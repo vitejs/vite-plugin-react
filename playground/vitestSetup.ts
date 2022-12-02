@@ -1,5 +1,5 @@
 import type * as http from 'node:http'
-import path, { dirname, join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import os from 'node:os'
 import fs from 'fs-extra'
 import { chromium } from 'playwright-chromium'
