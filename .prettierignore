@@ -1,0 +1,7 @@
+packages/*/CHANGELOG.md
+playground-temp/
+dist/
+temp/
+LICENSE.md
+pnpm-lock.yaml
+pnpm-workspace.yaml
