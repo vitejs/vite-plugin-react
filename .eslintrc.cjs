@@ -111,36 +111,7 @@ module.exports = defineConfig({
       }
     },
     {
-      files: 'packages/vite/**/*.*',
-      rules: {
-        'node/no-restricted-require': [
-          'error',
-          Object.keys(
-            require('./packages/vite/package.json').devDependencies
-          ).map((d) => ({
-            name: d,
-            message:
-              `devDependencies can only be imported using ESM syntax so ` +
-              `that they are included in the rollup bundle. If you are trying to ` +
-              `lazy load a dependency, use (await import('dependency')).default instead.`
-          }))
-        ]
-      }
-    },
-    {
-      files: ['packages/vite/src/node/**'],
-      rules: {
-        'no-console': ['error']
-      }
-    },
-    {
-      files: ['packages/vite/src/types/**', '*.spec.ts'],
-      rules: {
-        'node/no-extraneous-import': 'off'
-      }
-    },
-    {
-      files: ['packages/create-vite/template-*/**', '**/build.config.ts'],
+      files: ['**/build.config.ts'],
       rules: {
         'no-undef': 'off',
         'node/no-missing-import': 'off',
