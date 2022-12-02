@@ -90,9 +90,6 @@ jobs:
       - name: Test build
         run: pnpm run test-build
 
-      - name: Test docs
-        run: pnpm run test-docs
-
   lint:
     if: github.repository == 'vitejs/vite-plugin-react'
     timeout-minutes: 10
