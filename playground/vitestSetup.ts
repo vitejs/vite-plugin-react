@@ -30,10 +30,6 @@ export const workspaceRoot = resolve(__dirname, '../')
 export const isBuild = !!process.env.VITE_TEST_BUILD
 export const isServe = !isBuild
 export const isWindows = process.platform === 'win32'
-export const viteBinPath = path.posix.join(
-  workspaceRoot,
-  'packages/vite/bin/vite.js'
-)
 
 // #endregion
 
