@@ -14,7 +14,7 @@ async function main() {
     throw new Error('No tag specified')
   }
 
-  let pkgName
+  let pkgName = 'plugin-react'
   let version
 
   if (tag.includes('@')) [pkgName, version] = tag.split('@')
