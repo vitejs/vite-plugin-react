@@ -84,9 +84,6 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Test unit
-        run: pnpm run test-unit
-
       - name: Test serve
         run: pnpm run test-serve
 
