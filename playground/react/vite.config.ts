@@ -6,8 +6,8 @@ const config: UserConfig = {
   plugins: [react()],
   build: {
     // to make tests faster
-    minify: false
-  }
+    minify: false,
+  },
 }
 
 export default config

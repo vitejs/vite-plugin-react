@@ -7,11 +7,11 @@ export const runtimePublicPath = '/@react-refresh'
 
 const _require = createRequire(import.meta.url)
 const reactRefreshDir = path.dirname(
-  _require.resolve('react-refresh/package.json')
+  _require.resolve('react-refresh/package.json'),
 )
 const runtimeFilePath = path.join(
   reactRefreshDir,
-  'cjs/react-refresh-runtime.development.js'
+  'cjs/react-refresh-runtime.development.js',
 )
 
 export const runtimeCode = `
@@ -112,7 +112,7 @@ import.meta.hot.accept(mod => {
 export function addRefreshWrapper(
   code: string,
   id: string,
-  accept: boolean
+  accept: boolean,
 ): string {
   return (
     header.replace('__SOURCE__', JSON.stringify(id)) +
@@ -133,7 +133,7 @@ export function isRefreshBoundary(ast: t.File): boolean {
       if (declaration.type === 'ClassDeclaration') return false
       if (declaration.type === 'VariableDeclaration') {
         return declaration.declarations.every((variable) =>
-          isComponentLikeIdentifier(variable.id)
+          isComponentLikeIdentifier(variable.id),
         )
       }
       if (declaration.type === 'FunctionDeclaration') {

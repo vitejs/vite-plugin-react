@@ -3,7 +3,7 @@ import { editFile, page, untilUpdated } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('h1')).toMatch(
-    'Hello Vite + React + @emotion/react'
+    'Hello Vite + React + @emotion/react',
   )
 })
 
@@ -15,7 +15,7 @@ test('should update', async () => {
 
 test('should hmr', async () => {
   editFile('App.jsx', (code) =>
-    code.replace('Vite + React + @emotion/react', 'Updated')
+    code.replace('Vite + React + @emotion/react', 'Updated'),
   )
   await untilUpdated(() => page.textContent('h1'), 'Hello Updated')
   // preserve state
@@ -36,7 +36,7 @@ test('should update button style', async () => {
   expect(await getButtonBorderStyle()).toMatch('2px solid rgb(0, 0, 0)')
 
   editFile('App.jsx', (code) =>
-    code.replace('border: 2px solid #000', 'border: 4px solid red')
+    code.replace('border: 2px solid #000', 'border: 4px solid red'),
   )
 
   await untilUpdated(getButtonBorderStyle, '4px solid rgb(255, 0, 0)')

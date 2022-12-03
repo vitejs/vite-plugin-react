@@ -9,14 +9,14 @@ import type {
   PluginOption,
   ResolvedConfig,
   UserConfig,
-  ViteDevServer
+  ViteDevServer,
 } from 'vite'
 import {
   build,
   createServer,
   loadConfigFromFile,
   mergeConfig,
-  preview
+  preview,
 } from 'vite'
 import type { Browser, Page } from 'playwright-chromium'
 import type { RollupError, RollupWatcher, RollupWatcherEvent } from 'rollup'
@@ -147,7 +147,7 @@ beforeAll(async (s) => {
 
       const testCustomServe = [
         resolve(dirname(testPath), 'serve.ts'),
-        resolve(dirname(testPath), 'serve.js')
+        resolve(dirname(testPath), 'serve.js'),
       ].find((i) => fs.existsSync(i))
 
       if (testCustomServe) {
@@ -192,10 +192,10 @@ function loadConfigFromDir(dir: string) {
   return loadConfigFromFile(
     {
       command: isBuild ? 'build' : 'serve',
-      mode: isBuild ? 'production' : 'development'
+      mode: isBuild ? 'production' : 'development',
     },
     undefined,
-    dir
+    dir,
   )
 }
 
@@ -223,21 +223,21 @@ export async function startDefaultServe(): Promise<void> {
         // During tests we edit the files too fast and sometimes chokidar
         // misses change events, so enforce polling for consistency
         usePolling: true,
-        interval: 100
+        interval: 100,
       },
       host: true,
       fs: {
-        strict: !isBuild
-      }
+        strict: !isBuild,
+      },
     },
     build: {
       // esbuild do not minify ES lib output since that would remove pure annotations and break tree-shaking
       // skip transpilation during tests to make it faster
       target: 'esnext',
       // tests are flaky when `emptyOutDir` is `true`
-      emptyOutDir: false
+      emptyOutDir: false,
     },
-    customLogger: createInMemoryLogger(serverLogs)
+    customLogger: createInMemoryLogger(serverLogs),
   }
 
   setupConsoleWarnCollector(serverLogs)
@@ -260,7 +260,7 @@ export async function startDefaultServe(): Promise<void> {
       name: 'vite-plugin-watcher',
       configResolved(config) {
         resolvedConfig = config
-      }
+      },
     })
     options.plugins = [resolvedPlugin()]
     const testConfig = mergeConfig(options, config || {})
@@ -290,7 +290,7 @@ export async function startDefaultServe(): Promise<void> {
  * Send the rebuild complete message in build watch
  */
 export async function notifyRebuildComplete(
-  watcher: RollupWatcher
+  watcher: RollupWatcher,
 ): Promise<RollupWatcher> {
   let resolveFn: undefined | (() => void)
   const callback = (event: RollupWatcherEvent): void => {
@@ -331,7 +331,7 @@ function createInMemoryLogger(logs: string[]): Logger {
       if (opts?.error) {
         loggedErrors.add(opts.error)
       }
-    }
+    },
   }
 
   return logger

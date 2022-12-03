@@ -6,13 +6,13 @@ export default defineConfig({
     react({
       jsxImportSource: '@emotion/react',
       babel: {
-        plugins: ['@emotion/babel-plugin']
-      }
-    })
+        plugins: ['@emotion/babel-plugin'],
+      },
+    }),
   ],
   clearScreen: false,
   build: {
     // to make tests faster
-    minify: false
-  }
+    minify: false,
+  },
 })
