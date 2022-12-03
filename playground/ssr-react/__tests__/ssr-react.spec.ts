@@ -6,7 +6,7 @@ import {
   editFile,
   page,
   untilBrowserLogAfter,
-  untilUpdated
+  untilUpdated,
 } from '~utils'
 
 const url = `http://localhost:${port}`
@@ -52,7 +52,7 @@ test('/', async () => {
 test('hmr', async () => {
   await page.goto(url)
   editFile('src/pages/Home.jsx', (code) =>
-    code.replace('<h1>Home', '<h1>changed')
+    code.replace('<h1>Home', '<h1>changed'),
   )
   await untilUpdated(() => page.textContent('h1'), 'changed')
 })
@@ -64,7 +64,7 @@ test('client navigation', async () => {
   await page.click('a[href="/about"]')
   await untilUpdated(() => page.textContent('h1'), 'About')
   editFile('src/pages/About.jsx', (code) =>
-    code.replace('<h1>About', '<h1>changed')
+    code.replace('<h1>About', '<h1>changed'),
   )
   await untilUpdated(() => page.textContent('h1'), 'changed')
 })
@@ -72,6 +72,6 @@ test('client navigation', async () => {
 test(`circular dependencies modules doesn't throw`, async () => {
   await page.goto(url)
   expect(await page.textContent('.circ-dep-init')).toMatch(
-    'circ-dep-init-a circ-dep-init-b'
+    'circ-dep-init-a circ-dep-init-b',
   )
 })

@@ -3,5 +3,5 @@
 const Unused = () => <span>An unused react component</span>
 
 export const Foo = {
-  is: 'An Object'
+  is: 'An Object',
 }

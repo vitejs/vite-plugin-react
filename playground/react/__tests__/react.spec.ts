@@ -5,7 +5,7 @@ import {
   isServe,
   page,
   untilBrowserLogAfter,
-  untilUpdated
+  untilUpdated,
 } from '~utils'
 
 test('should render', async () => {
@@ -31,7 +31,7 @@ test.runIf(isServe)(
     const meta = await page.evaluate(() => {
       const button = document.querySelector('#state-button')
       const key = Object.keys(button).find(
-        (key) => key.indexOf('__reactFiber') === 0
+        (key) => key.indexOf('__reactFiber') === 0,
       )
       return button[key]._debugSource
     })
@@ -40,9 +40,9 @@ test.runIf(isServe)(
     expect(Object.keys(meta).sort()).toEqual([
       'columnNumber',
       'fileName',
-      'lineNumber'
+      'lineNumber',
     ])
-  }
+  },
 )
 
 if (!isBuild) {
@@ -51,15 +51,15 @@ if (!isBuild) {
     await untilBrowserLogAfter(
       () =>
         editFile('hmr/no-exported-comp.jsx', (code) =>
-          code.replace('An Object', 'Updated')
+          code.replace('An Object', 'Updated'),
         ),
       [
         '[vite] invalidate /hmr/no-exported-comp.jsx',
         '[vite] hot updated: /hmr/no-exported-comp.jsx',
         '[vite] hot updated: /hmr/parent.jsx',
-        'Parent rendered'
+        'Parent rendered',
       ],
-      true
+      true,
     )
     await untilUpdated(() => page.textContent('#parent'), 'Updated')
   })
@@ -67,30 +67,30 @@ if (!isBuild) {
   // #3301
   test('should hmr react context', async () => {
     expect(await page.textContent('#context-button')).toMatch(
-      'context-based count is: 0'
+      'context-based count is: 0',
     )
     await page.click('#context-button')
     expect(await page.textContent('#context-button')).toMatch(
-      'context-based count is: 1'
+      'context-based count is: 1',
     )
 
     await untilBrowserLogAfter(
       () =>
         editFile('context/CountProvider.jsx', (code) =>
-          code.replace('context provider', 'context provider updated')
+          code.replace('context provider', 'context provider updated'),
         ),
       [
         '[vite] invalidate /context/CountProvider.jsx',
         '[vite] hot updated: /context/CountProvider.jsx',
         '[vite] hot updated: /App.jsx',
         '[vite] hot updated: /context/ContextButton.jsx',
-        'Parent rendered'
+        'Parent rendered',
       ],
-      true
+      true,
     )
     await untilUpdated(
       () => page.textContent('#context-provider'),
-      'context provider updated'
+      'context provider updated',
     )
   })
 }

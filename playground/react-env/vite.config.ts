@@ -9,8 +9,8 @@ const config: UserConfig = {
   mode: 'staging',
   build: {
     // to make tests faster
-    minify: false
-  }
+    minify: false,
+  },
 }
 
 export default config

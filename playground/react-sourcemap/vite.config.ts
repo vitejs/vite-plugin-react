@@ -4,12 +4,12 @@ import type { UserConfig } from 'vite'
 const config: UserConfig = {
   plugins: [
     react({
-      jsxRuntime: process.env.USE_CLASSIC === '1' ? 'classic' : 'automatic'
-    })
+      jsxRuntime: process.env.USE_CLASSIC === '1' ? 'classic' : 'automatic',
+    }),
   ],
   build: {
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 }
 
 export default config

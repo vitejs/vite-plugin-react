@@ -14,7 +14,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [react()]
+  plugins: [react()],
 })
 ```
 
@@ -29,7 +29,7 @@ react({
   // Exclude storybook stories
   exclude: /\.stories\.(t|j)sx?$/,
   // Only .tsx files
-  include: '**/*.tsx'
+  include: '**/*.tsx',
 })
 ```
 
@@ -39,7 +39,7 @@ By default, the plugin uses the [automatic JSX runtime](https://github.com/alloc
 
 ```js
 react({
-  jsxRuntime: 'classic'
+  jsxRuntime: 'classic',
 })
 ```
 
@@ -69,9 +69,9 @@ If you are using ES syntax that are still in proposal status (e.g. class propert
 react({
   babel: {
     parserOpts: {
-      plugins: ['decorators-legacy']
-    }
-  }
+      plugins: ['decorators-legacy'],
+    },
+  },
 })
 ```
 

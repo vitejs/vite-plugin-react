@@ -24,7 +24,7 @@ test.runIf(isServe)(
     const meta = await page.evaluate(() => {
       const button = document.querySelector('button')
       const key = Object.keys(button).find(
-        (key) => key.indexOf('__reactFiber') === 0
+        (key) => key.indexOf('__reactFiber') === 0,
       )
       return button[key]._debugSource
     })
@@ -33,7 +33,7 @@ test.runIf(isServe)(
     expect(Object.keys(meta).sort()).toEqual([
       'columnNumber',
       'fileName',
-      'lineNumber'
+      'lineNumber',
     ])
-  }
+  },
 )
