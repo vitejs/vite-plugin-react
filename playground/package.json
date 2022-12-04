@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/vite-playground",
+  "name": "@vitejs/vite-plugin-react-playground",
   "private": true,
   "version": "1.0.0",
   "devDependencies": {
