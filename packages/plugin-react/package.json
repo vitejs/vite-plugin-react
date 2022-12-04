@@ -30,13 +30,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitejs/vite.git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
     "directory": "packages/plugin-react"
   },
   "bugs": {
-    "url": "https://github.com/vitejs/vite/issues"
+    "url": "https://github.com/vitejs/vite-plugin-react/issues"
   },
-  "homepage": "https://github.com/vitejs/vite/tree/main/packages/plugin-react#readme",
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "dependencies": {
     "@babel/core": "^7.20.5",
     "@babel/plugin-transform-react-jsx-self": "^7.18.6",
