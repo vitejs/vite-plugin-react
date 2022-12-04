@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
-import type { types as t } from '@babel/core'
 
 export const runtimePublicPath = '/@react-refresh'
 
@@ -67,14 +66,6 @@ const timeout = `
   }
 `
 
-const footer = `
-if (import.meta.hot) {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-
-  __ACCEPT__
-}`
-
 const checkAndAccept = `
 function isReactRefreshBoundary(mod) {
   if (mod == null || typeof mod !== 'object') {
@@ -109,47 +100,14 @@ import.meta.hot.accept(mod => {
 });
 `
 
-export function addRefreshWrapper(
-  code: string,
-  id: string,
-  accept: boolean,
-): string {
-  return (
-    header.replace('__SOURCE__', JSON.stringify(id)) +
-    code +
-    footer.replace('__ACCEPT__', accept ? checkAndAccept : timeout)
-  )
-}
+const footer = `
+if (import.meta.hot) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
 
-export function isRefreshBoundary(ast: t.File): boolean {
-  // Every export must be a potential React component.
-  // We'll also perform a runtime check that's more robust as well (isLikelyComponentType).
-  return ast.program.body.every((node) => {
-    if (node.type !== 'ExportNamedDeclaration') {
-      return true
-    }
-    const { declaration, specifiers } = node
-    if (declaration) {
-      if (declaration.type === 'ClassDeclaration') return false
-      if (declaration.type === 'VariableDeclaration') {
-        return declaration.declarations.every((variable) =>
-          isComponentLikeIdentifier(variable.id),
-        )
-      }
-      if (declaration.type === 'FunctionDeclaration') {
-        return !!declaration.id && isComponentLikeIdentifier(declaration.id)
-      }
-    }
-    return specifiers.every((spec) => {
-      return isComponentLikeIdentifier(spec.exported)
-    })
-  })
-}
+  ${checkAndAccept}
+}`
 
-function isComponentLikeIdentifier(node: t.Node): boolean {
-  return node.type === 'Identifier' && isComponentLikeName(node.name)
-}
-
-function isComponentLikeName(name: string): boolean {
-  return typeof name === 'string' && name[0] >= 'A' && name[0] <= 'Z'
+export function addRefreshWrapper(code: string, id: string): string {
+  return header.replace('__SOURCE__', JSON.stringify(id)) + code + footer
 }
