@@ -10,9 +10,6 @@
     "declaration": true,
     "sourceMap": true,
     "noUnusedLocals": true,
-    "esModuleInterop": true,
-    "paths": {
-      "vite": ["../vite/src/node/index.js"]
-    }
+    "esModuleInterop": true
   }
 }

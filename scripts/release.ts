@@ -11,7 +11,6 @@ import {
   run,
   runIfNotDry,
   step,
-  updateTemplateVersions,
   updateVersion,
 } from './releaseUtils'
 
@@ -56,8 +55,7 @@ async function main(): Promise<void> {
     throw new Error(`invalid target version: ${targetVersion}`)
   }
 
-  const tag =
-    pkgName === 'vite' ? `v${targetVersion}` : `${pkgName}@${targetVersion}`
+  const tag = `${pkgName}@${targetVersion}`
 
   if (targetVersion.includes('beta') && !args.tag) {
     args.tag = 'beta'
@@ -78,21 +76,24 @@ async function main(): Promise<void> {
 
   step('\nUpdating package version...')
   updateVersion(pkgPath, targetVersion)
-  if (pkgName === 'create-vite') updateTemplateVersions()
 
   step('\nGenerating changelog...')
-  const changelogArgs = [
-    'conventional-changelog',
-    '-p',
-    'angular',
-    '-i',
-    'CHANGELOG.md',
-    '-s',
-    '--commit-path',
-    '.',
-  ]
-  if (pkgName !== 'vite') changelogArgs.push('--lerna-package', pkgName)
-  await run('npx', changelogArgs, { cwd: pkgDir })
+  await run(
+    'npx',
+    [
+      'conventional-changelog',
+      '-p',
+      'angular',
+      '-i',
+      'CHANGELOG.md',
+      '-s',
+      '--commit-path',
+      '.',
+      '--lerna-package',
+      pkgName,
+    ],
+    { cwd: pkgDir },
+  )
 
   const { stdout } = await run('git', ['diff'], { stdio: 'pipe' })
   if (stdout) {

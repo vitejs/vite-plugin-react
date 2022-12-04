@@ -5,42 +5,17 @@ import fs from 'node:fs'
 import path from 'node:path'
 import colors from 'css-color-names'
 import type { ConsoleMessage, ElementHandle } from 'playwright-chromium'
-import type { Manifest } from 'vite'
-import { normalizePath } from 'vite'
-import { fromComment } from 'convert-source-map'
 import { expect } from 'vitest'
-import type { ExecaChildProcess } from 'execa'
-import { isBuild, isWindows, page, testDir } from './vitestSetup'
+import { isBuild, page, testDir } from './vitestSetup'
 
 export * from './vitestSetup'
 
 // make sure these ports are unique
 export const ports = {
-  cli: 9510,
-  'cli-module': 9511,
-  'legacy/ssr': 9520,
-  lib: 9521,
-  'optimize-missing-deps': 9522,
-  'legacy/client-and-ssr': 9523,
-  'ssr-deps': 9600,
-  'ssr-html': 9601,
-  'ssr-noexternal': 9602,
-  'ssr-pug': 9603,
   'ssr-react': 9604,
-  'ssr-vue': 9605,
-  'ssr-webworker': 9606,
-  'css/postcss-caching': 5005,
-  'css/postcss-plugins-different-dir': 5006,
-  'css/dynamic-import': 5007,
 }
 export const hmrPorts = {
-  'optimize-missing-deps': 24680,
-  'ssr-deps': 24681,
-  'ssr-html': 24682,
-  'ssr-noexternal': 24683,
-  'ssr-pug': 24684,
   'ssr-react': 24685,
-  'ssr-vue': 24686,
 }
 
 const hexToNameMap: Record<string, string> = {}
@@ -117,38 +92,6 @@ export function removeFile(filename: string): void {
   fs.unlinkSync(path.resolve(testDir, filename))
 }
 
-export function listAssets(base = ''): string[] {
-  const assetsDir = path.join(testDir, 'dist', base, 'assets')
-  return fs.readdirSync(assetsDir)
-}
-
-export function findAssetFile(
-  match: string | RegExp,
-  base = '',
-  assets = 'assets',
-): string {
-  const assetsDir = path.join(testDir, 'dist', base, assets)
-  let files: string[]
-  try {
-    files = fs.readdirSync(assetsDir)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      return ''
-    }
-    throw e
-  }
-  const file = files.find((file) => {
-    return file.match(match)
-  })
-  return file ? fs.readFileSync(path.resolve(assetsDir, file), 'utf-8') : ''
-}
-
-export function readManifest(base = ''): Manifest {
-  return JSON.parse(
-    fs.readFileSync(path.join(testDir, 'dist', base, 'manifest.json'), 'utf-8'),
-  )
-}
-
 /**
  * Poll a getter until the value it returns includes the expected value.
  */
@@ -168,25 +111,6 @@ export async function untilUpdated(
       await timeout(50)
     }
   }
-}
-
-/**
- * Retry `func` until it does not throw error.
- */
-export async function withRetry(
-  func: () => Promise<void>,
-  runInBuild = false,
-): Promise<void> {
-  if (isBuild && !runInBuild) return
-  const maxTries = process.env.CI ? 200 : 50
-  for (let tries = 0; tries < maxTries; tries++) {
-    try {
-      await func()
-      return
-    } catch {}
-    await timeout(50)
-  }
-  await func()
 }
 
 type UntilBrowserLogAfterCallback = (logs: string[]) => PromiseLike<void> | void
@@ -288,32 +212,6 @@ async function untilBrowserLog(
   return logs
 }
 
-export const extractSourcemap = (content: string): any => {
-  const lines = content.trim().split('\n')
-  return fromComment(lines[lines.length - 1]).toObject()
-}
-
-export const formatSourcemapForSnapshot = (map: any): any => {
-  const root = normalizePath(testDir)
-  const m = { ...map }
-  delete m.file
-  delete m.names
-  m.sources = m.sources.map((source) => source.replace(root, '/root'))
-  return m
-}
-
-// helper function to kill process, uses taskkill on windows to ensure child process is killed too
-export async function killProcess(
-  serverProcess: ExecaChildProcess,
-): Promise<void> {
-  if (isWindows) {
-    try {
-      const { execaCommandSync } = await import('execa')
-      execaCommandSync(`taskkill /pid ${serverProcess.pid} /T /F`)
-    } catch (e) {
-      console.error('failed to taskkill:', e)
-    }
-  } else {
-    serverProcess.kill('SIGTERM', { forceKillAfterTimeout: 2000 })
-  }
-}
+/**
+ * Before implementing a new util, check if it's not available in core https://github.com/vitejs/vite/blob/main/playground/test-utils.ts
+ */

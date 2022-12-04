@@ -1,7 +1,7 @@
 /**
  * modified from https://github.com/vuejs/core/blob/master/scripts/release.js
  */
-import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import colors from 'picocolors'
 import type { Options as ExecaOptions, ExecaReturnValue } from 'execa'
@@ -180,23 +180,19 @@ export async function publishPackage(
 }
 
 export async function getLatestTag(pkgName: string): Promise<string> {
-  const tags = (await run('git', ['tag'], { stdio: 'pipe' })).stdout
+  return (await run('git', ['tag'], { stdio: 'pipe' })).stdout
     .split(/\n/)
-    .filter(Boolean)
-  const prefix = pkgName === 'vite' ? 'v' : `${pkgName}@`
-  return tags
-    .filter((tag) => tag.startsWith(prefix))
+    .filter((tag) => tag && tag.startsWith(`${pkgName}@`))
     .sort()
     .reverse()[0]
 }
 
 export async function getActiveVersion(pkgName: string): Promise<string> {
-  const npmName =
-    pkgName === 'vite' || pkgName === 'create-vite'
-      ? pkgName
-      : `@vitejs/${pkgName}`
-  return (await run('npm', ['info', npmName, 'version'], { stdio: 'pipe' }))
-    .stdout
+  return (
+    await run('npm', ['info', `@vitejs/${pkgName}`, 'version'], {
+      stdio: 'pipe',
+    })
+  ).stdout
 }
 
 export async function logRecentCommits(pkgName: string): Promise<void> {
@@ -225,41 +221,4 @@ export async function logRecentCommits(pkgName: string): Promise<void> {
     { stdio: 'inherit' },
   )
   console.log()
-}
-
-export async function updateTemplateVersions(): Promise<void> {
-  const viteVersion = (
-    await fs.readJSON(path.resolve(__dirname, '../packages/vite/package.json'))
-  ).version
-  if (/beta|alpha|rc/.test(viteVersion)) return
-
-  const dir = path.resolve(__dirname, '../packages/create-vite')
-
-  const templates = readdirSync(dir).filter((dir) =>
-    dir.startsWith('template-'),
-  )
-  for (const template of templates) {
-    const pkgPath = path.join(dir, template, `package.json`)
-    const pkg = require(pkgPath)
-    pkg.devDependencies.vite = `^` + viteVersion
-    if (template.startsWith('template-vue')) {
-      pkg.devDependencies['@vitejs/plugin-vue'] =
-        `^` +
-        (
-          await fs.readJSON(
-            path.resolve(__dirname, '../packages/plugin-vue/package.json'),
-          )
-        ).version
-    }
-    if (template.startsWith('template-react')) {
-      pkg.devDependencies['@vitejs/plugin-react'] =
-        `^` +
-        (
-          await fs.readJSON(
-            path.resolve(__dirname, '../packages/plugin-react/package.json'),
-          )
-        ).version
-    }
-    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
-  }
 }
