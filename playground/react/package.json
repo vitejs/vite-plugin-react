@@ -1,5 +1,5 @@
 {
-  "name": "test-react",
+  "name": "@vitejs/test-react",
   "private": true,
   "version": "0.0.0",
   "scripts": {

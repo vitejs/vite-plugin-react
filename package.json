@@ -1,5 +1,5 @@
 {
-  "name": "vite-plugin-react-monorepo",
+  "name": "@vitejs/vite-plugin-react-monorepo",
   "private": true,
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
