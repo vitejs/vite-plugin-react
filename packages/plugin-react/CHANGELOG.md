@@ -1,3 +1,14 @@
+## 3.0.0-beta.0 (2022-12-05)
+
+* chore: clean some leftovers from Vite core (#44) ([d2a3931](https://github.com/vitejs/vite-plugin-react/commit/d2a3931)), closes [#44](https://github.com/vitejs/vite-plugin-react/issues/44)
+* chore: enable prettier trailing commas (#35) ([b647e74](https://github.com/vitejs/vite-plugin-react/commit/b647e74)), closes [#35](https://github.com/vitejs/vite-plugin-react/issues/35)
+* chore: more package name fixes (fixes #37) (#42) ([9094c8b](https://github.com/vitejs/vite-plugin-react/commit/9094c8b)), closes [#37](https://github.com/vitejs/vite-plugin-react/issues/37) [#42](https://github.com/vitejs/vite-plugin-react/issues/42)
+* chore: package setup ([ced7860](https://github.com/vitejs/vite-plugin-react/commit/ced7860))
+* chore: remove unused babel automatic runtime plugins (#41) ([1464a8f](https://github.com/vitejs/vite-plugin-react/commit/1464a8f)), closes [#41](https://github.com/vitejs/vite-plugin-react/issues/41)
+* chore(deps): update all non-major dependencies (#47) ([0cfe83a](https://github.com/vitejs/vite-plugin-react/commit/0cfe83a)), closes [#47](https://github.com/vitejs/vite-plugin-react/issues/47)
+
+
+
 ## 3.0.0-alpha.2 (2022-11-30)
 
 * fix(deps): update all non-major dependencies (#11091) ([073a4bf](https://github.com/vitejs/vite/commit/073a4bf)), closes [#11091](https://github.com/vitejs/vite/issues/11091)
