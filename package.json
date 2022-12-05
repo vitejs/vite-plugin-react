@@ -37,17 +37,17 @@
     "@types/picomatch": "^2.3.0",
     "@types/prompts": "^2.4.1",
     "@types/semver": "^7.3.13",
-    "@typescript-eslint/eslint-plugin": "^5.44.0",
-    "@typescript-eslint/parser": "^5.44.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
     "conventional-changelog-cli": "^2.2.2",
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-define-config": "^1.12.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-regexp": "^1.11.0",
     "execa": "^6.1.0",
     "fs-extra": "^10.1.0",
-    "lint-staged": "^13.0.4",
+    "lint-staged": "^13.1.0",
     "minimist": "^1.2.7",
     "picocolors": "^1.0.0",
     "playwright-chromium": "^1.28.1",
@@ -59,7 +59,7 @@
     "tsx": "^3.12.1",
     "typescript": "^4.6.4",
     "unbuild": "^0.9.4",
-    "vite": "^4.0.0-alpha.0",
+    "vite": "^4.0.0-alpha.6",
     "vitest": "^0.25.3"
   },
   "simple-git-hooks": {
@@ -80,5 +80,5 @@
       "eslint --cache --fix"
     ]
   },
-  "packageManager": "pnpm@7.17.1"
+  "packageManager": "pnpm@7.18.0"
 }
