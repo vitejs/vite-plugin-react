@@ -34,7 +34,7 @@
     "@types/babel__core": "^7.1.20",
     "@types/fs-extra": "^9.0.13",
     "@types/minimist": "^1.2.2",
-    "@types/node": "^17.0.42",
+    "@types/node": "^18.11.10",
     "@types/picomatch": "^2.3.0",
     "@types/prompts": "^2.4.1",
     "@types/semver": "^7.3.13",
