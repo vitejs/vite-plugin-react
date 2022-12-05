@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { ParserOptions, TransformOptions, types as t } from '@babel/core'
+import type { ParserOptions, TransformOptions } from '@babel/core'
 import * as babel from '@babel/core'
 import { createFilter, loadEnv, normalizePath, resolveEnvPrefix } from 'vite'
 import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
@@ -7,7 +7,6 @@ import MagicString from 'magic-string'
 import type { SourceMap } from 'magic-string'
 import {
   addRefreshWrapper,
-  isRefreshBoundary,
   preambleCode,
   runtimeCode,
   runtimePublicPath,
@@ -245,7 +244,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           }
         }
 
-        let ast: t.File | null | undefined
         let prependReactImport = false
         if (!isProjectFile || isJSX) {
           if (!useAutomaticRuntime && isProjectFile) {
@@ -314,14 +312,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           parserPlugins.push('typescript')
         }
 
-        const transformAsync = ast
-          ? babel.transformFromAstAsync.bind(babel, ast, code)
-          : babel.transformAsync.bind(babel, code)
-
-        const isReasonReact = extension.endsWith('.bs.js')
-        const result = await transformAsync({
+        const result = await babel.transformAsync(code, {
           ...babelOptions,
-          ast: !isReasonReact,
           root: projectRoot,
           filename: id,
           sourceFileName: filepath,
@@ -344,8 +336,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         if (result) {
           let code = result.code!
           if (useFastRefresh && /\$RefreshReg\$\(/.test(code)) {
-            const accept = isReasonReact || isRefreshBoundary(result.ast!)
-            code = addRefreshWrapper(code, id, accept)
+            code = addRefreshWrapper(code, id)
           }
           return {
             code,
