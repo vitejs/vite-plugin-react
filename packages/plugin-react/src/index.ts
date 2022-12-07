@@ -16,11 +16,6 @@ export interface Options {
   include?: string | RegExp | Array<string | RegExp>
   exclude?: string | RegExp | Array<string | RegExp>
   /**
-   * Enable `react-refresh` integration. Vite disables this in prod env or build mode.
-   * @default true
-   */
-  fastRefresh?: boolean
-  /**
    * Set this to `"automatic"` to use [vite-react-jsx](https://github.com/alloc/vite-react-jsx).
    * @default "automatic"
    */
@@ -89,14 +84,26 @@ declare module 'vite' {
 
 const prependReactImportCode = "import React from 'react'; "
 
+const defaultIncludeRE = /\.(?:mjs|[tj]sx?)$/
+
 export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
   let devBase = '/'
-  let filter = createFilter(opts.include, opts.exclude)
+  const filter = createFilter(
+    [
+      defaultIncludeRE,
+      ...(Array.isArray(opts.include)
+        ? opts.include
+        : opts.include
+        ? [opts.include]
+        : []),
+    ],
+    opts.exclude,
+  )
   let needHiresSourcemap = false
   let isProduction = true
   let projectRoot = process.cwd()
-  let skipFastRefresh = opts.fastRefresh === false
+  let skipFastRefresh = false
   let skipReactImport = false
   let runPluginOverrides = (
     options: ReactBabelOptions,
@@ -158,13 +165,10 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     configResolved(config) {
       devBase = config.base
       projectRoot = config.root
-      filter = createFilter(opts.include, opts.exclude, {
-        resolve: projectRoot,
-      })
       needHiresSourcemap =
         config.command === 'build' && !!config.build.sourcemap
       isProduction = config.isProduction
-      skipFastRefresh ||= isProduction || config.command === 'build'
+      skipFastRefresh = isProduction || config.command === 'build'
 
       const jsxInject = config.esbuild && config.esbuild.jsxInject
       if (jsxInject && importReactRE.test(jsxInject)) {
@@ -212,9 +216,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         filepath.match(fileExtensionRE) ||
         []
 
-      if (/\.(?:mjs|[tj]sx?)$/.test(extension)) {
+      if (filter(id)) {
         const isJSX = extension.endsWith('x')
-        const isProjectFile = id[0] === '\0' || id.startsWith(projectRoot + '/')
 
         let babelOptions = staticBabelOptions
         if (typeof opts.babel === 'function') {
@@ -228,39 +231,34 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           }
         }
 
-        const plugins = isProjectFile ? [...babelOptions.plugins] : []
+        const plugins = [...babelOptions.plugins]
 
-        let useFastRefresh = false
-        if (!skipFastRefresh && !ssr) {
-          // Modules with .js or .ts extension must import React.
-          const isReactModule = isJSX || importReactRE.test(code)
-          if (isReactModule && filter(id)) {
-            useFastRefresh = true
-            plugins.push([
-              await loadPlugin('react-refresh/babel'),
-              { skipEnvCheck: true },
-            ])
-          }
+        const useFastRefresh =
+          // Non-jsx extensions must import React.
+          !skipFastRefresh && !ssr && (isJSX || importReactRE.test(code))
+
+        if (useFastRefresh) {
+          plugins.push([
+            await loadPlugin('react-refresh/babel'),
+            { skipEnvCheck: true },
+          ])
         }
 
-        let prependReactImport = false
-        if (!isProjectFile || isJSX) {
-          if (!useAutomaticRuntime && isProjectFile) {
-            // These plugins are only needed for the classic runtime.
-            if (!isProduction) {
-              plugins.push(
-                await loadPlugin('@babel/plugin-transform-react-jsx-self'),
-                await loadPlugin('@babel/plugin-transform-react-jsx-source'),
-              )
-            }
-
-            // Even if the automatic JSX runtime is not used, we can still
-            // inject the React import for .jsx and .tsx modules.
-            if (!skipReactImport && !importReactRE.test(code)) {
-              prependReactImport = true
-            }
-          }
+        if (isJSX && !useAutomaticRuntime && !isProduction) {
+          // These development plugins are only needed for the classic runtime.
+          plugins.push(
+            await loadPlugin('@babel/plugin-transform-react-jsx-self'),
+            await loadPlugin('@babel/plugin-transform-react-jsx-source'),
+          )
         }
+
+        // Even if the automatic JSX runtime is not used, we can still
+        // inject the React import for .jsx and .tsx modules.
+        const prependReactImport =
+          isJSX &&
+          !useAutomaticRuntime &&
+          !skipReactImport &&
+          !importReactRE.test(code)
 
         let inputMap: SourceMap | undefined
         if (prependReactImport) {
@@ -274,17 +272,12 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           }
         }
 
-        // Plugins defined through this Vite plugin are only applied
-        // to modules within the project root, but "babel.config.js"
-        // files can define plugins that need to be applied to every
-        // module, including node_modules and linked packages.
-        const shouldSkip =
+        // Avoid parsing if no special transformation is needed
+        if (
           !plugins.length &&
           !babelOptions.configFile &&
-          !(isProjectFile && babelOptions.babelrc)
-
-        // Avoid parsing if no plugins exist.
-        if (shouldSkip) {
+          !babelOptions.babelrc
+        ) {
           return {
             code,
             map: inputMap ?? null,
