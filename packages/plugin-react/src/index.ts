@@ -335,7 +335,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 
         if (result) {
           let code = result.code!
-          if (useFastRefresh && /\$RefreshReg\$\(/.test(code)) {
+          if (useFastRefresh && /\$Refresh(Sig|Reg)\$\(/.test(code)) {
             code = addRefreshWrapper(code, id)
           }
           return {
