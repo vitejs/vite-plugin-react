@@ -203,6 +203,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     async transform(code, id, options) {
+      if (id.includes('/node_modules/')) return
       const ssr = options?.ssr === true
       // File extension could be mocked/overridden in querystring.
       const [filepath, querystring = ''] = id.split('?')
@@ -213,9 +214,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 
       if (/\.(?:mjs|[tj]sx?)$/.test(extension)) {
         const isJSX = extension.endsWith('x')
-        const isNodeModules = id.includes('/node_modules/')
-        const isProjectFile =
-          !isNodeModules && (id[0] === '\0' || id.startsWith(projectRoot + '/'))
+        const isProjectFile = id[0] === '\0' || id.startsWith(projectRoot + '/')
 
         let babelOptions = staticBabelOptions
         if (typeof opts.babel === 'function') {
@@ -232,7 +231,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         const plugins = isProjectFile ? [...babelOptions.plugins] : []
 
         let useFastRefresh = false
-        if (!skipFastRefresh && !ssr && !isNodeModules) {
+        if (!skipFastRefresh && !ssr) {
           // Modules with .js or .ts extension must import React.
           const isReactModule = isJSX || importReactRE.test(code)
           if (isReactModule && filter(id)) {
