@@ -55,7 +55,7 @@
     "playwright-chromium": "^1.28.1",
     "prettier": "2.8.0",
     "prompts": "^2.4.2",
-    "rollup": "~3.5.0",
+    "rollup": "^3.7.0",
     "semver": "^7.3.8",
     "simple-git-hooks": "^2.8.1",
     "tsx": "^3.12.1",
