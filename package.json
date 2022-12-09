@@ -61,7 +61,7 @@
     "tsx": "^3.12.1",
     "typescript": "^4.6.4",
     "unbuild": "^0.9.4",
-    "vite": "^4.0.0-alpha.6",
+    "vite": "^4.0.0",
     "vitest": "^0.25.3"
   },
   "simple-git-hooks": {
