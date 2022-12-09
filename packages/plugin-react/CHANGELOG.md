@@ -1,3 +1,11 @@
+## 3.0.0 (2022-12-09)
+
+* chore: update vite to ^4.0.0 (#57) ([941b20d](https://github.com/vitejs/vite-plugin-react/commit/941b20d)), closes [#57](https://github.com/vitejs/vite-plugin-react/issues/57)
+* chore(deps): update rollup (#56) ([af25ec7](https://github.com/vitejs/vite-plugin-react/commit/af25ec7)), closes [#56](https://github.com/vitejs/vite-plugin-react/issues/56)
+* chore!: drop ast check for refresh boundary (#43) ([e43bd76](https://github.com/vitejs/vite-plugin-react/commit/e43bd76)), closes [#43](https://github.com/vitejs/vite-plugin-react/issues/43)
+
+
+
 ## 3.0.0-beta.0 (2022-12-05)
 
 * chore: clean some leftovers from Vite core (#44) ([d2a3931](https://github.com/vitejs/vite-plugin-react/commit/d2a3931)), closes [#44](https://github.com/vitejs/vite-plugin-react/issues/44)
