@@ -19,10 +19,34 @@ test('should update', async () => {
 })
 
 test('should hmr', async () => {
-  editFile('App.jsx', (code) => code.replace('Vite + React', 'Updated'))
-  await untilUpdated(() => page.textContent('h1'), 'Hello Updated')
+  editFile('App.jsx', (code) =>
+    code.replace('Vite + React', 'Vite + React Updated'),
+  )
+  await untilUpdated(() => page.textContent('h1'), 'Hello Vite + React Updated')
   // preserve state
   expect(await page.textContent('#state-button')).toMatch('count is: 1')
+
+  editFile('App.jsx', (code) =>
+    code.replace('Vite + React Updated', 'Vite + React'),
+  )
+  await untilUpdated(() => page.textContent('h1'), 'Hello Vite + React')
+})
+
+test.runIf(isServe)('should not invalidate when code is invalid', async () => {
+  editFile('App.jsx', (code) =>
+    code.replace('<div className="App">', '<div className="App"}>'),
+  )
+
+  await untilUpdated(
+    () => page.textContent('vite-error-overlay .message-body'),
+    'Unexpected token',
+  )
+  // if import.meta.invalidate happened, the old page won't be shown because the page is reloaded
+  expect(await page.textContent('h1')).toMatch('Hello Vite + React')
+
+  editFile('App.jsx', (code) =>
+    code.replace('<div className="App"}>', '<div className="App">'),
+  )
 })
 
 test.runIf(isServe)(
@@ -59,7 +83,6 @@ if (!isBuild) {
         '[vite] hot updated: /hmr/parent.jsx',
         'Parent rendered',
       ],
-      true,
     )
     await untilUpdated(() => page.textContent('#parent'), 'Updated')
   })
@@ -86,7 +109,6 @@ if (!isBuild) {
         '[vite] hot updated: /context/ContextButton.jsx',
         'Parent rendered',
       ],
-      true,
     )
     await untilUpdated(
       () => page.textContent('#context-provider'),

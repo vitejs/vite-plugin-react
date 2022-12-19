@@ -92,6 +92,7 @@ function isReactRefreshBoundary(mod) {
 }
 
 import.meta.hot.accept(mod => {
+  if (!mod) return;
   if (isReactRefreshBoundary(mod)) {
     ${timeout}
   } else {
