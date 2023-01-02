@@ -16,14 +16,7 @@ const runtimeFilePath = path.join(
 export const runtimeCode = `
 const exports = {}
 ${fs.readFileSync(runtimeFilePath, 'utf-8')}
-function debounce(fn, delay) {
-  let handle
-  return () => {
-    clearTimeout(handle)
-    handle = setTimeout(fn, delay)
-  }
-}
-exports.performReactRefresh = debounce(exports.performReactRefresh, 16)
+${fs.readFileSync(_require.resolve('./refreshUtils.js'), 'utf-8')}
 export default exports
 `
 
@@ -57,58 +50,25 @@ if (import.meta.hot) {
   window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
 }`.replace(/\n+/g, '')
 
-const timeout = `
-  if (!window.__vite_plugin_react_timeout) {
-    window.__vite_plugin_react_timeout = setTimeout(() => {
-      window.__vite_plugin_react_timeout = 0;
-      RefreshRuntime.performReactRefresh();
-    }, 30);
-  }
-`
-
-const checkAndAccept = `
-function isReactRefreshBoundary(mod) {
-  if (mod == null || typeof mod !== 'object') {
-    return false;
-  }
-  let hasExports = false;
-  let areAllExportsComponents = true;
-  for (const exportName in mod) {
-    hasExports = true;
-    if (exportName === '__esModule') {
-      continue;
-    }
-    const desc = Object.getOwnPropertyDescriptor(mod, exportName);
-    if (desc && desc.get) {
-      // Don't invoke getters as they may have side effects.
-      return false;
-    }
-    const exportValue = mod[exportName];
-    if (!RefreshRuntime.isLikelyComponentType(exportValue)) {
-      areAllExportsComponents = false;
-    }
-  }
-  return hasExports && areAllExportsComponents;
-}
-
-import.meta.hot.accept(mod => {
-  if (!mod) return;
-  if (isReactRefreshBoundary(mod)) {
-    ${timeout}
-  } else {
-    import.meta.hot.invalidate();
-  }
-});
-`
-
 const footer = `
 if (import.meta.hot) {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 
-  ${checkAndAccept}
+  import(/* @vite-ignore */ import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh(__SOURCE__, currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
 }`
 
 export function addRefreshWrapper(code: string, id: string): string {
-  return header.replace('__SOURCE__', JSON.stringify(id)) + code + footer
+  return (
+    header.replace('__SOURCE__', JSON.stringify(id)) +
+    code +
+    footer.replace('__SOURCE__', JSON.stringify(id))
+  )
 }

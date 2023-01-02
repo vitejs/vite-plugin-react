@@ -105,3 +105,11 @@ Otherwise, you'll probably get this error:
 ```
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
 ```
+
+## Consistent components exports
+
+For React refresh to work correctly, your file should only export React components. You can find a good explanation in the [Gatsby docs](https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works).
+
+If an incompatible change in exports is found, the module will be invalidated and HMR will propagate. To make it easier to export simple constants alongside your component, the module is only invalidated when their value changes.
+
+You can catch mistakes and get more detailed warning with this [eslint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh).

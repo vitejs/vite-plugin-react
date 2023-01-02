@@ -4,7 +4,8 @@
   "license": "MIT",
   "author": "Evan You",
   "contributors": [
-    "Alec Larson"
+    "Alec Larson",
+    "Arnaud Barré"
   ],
   "files": [
     "dist"
@@ -21,7 +22,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild && pnpm run patch-cjs",
+    "build": "unbuild && pnpm run patch-cjs && tsx scripts/copyRefreshUtils.ts",
     "patch-cjs": "tsx ../../scripts/patchCJS.ts",
     "prepublishOnly": "npm run build"
   },
@@ -45,6 +46,6 @@
     "react-refresh": "^0.14.0"
   },
   "peerDependencies": {
-    "vite": "^4.0.0"
+    "vite": "^4.1.0-beta.0"
   }
 }
