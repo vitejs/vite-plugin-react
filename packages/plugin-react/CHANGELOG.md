@@ -1,3 +1,10 @@
+## <small>3.0.1 (2023-01-05)</small>
+
+* fix: don't invalidate when code is invalid (#67) ([9231a86](https://github.com/vitejs/vite-plugin-react/commit/9231a86)), closes [#67](https://github.com/vitejs/vite-plugin-react/issues/67)
+* fix(deps): update all non-major dependencies (#69) ([0a8e099](https://github.com/vitejs/vite-plugin-react/commit/0a8e099)), closes [#69](https://github.com/vitejs/vite-plugin-react/issues/69)
+
+
+
 ## 3.0.0 (2022-12-09)
 
 * chore: update vite to ^4.0.0 (#57) ([941b20d](https://github.com/vitejs/vite-plugin-react/commit/941b20d)), closes [#57](https://github.com/vitejs/vite-plugin-react/issues/57)
