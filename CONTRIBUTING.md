@@ -27,9 +27,9 @@ This repo is a monorepo using pnpm workspaces. The package manager used to insta
 
 - Make sure tests pass!
 
-- Commit messages must follow the [commit message convention](./.github/commit-convention.md) so that changelogs can be automatically generated. Commit messages are automatically validated before commit (by invoking [Git Hooks](https://git-scm.com/docs/githooks) via [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks)).
-
 - No need to worry about code style as long as you have installed the dev dependencies. Modified files are automatically formatted with Prettier on commit (by invoking [Git Hooks](https://git-scm.com/docs/githooks) via [simple-git-hooks](https://github.com/toplenboren/simple-git-hooks)).
+
+- PR title must follow the [commit message convention](./.github/commit-convention.md) so that changelogs can be automatically generated.
 
 ## Running Tests
 
