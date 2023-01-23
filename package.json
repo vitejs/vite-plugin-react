@@ -65,8 +65,7 @@
     "vitest": "^0.27.3"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged --concurrent false",
-    "commit-msg": "pnpm exec tsx scripts/verifyCommit.ts $1"
+    "pre-commit": "pnpm exec lint-staged --concurrent false"
   },
   "lint-staged": {
     "*": [
