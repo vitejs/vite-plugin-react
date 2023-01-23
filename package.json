@@ -31,19 +31,19 @@
     "ci-publish": "tsx scripts/publishCI.ts"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.1.20",
+    "@types/babel__core": "^7.20.0",
     "@types/fs-extra": "^11.0.1",
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.11.18",
     "@types/picomatch": "^2.3.0",
     "@types/prompts": "^2.4.2",
     "@types/semver": "^7.3.13",
-    "@typescript-eslint/eslint-plugin": "^5.48.1",
-    "@typescript-eslint/parser": "^5.48.1",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
     "conventional-changelog-cli": "^2.2.2",
     "eslint": "^8.32.0",
     "eslint-define-config": "^1.14.0",
-    "eslint-plugin-import": "^2.27.4",
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-regexp": "^1.12.0",
     "execa": "^6.1.0",
@@ -62,7 +62,7 @@
     "typescript": "^4.6.4",
     "unbuild": "^1.1.1",
     "vite": "^4.0.4",
-    "vitest": "^0.27.1"
+    "vitest": "^0.27.3"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged --concurrent false",
@@ -82,5 +82,5 @@
       "eslint --cache --fix"
     ]
   },
-  "packageManager": "pnpm@7.25.0"
+  "packageManager": "pnpm@7.25.1"
 }
