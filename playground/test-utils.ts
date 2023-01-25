@@ -3,7 +3,6 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import colors from 'css-color-names'
 import type { ConsoleMessage, ElementHandle } from 'playwright-chromium'
 import { expect } from 'vitest'
 import { isBuild, page, testDir } from './vitestSetup'
@@ -17,11 +16,6 @@ export const ports = {
 export const hmrPorts = {
   'ssr-react': 24685,
 }
-
-const hexToNameMap: Record<string, string> = {}
-Object.keys(colors).forEach((color) => {
-  hexToNameMap[colors[color]] = color
-})
 
 function componentToHex(c: number): string {
   const hex = c.toString(16)
@@ -55,7 +49,7 @@ async function toEl(el: string | ElementHandle): Promise<ElementHandle> {
 export async function getColor(el: string | ElementHandle): Promise<string> {
   el = await toEl(el)
   const rgb = await el.evaluate((el) => getComputedStyle(el as Element).color)
-  return hexToNameMap[rgbToHex(rgb)] ?? rgb
+  return rgbToHex(rgb)
 }
 
 export async function getBg(el: string | ElementHandle): Promise<string> {

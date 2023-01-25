@@ -13,9 +13,7 @@
   ],
   "ignoreDeps": [
     // manually bumping
-    "rollup",
     "node",
-    "typescript",
 
     // breaking changes
     "source-map", // `source-map:v0.7.0+` needs more investigation

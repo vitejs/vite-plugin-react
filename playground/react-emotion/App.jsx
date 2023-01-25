@@ -1,23 +1,7 @@
 import { useState } from 'react'
-import { css } from '@emotion/react'
-
 import _Switch from 'react-switch'
+import { Counter, StyledCode } from './Counter'
 const Switch = _Switch.default || _Switch
-
-export function Counter() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <button
-      css={css`
-        border: 2px solid #000;
-      `}
-      onClick={() => setCount((count) => count + 1)}
-    >
-      count is: {count}
-    </button>
-  )
-}
 
 function FragmentTest() {
   const [checked, setChecked] = useState(false)
@@ -38,7 +22,7 @@ function App() {
         <h1>Hello Vite + React + @emotion/react</h1>
         <FragmentTest />
         <p>
-          Edit <code>App.jsx</code> and save to test HMR updates.
+          Edit <StyledCode>App.jsx</StyledCode> and save to test HMR updates.
         </p>
         <a
           className="App-link"
