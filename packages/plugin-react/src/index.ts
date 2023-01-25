@@ -88,6 +88,7 @@ declare module 'vite' {
 }
 
 const prependReactImportCode = "import React from 'react'; "
+const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
@@ -335,7 +336,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 
         if (result) {
           let code = result.code!
-          if (useFastRefresh && /\$RefreshReg\$\(/.test(code)) {
+          if (useFastRefresh && refreshContentRE.test(code)) {
             code = addRefreshWrapper(code, id)
           }
           return {
