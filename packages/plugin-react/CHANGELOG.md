@@ -1,3 +1,11 @@
+## 3.1.0-beta.0 (2023-01-25)
+
+* fix: add RefreshSig to refresh content regex (closes #52) ([c8dd1d6](https://github.com/vitejs/vite-plugin-react/commit/c8dd1d6)), closes [#52](https://github.com/vitejs/vite-plugin-react/issues/52)
+* fix(deps): update all non-major dependencies (#81) ([e935a1f](https://github.com/vitejs/vite-plugin-react/commit/e935a1f)), closes [#81](https://github.com/vitejs/vite-plugin-react/issues/81)
+* feat: invalidate message and fix HMR for HOC, class component & styled component (#79) ([48017b7](https://github.com/vitejs/vite-plugin-react/commit/48017b7)), closes [#79](https://github.com/vitejs/vite-plugin-react/issues/79)
+
+
+
 ## <small>3.0.1 (2023-01-05)</small>
 
 * fix: don't invalidate when code is invalid (#67) ([9231a86](https://github.com/vitejs/vite-plugin-react/commit/9231a86)), closes [#67](https://github.com/vitejs/vite-plugin-react/issues/67)
