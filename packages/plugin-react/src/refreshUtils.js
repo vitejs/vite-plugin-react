@@ -38,7 +38,7 @@ function validateRefreshBoundaryAndEnqueueUpdate(prevExports, nextExports) {
   if (hasExports && allExportsAreComponentsOrUnchanged) {
     enqueueUpdate()
   } else {
-    return 'Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react#consistent-components-exports'
+    return 'Could not Fast Refresh. Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports'
   }
 }
 
