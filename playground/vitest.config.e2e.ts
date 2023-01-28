@@ -6,7 +6,7 @@ const timeout = process.env.CI ? 50000 : 30000
 export default defineConfig({
   resolve: {
     alias: {
-      '~utils': resolve(__dirname, './playground/test-utils'),
+      '~utils': resolve(__dirname, './test-utils'),
     },
   },
   test: {

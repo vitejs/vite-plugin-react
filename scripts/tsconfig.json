@@ -5,6 +5,7 @@
     "module": "CommonJS",
     "target": "ES2020",
     "moduleResolution": "Node",
+    "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

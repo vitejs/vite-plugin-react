@@ -6,6 +6,7 @@ function debounce(fn, delay) {
   }
 }
 
+/* eslint-disable no-undef */
 const enqueueUpdate = debounce(exports.performReactRefresh, 16)
 
 // Taken from https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/main/lib/runtime/RefreshUtils.js#L141

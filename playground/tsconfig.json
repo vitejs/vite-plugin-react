@@ -11,6 +11,7 @@
     "resolveJsonModule": true,
     "moduleResolution": "Node",
     "skipLibCheck": true,
+    "noEmit": true,
     "noUnusedLocals": true,
     "jsx": "preserve",
     "types": ["vite/client", "node"],
