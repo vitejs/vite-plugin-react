@@ -50,7 +50,8 @@ test('/', async () => {
 })
 
 test('hmr', async () => {
-  await page.goto(url)
+  await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
+
   editFile('src/pages/Home.jsx', (code) =>
     code.replace('<h1>Home', '<h1>changed'),
   )
@@ -70,7 +71,8 @@ test('client navigation', async () => {
 })
 
 test(`circular dependencies modules doesn't throw`, async () => {
-  await page.goto(url)
+  await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
+
   expect(await page.textContent('.circ-dep-init')).toMatch(
     'circ-dep-init-a circ-dep-init-b',
   )
