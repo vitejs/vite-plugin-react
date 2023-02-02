@@ -33,6 +33,16 @@ react({
 })
 ```
 
+### Configure the JSX import source
+
+Control where the JSX factory is imported from. This option is ignored for classic `jsxRuntime`.
+
+```js
+react({
+  jsxImportSource: '@emotion/react',
+})
+```
+
 ## Opting out of the automatic JSX runtime
 
 By default, the plugin uses the [automatic JSX runtime](https://github.com/alloc/vite-react-jsx#faq). However, if you encounter any issues, you may opt out using the `jsxRuntime` option.
