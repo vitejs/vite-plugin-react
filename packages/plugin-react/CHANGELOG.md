@@ -1,3 +1,11 @@
+## 3.1.0 (2023-02-02)
+
+* doc: add jsxImportSource option ([38d71f6](https://github.com/vitejs/vite-plugin-react/commit/38d71f6))
+* chore: bump release-scripts, typecheck package in CI, remove cache for eslint ([9af763d](https://github.com/vitejs/vite-plugin-react/commit/9af763d))
+* fix: fast-refresh explain link (#97) ([6097795](https://github.com/vitejs/vite-plugin-react/commit/6097795)), closes [#97](https://github.com/vitejs/vite-plugin-react/issues/97)
+
+
+
 ## 3.1.0-beta.0 (2023-01-25)
 
 * fix: add RefreshSig to refresh content regex (closes #52) ([c8dd1d6](https://github.com/vitejs/vite-plugin-react/commit/c8dd1d6)), closes [#52](https://github.com/vitejs/vite-plugin-react/issues/52)
