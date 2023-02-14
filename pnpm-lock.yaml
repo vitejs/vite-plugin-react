@@ -63,13 +63,13 @@ importers:
       '@babel/core': ^7.20.12
       '@babel/plugin-transform-react-jsx-self': ^7.18.6
       '@babel/plugin-transform-react-jsx-source': ^7.19.6
-      magic-string: ^0.29.0
+      magic-string: ^0.27.0
       react-refresh: ^0.14.0
     dependencies:
       '@babel/core': 7.20.12
       '@babel/plugin-transform-react-jsx-self': 7.18.6_@babel+core@7.20.12
       '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.20.12
-      magic-string: 0.29.0
+      magic-string: 0.27.0
       react-refresh: 0.14.0
 
   playground:
@@ -3539,14 +3539,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.14
-    dev: true
-
-  /magic-string/0.29.0:
-    resolution: {integrity: sha512-WcfidHrDjMY+eLjlU+8OvwREqHwpgCeKVBUpQ3OhYYuvfaYCUgcbuBzappNzZvg/v8onU3oQj+BYpkOJe9Iw4Q==}
-    engines: {node: '>=12'}
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.14
-    dev: false
 
   /map-obj/1.0.1:
     resolution: {integrity: sha512-7N/q3lyZ+LVCp7PzuxrJr4KMbBE2hW7BT7YNia330OFxIf4d3r5zVpicP2650l7CPN6RM9zOJRl3NGpqSiw3Eg==}
