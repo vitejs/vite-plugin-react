@@ -9,15 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-switch": "^7.0.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-pipeline-operator": "^7.18.9",
-    "@emotion/babel-plugin": "^11.10.5",
+    "@emotion/babel-plugin": "^11.10.6",
     "@vitejs/plugin-react": "workspace:*"
   },
   "babel": {
