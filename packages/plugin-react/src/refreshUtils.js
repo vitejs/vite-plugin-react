@@ -25,9 +25,7 @@ function registerExportsForReactRefresh(filename, moduleExports) {
     if (key === '__esModule') continue
     const exportValue = moduleExports[key]
     if (exports.isLikelyComponentType(exportValue)) {
-      // `export` is required to avoid key collision when renamed export shadow local component name
-      // https://github.com/vitejs/vite-plugin-react/issues/116
-      exports.register(exportValue, filename + ' export ' + key)
+      exports.register(exportValue, filename + ' ' + key)
     }
   }
 }
