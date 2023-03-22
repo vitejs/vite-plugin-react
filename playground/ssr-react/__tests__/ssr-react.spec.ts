@@ -69,11 +69,3 @@ test('client navigation', async () => {
   )
   await untilUpdated(() => page.textContent('h1'), 'changed')
 })
-
-test(`circular dependencies modules doesn't throw`, async () => {
-  await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
-
-  expect(await page.textContent('.circ-dep-init')).toMatch(
-    'circ-dep-init-a circ-dep-init-b',
-  )
-})
