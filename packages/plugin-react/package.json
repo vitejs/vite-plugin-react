@@ -46,6 +46,6 @@
     "react-refresh": "^0.14.0"
   },
   "peerDependencies": {
-    "vite": "^4.1.0-beta.0"
+    "vite": "^4.2.0"
   }
 }
