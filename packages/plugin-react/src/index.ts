@@ -32,12 +32,6 @@ export interface Options {
    */
   jsxImportSource?: string
   /**
-   * Set this to `true` to annotate the JSX factory with `\/* @__PURE__ *\/`.
-   * This option is ignored when `jsxRuntime` is not `"automatic"`.
-   * @default true
-   */
-  jsxPure?: boolean
-  /**
    * Babel configuration applied in both dev and prod.
    */
   babel?:
@@ -128,7 +122,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
             },
             jsx: 'transform',
             jsxImportSource: opts.jsxImportSource,
-            jsxSideEffects: opts.jsxPure === false,
           },
         }
       } else {
@@ -136,7 +129,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           esbuild: {
             jsx: 'automatic',
             jsxImportSource: opts.jsxImportSource,
-            jsxSideEffects: opts.jsxPure === false,
           },
         }
       }
