@@ -21,7 +21,8 @@ export interface Options {
    */
   fastRefresh?: boolean
   /**
-   * Set this to `"automatic"` to use [vite-react-jsx](https://github.com/alloc/vite-react-jsx).
+   * @deprecated All tools now support the automatic runtime, and it has been backported
+   * up to React 16. This allows to skip the React import and can produce smaller bundlers.
    * @default "automatic"
    */
   jsxRuntime?: 'classic' | 'automatic'
@@ -98,7 +99,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = opts.fastRefresh === false
-  let skipReactImport = false
+  const skipReactImport = false
   let runPluginOverrides = (
     options: ReactBabelOptions,
     context: ReactBabelHookContext,
@@ -167,26 +168,11 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       isProduction = config.isProduction
       skipFastRefresh ||= isProduction || config.command === 'build'
 
-      const jsxInject = config.esbuild && config.esbuild.jsxInject
-      if (jsxInject && importReactRE.test(jsxInject)) {
-        skipReactImport = true
-        config.logger.warn(
-          '[@vitejs/plugin-react] This plugin imports React for you automatically,' +
-            ' so you can stop using `esbuild.jsxInject` for that purpose.',
+      if (opts.jsxRuntime === 'classic') {
+        config.logger.warnOnce(
+          '[@vitejs/plugin-react] Support for classic runtime is deprecated.',
         )
       }
-
-      config.plugins.forEach((plugin) => {
-        const hasConflict =
-          plugin.name === 'react-refresh' ||
-          (plugin !== viteReactJsx && plugin.name === 'vite:react-jsx')
-
-        if (hasConflict)
-          return config.logger.warn(
-            `[@vitejs/plugin-react] You should stop using "${plugin.name}" ` +
-              `since this plugin conflicts with it.`,
-          )
-      })
 
       runPluginOverrides = (babelOptions, context) => {
         const hooks = config.plugins
