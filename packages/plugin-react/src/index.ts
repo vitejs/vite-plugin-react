@@ -149,6 +149,11 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           '[@vitejs/plugin-react] Support for classic runtime is deprecated.',
         )
       }
+      if ('jsxPure' in opts) {
+        config.logger.warnOnce(
+          '[@vitejs/plugin-react] jsxPure was removed. You can configure esbuild.jsxSideEffects directly.',
+        )
+      }
 
       runPluginOverrides = (babelOptions, context) => {
         const hooks = config.plugins
