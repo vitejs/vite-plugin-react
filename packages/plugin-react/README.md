@@ -1,11 +1,11 @@
 # @vitejs/plugin-react [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react.svg)](https://npmjs.com/package/@vitejs/plugin-react)
 
-The all-in-one Vite plugin for React projects.
+The default Vite plugin for React projects.
 
 - enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development
 - use the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
-- dedupe the `react` and `react-dom` packages
 - use custom Babel plugins/presets
+- small installation size
 
 ```js
 // vite.config.js
@@ -17,22 +17,23 @@ export default defineConfig({
 })
 ```
 
-## Filter which files use Fast Refresh
+## Options
 
-By default, Fast Refresh is used by files ending with `.js`, `.jsx`, `.ts`, and `.tsx`, except for files with a `node_modules` parent directory.
+### include/exclude
 
-In some situations, you may not want a file to act as a HMR boundary, instead preferring that the changes propagate higher in the stack before being handled. In these cases, you can provide an `include` and/or `exclude` option, which can be a regex, a [picomatch](https://github.com/micromatch/picomatch#globbing-features) pattern, or an array of either. Files matching `include` and not `exclude` will use Fast Refresh. The defaults are always applied.
+Includes `.js`, `.jsx`, `.ts` & `.tsx` by default. This option can be used to add fast refresh to `.mdx` files:
 
 ```js
-react({
-  // Exclude storybook stories
-  exclude: /\.stories\.(t|j)sx?$/,
-  // Only .tsx files
-  include: '**/*.tsx',
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import mdx from '@mdx-js/rollup'
+
+export default defineConfig({
+  plugins: [mdx(), react({ include: /.mdx$/ })],
 })
 ```
 
-### Configure the JSX import source
+### jsxImportSource
 
 Control where the JSX factory is imported from. For TS projects this is inferred from the tsconfig.
 
@@ -40,9 +41,9 @@ Control where the JSX factory is imported from. For TS projects this is inferred
 react({ jsxImportSource: '@emotion/react' })
 ```
 
-## Babel configuration
+### babel
 
-The `babel` option lets you add plugins, presets, and [other configuration](https://babeljs.io/docs/en/options) to the Babel transformation performed on each JSX/TSX file.
+The `babel` option lets you add plugins, presets, and [other configuration](https://babeljs.io/docs/en/options) to the Babel transformation performed on each included file.
 
 ```js
 react({
@@ -58,7 +59,9 @@ react({
 })
 ```
 
-### Proposed syntax
+Note: When not using plugins, only esbuild is used for production builds, resulting in faster builds.
+
+#### Proposed syntax
 
 If you are using ES syntax that are still in proposal status (e.g. class properties), you can selectively enable them with the `babel.parserOpts.plugins` option:
 
