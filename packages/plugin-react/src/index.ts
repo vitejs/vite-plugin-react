@@ -27,8 +27,8 @@ export interface Options {
   jsxRuntime?: 'classic' | 'automatic'
   /**
    * Control where the JSX factory is imported from.
-   * This option is ignored when `jsxRuntime` is not `"automatic"`.
-   * @default "react"
+   * https://esbuild.github.io/api/#jsx-import-source
+   * For TS projects this is read from tsconfig
    */
   jsxImportSource?: string
   /**
@@ -314,6 +314,12 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     name: 'vite:react-refresh',
     enforce: 'pre',
     config: () => ({
+      optimizeDeps: {
+        // We can't add `react-dom` because the dependency is `react-dom/client`
+        // for React 18 while it's `react-dom` for React 17. We'd need to detect
+        // what React version the user has installed.
+        include: ['react'],
+      },
       resolve: {
         dedupe: ['react', 'react-dom'],
       },
@@ -340,24 +346,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
-  const reactJsxRuntimeId = 'react/jsx-runtime'
-  const reactJsxDevRuntimeId = 'react/jsx-dev-runtime'
-  const viteReactJsx: Plugin = {
-    name: 'vite:react-jsx',
-    enforce: 'pre',
-    config() {
-      return {
-        optimizeDeps: {
-          // We can't add `react-dom` because the dependency is `react-dom/client`
-          // for React 18 while it's `react-dom` for React 17. We'd need to detect
-          // what React version the user has installed.
-          include: [reactJsxRuntimeId, reactJsxDevRuntimeId, 'react'],
-        },
-      }
-    },
-  }
-
-  return [viteBabel, viteReactRefresh, useAutomaticRuntime && viteReactJsx]
+  return [viteBabel, viteReactRefresh]
 }
 
 viteReact.preambleCode = preambleCode
