@@ -116,9 +116,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       if (opts.jsxRuntime === 'classic') {
         return {
           esbuild: {
-            logOverride: {
-              'this-is-undefined-in-esm': 'silent',
-            },
             jsx: 'transform',
             jsxImportSource: opts.jsxImportSource,
           },
