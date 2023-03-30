@@ -34,12 +34,10 @@ react({
 
 ### Configure the JSX import source
 
-Control where the JSX factory is imported from. This option is ignored for classic `jsxRuntime`.
+Control where the JSX factory is imported from. For TS projects this is inferred from the tsconfig.
 
 ```js
-react({
-  jsxImportSource: '@emotion/react',
-})
+react({ jsxImportSource: '@emotion/react' })
 ```
 
 ## Babel configuration
