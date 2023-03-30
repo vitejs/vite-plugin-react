@@ -3,8 +3,7 @@
 The all-in-one Vite plugin for React projects.
 
 - enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development
-- use the [automatic JSX runtime](https://github.com/alloc/vite-react-jsx#faq)
-- avoid manual `import React` in `.jsx` and `.tsx` modules
+- use the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
 - dedupe the `react` and `react-dom` packages
 - use custom Babel plugins/presets
 
@@ -40,16 +39,6 @@ Control where the JSX factory is imported from. This option is ignored for class
 ```js
 react({
   jsxImportSource: '@emotion/react',
-})
-```
-
-## Opting out of the automatic JSX runtime
-
-By default, the plugin uses the [automatic JSX runtime](https://github.com/alloc/vite-react-jsx#faq). However, if you encounter any issues, you may opt out using the `jsxRuntime` option.
-
-```js
-react({
-  jsxRuntime: 'classic',
 })
 ```
 
