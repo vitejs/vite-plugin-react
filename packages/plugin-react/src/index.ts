@@ -99,10 +99,9 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   let projectRoot = process.cwd()
   let skipFastRefresh = opts.fastRefresh === false
   const skipReactImport = false
-  let runPluginOverrides = (
-    options: ReactBabelOptions,
-    context: ReactBabelHookContext,
-  ) => false
+  let runPluginOverrides:
+    | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
+    | undefined
   let staticBabelOptions: ReactBabelOptions | undefined
 
   const useAutomaticRuntime = opts.jsxRuntime !== 'classic'
@@ -158,19 +157,16 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         )
       }
 
-      runPluginOverrides = (babelOptions, context) => {
-        const hooks = config.plugins
-          .map((plugin) => plugin.api?.reactBabel)
-          .filter(Boolean) as ReactBabelHook[]
+      const hooks = config.plugins
+        .map((plugin) => plugin.api?.reactBabel)
+        .filter(defined)
 
-        if (hooks.length > 0) {
-          return (runPluginOverrides = (babelOptions, context) => {
-            hooks.forEach((hook) => hook(babelOptions, context, config))
-            return true
-          })(babelOptions, context)
+      if (hooks.length > 0) {
+        runPluginOverrides = (babelOptions, context) => {
+          hooks.forEach((hook) => hook(babelOptions, context, config))
         }
-        runPluginOverrides = () => false
-        return false
+      } else if (typeof opts.babel !== 'function') {
+        staticBabelOptions = createBabelOptions(opts.babel)
       }
     },
     async transform(code, id, options) {
@@ -188,17 +184,16 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         const isProjectFile =
           !isNodeModules && (id[0] === '\0' || id.startsWith(projectRoot + '/'))
 
-        let babelOptions = staticBabelOptions
-        if (typeof opts.babel === 'function') {
-          const rawOptions = opts.babel(id, { ssr })
-          babelOptions = createBabelOptions(rawOptions)
-          runPluginOverrides(babelOptions, { ssr, id: id })
-        } else if (!babelOptions) {
-          babelOptions = createBabelOptions(opts.babel)
-          if (!runPluginOverrides(babelOptions, { ssr, id: id })) {
-            staticBabelOptions = babelOptions
-          }
-        }
+        const babelOptions = (() => {
+          if (staticBabelOptions) return staticBabelOptions
+          const newBabelOptions = createBabelOptions(
+            typeof opts.babel === 'function'
+              ? opts.babel(id, { ssr })
+              : opts.babel,
+          )
+          runPluginOverrides?.(newBabelOptions, { id, ssr })
+          return newBabelOptions
+        })()
 
         const plugins = isProjectFile ? [...babelOptions.plugins] : []
 
@@ -388,4 +383,8 @@ function createBabelOptions(rawOptions?: BabelOptions) {
   babelOptions.parserOpts.plugins ||= []
 
   return babelOptions
+}
+
+function defined<T>(value: T | undefined): value is T {
+  return value !== undefined
 }
