@@ -78,17 +78,13 @@ declare module 'vite' {
 
 const prependReactImportCode = "import React from 'react'; "
 const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
-const defaultIncludeRE = /\.(?:mjs|[tj]sx?)$/
+const defaultIncludeRE = /\.[tj]sx?$/
+const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
   let devBase = '/'
-  const filter = createFilter(
-    opts.include === undefined
-      ? defaultIncludeRE
-      : [defaultIncludeRE, ...arraify(opts.include)],
-    opts.exclude,
-  )
+  const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
   let needHiresSourcemap = false
   let isProduction = true
   let projectRoot = process.cwd()
@@ -173,7 +169,16 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       })()
       const plugins = [...babelOptions.plugins]
 
-      const useFastRefresh = !skipFastRefresh && !ssr
+      const isJSX = filepath.endsWith('x')
+      const useFastRefresh =
+        !skipFastRefresh &&
+        !ssr &&
+        (isJSX ||
+          (opts.jsxRuntime === 'classic'
+            ? code.includes(
+                `${opts.jsxImportSource ?? 'react'}/jsx-dev-runtime`,
+              )
+            : importReactRE.test(code)))
       if (useFastRefresh) {
         plugins.push([
           await loadPlugin('react-refresh/babel'),
@@ -182,7 +187,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
 
       let prependReactImport = false
-      if (opts.jsxRuntime === 'classic' && filepath.endsWith('x')) {
+      if (opts.jsxRuntime === 'classic' && isJSX) {
         if (!isProduction) {
           // These development plugins are only needed for the classic runtime.
           plugins.push(
@@ -226,7 +231,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         parserPlugins.push('jsx')
       }
 
-      if (/\.tsx?$/.test(filepath)) {
+      if (tsRE.test(filepath)) {
         parserPlugins.push('typescript')
       }
 
@@ -324,8 +329,4 @@ function createBabelOptions(rawOptions?: BabelOptions) {
 
 function defined<T>(value: T | undefined): value is T {
   return value !== undefined
-}
-
-function arraify<T>(target: T | T[]): T[] {
-  return Array.isArray(target) ? target : [target]
 }

@@ -29,13 +29,18 @@ import react from '@vitejs/plugin-react'
 import mdx from '@mdx-js/rollup'
 
 export default defineConfig({
-  plugins: [mdx(), react({ include: /.mdx$/ })],
+  plugins: [
+    { enforce: 'pre', ...mdx() },
+    react({ include: /\.(mdx|js|jsx|ts|tsx)$/ }),
+  ],
 })
 ```
 
+> `node_modules` are never processed by this plugin (but esbuild will)
+
 ### jsxImportSource
 
-Control where the JSX factory is imported from. For TS projects this is inferred from the tsconfig.
+Control where the JSX factory is imported from. For TS projects this is inferred from the tsconfig. If you have some React code outside JSX/TSX files, this will be used to detect the presence of React code and apply Fast Refresh.
 
 ```js
 react({ jsxImportSource: '@emotion/react' })
