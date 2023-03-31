@@ -252,17 +252,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           }
         }
 
-        const parserPlugins: typeof babelOptions.parserOpts.plugins = [
-          ...babelOptions.parserOpts.plugins,
-          'importMeta',
-          // This plugin is applied before esbuild transforms the code,
-          // so we need to enable some stage 3 syntax that is supported in
-          // TypeScript and some environments already.
-          'topLevelAwait',
-          'classProperties',
-          'classPrivateProperties',
-          'classPrivateMethods',
-        ]
+        const parserPlugins = [...babelOptions.parserOpts.plugins]
 
         if (!extension.endsWith('.ts')) {
           parserPlugins.push('jsx')
