@@ -224,8 +224,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         return { code, map: inputMap ?? null }
       }
 
-      const parserPlugins= [...babelOptions.parserOpts.plugins
-      ]
+      const parserPlugins = [...babelOptions.parserOpts.plugins]
 
       if (!filepath.endsWith('.ts')) {
         parserPlugins.push('jsx')
