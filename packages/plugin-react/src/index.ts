@@ -435,8 +435,18 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 
 viteReact.preambleCode = preambleCode
 
-function loadPlugin(path: string): Promise<any> {
-  return import(path).then((module) => module.default || module)
+const loadedPlugin = new Map<string, any>()
+function loadPlugin(path: string): any {
+  const cached = loadedPlugin.get(path)
+  if (cached) return cached
+
+  const promise = import(path).then((module) => {
+    const value = module.default || module
+    loadedPlugin.set(path, value)
+    return value
+  })
+  loadedPlugin.set(path, promise)
+  return promise
 }
 
 function createBabelOptions(rawOptions?: BabelOptions) {
