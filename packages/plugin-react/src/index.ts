@@ -1,7 +1,13 @@
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import * as babel from '@babel/core'
 import { createFilter } from 'vite'
-import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
+import type {
+  BuildOptions,
+  Plugin,
+  PluginOption,
+  ResolvedConfig,
+  UserConfig,
+} from 'vite'
 import MagicString from 'magic-string'
 import type { SourceMap } from 'magic-string'
 import {
@@ -268,7 +274,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   const viteReactRefresh: Plugin = {
     name: 'vite:react-refresh',
     enforce: 'pre',
-    config: () => ({
+    config: (userConfig) => ({
+      build: silenceUseClientWarning(userConfig),
       optimizeDeps: {
         // We can't add `react-dom` because the dependency is `react-dom/client`
         // for React 18 while it's `react-dom` for React 17. We'd need to detect
@@ -305,6 +312,24 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 }
 
 viteReact.preambleCode = preambleCode
+
+const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
+  rollupOptions: {
+    onwarn(warning, defaultHandler) {
+      if (
+        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+        warning.message.includes('use client')
+      ) {
+        return
+      }
+      if (userConfig.build?.rollupOptions?.onwarn) {
+        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
+      } else {
+        defaultHandler(warning)
+      }
+    },
+  },
+})
 
 const loadedPlugin = new Map<string, any>()
 function loadPlugin(path: string): any {
