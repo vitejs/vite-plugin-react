@@ -55,7 +55,7 @@ if (import.meta.hot) {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 
-  import(/* @vite-ignore */ import.meta.url).then((currentExports) => {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(__SOURCE__, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
