@@ -1,3 +1,40 @@
+## 4.0.0-beta.0 (2023-04-05)
+
+This major version include a revamp of options:
+
+- `include`/`exclude` now allow to completely override the files processed by the plugin ([#122](https://github.com/vitejs/vite-plugin-react/pull/122)). This is more in line with other Rollup/Vite plugins and simplify the setup of enabling Fast Refresh for `.mdx` files. This can be done like this:
+
+```js
+export default defineConfig({
+  plugins: [
+    { enforce: 'pre', ...mdx() },
+    react({ include: /\.(mdx|js|jsx|ts|tsx)$/ }),
+  ],
+})
+```
+
+These changes also allow to apply Babel plugins on files outside Vite root (expect in node_modules), which improve support for monorepo (fix [#16](https://github.com/vitejs/vite-plugin-react/issues/16)).
+
+With these changes, only the file extensions is used for filtering processed files and the query param fallback is removed.
+
+- `fastRefresh` is removed ([#122](https://github.com/vitejs/vite-plugin-react/pull/122)). This should be correctly activated by plugin without configuration.
+- `jsxPure` is removed. This is a niche use case that was just passing down the boolean to esbuild.jsxSideEffects. ([#129](https://github.com/vitejs/vite-plugin-react/pull/129))
+- `jsxRuntime` is unchanged but deprecated ([#131](https://github.com/vitejs/vite-plugin-react/pull/131)) and will be removed in the next major.
+
+This release goes in hand with the upcoming Vite 4.3 release focusing on performances:
+
+- Cache plugin load ([#141](https://github.com/vitejs/vite-plugin-react/issues/141))
+- Wrap dynamic import to speedup analysis ([#143](https://github.com/vitejs/vite-plugin-react/issues/143))
+
+Other notable changes:
+
+- Silence "use client" warning ([#144](https://github.com/vitejs/vite-plugin-react/pull/144), fix [#137](https://github.com/vitejs/vite-plugin-react/issues/137))
+- Fast Refresh is applied on JS files using automatic runtime ([#122](https://github.com/vitejs/vite-plugin-react/pull/122), fix [#83](https://github.com/vitejs/vite-plugin-react/issues/83))
+- Vite 4.2 is required as a peer dependency ([#128](https://github.com/vitejs/vite-plugin-react/pull/128))
+- Avoid key collision in React refresh registration ([a74dfef](https://github.com/vitejs/vite-plugin-react/commit/a74dfef), fix [#116](https://github.com/vitejs/vite-plugin-react/issues/116))
+- Throw when refresh runtime is loaded twice ([#108](https://github.com/vitejs/vite-plugin-react/pull/108), fix [#101](https://github.com/vitejs/vite-plugin-react/issues/101))
+- Don't force optimization of jsx-runtime ([#132](https://github.com/vitejs/vite-plugin-react/pull/132))
+
 ## 3.1.0 (2023-02-02)
 
 * doc: add jsxImportSource option ([38d71f6](https://github.com/vitejs/vite-plugin-react/commit/38d71f6))
