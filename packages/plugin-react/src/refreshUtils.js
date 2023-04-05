@@ -66,6 +66,13 @@ function predicateOnExport(moduleExports, predicate) {
   return true
 }
 
+// Hides vite-ignored dynamic import so that Vite can skip analysis if no other
+// dynamic import is present (https://github.com/vitejs/vite/pull/12732)
+function __hmr_import(module) {
+  return import(/* @vite-ignore */ module)
+}
+
+exports.__hmr_import = __hmr_import
 exports.registerExportsForReactRefresh = registerExportsForReactRefresh
 exports.validateRefreshBoundaryAndEnqueueUpdate =
   validateRefreshBoundaryAndEnqueueUpdate
