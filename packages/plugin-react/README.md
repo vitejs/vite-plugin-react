@@ -40,7 +40,7 @@ export default defineConfig({
 
 ### jsxImportSource
 
-Control where the JSX factory is imported from. For TS projects this is inferred from the tsconfig. If you have some React code outside JSX/TSX files, this will be used to detect the presence of React code and apply Fast Refresh.
+Control where the JSX factory is imported from. Default to `'react'`
 
 ```js
 react({ jsxImportSource: '@emotion/react' })
