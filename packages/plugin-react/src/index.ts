@@ -29,7 +29,7 @@ export interface Options {
   /**
    * Control where the JSX factory is imported from.
    * https://esbuild.github.io/api/#jsx-import-source
-   * For TS projects this is read from tsconfig
+   * @default 'react'
    */
   jsxImportSource?: string
   /**
@@ -91,6 +91,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
   let devBase = '/'
   const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
+  const devRuntime = `${opts.jsxImportSource ?? 'react'}/jsx-dev-runtime`
   let needHiresSourcemap = false
   let isProduction = true
   let projectRoot = process.cwd()
@@ -181,9 +182,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         !ssr &&
         (isJSX ||
           (opts.jsxRuntime === 'classic'
-            ? code.includes(
-                `${opts.jsxImportSource ?? 'react'}/jsx-dev-runtime`,
-              )
+            ? code.includes(devRuntime)
             : importReactRE.test(code)))
       if (useFastRefresh) {
         plugins.push([
@@ -280,7 +279,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         // We can't add `react-dom` because the dependency is `react-dom/client`
         // for React 18 while it's `react-dom` for React 17. We'd need to detect
         // what React version the user has installed.
-        include: ['react'],
+        include: ['react', devRuntime],
       },
       resolve: {
         dedupe: ['react', 'react-dom'],
