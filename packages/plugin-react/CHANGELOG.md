@@ -1,3 +1,9 @@
+## 4.0.0-beta.1 (2023-04-17)
+
+* fix: add jsx dev runtime to optimizeDeps (#147) ([3bbd8f0](https://github.com/vitejs/vite-plugin-react/commit/3bbd8f0)), closes [#147](https://github.com/vitejs/vite-plugin-react/issues/147)
+
+
+
 ## 4.0.0-beta.0 (2023-04-05)
 
 This major version include a revamp of options:
