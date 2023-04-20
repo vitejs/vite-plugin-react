@@ -42,7 +42,6 @@
     "@babel/core": "^7.21.4",
     "@babel/plugin-transform-react-jsx-self": "^7.21.0",
     "@babel/plugin-transform-react-jsx-source": "^7.19.6",
-    "magic-string": "^0.30.0",
     "react-refresh": "^0.14.0"
   },
   "peerDependencies": {

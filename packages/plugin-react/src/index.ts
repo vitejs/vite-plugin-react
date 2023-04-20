@@ -8,8 +8,6 @@ import type {
   ResolvedConfig,
   UserConfig,
 } from 'vite'
-import MagicString from 'magic-string'
-import type { SourceMap } from 'magic-string'
 import {
   addRefreshWrapper,
   preambleCode,
@@ -21,17 +19,16 @@ export interface Options {
   include?: string | RegExp | Array<string | RegExp>
   exclude?: string | RegExp | Array<string | RegExp>
   /**
-   * @deprecated All tools now support the automatic runtime, and it has been backported
-   * up to React 16. This allows to skip the React import and can produce smaller bundlers.
-   * @default "automatic"
-   */
-  jsxRuntime?: 'classic' | 'automatic'
-  /**
    * Control where the JSX factory is imported from.
    * https://esbuild.github.io/api/#jsx-import-source
    * @default 'react'
    */
   jsxImportSource?: string
+  /**
+   * Note: Skipping React import with classic runtime is not supported from v4
+   * @default "automatic"
+   */
+  jsxRuntime?: 'classic' | 'automatic'
   /**
    * Babel configuration applied in both dev and prod.
    */
@@ -82,7 +79,6 @@ declare module 'vite' {
   }
 }
 
-const prependReactImportCode = "import React from 'react'; "
 const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
@@ -92,7 +88,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   let devBase = '/'
   const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
   const devRuntime = `${opts.jsxImportSource ?? 'react'}/jsx-dev-runtime`
-  let needHiresSourcemap = false
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = false
@@ -105,7 +100,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   // - import * as React from 'react';
   // - import React from 'react';
   // - import React, {useEffect} from 'react';
-  const importReactRE = /(?:^|\n)import\s+(?:\*\s+as\s+)?React(?:,|\s+)/
+  const importReactRE = /(?:^|\s)import\s+(?:\*\s+as\s+)?React(?:,|\s+)/
 
   const viteBabel: Plugin = {
     name: 'vite:react-babel',
@@ -129,8 +124,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     configResolved(config) {
       devBase = config.base
       projectRoot = config.root
-      needHiresSourcemap =
-        config.command === 'build' && !!config.build.sourcemap
       isProduction = config.isProduction
       skipFastRefresh = isProduction || config.command === 'build'
 
@@ -191,7 +184,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         ])
       }
 
-      let prependReactImport = false
       if (opts.jsxRuntime === 'classic' && isJSX) {
         if (!isProduction) {
           // These development plugins are only needed for the classic runtime.
@@ -199,24 +191,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
             await loadPlugin('@babel/plugin-transform-react-jsx-self'),
             await loadPlugin('@babel/plugin-transform-react-jsx-source'),
           )
-        }
-
-        // Even if the automatic JSX runtime is not used, we can still
-        // inject the React import for .jsx and .tsx modules.
-        if (!importReactRE.test(code)) {
-          prependReactImport = true
-        }
-      }
-
-      let inputMap: SourceMap | undefined
-      if (prependReactImport) {
-        if (needHiresSourcemap) {
-          const s = new MagicString(code)
-          s.prepend(prependReactImportCode)
-          code = s.toString()
-          inputMap = s.generateMap({ hires: true, source: id })
-        } else {
-          code = prependReactImportCode + code
         }
       }
 
@@ -226,7 +200,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         !babelOptions.configFile &&
         !babelOptions.babelrc
       ) {
-        return { code, map: inputMap ?? null }
+        return
       }
 
       const parserPlugins = [...babelOptions.parserOpts.plugins]
@@ -256,8 +230,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         },
         plugins,
         sourceMaps: true,
-        // Vite handles sourcemap flattening
-        inputSourceMap: inputMap ?? (false as any),
       })
 
       if (result) {
