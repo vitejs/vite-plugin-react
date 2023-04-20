@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 4.0.0 (2023-04-20)
+
 This major version include a revamp of options:
 
 - `include`/`exclude` now allow to completely override the files processed by the plugin ([#122](https://github.com/vitejs/vite-plugin-react/pull/122)). This is more in line with other Rollup/Vite plugins and simplify the setup of enabling Fast Refresh for `.mdx` files. This can be done like this:
