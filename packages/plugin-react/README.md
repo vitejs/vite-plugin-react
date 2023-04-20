@@ -46,6 +46,14 @@ Control where the JSX factory is imported from. Default to `'react'`
 react({ jsxImportSource: '@emotion/react' })
 ```
 
+## jsxRuntime
+
+By default, the plugin uses the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html). However, if you encounter any issues, you may opt out using the `jsxRuntime` option.
+
+```js
+react({ jsxRuntime: 'classic' })
+```
+
 ### babel
 
 The `babel` option lets you add plugins, presets, and [other configuration](https://babeljs.io/docs/en/options) to the Babel transformation performed on each included file.
