@@ -3,12 +3,10 @@ name: Publish Package
 on:
   push:
     tags:
-      - "plugin-*" # Push events to matching plugin-*, i.e. plugin-(vue|vue-jsx|react|legacy)@1.0.0
+      - "plugin-*"
 
 jobs:
   publish:
-    # prevents this action from running on forks
-    if: github.repository == 'vitejs/vite-plugin-react'
     runs-on: ubuntu-latest
     environment: Release
     steps:
@@ -34,3 +32,5 @@ jobs:
         run: pnpm run ci-publish ${{ github.ref_name }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - uses: ArnaudBarre/github-release@v1
