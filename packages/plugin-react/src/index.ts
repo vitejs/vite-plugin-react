@@ -127,11 +127,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       isProduction = config.isProduction
       skipFastRefresh = isProduction || config.command === 'build'
 
-      if (opts.jsxRuntime === 'classic') {
-        config.logger.warnOnce(
-          '[@vitejs/plugin-react] Support for classic runtime is deprecated.',
-        )
-      }
       if ('jsxPure' in opts) {
         config.logger.warnOnce(
           '[@vitejs/plugin-react] jsxPure was removed. You can configure esbuild.jsxSideEffects directly.',
