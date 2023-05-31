@@ -174,7 +174,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
             : importReactRE.test(code)))
       if (useFastRefresh) {
         plugins.push([
-          await loadPlugin('react-refresh/babel'),
+          await loadPlugin('react-refresh/babel.js'),
           { skipEnvCheck: true },
         ])
       }
