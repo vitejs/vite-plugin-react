@@ -284,7 +284,8 @@ const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
     onwarn(warning, defaultHandler) {
       if (
         warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
+        warning.message.includes('use client') ||
+        warning.message.includes("use client")
       ) {
         return
       }
