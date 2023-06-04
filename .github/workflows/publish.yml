@@ -34,3 +34,5 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - uses: ArnaudBarre/github-release@v1
+        with:
+          path: packages/plugin-react/CHANGELOG.md
