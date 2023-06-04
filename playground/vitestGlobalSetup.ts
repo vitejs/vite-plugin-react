@@ -9,6 +9,7 @@ const DIR = path.join(os.tmpdir(), 'vitest_playwright_global_setup')
 let browserServer: BrowserServer | undefined
 
 export async function setup(): Promise<void> {
+  process.env.VITE_TEST_HMR = 'true' // To force HMR transformation in test environment
   process.env.NODE_ENV = process.env.VITE_TEST_BUILD
     ? 'production'
     : 'development'

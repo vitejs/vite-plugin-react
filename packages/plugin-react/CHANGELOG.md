@@ -1,4 +1,8 @@
+# Changelog
+
 ## Unreleased
+
+- Support [Vitest deps.experimentalOptimizer](https://vitest.dev/config/#deps-experimentaloptimizer)
 
 ## 4.0.0 (2023-04-20)
 

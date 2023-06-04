@@ -125,7 +125,10 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       devBase = config.base
       projectRoot = config.root
       isProduction = config.isProduction
-      skipFastRefresh = isProduction || config.command === 'build'
+      skipFastRefresh =
+        isProduction ||
+        config.command === 'build' ||
+        (!!process.env.TEST && !process.env.VITE_TEST_HMR)
 
       if ('jsxPure' in opts) {
         config.logger.warnOnce(
