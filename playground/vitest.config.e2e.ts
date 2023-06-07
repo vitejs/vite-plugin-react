@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
-const timeout = process.env.CI ? 50000 : 30000
+const timeout = process.env.CI ? 20_000 : 10_000
 
 export default defineConfig({
   resolve: {

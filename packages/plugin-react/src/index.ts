@@ -128,7 +128,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       skipFastRefresh =
         isProduction ||
         config.command === 'build' ||
-        (!!process.env.TEST && !process.env.VITE_TEST_HMR)
+        config.server.hmr === false
 
       if ('jsxPure' in opts) {
         config.logger.warnOnce(
