@@ -31,10 +31,11 @@ window.__vite_plugin_react_preamble_installed__ = true
 const header = `
 import RefreshRuntime from "${runtimePublicPath}";
 
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 let prevRefreshReg;
 let prevRefreshSig;
 
-if (import.meta.hot) {
+if (import.meta.hot && !inWebWorker) {
   if (!window.__vite_plugin_react_preamble_installed__) {
     throw new Error(
       "@vitejs/plugin-react can't detect preamble. Something is wrong. " +
