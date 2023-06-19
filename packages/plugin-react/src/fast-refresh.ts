@@ -52,7 +52,7 @@ if (import.meta.hot && !inWebWorker) {
 }`.replace(/\n+/g, '')
 
 const footer = `
-if (import.meta.hot) {
+if (import.meta.hot && !inWebWorker) {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 
