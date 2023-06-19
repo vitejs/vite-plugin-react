@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 4.0.1 (2023-06-19)
+
 - Support [Vitest deps.experimentalOptimizer](https://vitest.dev/config/#deps-experimentaloptimizer)
+- Support using components inside web workers ([#181](https://github.com/vitejs/vite-plugin-react/pull/181))
 
 ## 4.0.0 (2023-04-20)
 
