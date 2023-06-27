@@ -173,8 +173,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         !ssr &&
         (isJSX ||
           (opts.jsxRuntime === 'classic'
-            ? code.includes(devRuntime)
-            : importReactRE.test(code)))
+            ? importReactRE.test(code)
+            : code.includes(devRuntime)))
       if (useFastRefresh) {
         plugins.push([
           await loadPlugin('react-refresh/babel'),
