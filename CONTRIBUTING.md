@@ -117,9 +117,9 @@ To use breakpoints and explore code execution, you can use the ["Run and Debug"]
 
 Some errors are masked and hidden away because of the layers of abstraction and sandboxed nature added by Vitest, Playwright, and Chromium. In order to see what's actually going wrong and the contents of the devtools console in those instances, follow this setup:
 
-1. Add a `debugger` statement to the `playground/vitestSetup.ts` -> `afterAll` hook. This will pause execution before the tests quit and the Playwright browser instance exits.
+1. Add a `debugger` statement to the `playground/vitestSetup.ts` -> `afterAll` hook. This will pause execution before the tests quit and the Playwright browser instance exits. You can also add `debugger` statements in your tests (`.spec.ts`) files.
 
-2. Run the tests with the `debug-serve` script command, which will enable remote debugging: `pnpm run debug-serve react-sourcemap`.
+2. Run the tests with the `debug-serve` script command, which will enable remote debugging: `pnpm run debug-serve react-sourcemap`. Remember to run this command within the **"JavaScript Debug Terminal"** of VS Code.
 
 3. Wait for inspector devtools to open in your browser and the debugger to attach.
 

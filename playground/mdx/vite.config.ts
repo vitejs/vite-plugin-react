@@ -6,6 +6,6 @@ import mdx from '@mdx-js/rollup'
 export default defineConfig({
   plugins: [
     { enforce: 'pre', ...mdx() },
-    react({ include: /\.(mdx|ts|tsx)$/ }),
+    react({ include: /\.(mdx|md|ts|tsx)$/ }),
   ],
 })
