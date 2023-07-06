@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 4.0.2 (2023-07-06)
+
+- Fix fast-refresh for files that are transformed into jsx ([#188](https://github.com/vitejs/vite-plugin-react/pull/188))
+
 ## 4.0.1 (2023-06-19)
 
 - Support [Vitest deps.experimentalOptimizer](https://vitest.dev/config/#deps-experimentaloptimizer)
