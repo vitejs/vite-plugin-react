@@ -1,13 +1,3 @@
-/* eslint-disable no-undef */
-if (typeof window !== 'undefined') {
-  if (window.__vite_plugin_react_runtime_loaded__) {
-    throw new Error(
-      'React refresh runtime was loaded twice. Maybe you forgot the base path?',
-    )
-  }
-  window.__vite_plugin_react_runtime_loaded__ = true
-}
-
 function debounce(fn, delay) {
   let handle
   return () => {
@@ -16,6 +6,7 @@ function debounce(fn, delay) {
   }
 }
 
+/* eslint-disable no-undef */
 const enqueueUpdate = debounce(exports.performReactRefresh, 16)
 
 // Taken from https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/main/lib/runtime/RefreshUtils.js#L141
