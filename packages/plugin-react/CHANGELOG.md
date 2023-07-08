@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Revert [#108](https://github.com/vitejs/vite-plugin-react/pull/108): Remove throw when refresh runtime is loaded twice to enable usage in micro frontend apps. This was added to help fix setup usage, and this is not worth an annoying warning for others or a config parameter.
+
 ## 4.0.2 (2023-07-06)
 
 - Fix fast-refresh for files that are transformed into jsx ([#188](https://github.com/vitejs/vite-plugin-react/pull/188))
