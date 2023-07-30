@@ -195,6 +195,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       // Avoid parsing if no special transformation is needed
       if (
         !plugins.length &&
+        !babelOptions.presets.length &&
         !babelOptions.configFile &&
         !babelOptions.babelrc
       ) {
