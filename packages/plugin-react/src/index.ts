@@ -145,6 +145,9 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           hooks.forEach((hook) => hook(babelOptions, context, config))
         }
       } else if (typeof opts.babel !== 'function') {
+        // Because hooks and the callback option can mutate the Babel options
+        // we only create static option in this case and re-create them
+        // each time otherwise
         staticBabelOptions = createBabelOptions(opts.babel)
       }
     },

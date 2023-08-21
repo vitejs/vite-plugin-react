@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix [#211](https://github.com/vitejs/vite-plugin-react/issues/211): Add `@types/babel__cores` to dependencies
+
 ## 4.0.4 (2023-07-31)
 
 - Fix [#198](https://github.com/vitejs/vite-plugin-react/discussions/198): Enable Babel if presets list is not empty

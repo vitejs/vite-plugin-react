@@ -42,6 +42,7 @@
     "@babel/core": "^7.22.9",
     "@babel/plugin-transform-react-jsx-self": "^7.22.5",
     "@babel/plugin-transform-react-jsx-source": "^7.22.5",
+    "@types/babel__core": "^7.20.1",
     "react-refresh": "^0.14.0"
   },
   "peerDependencies": {
