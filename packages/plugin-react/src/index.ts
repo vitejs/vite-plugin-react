@@ -1,5 +1,7 @@
+// eslint-disable-next-line import/no-duplicates
+import type * as babelCore from '@babel/core'
+// eslint-disable-next-line import/no-duplicates
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import * as babel from '@babel/core'
 import { createFilter } from 'vite'
 import type {
   BuildOptions,
@@ -14,6 +16,15 @@ import {
   runtimeCode,
   runtimePublicPath,
 } from './fast-refresh'
+
+// lazy load babel since it's not used during build if plugins are not used
+let babel: typeof babelCore | undefined
+async function loadBabel() {
+  if (!babel) {
+    babel = await import('@babel/core')
+  }
+  return babel
+}
 
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
@@ -215,6 +226,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         parserPlugins.push('typescript')
       }
 
+      const babel = await loadBabel()
       const result = await babel.transformAsync(code, {
         ...babelOptions,
         root: projectRoot,
