@@ -26,8 +26,11 @@ function registerExportsForReactRefresh(filename, moduleExports) {
 }
 
 function validateRefreshBoundaryAndEnqueueUpdate(prevExports, nextExports) {
-  if (!predicateOnExport(prevExports, (key) => !!nextExports[key])) {
+  if (!predicateOnExport(prevExports, (key) => key in nextExports)) {
     return 'Could not Fast Refresh (export removed)'
+  }
+  if (!predicateOnExport(nextExports, (key) => key in prevExports)) {
+    return 'Could not Fast Refresh (new export)'
   }
 
   let hasExports = false
@@ -36,7 +39,6 @@ function validateRefreshBoundaryAndEnqueueUpdate(prevExports, nextExports) {
     (key, value) => {
       hasExports = true
       if (exports.isLikelyComponentType(value)) return true
-      if (!prevExports[key]) return false
       return prevExports[key] === nextExports[key]
     },
   )
