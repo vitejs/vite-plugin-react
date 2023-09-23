@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Button from 'jsx-entry'
 import Dummy from './components/Dummy?qs-should-not-break-plugin-react'
 import Parent from './hmr/parent'
+import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
 
@@ -37,6 +38,7 @@ function App() {
 
       <Dummy />
       <Parent />
+      <JsxImportRuntime />
       <Button>button</Button>
     </div>
   )

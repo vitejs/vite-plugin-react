@@ -115,4 +115,27 @@ if (!isBuild) {
       'context provider updated',
     )
   })
+
+  test('should hmr files with "react/jsx-runtime"', async () => {
+    expect(await page.textContent('#state-button')).toMatch('count is: 0')
+    await page.click('#state-button')
+    expect(await page.textContent('#state-button')).toMatch('count is: 1')
+
+    await untilBrowserLogAfter(
+      () =>
+        editFile('hmr/jsx-import-runtime.js', (code) =>
+          code.replace(
+            'JSX import runtime works',
+            'JSX import runtime updated',
+          ),
+        ),
+      ['[vite] hot updated: /hmr/jsx-import-runtime.js'],
+    )
+    await untilUpdated(
+      () => page.textContent('#jsx-import-runtime'),
+      'JSX import runtime updated',
+    )
+
+    expect(await page.textContent('#state-button')).toMatch('count is: 1')
+  })
 }
