@@ -98,7 +98,9 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
   let devBase = '/'
   const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
-  const devRuntime = `${opts.jsxImportSource ?? 'react'}/jsx-dev-runtime`
+  const jsxImportSource = opts.jsxImportSource ?? 'react'
+  const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
+  const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = false
@@ -188,7 +190,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         (isJSX ||
           (opts.jsxRuntime === 'classic'
             ? importReactRE.test(code)
-            : code.includes(devRuntime)))
+            : code.includes(jsxImportDevRuntime) ||
+              code.includes(jsxImportRuntime)))
       if (useFastRefresh) {
         plugins.push([
           await loadPlugin('react-refresh/babel'),
@@ -265,7 +268,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         // We can't add `react-dom` because the dependency is `react-dom/client`
         // for React 18 while it's `react-dom` for React 17. We'd need to detect
         // what React version the user has installed.
-        include: ['react', devRuntime],
+        include: ['react', jsxImportDevRuntime, jsxImportRuntime],
       },
       resolve: {
         dedupe: ['react', 'react-dom'],
