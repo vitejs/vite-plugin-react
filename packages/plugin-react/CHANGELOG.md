@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-- Fix [#211](https://github.com/vitejs/vite-plugin-react/issues/211): Add `@types/babel__cores` to dependencies
+## 4.1.0 (2023-09-24)
+
+- Add `@types/babel__cores` to dependencies (fix [#211](https://github.com/vitejs/vite-plugin-react/issues/211))
+- Improve build perf when not using Babel plugins by lazy loading `@babel/core` [#212](https://github.com/vitejs/vite-plugin-react/pull/212)
+- Better invalidation message when an export is added & fix HMR for export of nullish values [#215](https://github.com/vitejs/vite-plugin-react/pull/215)
+- Include non-dev jsx runtime in optimizeDeps & support HMR for JS files using the non dev runtime [#224](https://github.com/vitejs/vite-plugin-react/pull/224)
+- The build output now contains a `index.d.cts` file so you don't get types errors when setting `moduleResolution` to `node16` or `nodenext` in your tsconfig (we recommend using `bundler` which is more close to how Vite works)
 
 ## 4.0.4 (2023-07-31)
 
