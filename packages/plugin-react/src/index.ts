@@ -167,7 +167,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     async transform(code, id, options) {
       if (id.includes('/node_modules/')) return
 
-      const [filepath] = id.split('?')
+      const [filepath] = id.split(/\?|#/)
       if (!filter(filepath)) return
 
       const ssr = options?.ssr === true
