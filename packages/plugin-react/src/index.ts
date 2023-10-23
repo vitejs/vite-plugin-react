@@ -235,6 +235,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         root: projectRoot,
         filename: id,
         sourceFileName: filepath,
+        // Required for esbuild.jsxDev to provide correct line numbers
+        retainLines: !isProduction && isJSX && opts.jsxRuntime !== 'classic',
         parserOpts: {
           ...babelOptions.parserOpts,
           sourceType: 'module',
