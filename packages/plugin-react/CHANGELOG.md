@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.1.1 (2023-11-02)
+
 - Enable retainLines to get correct line numbers for jsxDev (fix [#235](https://github.com/vitejs/vite-plugin-react/issues/235))
 
 ## 4.1.0 (2023-09-24)
