@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: false
@@ -56,9 +56,6 @@ importers:
       prettier:
         specifier: ^3.0.3
         version: 3.0.3
-      rollup:
-        specifier: ^3.29.4
-        version: 3.29.4
       simple-git-hooks:
         specifier: ^2.9.0
         version: 2.9.0
@@ -116,7 +113,7 @@ importers:
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^2.3.0
-        version: 2.3.0(rollup@3.29.4)
+        version: 2.3.0
       '@types/react':
         specifier: ^18.2.33
         version: 18.2.33
@@ -1113,14 +1110,13 @@ packages:
       - supports-color
     dev: true
 
-  /@mdx-js/rollup@2.3.0(rollup@3.29.4):
+  /@mdx-js/rollup@2.3.0:
     resolution: {integrity: sha512-wLvRfJS/M4UmdqTd+WoaySEE7q4BIejYf1xAHXYvtT1du/1Tl/z2450Gg2+Hu7fh05KwRRiehiTP9Yc/Dtn0fA==}
     peerDependencies:
       rollup: '>=2'
     dependencies:
       '@mdx-js/mdx': 2.3.0
-      '@rollup/pluginutils': 5.0.2(rollup@3.29.4)
-      rollup: 3.29.4
+      '@rollup/pluginutils': 5.0.2
       source-map: 0.7.4
       vfile: 5.3.7
     transitivePeerDependencies:
@@ -1229,7 +1225,7 @@ packages:
       rollup: 3.29.4
     dev: true
 
-  /@rollup/pluginutils@5.0.2(rollup@3.29.4):
+  /@rollup/pluginutils@5.0.2:
     resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
@@ -1241,7 +1237,6 @@ packages:
       '@types/estree': 1.0.0
       estree-walker: 2.0.2
       picomatch: 2.3.1
-      rollup: 3.29.4
     dev: true
 
   /@rollup/pluginutils@5.0.4(rollup@3.29.4):
@@ -5703,5 +5698,4 @@ packages:
   file:playground/react/jsx-entry:
     resolution: {directory: playground/react/jsx-entry, type: directory}
     name: jsx-entry
-    version: 0.0.0
     dev: false
