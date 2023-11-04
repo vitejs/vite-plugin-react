@@ -8,6 +8,7 @@ import type {
   Logger,
   PluginOption,
   ResolvedConfig,
+  Rollup,
   UserConfig,
   ViteDevServer,
 } from 'vite'
@@ -19,7 +20,6 @@ import {
   preview,
 } from 'vite'
 import type { Browser, Page } from 'playwright-chromium'
-import type { RollupError, RollupWatcher, RollupWatcherEvent } from 'rollup'
 import type { File } from 'vitest'
 import { beforeAll } from 'vitest'
 
@@ -72,7 +72,7 @@ export let resolvedConfig: ResolvedConfig = undefined!
 export let page: Page = undefined!
 export let browser: Browser = undefined!
 export let viteTestUrl: string = ''
-export let watcher: RollupWatcher | undefined = undefined
+export let watcher: Rollup.RollupWatcher | undefined = undefined
 
 declare module 'vite' {
   interface InlineConfig {
@@ -269,7 +269,7 @@ export async function startDefaultServe(): Promise<void> {
     const isWatch = !!resolvedConfig!.build.watch
     // in build watch,call startStaticServer after the build is complete
     if (isWatch) {
-      watcher = rollupOutput as RollupWatcher
+      watcher = rollupOutput as Rollup.RollupWatcher
       await notifyRebuildComplete(watcher)
     }
     // @ts-ignore
@@ -290,10 +290,10 @@ export async function startDefaultServe(): Promise<void> {
  * Send the rebuild complete message in build watch
  */
 export async function notifyRebuildComplete(
-  watcher: RollupWatcher,
-): Promise<RollupWatcher> {
+  watcher: Rollup.RollupWatcher,
+): Promise<Rollup.RollupWatcher> {
   let resolveFn: undefined | (() => void)
-  const callback = (event: RollupWatcherEvent): void => {
+  const callback = (event: Rollup.RollupWatcherEvent): void => {
     if (event.code === 'END') {
       resolveFn?.()
     }
@@ -306,7 +306,7 @@ export async function notifyRebuildComplete(
 }
 
 function createInMemoryLogger(logs: string[]): Logger {
-  const loggedErrors = new WeakSet<Error | RollupError>()
+  const loggedErrors = new WeakSet<Error | Rollup.RollupError>()
   const warnedMessages = new Set<string>()
 
   const logger: Logger = {
