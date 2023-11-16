@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 4.2.0 (2023-11-16)
+
+### Update peer dependency range to target Vite 5
+
+There were no breaking change that impacted this plugin, so any combination of React plugins and Vite core version will work.
+
 ### Align jsx runtime for optimized dependencies
 
 This will only affect people using internal libraries that contains untranspiled JSX. This change aligns the optimizer with the source code and avoid issues when the published source don't have `React` in the scope.
