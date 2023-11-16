@@ -131,6 +131,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
             jsx: 'automatic',
             jsxImportSource: opts.jsxImportSource,
           },
+          optimizeDeps: { esbuildOptions: { jsx: 'automatic' } },
         }
       }
     },

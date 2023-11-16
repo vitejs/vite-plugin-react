@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Align jsx runtime for optimized dependencies
+
+This will only affect people using internal libraries that contains untranspiled JSX. This change aligns the optimizer with the source code and avoid issues when the published source don't have `React` in the scope.
+
+Reminder: While being partially supported in Vite, publishing TS & JSX outside of internal libraries is highly discouraged.
+
 ## 4.1.1 (2023-11-02)
 
 - Enable retainLines to get correct line numbers for jsxDev (fix [#235](https://github.com/vitejs/vite-plugin-react/issues/235))
