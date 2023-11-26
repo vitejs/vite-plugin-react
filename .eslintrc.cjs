@@ -2,6 +2,9 @@
 const { builtinModules } = require('node:module')
 const { defineConfig } = require('eslint-define-config')
 
+/// <reference types="@eslint-types/typescript-eslint" />
+/// <reference types="@eslint-types/import" />
+
 module.exports = defineConfig({
   root: true,
   extends: [

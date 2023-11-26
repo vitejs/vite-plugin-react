@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: false
@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@eslint-types/import':
+        specifier: ^2.29.0-1
+        version: 2.29.0-1
+      '@eslint-types/typescript-eslint':
+        specifier: ^6.12.0
+        version: 6.12.0
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
@@ -27,8 +33,8 @@ importers:
         specifier: ^8.53.0
         version: 8.53.0
       eslint-define-config:
-        specifier: ^1.24.1
-        version: 1.24.1
+        specifier: ^2.0.0
+        version: 2.0.0
       eslint-plugin-import:
         specifier: ^2.29.0
         version: 2.29.0(@typescript-eslint/parser@6.11.0)(eslint@8.53.0)
@@ -995,6 +1001,14 @@ packages:
   /@eslint-community/regexpp@4.9.1:
     resolution: {integrity: sha512-Y27x+MBLjXa+0JWDhykM3+JE+il3kHKAEqabfEWq3SDhZjLYb6/BHL/JKFnH3fe207JaXkyDo685Oc2Glt6ifA==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
+    dev: true
+
+  /@eslint-types/import@2.29.0-1:
+    resolution: {integrity: sha512-cmlKmWLY9PKmsxKdb5DlXZBe6SV3fIyhoMj+lBVUeW5d9Dvqs62Hk+jskz4D9B3x+dEwDez29ScTog04K8WpUQ==}
+    dev: true
+
+  /@eslint-types/typescript-eslint@6.12.0:
+    resolution: {integrity: sha512-N8cbOYjyFl2BFgDhDgHhTGpgiMkFg0CoITG5hdBm9ZGmcEgUvFBnHvHG7qJl3qVEmFnoKUdfSAcr7MRb2/Jxvw==}
     dev: true
 
   /@eslint/eslintrc@2.1.3:
@@ -2348,9 +2362,9 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  /eslint-define-config@1.24.1:
-    resolution: {integrity: sha512-o36vBhPSWyIQlHoMqGhhcGmOOm2A2ccBVIdLTG/AWdm9YmjpsLpf+5ntf9LlHR6dduLREgxtGwvwPwSt7vnXJg==}
-    engines: {node: '>=18.0.0', npm: '>=9.0.0', pnpm: '>= 8.6.0'}
+  /eslint-define-config@2.0.0:
+    resolution: {integrity: sha512-M8ao9mAE35BGwjZeT8ZlsRA42wcJHWS29Avd0qfeclRXig6uTnGXcaO7UxVyFzUA1VJtxeV/acw4KrhJA3JqxQ==}
+    engines: {node: '>=18.0.0', npm: '>=9.0.0', pnpm: '>=8.6.0'}
     dev: true
 
   /eslint-import-resolver-node@0.3.9:
@@ -5663,5 +5677,4 @@ packages:
   file:playground/react/jsx-entry:
     resolution: {directory: playground/react/jsx-entry, type: directory}
     name: jsx-entry
-    version: 0.0.0
     dev: false
