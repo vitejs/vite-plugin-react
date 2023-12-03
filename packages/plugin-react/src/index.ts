@@ -79,15 +79,11 @@ type ReactBabelHook = (
 
 type ReactBabelHookContext = { ssr: boolean; id: string }
 
-declare module 'vite' {
-  export interface Plugin {
-    api?: {
-      /**
-       * Manipulate the Babel options of `@vitejs/plugin-react`
-       */
-      reactBabel?: ReactBabelHook
-    }
-  }
+export type ViteReactPluginApi = {
+  /**
+   * Manipulate the Babel options of `@vitejs/plugin-react`
+   */
+  reactBabel?: ReactBabelHook
 }
 
 const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
@@ -150,7 +146,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         )
       }
 
-      const hooks = config.plugins
+      const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
 

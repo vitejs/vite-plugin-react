@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+Remove generic parameter on `Plugin` to avoid type error with Rollup 4/Vite 5 and `skipLibCheck: false`.
+
+I expect very few people to currently use this feature, but if you are extending the React plugin via `api` object, you can get back the typing of the hook by importing `ViteReactPluginApi`:
+
+```ts
+import type { Plugin } from 'vite'
+import type { ViteReactPluginApi } from '@vitejs/plugin-react'
+
+export const somePlugin: Plugin = {
+  name: 'some-plugin',
+  api: {
+    reactBabel: (babelConfig) => {
+      babelConfig.plugins.push('some-babel-plugin')
+    },
+  } satisfies ViteReactPluginApi,
+}
+```
+
 ## 4.2.0 (2023-11-16)
 
 ### Update peer dependency range to target Vite 5
