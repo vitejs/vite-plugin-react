@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.1 (2023-12-04)
+
 Remove generic parameter on `Plugin` to avoid type error with Rollup 4/Vite 5 and `skipLibCheck: false`.
 
 I expect very few people to currently use this feature, but if you are extending the React plugin via `api` object, you can get back the typing of the hook by importing `ViteReactPluginApi`:
