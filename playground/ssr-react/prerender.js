@@ -22,8 +22,7 @@ const routesToPrerender = fs
 ;(async () => {
   // pre-render each route...
   for (const url of routesToPrerender) {
-    const context = {}
-    const appHtml = await render(url, context)
+    const appHtml = await render(url)
 
     const html = template.replace(`<!--app-html-->`, appHtml)
 
