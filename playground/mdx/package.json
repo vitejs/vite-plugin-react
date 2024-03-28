@@ -12,9 +12,9 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@mdx-js/rollup": "^3.0.0",
-    "@types/react": "^18.2.41",
-    "@types/react-dom": "^18.2.17",
+    "@mdx-js/rollup": "^3.0.1",
+    "@types/react": "^18.2.73",
+    "@types/react-dom": "^18.2.23",
     "@vitejs/plugin-react": "workspace:*"
   }
 }
