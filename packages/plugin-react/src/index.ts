@@ -88,12 +88,16 @@ export type ViteReactPluginApi = {
 
 const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 const defaultIncludeRE = /\.[tj]sx?$/
+const defaultExcludeRE = /\/node_modules\//
 const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
   // Provide default values for Rollup compat.
   let devBase = '/'
-  const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
+  const filter = createFilter(
+    opts.include ?? defaultIncludeRE,
+    opts.exclude ?? defaultExcludeRE,
+  )
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
@@ -162,7 +166,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     async transform(code, id, options) {
-      if (id.includes('/node_modules/')) return
+      if (!opts.exclude && id.includes('/node_modules/')) return
 
       const [filepath] = id.split('?')
       if (!filter(filepath)) return
