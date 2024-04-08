@@ -166,8 +166,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     async transform(code, id, options) {
-      if (!opts.exclude && id.includes('/node_modules/')) return
-
       const [filepath] = id.split('?')
       if (!filter(filepath)) return
 
