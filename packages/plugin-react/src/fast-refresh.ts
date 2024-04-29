@@ -35,20 +35,25 @@ const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof 
 let prevRefreshReg;
 let prevRefreshSig;
 
-if (import.meta.hot && !inWebWorker) {
-  if (!window.__vite_plugin_react_preamble_installed__) {
-    throw new Error(
-      "@vitejs/plugin-react can't detect preamble. Something is wrong. " +
-      "See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201"
-    );
-  }
+if (import.meta.hot) {
+  if (inWebWorker) {
+    globalThis.$RefreshReg$ = () => {};
+    globalThis.$RefreshSig$ = () => (type) => type;
+  } else {
+    if (!window.__vite_plugin_react_preamble_installed__) {
+      throw new Error(
+        "@vitejs/plugin-react can't detect preamble. Something is wrong. " +
+        "See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201"
+      );
+    }
 
-  prevRefreshReg = window.$RefreshReg$;
-  prevRefreshSig = window.$RefreshSig$;
-  window.$RefreshReg$ = (type, id) => {
-    RefreshRuntime.register(type, __SOURCE__ + " " + id)
-  };
-  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+    prevRefreshReg = window.$RefreshReg$;
+    prevRefreshSig = window.$RefreshSig$;
+    window.$RefreshReg$ = (type, id) => {
+      RefreshRuntime.register(type, __SOURCE__ + " " + id)
+    };
+    window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+  }
 }`.replace(/\n+/g, '')
 
 const footer = `
