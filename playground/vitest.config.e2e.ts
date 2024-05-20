@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
-const timeout = process.env.CI ? 20_000 : 10_000
+const timeout = process.env.CI ? 20_000 : 5_000
 
 export default defineConfig({
   resolve: {
@@ -10,6 +10,7 @@ export default defineConfig({
     },
   },
   test: {
+    pool: 'forks',
     include: ['./playground/**/*.spec.[tj]s'],
     setupFiles: ['./playground/vitestSetup.ts'],
     globalSetup: ['./playground/vitestGlobalSetup.ts'],

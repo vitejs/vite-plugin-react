@@ -246,6 +246,7 @@ export async function startDefaultServe(): Promise<void> {
     process.env.VITE_INLINE = 'inline-serve'
     const testConfig = mergeConfig(options, config || {})
     viteConfig = testConfig
+    process.chdir(rootDir)
     viteServer = server = await (await createServer(testConfig)).listen()
     // use resolved port/base from server
     const devBase = server.config.base
@@ -265,6 +266,7 @@ export async function startDefaultServe(): Promise<void> {
     options.plugins = [resolvedPlugin()]
     const testConfig = mergeConfig(options, config || {})
     viteConfig = testConfig
+    process.chdir(rootDir)
     const rollupOutput = await build(testConfig)
     const isWatch = !!resolvedConfig!.build.watch
     // in build watch,call startStaticServer after the build is complete
