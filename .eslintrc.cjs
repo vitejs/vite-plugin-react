@@ -9,7 +9,7 @@ module.exports = defineConfig({
   root: true,
   extends: [
     'eslint:recommended',
-    'plugin:node/recommended',
+    'plugin:n/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:regexp/recommended',
   ],
@@ -23,7 +23,6 @@ module.exports = defineConfig({
     eqeqeq: ['warn', 'always', { null: 'never' }],
     'no-debugger': ['error'],
     'no-empty': ['warn', { allowEmptyCatch: true }],
-    'no-process-exit': 'off',
     'no-useless-escape': 'off',
     'prefer-const': [
       'warn',
@@ -32,14 +31,15 @@ module.exports = defineConfig({
       },
     ],
 
-    'node/no-missing-import': [
+    'n/no-process-exit': 'off',
+    'n/no-missing-import': [
       'error',
       {
         allowModules: ['types', 'estree', 'less', 'sass', 'stylus'],
         tryExtensions: ['.ts', '.js', '.jsx', '.tsx', '.d.ts'],
       },
     ],
-    'node/no-missing-require': [
+    'n/no-missing-require': [
       'error',
       {
         // for try-catching yarn pnp
@@ -47,22 +47,22 @@ module.exports = defineConfig({
         tryExtensions: ['.ts', '.js', '.jsx', '.tsx', '.d.ts'],
       },
     ],
-    'node/no-extraneous-import': [
+    'n/no-extraneous-import': [
       'error',
       {
         allowModules: ['vite', 'less', 'sass', 'vitest'],
       },
     ],
-    'node/no-extraneous-require': [
+    'n/no-extraneous-require': [
       'error',
       {
         allowModules: ['vite'],
       },
     ],
-    'node/no-deprecated-api': 'off',
-    'node/no-unpublished-import': 'off',
-    'node/no-unpublished-require': 'off',
-    'node/no-unsupported-features/es-syntax': 'off',
+    'n/no-deprecated-api': 'off',
+    'n/no-unpublished-import': 'off',
+    'n/no-unpublished-require': 'off',
+    'n/no-unsupported-features/es-syntax': 'off',
 
     '@typescript-eslint/ban-ts-comment': 'off', // TODO: we should turn this on in a new PR
     '@typescript-eslint/ban-types': 'off', // TODO: we should turn this on in a new PR
@@ -122,25 +122,25 @@ module.exports = defineConfig({
       files: ['**/build.config.ts'],
       rules: {
         'no-undef': 'off',
-        'node/no-missing-import': 'off',
+        'n/no-missing-import': 'off',
         '@typescript-eslint/explicit-module-boundary-types': 'off',
       },
     },
     {
       files: ['playground/**'],
       rules: {
-        'node/no-extraneous-import': 'off',
-        'node/no-extraneous-require': 'off',
-        'node/no-missing-import': 'off',
-        'node/no-missing-require': 'off',
+        'n/no-extraneous-import': 'off',
+        'n/no-extraneous-require': 'off',
+        'n/no-missing-import': 'off',
+        'n/no-missing-require': 'off',
         // engine field doesn't exist in playgrounds
-        'node/no-unsupported-features/es-builtins': [
+        'n/no-unsupported-features/es-builtins': [
           'error',
           {
             version: '^14.18.0 || >=16.0.0',
           },
         ],
-        'node/no-unsupported-features/node-builtins': [
+        'n/no-unsupported-features/node-builtins': [
           'error',
           {
             version: '^14.18.0 || >=16.0.0',
