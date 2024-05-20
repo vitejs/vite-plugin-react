@@ -28,10 +28,12 @@ window.$RefreshSig$ = () => (type) => type
 window.__vite_plugin_react_preamble_installed__ = true
 `
 
-const header = `
+const sharedHeader = `
 import RefreshRuntime from "${runtimePublicPath}";
 
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+`.replace(/\n+/g, '')
+const functionHeader = `
 let prevRefreshReg;
 let prevRefreshSig;
 
@@ -51,11 +53,13 @@ if (import.meta.hot && !inWebWorker) {
   window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
 }`.replace(/\n+/g, '')
 
-const footer = `
+const functionFooter = `
 if (import.meta.hot && !inWebWorker) {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
-
+}`
+const sharedFooter = `
+if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(__SOURCE__, currentExports);
     import.meta.hot.accept((nextExports) => {
@@ -68,8 +72,19 @@ if (import.meta.hot && !inWebWorker) {
 
 export function addRefreshWrapper(code: string, id: string): string {
   return (
-    header.replace('__SOURCE__', JSON.stringify(id)) +
+    sharedHeader +
+    functionHeader.replace('__SOURCE__', JSON.stringify(id)) +
     code +
-    footer.replace('__SOURCE__', JSON.stringify(id))
+    functionFooter +
+    sharedFooter.replace('__SOURCE__', JSON.stringify(id))
+  )
+}
+
+export function addClassComponentRefreshWrapper(
+  code: string,
+  id: string,
+): string {
+  return (
+    sharedHeader + code + sharedFooter.replace('__SOURCE__', JSON.stringify(id))
   )
 }
