@@ -1,7 +1,7 @@
 {
   "name": "@vitejs/vite-plugin-react-playground",
   "private": true,
-  "version": "1.0.0",
+  "type": "module",
   "devDependencies": {
     "kill-port": "^1.6.1",
     "node-fetch": "^3.3.2"

@@ -1,7 +1,7 @@
 {
   "name": "@vitejs/test-react-sourcemap",
   "private": true,
-  "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:classic": "USE_CLASSIC=1 vite",
