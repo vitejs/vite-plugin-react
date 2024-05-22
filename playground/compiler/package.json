@@ -1,0 +1,23 @@
+{
+  "name": "@vitejs/compiler",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0-rc-3f1436cca1-20240516",
+    "react-dom": "^19.0.0-rc-3f1436cca1-20240516"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx-development": "^7.22.5",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "workspace:*",
+    "babel-plugin-react-compiler": "^0.0.0-experimental-592953e-20240517",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

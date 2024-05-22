@@ -5,6 +5,7 @@ import type { UserConfig } from 'vite'
 process.env.NODE_ENV = ''
 
 const config: UserConfig = {
+  server: { port: 8905 /* Should be unique */ },
   plugins: [react()],
   mode: 'staging',
   build: {

@@ -235,7 +235,11 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         filename: id,
         sourceFileName: filepath,
         // Required for esbuild.jsxDev to provide correct line numbers
-        retainLines: !isProduction && isJSX && opts.jsxRuntime !== 'classic',
+        // This crates issues the react compiler because the re-order is too important
+        // People should use @babel/plugin-transform-react-jsx-development to get back good line numbers
+        retainLines: hasCompiler(plugins)
+          ? false
+          : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
         parserOpts: {
           ...babelOptions.parserOpts,
           sourceType: 'module',
@@ -264,16 +268,23 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
+  // We can't add `react-dom` because the dependency is `react-dom/client`
+  // for React 18 while it's `react-dom` for React 17. We'd need to detect
+  // what React version the user has installed.
+  const dependencies = ['react', jsxImportDevRuntime, jsxImportRuntime]
+  const staticBabelPlugins =
+    typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
+  if (hasCompiler(staticBabelPlugins)) {
+    dependencies.push('react/compiler-runtime')
+  }
+
   const viteReactRefresh: Plugin = {
     name: 'vite:react-refresh',
     enforce: 'pre',
     config: (userConfig) => ({
       build: silenceUseClientWarning(userConfig),
       optimizeDeps: {
-        // We can't add `react-dom` because the dependency is `react-dom/client`
-        // for React 18 while it's `react-dom` for React 17. We'd need to detect
-        // what React version the user has installed.
-        include: ['react', jsxImportDevRuntime, jsxImportRuntime],
+        include: dependencies,
       },
       resolve: {
         dedupe: ['react', 'react-dom'],
@@ -356,4 +367,12 @@ function createBabelOptions(rawOptions?: BabelOptions) {
 
 function defined<T>(value: T | undefined): value is T {
   return value !== undefined
+}
+
+function hasCompiler(plugins: ReactBabelOptions['plugins']) {
+  return plugins.some(
+    (p) =>
+      p === 'babel-plugin-react-compiler' ||
+      (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler'),
+  )
 }

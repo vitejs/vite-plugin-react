@@ -31,8 +31,8 @@
     "ci-publish": "tsx scripts/publishCI.ts"
   },
   "devDependencies": {
-    "@eslint-types/typescript-eslint": "^7.5.0",
     "@eslint-types/import": "^2.29.1",
+    "@eslint-types/typescript-eslint": "^7.5.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
