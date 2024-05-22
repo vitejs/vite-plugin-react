@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Support HMR for class components
+
+This is a long overdue and should fix some issues people had with HMR when migrating from CRA.
+
 ## 4.2.1 (2023-12-04)
 
 Remove generic parameter on `Plugin` to avoid type error with Rollup 4/Vite 5 and `skipLibCheck: false`.
