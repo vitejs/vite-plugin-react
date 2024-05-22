@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.0 (2024-05-22)
+
 ### Fix support for React compiler
 
 Don't set `retainLines: true` when the React compiler is used. This creates whitespace issues and the compiler is modifying the JSX too much to get correct line numbers after that. If you want to use the React compiler and get back correct line numbers for tools like [vite-plugin-react-click-to-component](https://github.com/ArnaudBarre/vite-plugin-react-click-to-component) to work, you should update your config to something like:
