@@ -4,6 +4,7 @@ import { port } from './serve'
 import {
   browserLogs,
   editFile,
+  isBuild,
   page,
   untilBrowserLogAfter,
   untilUpdated,
@@ -49,13 +50,18 @@ test('/', async () => {
   expect(html).toMatch('Home')
 })
 
-test('hmr', async () => {
+test.skipIf(isBuild)('hmr', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
+  await untilUpdated(() => page.textContent('h1'), 'Home')
   editFile('src/pages/Home.jsx', (code) =>
     code.replace('<h1>Home', '<h1>changed'),
   )
   await untilUpdated(() => page.textContent('h1'), 'changed')
+
+  // verify the change also affects next SSR
+  const res = await page.reload()
+  expect(await res?.text()).toContain('<h1>changed')
 })
 
 test('client navigation', async () => {
