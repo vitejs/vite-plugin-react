@@ -4,6 +4,7 @@ import { port } from './serve'
 import {
   browserLogs,
   editFile,
+  isBuild,
   page,
   untilBrowserLogAfter,
   untilUpdated,
@@ -49,7 +50,7 @@ test('/', async () => {
   expect(html).toMatch('Home')
 })
 
-test('hmr', async () => {
+test.skipIf(isBuild)('hmr', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
   await untilUpdated(() => page.textContent('h1'), 'Home')
