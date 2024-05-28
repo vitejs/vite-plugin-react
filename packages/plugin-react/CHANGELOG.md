@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fix support for React Compiler with React 18
+
+The previous version made this assumption that the compiler was only usable with React 19, but it's possible to use it with React 18 and a custom `runtimeModule`: https://gist.github.com/poteto/37c076bf112a07ba39d0e5f0645fec43
+
+When using a custom `runtimeModule`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
+
 ## 4.3.0 (2024-05-22)
 
 ### Fix support for React compiler

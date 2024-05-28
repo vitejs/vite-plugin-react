@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/test-compiler",
+  "name": "@vitejs/test-compiler-react-18",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,8 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.0.0-rc-3f1436cca1-20240516",
-    "react-dom": "^19.0.0-rc-3f1436cca1-20240516"
+    "react": "^18.3.1",
+    "react-compiler-runtime": "file:./lib/react-compiler-runtime",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx-development": "^7.22.5",

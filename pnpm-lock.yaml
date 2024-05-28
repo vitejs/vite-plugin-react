@@ -159,6 +159,46 @@ importers:
         specifier: ^5.2.11
         version: 5.2.11(@types/node@20.12.12)
 
+  playground/compiler-react-18:
+    dependencies:
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-compiler-runtime:
+        specifier: file:./lib/react-compiler-runtime
+        version: file:playground/compiler-react-18/lib/react-compiler-runtime
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@babel/plugin-transform-react-jsx-development':
+        specifier: ^7.22.5
+        version: 7.22.5
+      '@types/react':
+        specifier: ^18.3.2
+        version: 18.3.2
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+      babel-plugin-react-compiler:
+        specifier: ^0.0.0-experimental-592953e-20240517
+        version: 0.0.0-experimental-592953e-20240517
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.11
+        version: 5.2.11(@types/node@20.12.12)
+
+  playground/compiler-react-18/lib/react-compiler-runtime:
+    dependencies:
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+
   playground/mdx:
     dependencies:
       react:
@@ -6575,6 +6615,13 @@ packages:
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
+
+  file:playground/compiler-react-18/lib/react-compiler-runtime:
+    resolution: {directory: playground/compiler-react-18/lib/react-compiler-runtime, type: directory}
+    name: react-compiler-runtime
+    dependencies:
+      react: 18.3.1
+    dev: false
 
   file:playground/react/jsx-entry:
     resolution: {directory: playground/react/jsx-entry, type: directory}
