@@ -111,7 +111,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   // - import * as React from 'react';
   // - import React from 'react';
   // - import React, {useEffect} from 'react';
-  const importReactRE = /\bimport\s+(?:\*\s+as\s+)?React\b/
+  const importReactRE = /\bimport\s+(?:\*\s+as\s+)?React\b(?:\s*,\s*\{[^}]*\})?\s+from\s+['"]react['"]/;
 
   const viteBabel: Plugin = {
     name: 'vite:react-babel',
