@@ -1,4 +1,4 @@
-const React = require('react')
+import React from 'react'
 const $empty = Symbol.for('react.memo_cache_sentinel')
 /**
  * DANGER: this hook is NEVER meant to be called directly!

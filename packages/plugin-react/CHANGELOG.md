@@ -8,6 +8,8 @@ The previous version made this assumption that the compiler was only usable with
 
 When using a custom `runtimeModule`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
 
+Reminder: Vite expect code outside of `node_modules` to be ESM, so you will need to update the gist with `import React from 'react'`.
+
 ## 4.3.0 (2024-05-22)
 
 ### Fix support for React compiler
