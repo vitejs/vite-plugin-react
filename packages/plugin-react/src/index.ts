@@ -274,7 +274,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   const dependencies = ['react', jsxImportDevRuntime, jsxImportRuntime]
   const staticBabelPlugins =
     typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
-  if (hasCompiler(staticBabelPlugins)) {
+  if (hasCompilerWithDefaultRuntime(staticBabelPlugins)) {
     dependencies.push('react/compiler-runtime')
   }
 
@@ -374,5 +374,16 @@ function hasCompiler(plugins: ReactBabelOptions['plugins']) {
     (p) =>
       p === 'babel-plugin-react-compiler' ||
       (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler'),
+  )
+}
+
+// https://gist.github.com/poteto/37c076bf112a07ba39d0e5f0645fec43
+function hasCompilerWithDefaultRuntime(plugins: ReactBabelOptions['plugins']) {
+  return plugins.some(
+    (p) =>
+      p === 'babel-plugin-react-compiler' ||
+      (Array.isArray(p) &&
+        p[0] === 'babel-plugin-react-compiler' &&
+        p[1]?.runtimeModule === undefined),
   )
 }
