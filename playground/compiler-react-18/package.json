@@ -13,12 +13,12 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx-development": "^7.22.5",
-    "@types/react": "^18.3.2",
+    "@babel/plugin-transform-react-jsx-development": "^7.24.7",
+    "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "workspace:*",
-    "babel-plugin-react-compiler": "^0.0.0-experimental-592953e-20240517",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "babel-plugin-react-compiler": "^0.0.0-experimental-696af53-20240625",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.2"
   }
 }
