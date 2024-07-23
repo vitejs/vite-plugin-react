@@ -47,6 +47,11 @@ export interface Options {
   babel?:
     | BabelOptions
     | ((id: string, options: { ssr?: boolean }) => BabelOptions)
+  /**
+   * Script to run as `async`
+   * We need this for streaming, otherwise script runs once streaming has finished
+   */
+  async?: boolean
 }
 
 export type BabelOptions = Omit<
@@ -305,7 +310,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         return [
           {
             tag: 'script',
-            attrs: { type: 'module' },
+            attrs: { type: 'module', async: !!opts.async },
             children: preambleCode.replace(`__BASE__`, devBase),
           },
         ]
