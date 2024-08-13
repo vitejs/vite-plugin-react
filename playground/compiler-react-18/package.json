@@ -19,6 +19,6 @@
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "^0.0.0-experimental-592953e-20240517",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "vite": "^5.4.0"
   }
 }
