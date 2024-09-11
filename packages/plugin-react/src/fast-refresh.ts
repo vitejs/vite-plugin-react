@@ -61,7 +61,7 @@ if (import.meta.hot && !inWebWorker) {
 const sharedFooter = (id: string) => `
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
-    RefreshRuntime.registerExportsForReactRefresh("${id}", currentExports);
+    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(id)}, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
       const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("${id}", currentExports, nextExports);
