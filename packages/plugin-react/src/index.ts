@@ -326,6 +326,14 @@ const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
       ) {
         return
       }
+      // https://github.com/vitejs/vite/issues/15012
+      if (
+        warning.code === 'SOURCEMAP_ERROR' &&
+        warning.message.includes('resolve original location') &&
+        warning.pos === 0
+      ) {
+        return
+      }
       if (userConfig.build?.rollupOptions?.onwarn) {
         userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
       } else {
