@@ -61,10 +61,14 @@ if (import.meta.hot && !inWebWorker) {
 const sharedFooter = (id: string) => `
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
-    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(id)}, currentExports);
+    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
+      id,
+    )}, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
-      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(id)}, currentExports, nextExports);
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
+        id,
+      )}, currentExports, nextExports);
       if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
     });
   });
