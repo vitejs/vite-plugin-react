@@ -58,13 +58,17 @@ if (import.meta.hot && !inWebWorker) {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }`
-const sharedFooter = `
+const sharedFooter = (id: string) => `
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
-    RefreshRuntime.registerExportsForReactRefresh(__SOURCE__, currentExports);
+    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
+      id,
+    )}, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
-      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(currentExports, nextExports);
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
+        id,
+      )}, currentExports, nextExports);
       if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
     });
   });
@@ -76,7 +80,7 @@ export function addRefreshWrapper(code: string, id: string): string {
     functionHeader.replace('__SOURCE__', JSON.stringify(id)) +
     code +
     functionFooter +
-    sharedFooter.replace('__SOURCE__', JSON.stringify(id))
+    sharedFooter(id)
   )
 }
 
@@ -84,7 +88,5 @@ export function addClassComponentRefreshWrapper(
   code: string,
   id: string,
 ): string {
-  return (
-    sharedHeader + code + sharedFooter.replace('__SOURCE__', JSON.stringify(id))
-  )
+  return sharedHeader + code + sharedFooter(id)
 }
