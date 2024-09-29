@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 4.3.2 (2024-09-29)
+
+Ignore directive sourcemap error [#369](https://github.com/vitejs/vite-plugin-react/issues/369)
+
 ## 4.3.1 (2024-06-10)
 
 ### Fix support for React Compiler with React 18
