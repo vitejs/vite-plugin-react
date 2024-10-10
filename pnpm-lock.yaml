@@ -150,8 +150,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
       babel-plugin-react-compiler:
-        specifier: ^0.0.0-experimental-b12479e-20240926
-        version: 0.0.0-experimental-b12479e-20240926
+        specifier: 0.0.0-experimental-58c2b1c-20241009
+        version: 0.0.0-experimental-58c2b1c-20241009
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -165,8 +165,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1
       react-compiler-runtime:
-        specifier: file:./lib/react-compiler-runtime
-        version: link:lib/react-compiler-runtime
+        specifier: 0.0.0-experimental-8d8e73f-20241009
+        version: 0.0.0-experimental-8d8e73f-20241009(react@18.3.1)
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
@@ -184,20 +184,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
       babel-plugin-react-compiler:
-        specifier: ^0.0.0-experimental-b12479e-20240926
-        version: 0.0.0-experimental-b12479e-20240926
+        specifier: 0.0.0-experimental-58c2b1c-20241009
+        version: 0.0.0-experimental-58c2b1c-20241009
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
       vite:
         specifier: ^5.4.8
         version: 5.4.8(@types/node@20.16.10)
-
-  playground/compiler-react-18/lib/react-compiler-runtime:
-    dependencies:
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
 
   playground/mdx:
     dependencies:
@@ -1496,8 +1490,8 @@ packages:
     resolution: {integrity: sha512-Cg7TFGpIr01vOQNODXOOaGz2NpCU5gl8x1qJFbb6hbZxR7XrcE2vtbAsTAbJ7/xwJtUuJEw8K8Zr/AE0LHlesg==}
     engines: {node: '>=10', npm: '>=6'}
 
-  babel-plugin-react-compiler@0.0.0-experimental-b12479e-20240926:
-    resolution: {integrity: sha512-QoiS1tZsE7gDdd3EFLpprvM4edUBhNrV98El2G073Onhg2vJ+wub+RpEtztoNTNGrAwogj+CcFU9j1VxxzhiPQ==}
+  babel-plugin-react-compiler@0.0.0-experimental-58c2b1c-20241009:
+    resolution: {integrity: sha512-/DSwpfz7c1hK5dpxxlLxQJtvXCF3RjN3ZCaJ43NM4BEvzTpaS0C0jasXVBEUIFumBcdaoirFbfZkyk9htY+6Xw==}
 
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
@@ -2040,6 +2034,7 @@ packages:
   eslint@8.57.1:
     resolution: {integrity: sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.6.1:
@@ -3316,6 +3311,11 @@ packages:
     resolution: {integrity: sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==}
     engines: {node: '>= 0.8'}
 
+  react-compiler-runtime@0.0.0-experimental-8d8e73f-20241009:
+    resolution: {integrity: sha512-TEOS8csCfa/xSNt8ft9yRAimOJNetQIOuTgMFU2rv3dhDUOpM3e/Jrv+55uGUKMUYK6kCBV4QYsviLl2c8JfOg==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+
   react-dom@18.3.1:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
@@ -4040,7 +4040,7 @@ snapshots:
 
   '@babel/generator@7.2.0':
     dependencies:
-      '@babel/types': 7.24.5
+      '@babel/types': 7.25.6
       jsesc: 2.5.2
       lodash: 4.17.21
       source-map: 0.5.7
@@ -4130,7 +4130,7 @@ snapshots:
 
   '@babel/parser@7.24.5':
     dependencies:
-      '@babel/types': 7.24.5
+      '@babel/types': 7.25.6
 
   '@babel/parser@7.25.6':
     dependencies:
@@ -5090,10 +5090,10 @@ snapshots:
       cosmiconfig: 7.1.0
       resolve: 1.22.8
 
-  babel-plugin-react-compiler@0.0.0-experimental-b12479e-20240926:
+  babel-plugin-react-compiler@0.0.0-experimental-58c2b1c-20241009:
     dependencies:
       '@babel/generator': 7.2.0
-      '@babel/types': 7.24.5
+      '@babel/types': 7.25.6
       chalk: 4.1.2
       invariant: 2.2.4
       pretty-format: 24.9.0
@@ -7365,6 +7365,10 @@ snapshots:
       http-errors: 2.0.0
       iconv-lite: 0.4.24
       unpipe: 1.0.0
+
+  react-compiler-runtime@0.0.0-experimental-8d8e73f-20241009(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   react-dom@18.3.1(react@18.3.1):
     dependencies:

@@ -237,9 +237,10 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         // Required for esbuild.jsxDev to provide correct line numbers
         // This crates issues the react compiler because the re-order is too important
         // People should use @babel/plugin-transform-react-jsx-development to get back good line numbers
-        retainLines: hasCompiler(plugins)
-          ? false
-          : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
+        retainLines:
+          getReactCompilerPlugin(plugins) != null
+            ? false
+            : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
         parserOpts: {
           ...babelOptions.parserOpts,
           sourceType: 'module',
@@ -274,8 +275,11 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   const dependencies = ['react', jsxImportDevRuntime, jsxImportRuntime]
   const staticBabelPlugins =
     typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
-  if (hasCompilerWithDefaultRuntime(staticBabelPlugins)) {
-    dependencies.push('react/compiler-runtime')
+  const reactCompilerPlugin = getReactCompilerPlugin(staticBabelPlugins)
+  if (reactCompilerPlugin != null) {
+    const reactCompilerRuntimeModule =
+      getReactCompilerRuntimeModule(reactCompilerPlugin)
+    dependencies.push(reactCompilerRuntimeModule)
   }
 
   const viteReactRefresh: Plugin = {
@@ -377,21 +381,37 @@ function defined<T>(value: T | undefined): value is T {
   return value !== undefined
 }
 
-function hasCompiler(plugins: ReactBabelOptions['plugins']) {
-  return plugins.some(
-    (p) =>
+type ReactCompilerBabelPluginItem =
+  | string
+  | [babelCore.PluginTarget, babelCore.PluginOptions]
+  | [babelCore.PluginTarget, babelCore.PluginOptions, string | undefined]
+function getReactCompilerPlugin(
+  plugins: ReactBabelOptions['plugins'],
+): ReactCompilerBabelPluginItem | null {
+  for (const p of plugins) {
+    if (
       p === 'babel-plugin-react-compiler' ||
-      (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler'),
-  )
+      (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler')
+    ) {
+      return p
+    }
+  }
+  return null
 }
 
-// https://gist.github.com/poteto/37c076bf112a07ba39d0e5f0645fec43
-function hasCompilerWithDefaultRuntime(plugins: ReactBabelOptions['plugins']) {
-  return plugins.some(
-    (p) =>
-      p === 'babel-plugin-react-compiler' ||
-      (Array.isArray(p) &&
-        p[0] === 'babel-plugin-react-compiler' &&
-        p[1]?.runtimeModule === undefined),
-  )
+type ReactCompilerRuntimeModule =
+  | 'react/compiler-runtime' // from react namespace
+  | 'react-compiler-runtime' // npm package
+function getReactCompilerRuntimeModule(
+  plugin: ReactCompilerBabelPluginItem,
+): ReactCompilerRuntimeModule {
+  let moduleName: ReactCompilerRuntimeModule = 'react/compiler-runtime'
+  if (Array.isArray(plugin)) {
+    if (plugin[1]?.target === '17' || plugin[1]?.target === '18') {
+      moduleName = 'react-compiler-runtime'
+    } else if (typeof plugin[1]?.runtimeModule === 'string') {
+      moduleName = plugin[1]?.runtimeModule
+    }
+  }
+  return moduleName
 }

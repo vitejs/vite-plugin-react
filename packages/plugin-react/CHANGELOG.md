@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### React Compiler runtimeModule option removed
+
+React Compiler was updated to accept a `target` option and `runtimeModule` was removed. vite-plugin-react will still detect `runtimeModule` for backwards compatibility.
+
+When using a custom `runtimeModule` or `target !== '19'`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
+
 ## 4.3.2 (2024-09-29)
 
 Ignore directive sourcemap error [#369](https://github.com/vitejs/vite-plugin-react/issues/369)
