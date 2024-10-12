@@ -381,29 +381,19 @@ function defined<T>(value: T | undefined): value is T {
   return value !== undefined
 }
 
-type ReactCompilerBabelPluginItem =
-  | string
-  | [babelCore.PluginTarget, babelCore.PluginOptions]
-  | [babelCore.PluginTarget, babelCore.PluginOptions, string | undefined]
-function getReactCompilerPlugin(
-  plugins: ReactBabelOptions['plugins'],
-): ReactCompilerBabelPluginItem | null {
-  for (const p of plugins) {
-    if (
+function getReactCompilerPlugin(plugins: ReactBabelOptions['plugins']) {
+  return plugins.find(
+    (p) =>
       p === 'babel-plugin-react-compiler' ||
-      (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler')
-    ) {
-      return p
-    }
-  }
-  return null
+      (Array.isArray(p) && p[0] === 'babel-plugin-react-compiler'),
+  )
 }
 
 type ReactCompilerRuntimeModule =
   | 'react/compiler-runtime' // from react namespace
   | 'react-compiler-runtime' // npm package
 function getReactCompilerRuntimeModule(
-  plugin: ReactCompilerBabelPluginItem,
+  plugin: babelCore.PluginItem,
 ): ReactCompilerRuntimeModule {
   let moduleName: ReactCompilerRuntimeModule = 'react/compiler-runtime'
   if (Array.isArray(plugin)) {
