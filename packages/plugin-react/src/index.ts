@@ -269,10 +269,12 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
-  // We can't add `react-dom` because the dependency is `react-dom/client`
-  // for React 18 while it's `react-dom` for React 17. We'd need to detect
-  // what React version the user has installed.
-  const dependencies = ['react', jsxImportDevRuntime, jsxImportRuntime]
+  const dependencies = [
+    'react',
+    'react-dom',
+    jsxImportDevRuntime,
+    jsxImportRuntime,
+  ]
   const staticBabelPlugins =
     typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
   const reactCompilerPlugin = getReactCompilerPlugin(staticBabelPlugins)
