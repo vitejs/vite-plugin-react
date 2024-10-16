@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import type { UserConfig } from 'vite'
+import type { UserConfig } from 'rolldown-vite'
 
 const config: UserConfig = {
   server: { port: 8906 /* Should be unique */ },

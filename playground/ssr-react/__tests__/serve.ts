@@ -10,7 +10,7 @@ export const port = ports['ssr-react']
 export async function serve(): Promise<{ close(): Promise<void> }> {
   if (isBuild) {
     // build first
-    const { build } = await import('vite')
+    const { build } = await import('rolldown-vite')
     // client build
     await build({
       root: rootDir,

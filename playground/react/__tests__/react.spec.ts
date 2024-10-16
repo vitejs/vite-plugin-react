@@ -116,7 +116,8 @@ if (!isBuild) {
     )
   })
 
-  test('should hmr files with "react/jsx-runtime"', async () => {
+  // ref https://github.com/oxc-project/oxc/issues/6620
+  test.skip('should hmr files with "react/jsx-runtime"', async () => {
     expect(await page.textContent('#state-button')).toMatch('count is: 0')
     await page.click('#state-button')
     expect(await page.textContent('#state-button')).toMatch('count is: 1')

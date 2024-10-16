@@ -12,6 +12,11 @@ export default defineConfig({
   test: {
     pool: 'forks',
     include: ['./playground/**/*.spec.[tj]s'],
+    exclude: [
+      './playground/react-emotion/**/*.spec.[tj]s', // the remotion need to transformer
+      './playground/mdx/**/*.spec.[tj]s', // need to find a way to let rolldown-vite internal oxc transformer tread mdx as jsx
+      './playground/ssr-react/**/*.spec.[tj]s', // need to find a way to disable the refresh transformer at ssr
+    ],
     setupFiles: ['./playground/vitestSetup.ts'],
     globalSetup: ['./playground/vitestGlobalSetup.ts'],
     testTimeout: timeout,

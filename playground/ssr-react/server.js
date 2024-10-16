@@ -28,7 +28,7 @@ export async function createServer(
   let vite
   if (!isProd) {
     vite = await (
-      await import('vite')
+      await import('rolldown-vite')
     ).createServer({
       root,
       logLevel: isTest ? 'error' : 'info',

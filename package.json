@@ -53,7 +53,7 @@
     "simple-git-hooks": "^2.11.1",
     "tsx": "^4.19.1",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8",
+    "rolldown-vite": "https://pkg.pr.new/rolldown/vite@43",
     "vitest": "^2.1.1"
   },
   "simple-git-hooks": {

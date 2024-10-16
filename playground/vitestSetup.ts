@@ -11,14 +11,14 @@ import type {
   Rollup,
   UserConfig,
   ViteDevServer,
-} from 'vite'
+} from 'rolldown-vite'
 import {
   build,
   createServer,
   loadConfigFromFile,
   mergeConfig,
   preview,
-} from 'vite'
+} from 'rolldown-vite'
 import type { Browser, Page } from 'playwright-chromium'
 import type { File } from 'vitest'
 import { beforeAll } from 'vitest'

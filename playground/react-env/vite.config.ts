@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import type { UserConfig } from 'vite'
+import type { UserConfig } from 'rolldown-vite'
 
 // Overriding the NODE_ENV set by vitest
 process.env.NODE_ENV = ''
