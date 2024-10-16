@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+### React Compiler runtimeModule option removed
+
+React Compiler was updated to accept a `target` option and `runtimeModule` was removed. vite-plugin-react will still detect `runtimeModule` for backwards compatibility.
+
+When using a custom `runtimeModule` or `target !== '19'`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
+
+The [react-compiler-runtime](https://www.npmjs.com/package/react-compiler-runtime) is now available on npm can be used instead of the local shim for people using the compiler with React < 19.
+
+Here is the configuration to use the compiler with React 18 and correct source maps in development:
+
+```bash
+npm install react-compiler-runtime
+```
+
+```ts
+export default defineConfig(({ command }) => {
+  const babelPlugins = [['babel-plugin-react-compiler', { target: '18' }]]
+  if (command === 'serve') {
+    babelPlugins.push(['@babel/plugin-transform-react-jsx-development', {}])
+  }
+
+  return {
+    plugins: [react({ babel: { plugins: babelPlugins } })],
+  }
+})
+````
+
 ## 4.3.2 (2024-09-29)
 
 Ignore directive sourcemap error [#369](https://github.com/vitejs/vite-plugin-react/issues/369)
