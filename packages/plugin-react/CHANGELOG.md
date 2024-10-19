@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.3 (2024-10-19)
+
 ### React Compiler runtimeModule option removed
 
 React Compiler was updated to accept a `target` option and `runtimeModule` was removed. vite-plugin-react will still detect `runtimeModule` for backwards compatibility.
@@ -13,7 +15,7 @@ The [react-compiler-runtime](https://www.npmjs.com/package/react-compiler-runtim
 Here is the configuration to use the compiler with React 18 and correct source maps in development:
 
 ```bash
-npm install react-compiler-runtime
+npm install babel-plugin-react-compiler react-compiler-runtime @babel/plugin-transform-react-jsx-development
 ```
 
 ```ts
