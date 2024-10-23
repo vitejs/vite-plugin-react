@@ -38,9 +38,9 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "dependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-transform-react-jsx-self": "^7.24.7",
-    "@babel/plugin-transform-react-jsx-source": "^7.24.7",
+    "@babel/core": "^7.25.9",
+    "@babel/plugin-transform-react-jsx-self": "^7.25.9",
+    "@babel/plugin-transform-react-jsx-source": "^7.25.9",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.14.2"
   },

@@ -9,16 +9,16 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-compiler-runtime": "0.0.0-experimental-8d8e73f-20241009",
+    "react-compiler-runtime": "0.0.0-experimental-fa06e2c-20241016",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx-development": "^7.24.7",
-    "@types/react": "^18.3.10",
-    "@types/react-dom": "^18.3.0",
+    "@babel/plugin-transform-react-jsx-development": "^7.25.9",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "workspace:*",
-    "babel-plugin-react-compiler": "0.0.0-experimental-58c2b1c-20241009",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.8"
+    "babel-plugin-react-compiler": "0.0.0-experimental-fe484b5-20240912",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
   }
 }
