@@ -5,6 +5,7 @@ import Parent from './hmr/parent'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
+import { TestImportAttributes } from './import-attributes/test'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -40,6 +41,7 @@ function App() {
       <Parent />
       <JsxImportRuntime />
       <Button>button</Button>
+      <TestImportAttributes />
     </div>
   )
 }

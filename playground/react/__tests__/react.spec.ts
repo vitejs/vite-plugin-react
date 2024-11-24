@@ -69,6 +69,10 @@ test.runIf(isServe)(
   },
 )
 
+test('import attributes', async () => {
+  expect(await page.textContent('.import-attributes')).toBe('ok')
+})
+
 if (!isBuild) {
   // #9869
   test('should only hmr files with exported react components', async () => {
