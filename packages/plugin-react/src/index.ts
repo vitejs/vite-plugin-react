@@ -249,6 +249,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         },
         generatorOpts: {
           ...babelOptions.generatorOpts,
+          importAttributesKeyword: 'with',
           decoratorsBeforeExport: true,
         },
         plugins,
