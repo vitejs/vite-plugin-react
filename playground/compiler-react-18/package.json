@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-compiler-runtime": "0.0.0-experimental-fcabbc1-20241106",
+    "react-compiler-runtime": "0.0.0-experimental-dc8bd44-20241121",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
