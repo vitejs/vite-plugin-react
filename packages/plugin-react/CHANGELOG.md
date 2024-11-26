@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Add Vite 6 to peerDependencies range
+
+Vite 6 is highly backward compatible, not much to add!
+
+### Force Babel to output spec compliant import attributes [#386](https://github.com/vitejs/vite-plugin-react/pull/386)
+
+The default was an old spec (`with type: "json"`). We now enforce spec compliant (`with { type: "json" }`)
+
 ## 4.3.3 (2024-10-19)
 
 ### React Compiler runtimeModule option removed

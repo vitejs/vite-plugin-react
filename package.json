@@ -53,7 +53,7 @@
     "simple-git-hooks": "^2.11.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11",
+    "vite": "^6.0.0",
     "vitest": "^2.1.5"
   },
   "simple-git-hooks": {
