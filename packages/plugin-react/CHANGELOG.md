@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.4 (2024-11-26)
+
 ### Add Vite 6 to peerDependencies range
 
 Vite 6 is highly backward compatible, not much to add!
