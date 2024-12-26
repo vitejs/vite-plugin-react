@@ -13,9 +13,6 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "workspace:*",
-    "compression": "^1.7.5",
-    "express": "^4.21.1",
-    "serve-static": "^1.16.2"
+    "@vitejs/plugin-react": "workspace:*"
   }
 }

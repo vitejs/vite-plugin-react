@@ -11,9 +11,8 @@ import {
 } from '~utils'
 
 test('/env', async () => {
-  await untilBrowserLogAfter(() => page.goto(url + `/env`), 'hydrated')
+  await untilBrowserLogAfter(() => page.goto(url + '/env'), 'hydrated')
 
-  await page.pause()
   expect(await page.textContent('h1')).toMatch('default message here')
 
   // raw http request
