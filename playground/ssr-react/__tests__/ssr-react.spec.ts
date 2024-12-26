@@ -1,6 +1,5 @@
 import fetch from 'node-fetch'
 import { expect, test } from 'vitest'
-import { port } from './serve'
 import {
   browserLogs,
   editFile,
@@ -8,13 +7,13 @@ import {
   page,
   untilBrowserLogAfter,
   untilUpdated,
+  viteTestUrl as url,
 } from '~utils'
 
-const url = `http://localhost:${port}`
-
 test('/env', async () => {
-  await untilBrowserLogAfter(() => page.goto(url + '/env'), 'hydrated')
+  await untilBrowserLogAfter(() => page.goto(url + `/env`), 'hydrated')
 
+  await page.pause()
   expect(await page.textContent('h1')).toMatch('default message here')
 
   // raw http request

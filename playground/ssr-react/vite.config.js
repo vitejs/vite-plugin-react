@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
 
+process.env.MY_CUSTOM_SECRET = 'API_KEY_qwertyuiop'
+
 export default defineConfig({
   appType: 'custom',
   build: {
@@ -72,4 +74,6 @@ export default defineConfig({
       },
     },
   ],
+  // tell vitestSetup.ts to use buildApp API
+  builder: {},
 })
