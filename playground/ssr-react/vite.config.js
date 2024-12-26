@@ -38,11 +38,10 @@ export default defineConfig({
                 '/src/entry-server.jsx',
               )
               const appHtml = render(url)
-              let template = fs.readFileSync(
-                path.resolve('index.html'),
-                'utf-8',
+              const template = await server.transformIndexHtml(
+                url,
+                fs.readFileSync(path.resolve('index.html'), 'utf-8'),
               )
-              template = await server.transformIndexHtml(url, template)
               const html = template.replace(`<!--app-html-->`, appHtml)
               res.setHeader('content-type', 'text/html').end(html)
             } catch (e) {
@@ -51,18 +50,18 @@ export default defineConfig({
           })
         }
       },
-      configurePreviewServer(server) {
+      async configurePreviewServer(server) {
         const template = fs.readFileSync(
           path.resolve('dist/client/index.html'),
           'utf-8',
+        )
+        const { render } = await import(
+          new URL('./dist/server/entry-server.js', import.meta.url).href
         )
         return () => {
           server.middlewares.use(async (req, res, next) => {
             const url = req.originalUrl ?? '/'
             try {
-              const { render } = await import(
-                new URL('./dist/server/entry-server.js', import.meta.url).href
-              )
               const appHtml = render(url)
               const html = template.replace(`<!--app-html-->`, appHtml)
               res.setHeader('content-type', 'text/html').end(html)
