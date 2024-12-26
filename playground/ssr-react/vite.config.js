@@ -61,7 +61,7 @@ export default defineConfig({
             const url = req.originalUrl ?? '/'
             try {
               const { render } = await import(
-                path.resolve('dist/server/entry-server.js')
+                new URL('./dist/server/entry-server.js', import.meta.url).href
               )
               const appHtml = render(url)
               const html = template.replace(`<!--app-html-->`, appHtml)
