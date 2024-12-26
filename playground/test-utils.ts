@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { ConsoleMessage, ElementHandle } from 'playwright-chromium'
 import { expect } from 'vitest'
-import { isBuild, page, testDir } from './vitestSetup'
+import { page, testDir } from './vitestSetup'
 
 export * from './vitestSetup'
 
@@ -90,9 +90,7 @@ export function removeFile(filename: string): void {
 export async function untilUpdated(
   poll: () => string | Promise<string>,
   expected: string,
-  runInBuild = false,
 ): Promise<void> {
-  if (isBuild && !runInBuild) return
   const maxTries = process.env.CI ? 100 : 50
   for (let tries = 0; tries < maxTries; tries++) {
     const actual = (await poll()) ?? ''
