@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { editFile, getColor, page, untilUpdated } from '~utils'
+import { editFile, getColor, isServe, page, untilUpdated } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('h1')).toMatch(
@@ -13,7 +13,7 @@ test('should update', async () => {
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
 
-test('should hmr', async () => {
+test.runIf(isServe)('should hmr', async () => {
   editFile('App.jsx', (code) =>
     code.replace('Vite + React + @emotion/react', 'Updated'),
   )
