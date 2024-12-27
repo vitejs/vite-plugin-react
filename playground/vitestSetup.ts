@@ -14,6 +14,7 @@ import type {
 } from 'vite'
 import {
   build,
+  createBuilder,
   createServer,
   loadConfigFromFile,
   mergeConfig,
@@ -253,6 +254,7 @@ export async function startDefaultServe(): Promise<void> {
     viteTestUrl = `http://localhost:${server.config.server.port}${
       devBase === '/' ? '' : devBase
     }`
+    setViteUrl(viteTestUrl)
     await page.goto(viteTestUrl)
   } else {
     process.env.VITE_INLINE = 'inline-build'
@@ -267,12 +269,17 @@ export async function startDefaultServe(): Promise<void> {
     const testConfig = mergeConfig(options, config || {})
     viteConfig = testConfig
     process.chdir(rootDir)
-    const rollupOutput = await build(testConfig)
-    const isWatch = !!resolvedConfig!.build.watch
-    // in build watch,call startStaticServer after the build is complete
-    if (isWatch) {
-      watcher = rollupOutput as Rollup.RollupWatcher
-      await notifyRebuildComplete(watcher)
+    if (testConfig.builder) {
+      const builder = await createBuilder(testConfig)
+      await builder.buildApp()
+    } else {
+      const rollupOutput = await build(testConfig)
+      const isWatch = !!resolvedConfig!.build.watch
+      // in build watch,call startStaticServer after the build is complete
+      if (isWatch) {
+        watcher = rollupOutput as Rollup.RollupWatcher
+        await notifyRebuildComplete(watcher)
+      }
     }
     // @ts-ignore
     if (config && config.__test__) {
@@ -284,6 +291,8 @@ export async function startDefaultServe(): Promise<void> {
     // prevent preview change NODE_ENV
     process.env.NODE_ENV = _nodeEnv
     viteTestUrl = previewServer.resolvedUrls.local[0]
+    viteTestUrl = viteTestUrl.replace(/\/+$/, '')
+    setViteUrl(viteTestUrl)
     await page.goto(viteTestUrl)
   }
 }
