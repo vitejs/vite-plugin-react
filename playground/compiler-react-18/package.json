@@ -8,14 +8,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
+    "react": "^19.0.0",
     "react-compiler-runtime": "0.0.0-experimental-dc8bd44-20241121",
-    "react-dom": "^18.3.1"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx-development": "^7.25.9",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "0.0.0-experimental-dc8bd44-20241121",
     "typescript": "^5.7.2"
