@@ -11,7 +11,7 @@ test('should update', async () => {
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
 
-test('should hmr', async () => {
+test.runIf(isServe)('should hmr', async () => {
   editFile('App.jsx', (code) => code.replace('Vite + React', 'Updated'))
   await untilUpdated(() => page.textContent('h1'), 'Hello Updated')
   // preserve state

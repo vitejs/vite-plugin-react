@@ -68,8 +68,11 @@ test('client navigation', async () => {
   await untilUpdated(() => page.textContent('a[href="/about"]'), 'About')
   await page.click('a[href="/about"]')
   await untilUpdated(() => page.textContent('h1'), 'About')
-  editFile('src/pages/About.jsx', (code) =>
-    code.replace('<h1>About', '<h1>changed'),
-  )
-  await untilUpdated(() => page.textContent('h1'), 'changed')
+
+  if (!isBuild) {
+    editFile('src/pages/About.jsx', (code) =>
+      code.replace('<h1>About', '<h1>changed'),
+    )
+    await untilUpdated(() => page.textContent('h1'), 'changed')
+  }
 })
