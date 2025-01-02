@@ -14,8 +14,8 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx-development": "^7.25.9",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "0.0.0-experimental-dc8bd44-20241121",
     "typescript": "^5.7.2"
