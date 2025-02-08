@@ -235,7 +235,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         filename: id,
         sourceFileName: filepath,
         // Required for esbuild.jsxDev to provide correct line numbers
-        // This crates issues the react compiler because the re-order is too important
+        // This creates issues the react compiler because the re-order is too important
         // People should use @babel/plugin-transform-react-jsx-development to get back good line numbers
         retainLines:
           getReactCompilerPlugin(plugins) != null

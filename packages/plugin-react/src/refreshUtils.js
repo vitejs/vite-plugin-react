@@ -17,7 +17,7 @@ const enqueueUpdate = debounce(async () => {
 }, 16)
 
 // Taken from https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/main/lib/runtime/RefreshUtils.js#L141
-// This allows to resister components not detected by SWC like styled component
+// This allows to register components not detected by SWC like styled component
 function registerExportsForReactRefresh(filename, moduleExports) {
   for (const key in moduleExports) {
     if (key === '__esModule') continue
