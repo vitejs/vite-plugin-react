@@ -5,7 +5,7 @@
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
-  "packageManager": "pnpm@9.14.2",
+  "packageManager": "pnpm@10.6.5",
   "homepage": "https://github.com/vitejs/vite-plugin-react/",
   "keywords": [
     "frontend",
