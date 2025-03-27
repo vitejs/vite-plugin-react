@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
+import { type Options } from './index'
 
 export const runtimePublicPath = '/@react-refresh'
 
@@ -28,8 +29,9 @@ window.$RefreshSig$ = () => (type) => type
 window.__vite_plugin_react_preamble_installed__ = true
 `
 
-const sharedHeader = `
-import RefreshRuntime from "${runtimePublicPath}";
+const sharedHeader = (reactRefreshHost: Options['reactRefreshHost']) =>
+  `
+import RefreshRuntime from "${reactRefreshHost ?? ''}${runtimePublicPath}";
 
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 `.replace(/\n+/g, '')
@@ -74,9 +76,13 @@ if (import.meta.hot && !inWebWorker) {
   });
 }`
 
-export function addRefreshWrapper(code: string, id: string): string {
+export function addRefreshWrapper(
+  code: string,
+  id: string,
+  opts: Options,
+): string {
   return (
-    sharedHeader +
+    sharedHeader(opts.reactRefreshHost) +
     functionHeader.replace('__SOURCE__', JSON.stringify(id)) +
     code +
     functionFooter +
@@ -87,6 +93,7 @@ export function addRefreshWrapper(code: string, id: string): string {
 export function addClassComponentRefreshWrapper(
   code: string,
   id: string,
+  opts: Options,
 ): string {
-  return sharedHeader + code + sharedFooter(id)
+  return sharedHeader(opts.reactRefreshHost) + code + sharedFooter(id)
 }

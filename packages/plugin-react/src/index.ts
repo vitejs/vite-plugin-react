@@ -47,6 +47,14 @@ export interface Options {
   babel?:
     | BabelOptions
     | ((id: string, options: { ssr?: boolean }) => BabelOptions)
+  /**
+   * React refresh runtime url prefix.
+   * Useful in module federation context to enable HMR by
+   * setting the host url on a vite config which is serving a remote app.
+   * @example
+   * reactRefreshHost: 'http://localhost:3000'
+   */
+  reactRefreshHost?: string
 }
 
 export type BabelOptions = Omit<
@@ -261,9 +269,9 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         let code = result.code!
         if (useFastRefresh) {
           if (refreshContentRE.test(code)) {
-            code = addRefreshWrapper(code, id)
+            code = addRefreshWrapper(code, id, opts)
           } else if (reactCompRE.test(code)) {
-            code = addClassComponentRefreshWrapper(code, id)
+            code = addClassComponentRefreshWrapper(code, id, opts)
           }
         }
         return { code, map: result.map }
