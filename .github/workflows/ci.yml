@@ -9,6 +9,8 @@ env:
   # Vitest auto retry on flaky segfault
   VITEST_SEGFAULT_RETRY: 3
 
+permissions: {}
+
 on:
   push:
     branches:

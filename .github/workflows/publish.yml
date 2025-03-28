@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # for ArnaudBarre/github-release to create a release
     environment: Release
     steps:
       - name: Checkout
