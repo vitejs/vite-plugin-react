@@ -1,0 +1,6 @@
+.idea/
+node_modules/
+dist/
+playground-temp/
+test-results/
+.swc/

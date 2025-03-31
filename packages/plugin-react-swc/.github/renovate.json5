@@ -1,0 +1,21 @@
+{
+  extends: ["config:base", "schedule:weekly", "group:allNonMajor"],
+  labels: ["dependencies"],
+  rangeStrategy: "bump",
+  packageRules: [
+    { depTypeList: ["peerDependencies"], enabled: false },
+    {
+      "matchFileNames": ["**/react-18/**"],
+      "ignoreDeps": ["react", "react-dom", "@types/react", "@types/react-dom"]
+    },
+    {
+      "matchDepTypes": ["action"],
+      "excludePackagePrefixes": ["actions/", "github/"],
+      "pinDigests": true,
+    },
+  ],
+  ignoreDeps: [
+    "generouted", // testing lib shipping JSX (new version ship transpiled JS)
+    "prettier", // waiting for stable choice on ternaries
+  ],
+}
