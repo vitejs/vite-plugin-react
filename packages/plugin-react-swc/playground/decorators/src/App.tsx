@@ -1,4 +1,5 @@
-import { ComponentClass, Component } from 'react'
+import type { ComponentClass } from 'react'
+import { Component } from 'react'
 
 function decorated(target: ComponentClass) {
   const original = target.prototype.render

@@ -50,7 +50,7 @@ module.exports = defineConfig({
     'n/no-extraneous-import': [
       'error',
       {
-        allowModules: ['vite', 'less', 'sass', 'vitest'],
+        allowModules: ['vite', 'less', 'sass', 'vitest', '@playwright/test'],
       },
     ],
     'n/no-extraneous-require': [
@@ -127,7 +127,7 @@ module.exports = defineConfig({
       },
     },
     {
-      files: ['playground/**'],
+      files: ['playground/**', 'packages/plugin-react-swc/playground/**'],
       rules: {
         'n/no-extraneous-import': 'off',
         'n/no-extraneous-require': 'off',
@@ -150,7 +150,7 @@ module.exports = defineConfig({
       },
     },
     {
-      files: ['playground/**'],
+      files: ['playground/**', 'packages/plugin-react-swc/playground/**'],
       excludedFiles: '**/__tests__/**',
       rules: {
         'no-undef': 'off',

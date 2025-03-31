@@ -1,3 +1,6 @@
+/* global window */
+/* eslint-disable eqeqeq, prefer-const, @typescript-eslint/no-empty-function */
+
 /*! Copyright (c) Meta Platforms, Inc. and affiliates. **/
 /**
  * This is simplified pure-js version of https://github.com/facebook/react/blob/main/packages/react-refresh/src/ReactFreshRuntime.js
@@ -511,7 +514,7 @@ function isLikelyComponentType(type) {
           // This looks like a class.
           return false
         }
-        // eslint-disable-next-line no-proto
+
         if (type.prototype.__proto__ !== Object.prototype) {
           // It has a superclass.
           return false

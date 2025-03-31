@@ -1,6 +1,6 @@
-import { rmSync, writeFileSync, copyFileSync } from 'node:fs'
+import { copyFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
-import { build, type BuildOptions, context } from 'esbuild'
+import { type BuildOptions, build, context } from 'esbuild'
 
 import packageJSON from '../package.json'
 

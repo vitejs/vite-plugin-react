@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { setupDevServer, setupBuildAndPreview } from '../../utils.ts'
+import { setupBuildAndPreview, setupDevServer } from '../../utils.ts'
 
 test('Decorators build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('decorators')

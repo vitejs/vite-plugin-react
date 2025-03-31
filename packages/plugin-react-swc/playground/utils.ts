@@ -1,12 +1,12 @@
-import { expect, type Locator, type Page } from '@playwright/test'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { type Locator, type Page, expect } from '@playwright/test'
 import {
+  build,
   createServer,
   loadConfigFromFile,
   mergeConfig,
   preview,
-  build,
 } from 'vite'
-import { readFileSync, writeFileSync } from 'fs'
 
 export const setupWaitForLogs = async (page: Page) => {
   let logs: string[] = []
@@ -56,7 +56,7 @@ export const setupDevServer = async (name: string) => {
     ) => {
       const path = `${root}/${name}`
       let content = readFileSync(path, 'utf-8')
-      for (let [search, replace] of replacements) {
+      for (const [search, replace] of replacements) {
         if (!content.includes(search)) {
           throw new Error(`'${search}' not found in ${name}`)
         }

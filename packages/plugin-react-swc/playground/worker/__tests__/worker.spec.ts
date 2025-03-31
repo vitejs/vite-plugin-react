@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
 import {
-  setupDevServer,
   setupBuildAndPreview,
+  setupDevServer,
   setupWaitForLogs,
 } from '../../utils.ts'
 

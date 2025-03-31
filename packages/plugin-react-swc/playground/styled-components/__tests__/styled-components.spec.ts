@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 import {
-  setupDevServer,
-  setupBuildAndPreview,
-  setupWaitForLogs,
   expectColor,
+  setupBuildAndPreview,
+  setupDevServer,
+  setupWaitForLogs,
 } from '../../utils.ts'
 
 test('styled-components build', async ({ page }) => {

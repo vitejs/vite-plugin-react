@@ -1,17 +1,17 @@
-import { readFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
-import type { SourceMapPayload } from 'module'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import type { SourceMapPayload } from 'node:module'
+import { createRequire } from 'node:module'
 import {
+  type JscTarget,
   type Output,
   type ParserConfig,
   type ReactConfig,
-  type JscTarget,
-  transform,
   type Options as SWCOptions,
+  transform,
 } from '@swc/core'
-import type { PluginOption, UserConfig, BuildOptions } from 'vite'
-import { createRequire } from 'module'
+import type { BuildOptions, PluginOption, UserConfig } from 'vite'
 
 const runtimePublicPath = '/@react-refresh'
 
@@ -20,6 +20,7 @@ injectIntoGlobalHook(window);
 window.$RefreshReg$ = () => {};
 window.$RefreshSig$ = () => (type) => type;`
 
+/* eslint-disable no-restricted-globals */
 const _dirname =
   typeof __dirname !== 'undefined'
     ? __dirname
@@ -27,6 +28,8 @@ const _dirname =
 const resolve = createRequire(
   typeof __filename !== 'undefined' ? __filename : import.meta.url,
 ).resolve
+/* eslint-enable no-restricted-globals */
+
 const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
 const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 
@@ -265,7 +268,7 @@ const transformWithOptions = async (
     const message: string = e.message
     const fileStartIndex = message.indexOf('╭─[')
     if (fileStartIndex !== -1) {
-      const match = message.slice(fileStartIndex).match(/:(\d+):(\d+)]/)
+      const match = message.slice(fileStartIndex).match(/:(\d+):(\d+)\]/)
       if (match) {
         e.line = match[1]
         e.column = match[2]
