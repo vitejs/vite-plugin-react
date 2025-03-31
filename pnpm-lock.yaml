@@ -108,9 +108,6 @@ importers:
         specifier: ^1.11.11
         version: 1.11.13
     devDependencies:
-      '@arnaud-barre/tnode':
-        specifier: ^0.24.0
-        version: 0.24.0
       '@playwright/test':
         specifier: ^1.51.1
         version: 1.51.1
@@ -625,10 +622,6 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
-
-  '@arnaud-barre/tnode@0.24.0':
-    resolution: {integrity: sha512-kPojVbbrEJrBGmjGH0yT8PAd++2Mbf/t3b45aTgtOHMlhuukMcCxLotZdu8R85XHp6q4YXYfx6HMij7VRi6oNA==}
-    hasBin: true
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -4406,10 +4399,6 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
-
-  '@arnaud-barre/tnode@0.24.0':
-    dependencies:
-      esbuild: 0.24.2
 
   '@babel/code-frame@7.24.7':
     dependencies:

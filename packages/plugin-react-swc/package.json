@@ -4,10 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tnode scripts/bundle.ts --dev",
-    "build": "tnode scripts/bundle.ts",
+    "dev": "tsx scripts/bundle.ts --dev",
+    "build": "tsx scripts/bundle.ts",
     "test": "playwright test",
-    "release": "pnpm build && tnode scripts/release.ts"
+    "release": "pnpm build && tsx scripts/release.ts"
   },
   "packageManager": "pnpm@10.6.4",
   "dependencies": {
@@ -17,7 +17,6 @@
     "vite": "^4 || ^5 || ^6"
   },
   "devDependencies": {
-    "@arnaud-barre/tnode": "^0.24.0",
     "@playwright/test": "^1.51.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "22.13.10",
