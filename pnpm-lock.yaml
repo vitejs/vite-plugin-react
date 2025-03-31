@@ -59,8 +59,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       playwright-chromium:
-        specifier: ^1.49.0
-        version: 1.49.0
+        specifier: ^1.51.1
+        version: 1.51.1
       prettier:
         specifier: ^3.0.3
         version: 3.1.0
@@ -3476,13 +3476,8 @@ packages:
   pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
 
-  playwright-chromium@1.49.0:
-    resolution: {integrity: sha512-xU+nOHawNFKfJsHTTGyWqSJ5nRGGHQq1wTsc49H9rM+hDNnoKZi+3m12mGoLpqvJP7vRjZQ3uvU9/UJZbrJ1AA==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  playwright-core@1.49.0:
-    resolution: {integrity: sha512-R+3KKTQF3npy5GTiKH/T+kdhoJfJojjHESR1YEWhYuEKRVfVaxH3+4+GvXE5xyCngCxhxnykk0Vlah9v8fs3jA==}
+  playwright-chromium@1.51.1:
+    resolution: {integrity: sha512-IQpN8lgv/fx++WRxT8ITZylDwYAamd3Fv5H9g2AWsicp0N829L1oXHziK/6l9h/TMxioSTqc4ifPiZLS8nITxw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -7514,11 +7509,9 @@ snapshots:
       mlly: 1.4.2
       pathe: 1.1.2
 
-  playwright-chromium@1.49.0:
+  playwright-chromium@1.51.1:
     dependencies:
-      playwright-core: 1.49.0
-
-  playwright-core@1.49.0: {}
+      playwright-core: 1.51.1
 
   playwright-core@1.51.1: {}
 
