@@ -6,6 +6,16 @@ body:
     attributes:
       value: |
         Thanks for your interest in the project and taking the time to fill out this feature report!
+  - type: checkboxes
+    id: plugins
+    attributes:
+      label: Related plugins
+      description: Select the plugin which is related
+      options:
+        - label: |
+            [plugin-react](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react)
+        - label: |
+            [plugin-react-swc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc)
   - type: textarea
     id: feature-description
     attributes:

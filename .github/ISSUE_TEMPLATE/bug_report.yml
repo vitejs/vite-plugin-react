@@ -6,6 +6,16 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: plugins
+    attributes:
+      label: Related plugins
+      description: Select the plugin which is related
+      options:
+        - label: |
+            [plugin-react](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react)
+        - label: |
+            [plugin-react-swc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc)
   - type: textarea
     id: bug-description
     attributes:
