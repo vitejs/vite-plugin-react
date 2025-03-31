@@ -1,10 +1,10 @@
-import { useState } from "react";
-import reactLogo from "./react.svg";
-import "./App.css";
-import { TitleWithExport, framework } from "./TitleWithExport.tsx";
+import { useState } from 'react'
+import reactLogo from './react.svg'
+import './App.css'
+import { TitleWithExport, framework } from './TitleWithExport.tsx'
 
 export const App = () => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(0)
 
   return (
     <div>
@@ -27,5 +27,5 @@ export const App = () => {
         Click on the Vite and {framework} logos to learn more
       </p>
     </div>
-  );
-};
+  )
+}

@@ -1,5 +1,5 @@
-import "./App.css";
-import { Button, StyledCode } from "./Button.tsx";
+import './App.css'
+import { Button, StyledCode } from './Button.tsx'
 
 export const App = () => (
   <div>
@@ -25,4 +25,4 @@ export const App = () => (
       Click on the Vite and Emotion logos to learn more
     </p>
   </div>
-);
+)

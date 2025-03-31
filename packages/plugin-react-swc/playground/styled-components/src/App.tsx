@@ -1,5 +1,5 @@
-import "./App.css";
-import { Counter, StyledCode } from "./Button.tsx";
+import './App.css'
+import { Counter, StyledCode } from './Button.tsx'
 
 export const App = () => (
   <div>
@@ -25,4 +25,4 @@ export const App = () => (
       Click on the Vite and Styled Components logos to learn more
     </p>
   </div>
-);
+)

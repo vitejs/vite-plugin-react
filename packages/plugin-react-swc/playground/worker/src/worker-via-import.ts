@@ -1,7 +1,7 @@
 function printAlive(): void {
-  console.log("Worker imported!");
+  console.log('Worker imported!')
 }
 
-printAlive();
+printAlive()
 
-export {};
+export {}

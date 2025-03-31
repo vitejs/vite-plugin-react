@@ -1,1 +1,1 @@
-export const getGetting = () => <span>Hello</span>;
+export const getGetting = () => <span>Hello</span>
