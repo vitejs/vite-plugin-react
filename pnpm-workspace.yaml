@@ -1,3 +1,4 @@
 packages:
   - 'packages/*'
   - 'playground/**'
+  - 'packages/plugin-react-swc/playground/**'

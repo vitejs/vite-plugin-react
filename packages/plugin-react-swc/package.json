@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-react-swc-monorepo",
+  "name": "@vitejs/plugin-react-swc",
   "version": "3.8.1",
   "type": "module",
   "private": true,
@@ -7,9 +7,6 @@
     "dev": "tnode scripts/bundle.ts --dev",
     "build": "tnode scripts/bundle.ts",
     "test": "playwright test",
-    "prettier": "pnpm prettier-ci --write",
-    "prettier-ci": "prettier --cache --ignore-path=.gitignore --check \"**/*.{js,jsx,ts,tsx,html,css,json,md,yml}\"",
-    "qa": "tsc && pnpm prettier-ci && pnpm build && pnpm test",
     "release": "pnpm build && tnode scripts/release.ts"
   },
   "packageManager": "pnpm@10.6.4",

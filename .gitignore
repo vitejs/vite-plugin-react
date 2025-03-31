@@ -10,6 +10,9 @@ dist-ssr
 explorations
 node_modules
 playground-temp
+packages/plugin-react-swc/playground-temp
 temp
 TODOs.md
 .eslintcache
+test-results/
+.swc/
