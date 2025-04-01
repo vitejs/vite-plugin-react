@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4.0.0
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
 
       - name: Set node version to 20
         uses: actions/setup-node@v4
@@ -51,6 +51,6 @@ jobs:
 
       - # only run if tag is not alpha
         if: steps.tag.outputs.pkgName
-        uses: ArnaudBarre/github-release@v1
+        uses: ArnaudBarre/github-release@e8d55cf5b215f7cf998ad2387044b9e7d5dd8112 # v1
         with:
           path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
