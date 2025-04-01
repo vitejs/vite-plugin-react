@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-duplicates
 import type * as babelCore from '@babel/core'
-// eslint-disable-next-line import/no-duplicates
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
 import type {
