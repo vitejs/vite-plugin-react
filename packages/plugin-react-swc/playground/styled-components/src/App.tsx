@@ -4,7 +4,7 @@ import { Counter, StyledCode } from './Button.tsx'
 export const App = () => (
   <div>
     <div>
-      <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+      <a href="https://vite.dev" target="_blank" rel="noreferrer">
         <img src="/vite.svg" className="logo" alt="Vite logo" />
       </a>
       <a href="https://styled-components.com" target="_blank" rel="noreferrer">

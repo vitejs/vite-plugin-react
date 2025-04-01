@@ -29,7 +29,7 @@ This plugin has limited options to enable good performances and be transpiler ag
 - [useDefineForClassFields](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier) is always activated, as this matches the current ECMAScript spec
 - `jsx runtime` is always `automatic`
 - In development:
-  - esbuild is disabled, so the [esbuild configuration](https://vitejs.dev/config/shared-options.html#esbuild) has no effect
+  - esbuild is disabled, so the [esbuild configuration](https://vite.dev/config/shared-options.html#esbuild) has no effect
   - `target` is ignored and defaults to `es2020` (see [`devTarget`](#devtarget))
   - JS files are not transformed
   - tsconfig is not resolved, so properties other than the ones listed above behaves like TS defaults
@@ -68,7 +68,7 @@ react({ plugins: [['@swc/plugin-styled-components', {}]] })
 
 Set the target for SWC in dev. This can avoid to down-transpile private class method for example.
 
-For production target, see https://vitejs.dev/config/build-options.html#build-target.
+For production target, see https://vite.dev/config/build-options.html#build-target.
 
 `@default` "es2020"
 

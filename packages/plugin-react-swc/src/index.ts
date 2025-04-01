@@ -51,7 +51,7 @@ type Options = {
   plugins?: [string, Record<string, any>][]
   /**
    * Set the target for SWC in dev. This can avoid to down-transpile private class method for example.
-   * For production target, see https://vitejs.dev/config/build-options.html#build-target
+   * For production target, see https://vite.dev/config/build-options.html#build-target
    * @default "es2020"
    */
   devTarget?: JscTarget
