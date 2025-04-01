@@ -67,7 +67,10 @@ module.exports.default = react;`,
       {
         ...Object.fromEntries(
           Object.entries(packageJSON).filter(
-            ([key, _val]) => key !== 'devDependencies' && key !== 'scripts',
+            ([key, _val]) =>
+              key !== 'devDependencies' &&
+              key !== 'scripts' &&
+              key !== 'private',
           ),
         ),
         main: 'index.cjs',

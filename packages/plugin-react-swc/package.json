@@ -13,6 +13,7 @@
     "fast refresh"
   ],
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "tsx scripts/bundle.ts --dev",
     "build": "tsx scripts/bundle.ts",
