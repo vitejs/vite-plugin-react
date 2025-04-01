@@ -1,7 +1,7 @@
 import React from 'react'
 
 // Auto generates routes from files under ./pages
-// https://vitejs.dev/guide/features.html#glob-import
+// https://vite.dev/guide/features.html#glob-import
 const pages = import.meta.glob('./pages/*.jsx', { eager: true })
 
 const routes = Object.keys(pages).map((path) => {

@@ -70,7 +70,7 @@ Reminder: While being partially supported in Vite, publishing TS & JSX outside o
 
 Using CJS in source code will not work in Vite (and will never be supported), so this is better to only use `.ts`.
 
-But to better align with [Vite core defaults](https://vitejs.dev/config/shared-options.html#resolve-extensions), `.mts` extension will now be processed like `.ts`. This maybe reverted in a future major.
+But to better align with [Vite core defaults](https://vite.dev/config/shared-options.html#resolve-extensions), `.mts` extension will now be processed like `.ts`. This maybe reverted in a future major.
 
 ## 3.4.0
 
@@ -153,7 +153,7 @@ Some breaking changes have been made to make the plugin closer to the Babel one 
 - Automatically enable automatic JSX runtime. "classic" runtime is not supported
 - Skip transformation for `.js` files
 - Enforce [useDefineForClassFields](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)
-- Don't pass `esbuild.define` config option to SWC. You can use the [top level define option](https://vitejs.dev/config/shared-options.html#define) instead
+- Don't pass `esbuild.define` config option to SWC. You can use the [top level define option](https://vite.dev/config/shared-options.html#define) instead
 - Use default export
 
 To migrate, change your config to:

@@ -4,7 +4,7 @@ import { Button, StyledCode } from './Button.jsx'
 export const App = () => (
   <div>
     <div>
-      <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
+      <a href="https://vite.dev" target="_blank" rel="noreferrer">
         <img src="/vite.svg" className="logo" alt="Vite logo" />
       </a>
       <a href="https://emotion.sh/" target="_blank" rel="noreferrer">

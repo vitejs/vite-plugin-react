@@ -467,7 +467,7 @@ See the [readme](https://github.com/aleclarson/vite/blob/f8129ce6e87684eb7a4edd8
 
 - Support for [automatic JSX runtime](https://github.com/alloc/vite-react-jsx)
 - Babel integration for both development and production builds
-- Add `react` and `react-dom` to [`resolve.dedupe`](https://vitejs.dev/config/#resolve-dedupe) automatically
+- Add `react` and `react-dom` to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
 
 Thanks to @aleclarson and @pengx17 for preparing this release!
 
