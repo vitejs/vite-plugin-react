@@ -57,7 +57,7 @@ function listenNavigation(onNavigation) {
    * @param {MouseEvent} e
    */
   function onClick(e) {
-    let link = e.target.closest('a')
+    const link = e.target.closest('a')
     if (
       link &&
       link instanceof HTMLAnchorElement &&

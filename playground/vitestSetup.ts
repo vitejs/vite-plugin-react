@@ -281,9 +281,7 @@ export async function startDefaultServe(): Promise<void> {
         await notifyRebuildComplete(watcher)
       }
     }
-    // @ts-ignore
     if (config && config.__test__) {
-      // @ts-ignore
       config.__test__()
     }
     const _nodeEnv = process.env.NODE_ENV
@@ -358,4 +356,15 @@ function setupConsoleWarnCollector(logs: string[]) {
 
 export function slash(p: string): string {
   return p.replace(/\\/g, '/')
+}
+
+declare module 'vite' {
+  export interface UserConfig {
+    /**
+     * special test only hook
+     *
+     * runs after build and before preview
+     */
+    __test__?: () => void
+  }
 }
