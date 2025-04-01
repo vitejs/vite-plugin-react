@@ -30,11 +30,6 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
-      - name: Publish package
-        run: pnpm run ci-publish ${{ github.ref_name }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Get pkgName for tag
         id: tag
         run: |
@@ -48,6 +43,15 @@ jobs:
           pkgName=${GITHUB_REF_NAME%@*}
 
           echo "pkgName=$pkgName" >> $GITHUB_OUTPUT
+
+      - if: steps.tag.outputs.pkgName == 'plugin-react-swc'
+        working-directory: packages/plugin-react-swc
+        run: pnpm build
+
+      - name: Publish package
+        run: pnpm run ci-publish ${{ github.ref_name }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - # only run if tag is not alpha
         if: steps.tag.outputs.pkgName
