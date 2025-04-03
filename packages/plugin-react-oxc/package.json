@@ -11,6 +11,7 @@
     "dist"
   ],
   "type": "module",
+  "types": "./dist/index.d.mts",
   "exports": "./dist/index.mjs",
   "scripts": {
     "dev": "unbuild --stub",

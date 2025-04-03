@@ -7,6 +7,7 @@ export default defineConfig(({ command }) => {
     server: { port: 8901 /* Should be unique */ },
     plugins: [
       react({
+        // @ts-expect-error babel plugins are not supported
         babel: {
           plugins: [['babel-plugin-react-compiler', { target: '18' }]],
         },

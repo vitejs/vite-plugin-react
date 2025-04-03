@@ -10,6 +10,7 @@ export default defineConfig(({ command }) => {
 
   return {
     server: { port: 8900 /* Should be unique */ },
+    // @ts-expect-error babel plugins are not supported
     plugins: [react({ babel: { plugins: babelPlugins } })],
   }
 })

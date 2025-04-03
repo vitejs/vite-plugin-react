@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [
     react({
       jsxImportSource: '@emotion/react',
+      // @ts-expect-error babel plugins are not supported
       babel: {
         plugins: ['@emotion/babel-plugin'],
       },
