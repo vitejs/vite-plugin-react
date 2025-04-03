@@ -1,0 +1,41 @@
+{
+  "name": "@vitejs/plugin-react-oxc",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Evan You",
+  "contributors": [
+    "Alec Larson",
+    "Arnaud Barré"
+  ],
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": "./dist/index.mjs",
+  "scripts": {
+    "dev": "unbuild --stub",
+    "build": "unbuild && tsx scripts/copyRefreshUtils.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-react-oxc"
+  },
+  "bugs": {
+    "url": "https://github.com/vitejs/vite-plugin-react/issues"
+  },
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
+  "dependencies": {
+    "react-refresh": "^0.14.2"
+  },
+  "peerDependencies": {
+    "vite": "^6.3.0"
+  },
+  "devDependencies": {
+    "unbuild": "^3.5.0"
+  }
+}
