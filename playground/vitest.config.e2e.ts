@@ -17,10 +17,6 @@ export default defineConfig({
     testTimeout: timeout,
     hookTimeout: timeout,
     reporters: 'dot',
-    onConsoleLog(log) {
-      if (log.match(/experimental|jit engine|emitted file|tailwind/i))
-        return false
-    },
   },
   esbuild: {
     target: 'node14',
