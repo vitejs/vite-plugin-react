@@ -1,8 +1,9 @@
 import type * as http from 'node:http'
-import { dirname, resolve } from 'node:path'
+import path, { dirname, resolve } from 'node:path'
 import fs from 'fs-extra'
 import { chromium } from 'playwright-chromium'
 import type {
+  ConfigEnv,
   InlineConfig,
   Logger,
   PluginOption,
@@ -20,7 +21,7 @@ import {
   preview,
 } from 'vite'
 import type { Browser, Page } from 'playwright-chromium'
-import type { File } from 'vitest'
+import type { RunnerTestFile } from 'vitest'
 import { beforeAll, inject } from 'vitest'
 
 // #region env
@@ -74,16 +75,6 @@ export let browser: Browser = undefined!
 export let viteTestUrl: string = ''
 export let watcher: Rollup.RollupWatcher | undefined = undefined
 
-declare module 'vite' {
-  interface InlineConfig {
-    testConfig?: {
-      // relative base output use relative path
-      // rewrite the url to truth file path
-      baseRoute: string
-    }
-  }
-}
-
 export function setViteUrl(url: string): void {
   viteTestUrl = url
 }
@@ -91,7 +82,15 @@ export function setViteUrl(url: string): void {
 // #endregion
 
 beforeAll(async (s) => {
-  const suite = s as File
+  const suite = s as RunnerTestFile
+
+  testPath = suite.filepath!
+  testName = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
+  testDir = dirname(testPath)
+  if (testName) {
+    testDir = path.resolve(workspaceRoot, 'playground-temp', testName)
+  }
+
   // skip browser setup for non-playground tests
   if (!suite.filepath.includes('playground')) {
     return
@@ -130,18 +129,21 @@ beforeAll(async (s) => {
       browserErrors.push(error)
     })
 
-    testPath = suite.filepath!
-    testName = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
-    testDir = dirname(testPath)
-
     // if this is a test placed under playground/xxx/__tests__
     // start a vite server in that directory.
     if (testName) {
-      testDir = resolve(workspaceRoot, 'playground-temp', testName)
-
       // when `root` dir is present, use it as vite's root
       const testCustomRoot = resolve(testDir, 'root')
       rootDir = fs.existsSync(testCustomRoot) ? testCustomRoot : testDir
+
+      // separate rootDir for variant
+      const variantName = path.basename(path.dirname(testPath))
+      if (variantName !== '__tests__') {
+        const variantTestDir = testDir + '__' + variantName
+        if (fs.existsSync(variantTestDir)) {
+          rootDir = testDir = variantTestDir
+        }
+      }
 
       const testCustomServe = [
         resolve(dirname(testPath), 'serve.ts'),
@@ -159,7 +161,6 @@ beforeAll(async (s) => {
         if (serve) {
           server = await serve()
           viteServer = mod.viteServer
-          return
         }
       } else {
         await startDefaultServe()
@@ -186,27 +187,26 @@ beforeAll(async (s) => {
   }
 })
 
-function loadConfigFromDir(dir: string) {
-  return loadConfigFromFile(
-    {
-      command: isBuild ? 'build' : 'serve',
-      mode: isBuild ? 'production' : 'development',
-    },
-    undefined,
-    dir,
-  )
-}
-
-export async function startDefaultServe(): Promise<void> {
+async function loadConfig(configEnv: ConfigEnv) {
   let config: UserConfig | null = null
-  // config file near the *.spec.ts
-  const res = await loadConfigFromDir(dirname(testPath))
-  if (res) {
-    config = res.config
+
+  // config file named by convention as the *.spec.ts folder
+  const variantName = path.basename(path.dirname(testPath))
+  if (variantName !== '__tests__') {
+    const configVariantPath = path.resolve(
+      rootDir,
+      `vite.config-${variantName}.js`,
+    )
+    if (fs.existsSync(configVariantPath)) {
+      const res = await loadConfigFromFile(configEnv, configVariantPath)
+      if (res) {
+        config = res.config
+      }
+    }
   }
   // config file from test root dir
   if (!config) {
-    const res = await loadConfigFromDir(rootDir)
+    const res = await loadConfigFromFile(configEnv, undefined, rootDir)
     if (res) {
       config = res.config
     }
@@ -223,7 +223,6 @@ export async function startDefaultServe(): Promise<void> {
         usePolling: true,
         interval: 100,
       },
-      host: true,
       fs: {
         strict: !isBuild,
       },
@@ -237,21 +236,20 @@ export async function startDefaultServe(): Promise<void> {
     },
     customLogger: createInMemoryLogger(serverLogs),
   }
+  return mergeConfig(options, config || {})
+}
 
+export async function startDefaultServe(): Promise<void> {
   setupConsoleWarnCollector(serverLogs)
 
   if (!isBuild) {
     process.env.VITE_INLINE = 'inline-serve'
-    const testConfig = mergeConfig(options, config || {})
-    viteConfig = testConfig
-    process.chdir(rootDir)
-    viteServer = server = await (await createServer(testConfig)).listen()
-    // use resolved port/base from server
-    const devBase = server.config.base
-    viteTestUrl = `http://localhost:${server.config.server.port}${
-      devBase === '/' ? '' : devBase
-    }`
-    setViteUrl(viteTestUrl)
+    const config = await loadConfig({ command: 'serve', mode: 'development' })
+    viteServer = server = await (await createServer(config)).listen()
+    viteTestUrl = stripTrailingSlashIfNeeded(
+      server.resolvedUrls.local[0],
+      server.config.base,
+    )
     await page.goto(viteTestUrl)
   } else {
     process.env.VITE_INLINE = 'inline-build'
@@ -262,32 +260,41 @@ export async function startDefaultServe(): Promise<void> {
         resolvedConfig = config
       },
     })
-    options.plugins = [resolvedPlugin()]
-    const testConfig = mergeConfig(options, config || {})
-    viteConfig = testConfig
-    process.chdir(rootDir)
-    if (testConfig.builder) {
-      const builder = await createBuilder(testConfig)
+    const buildConfig = mergeConfig(
+      await loadConfig({ command: 'build', mode: 'production' }),
+      {
+        plugins: [resolvedPlugin()],
+      },
+    )
+    if (buildConfig.builder) {
+      const builder = await createBuilder(buildConfig)
       await builder.buildApp()
     } else {
-      const rollupOutput = await build(testConfig)
+      const rollupOutput = await build(buildConfig)
       const isWatch = !!resolvedConfig!.build.watch
       // in build watch,call startStaticServer after the build is complete
       if (isWatch) {
         watcher = rollupOutput as Rollup.RollupWatcher
         await notifyRebuildComplete(watcher)
       }
+      if (buildConfig.__test__) {
+        buildConfig.__test__()
+      }
     }
-    if (config && config.__test__) {
-      config.__test__()
-    }
+
+    const previewConfig = await loadConfig({
+      command: 'serve',
+      mode: 'development',
+      isPreview: true,
+    })
     const _nodeEnv = process.env.NODE_ENV
-    const previewServer = await preview(testConfig)
+    const previewServer = await preview(previewConfig)
     // prevent preview change NODE_ENV
     process.env.NODE_ENV = _nodeEnv
-    viteTestUrl = previewServer.resolvedUrls.local[0]
-    viteTestUrl = viteTestUrl.replace(/\/+$/, '')
-    setViteUrl(viteTestUrl)
+    viteTestUrl = stripTrailingSlashIfNeeded(
+      previewServer.resolvedUrls.local[0],
+      previewServer.config.base,
+    )
     await page.goto(viteTestUrl)
   }
 }
@@ -346,13 +353,20 @@ function createInMemoryLogger(logs: string[]): Logger {
 function setupConsoleWarnCollector(logs: string[]) {
   const warn = console.warn
   console.warn = (...args) => {
-    serverLogs.push(args.join(' '))
+    logs.push(args.join(' '))
     return warn.call(console, ...args)
   }
 }
 
 export function slash(p: string): string {
   return p.replace(/\\/g, '/')
+}
+
+function stripTrailingSlashIfNeeded(url: string, base: string): string {
+  if (base === '/') {
+    return url.replace(/\/$/, '')
+  }
+  return url
 }
 
 declare module 'vite' {
