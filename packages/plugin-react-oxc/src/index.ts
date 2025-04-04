@@ -62,6 +62,14 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         },
       }
     },
+    options() {
+      if (!this.meta.rolldownVersion) {
+        throw new Error(
+          '@vitejs/plugin-react-oxc requires rolldown-vite to be used. ' +
+            'See https://vitejs.dev/guide/rolldown for more details about rolldown-vite.',
+        )
+      }
+    },
   }
 
   const viteRefreshRuntime: Plugin = {
