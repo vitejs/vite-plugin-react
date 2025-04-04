@@ -78,10 +78,6 @@
           "react-router-dom": "*"
         }
       }
-    },
-    "overrides": {
-      "vite": "npm:rolldown-vite@6.3.0-beta.5",
-      "@vitejs/plugin-react": "workspace:@vitejs/plugin-react-oxc@*"
     }
   }
 }

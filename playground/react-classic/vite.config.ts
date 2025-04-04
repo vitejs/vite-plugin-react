@@ -5,7 +5,6 @@ const config: UserConfig = {
   server: { port: 8903 /* Should be unique */ },
   plugins: [
     react({
-      // @ts-expect-error classic jsx runtime is not supported
       jsxRuntime: 'classic',
     }),
   ],
