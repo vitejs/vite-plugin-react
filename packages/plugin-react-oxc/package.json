@@ -37,6 +37,7 @@
     "vite": "^6.3.0"
   },
   "devDependencies": {
-    "unbuild": "^3.5.0"
+    "unbuild": "^3.5.0",
+    "vite": "npm:rolldown-vite@6.3.0-beta.5"
   }
 }
