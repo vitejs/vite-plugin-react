@@ -41,44 +41,52 @@ export async function setup({ provide }: TestProject): Promise<void> {
       }
     })
 
-  // also setup dedicated copy for plugin-react-oxc tests
-  const oxcIgnoredDirs = new Set([
-    'compiler',
-    'compiler-react-18',
-    'react-classic',
-    'react-emotion',
-    'node_modules',
-  ])
-  const oxcPlaygrounds = (
+  const playgrounds = (
     await fs.readdir(path.resolve(__dirname, '../playground'), {
       withFileTypes: true,
     })
-  ).filter((dirent) => !oxcIgnoredDirs.has(dirent.name) && dirent.isDirectory())
-  for (const { name: playgroundName } of oxcPlaygrounds) {
+  ).filter((dirent) => dirent.name !== 'node_modules' && dirent.isDirectory())
+  for (const { name: playgroundName } of playgrounds) {
+    // write vite proxy file to load vite from each playground
+    await fs.writeFile(
+      path.resolve(tempDir, `${playgroundName}/_vite-proxy.js`),
+      "export * from 'vite';",
+    )
+
+    // also setup dedicated copy for plugin-react-oxc tests
+    const oxcTestDir = path.resolve(
+      __dirname,
+      '../playground',
+      playgroundName,
+      '__tests__/oxc',
+    )
+    if (!(await fs.exists(oxcTestDir))) continue
+
+    const variantPlaygroundName = `${playgroundName}__oxc`
     await fs.copy(
       path.resolve(tempDir, playgroundName),
-      path.resolve(tempDir, `${playgroundName}-oxc`),
+      path.resolve(tempDir, variantPlaygroundName),
     )
     await fs.remove(
       path.resolve(
         tempDir,
-        `${playgroundName}-oxc/node_modules/@vitejs/plugin-react`,
+        `${variantPlaygroundName}/node_modules/@vitejs/plugin-react`,
       ),
     )
     await fs.symlink(
       path.resolve(__dirname, '../packages/plugin-react-oxc'),
       path.resolve(
         tempDir,
-        `${playgroundName}-oxc/node_modules/@vitejs/plugin-react`,
+        `${variantPlaygroundName}/node_modules/@vitejs/plugin-react`,
       ),
     )
     await fs.symlink(
       path.resolve(__dirname, '../packages/plugin-react-oxc/node_modules/vite'),
-      path.resolve(tempDir, `${playgroundName}-oxc/node_modules/vite`),
+      path.resolve(tempDir, `${variantPlaygroundName}/node_modules/vite`),
     )
     await fs.copy(
       path.resolve(__dirname, '../packages/plugin-react-oxc/node_modules/.bin'),
-      path.resolve(tempDir, `${playgroundName}-oxc/node_modules/.bin`),
+      path.resolve(tempDir, `${variantPlaygroundName}/node_modules/.bin`),
     )
   }
 }
