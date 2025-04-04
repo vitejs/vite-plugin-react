@@ -4,6 +4,12 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  rolldown-vite:
+    vite:
+      specifier: npm:rolldown-vite@^6.3.0-beta.5
+      version: 6.3.0-beta.5
+
 packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
 
 importers:
@@ -103,7 +109,7 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0(typescript@5.8.2)
       vite:
-        specifier: npm:rolldown-vite@6.3.0-beta.5
+        specifier: catalog:rolldown-vite
         version: rolldown-vite@6.3.0-beta.5(@types/node@22.13.15)(esbuild@0.25.2)(jiti@2.4.2)(tsx@4.19.2)(typescript@5.8.2)(yaml@2.5.1)
 
   packages/plugin-react-swc:
