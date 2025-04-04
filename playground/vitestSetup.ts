@@ -68,8 +68,6 @@ export const serverLogs: string[] = []
 export const browserLogs: string[] = []
 export const browserErrors: Error[] = []
 
-export let resolvedConfig: ResolvedConfig = undefined!
-
 export let page: Page = undefined!
 export let browser: Browser = undefined!
 export let viteTestUrl: string = ''
@@ -103,15 +101,6 @@ beforeAll(async (s) => {
 
   browser = await chromium.connect(wsEndpoint)
   page = await browser.newPage()
-
-  const globalConsole = global.console
-  const warn = globalConsole.warn
-  globalConsole.warn = (msg, ...args) => {
-    // suppress @vue/reactivity-transform warning
-    if (msg.includes('@vue/reactivity-transform')) return
-    if (msg.includes('Generated an empty chunk')) return
-    warn.call(globalConsole, msg, ...args)
-  }
 
   try {
     page.on('console', (msg) => {
@@ -223,9 +212,6 @@ async function loadConfig(configEnv: ConfigEnv) {
         usePolling: true,
         interval: 100,
       },
-      fs: {
-        strict: !isBuild,
-      },
     },
     build: {
       // esbuild do not minify ES lib output since that would remove pure annotations and break tree-shaking
@@ -253,6 +239,7 @@ export async function startDefaultServe(): Promise<void> {
     await page.goto(viteTestUrl)
   } else {
     process.env.VITE_INLINE = 'inline-build'
+    let resolvedConfig: ResolvedConfig
     // determine build watch
     const resolvedPlugin: () => PluginOption = () => ({
       name: 'vite-plugin-watcher',
