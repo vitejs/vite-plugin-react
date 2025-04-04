@@ -13,7 +13,7 @@ export default defineConfig({
 ## Caveats
 
 - `jsx runtime` is always `automatic`
-- this plugin only works with `rolldown-vite`
+- this plugin only works with [`rolldown-vite`](https://vitejs.dev/guide/rolldown)
 
 ## Options
 
