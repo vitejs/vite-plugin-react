@@ -65,13 +65,14 @@ module.exports.default = react;`,
     'dist/package.json',
     JSON.stringify(
       {
-        name: '@vitejs/plugin-react-swc',
-        description: 'Speed up your Vite dev server with SWC',
-        version: packageJSON.version,
-        author: 'Arnaud Barré (https://github.com/ArnaudBarre)',
-        license: 'MIT',
-        repository: 'github:vitejs/vite-plugin-react-swc',
-        type: 'module',
+        ...Object.fromEntries(
+          Object.entries(packageJSON).filter(
+            ([key, _val]) =>
+              key !== 'devDependencies' &&
+              key !== 'scripts' &&
+              key !== 'private',
+          ),
+        ),
         main: 'index.cjs',
         types: 'index.d.ts',
         module: 'index.mjs',
@@ -82,16 +83,6 @@ module.exports.default = react;`,
             import: './index.mjs',
           },
         },
-        keywords: [
-          'vite',
-          'vite-plugin',
-          'react',
-          'swc',
-          'react-refresh',
-          'fast refresh',
-        ],
-        peerDependencies: packageJSON.peerDependencies,
-        dependencies: packageJSON.dependencies,
       },
       null,
       2,

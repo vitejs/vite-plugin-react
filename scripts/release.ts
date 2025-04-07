@@ -5,6 +5,12 @@ import colors from 'picocolors'
 release({
   repo: 'vite-plugin-react',
   packages: ['plugin-react', 'plugin-react-swc'],
+  getPkgDir(pkg) {
+    if (pkg === 'plugin-react-swc') {
+      return `packages/${pkg}/dist`
+    }
+    return `packages/${pkg}`
+  },
   toTag: (pkg, version) => `${pkg}@${version}`,
   logChangelog: async (pkgName) => {
     const changelog = readFileSync(`packages/${pkgName}/CHANGELOG.md`, 'utf-8')
