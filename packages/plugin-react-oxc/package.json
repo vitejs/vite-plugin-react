@@ -24,7 +24,7 @@
   "exports": "./dist/index.mjs",
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild && tsx scripts/copyRefreshUtils.ts",
+    "build": "unbuild && tsx scripts/copyRefreshRuntime.ts",
     "prepublishOnly": "npm run build"
   },
   "engines": {
@@ -46,6 +46,7 @@
     "vite": "^6.3.0"
   },
   "devDependencies": {
+    "@vitejs/react-common": "workspace:*",
     "unbuild": "^3.5.0",
     "vite": "catalog:rolldown-vite"
   }

@@ -114,6 +114,9 @@ importers:
         specifier: ^0.14.2
         version: 0.14.2
     devDependencies:
+      '@vitejs/react-common':
+        specifier: workspace:*
+        version: link:../common
       unbuild:
         specifier: ^3.5.0
         version: 3.5.0(typescript@5.8.2)

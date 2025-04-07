@@ -1,11 +1,15 @@
-import type { BuildOptions, Plugin, PluginOption, UserConfig } from 'vite'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import type { BuildOptions, Plugin, PluginOption } from 'vite'
 import {
-  addClassComponentRefreshWrapper,
   addRefreshWrapper,
-  preambleCode,
-  runtimeCode,
+  getPreambleCode,
   runtimePublicPath,
-} from './fast-refresh'
+  silenceUseClientWarning,
+} from '@vitejs/react-common'
+
+const _dirname = dirname(fileURLToPath(import.meta.url))
 
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
@@ -17,8 +21,6 @@ export interface Options {
   jsxImportSource?: string
 }
 
-const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 const defaultIncludeRE = /\.[tj]sx?(?:$|\?)/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
@@ -40,7 +42,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     name: 'vite:react-oxc:config',
     config(userConfig, { command }) {
       return {
-        build: silenceUseClientWarning(userConfig),
+        // @ts-expect-error rolldown-vite Vite type incompatibility
+        build: silenceUseClientWarning(userConfig) as BuildOptions,
         oxc: {
           jsx: {
             runtime: 'automatic',
@@ -84,19 +87,23 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     load: {
       filter: { id: exactRegex(runtimePublicPath) },
       handler(_id) {
-        return runtimeCode
+        return readFileSync(
+          join(_dirname, 'refresh-runtime.js'),
+          'utf-8',
+        ).replace(
+          /__README_URL__/g,
+          'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-oxc',
+        )
       },
     },
   }
 
-  let devBase: string
   let skipFastRefresh = false
 
   const viteRefreshWrapper: Plugin = {
     name: 'vite:react-oxc:refresh-wrapper',
     apply: 'serve',
     configResolved(config) {
-      devBase = config.base
       skipFastRefresh = config.isProduction || config.server.hmr === false
     },
     transform: {
@@ -114,24 +121,23 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           (isJSX ||
             code.includes(jsxImportDevRuntime) ||
             code.includes(jsxImportRuntime))
+        if (!useFastRefresh) return
 
-        if (useFastRefresh) {
-          if (refreshContentRE.test(code)) {
-            code = addRefreshWrapper(code, id)
-          } else if (reactCompRE.test(code)) {
-            code = addClassComponentRefreshWrapper(code, id)
-          }
-          return { code }
-        }
+        return addRefreshWrapper(
+          code,
+          undefined,
+          '@vitejs/plugin-react-oxc',
+          id,
+        )
       },
     },
-    transformIndexHtml() {
+    transformIndexHtml(_, config) {
       if (!skipFastRefresh)
         return [
           {
             tag: 'script',
             attrs: { type: 'module' },
-            children: preambleCode.replace(`__BASE__`, devBase),
+            children: getPreambleCode(config.server!.config.base),
           },
         ]
     },
@@ -139,32 +145,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 
   return [viteConfig, viteRefreshRuntime, viteRefreshWrapper]
 }
-
-const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
-  rollupOptions: {
-    onwarn(warning, defaultHandler) {
-      if (
-        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
-      ) {
-        return
-      }
-      // https://github.com/vitejs/vite/issues/15012
-      if (
-        warning.code === 'SOURCEMAP_ERROR' &&
-        warning.message.includes('resolve original location') &&
-        warning.pos === 0
-      ) {
-        return
-      }
-      if (userConfig.build?.rollupOptions?.onwarn) {
-        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
-      } else {
-        defaultHandler(warning)
-      }
-    },
-  },
-})
 
 function exactRegex(input: string): RegExp {
   return new RegExp(`^${escapeRegex(input)}$`)
