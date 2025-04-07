@@ -1,3 +1,6 @@
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
@@ -12,9 +15,10 @@ import {
   addClassComponentRefreshWrapper,
   addRefreshWrapper,
   preambleCode,
-  runtimeCode,
   runtimePublicPath,
 } from './fast-refresh'
+
+const _dirname = dirname(fileURLToPath(import.meta.url))
 
 // lazy load babel since it's not used during build if plugins are not used
 let babel: typeof babelCore | undefined
@@ -303,7 +307,13 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
     load(id) {
       if (id === runtimePublicPath) {
-        return runtimeCode
+        return readFileSync(
+          join(_dirname, 'refresh-runtime.js'),
+          'utf-8',
+        ).replace(
+          /__README_URL__/g,
+          'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react',
+        )
       }
     },
     transformIndexHtml() {

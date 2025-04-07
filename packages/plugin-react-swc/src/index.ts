@@ -94,7 +94,10 @@ const react = (_options?: Options): PluginOption[] => {
       resolveId: (id) => (id === runtimePublicPath ? id : undefined),
       load: (id) =>
         id === runtimePublicPath
-          ? readFileSync(join(_dirname, 'refresh-runtime.js'), 'utf-8')
+          ? readFileSync(join(_dirname, 'refresh-runtime.js'), 'utf-8').replace(
+              /__README_URL__/g,
+              'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc',
+            )
           : undefined,
     },
     {
