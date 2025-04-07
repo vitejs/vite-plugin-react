@@ -14,20 +14,30 @@ window.$RefreshSig$ = () => (type) => type;`
 export const getPreambleCode = (base: string): string =>
   preambleCode.replace('__BASE__', base)
 
-export function addRefreshWrapper<M extends { mappings: string } | undefined>(
+export const avoidSourceMapOption = Symbol()
+
+export function addRefreshWrapper<M extends { mappings: string }>(
   code: string,
-  map: M | string,
+  map: M | string | undefined | typeof avoidSourceMapOption,
   pluginName: string,
   id: string,
-): { code: string; map: M | string } {
+): { code: string; map: M | undefined | string } {
   const hasRefresh = refreshContentRE.test(code)
   const onlyReactComp = !hasRefresh && reactCompRE.test(code)
-  if (!hasRefresh && !onlyReactComp) return { code, map }
+  const newMap =
+    map === avoidSourceMapOption
+      ? undefined
+      : typeof map === 'string'
+        ? (JSON.parse(map) as M)
+        : map
+  if (!hasRefresh && !onlyReactComp) return { code, map: newMap }
 
-  const newMap = typeof map === 'string' ? (JSON.parse(map) as M) : map
+  const avoidSourceMap = map === avoidSourceMapOption
+
   let newCode = code
   if (hasRefresh) {
-    newCode = `let prevRefreshReg;
+    const refreshHead = removeLineBreaksIfNeeded(
+      `let prevRefreshReg;
 let prevRefreshSig;
 
 if (import.meta.hot && !inWebWorker) {
@@ -43,7 +53,11 @@ if (import.meta.hot && !inWebWorker) {
   window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
 }
 
-${newCode}
+`,
+      avoidSourceMap,
+    )
+
+    newCode = `${refreshHead}${newCode}
 
 if (import.meta.hot && !inWebWorker) {
   window.$RefreshReg$ = prevRefreshReg;
@@ -55,10 +69,15 @@ if (import.meta.hot && !inWebWorker) {
     }
   }
 
-  newCode = `import * as RefreshRuntime from "${runtimePublicPath}";
+  const sharedHead = removeLineBreaksIfNeeded(
+    `import * as RefreshRuntime from "${runtimePublicPath}";
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 
-${newCode}
+`,
+    avoidSourceMap,
+  )
+
+  newCode = `${sharedHead}${newCode}
 
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
@@ -80,4 +99,8 @@ if (import.meta.hot && !inWebWorker) {
   }
 
   return { code: newCode, map: newMap }
+}
+
+function removeLineBreaksIfNeeded(code: string, enabled: boolean): string {
+  return enabled ? code.replace(/\n/g, '') : code
 }

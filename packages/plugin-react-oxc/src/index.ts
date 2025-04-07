@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import type { BuildOptions, Plugin, PluginOption } from 'vite'
 import {
   addRefreshWrapper,
+  avoidSourceMapOption,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
@@ -123,12 +124,13 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
             code.includes(jsxImportRuntime))
         if (!useFastRefresh) return
 
-        return addRefreshWrapper(
+        const { code: newCode } = addRefreshWrapper(
           code,
-          undefined,
+          avoidSourceMapOption,
           '@vitejs/plugin-react-oxc',
           id,
         )
+        return { code: newCode, map: null }
       },
     },
     transformIndexHtml(_, config) {
