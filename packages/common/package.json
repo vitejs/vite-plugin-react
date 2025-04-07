@@ -1,0 +1,16 @@
+{
+  "name": "@vitejs/react-common",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./refresh-runtime": "./refresh-runtime.js"
+  },
+  "peerDependencies": {
+    "vite": "^4.2.0 || ^5.0.0 || ^6.0.0"
+  },
+  "devDependencies": {
+    "vite": "^6.2.2"
+  }
+}

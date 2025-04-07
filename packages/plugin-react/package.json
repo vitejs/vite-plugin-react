@@ -30,7 +30,7 @@
   },
   "scripts": {
     "dev": "unbuild --stub",
-    "build": "unbuild && pnpm run patch-cjs && tsx scripts/copyRefreshUtils.ts",
+    "build": "unbuild && pnpm run patch-cjs && tsx scripts/copyRefreshRuntime.ts",
     "patch-cjs": "tsx ../../scripts/patchCJS.ts",
     "prepublishOnly": "npm run build"
   },
@@ -57,6 +57,7 @@
     "vite": "^4.2.0 || ^5.0.0 || ^6.0.0"
   },
   "devDependencies": {
+    "@vitejs/react-common": "workspace:*",
     "unbuild": "^3.5.0"
   }
 }
