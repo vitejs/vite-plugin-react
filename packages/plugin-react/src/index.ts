@@ -12,14 +12,11 @@ import type {
   UserConfig,
 } from 'vite'
 import {
+  addRefreshWrapper,
   getPreambleCode,
   preambleCode,
   runtimePublicPath,
 } from '@vitejs/react-common'
-import {
-  addClassComponentRefreshWrapper,
-  addRefreshWrapper,
-} from './fast-refresh'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -92,8 +89,6 @@ export type ViteReactPluginApi = {
   reactBabel?: ReactBabelHook
 }
 
-const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
@@ -260,15 +255,15 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       })
 
       if (result) {
-        let code = result.code!
-        if (useFastRefresh) {
-          if (refreshContentRE.test(code)) {
-            code = addRefreshWrapper(code, id)
-          } else if (reactCompRE.test(code)) {
-            code = addClassComponentRefreshWrapper(code, id)
-          }
+        if (!useFastRefresh) {
+          return { code: result.code!, map: result.map }
         }
-        return { code, map: result.map }
+        return addRefreshWrapper(
+          result.code!,
+          result.map ?? undefined,
+          '@vitejs/plugin-react',
+          id,
+        )
       }
     },
   }
