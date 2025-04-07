@@ -1,0 +1,9 @@
+{
+  "name": "@vitejs/react-common",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./refresh-runtime": "./refresh-runtime.js"
+  }
+}
