@@ -4,18 +4,13 @@ import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
-import type {
-  BuildOptions,
-  Plugin,
-  PluginOption,
-  ResolvedConfig,
-  UserConfig,
-} from 'vite'
+import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
   preambleCode,
   runtimePublicPath,
+  silenceUseClientWarning,
 } from '@vitejs/react-common'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
@@ -329,32 +324,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 /** @deprecated use getPreambleCode instead */
 viteReact.preambleCode = preambleCode
 viteReact.getPreambleCode = getPreambleCode
-
-const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
-  rollupOptions: {
-    onwarn(warning, defaultHandler) {
-      if (
-        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
-      ) {
-        return
-      }
-      // https://github.com/vitejs/vite/issues/15012
-      if (
-        warning.code === 'SOURCEMAP_ERROR' &&
-        warning.message.includes('resolve original location') &&
-        warning.pos === 0
-      ) {
-        return
-      }
-      if (userConfig.build?.rollupOptions?.onwarn) {
-        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
-      } else {
-        defaultHandler(warning)
-      }
-    },
-  },
-})
 
 const loadedPlugin = new Map<string, any>()
 function loadPlugin(path: string): any {

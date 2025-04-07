@@ -11,11 +11,12 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { BuildOptions, PluginOption, UserConfig } from 'vite'
+import type { PluginOption } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
   runtimePublicPath,
+  silenceUseClientWarning,
 } from '@vitejs/react-common'
 
 /* eslint-disable no-restricted-globals */
@@ -244,31 +245,5 @@ const transformWithOptions = async (
 
   return result
 }
-
-const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
-  rollupOptions: {
-    onwarn(warning, defaultHandler) {
-      if (
-        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
-      ) {
-        return
-      }
-      // https://github.com/vitejs/vite/issues/15012
-      if (
-        warning.code === 'SOURCEMAP_ERROR' &&
-        warning.message.includes('resolve original location') &&
-        warning.pos === 0
-      ) {
-        return
-      }
-      if (userConfig.build?.rollupOptions?.onwarn) {
-        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
-      } else {
-        defaultHandler(warning)
-      }
-    },
-  },
-})
 
 export default react
