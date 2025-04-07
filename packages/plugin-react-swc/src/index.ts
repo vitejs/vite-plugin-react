@@ -147,10 +147,9 @@ const react = (_options?: Options): PluginOption[] => {
         if (!result) return
         if (!refresh) return result
 
-        const sourceMap: SourceMapPayload = JSON.parse(result.map!)
-        return addRefreshWrapper(
+        return addRefreshWrapper<SourceMapPayload>(
           result.code,
-          sourceMap,
+          result.map!,
           '@vitejs/plugin-react-swc',
           id,
         )
