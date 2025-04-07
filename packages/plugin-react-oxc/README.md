@@ -40,7 +40,7 @@ export default defineConfig({
 })
 ```
 
-> `node_modules` are never processed by this plugin (but esbuild will)
+> `node_modules` are never processed by this plugin (but Oxc will)
 
 ### jsxImportSource
 
