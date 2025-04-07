@@ -7,6 +7,15 @@
     "Alec Larson",
     "Arnaud Barré"
   ],
+  "description": "The future default Vite plugin for React projects",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "react",
+    "oxc",
+    "react-refresh",
+    "fast refresh"
+  ],
   "files": [
     "dist"
   ],

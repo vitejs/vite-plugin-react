@@ -1,5 +1,11 @@
 # @vitejs/plugin-react-oxc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-oxc.svg)](https://npmjs.com/package/@vitejs/plugin-react-oxc)
 
+The future default Vite plugin for React projects.
+
+- enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development
+- use the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
+- small installation size
+
 ```js
 // vite.config.js
 import { defineConfig } from 'vite'
