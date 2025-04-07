@@ -12,13 +12,7 @@ import {
   transform,
 } from '@swc/core'
 import type { BuildOptions, PluginOption, UserConfig } from 'vite'
-
-const runtimePublicPath = '/@react-refresh'
-
-const preambleCode = `import { injectIntoGlobalHook } from "__PATH__";
-injectIntoGlobalHook(window);
-window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;`
+import { getPreambleCode, runtimePublicPath } from '@vitejs/react-common'
 
 /* eslint-disable no-restricted-globals */
 const _dirname =
@@ -129,10 +123,7 @@ const react = (_options?: Options): PluginOption[] => {
         {
           tag: 'script',
           attrs: { type: 'module' },
-          children: preambleCode.replace(
-            '__PATH__',
-            config.server!.config.base + runtimePublicPath.slice(1),
-          ),
+          children: getPreambleCode(config.server!.config.base),
         },
       ],
       async transform(code, _id, transformOptions) {

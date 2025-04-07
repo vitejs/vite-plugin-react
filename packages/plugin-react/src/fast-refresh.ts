@@ -1,12 +1,4 @@
-export const runtimePublicPath = '/@react-refresh'
-
-export const preambleCode = `
-import { injectIntoGlobalHook } from "__BASE__${runtimePublicPath.slice(1)}"
-injectIntoGlobalHook(window)
-window.$RefreshReg$ = () => {}
-window.$RefreshSig$ = () => (type) => type
-window.__vite_plugin_react_preamble_installed__ = true
-`
+import { runtimePublicPath } from '@vitejs/react-common'
 
 const sharedHeader = `
 import * as RefreshRuntime from "${runtimePublicPath}";
@@ -18,7 +10,7 @@ let prevRefreshReg;
 let prevRefreshSig;
 
 if (import.meta.hot && !inWebWorker) {
-  if (!window.__vite_plugin_react_preamble_installed__) {
+  if (!window.$RefreshReg$) {
     throw new Error(
       "@vitejs/plugin-react can't detect preamble. Something is wrong. " +
       "See https://github.com/vitejs/vite-plugin-react/pull/11#discussion_r430879201"

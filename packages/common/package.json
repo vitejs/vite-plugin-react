@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "exports": {
+    ".": "./index.ts",
     "./refresh-runtime": "./refresh-runtime.js"
   }
 }

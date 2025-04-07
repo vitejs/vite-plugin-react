@@ -12,10 +12,13 @@ import type {
   UserConfig,
 } from 'vite'
 import {
-  addClassComponentRefreshWrapper,
-  addRefreshWrapper,
+  getPreambleCode,
   preambleCode,
   runtimePublicPath,
+} from '@vitejs/react-common'
+import {
+  addClassComponentRefreshWrapper,
+  addRefreshWrapper,
 } from './fast-refresh'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
@@ -95,8 +98,6 @@ const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
-  // Provide default values for Rollup compat.
-  let devBase = '/'
   const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
@@ -136,7 +137,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     configResolved(config) {
-      devBase = config.base
       projectRoot = config.root
       isProduction = config.isProduction
       skipFastRefresh =
@@ -316,13 +316,13 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         )
       }
     },
-    transformIndexHtml() {
+    transformIndexHtml(_, config) {
       if (!skipFastRefresh)
         return [
           {
             tag: 'script',
             attrs: { type: 'module' },
-            children: preambleCode.replace(`__BASE__`, devBase),
+            children: getPreambleCode(config.server!.config.base),
           },
         ]
     },
@@ -331,7 +331,9 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   return [viteBabel, viteReactRefresh]
 }
 
+/** @deprecated use getPreambleCode instead */
 viteReact.preambleCode = preambleCode
+viteReact.getPreambleCode = getPreambleCode
 
 const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
   rollupOptions: {
