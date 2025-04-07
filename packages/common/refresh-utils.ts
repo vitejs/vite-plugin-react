@@ -21,18 +21,18 @@ export function addRefreshWrapper<M extends { mappings: string }>(
   map: M | string | undefined | typeof avoidSourceMapOption,
   pluginName: string,
   id: string,
-): { code: string; map: M | undefined | string } {
+): { code: string; map: M | null | undefined | string } {
   const hasRefresh = refreshContentRE.test(code)
   const onlyReactComp = !hasRefresh && reactCompRE.test(code)
-  const newMap =
-    map === avoidSourceMapOption
-      ? undefined
-      : typeof map === 'string'
-        ? (JSON.parse(map) as M)
-        : map
-  if (!hasRefresh && !onlyReactComp) return { code, map: newMap }
+  const normalizedMap = map === avoidSourceMapOption ? null : map
+
+  if (!hasRefresh && !onlyReactComp) return { code, map: normalizedMap }
 
   const avoidSourceMap = map === avoidSourceMapOption
+  const newMap =
+    typeof normalizedMap === 'string'
+      ? (JSON.parse(normalizedMap) as M)
+      : normalizedMap
 
   let newCode = code
   if (hasRefresh) {
