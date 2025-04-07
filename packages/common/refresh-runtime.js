@@ -624,7 +624,7 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
   if (hasExports && allExportsAreComponentsOrUnchanged === true) {
     enqueueUpdate()
   } else {
-    return `Could not Fast Refresh ("${allExportsAreComponentsOrUnchanged}" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react-swc#consistent-components-exports`
+    return `Could not Fast Refresh ("${allExportsAreComponentsOrUnchanged}" export is incompatible). Learn more at __README_URL__#consistent-components-exports`
   }
 }
 

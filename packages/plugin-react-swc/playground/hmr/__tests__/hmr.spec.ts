@@ -35,7 +35,7 @@ test('HMR invalidate', async ({ page }) => {
   // Edit export
   editFile('src/TitleWithExport.tsx', ['React', 'React!'])
   await waitForLogs(
-    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh ("framework" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react-swc#consistent-components-exports',
+    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh ("framework" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#consistent-components-exports',
     '[vite] hot updated: /src/App.tsx',
   )
   await expect(page.locator('h1')).toHaveText('Vite * React!')

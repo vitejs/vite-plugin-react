@@ -11,14 +11,13 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { BuildOptions, PluginOption, UserConfig } from 'vite'
-
-const runtimePublicPath = '/@react-refresh'
-
-const preambleCode = `import { injectIntoGlobalHook } from "__PATH__";
-injectIntoGlobalHook(window);
-window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;`
+import type { PluginOption } from 'vite'
+import {
+  addRefreshWrapper,
+  getPreambleCode,
+  runtimePublicPath,
+  silenceUseClientWarning,
+} from '@vitejs/react-common'
 
 /* eslint-disable no-restricted-globals */
 const _dirname =
@@ -29,9 +28,6 @@ const resolve = createRequire(
   typeof __filename !== 'undefined' ? __filename : import.meta.url,
 ).resolve
 /* eslint-enable no-restricted-globals */
-
-const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 
 type Options = {
   /**
@@ -94,7 +90,10 @@ const react = (_options?: Options): PluginOption[] => {
       resolveId: (id) => (id === runtimePublicPath ? id : undefined),
       load: (id) =>
         id === runtimePublicPath
-          ? readFileSync(join(_dirname, 'refresh-runtime.js'), 'utf-8')
+          ? readFileSync(join(_dirname, 'refresh-runtime.js'), 'utf-8').replace(
+              /__README_URL__/g,
+              'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc',
+            )
           : undefined,
     },
     {
@@ -126,10 +125,7 @@ const react = (_options?: Options): PluginOption[] => {
         {
           tag: 'script',
           attrs: { type: 'module' },
-          children: preambleCode.replace(
-            '__PATH__',
-            config.server!.config.base + runtimePublicPath.slice(1),
-          ),
+          children: getPreambleCode(config.server!.config.base),
         },
       ],
       async transform(code, _id, transformOptions) {
@@ -151,43 +147,12 @@ const react = (_options?: Options): PluginOption[] => {
         if (!result) return
         if (!refresh) return result
 
-        const hasRefresh = refreshContentRE.test(result.code)
-        if (!hasRefresh && !reactCompRE.test(result.code)) return result
-
-        const sourceMap: SourceMapPayload = JSON.parse(result.map!)
-        sourceMap.mappings = ';;' + sourceMap.mappings
-
-        result.code = `import * as RefreshRuntime from "${runtimePublicPath}";
-
-${result.code}`
-
-        if (hasRefresh) {
-          sourceMap.mappings = ';;;;;;' + sourceMap.mappings
-          result.code = `if (!window.$RefreshReg$) throw new Error("React refresh preamble was not loaded. Something is wrong.");
-const prevRefreshReg = window.$RefreshReg$;
-const prevRefreshSig = window.$RefreshSig$;
-window.$RefreshReg$ = RefreshRuntime.getRefreshReg("${id}");
-window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
-
-${result.code}
-
-window.$RefreshReg$ = prevRefreshReg;
-window.$RefreshSig$ = prevRefreshSig;
-`
-        }
-
-        result.code += `
-RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
-  RefreshRuntime.registerExportsForReactRefresh("${id}", currentExports);
-  import.meta.hot.accept((nextExports) => {
-    if (!nextExports) return;
-    const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("${id}", currentExports, nextExports);
-    if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
-  });
-});
-`
-
-        return { code: result.code, map: sourceMap }
+        return addRefreshWrapper<SourceMapPayload>(
+          result.code,
+          result.map!,
+          '@vitejs/plugin-react-swc',
+          id,
+        )
       },
     },
     options.plugins
@@ -279,31 +244,5 @@ const transformWithOptions = async (
 
   return result
 }
-
-const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
-  rollupOptions: {
-    onwarn(warning, defaultHandler) {
-      if (
-        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
-      ) {
-        return
-      }
-      // https://github.com/vitejs/vite/issues/15012
-      if (
-        warning.code === 'SOURCEMAP_ERROR' &&
-        warning.message.includes('resolve original location') &&
-        warning.pos === 0
-      ) {
-        return
-      }
-      if (userConfig.build?.rollupOptions?.onwarn) {
-        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
-      } else {
-        defaultHandler(warning)
-      }
-    },
-  },
-})
 
 export default react

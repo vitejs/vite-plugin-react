@@ -1,20 +1,19 @@
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
-import type {
-  BuildOptions,
-  Plugin,
-  PluginOption,
-  ResolvedConfig,
-  UserConfig,
-} from 'vite'
+import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
 import {
-  addClassComponentRefreshWrapper,
   addRefreshWrapper,
+  getPreambleCode,
   preambleCode,
-  runtimeCode,
   runtimePublicPath,
-} from './fast-refresh'
+  silenceUseClientWarning,
+} from '@vitejs/react-common'
+
+const _dirname = dirname(fileURLToPath(import.meta.url))
 
 // lazy load babel since it's not used during build if plugins are not used
 let babel: typeof babelCore | undefined
@@ -85,14 +84,10 @@ export type ViteReactPluginApi = {
   reactBabel?: ReactBabelHook
 }
 
-const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
 const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
-  // Provide default values for Rollup compat.
-  let devBase = '/'
   const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
@@ -132,7 +127,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     configResolved(config) {
-      devBase = config.base
       projectRoot = config.root
       isProduction = config.isProduction
       skipFastRefresh =
@@ -256,15 +250,15 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       })
 
       if (result) {
-        let code = result.code!
-        if (useFastRefresh) {
-          if (refreshContentRE.test(code)) {
-            code = addRefreshWrapper(code, id)
-          } else if (reactCompRE.test(code)) {
-            code = addClassComponentRefreshWrapper(code, id)
-          }
+        if (!useFastRefresh) {
+          return { code: result.code!, map: result.map }
         }
-        return { code, map: result.map }
+        return addRefreshWrapper(
+          result.code!,
+          result.map ?? undefined,
+          '@vitejs/plugin-react',
+          id,
+        )
       }
     },
   }
@@ -303,16 +297,22 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
     load(id) {
       if (id === runtimePublicPath) {
-        return runtimeCode
+        return readFileSync(
+          join(_dirname, 'refresh-runtime.js'),
+          'utf-8',
+        ).replace(
+          /__README_URL__/g,
+          'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react',
+        )
       }
     },
-    transformIndexHtml() {
+    transformIndexHtml(_, config) {
       if (!skipFastRefresh)
         return [
           {
             tag: 'script',
             attrs: { type: 'module' },
-            children: preambleCode.replace(`__BASE__`, devBase),
+            children: getPreambleCode(config.server!.config.base),
           },
         ]
     },
@@ -322,32 +322,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
 }
 
 viteReact.preambleCode = preambleCode
-
-const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
-  rollupOptions: {
-    onwarn(warning, defaultHandler) {
-      if (
-        warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        warning.message.includes('use client')
-      ) {
-        return
-      }
-      // https://github.com/vitejs/vite/issues/15012
-      if (
-        warning.code === 'SOURCEMAP_ERROR' &&
-        warning.message.includes('resolve original location') &&
-        warning.pos === 0
-      ) {
-        return
-      }
-      if (userConfig.build?.rollupOptions?.onwarn) {
-        userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
-      } else {
-        defaultHandler(warning)
-      }
-    },
-  },
-})
 
 const loadedPlugin = new Map<string, any>()
 function loadPlugin(path: string): any {

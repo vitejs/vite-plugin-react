@@ -27,7 +27,7 @@ const buildOrWatch = async (options: BuildOptions) => {
 
 Promise.all([
   buildOrWatch({
-    entryPoints: ['src/refresh-runtime.js'],
+    entryPoints: ['@vitejs/react-common/refresh-runtime'],
     outdir: 'dist',
     platform: 'browser',
     format: 'esm',
