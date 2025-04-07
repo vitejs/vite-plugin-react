@@ -321,9 +321,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   return [viteBabel, viteReactRefresh]
 }
 
-/** @deprecated use getPreambleCode instead */
 viteReact.preambleCode = preambleCode
-viteReact.getPreambleCode = getPreambleCode
 
 const loadedPlugin = new Map<string, any>()
 function loadPlugin(path: string): any {
