@@ -18,10 +18,10 @@ export const avoidSourceMapOption = Symbol()
 
 export function addRefreshWrapper<M extends { mappings: string }>(
   code: string,
-  map: M | string | undefined | typeof avoidSourceMapOption,
+  map: M | string | typeof avoidSourceMapOption,
   pluginName: string,
   id: string,
-): { code: string; map: M | null | undefined | string } {
+): { code: string; map: M | null | string } {
   const hasRefresh = refreshContentRE.test(code)
   const onlyReactComp = !hasRefresh && reactCompRE.test(code)
   const normalizedMap = map === avoidSourceMapOption ? null : map

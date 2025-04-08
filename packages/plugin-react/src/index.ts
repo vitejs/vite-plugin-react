@@ -255,7 +255,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         }
         return addRefreshWrapper(
           result.code!,
-          result.map ?? undefined,
+          result.map!,
           '@vitejs/plugin-react',
           id,
         )
