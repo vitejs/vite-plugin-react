@@ -65,7 +65,7 @@ if (import.meta.hot && !inWebWorker) {
 }
 `
     if (newMap) {
-      newMap.mappings = ';'.repeat(17) + newMap.mappings
+      newMap.mappings = ';'.repeat(16) + newMap.mappings
     }
   }
 
