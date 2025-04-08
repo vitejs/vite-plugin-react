@@ -94,6 +94,16 @@ This option does not enable _code transformation_. That is handled by esbuild.
 
 Here's the [complete list of Babel parser plugins](https://babeljs.io/docs/en/babel-parser#ecmascript-proposalshttpsgithubcombabelproposals).
 
+### reactRefreshHost
+
+The `reactRefreshHost` option is only necessary in a module federation context. It allows HMR to work between a remote & host server. In your remote vite config you would add your host origin:
+
+```js
+react({ reactRefreshHost: 'http://localhost:3000' })
+```
+
+Under the hood this simply updates the react refresh url from "/@react-refresh" to "http://localhost:3000/@react-refresh" to ensure you get only one Fast Refresh runtime in the whole application.
+
 ## Middleware mode
 
 In [middleware mode](https://vite.dev/config/server-options.html#server-middlewaremode), you should make sure your entry `index.html` file is transformed by Vite. Here's an example for an Express server:

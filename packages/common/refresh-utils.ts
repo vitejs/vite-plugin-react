@@ -21,6 +21,7 @@ export function addRefreshWrapper<M extends { mappings: string }>(
   map: M | string | typeof avoidSourceMapOption,
   pluginName: string,
   id: string,
+  reactRefreshHost = '',
 ): { code: string; map: M | null | string } {
   const hasRefresh = refreshContentRE.test(code)
   const onlyReactComp = !hasRefresh && reactCompRE.test(code)
@@ -70,7 +71,8 @@ if (import.meta.hot && !inWebWorker) {
   }
 
   const sharedHead = removeLineBreaksIfNeeded(
-    `import * as RefreshRuntime from "${runtimePublicPath}";
+    `import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
+
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 
 `,
