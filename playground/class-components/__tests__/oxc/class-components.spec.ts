@@ -1,0 +1,1 @@
+import '../class-components.spec'

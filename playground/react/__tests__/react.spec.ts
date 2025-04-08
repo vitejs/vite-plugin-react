@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
   editFile,
+  escapeRegex,
   isBuild,
   isServe,
   page,
@@ -82,7 +83,13 @@ if (!isBuild) {
           code.replace('An Object', 'Updated'),
         ),
       [
-        '[vite] invalidate /hmr/no-exported-comp.jsx: Could not Fast Refresh ("Foo" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports',
+        new RegExp(
+          `^${escapeRegex(
+            '[vite] invalidate /hmr/no-exported-comp.jsx: Could not Fast Refresh ("Foo" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/',
+          )}plugin-react(?:-\\w+)?${escapeRegex(
+            '#consistent-components-exports',
+          )}`,
+        ),
         '[vite] hot updated: /hmr/no-exported-comp.jsx',
         '[vite] hot updated: /hmr/parent.jsx',
         'Parent rendered',
@@ -107,7 +114,13 @@ if (!isBuild) {
           code.replace('context provider', 'context provider updated'),
         ),
       [
-        '[vite] invalidate /context/CountProvider.jsx: Could not Fast Refresh ("CountContext" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports',
+        new RegExp(
+          `^${escapeRegex(
+            '[vite] invalidate /context/CountProvider.jsx: Could not Fast Refresh ("CountContext" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/',
+          )}plugin-react(?:-\\w+)?${escapeRegex(
+            '#consistent-components-exports',
+          )}`,
+        ),
         '[vite] hot updated: /context/CountProvider.jsx',
         '[vite] hot updated: /App.jsx',
         '[vite] hot updated: /context/ContextButton.jsx',

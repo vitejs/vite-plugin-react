@@ -4,7 +4,7 @@ import colors from 'picocolors'
 
 release({
   repo: 'vite-plugin-react',
-  packages: ['plugin-react', 'plugin-react-swc'],
+  packages: ['plugin-react', 'plugin-react-swc', 'plugin-react-oxc'],
   getPkgDir(pkg) {
     if (pkg === 'plugin-react-swc') {
       return `packages/${pkg}/dist`

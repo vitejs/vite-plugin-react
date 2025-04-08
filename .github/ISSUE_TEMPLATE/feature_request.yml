@@ -17,6 +17,8 @@ body:
             [plugin-react](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react)
         - label: |
             [plugin-react-swc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc)
+        - label: |
+            [plugin-react-oxc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-oxc)
   - type: textarea
     id: feature-description
     attributes:

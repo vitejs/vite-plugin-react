@@ -1,0 +1,50 @@
+{
+  "name": "@vitejs/plugin-react-oxc",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Evan You",
+  "contributors": [
+    "Alec Larson",
+    "Arnaud Barré"
+  ],
+  "description": "The future default Vite plugin for React projects",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "react",
+    "oxc",
+    "react-refresh",
+    "fast refresh"
+  ],
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": "./dist/index.mjs",
+  "scripts": {
+    "dev": "unbuild --stub",
+    "build": "unbuild && tsx scripts/copyRefreshRuntime.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-react-oxc"
+  },
+  "bugs": {
+    "url": "https://github.com/vitejs/vite-plugin-react/issues"
+  },
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
+  "peerDependencies": {
+    "vite": "^6.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/react-common": "workspace:*",
+    "unbuild": "^3.5.0",
+    "vite": "catalog:rolldown-vite"
+  }
+}

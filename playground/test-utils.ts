@@ -202,6 +202,11 @@ async function untilBrowserLog(
   return logs
 }
 
+const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g
+export function escapeRegex(str: string): string {
+  return str.replace(escapeRegexRE, '\\$&')
+}
+
 /**
  * Before implementing a new util, check if it's not available in core https://github.com/vitejs/vite/blob/main/playground/test-utils.ts
  */
