@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.9.0-beta.0 (2025-04-09)
+
 ## 3.8.1
 
 ### Remove WebContainers warning [#268](https://github.com/vitejs/vite-plugin-react-swc/pull/268)
