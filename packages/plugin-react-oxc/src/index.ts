@@ -12,6 +12,11 @@ import {
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
+const refreshRuntimePath = globalThis.__IS_BUILD__
+  ? join(_dirname, 'refresh-runtime.js')
+  : // eslint-disable-next-line n/no-unsupported-features/node-builtins -- only used in dev
+    fileURLToPath(import.meta.resolve('@vitejs/react-common/refresh-runtime'))
+
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
   exclude?: string | RegExp | Array<string | RegExp>
@@ -88,10 +93,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     load: {
       filter: { id: exactRegex(runtimePublicPath) },
       handler(_id) {
-        return readFileSync(
-          join(_dirname, 'refresh-runtime.js'),
-          'utf-8',
-        ).replace(
+        return readFileSync(refreshRuntimePath, 'utf-8').replace(
           /__README_URL__/g,
           'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-oxc',
         )
