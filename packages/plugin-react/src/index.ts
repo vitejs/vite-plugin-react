@@ -15,6 +15,11 @@ import {
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
+const refreshRuntimePath = globalThis.__IS_BUILD__
+  ? join(_dirname, 'refresh-runtime.js')
+  : // eslint-disable-next-line n/no-unsupported-features/node-builtins -- only used in dev
+    fileURLToPath(import.meta.resolve('@vitejs/react-common/refresh-runtime'))
+
 // lazy load babel since it's not used during build if plugins are not used
 let babel: typeof babelCore | undefined
 async function loadBabel() {
@@ -297,10 +302,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
     load(id) {
       if (id === runtimePublicPath) {
-        return readFileSync(
-          join(_dirname, 'refresh-runtime.js'),
-          'utf-8',
-        ).replace(
+        return readFileSync(refreshRuntimePath, 'utf-8').replace(
           /__README_URL__/g,
           'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react',
         )

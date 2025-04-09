@@ -8,4 +8,7 @@ export default defineBuildConfig({
   rollup: {
     inlineDependencies: true,
   },
+  replace: {
+    'globalThis.__IS_BUILD__': 'true',
+  },
 })
