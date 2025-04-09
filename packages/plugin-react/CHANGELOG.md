@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.4.0-beta.0 (2025-04-09)
+
 ## 4.3.4 (2024-11-26)
 
 ### Add Vite 6 to peerDependencies range
