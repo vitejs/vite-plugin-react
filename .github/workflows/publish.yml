@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # for ArnaudBarre/github-release to create a release
+      id-token: write # for provenance generation
     environment: Release
     steps:
       - name: Checkout
