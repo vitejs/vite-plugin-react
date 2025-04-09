@@ -25,6 +25,14 @@ release({
     )
   },
   generateChangelog: async (pkgName, version) => {
+    if (pkgName === 'plugin-react-swc') {
+      console.log(colors.cyan('\nUpdating package.json version...'))
+      const pkgJsonPath = `packages/${pkgName}/package.json`
+      const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'))
+      pkg.version = version
+      writeFileSync(pkgJsonPath, `${JSON.stringify(pkg, null, 2)}\n`)
+    }
+
     const changelog = readFileSync(`packages/${pkgName}/CHANGELOG.md`, 'utf-8')
     console.log(colors.cyan('\nUpdating CHANGELOG.md...'))
     const date = new Date().toISOString().slice(0, 10)
