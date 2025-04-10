@@ -138,9 +138,6 @@ importers:
       '@vitejs/react-common':
         specifier: workspace:*
         version: link:../common
-      '@vitejs/release-scripts':
-        specifier: ^1.3.3
-        version: 1.4.0
       esbuild:
         specifier: ^0.25.1
         version: 0.25.2
@@ -1936,9 +1933,6 @@ packages:
     resolution: {integrity: sha512-/9crJgPptVsGCL6X+JPDQyaJwkalSZ/52WuF8DiRUxJgcmpNdzYRfZ+gqMEP8W3CTVfuMWPqqvIgfwJ97f9Etw==}
     peerDependencies:
       valibot: ^1.0.0
-
-  '@vitejs/release-scripts@1.4.0':
-    resolution: {integrity: sha512-NpPniB3UxEsWf9fX8SlZA96vv3tqkd9IFW23pBHVylAW18BsV8J9f/iukbvilCU+nyhtCQ9xsf7K/7p2wSro3Q==}
 
   '@vitejs/release-scripts@1.5.0':
     resolution: {integrity: sha512-rZQdM5AneNJHzDOTUaQOOifauH6MkGTSI+GH8bKKrimBaa5BtvpnE1iz43fJ4QDO7RdGxAlxWnPQAVlFhGM1cQ==}
@@ -5121,15 +5115,6 @@ snapshots:
   '@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.2))':
     dependencies:
       valibot: 1.0.0(typescript@5.8.2)
-
-  '@vitejs/release-scripts@1.4.0':
-    dependencies:
-      execa: 8.0.1
-      mri: 1.2.0
-      picocolors: 1.1.1
-      prompts: 2.4.2
-      publint: 0.3.9
-      semver: 7.7.1
 
   '@vitejs/release-scripts@1.5.0':
     dependencies:
