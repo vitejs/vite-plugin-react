@@ -26,8 +26,8 @@ importers:
         specifier: ^22.13.15
         version: 22.13.15
       '@vitejs/release-scripts':
-        specifier: ^1.3.2
-        version: 1.4.0
+        specifier: ^1.5.0
+        version: 1.5.0
       eslint:
         specifier: ^9.22.0
         version: 9.23.0(jiti@2.4.2)
@@ -1939,6 +1939,9 @@ packages:
 
   '@vitejs/release-scripts@1.4.0':
     resolution: {integrity: sha512-NpPniB3UxEsWf9fX8SlZA96vv3tqkd9IFW23pBHVylAW18BsV8J9f/iukbvilCU+nyhtCQ9xsf7K/7p2wSro3Q==}
+
+  '@vitejs/release-scripts@1.5.0':
+    resolution: {integrity: sha512-rZQdM5AneNJHzDOTUaQOOifauH6MkGTSI+GH8bKKrimBaa5BtvpnE1iz43fJ4QDO7RdGxAlxWnPQAVlFhGM1cQ==}
 
   '@vitest/expect@3.0.5':
     resolution: {integrity: sha512-nNIOqupgZ4v5jWuQx2DSlHLEs7Q4Oh/7AYwNyE+k0UQzG7tSmjPXShUikn1mpNGzYEN2jJbTvLejwShMitovBA==}
@@ -5120,6 +5123,15 @@ snapshots:
       valibot: 1.0.0(typescript@5.8.2)
 
   '@vitejs/release-scripts@1.4.0':
+    dependencies:
+      execa: 8.0.1
+      mri: 1.2.0
+      picocolors: 1.1.1
+      prompts: 2.4.2
+      publint: 0.3.9
+      semver: 7.7.1
+
+  '@vitejs/release-scripts@1.5.0':
     dependencies:
       execa: 8.0.1
       mri: 1.2.0
