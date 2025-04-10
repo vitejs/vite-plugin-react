@@ -102,7 +102,7 @@ The `reactRefreshHost` option is only necessary in a module federation context. 
 react({ reactRefreshHost: 'http://localhost:3000' })
 ```
 
-Under the hood this simply updates the react refresh url from "/@react-refresh" to "http://localhost:3000/@react-refresh" to ensure you get only one Fast Refresh runtime in the whole application.
+Under the hood this simply updates the react refresh url from "/@react-refresh" to "http://localhost:3000/@react-refresh" to ensure you get only one Fast Refresh runtime in the whole application. Note that if you define `base` you need to include that in the url provided like: `http://localhost:3000/{base}`.
 
 ## Middleware mode
 
