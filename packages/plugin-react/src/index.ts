@@ -271,7 +271,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           result.map!,
           '@vitejs/plugin-react',
           id,
-          opts.reactRefreshHost
+          opts.reactRefreshHost,
         )
       }
     },
