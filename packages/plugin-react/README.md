@@ -96,13 +96,13 @@ Here's the [complete list of Babel parser plugins](https://babeljs.io/docs/en/ba
 
 ### reactRefreshHost
 
-The `reactRefreshHost` option is only necessary in a module federation context. It allows HMR to work between a remote & host server. In your remote vite config you would add your host origin:
+The `reactRefreshHost` option is only necessary in a module federation context. It enables HMR to work between a remote & host application. In your remote vite config, you would add your host origin:
 
 ```js
 react({ reactRefreshHost: 'http://localhost:3000' })
 ```
 
-Under the hood this simply updates the react refresh url from "/@react-refresh" to "http://localhost:3000/@react-refresh" to ensure you get only one Fast Refresh runtime in the whole application. Note that if you define `base` you need to include that in the url provided like: `http://localhost:3000/{base}`.
+Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
 
 ## Middleware mode
 
