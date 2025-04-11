@@ -49,6 +49,14 @@ export interface Options {
   babel?:
     | BabelOptions
     | ((id: string, options: { ssr?: boolean }) => BabelOptions)
+  /**
+   * React Fast Refresh runtime URL prefix.
+   * Useful in a module federation context to enable HMR by specifying
+   * the host application URL in the Vite config of a remote application.
+   * @example
+   * reactRefreshHost: 'http://localhost:3000'
+   */
+  reactRefreshHost?: string
 }
 
 export type BabelOptions = Omit<
@@ -263,6 +271,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           result.map!,
           '@vitejs/plugin-react',
           id,
+          opts.reactRefreshHost,
         )
       }
     },

@@ -59,6 +59,14 @@ type Options = {
    */
   parserConfig?: (id: string) => ParserConfig | undefined
   /**
+   * React Fast Refresh runtime URL prefix.
+   * Useful in a module federation context to enable HMR by specifying
+   * the host application URL in a Vite config of a remote application.
+   * @example
+   * reactRefreshHost: 'http://localhost:3000'
+   */
+  reactRefreshHost?: string
+  /**
    * The future of Vite is with OXC, and from the beginning this was a design choice
    * to not exposed too many specialties from SWC so that Vite React users can move to
    * another transformer later.
@@ -78,6 +86,7 @@ const react = (_options?: Options): PluginOption[] => {
       : undefined,
     devTarget: _options?.devTarget ?? 'es2020',
     parserConfig: _options?.parserConfig,
+    reactRefreshHost: _options?.reactRefreshHost,
     useAtYourOwnRisk_mutateSwcOptions:
       _options?.useAtYourOwnRisk_mutateSwcOptions,
   }
@@ -152,6 +161,7 @@ const react = (_options?: Options): PluginOption[] => {
           result.map!,
           '@vitejs/plugin-react-swc',
           id,
+          options.reactRefreshHost,
         )
       },
     },

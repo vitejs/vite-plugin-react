@@ -93,6 +93,16 @@ react({
 })
 ```
 
+### reactRefreshHost
+
+The `reactRefreshHost` option is only necessary in a module federation context. It enables HMR to work between a remote & host application. In your remote Vite config, you would add your host origin:
+
+```js
+react({ reactRefreshHost: 'http://localhost:3000' })
+```
+
+Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
+
 ### useAtYourOwnRisk_mutateSwcOptions
 
 The future of Vite is with OXC, and from the beginning this was a design choice to not exposed too many specialties from SWC so that Vite React users can move to another transformer later.

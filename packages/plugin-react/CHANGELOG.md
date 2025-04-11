@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Add `reactRefreshHost` option
+
+Add `reactRefreshHost` option to set a React Fast Refresh runtime URL prefix.
+This is useful in a module federation context to enable HMR by specifying the host application URL in the Vite config of a remote application.
+See full discussion here: https://github.com/module-federation/vite/issues/183#issuecomment-2751825367
+
+```ts
+export default defineConfig({
+  plugins: [react({ reactRefreshHost: 'http://localhost:3000' })],
+})
+```
+
 ## 4.4.0-beta.1 (2025-04-09)
 
 ## 4.4.0-beta.0 (2025-04-09)
