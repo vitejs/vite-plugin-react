@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-### Add option `reactRefreshHost`
+### Add `reactRefreshHost` option
 
-Add option `reactRefreshHost` to set React refresh runtime url prefix.
-This is useful in module federation context to enable HMR by setting the host url on a Vite config which is serving a remote app.
+Add `reactRefreshHost` option to set a React Fast Refresh runtime URL prefix.
+This is useful in a module federation context to enable HMR by specifying the host application URL in the vite config of a remote application.
 See full discussion here: https://github.com/module-federation/vite/issues/183#issuecomment-2751825367
 
 ```ts
