@@ -59,9 +59,9 @@ type Options = {
    */
   parserConfig?: (id: string) => ParserConfig | undefined
   /**
-   * React refresh runtime url prefix.
-   * Useful in module federation context to enable HMR by
-   * setting the host url on a vite config which is serving a remote app.
+   * React Fast Refresh runtime URL prefix.
+   * Useful in a module federation context to enable HMR by specifying
+   * the host application URL in a Vite config of a remote application.
    * @example
    * reactRefreshHost: 'http://localhost:3000'
    */
