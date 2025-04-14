@@ -110,6 +110,8 @@ const react = (_options?: Options): PluginOption[] => {
       apply: 'serve',
       config: () => ({
         esbuild: false,
+        // NOTE: oxc option only exists in rolldown-vite
+        oxc: false,
         optimizeDeps: {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
           esbuildOptions: { jsx: 'automatic' },
