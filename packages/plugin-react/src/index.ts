@@ -209,7 +209,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         // OXC injects self and source so these plugins are not needed for rolldown-vite
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore -- this.meta.rolldownVersion only exists in rolldown-vite
-        this.meta.rolldownVersion
+        !this.meta.rolldownVersion
       ) {
         if (!isProduction) {
           // These development plugins are only needed for the classic runtime.
