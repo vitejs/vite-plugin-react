@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Make compatible with rolldown-vite
+
+This plugin is now compatible with rolldown-powered version of Vite.
+Note that currently the `__source` property value position might be incorrect. This will be fixed in the near future.
+
 ## 4.4.0-beta.2 (2025-04-15)
 
 ### Add `reactRefreshHost` option
