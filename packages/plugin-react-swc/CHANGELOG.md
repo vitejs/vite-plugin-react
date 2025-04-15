@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.9.0 (2025-04-15)
+
 ### Make compatible with rolldown-vite
 
 This plugin is now compatible with rolldown-powered version of Vite.
