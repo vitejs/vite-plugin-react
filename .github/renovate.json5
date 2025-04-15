@@ -13,6 +13,14 @@
       "matchFileNames": ["**/react-18/**"],
       "ignoreDeps": ["react", "react-dom", "@types/react", "@types/react-dom"],
     },
+    // renovate doesn't properly handle x.x.x-beta-hash-yyyymm version schema
+    {
+      "matchPackageNames": [
+        "react-compiler-runtime",
+        "babel-plugin-react-compiler",
+      ],
+      "followTag": "latest",
+    },
     {
       "matchDepTypes": ["action"],
       "excludePackagePrefixes": ["actions/", "github/"],
