@@ -16,7 +16,7 @@
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "workspace:*",
-    "babel-plugin-react-compiler": "0.0.0-experimental-dc8bd44-20241121",
+    "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "typescript": "^5.8.3"
   }
 }
