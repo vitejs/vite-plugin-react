@@ -562,19 +562,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
 
-  playground/react-classic-18:
-    dependencies:
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: workspace:*
-        version: link:../../packages/plugin-react
-
   playground/react-emotion:
     dependencies:
       '@emotion/react':
