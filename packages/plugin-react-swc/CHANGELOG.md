@@ -14,6 +14,10 @@ export default defineConfig({
 })
 ```
 
+### Make compatible with rolldown-vite
+
+This plugin is now compatible with rolldown-powered version of Vite.
+
 ## 3.9.0-beta.2 (2025-04-09)
 
 ## 3.9.0-beta.0 (2025-04-09)
