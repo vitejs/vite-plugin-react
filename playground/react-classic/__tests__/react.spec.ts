@@ -17,3 +17,23 @@ test.runIf(isServe)('should hmr', async () => {
   // preserve state
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
+
+test.runIf(isServe)(
+  'should have annotated jsx with file location metadata',
+  async () => {
+    const meta = await page.evaluate(() => {
+      const button = document.querySelector('button')
+      const key = Object.keys(button).find(
+        (key) => key.indexOf('__reactFiber') === 0,
+      )
+      return button[key]._debugSource
+    })
+    // If the evaluate call doesn't crash, and the returned metadata has
+    // the expected fields, we're good.
+    expect(Object.keys(meta).sort()).toEqual([
+      'columnNumber',
+      'fileName',
+      'lineNumber',
+    ])
+  },
+)
