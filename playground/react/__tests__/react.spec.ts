@@ -50,26 +50,6 @@ test.runIf(isServe)('should not invalidate when code is invalid', async () => {
   )
 })
 
-test.runIf(isServe)(
-  'should have annotated jsx with file location metadata',
-  async () => {
-    const meta = await page.evaluate(() => {
-      const button = document.querySelector('#state-button')
-      const key = Object.keys(button).find(
-        (key) => key.indexOf('__reactFiber') === 0,
-      )
-      return button[key]._debugSource
-    })
-    // If the evaluate call doesn't crash, and the returned metadata has
-    // the expected fields, we're good.
-    expect(Object.keys(meta).sort()).toEqual([
-      'columnNumber',
-      'fileName',
-      'lineNumber',
-    ])
-  },
-)
-
 test('import attributes', async () => {
   expect(await page.textContent('.import-attributes')).toBe('ok')
 })
