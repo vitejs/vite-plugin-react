@@ -7,6 +7,7 @@ import {
   page,
   untilBrowserLogAfter,
   untilUpdated,
+  viteTestUrl,
 } from '~utils'
 
 test('should render', async () => {
@@ -53,20 +54,10 @@ test.runIf(isServe)('should not invalidate when code is invalid', async () => {
 test.runIf(isServe)(
   'should have annotated jsx with file location metadata',
   async () => {
-    const meta = await page.evaluate(() => {
-      const button = document.querySelector('#state-button')
-      const key = Object.keys(button).find(
-        (key) => key.indexOf('__reactFiber') === 0,
-      )
-      return button[key]._debugSource
-    })
-    // If the evaluate call doesn't crash, and the returned metadata has
-    // the expected fields, we're good.
-    expect(Object.keys(meta).sort()).toEqual([
-      'columnNumber',
-      'fileName',
-      'lineNumber',
-    ])
+    const res = await page.request.get(viteTestUrl + '/App.jsx')
+    const code = await res.text()
+    expect(code).toMatch(/lineNumber:\s*\d+/)
+    expect(code).toMatch(/columnNumber:\s*\d+/)
   },
 )
 

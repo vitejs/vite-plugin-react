@@ -10,7 +10,7 @@
       "enabled": false,
     },
     {
-      "matchFileNames": ["**/react-18/**"],
+      "matchFileNames": ["**/react-18/**", "**/compiler-react-18/**"],
       "ignoreDeps": ["react", "react-dom", "@types/react", "@types/react-dom"],
     },
     {

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { editFile, isServe, page, untilUpdated } from '~utils'
+import { editFile, isServe, page, untilUpdated, viteTestUrl } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('h1')).toMatch('Hello Vite + React')
@@ -21,19 +21,9 @@ test.runIf(isServe)('should hmr', async () => {
 test.runIf(isServe)(
   'should have annotated jsx with file location metadata',
   async () => {
-    const meta = await page.evaluate(() => {
-      const button = document.querySelector('button')
-      const key = Object.keys(button).find(
-        (key) => key.indexOf('__reactFiber') === 0,
-      )
-      return button[key]._debugSource
-    })
-    // If the evaluate call doesn't crash, and the returned metadata has
-    // the expected fields, we're good.
-    expect(Object.keys(meta).sort()).toEqual([
-      'columnNumber',
-      'fileName',
-      'lineNumber',
-    ])
+    const res = await page.request.get(viteTestUrl + '/App.jsx')
+    const code = await res.text()
+    expect(code).toMatch(/lineNumber:\s*\d+/)
+    expect(code).toMatch(/columnNumber:\s*\d+/)
   },
 )

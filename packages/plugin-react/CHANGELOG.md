@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.4.0-beta.2 (2025-04-15)
+
 ### Add `reactRefreshHost` option
 
 Add `reactRefreshHost` option to set a React Fast Refresh runtime URL prefix.
