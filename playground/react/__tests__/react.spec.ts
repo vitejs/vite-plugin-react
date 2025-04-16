@@ -46,8 +46,12 @@ test.runIf(isServe)('should not invalidate when code is invalid', async () => {
   // if import.meta.invalidate happened, the old page won't be shown because the page is reloaded
   expect(await page.textContent('h1')).toMatch('Hello Vite + React')
 
-  editFile('App.jsx', (code) =>
-    code.replace('<div className="App"}>', '<div className="App">'),
+  await untilBrowserLogAfter(
+    () =>
+      editFile('App.jsx', (code) =>
+        code.replace('<div className="App"}>', '<div className="App">'),
+      ),
+    '[vite] hot updated: /App.jsx',
   )
 })
 
