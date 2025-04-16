@@ -13,6 +13,14 @@
       "matchFileNames": ["**/react-18/**", "**/compiler-react-18/**"],
       "ignoreDeps": ["react", "react-dom", "@types/react", "@types/react-dom"],
     },
+    // renovate doesn't properly handle x.x.x-beta-hash-yyyymm version schema
+    {
+      "matchPackageNames": [
+        "react-compiler-runtime",
+        "babel-plugin-react-compiler",
+      ],
+      "followTag": "latest",
+    },
     {
       "matchDepTypes": ["action"],
       "excludePackagePrefixes": ["actions/", "github/"],
@@ -30,9 +38,5 @@
     "kill-port", // `kill-port:^2.0.0 has perf issues (#8392)
 
     "prettier", // waiting for stable choice on ternaries
-
-    // renovate doesn't properly handle x.x.x-experimental-yyy-zzz version schema
-    "react-compiler-runtime",
-    "babel-plugin-react-compiler",
   ],
 }
