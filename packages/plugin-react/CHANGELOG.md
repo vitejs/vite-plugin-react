@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 4.4.1 (2025-04-19)
+
+Fix type issue when using `moduleResolution: "node"` in tsconfig [#462](https://github.com/vitejs/vite-plugin-react/pull/4620)
+
 ## 4.4.0 (2025-04-15)
 
 ### Make compatible with rolldown-vite
