@@ -132,7 +132,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
                 runtime: 'classic',
                 // disable __self and __source injection even in dev
                 // as this plugin injects them by babel and oxc will throw
-                //  if development is enabled and those properties are already present
+                // if development is enabled and those properties are already present
                 development: false,
               },
             },
