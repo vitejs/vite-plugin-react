@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
+import * as vite from 'vite'
 import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
@@ -124,10 +125,23 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     enforce: 'pre',
     config() {
       if (opts.jsxRuntime === 'classic') {
-        return {
-          esbuild: {
-            jsx: 'transform',
-          },
+        if ('rolldownVersion' in vite) {
+          return {
+            oxc: {
+              jsx: {
+                runtime: 'classic',
+                // disable __self and __source injection even in dev
+                // as this plugin injects them by babel
+                development: false,
+              },
+            },
+          }
+        } else {
+          return {
+            esbuild: {
+              jsx: 'transform',
+            },
+          }
         }
       } else {
         return {
@@ -203,14 +217,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         ])
       }
 
-      if (
-        opts.jsxRuntime === 'classic' &&
-        isJSX &&
-        // OXC injects self and source so these plugins are not needed for rolldown-vite
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore -- this.meta.rolldownVersion only exists in rolldown-vite
-        !this.meta.rolldownVersion
-      ) {
+      if (opts.jsxRuntime === 'classic' && isJSX) {
         if (!isProduction) {
           // These development plugins are only needed for the classic runtime.
           plugins.push(
