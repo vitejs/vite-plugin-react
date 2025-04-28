@@ -103,7 +103,10 @@ const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): PluginOption[] {
-  const filter = createFilter(opts.include ?? defaultIncludeRE, opts.exclude)
+  const include = opts.include ?? defaultIncludeRE
+  const exclude = opts.exclude
+  const filter = createFilter(include, exclude)
+
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
@@ -193,7 +196,15 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     transform: {
-      filter: { id: { exclude: /\/node_modules\// } },
+      filter: {
+        id: {
+          include: ensureArray(include).map(matchWithQuery),
+          exclude: [
+            ...(exclude ? ensureArray(exclude).map(matchWithQuery) : []),
+            /\/node_modules\//,
+          ],
+        },
+      },
       async handler(code, id, options) {
         if (id.includes('/node_modules/')) return
 
@@ -432,4 +443,23 @@ function getReactCompilerRuntimeModule(
     }
   }
   return moduleName
+}
+
+function ensureArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}
+
+function matchWithQuery(input: string | RegExp) {
+  if (typeof input === 'string') {
+    return `${input}{?*,}`
+  }
+  return addQueryToRegex(input)
+}
+
+function addQueryToRegex(input: RegExp) {
+  return new RegExp(
+    // replace `$` with `(?:\?.*)?$` (ignore `\$`)
+    input.source.replace(/(?<!\\)\$/g, '(?:\\?.*)?$'),
+    input.flags,
+  )
 }
