@@ -5,6 +5,7 @@ import type { BuildOptions, Plugin, PluginOption } from 'vite'
 import {
   addRefreshWrapper,
   avoidSourceMapOption,
+  exactRegex,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
@@ -148,13 +149,4 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   }
 
   return [viteConfig, viteRefreshRuntime, viteRefreshWrapper]
-}
-
-function exactRegex(input: string): RegExp {
-  return new RegExp(`^${escapeRegex(input)}$`)
-}
-
-const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g
-function escapeRegex(str: string): string {
-  return str.replace(escapeRegexRE, '\\$&')
 }
