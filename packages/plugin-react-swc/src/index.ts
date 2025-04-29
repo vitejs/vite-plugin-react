@@ -135,7 +135,7 @@ const react = (_options?: Options): PluginOption[] => {
       transformIndexHtml: (_, config) => [
         {
           tag: 'script',
-          attrs: { type: 'module', async: 'true' },
+          attrs: { type: 'module' },
           children: getPreambleCode(config.server!.config.base),
         },
       ],

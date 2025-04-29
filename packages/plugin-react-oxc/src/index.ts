@@ -140,7 +140,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         return [
           {
             tag: 'script',
-            attrs: { type: 'module', async: 'true' },
+            attrs: { type: 'module' },
             children: getPreambleCode(config.server!.config.base),
           },
         ]
