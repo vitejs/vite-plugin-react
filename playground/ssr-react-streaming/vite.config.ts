@@ -49,7 +49,7 @@ export default defineConfig({
       },
       async configurePreviewServer(server) {
         const mod = await import(
-          path.join(import.meta.dirname, 'dist/server/index.js')
+          new URL('dist/server/index.js', import.meta.url).toString()
         )
         return () => {
           server.middlewares.use(async (req, res, next) => {
