@@ -1,7 +1,8 @@
 import path from 'node:path'
-import { defineConfig, Manifest } from 'vite'
-import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
+import type { Manifest } from 'vite'
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 const CLIENT_ENTRY = path.join(import.meta.dirname, 'src/entry-client.jsx')
 const SERVER_ENTRY = path.join(import.meta.dirname, 'src/entry-server.jsx')

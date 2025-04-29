@@ -48,7 +48,7 @@ function TestSuspense() {
 // use weak map to suspend for each server render
 const sleepPromiseMap = new WeakMap<object, Promise<void>>()
 
-function Sleep(props: { context: {} }) {
+function Sleep(props: { context: object }) {
   if (typeof document !== 'undefined') {
     return <div>suspense-resolved</div>
   }
