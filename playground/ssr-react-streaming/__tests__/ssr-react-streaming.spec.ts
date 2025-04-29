@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { editFile, isBuild, page, viteTestUrl as url } from '~utils'
 
 test('interactive before suspense is resolved', async () => {
-  await page.goto(url, { waitUntil: 'commit' })
+  await page.goto(url, { waitUntil: 'commit' }) // don't wait for full html
   await expect
     .poll(() => page.getByTestId('hydrated').textContent())
     .toContain('[hydrated: 1]')
@@ -15,6 +15,7 @@ test('interactive before suspense is resolved', async () => {
 })
 
 test.skipIf(isBuild)('hmr', async () => {
+  await page.goto(url)
   await expect
     .poll(() => page.getByTestId('hydrated').textContent())
     .toContain('[hydrated: 1]')
