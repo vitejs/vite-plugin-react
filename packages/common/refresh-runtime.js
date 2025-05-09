@@ -632,8 +632,9 @@ function predicateOnExport(ignoredExports, moduleExports, predicate) {
   for (const key in moduleExports) {
     if (key === '__esModule') continue
     if (ignoredExports.includes(key)) continue
-    const desc = Object.getOwnPropertyDescriptor(moduleExports, key)
-    if (desc && desc.get) return key
+    // TODO: Not sure why need this. The esm module live binding always is getter, look like the browser is not.
+    // const desc = Object.getOwnPropertyDescriptor(moduleExports, key)
+    // if (desc && desc.get) return key
     if (!predicate(key, moduleExports[key])) return key
   }
   return true

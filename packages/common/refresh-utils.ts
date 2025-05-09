@@ -81,7 +81,7 @@ const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof 
   newCode = `${sharedHead}${newCode}
 
 if (import.meta.hot && !inWebWorker) {
-  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+  import.meta.hot.getExports().then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
       id,
     )}, currentExports);

@@ -120,7 +120,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
   let staticBabelOptions: ReactBabelOptions | undefined
-
+  let base: string | undefined
   // Support patterns like:
   // - import * as React from 'react';
   // - import React from 'react';
@@ -162,6 +162,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       }
     },
     configResolved(config) {
+      base = config.base
       projectRoot = config.root
       isProduction = config.isProduction
       skipFastRefresh =
@@ -361,15 +362,22 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
-        return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
-          },
-        ]
+    transformIndexHtml: {
+      handler() {
+        if (!skipFastRefresh)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              // !!! Rolldown vite full bunlde module break changes, config.server is invalid
+              // children: getPreambleCode(config.server!.config.base),
+              children: getPreambleCode(base!),
+            },
+          ]
+      },
+      // Rolldown vite full bunlde module break changes.
+      // Changed it to make sure the inject module could be bundled
+      order: 'pre',
     },
   }
 
