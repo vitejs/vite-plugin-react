@@ -18,12 +18,14 @@ test.runIf(isServe)('should hmr', async () => {
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
 
-test.runIf(isServe)(
-  'should have annotated jsx with file location metadata',
-  async () => {
-    const res = await page.request.get(viteTestUrl + '/App.jsx')
-    const code = await res.text()
-    expect(code).toMatch(/lineNumber:\s*\d+/)
-    expect(code).toMatch(/columnNumber:\s*\d+/)
-  },
-)
+if (!process.env.VITE_TEST_FULL_BUNDLE_MODE){
+  test.runIf(isServe)(
+    'should have annotated jsx with file location metadata',
+    async () => {
+      const res = await page.request.get(viteTestUrl + '/App.jsx')
+      const code = await res.text()
+      expect(code).toMatch(/lineNumber:\s*\d+/)
+      expect(code).toMatch(/columnNumber:\s*\d+/)
+    },
+  )
+}
