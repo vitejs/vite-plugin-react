@@ -23,6 +23,7 @@
     "typecheck": "tsc -p scripts && tsc -p playground && tsc -p packages/plugin-react",
     "test": "pnpm run test-serve && pnpm run test-build && pnpm --filter ./packages/plugin-react-swc run test",
     "test-serve": "vitest run -c playground/vitest.config.e2e.ts",
+    "test-full-bundle-mode-serve": "VITE_TEST_FULL_BUNDLE_MODE=1 vitest run -c playground/vitest.config.e2e.ts",
     "test-build": "VITE_TEST_BUILD=1 vitest run -c playground/vitest.config.e2e.ts",
     "debug-serve": "VITE_DEBUG_SERVE=1 vitest run -c playground/vitest.config.e2e.ts",
     "debug-build": "VITE_TEST_BUILD=1 VITE_PRESERVE_BUILD_ARTIFACTS=1 vitest run -c playground/vitest.config.e2e.ts",
