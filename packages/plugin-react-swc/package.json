@@ -37,9 +37,9 @@
   "devDependencies": {
     "@playwright/test": "^1.52.0",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.15.2",
+    "@types/node": "^22.15.18",
     "@vitejs/react-common": "workspace:*",
-    "esbuild": "^0.25.3",
+    "esbuild": "^0.25.4",
     "fs-extra": "^11.3.0",
     "picocolors": "^1.1.1",
     "prettier": "^3.0.3",
