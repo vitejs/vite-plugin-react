@@ -10,6 +10,12 @@ Added `filter` so that it is more performant when running this plugin with rolld
 
 This was causing annoying `Sourcemap for "/@react-refresh" points to missing source files` and is unnecessary in test mode.
 
+### Skip HMR for JSX files with hooks
+
+The current HMR implementation was trying to all HMR files that contains either hooks or components, but this was working only for components and lead to HMR invalidation for JSX files containing hooks.
+
+The best solution would have been to support HMR for hooks, but in my testing it was sometimes leading to stale updates. So this simple and reliable solution is to skip HMR for these files and have the components handle the updates, like any other hooks file.
+
 ## 3.9.0 (2025-04-15)
 
 ### Make compatible with rolldown-vite

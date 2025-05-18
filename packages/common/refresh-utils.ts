@@ -1,7 +1,7 @@
 export const runtimePublicPath = '/@react-refresh'
 
 const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$Refresh(?:Reg|Sig)\$\(/
+const refreshContentRE = /\$RefreshReg\$\(/
 
 // NOTE: this is exposed publicly via plugin-react
 export const preambleCode = `import { injectIntoGlobalHook } from "__BASE__${runtimePublicPath.slice(
