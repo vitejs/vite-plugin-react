@@ -192,7 +192,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         if (
           canSkipBabel(staticBabelOptions.plugins, staticBabelOptions) &&
           skipFastRefresh &&
-          isProduction
+          (opts.jsxRuntime === 'classic' ? isProduction : true)
         ) {
           delete viteBabel.transform
         }
