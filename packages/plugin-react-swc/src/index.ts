@@ -14,11 +14,11 @@ import {
 import type { PluginOption } from 'vite'
 import {
   addRefreshWrapper,
-  exactRegex,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import { exactRegex } from '@rolldown/pluginutils'
 
 /* eslint-disable no-restricted-globals */
 const _dirname =

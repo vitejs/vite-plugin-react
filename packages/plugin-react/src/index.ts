@@ -8,12 +8,15 @@ import * as vite from 'vite'
 import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
-  exactRegex,
   getPreambleCode,
   preambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import {
+  exactRegex,
+  makeIdFiltersToMatchWithQuery,
+} from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -198,9 +201,11 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     transform: {
       filter: {
         id: {
-          include: ensureArray(include).map(matchWithQuery),
+          include: makeIdFiltersToMatchWithQuery(include),
           exclude: [
-            ...(exclude ? ensureArray(exclude).map(matchWithQuery) : []),
+            ...(exclude
+              ? makeIdFiltersToMatchWithQuery(ensureArray(exclude))
+              : []),
             /\/node_modules\//,
           ],
         },
@@ -447,19 +452,4 @@ function getReactCompilerRuntimeModule(
 
 function ensureArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
-}
-
-function matchWithQuery(input: string | RegExp) {
-  if (typeof input === 'string') {
-    return `${input}{?*,}`
-  }
-  return addQueryToRegex(input)
-}
-
-function addQueryToRegex(input: RegExp) {
-  return new RegExp(
-    // replace `$` with `(?:\?.*)?$` (ignore `\$`)
-    input.source.replace(/(?<!\\)\$/g, '(?:\\?.*)?$'),
-    input.flags,
-  )
 }

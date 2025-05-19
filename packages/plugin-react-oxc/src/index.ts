@@ -5,11 +5,11 @@ import type { BuildOptions, Plugin, PluginOption } from 'vite'
 import {
   addRefreshWrapper,
   avoidSourceMapOption,
-  exactRegex,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import { exactRegex } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
