@@ -142,13 +142,17 @@ const react = (_options?: Options): PluginOption[] => {
           )
         }
       },
-      transformIndexHtml: (_, config) => [
-        {
-          tag: 'script',
-          attrs: { type: 'module' },
-          children: getPreambleCode(config.server!.config.base),
-        },
-      ],
+      transformIndexHtml: (_, config) => {
+        if (!hmrDisabled) {
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(config.server!.config.base),
+            },
+          ]
+        }
+      },
       async transform(code, _id, transformOptions) {
         const id = _id.split('?')[0]
         const refresh = !transformOptions?.ssr && !hmrDisabled

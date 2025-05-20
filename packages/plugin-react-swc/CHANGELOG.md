@@ -6,6 +6,10 @@
 
 Added `filter` so that it is more performant when running this plugin with rolldown-powered version of Vite.
 
+### Skip HMR preamble in Vitest browser mode
+
+This was causing annoying `Sourcemap for "/@react-refresh" points to missing source files` and is unnecessary in test mode.
+
 ## 3.9.0 (2025-04-15)
 
 ### Make compatible with rolldown-vite
