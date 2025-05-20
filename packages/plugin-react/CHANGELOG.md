@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add `filter` for rolldown-vite
+
+Added `filter` so that it is more performant when running this plugin with rolldown-powered version of Vite.
+
 ## 4.4.1 (2025-04-19)
 
 Fix type issue when using `moduleResolution: "node"` in tsconfig [#462](https://github.com/vitejs/vite-plugin-react/pull/462)
