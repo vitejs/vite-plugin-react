@@ -18,6 +18,7 @@ import {
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import { exactRegex } from '@rolldown/pluginutils'
 
 /* eslint-disable no-restricted-globals */
 const _dirname =
@@ -96,14 +97,23 @@ const react = (_options?: Options): PluginOption[] => {
       name: 'vite:react-swc:resolve-runtime',
       apply: 'serve',
       enforce: 'pre', // Run before Vite default resolve to avoid syscalls
-      resolveId: (id) => (id === runtimePublicPath ? id : undefined),
-      load: (id) =>
-        id === runtimePublicPath
-          ? readFileSync(join(_dirname, 'refresh-runtime.js'), 'utf-8').replace(
-              /__README_URL__/g,
-              'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc',
-            )
-          : undefined,
+      resolveId: {
+        filter: { id: exactRegex(runtimePublicPath) },
+        handler: (id) => (id === runtimePublicPath ? id : undefined),
+      },
+      load: {
+        filter: { id: exactRegex(runtimePublicPath) },
+        handler: (id) =>
+          id === runtimePublicPath
+            ? readFileSync(
+                join(_dirname, 'refresh-runtime.js'),
+                'utf-8',
+              ).replace(
+                /__README_URL__/g,
+                'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc',
+              )
+            : undefined,
+      },
     },
     {
       name: 'vite:react-swc',

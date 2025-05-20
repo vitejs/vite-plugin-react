@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#readme",
   "dependencies": {
+    "@rolldown/pluginutils": "1.0.0-beta.9",
     "@swc/core": "^1.11.22"
   },
   "peerDependencies": {

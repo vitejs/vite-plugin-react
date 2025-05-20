@@ -9,6 +9,7 @@ import {
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import { exactRegex } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -148,13 +149,4 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   }
 
   return [viteConfig, viteRefreshRuntime, viteRefreshWrapper]
-}
-
-function exactRegex(input: string): RegExp {
-  return new RegExp(`^${escapeRegex(input)}$`)
-}
-
-const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g
-function escapeRegex(str: string): string {
-  return str.replace(escapeRegexRE, '\\$&')
 }
