@@ -114,6 +114,9 @@ importers:
 
   packages/plugin-react-oxc:
     dependencies:
+      '@rolldown/pluginutils':
+        specifier: 1.0.0-beta.9
+        version: 1.0.0-beta.9
       vite:
         specifier: https://pkg.pr.new/vitejs/rolldown-vite@bdb70a9
         version: rolldown-vite@https://pkg.pr.new/vitejs/rolldown-vite@bdb70a9(@types/node@22.15.2)(esbuild@0.25.3)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
@@ -1497,6 +1500,9 @@ packages:
   '@rolldown/pluginutils@1.0.0-beta.8-commit.360c072':
     resolution: {integrity: sha512-OI2A/nrQsAJKNdEbBqGUG2uWyFFdH4qmUfOKzrO8AZaRQqz0rvUVBL4r0gZRQenfMWxFslQoHgjT4Y94hYTd5A==}
 
+  '@rolldown/pluginutils@1.0.0-beta.9':
+    resolution: {integrity: sha512-e9MeMtVWo186sgvFFJOPGy7/d2j2mZhLJIdVW0C/xDluuOvymEATqz6zKsP0ZmXGzQtqlyjz5sC1sYQUoJG98w==}
+
   '@rollup/plugin-alias@5.1.1':
     resolution: {integrity: sha512-PR9zDb+rOzkRb2VD+EuKB7UC41vU5DIwZ5qqCpk0KJudcWAyi8rvYOhS7+L5aZCspw1stTViLgN5v6FF1p5cgQ==}
     engines: {node: '>=14.0.0'}
@@ -1723,7 +1729,6 @@ packages:
   '@swc/core@1.11.22':
     resolution: {integrity: sha512-mjPYbqq8XjwqSE0hEPT9CzaJDyxql97LgK4iyvYlwVSQhdN1uK0DBG4eP9PxYzCS2MUGAXB34WFLegdUj5HGpg==}
     engines: {node: '>=10'}
-    deprecated: It has a bug. See https://github.com/swc-project/swc/issues/10413
     peerDependencies:
       '@swc/helpers': '>=0.5.17'
     peerDependenciesMeta:
@@ -4621,18 +4626,7 @@ snapshots:
       - esbuild
       - jiti
       - less
-      - '@types/node'
-      - esbuild
-      - jiti
-      - less
       - react-router-dom
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
       - sass
       - sass-embedded
       - stylus
@@ -4765,7 +4759,6 @@ snapshots:
   '@rolldown/binding-wasm32-wasi@1.0.0-beta.8-commit.360c072':
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.9
-      '@napi-rs/wasm-runtime': 0.2.9
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.0.0-beta.8-commit.360c072':
@@ -4778,6 +4771,8 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.0-beta.8-commit.360c072': {}
+
+  '@rolldown/pluginutils@1.0.0-beta.9': {}
 
   '@rollup/plugin-alias@5.1.1(rollup@4.37.0)':
     optionalDependencies:
@@ -7497,7 +7492,6 @@ snapshots:
       vite: rolldown-vite@https://pkg.pr.new/vitejs/rolldown-vite@bdb70a9(@types/node@22.15.2)(esbuild@0.25.3)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
     transitivePeerDependencies:
       - '@types/node'
-      - esbuild
       - esbuild
       - jiti
       - less
