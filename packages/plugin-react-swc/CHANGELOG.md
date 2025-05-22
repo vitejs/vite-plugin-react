@@ -2,13 +2,17 @@
 
 ## Unreleased
 
-### Add `filter` for rolldown-vite
+### Add `filter` for rolldown-vite [#470](https://github.com/vitejs/vite-plugin-react/pull/470)
 
 Added `filter` so that it is more performant when running this plugin with rolldown-powered version of Vite.
 
-### Skip HMR preamble in Vitest browser mode
+### Skip HMR preamble in Vitest browser mode [#478](https://github.com/vitejs/vite-plugin-react/pull/478)
 
 This was causing annoying `Sourcemap for "/@react-refresh" points to missing source files` and is unnecessary in test mode.
+
+### Skip HMR for JSX files with hooks [#480](https://github.com/vitejs/vite-plugin-react/pull/480)
+
+This removes the HMR warning for hooks with JSX.
 
 ## 3.9.0 (2025-04-15)
 
