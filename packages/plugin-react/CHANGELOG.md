@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.5.0 (2025-05-23)
+
 ### Add `filter` for rolldown-vite [#470](https://github.com/vitejs/vite-plugin-react/pull/470)
 
 Added `filter` so that it is more performant when running this plugin with rolldown-powered version of Vite.
