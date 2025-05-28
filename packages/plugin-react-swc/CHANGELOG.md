@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)
+
+This fixes an edge case when using HTML minifiers that strips line breaks aggressively.
+
 ## 3.10.0 (2025-05-23)
 
 ### Add `filter` for rolldown-vite [#470](https://github.com/vitejs/vite-plugin-react/pull/470)
