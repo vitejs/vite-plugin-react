@@ -12,7 +12,7 @@
     "generouted": "1.11.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.5.0"
+    "react-router-dom": "^7.5.2"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
