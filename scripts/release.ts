@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { release } from '@vitejs/release-scripts'
 import colors from 'picocolors'
 
+const nextH2RE = /^## /gm
+
 release({
   repo: 'vite-plugin-react',
   packages: ['plugin-react', 'plugin-react-swc', 'plugin-react-oxc'],
@@ -18,11 +20,9 @@ release({
       throw new Error("Can't find '## Unreleased' section in CHANGELOG.md")
     }
     const index = changelog.indexOf('## Unreleased') + 13
-    console.log(
-      colors.dim(
-        changelog.slice(index, changelog.indexOf('## ', index)).trim(),
-      ),
-    )
+    nextH2RE.lastIndex = index
+    const nextH2Pos = nextH2RE.exec(changelog)?.index
+    console.log(colors.dim(changelog.slice(index, nextH2Pos).trim()))
   },
   generateChangelog: async (pkgName, version) => {
     if (pkgName === 'plugin-react-swc') {

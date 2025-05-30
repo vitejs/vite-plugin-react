@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "license": "MIT",
   "author": "Evan You",
   "description": "The default Vite plugin for React projects",
@@ -51,6 +51,7 @@
     "@babel/core": "^7.26.10",
     "@babel/plugin-transform-react-jsx-self": "^7.25.9",
     "@babel/plugin-transform-react-jsx-source": "^7.25.9",
+    "@rolldown/pluginutils": "1.0.0-beta.9",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.17.0"
   },
