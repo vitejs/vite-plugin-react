@@ -18,6 +18,7 @@ import {
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
 
 /* eslint-disable no-restricted-globals */
@@ -139,6 +140,13 @@ const react = (_options?: Options): PluginOption[] => {
         ) {
           throw new Error(
             '[vite:react-swc] The MDX plugin should be placed before this plugin',
+          )
+        }
+
+        // Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and no swc plugins are set
+        if ('rolldownVersion' in vite && !config.plugins.length) {
+          console.warn(
+            '[vite:react-swc] We recommend switching to `vite-plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
           )
         }
       },
