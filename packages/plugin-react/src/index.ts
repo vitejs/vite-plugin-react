@@ -131,8 +131,8 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     name: 'vite:react-babel',
     enforce: 'pre',
     config() {
-      if ('rolldownVersion' in vite) {
-        // Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used
+      if ('rolldownVersion' in vite && !opts.babel) {
+        // Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and no babel config is set
         console.warn(
           '[vite:react-babel] We recommend switching to `vite-plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
         )
