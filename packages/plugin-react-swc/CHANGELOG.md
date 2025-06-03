@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.10.1 (2025-06-03)
+
 ### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)
 
 This fixes an edge case when using HTML minifiers that strips line breaks aggressively.
