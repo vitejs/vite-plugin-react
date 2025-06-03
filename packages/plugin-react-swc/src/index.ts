@@ -76,6 +76,11 @@ type Options = {
    * feature doesn't work is not fun, so we won't provide support for it, hence the name `useAtYourOwnRisk`
    */
   useAtYourOwnRisk_mutateSwcOptions?: (options: SWCOptions) => void
+
+  /**
+   * If set, disables the recommendation to use `vite-plugin-react-oxc`
+   */
+  disableOxcRecommendation?: boolean
 }
 
 const react = (_options?: Options): PluginOption[] => {
@@ -91,6 +96,7 @@ const react = (_options?: Options): PluginOption[] => {
     reactRefreshHost: _options?.reactRefreshHost,
     useAtYourOwnRisk_mutateSwcOptions:
       _options?.useAtYourOwnRisk_mutateSwcOptions,
+    disableOxcRecommendation: _options?.disableOxcRecommendation,
   }
 
   return [
@@ -143,12 +149,14 @@ const react = (_options?: Options): PluginOption[] => {
           )
         }
 
-        /* Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
+        /*
+         * Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
          * No swc plugins are set
          * mutateSwcOptions is not set
          */
         if (
           'rolldownVersion' in vite &&
+          !options.disableOxcRecommendation &&
           !options.useAtYourOwnRisk_mutateSwcOptions &&
           !options.plugins
         ) {
