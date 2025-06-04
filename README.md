@@ -20,6 +20,7 @@ See [`@vitejs/plugin-react` documentation](packages/plugin-react/README.md) and 
 | Package                                               | Version (click for changelogs)                                                                                                             |
 | ----------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 | [@vitejs/plugin-react](packages/plugin-react)         | [![plugin-react version](https://img.shields.io/npm/v/@vitejs/plugin-react.svg?label=%20)](packages/plugin-react/CHANGELOG.md)             |
+| [@vitejs/plugin-react-oxc](packages/plugin-react-oxc) | [![plugin-react-oxc version](https://img.shields.io/npm/v/@vitejs/plugin-react-oxc.svg?label=%20)](packages/plugin-react-oxc/CHANGELOG.md) |
 | [@vitejs/plugin-react-swc](packages/plugin-react-swc) | [![plugin-react-swc version](https://img.shields.io/npm/v/@vitejs/plugin-react-swc.svg?label=%20)](packages/plugin-react-swc/CHANGELOG.md) |
 
 ## License
