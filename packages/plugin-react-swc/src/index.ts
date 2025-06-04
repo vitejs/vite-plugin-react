@@ -12,6 +12,7 @@ import {
   transform,
 } from '@swc/core'
 import type { PluginOption } from 'vite'
+import * as vite from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -131,7 +132,9 @@ const react = (_options?: Options): PluginOption[] => {
         oxc: false,
         optimizeDeps: {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
-          esbuildOptions: { jsx: 'automatic' },
+          ...('rolldownVersion' in vite
+            ? { rollupOptions: { jsx: { mode: 'automatic' } } }
+            : { esbuildOptions: { jsx: 'automatic' } }),
         },
       }),
       configResolved(config) {
