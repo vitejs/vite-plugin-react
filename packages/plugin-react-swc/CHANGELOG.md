@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Use `optimizeDeps.rollupOptions` instead of `optimizeDeps.esbuildOptions` for rolldown-vite [#489](https://github.com/vitejs/vite-plugin-react/pull/489)
+
+This suppresses the warning about `optimizeDeps.esbuildOptions` being deprecated in rolldown-vite.
+
 ## 3.10.1 (2025-06-03)
 
 ### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)
