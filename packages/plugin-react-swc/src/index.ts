@@ -78,7 +78,7 @@ type Options = {
   useAtYourOwnRisk_mutateSwcOptions?: (options: SWCOptions) => void
 
   /**
-   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
+   * If set, disables the recommendation to use `vite-plugin-react-oxc`
    */
   disableOxcRecommendation?: boolean
 }
@@ -160,7 +160,7 @@ const react = (_options?: Options): PluginOption[] => {
           !options.useAtYourOwnRisk_mutateSwcOptions &&
           !options.plugins
         ) {
-          console.warn(
+          config.logger.warn(
             '[vite:react-swc] We recommend switching to `vite-plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
           )
         }
