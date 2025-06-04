@@ -12,7 +12,6 @@ import {
   transform,
 } from '@swc/core'
 import type { PluginOption } from 'vite'
-import * as vite from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
