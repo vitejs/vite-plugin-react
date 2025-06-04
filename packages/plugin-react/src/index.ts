@@ -174,17 +174,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         config.command === 'build' ||
         config.server.hmr === false
 
-      if (
-        'rolldownVersion' in vite &&
-        !opts.disableOxcRecommendation &&
-        !opts.babel
-      ) {
-        // Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and no babel config is set
-        config.logger.warn(
-          '[vite:react-babel] We recommend switching to `vite-plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
-        )
-      }
-
       if ('jsxPure' in opts) {
         config.logger.warnOnce(
           '[@vitejs/plugin-react] jsxPure was removed. You can configure esbuild.jsxSideEffects directly.',
@@ -194,6 +183,23 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
+
+      if (
+        'rolldownVersion' in vite &&
+        !opts.babel &&
+        !hooks.length &&
+        !opts.disableOxcRecommendation
+      ) {
+        /*
+         * Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
+         * No babel config is set
+         * No other plugin is using the `api.reactBabel` hook
+         * It is not disabled by the user
+         */
+        config.logger.warn(
+          '[vite:react-babel] We recommend switching to `vite-plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
+        )
+      }
 
       if (hooks.length > 0) {
         runPluginOverrides = (babelOptions, context) => {

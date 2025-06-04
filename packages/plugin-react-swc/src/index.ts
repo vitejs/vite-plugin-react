@@ -153,12 +153,13 @@ const react = (_options?: Options): PluginOption[] => {
          * Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
          * No swc plugins are set
          * mutateSwcOptions is not set
+         * It is not disabled by the user
          */
         if (
           'rolldownVersion' in vite &&
-          !options.disableOxcRecommendation &&
+          !options.plugins &&
           !options.useAtYourOwnRisk_mutateSwcOptions &&
-          !options.plugins
+          !options.disableOxcRecommendation
         ) {
           config.logger.warn(
             '[vite:react-swc] We recommend switching to `vite-plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
