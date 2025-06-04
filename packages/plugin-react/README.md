@@ -131,7 +131,7 @@ Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
 
 ### disableOxcRecommendation
 
-If set, disables the recommendation to use `vite-plugin-react-oxc` (which is shown when `rolldown-vite` is detected and `babel` is not configured).
+If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and `babel` is not configured).
 
 ## Consistent components exports
 

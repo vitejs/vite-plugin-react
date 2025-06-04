@@ -119,7 +119,7 @@ react({
 
 ### disableOxcRecommendation
 
-If set, disables the recommendation to use `vite-plugin-react-oxc` (which is shown when `rolldown-vite` is detected and neither `swc` plugins are used nor the `swc` options are mutated).
+If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and neither `swc` plugins are used nor the `swc` options are mutated).
 
 ```ts
 react({ disableOxcRecommendation: true })
