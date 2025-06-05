@@ -152,7 +152,7 @@ const react = (_options?: Options): PluginOption[] => {
         }
 
         /*
-         * Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
+         * Suggest to use @vitejs/plugin-react-oxc if `rolldown-vite` is used and:
          * No swc plugins are set
          * mutateSwcOptions is not set
          * It is not disabled by the user
