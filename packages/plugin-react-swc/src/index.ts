@@ -93,6 +93,7 @@ const react = (_options?: Options): PluginOption[] => {
       _options?.useAtYourOwnRisk_mutateSwcOptions,
   }
 
+  let base: string | undefined
   return [
     {
       name: 'vite:react-swc:resolve-runtime',
@@ -131,6 +132,7 @@ const react = (_options?: Options): PluginOption[] => {
         },
       }),
       configResolved(config) {
+        base = config.base
         if (config.server.hmr === false) hmrDisabled = true
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
@@ -145,16 +147,23 @@ const react = (_options?: Options): PluginOption[] => {
           )
         }
       },
-      transformIndexHtml: (_, config) => {
-        if (!hmrDisabled) {
-          return [
-            {
-              tag: 'script',
-              attrs: { type: 'module' },
-              children: getPreambleCode(config.server!.config.base),
-            },
-          ]
-        }
+      transformIndexHtml: {
+        handler() {
+          if (!hmrDisabled) {
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module' },
+                // !!! Rolldown vite full bunlde module break changes, config.server is invalid
+                // children: getPreambleCode(config.server!.config.base),
+                children: getPreambleCode(base!),
+              },
+            ]
+          }
+        },
+        // Rolldown vite full bunlde module break changes.
+        // Changed it to make sure the inject module could be bundled
+        order: 'pre',
       },
       async transform(code, _id, transformOptions) {
         const id = _id.split('?')[0]

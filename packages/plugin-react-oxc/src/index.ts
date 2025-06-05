@@ -103,11 +103,12 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   }
 
   let skipFastRefresh = false
-
+  let base: string | undefined
   const viteRefreshWrapper: Plugin = {
     name: 'vite:react-oxc:refresh-wrapper',
     apply: 'serve',
     configResolved(config) {
+      base = config.base
       skipFastRefresh = config.isProduction || config.server.hmr === false
     },
     transform: {
@@ -136,15 +137,22 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         return { code: newCode, map: null }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
-        return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
-          },
-        ]
+    transformIndexHtml: {
+      handler() {
+        if (!skipFastRefresh)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              // !!! Rolldown vite full bunlde module break changes, config.server is invalid
+              // children: getPreambleCode(config.server!.config.base),
+              children: getPreambleCode(base!),
+            },
+          ]
+      },
+      // Rolldown vite full bunlde module break changes.
+      // Changed it to make sure the inject module could be bundled
+      order: 'pre',
     },
   }
 
