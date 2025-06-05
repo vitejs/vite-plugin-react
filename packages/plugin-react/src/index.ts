@@ -64,7 +64,7 @@ export interface Options {
   reactRefreshHost?: string
 
   /**
-   * If set, disables the recommendation to use `vite-plugin-react-oxc`
+   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
    */
   disableOxcRecommendation?: boolean
 }
