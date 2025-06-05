@@ -200,7 +200,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
          * It is not disabled by the user
          */
         config.logger.warn(
-          '[vite:react-babel] We recommend switching to `vite-plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
+          '[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
         )
       }
 
