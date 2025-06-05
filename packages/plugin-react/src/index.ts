@@ -193,12 +193,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         !hooks.length &&
         !opts.disableOxcRecommendation
       ) {
-        /*
-         * Suggest to use vite-plugin-react-oxc if `rolldown-vite` is used and:
-         * No babel config is set
-         * No other plugin is using the `api.reactBabel` hook
-         * It is not disabled by the user
-         */
         config.logger.warn(
           '[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
         )
