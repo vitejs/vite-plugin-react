@@ -12,13 +12,13 @@ import {
   transform,
 } from '@swc/core'
 import type { PluginOption } from 'vite'
-import * as vite from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
+import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
 
 /* eslint-disable no-restricted-globals */
@@ -76,6 +76,11 @@ type Options = {
    * feature doesn't work is not fun, so we won't provide support for it, hence the name `useAtYourOwnRisk`
    */
   useAtYourOwnRisk_mutateSwcOptions?: (options: SWCOptions) => void
+
+  /**
+   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
+   */
+  disableOxcRecommendation?: boolean
 }
 
 const react = (_options?: Options): PluginOption[] => {
@@ -91,6 +96,7 @@ const react = (_options?: Options): PluginOption[] => {
     reactRefreshHost: _options?.reactRefreshHost,
     useAtYourOwnRisk_mutateSwcOptions:
       _options?.useAtYourOwnRisk_mutateSwcOptions,
+    disableOxcRecommendation: _options?.disableOxcRecommendation,
   }
 
   return [
@@ -142,6 +148,17 @@ const react = (_options?: Options): PluginOption[] => {
         ) {
           throw new Error(
             '[vite:react-swc] The MDX plugin should be placed before this plugin',
+          )
+        }
+
+        if (
+          'rolldownVersion' in vite &&
+          !options.plugins &&
+          !options.useAtYourOwnRisk_mutateSwcOptions &&
+          !options.disableOxcRecommendation
+        ) {
+          config.logger.warn(
+            '[vite:react-swc] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
           )
         }
       },

@@ -62,6 +62,11 @@ export interface Options {
    * reactRefreshHost: 'http://localhost:3000'
    */
   reactRefreshHost?: string
+
+  /**
+   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
+   */
+  disableOxcRecommendation?: boolean
 }
 
 export type BabelOptions = Omit<
@@ -181,6 +186,17 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
+
+      if (
+        'rolldownVersion' in vite &&
+        !opts.babel &&
+        !hooks.length &&
+        !opts.disableOxcRecommendation
+      ) {
+        config.logger.warn(
+          '[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
+        )
+      }
 
       if (hooks.length > 0) {
         runPluginOverrides = (babelOptions, context) => {

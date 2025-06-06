@@ -129,6 +129,10 @@ Otherwise, you'll probably get this error:
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
 ```
 
+### disableOxcRecommendation
+
+If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and `babel` is not configured).
+
 ## Consistent components exports
 
 For React refresh to work correctly, your file should only export React components. You can find a good explanation in the [Gatsby docs](https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works).
