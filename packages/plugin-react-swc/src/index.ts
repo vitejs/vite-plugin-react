@@ -48,6 +48,11 @@ type Options = {
    */
   plugins?: [string, Record<string, any>][]
   /**
+   * Specify the location where SWC stores its intermediate cache files.
+   * @default '.swc'
+   */
+  swcCacheDir?: string
+  /**
    * Set the target for SWC in dev. This can avoid to down-transpile private class method for example.
    * For production target, see https://vite.dev/config/build-options.html#build-target
    * @default "es2020"
@@ -88,6 +93,7 @@ const react = (_options?: Options): PluginOption[] => {
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
+    swcCacheDir: _options?.swcCacheDir,
     plugins: _options?.plugins
       ? _options?.plugins.map((el): typeof el => [resolve(el[0]), el[1]])
       : undefined,
@@ -264,7 +270,7 @@ const transformWithOptions = async (
       jsc: {
         target,
         parser,
-        experimental: { plugins: options.plugins },
+        experimental: { plugins: options.plugins, cacheRoot: options.swcCacheDir },
         transform: {
           useDefineForClassFields: true,
           react: reactConfig,
