@@ -6,10 +6,13 @@
 
 Emit a log which recommends `@vitejs/plugin-react-oxc` when `rolldown-vite` is detected to improve performance and use Oxc under the hood. The warning can be disabled by setting `disableOxcRecommendation: false` in the plugin options.
 
-
 ### Use `optimizeDeps.rollupOptions` instead of `optimizeDeps.esbuildOptions` for rolldown-vite [#489](https://github.com/vitejs/vite-plugin-react/pull/489)
 
 This suppresses the warning about `optimizeDeps.esbuildOptions` being deprecated in rolldown-vite.
+
+### Add Vite 7-beta to peerDependencies range [#497](https://github.com/vitejs/vite-plugin-react/pull/497)
+
+React plugins are compatible with Vite 7, this removes the warning when testing the beta.
 
 ## 4.5.1 (2025-06-03)
 
