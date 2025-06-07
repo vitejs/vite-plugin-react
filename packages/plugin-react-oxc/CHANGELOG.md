@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add Vite 7-beta to peerDependencies range [#497](https://github.com/vitejs/vite-plugin-react/pull/497)
+
+React plugins are compatible with Vite 7, this removes the warning when testing the beta.
+
 ## 0.2.1 (2025-06-03)
 
 ### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)

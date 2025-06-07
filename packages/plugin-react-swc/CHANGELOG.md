@@ -10,6 +10,10 @@ Emit a log which recommends `@vitejs/plugin-react-oxc` when `rolldown-vite` is d
 
 This suppresses the warning about `optimizeDeps.esbuildOptions` being deprecated in rolldown-vite.
 
+### Add Vite 7-beta to peerDependencies range [#497](https://github.com/vitejs/vite-plugin-react/pull/497)
+
+React plugins are compatible with Vite 7, this removes the warning when testing the beta.
+
 ## 3.10.1 (2025-06-03)
 
 ### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)
