@@ -49,7 +49,7 @@ type Options = {
   plugins?: [string, Record<string, any>][]
   /**
    * Specify the location where SWC stores its intermediate cache files.
-   * @default '.swc'
+   * @default 'node_modules/.vite/swc'
    */
   swcCacheDir?: string
   /**
@@ -93,7 +93,7 @@ const react = (_options?: Options): PluginOption[] => {
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
-    swcCacheDir: _options?.swcCacheDir,
+    swcCacheDir: _options?.swcCacheDir ?? 'node_modules/.vite/swc',
     plugins: _options?.plugins
       ? _options?.plugins.map((el): typeof el => [resolve(el[0]), el[1]])
       : undefined,
