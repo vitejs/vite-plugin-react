@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.2 (2025-06-10)
+
 ### Add Vite 7-beta to peerDependencies range [#497](https://github.com/vitejs/vite-plugin-react/pull/497)
 
 React plugins are compatible with Vite 7, this removes the warning when testing the beta.
