@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.5.2 (2025-06-10)
+
 ### Suggest `@vitejs/plugin-react-oxc` if rolldown-vite is detected [#491](https://github.com/vitejs/vite-plugin-react/pull/491)
 
 Emit a log which recommends `@vitejs/plugin-react-oxc` when `rolldown-vite` is detected to improve performance and use Oxc under the hood. The warning can be disabled by setting `disableOxcRecommendation: false` in the plugin options.
