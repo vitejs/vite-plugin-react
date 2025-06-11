@@ -51,18 +51,16 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       return {
         // @ts-expect-error rolldown-vite Vite type incompatibility
         build: silenceUseClientWarning(userConfig) as BuildOptions,
-        oxc: process.env.VITEST
-          ? undefined
-          : {
-              jsx: {
-                runtime: 'automatic',
-                importSource: jsxImportSource,
-                refresh: command === 'serve',
-                development: command === 'serve',
-              },
-              jsxRefreshInclude: include,
-              jsxRefreshExclude: exclude,
-            },
+        oxc: {
+          jsx: {
+            runtime: 'automatic',
+            importSource: jsxImportSource,
+            refresh: !process.env.VITEST && command === 'serve',
+            development: command === 'serve',
+          },
+          jsxRefreshInclude: include,
+          jsxRefreshExclude: exclude,
+        },
         optimizeDeps: {
           include: [
             'react',
