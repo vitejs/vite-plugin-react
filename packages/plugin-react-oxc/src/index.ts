@@ -83,7 +83,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   }
 
   const viteConfigPost: Plugin = {
-    name: 'vite:react-oxc:config-psot',
+    name: 'vite:react-oxc:config-post',
     enforce: 'post',
     config(userConfig) {
       if (userConfig.server?.hmr === false) {
