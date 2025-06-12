@@ -55,7 +55,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           jsx: {
             runtime: 'automatic',
             importSource: jsxImportSource,
-            refresh: !process.env.VITEST && command === 'serve',
+            refresh: command === 'serve',
             development: command === 'serve',
           },
           jsxRefreshInclude: include,
@@ -78,6 +78,22 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
           '@vitejs/plugin-react-oxc requires rolldown-vite to be used. ' +
             'See https://vitejs.dev/guide/rolldown for more details about rolldown-vite.',
         )
+      }
+    },
+  }
+
+  const viteConfigPost: Plugin = {
+    name: 'vite:react-oxc:config-psot',
+    enforce: 'post',
+    config(userConfig) {
+      if (userConfig.server?.hmr === false) {
+        return {
+          oxc: {
+            jsx: {
+              refresh: false,
+            },
+          },
+        }
       }
     },
   }
@@ -148,5 +164,5 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
-  return [viteConfig, viteRefreshRuntime, viteRefreshWrapper]
+  return [viteConfig, viteConfigPost, viteRefreshRuntime, viteRefreshWrapper]
 }
