@@ -36,7 +36,19 @@ export default defineConfig({
 })
 ```
 
-> `node_modules` are never processed by this plugin (but esbuild will)
+> [!NOTE]
+> `node_modules` are not processed by this plugin by default (unlike esbuild), regardless of the `include` option. If you want to include them, you can set the `excludeNodeModules` option to `false`.
+
+### excludeNodeModules
+
+By default, the plugin excludes `node_modules` from being processed. If you want to include them, you can set this option to `false`:
+
+```js
+react({ excludeNodeModules: false })
+```
+
+> [!NOTE]
+> Including `node_modules` can slow down the development server, so use this option with caution.
 
 ### jsxImportSource
 
