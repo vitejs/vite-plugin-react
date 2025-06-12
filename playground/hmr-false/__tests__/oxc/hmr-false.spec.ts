@@ -1,0 +1,1 @@
+import '../hmr-false.spec'
