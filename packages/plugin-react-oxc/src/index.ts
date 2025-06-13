@@ -103,12 +103,15 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   }
 
   let skipFastRefresh = false
+  let base: string
 
   const viteRefreshWrapper: Plugin = {
     name: 'vite:react-oxc:refresh-wrapper',
     apply: 'serve',
     configResolved(config) {
+      base = config.base
       skipFastRefresh = config.isProduction || config.server.hmr === false
+      base = config.base
     },
     transform: {
       filter: {
@@ -136,15 +139,21 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
         return { code: newCode, map: null }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
-        return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
-          },
-        ]
+    transformIndexHtml: {
+      // TODO: maybe we can inject this to entrypoints instead of index.html?
+      handler() {
+        if (!skipFastRefresh)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(base),
+            },
+          ]
+      },
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+      order: 'pre',
     },
   }
 
