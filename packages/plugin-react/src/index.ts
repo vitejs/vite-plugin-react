@@ -126,7 +126,6 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
   let staticBabelOptions: ReactBabelOptions | undefined
-  let base: string | undefined
   // Support patterns like:
   // - import * as React from 'react';
   // - import React from 'react';
