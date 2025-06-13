@@ -121,6 +121,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = false
+  let base: string
   let runPluginOverrides:
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
@@ -382,20 +383,19 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
       },
     },
     transformIndexHtml: {
+      // TODO: maybe we can inject this to entrypoints instead of index.html?
       handler() {
         if (!skipFastRefresh)
           return [
             {
               tag: 'script',
               attrs: { type: 'module' },
-              // !!! Rolldown vite full bunlde module break changes, config.server is invalid
-              // children: getPreambleCode(config.server!.config.base),
-              children: getPreambleCode(base!),
+              children: getPreambleCode(base),
             },
           ]
       },
-      // Rolldown vite full bunlde module break changes.
-      // Changed it to make sure the inject module could be bundled
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
       order: 'pre',
     },
   }

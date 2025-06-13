@@ -81,7 +81,8 @@ const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof 
   newCode = `${sharedHead}${newCode}
 
 if (import.meta.hot && !inWebWorker) {
-  import.meta.hot.getExports(import.meta.url).then((currentExports) => {
+  // NOTE: import(import.meta.url) does not work in full-bundle mode
+  import.meta.hot.getExports().then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
       id,
     )}, currentExports);
