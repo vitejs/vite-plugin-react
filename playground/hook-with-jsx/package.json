@@ -1,7 +1,7 @@
 {
-  "name": "playground-shadow-export",
-  "type": "module",
+  "name": "@vitejs/test-hook-with-jsx",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,6 +14,6 @@
   "devDependencies": {
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react-swc": "../../dist"
+    "@vitejs/plugin-react": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react-oxc",
-  "version": "0.1.1",
+  "version": "0.2.2",
   "license": "MIT",
   "author": "Evan You",
   "contributors": [
@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "peerDependencies": {
-    "vite": "^6.3.0"
+    "vite": "^6.3.0 || ^7.0.0-beta.0"
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
@@ -48,6 +48,6 @@
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.9"
+    "@rolldown/pluginutils": "1.0.0-beta.11"
   }
 }

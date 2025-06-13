@@ -9,15 +9,15 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-compiler-runtime": "19.1.0-rc.1",
+    "react-compiler-runtime": "19.1.0-rc.2",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx-development": "^7.25.9",
+    "@babel/plugin-transform-react-jsx-development": "^7.27.1",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "workspace:*",
-    "babel-plugin-react-compiler": "19.1.0-rc.1",
+    "babel-plugin-react-compiler": "19.1.0-rc.2",
     "typescript": "^5.8.3"
   }
 }
