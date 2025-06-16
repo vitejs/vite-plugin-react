@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     "schedule:weekly",
     "group:allNonMajor",
     "group:swcMonorepo",
@@ -11,7 +11,7 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
-      "depTypeList": ["peerDependencies"],
+      "matchDepTypes": ["peerDependencies"],
       "enabled": false,
     },
     {
@@ -28,8 +28,8 @@
     },
     {
       "matchDepTypes": ["action"],
-      "excludePackagePrefixes": ["actions/", "github/"],
       "pinDigests": true,
+      "matchPackageNames": ["!actions/{/,}**", "!github/{/,}**"],
     },
   ],
   "ignoreDeps": [
