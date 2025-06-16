@@ -1,11 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "schedule:weekly",
-    "group:swcMonorepo",
-    "group:allNonMajor",
-  ],
+  "extends": ["config:recommended", "schedule:weekly", "group:allNonMajor"],
   "labels": ["dependencies"],
   "ignorePaths": ["**/__tests__/**"],
   "rangeStrategy": "bump",
@@ -17,6 +12,12 @@
     {
       "matchFileNames": ["**/react-18/**", "**/compiler-react-18/**"],
       "ignoreDeps": ["react", "react-dom", "@types/react", "@types/react-dom"],
+    },
+    {
+      "extends": ["monorepo:swc"],
+      "groupName": "swc monorepo",
+      "matchUpdateTypes": ["patch", "minor", "major"],
+      "separateMajorMinor": false,
     },
     // renovate doesn't properly handle x.x.x-beta-hash-yyyymm version schema
     {
