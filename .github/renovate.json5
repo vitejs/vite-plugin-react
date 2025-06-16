@@ -3,8 +3,8 @@
   "extends": [
     "config:recommended",
     "schedule:weekly",
-    "group:allNonMajor",
     "group:swcMonorepo",
+    "group:allNonMajor",
   ],
   "labels": ["dependencies"],
   "ignorePaths": ["**/__tests__/**"],
