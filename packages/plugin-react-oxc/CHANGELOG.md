@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.3 (2025-06-16)
+
 ### Disable refresh transform when `server.hmr: false` is set [#502](https://github.com/vitejs/vite-plugin-react/pull/502)
 
 This fixes "`$RefreshReg$` is not defined" error when running Vitest with the plugin.
