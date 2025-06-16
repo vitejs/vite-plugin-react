@@ -16,7 +16,6 @@
     {
       "extends": ["monorepo:swc"],
       "groupName": "swc monorepo",
-      "matchUpdateTypes": ["patch", "minor", "major"],
       "separateMajorMinor": false,
     },
     // renovate doesn't properly handle x.x.x-beta-hash-yyyymm version schema
