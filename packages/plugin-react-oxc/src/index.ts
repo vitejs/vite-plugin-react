@@ -82,6 +82,22 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
+  const viteConfigPost: Plugin = {
+    name: 'vite:react-oxc:config-post',
+    enforce: 'post',
+    config(userConfig) {
+      if (userConfig.server?.hmr === false) {
+        return {
+          oxc: {
+            jsx: {
+              refresh: false,
+            },
+          },
+        }
+      }
+    },
+  }
+
   const viteRefreshRuntime: Plugin = {
     name: 'vite:react-oxc:refresh-runtime',
     enforce: 'pre',
@@ -148,5 +164,5 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     },
   }
 
-  return [viteConfig, viteRefreshRuntime, viteRefreshWrapper]
+  return [viteConfig, viteConfigPost, viteRefreshRuntime, viteRefreshWrapper]
 }
