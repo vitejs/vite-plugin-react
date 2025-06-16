@@ -17,6 +17,11 @@ export default defineConfig({
     testTimeout: timeout,
     hookTimeout: timeout,
     reporters: 'dot',
+    expect: {
+      poll: {
+        timeout: 50 * (process.env.CI ? 200 : 50),
+      },
+    },
   },
   esbuild: {
     target: 'node14',
