@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add raw Rolldown support
+
+This plugin only worked with Vite. But now it can also be used with raw Rolldown. The main purpose for using this plugin with Rolldown is to use react compiler.
+
 ## 4.5.2 (2025-06-10)
 
 ### Suggest `@vitejs/plugin-react-oxc` if rolldown-vite is detected [#491](https://github.com/vitejs/vite-plugin-react/pull/491)
