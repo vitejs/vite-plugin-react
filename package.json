@@ -5,7 +5,7 @@
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.12.2",
   "homepage": "https://github.com/vitejs/vite-plugin-react/",
   "keywords": [
     "frontend",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.15.31",
+    "@types/node": "^22.15.32",
     "@vitejs/release-scripts": "^1.5.0",
     "eslint": "^9.29.0",
     "eslint-plugin-import-x": "^4.15.2",
@@ -45,14 +45,14 @@
     "globals": "^16.2.0",
     "lint-staged": "^15.5.2",
     "picocolors": "^1.1.1",
-    "playwright-chromium": "^1.53.0",
+    "playwright-chromium": "^1.53.1",
     "prettier": "^3.0.3",
     "simple-git-hooks": "^2.13.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0",
+    "typescript-eslint": "^8.34.1",
     "vite": "^6.3.3",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.4"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged --concurrent false"
