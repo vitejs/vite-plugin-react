@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.6.0 (2025-06-23)
+
 ### Add raw Rolldown support
 
 This plugin only worked with Vite. But now it can also be used with raw Rolldown. The main purpose for using this plugin with Rolldown is to use react compiler.
