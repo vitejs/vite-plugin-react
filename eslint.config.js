@@ -127,6 +127,7 @@ export default tseslint.config(
   {
     name: 'disables/playground',
     files: [
+      'packages/**/*.test.?([cm])[jt]s?(x)',
       'playground/**/*.?([cm])[jt]s?(x)',
       'packages/plugin-react-swc/playground/**/*.?([cm])[jt]s?(x)',
     ],
