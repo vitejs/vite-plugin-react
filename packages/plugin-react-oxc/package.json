@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "peerDependencies": {
-    "vite": "^6.3.0 || ^7.0.0-beta.0"
+    "vite": "^6.3.0 || ^7.0.0"
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
