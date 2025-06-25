@@ -1,0 +1,22 @@
+{
+  "name": "@vitejs/test-compound-components",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "workspace:*",
+    "typescript": "^5.5.3",
+    "vite": "^6.0.5"
+  }
+}
