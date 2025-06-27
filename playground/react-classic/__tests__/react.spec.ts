@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { editFile, isServe, page, untilUpdated, viteTestUrl } from '~utils'
+import { editFile, isServe, page, viteTestUrl } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('h1')).toMatch('Hello Vite + React')
@@ -13,12 +13,12 @@ test('should update', async () => {
 
 test.runIf(isServe)('should hmr', async () => {
   editFile('App.jsx', (code) => code.replace('Vite + React', 'Updated'))
-  await untilUpdated(() => page.textContent('h1'), 'Hello Updated')
+  await expect.poll(() => page.textContent('h1')).toMatch('Hello Updated')
   // preserve state
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
 
-if (!process.env.VITE_TEST_FULL_BUNDLE_MODE){
+if (!process.env.VITE_TEST_FULL_BUNDLE_MODE) {
   test.runIf(isServe)(
     'should have annotated jsx with file location metadata',
     async () => {

@@ -6,7 +6,6 @@ import {
   isBuild,
   page,
   untilBrowserLogAfter,
-  untilUpdated,
   viteTestUrl as url,
 } from '~utils'
 
@@ -51,11 +50,11 @@ test('/', async () => {
 test.skipIf(isBuild)('hmr', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
-  await untilUpdated(() => page.textContent('h1'), 'Home')
+  await expect.poll(() => page.textContent('h1')).toMatch('Home')
   editFile('src/pages/Home.jsx', (code) =>
     code.replace('<h1>Home', '<h1>changed'),
   )
-  await untilUpdated(() => page.textContent('h1'), 'changed')
+  await expect.poll(() => page.textContent('h1')).toMatch('changed')
 
   // verify the change also affects next SSR
   const res = await page.reload()
@@ -65,14 +64,14 @@ test.skipIf(isBuild)('hmr', async () => {
 test('client navigation', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
-  await untilUpdated(() => page.textContent('a[href="/about"]'), 'About')
+  await expect.poll(() => page.textContent('a[href="/about"]')).toMatch('About')
   await page.click('a[href="/about"]')
-  await untilUpdated(() => page.textContent('h1'), 'About')
+  await expect.poll(() => page.textContent('h1')).toMatch('About')
 
   if (!isBuild) {
     editFile('src/pages/About.jsx', (code) =>
       code.replace('<h1>About', '<h1>changed'),
     )
-    await untilUpdated(() => page.textContent('h1'), 'changed')
+    await expect.poll(() => page.textContent('h1')).toMatch('changed')
   }
 })

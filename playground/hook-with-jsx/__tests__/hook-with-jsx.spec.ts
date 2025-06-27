@@ -1,11 +1,5 @@
 import { expect, test } from 'vitest'
-import {
-  editFile,
-  isServe,
-  page,
-  untilBrowserLogAfter,
-  untilUpdated,
-} from '~utils'
+import { editFile, isServe, page, untilBrowserLogAfter } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('button')).toMatch('count is 0')
@@ -22,6 +16,6 @@ if (isServe) {
       () => page.textContent('button'),
       '[vite] hot updated: /src/App.tsx',
     )
-    await untilUpdated(() => page.textContent('button'), 'count is 1!')
+    await expect.poll(() => page.textContent('button')).toMatch('count is 1!')
   })
 }

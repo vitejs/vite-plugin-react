@@ -1,11 +1,5 @@
 import { expect, test } from 'vitest'
-import {
-  editFile,
-  isServe,
-  page,
-  untilBrowserLogAfter,
-  untilUpdated,
-} from '~utils'
+import { editFile, isServe, page, untilBrowserLogAfter } from '~utils'
 
 test('should render', async () => {
   expect(await page.textContent('h1')).toMatch('Vite + MDX')
@@ -24,7 +18,7 @@ if (isServe) {
       () => page.textContent('h1'),
       '[vite] hot updated: /src/demo.mdx',
     )
-    await untilUpdated(() => page.textContent('h1'), 'Updated')
+    await expect.poll(() => page.textContent('h1')).toMatch('Updated')
   })
 
   test('should hmr with .md extension', async () => {
@@ -35,9 +29,8 @@ if (isServe) {
         ),
       '[vite] hot updated: /src/demo2.md',
     )
-    await untilUpdated(
-      () => page.getByText('.md extension hmr works.').textContent(),
-      '.md extension hmr works. This is bold text.',
-    )
+    await expect
+      .poll(() => page.getByText('.md extension hmr works.').textContent())
+      .toMatch('.md extension hmr works. This is bold text.')
   })
 }
