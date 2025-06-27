@@ -1,15 +1,14 @@
 export const runtimePublicPath = '/@react-refresh'
 
 const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
-const refreshContentRE = /\$RefreshReg\$\(/
+const refreshRegCall = '$RefreshReg$('
+const refreshSigCall = '$RefreshSig$('
 
 // NOTE: this is exposed publicly via plugin-react
 export const preambleCode = `import { injectIntoGlobalHook } from "__BASE__${runtimePublicPath.slice(
   1,
 )}";
-injectIntoGlobalHook(window);
-window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;`
+injectIntoGlobalHook(window);`
 
 export const getPreambleCode = (base: string): string =>
   preambleCode.replace('__BASE__', base)
@@ -23,11 +22,15 @@ export function addRefreshWrapper<M extends { mappings: string }>(
   id: string,
   reactRefreshHost = '',
 ): { code: string; map: M | null | string } {
-  const hasRefresh = refreshContentRE.test(code)
-  const onlyReactComp = !hasRefresh && reactCompRE.test(code)
+  const hasReg = code.includes(refreshRegCall)
+  const hasSig = code.includes(refreshSigCall)
+  const hasClassComponent = reactCompRE.test(code)
+
   const normalizedMap = map === avoidSourceMapOption ? null : map
 
-  if (!hasRefresh && !onlyReactComp) return { code, map: normalizedMap }
+  if (!hasReg && !hasSig && !hasClassComponent) {
+    return { code, map: normalizedMap }
+  }
 
   const avoidSourceMap = map === avoidSourceMapOption
   const newMap =
@@ -35,50 +38,53 @@ export function addRefreshWrapper<M extends { mappings: string }>(
       ? (JSON.parse(normalizedMap) as M)
       : normalizedMap
 
-  let newCode = code
-  if (hasRefresh) {
-    const refreshHead = removeLineBreaksIfNeeded(
-      `let prevRefreshReg;
-let prevRefreshSig;
-
-if (import.meta.hot && !inWebWorker) {
-  if (!window.$RefreshReg$) {
-    throw new Error(
-      "${pluginName} can't detect preamble. Something is wrong."
-    );
-  }
-
-  prevRefreshReg = window.$RefreshReg$;
-  prevRefreshSig = window.$RefreshSig$;
-  window.$RefreshReg$ = RefreshRuntime.getRefreshReg(${JSON.stringify(id)});
-  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
-}
-
-`,
-      avoidSourceMap,
-    )
-
-    newCode = `${refreshHead}${newCode}
-
-if (import.meta.hot && !inWebWorker) {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-`
-    if (newMap) {
-      newMap.mappings = ';'.repeat(16) + newMap.mappings
-    }
-  }
-
-  const sharedHead = removeLineBreaksIfNeeded(
+  let newCode = removeLineBreaksIfNeeded(
     `import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 
 `,
     avoidSourceMap,
   )
+  if (newMap) {
+    newMap.mappings = ';;;' + newMap.mappings
+  }
 
-  newCode = `${sharedHead}${newCode}
+  if (hasReg) {
+    newCode += removeLineBreaksIfNeeded(
+      `let $RefreshReg$, $RefreshSig$;
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.__vite_plugin_react_preamble_installed__) {
+    throw new Error("${pluginName} can't detect preamble. Something is wrong.");
+  }
+  $RefreshReg$ = RefreshRuntime.getRefreshReg(${JSON.stringify(id)});
+  $RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+
+`,
+      avoidSourceMap,
+    )
+    if (newMap) {
+      newMap.mappings = ';'.repeat(10) + newMap.mappings
+    }
+  } else if (hasSig) {
+    newCode += removeLineBreaksIfNeeded(
+      `let $RefreshSig$;
+if (import.meta.hot && !inWebWorker) {
+  $RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+`,
+      avoidSourceMap,
+    )
+    if (newMap) {
+      newMap.mappings = ';'.repeat(4) + newMap.mappings
+    }
+  }
+
+  newCode += code
+
+  if (hasReg || hasClassComponent) {
+    newCode += `
 
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
@@ -93,10 +99,7 @@ if (import.meta.hot && !inWebWorker) {
       if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
     });
   });
-}
-`
-  if (newMap) {
-    newMap.mappings = ';;;' + newMap.mappings
+}`
   }
 
   return { code: newCode, map: newMap }

@@ -439,6 +439,8 @@ export function injectIntoGlobalHook(globalObject) {
     // Always call the decorated DevTools hook.
     return oldOnCommitFiberRoot.apply(this, arguments)
   }
+
+  globalObject.__vite_plugin_react_preamble_installed__ = true
 }
 
 // This is a wrapper over more primitive functions for setting signature.
