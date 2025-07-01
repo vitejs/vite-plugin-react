@@ -534,16 +534,6 @@ function isLikelyComponentType(type) {
             // Definitely React components.
             return true
           default:
-            // Check if this is a compound component (object with all properties being React components)
-            if (isPlainObject(type)) {
-              const keys = Object.keys(type)
-              if (
-                keys.length > 0 &&
-                keys.every((key) => isLikelyComponentType(type[key]))
-              ) {
-                return true
-              }
-            }
             return false
         }
       }
