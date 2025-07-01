@@ -546,6 +546,10 @@ function isLikelyComponentType(type) {
 }
 
 function isPlainObject(obj) {
+  if (typeof obj !== 'object' || obj === null) {
+    return false
+  }
+
   return (
     Object.prototype.toString.call(obj) === '[object Object]' &&
     (obj.constructor === Object || obj.constructor === undefined)
@@ -576,8 +580,6 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       // If it's a compound component (plain object with component properties),
       // also register the individual components
       if (
-        typeof exportValue === 'object' &&
-        exportValue != null &&
         isPlainObject(exportValue) &&
         Object.keys(exportValue).every((subKey) =>
           isLikelyComponentType(exportValue[subKey]),
