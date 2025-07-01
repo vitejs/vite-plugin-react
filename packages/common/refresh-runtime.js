@@ -556,6 +556,10 @@ function isPlainObject(obj) {
   )
 }
 
+function isLikelyCompoundComponent(type) {
+  return isPlainObject(type) && Object.keys(type).every(isLikelyComponentType)
+}
+
 /**
  * Plugin utils
  */
@@ -576,15 +580,7 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       // The register function has an identity check to not register twice the same component,
       // so this is safe to not used the same key here.
       register(exportValue, filename + ' export ' + key)
-    }
-    // If it's a compound component (plain object with component properties),
-    // also register the individual components
-    else if (
-      isPlainObject(exportValue) &&
-      Object.keys(exportValue).every((subKey) =>
-        isLikelyComponentType(exportValue[subKey]),
-      )
-    ) {
+    } else if (isLikelyCompoundComponent(exportValue)) {
       for (const subKey in exportValue) {
         register(
           exportValue[subKey],
