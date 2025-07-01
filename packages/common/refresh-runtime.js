@@ -534,6 +534,16 @@ function isLikelyComponentType(type) {
             // Definitely React components.
             return true
           default:
+            // Check if this is a compound component (object with all properties being React components)
+            if (isPlainObject(type)) {
+              const keys = Object.keys(type)
+              if (
+                keys.length > 0 &&
+                keys.every((key) => isLikelyComponentType(type[key]))
+              ) {
+                return true
+              }
+            }
             return false
         }
       }
@@ -546,18 +556,10 @@ function isLikelyComponentType(type) {
 }
 
 function isPlainObject(obj) {
-  if (typeof obj !== 'object' || obj === null) {
-    return false
-  }
-
   return (
     Object.prototype.toString.call(obj) === '[object Object]' &&
     (obj.constructor === Object || obj.constructor === undefined)
   )
-}
-
-function isLikelyCompoundComponent(type) {
-  return isPlainObject(type) && Object.keys(type).every(isLikelyComponentType)
 }
 
 /**
@@ -580,12 +582,23 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       // The register function has an identity check to not register twice the same component,
       // so this is safe to not used the same key here.
       register(exportValue, filename + ' export ' + key)
-    } else if (isLikelyCompoundComponent(exportValue)) {
-      for (const subKey in exportValue) {
-        register(
-          exportValue[subKey],
-          filename + ' export ' + key + '$' + subKey,
+
+      // If it's a compound component (plain object with component properties),
+      // also register the individual components
+      if (
+        typeof exportValue === 'object' &&
+        exportValue != null &&
+        isPlainObject(exportValue) &&
+        Object.keys(exportValue).every((subKey) =>
+          isLikelyComponentType(exportValue[subKey]),
         )
+      ) {
+        for (const subKey in exportValue) {
+          register(
+            exportValue[subKey],
+            filename + ' export ' + key + '$' + subKey,
+          )
+        }
       }
     }
   }
