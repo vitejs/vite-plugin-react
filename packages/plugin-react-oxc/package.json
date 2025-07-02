@@ -48,6 +48,6 @@
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.19"
+    "@rolldown/pluginutils": "1.0.0-beta.23"
   }
 }

@@ -29,16 +29,16 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#readme",
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.19",
+    "@rolldown/pluginutils": "1.0.0-beta.23",
     "@swc/core": "^1.12.9"
   },
   "peerDependencies": {
     "vite": "^4 || ^5 || ^6 || ^7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.53.1",
+    "@playwright/test": "^1.53.2",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.15.32",
+    "@types/node": "^22.16.0",
     "@vitejs/react-common": "workspace:*",
     "esbuild": "^0.25.5",
     "fs-extra": "^11.3.0",
