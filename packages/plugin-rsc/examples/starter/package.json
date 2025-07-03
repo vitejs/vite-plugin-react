@@ -18,7 +18,6 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "vite-plugin-inspect": "latest"
   }
 }
