@@ -204,7 +204,7 @@ function defineTest(f: Fixture) {
     // update server code
     const editor = f.createEditor('src/routes/action/action.tsx')
     editor.edit((s) =>
-      s.replace('const TEST_UPDATE = 1;', 'const TEST_UPDATE = 10;'),
+      s.replace('const TEST_UPDATE = 1\n', 'const TEST_UPDATE = 10\n'),
     )
     await expect(async () => {
       if (!options.js) await page.goto(f.url())
@@ -385,8 +385,8 @@ function defineTest(f: Fixture) {
       const editor = f.createEditor('src/routes/style-client/client-dep.tsx')
       editor.edit((s) =>
         s.replaceAll(
-          `import "./client-dep.css";`,
-          `/* import "./client-dep.css"; */`,
+          `import './client-dep.css'`,
+          `/* import './client-dep.css' */`,
         ),
       )
       await page.waitForTimeout(100)
@@ -465,7 +465,7 @@ function defineTest(f: Fixture) {
       // remove css import
       const editor = f.createEditor('src/routes/style-server/server.tsx')
       editor.edit((s) =>
-        s.replaceAll(`import "./server.css";`, `/* import "./server.css"; */`),
+        s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
       )
       await page.waitForTimeout(100)
       await expect(async () => {
