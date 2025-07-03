@@ -72,6 +72,10 @@
     ]
   },
   "pnpm": {
+    "overrides": {
+      "vite": "$vite",
+      "@hiogawa/vite-rsc": "workspace:*"
+    },
     "packageExtensions": {
       "generouted": {
         "peerDependencies": {
