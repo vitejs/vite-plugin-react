@@ -473,9 +473,15 @@ importers:
         specifier: ^1.0.5
         version: 1.1.0(vite@7.0.0(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
     devDependencies:
+      '@hiogawa/utils':
+        specifier: ^1.7.0
+        version: 1.7.0
       '@playwright/test':
         specifier: ^1.53.1
         version: 1.53.2
+      '@tsconfig/strictest':
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/estree':
         specifier: ^1.0.8
         version: 1.0.8
@@ -2086,6 +2092,9 @@ packages:
   '@hiogawa/transforms@0.1.6':
     resolution: {integrity: sha512-IWt/CCZ5+ZxOmpm/X7Eyt5t2byqFEnnwNJK1AliIKnN+6Lq8j3fdYB/4goWcTH7WJCelGQoKpvx86eO//IN48w==}
 
+  '@hiogawa/utils@1.7.0':
+    resolution: {integrity: sha512-ghiEFWBR1NENoHn+lSuW7liicTIzVPN+8Srm5UedCTw43gus0mlse6Wp2lz6GmbOXJ/CalMPp/0Tz2X8tajkAg==}
+
   '@hiogawa/vite-rsc@0.4.8':
     resolution: {integrity: sha512-h7eTVFry1dEV4vez51fBqIy/OX7lnzUksA+AhSOABd65XRS4FAmSJnuXgbM4CHPYUGClGt2SGm9SzHQFXkQHIw==}
     peerDependencies:
@@ -2921,6 +2930,9 @@ packages:
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
+
+  '@tsconfig/strictest@2.0.5':
+    resolution: {integrity: sha512-ec4tjL2Rr0pkZ5hww65c+EEPYwxOi4Ryv+0MtjeaSQRJyq322Q27eOQiFbuNgw2hpL4hB1/W/HBGk3VKS43osg==}
 
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
@@ -6859,6 +6871,8 @@ snapshots:
       magic-string: 0.30.17
       periscopic: 4.0.2
 
+  '@hiogawa/utils@1.7.0': {}
+
   '@hiogawa/vite-rsc@0.4.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(vite@7.0.0(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))':
     dependencies:
       '@hiogawa/transforms': 0.1.6
@@ -7576,6 +7590,8 @@ snapshots:
       vite: 7.0.0(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
 
   '@trysound/sax@0.2.0': {}
+
+  '@tsconfig/strictest@2.0.5': {}
 
   '@tybys/wasm-util@0.9.0':
     dependencies:

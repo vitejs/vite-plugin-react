@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import { defineConfig } from 'tsdown'
-// import pkg from "./package.json" with { type: "json" };
 
 export default defineConfig({
   entry: [
@@ -24,7 +23,7 @@ export default defineConfig({
     'src/utils/rpc.ts',
   ],
   format: ['esm'],
-  external: [/^virtual:/, new RegExp(`^${pkg.name}/`)],
+  external: [/^virtual:/, /^@hiogawa\/vite-rsc/],
   dts: {
     sourcemap: process.argv.slice(2).includes('--sourcemap'),
   },

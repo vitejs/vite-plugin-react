@@ -22,6 +22,8 @@
     "test-e2e": "playwright test --project=chromium",
     "test-e2e-ci": "playwright test",
     "test-package": "bash scripts/test-package.sh",
+    "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
+    "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
     "dev": "tsdown --sourcemap --watch src",
     "build": "tsdown",
     "prepack": "tsdown --clean"
@@ -36,7 +38,9 @@
     "vitefu": "^1.0.5"
   },
   "devDependencies": {
+    "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.53.1",
+    "@tsconfig/strictest": "^2.0.5",
     "@types/estree": "^1.0.8",
     "@types/node": "^22.14.1",
     "react-server-dom-webpack": "^19.1.0",
