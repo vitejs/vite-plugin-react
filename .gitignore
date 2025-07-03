@@ -16,4 +16,3 @@ TODOs.md
 .eslintcache
 test-results/
 .swc/
-*.tsbuildinfo
