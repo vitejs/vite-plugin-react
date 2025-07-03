@@ -18,6 +18,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+      - run: pnpm i
       - run: pnpm build
       - run: pnpm -C packages/plugin-rsc tsc
       - run: pnpm -C packages/plugin-rsc test
@@ -42,6 +43,7 @@ jobs:
         with:
           node-version: 22
       - run: corepack enable
+      - run: pnpm i
       - run: pnpm build
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
