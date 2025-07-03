@@ -1,0 +1,12 @@
+{
+  "name": "@vitejs/test-dep-client-in-server2",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./server.js",
+    "./client": "./client.js"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

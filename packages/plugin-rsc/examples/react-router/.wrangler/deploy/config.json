@@ -1,0 +1,4 @@
+{
+  "configPath": "../../dist/ssr/wrangler.json",
+  "auxiliaryWorkers": [{ "configPath": "../../dist/rsc/wrangler.json" }]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@hiogawa/vite-rsc-examples-basic",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --app",
+    "preview": "vite preview",
+    "cf-build": "CF_BUILD=1 pnpm build",
+    "cf-preview": "wrangler dev",
+    "cf-release": "wrangler deploy"
+  },
+  "dependencies": {
+    "@hiogawa/vite-rsc": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
+    "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
+    "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
+    "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
+    "tailwindcss": "^4.1.4",
+    "vite": "latest",
+    "vite-plugin-inspect": "^11.2.0"
+  }
+}
