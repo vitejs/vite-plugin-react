@@ -44,7 +44,7 @@
     "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.53.1",
     "@tsconfig/strictest": "^2.0.5",
-    "@types/estree": "1.0.6",
+    "@types/estree": "^1.0.8",
     "@types/node": "^22.14.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
