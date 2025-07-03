@@ -39,9 +39,10 @@
     "@playwright/test": "^1.53.1",
     "@types/estree": "^1.0.8",
     "@types/node": "^22.14.1",
-    "react-server-dom-webpack": "*",
+    "react-server-dom-webpack": "^19.1.0",
     "rsc-html-stream": "^0.0.6",
-    "tinyexec": "^1.0.1"
+    "tinyexec": "^1.0.1",
+    "tsdown": "^0.12.9"
   },
   "peerDependencies": {
     "react": "*",
