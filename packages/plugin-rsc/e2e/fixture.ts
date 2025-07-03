@@ -92,6 +92,7 @@ export function useFixture(options: {
           ...options.cliOptions,
         })
         await proc.done
+        assert(proc.proc.exitCode === 0)
       }
       const proc = runCli({
         command: options.command ?? `pnpm preview`,
@@ -161,7 +162,7 @@ export async function setupIsolatedFixture(options: {
   // setup package.json overrides
   const packagesDir = path.join(import.meta.dirname, '..', '..')
   const overrides = {
-    '@hiogawa/vite-rsc': `file:${path.join(packagesDir, 'rsc')}`,
+    '@hiogawa/vite-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
   }
   editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
     Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
@@ -170,6 +171,7 @@ export async function setupIsolatedFixture(options: {
 
   // install
   await x('pnpm', ['i'], {
+    throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
       stdio: process.env.TEST_DEBUG ? 'inherit' : undefined,
