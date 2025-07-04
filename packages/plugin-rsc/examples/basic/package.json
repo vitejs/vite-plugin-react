@@ -26,7 +26,7 @@
     "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
     "tailwindcss": "^4.1.4",
-    "vite": "^7.0.1",
+    "vite": "^7.0.2",
     "vite-plugin-inspect": "^11.2.0"
   }
 }

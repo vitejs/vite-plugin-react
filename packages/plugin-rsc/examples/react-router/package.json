@@ -27,7 +27,7 @@
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
     "tailwindcss": "^4.1.4",
-    "vite": "^7.0.1",
+    "vite": "^7.0.2",
     "vite-plugin-inspect": "^11.2.0",
     "wrangler": "^4.22.0"
   }
