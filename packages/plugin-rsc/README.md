@@ -14,7 +14,7 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 You can start a project by copying an example locally by:
 
 ```sh
-npx degit hi-ogawa/vite-plugins/packages/rsc/examples/starter my-app
+npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 ```
 
 ## Examples
