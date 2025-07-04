@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.10-alpha.0",
+  "version": "0.4.10-alpha.1",
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
   "repository": {
     "type": "git",
