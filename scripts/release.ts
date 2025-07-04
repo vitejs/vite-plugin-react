@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs'
-import { release } from '@vitejs/release-scripts'
+import { release, generateChangelog } from '@vitejs/release-scripts'
 import colors from 'picocolors'
 
 const nextH2RE = /^## /gm
@@ -32,9 +32,13 @@ release({
     console.log(colors.dim(changelog.slice(index, nextH2Pos).trim()))
   },
   generateChangelog: async (pkgName, version) => {
-    // for @vitejs/plugin-rsc, use `pnpm -C packages/plugin-rsc changelog`
-    // and adjust CHANGELOG.md manually.
-    if (pkgName === 'plugin-rsc') return
+    if (pkgName === 'plugin-rsc') {
+      await generateChangelog({
+        getPkgDir: () => `packages/${pkgName}`,
+        tagPrefix: `${pkgName}@`,
+      })
+      return
+    }
 
     if (pkgName === 'plugin-react-swc') {
       console.log(colors.cyan('\nUpdating package.json version...'))
