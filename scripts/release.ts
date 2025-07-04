@@ -32,6 +32,8 @@ release({
     console.log(colors.dim(changelog.slice(index, nextH2Pos).trim()))
   },
   generateChangelog: async (pkgName, version) => {
+    // for @vitejs/plugin-rsc, use `pnpm -C packages/plugin-rsc changelog`
+    // and adjust CHANGELOG.md manually.
     if (pkgName === 'plugin-rsc') return
 
     if (pkgName === 'plugin-react-swc') {
