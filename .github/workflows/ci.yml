@@ -81,7 +81,7 @@ jobs:
         # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
         run: pnpm playwright install chromium
 
-      - if: matrix.node_version == '18.x'
+      - if: matrix.node_version == '18'
         run: pnpm i -D vite@6.3.5 -w
 
       - name: Build
