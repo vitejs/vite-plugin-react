@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@oxc-project/types": ["./node_modules/@types/estree"]
+    },
+    "noImplicitReturns": false,
+    "exactOptionalPropertyTypes": false,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"]
+  }
+}

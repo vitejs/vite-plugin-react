@@ -1,0 +1,13 @@
+@import 'tailwindcss' source('./');
+
+button {
+  @apply bg-gray-100 mx-1 px-2 border hover:bg-gray-200 active:bg-gray-300;
+}
+
+input {
+  @apply mx-1 px-2 border;
+}
+
+a {
+  @apply text-gray-500 underline hover:text-gray-700;
+}

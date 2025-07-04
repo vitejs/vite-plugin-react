@@ -1,0 +1,34 @@
+{
+  "name": "@vitejs/plugin-rsc-examples-react-router",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --app",
+    "preview": "vite preview",
+    "cf-dev": "vite -c ./cf/vite.config.ts",
+    "cf-build": "vite -c ./cf/vite.config.ts build",
+    "cf-preview": "vite -c ./cf/vite.config.ts preview",
+    "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
+  },
+  "dependencies": {
+    "@vitejs/plugin-rsc": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router": "0.0.0-experimental-23decd7bc"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.8.0",
+    "@react-router/dev": "0.0.0-experimental-23decd7bc",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "tailwindcss": "^4.1.4",
+    "vite": "^7.0.2",
+    "vite-plugin-inspect": "^11.2.0",
+    "wrangler": "^4.22.0"
+  }
+}
