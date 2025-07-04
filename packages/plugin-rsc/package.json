@@ -8,6 +8,14 @@
     "directory": "packages/plugin-rsc"
   },
   "license": "MIT",
+  "description": "React Server Components (RSC) support for Vite.",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "react",
+    "react-server-components",
+    "rsc"
+  ],
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
