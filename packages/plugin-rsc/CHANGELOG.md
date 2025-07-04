@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.10
+
+- feat: add `@vitejs/plugin-rsc` ([#521](https://github.com/vitejs/vite-plugin-react/pull/521))
+
+---
+
+Older versions were released as [`@hi-ogawa/vite-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc).
+
 ## v0.4.9 (2025-07-03)
 
 - feat: re-export plugin from base exports entry ([#1125](https://github.com/hi-ogawa/vite-plugins/pull/1125))
