@@ -1,13 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
   "version": "0.4.10-alpha.1",
-  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
-    "directory": "packages/plugin-rsc"
-  },
-  "license": "MIT",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "vite",
@@ -16,6 +9,13 @@
     "react-server-components",
     "rsc"
   ],
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-rsc"
+  },
+  "license": "MIT",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
@@ -49,14 +49,14 @@
     "vitefu": "^1.0.5"
   },
   "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "workspace:*",
     "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.53.1",
     "@tsconfig/strictest": "^2.0.5",
     "@types/estree": "^1.0.8",
     "@types/node": "^22.14.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-server-dom-webpack": "^19.1.0",
