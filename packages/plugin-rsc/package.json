@@ -31,7 +31,6 @@
     "test": "vitest",
     "test-e2e": "playwright test --project=chromium",
     "test-e2e-ci": "playwright test",
-    "test-package": "bash scripts/test-package.sh",
     "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
     "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
     "dev": "tsdown --sourcemap --watch src",
