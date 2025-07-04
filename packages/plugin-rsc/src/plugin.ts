@@ -33,8 +33,6 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import { normalizeViteImportAnalysisUrl } from './vite-utils'
 
-export { transformHoistInlineDirective } from './transforms'
-
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
 let server: ViteDevServer
@@ -71,7 +69,7 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
-type RscPluginOptions = {
+export type RscPluginOptions = {
   /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
    */

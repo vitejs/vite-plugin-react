@@ -68,7 +68,7 @@ graph TD
 - [`vite.config.ts`](./examples/starter/vite.config.ts)
 
 ```js
-import rsc from "@hiogawa/vite-rsc/plugin";
+import rsc from "@hiogawa/vite-rsc";
 
 export default defineConfig() {
   plugins: [
@@ -338,10 +338,10 @@ function __Page(props) {
 export { __Page as Page }
 ```
 
-Underlying transform utility is available from `@hiogawa/vite-rsc/plugin`:
+Underlying transform utility is available from `@hiogawa/vite-rsc`:
 
 ```tsx
-import { transformRscCssExport } from '@hiogawa/vite-rsc/plugin'
+import { transformRscCssExport } from '@hiogawa/vite-rsc'
 ```
 
 ### available on `ssr` environment
@@ -381,10 +381,10 @@ import.meta.hot.on('rsc:update', async () => {
 
 ## Plugin API
 
-### `@hiogawa/vite-rsc/plugin`
+### `@hiogawa/vite-rsc`
 
 ```js
-import rsc from '@hiogawa/vite-rsc/plugin'
+import rsc from '@hiogawa/vite-rsc'
 import { defineConfig } from 'vite'
 
 export default defineConfig({

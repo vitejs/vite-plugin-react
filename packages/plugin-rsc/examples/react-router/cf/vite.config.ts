@@ -1,5 +1,5 @@
 import { cloudflare } from '@cloudflare/vite-plugin'
-import rsc from '@hiogawa/vite-rsc/plugin'
+import rsc from '@hiogawa/vite-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
