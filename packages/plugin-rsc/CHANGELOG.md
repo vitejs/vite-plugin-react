@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.10
+## v0.4.10 (2025-07-04)
 
 - feat: add `@vitejs/plugin-rsc` ([#521](https://github.com/vitejs/vite-plugin-react/pull/521))
 

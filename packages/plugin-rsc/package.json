@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.10",
+  "version": "0.4.10-pre.0",
   "homepage": "https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc",
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
     "test-package": "bash scripts/test-package.sh",
     "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
     "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
+    "changelog": "pnpm dlx @hiogawa/changelog --repo https://github.com/vitejs/vite-plugin-react",
     "dev": "tsdown --sourcemap --watch src",
     "build": "tsdown",
     "prepack": "tsdown --clean"
