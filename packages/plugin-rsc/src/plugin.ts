@@ -55,7 +55,7 @@ let clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
 
 let serverResourcesMetaMap: Record<string, { key: string }> = {}
 
-const PKG_NAME = '@hiogawa/vite-rsc'
+const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
 // dev-only wrapper virtual module of rollupOptions.input.index
@@ -425,7 +425,7 @@ export default function vitePluginRsc(
               endpoint,
             })})`
             s.prepend(
-              `import * as __vite_rsc_rpc from "@hiogawa/vite-rsc/utils/rpc";`,
+              `import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";`,
             )
           } else if (this.environment.mode === 'dev') {
             const environment = server.environments[environmentName]!

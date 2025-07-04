@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-/// <reference types="@hiogawa/vite-rsc/types" />
+/// <reference types="@vitejs/plugin-rsc/types" />
 
 declare module 'react-dom/server.edge' {
   export * from 'react-dom/server'

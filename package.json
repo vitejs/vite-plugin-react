@@ -73,7 +73,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@hiogawa/vite-rsc": "workspace:*"
+      "@vitejs/plugin-rsc": "workspace:*"
     },
     "packageExtensions": {
       "generouted": {

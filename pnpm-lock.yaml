@@ -11,7 +11,7 @@ catalogs:
       version: 6.3.21
 
 overrides:
-  '@hiogawa/vite-rsc': workspace:*
+  '@vitejs/plugin-rsc': workspace:*
 
 packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
 
@@ -521,7 +521,7 @@ importers:
 
   packages/plugin-rsc/examples/basic:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       react:
@@ -567,7 +567,7 @@ importers:
 
   packages/plugin-rsc/examples/hono:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       hono:
@@ -576,7 +576,7 @@ importers:
 
   packages/plugin-rsc/examples/react-router:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       react:
@@ -625,7 +625,7 @@ importers:
 
   packages/plugin-rsc/examples/ssg:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       react:
@@ -653,7 +653,7 @@ importers:
 
   packages/plugin-rsc/examples/starter:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       react:
@@ -678,7 +678,7 @@ importers:
 
   packages/plugin-rsc/examples/starter-cf-single:
     dependencies:
-      '@hiogawa/vite-rsc':
+      '@vitejs/plugin-rsc':
         specifier: workspace:*
         version: link:../..
       react:

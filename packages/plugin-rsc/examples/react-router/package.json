@@ -1,5 +1,5 @@
 {
-  "name": "@hiogawa/vite-rsc-examples-react-router",
+  "name": "@vitejs/plugin-rsc-examples-react-router",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -13,7 +13,7 @@
     "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
   },
   "dependencies": {
-    "@hiogawa/vite-rsc": "latest",
+    "@vitejs/plugin-rsc": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-router": "0.0.0-experimental-23decd7bc"

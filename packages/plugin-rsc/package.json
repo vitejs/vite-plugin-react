@@ -1,5 +1,5 @@
 {
-  "name": "@hiogawa/vite-rsc",
+  "name": "@vitejs/plugin-rsc",
   "version": "0.4.8",
   "homepage": "https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc",
   "repository": {

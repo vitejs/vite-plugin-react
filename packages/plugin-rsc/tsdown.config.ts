@@ -24,7 +24,7 @@ export default defineConfig({
     'src/utils/rpc.ts',
   ],
   format: ['esm'],
-  external: [/^virtual:/, /^@hiogawa\/vite-rsc/],
+  external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
   dts: {
     sourcemap: process.argv.slice(2).includes('--sourcemap'),
   },

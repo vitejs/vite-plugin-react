@@ -1,4 +1,4 @@
-import * as ReactServer from '@hiogawa/vite-rsc/rsc'
+import * as ReactServer from '@vitejs/plugin-rsc/rsc'
 import { Root, getStaticPaths } from '../root'
 import { RSC_POSTFIX, type RscPayload } from './shared'
 

@@ -1,3 +1,3 @@
-import { hydrate } from '@hiogawa/vite-rsc/extra/browser'
+import { hydrate } from '@vitejs/plugin-rsc/extra/browser'
 
 hydrate()

@@ -3,7 +3,7 @@ import {
   createTemporaryReferenceSet,
   encodeReply,
   setServerCallback,
-} from '@hiogawa/vite-rsc/browser'
+} from '@vitejs/plugin-rsc/browser'
 import * as React from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import {

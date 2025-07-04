@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import rsc, { transformHoistInlineDirective } from '@hiogawa/vite-rsc'
+import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, parseAstAsync } from 'vite'

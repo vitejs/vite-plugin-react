@@ -1,4 +1,4 @@
-import { createFromReadableStream } from '@hiogawa/vite-rsc/ssr'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import * as ReactDomServer from 'react-dom/server.edge'
 import {
   unstable_RSCStaticRouter as RSCStaticRouter,

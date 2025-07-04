@@ -1,4 +1,4 @@
-import { fetchRSC } from '@hiogawa/vite-rsc/extra/browser'
+import { fetchRSC } from '@vitejs/plugin-rsc/extra/browser'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 

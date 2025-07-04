@@ -1,5 +1,5 @@
 {
-  "name": "@hiogawa/vite-rsc-examples-hono",
+  "name": "@vitejs/plugin-rsc-examples-hono",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hiogawa/vite-rsc": "workspace:*",
+    "@vitejs/plugin-rsc": "workspace:*",
     "hono": "^4.7.5"
   }
 }

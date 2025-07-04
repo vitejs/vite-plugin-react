@@ -1,7 +1,7 @@
 import {
   createFromReadableStream,
   renderToReadableStream,
-} from '@hiogawa/vite-rsc/rsc'
+} from '@vitejs/plugin-rsc/rsc'
 import { testSerializationAction } from './action'
 import { TestSerializationClient } from './client'
 

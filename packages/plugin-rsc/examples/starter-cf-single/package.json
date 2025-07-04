@@ -1,5 +1,5 @@
 {
-  "name": "@hiogawa/vite-rsc-examples-starter-cf-single",
+  "name": "@vitejs/plugin-rsc-examples-starter-cf-single",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -11,7 +11,7 @@
     "release": "wrangler deploy"
   },
   "dependencies": {
-    "@hiogawa/vite-rsc": "latest",
+    "@vitejs/plugin-rsc": "latest",
     "react": "latest",
     "react-dom": "latest"
   },

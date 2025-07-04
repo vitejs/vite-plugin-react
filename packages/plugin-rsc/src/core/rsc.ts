@@ -9,7 +9,7 @@ import {
 } from './shared'
 
 // @ts-ignore
-import * as ReactServer from '@hiogawa/vite-rsc/vendor/react-server-dom/server.edge'
+import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 
 let init = false
 let requireModule!: (id: string) => unknown

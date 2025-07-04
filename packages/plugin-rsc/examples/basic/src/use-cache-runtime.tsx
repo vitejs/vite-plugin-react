@@ -1,4 +1,4 @@
-import * as ReactRsc from '@hiogawa/vite-rsc/rsc'
+import * as ReactRsc from '@vitejs/plugin-rsc/rsc'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435

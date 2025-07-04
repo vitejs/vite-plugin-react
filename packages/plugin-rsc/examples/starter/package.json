@@ -1,5 +1,5 @@
 {
-  "name": "@hiogawa/vite-rsc-examples-starter",
+  "name": "@vitejs/plugin-rsc-examples-starter",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hiogawa/vite-rsc": "latest",
+    "@vitejs/plugin-rsc": "latest",
     "react": "latest",
     "react-dom": "latest"
   },

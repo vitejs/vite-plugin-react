@@ -1,4 +1,4 @@
-import * as ReactServer from '@hiogawa/vite-rsc/rsc'
+import * as ReactServer from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 

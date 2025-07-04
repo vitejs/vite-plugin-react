@@ -1,6 +1,6 @@
 # Vite + RSC
 
-This example shows how to setup a React application with [Server Component](https://react.dev/reference/rsc/server-components) features on Vite using [`@hiogawa/vite-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc).
+This example shows how to setup a React application with [Server Component](https://react.dev/reference/rsc/server-components) features on Vite using [`@vitejs/plugin-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc).
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hi-ogawa/vite-plugins/tree/main/packages/rsc/examples/starter)
 
@@ -15,20 +15,20 @@ npm run preview
 
 ## API usages
 
-See [`@hiogawa/vite-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc) for the documentation.
+See [`@vitejs/plugin-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc) for the documentation.
 
 - [`vite.config.ts`](./vite.config.ts)
   - `@higoawa/vite-rsc/plugin`
 - [`./src/framework/entry.rsc.tsx`](./src/framework/entry.rsc.tsx)
-  - `@hiogawa/vite-rsc/rsc`
+  - `@vitejs/plugin-rsc/rsc`
   - `import.meta.viteRsc.loadModule`
 - [`./src/framework/entry.ssr.tsx`](./src/framework/entry.ssr.tsx)
-  - `@hiogawa/vite-rsc/ssr`
-  - `@hiogawa/vite-rsc/rsc-html-stream/ssr`
+  - `@vitejs/plugin-rsc/ssr`
+  - `@vitejs/plugin-rsc/rsc-html-stream/ssr`
   - `import.meta.viteRsc.loadBootstrapScriptContent`
 - [`./src/framework/entry.browser.tsx`](./src/framework/entry.browser.tsx)
-  - `@hiogawa/vite-rsc/browser`
-  - `@hiogawa/vite-rsc/rsc-html-stream/browser`
+  - `@vitejs/plugin-rsc/browser`
+  - `@vitejs/plugin-rsc/rsc-html-stream/browser`
 
 ## Notes
 
