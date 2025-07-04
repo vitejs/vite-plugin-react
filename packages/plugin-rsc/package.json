@@ -1,11 +1,11 @@
 {
   "name": "@vitejs/plugin-rsc",
   "version": "0.4.10-pre.0",
-  "homepage": "https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc",
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hi-ogawa/vite-plugins.git",
-    "directory": "packages/rsc"
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-rsc"
   },
   "license": "MIT",
   "type": "module",
