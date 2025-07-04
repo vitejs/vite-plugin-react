@@ -1,7 +1,6 @@
 # @vitejs/plugin-rsc
 
 This package provides [React Server Components](https://react.dev/reference/rsc/server-components) (RSC) support for Vite.
-Any feedback is welcome, please feel free to share an idea in [the discussion](https://github.com/hi-ogawa/vite-plugins/discussions/979).
 
 ## Features
 
@@ -22,12 +21,14 @@ npx degit hi-ogawa/vite-plugins/packages/rsc/examples/starter my-app
 
 - [`./examples/starter`](./examples/starter)
   - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
-- [`./examples/starter-cf-single`](./examples/starter-cf-single)
-  - [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare) integration example with a single worker setup.
 - [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview) with this plugin. It also includes `@cloudflare/vite-plugin` integration with multi workers setup.
+  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview) with this plugin.
+    It also includes `@cloudflare/vite-plugin` integration.
 - [`./examples/basic`](./examples/basic)
-  - This is mainly used for e2e testing and include various edge cases. It also uses a high level `@vitejs/plugin-rsc/extra/{rsc,ssr,browser}` API for quick setup.
+  - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
+    It also uses a high level `@vitejs/plugin-rsc/extra/{rsc,ssr,browser}` API for quick setup.
+- [`./examples/ssg`](./examples/ssg)
+  - Static site generation (SSG) example with MDX and client components for interactivity.
 
 ## Basic Concepts
 
@@ -68,9 +69,10 @@ graph TD
 - [`vite.config.ts`](./examples/starter/vite.config.ts)
 
 ```js
-import rsc from "@vitejs/plugin-rsc";
+import rsc from '@vitejs/plugin-rsc'
+import { defineConfig } from 'vite'
 
-export default defineConfig() {
+export default defineConfig({
   plugins: [
     // add plugin
     rsc(),
@@ -86,7 +88,7 @@ export default defineConfig() {
       build: {
         rollupOptions: {
           input: {
-            index: "./src/framework/entry.rsc.tsx",
+            index: './src/framework/entry.rsc.tsx',
           },
         },
       },
@@ -101,7 +103,7 @@ export default defineConfig() {
       build: {
         rollupOptions: {
           input: {
-            index: "./src/framework/entry.ssr.tsx",
+            index: './src/framework/entry.ssr.tsx',
           },
         },
       },
@@ -117,13 +119,13 @@ export default defineConfig() {
       build: {
         rollupOptions: {
           input: {
-            index: "./src/framework/entry.browser.tsx",
+            index: './src/framework/entry.browser.tsx',
           },
         },
       },
     },
   },
-}
+})
 ```
 
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
@@ -147,16 +149,16 @@ export default async function handler(request: Request): Promise<Response> {
   if (request.url.endsWith('.rsc')) {
     return new Response(rscStream, {
       headers: {
-        'Content-type': 'text/html',
+        'Content-type': 'text/x-component;charset=utf-8',
       },
     })
   }
 
   // delegate to SSR environment for html rendering
-  // `loadSsrModule` is a helper API provided by the plugin for multi environment interaction.
-  const ssrEntry = await import.meta.viteRsc.loadSsrModule<
+  // `loadModule` is a helper API provided by the plugin for multi environment interaction.
+  const ssrEntry = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
-  >()
+  >('ssr', 'index')
   const htmlStream = await ssrEntry.handleSsr(rscStream)
 
   // respond html
@@ -194,19 +196,19 @@ export async function handleSsr(rscStream: ReadableStream) {
 - [`entry.browser.tsx`](./examples/starter/src/framework/entry.browser.tsx)
 
 ```tsx
-import * as ReactClient from '@vitejs/plugin-rsc/browser' // re-export of react-server-dom/client.browser
-import * as ReactDOMClient from 'react-dom/client'
+import * as ReactClient from "@vitejs/plugin-rsc/browser"; // re-export of react-server-dom/client.browser
+import * as ReactDOMClient from "react-dom/client";
 
 async function main() {
   // fetch and deserialize RSC stream back to React VDOM
-  const rscResponse = await fetch(window.location.href + '.rsc')
-  const root = await ReactClient.createFromReadableStream(rscResponse.body)
+  const rscResponse = await fetch(window.location.href + ".rsc);
+  const root = await ReactClient.createFromReadableStream(rscResponse.body);
 
   // hydration (traditional CSR)
-  ReactDOMClient.hydrateRoot(document, root)
+  ReactDOMClient.hydrateRoot(document, root);
 }
 
-main()
+main();
 ```
 
 ## `react-server-dom` API
@@ -338,12 +340,6 @@ function __Page(props) {
 export { __Page as Page }
 ```
 
-Underlying transform utility is available from `@vitejs/plugin-rsc`:
-
-```tsx
-import { transformRscCssExport } from '@vitejs/plugin-rsc'
-```
-
 ### available on `ssr` environment
 
 #### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
@@ -438,3 +434,14 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 ### `@vitejs/plugin-rsc/extra/browser`
 
 - `hydrate`
+
+## Credits
+
+This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.
+Additionally, Parcel and React Router's work on standardizing the RSC bundler/app responsibility has guided this plugin's API design:
+
+- [Waku](https://github.com/wakujs/waku)
+- [@lazarv/react-server](https://github.com/lazarv/react-server)
+- [@jacob-ebey/vite-react-server-dom](https://github.com/jacob-ebey/vite-plugins/tree/main/packages/vite-react-server-dom)
+- [React Router RSC](https://remix.run/blog/rsc-preview)
+- [Parcel RSC](https://parceljs.org/recipes/rsc)
