@@ -4,6 +4,10 @@ name: ci-rsc
     branches:
       - main
   pull_request:
+    paths:
+      - "packages/plugin-rsc/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ci-rsc.yml"
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
