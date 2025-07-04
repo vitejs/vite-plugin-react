@@ -35,5 +35,4 @@ jobs:
         run: pnpm build
 
       - name: Publish
-        # run: pnpm dlx pkg-pr-new@0.0 publish --pnpm --compact './packages/*' './packages/plugin-react-swc/dist'
-        run: pnpm dlx pkg-pr-new@0.0 publish --pnpm --comment=off './packages/*' './packages/plugin-react-swc/dist'
+        run: pnpm dlx pkg-pr-new@0.0 publish --pnpm --compact './packages/*' './packages/plugin-react-swc/dist'
