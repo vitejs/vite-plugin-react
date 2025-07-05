@@ -27,6 +27,7 @@ import { TestTailwindClient } from './tailwind/client'
 import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
+import { TestHydrationMismatch } from './hydration-mismatch/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -47,6 +48,7 @@ export function Root(props: { url: URL }) {
         <TestCssClientNoSsr url={props.url} />
         <TestTailwindClient />
         <TestTailwindServer />
+        <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />
         <TestTemporaryReference />
         <TestServerActionError />
