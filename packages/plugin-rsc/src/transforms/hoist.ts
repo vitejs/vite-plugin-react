@@ -3,19 +3,21 @@ import type { Program } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
-import { hasDirective } from './utils'
 
 export function transformHoistInlineDirective(
   input: string,
   ast: Program,
   {
     runtime,
-    directive,
     rejectNonAsyncFunction,
     ...options
   }: {
-    runtime: (value: string, name: string) => string
-    directive: string
+    runtime: (
+      value: string,
+      name: string,
+      meta: { directiveMatch: RegExpMatchArray },
+    ) => string
+    directive: string | RegExp
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
     decode?: (value: string) => string
@@ -26,6 +28,10 @@ export function transformHoistInlineDirective(
   names: string[]
 } {
   const output = new MagicString(input)
+  const directiveRegex =
+    typeof options.directive === 'string'
+      ? exactRegex(options.directive)
+      : options.directive
 
   // re-export somehow confuses periscopic scopes so remove them before analysis
   walk(ast, {
@@ -48,12 +54,13 @@ export function transformHoistInlineDirective(
         (node.type === 'FunctionExpression' ||
           node.type === 'FunctionDeclaration' ||
           node.type === 'ArrowFunctionExpression') &&
-        node.body.type === 'BlockStatement' &&
-        hasDirective(node.body.body, directive)
+        node.body.type === 'BlockStatement'
       ) {
+        const match = matchDirective(node.body.body, directiveRegex)
+        if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
-            new Error(`"${directive}" doesn't allow non async function`),
+            new Error(`"${directiveRegex}" doesn't allow non async function`),
             {
               pos: node.start,
             },
@@ -116,7 +123,9 @@ export function transformHoistInlineDirective(
         output.move(node.start, node.end, input.length)
 
         // replace original declartion with action register + bind
-        let newCode = `/* #__PURE__ */ ${runtime(newName, newName)}`
+        let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
+          directiveMatch: match,
+        })}`
         if (bindVars.length > 0) {
           const bindArgs = options.encode
             ? options.encode('[' + bindVars.join(', ') + ']')
@@ -138,5 +147,27 @@ export function transformHoistInlineDirective(
   return {
     output,
     names,
+  }
+}
+
+const exactRegex = (s: string): RegExp =>
+  new RegExp('^' + s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$', 'u')
+
+function matchDirective(
+  body: Program['body'],
+  directive: RegExp,
+): RegExpMatchArray | undefined {
+  for (const stable of body) {
+    if (
+      stable.type === 'ExpressionStatement' &&
+      stable.expression.type === 'Literal' &&
+      typeof stable.expression.value === 'string' &&
+      stable.expression.value.match(directive)
+    ) {
+      const match = stable.expression.value.match(directive)
+      if (match) {
+        return match
+      }
+    }
   }
 }
