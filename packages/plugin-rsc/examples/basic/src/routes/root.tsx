@@ -28,6 +28,7 @@ import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
+import { TestBrowserOnly } from './browser-only/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -67,6 +68,7 @@ export function Root(props: { url: URL }) {
         <TestServerInClient />
         <TestActionStateServer />
         <TestModuleInvalidationServer />
+        <TestBrowserOnly />
         <TestUseCache />
       </body>
     </html>

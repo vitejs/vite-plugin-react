@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
+import path from 'node:path'
 
 // log unhandled rejection to debug e2e failures
 if (!(globalThis as any).__debugHandlerRegisterd) {
@@ -23,6 +24,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vitePluginUseCache(),
+    vitePluginBrowserOnly(),
     rsc({
       entries: {
         client: './src/client.tsx',
@@ -93,6 +95,23 @@ export default defineConfig({
         if (this.environment.name === 'client') {
           assert(!viteManifest.source.includes('src/server.tsx'))
           assert(viteManifest.source.includes('src/client.tsx'))
+        }
+      },
+    },
+    {
+      name: 'test-browser-only',
+      writeBundle(_options, bundle) {
+        const moduleIds = Object.values(bundle).flatMap((c) =>
+          c.type === 'chunk' ? [...c.moduleIds] : [],
+        )
+        const browserId = path.resolve(
+          'src/routes/browser-only/browser-dep.tsx',
+        )
+        if (this.environment.name === 'client') {
+          assert(moduleIds.includes(browserId))
+        }
+        if (this.environment.name === 'ssr') {
+          assert(!moduleIds.includes(browserId))
         }
       },
     },
@@ -171,6 +190,35 @@ function vitePluginUseCache(): Plugin[] {
         return {
           code: result.output.toString(),
           map: result.output.generateMap({ hires: 'boundary' }),
+        }
+      },
+    },
+  ]
+}
+
+function vitePluginBrowserOnly(): Plugin[] {
+  return [
+    {
+      name: 'browser-only-component',
+      load(id, code) {
+        if (id.endsWith('?browser-only')) {
+          if (this.environment.name === 'rsc') return
+
+          id = id.slice(0, -'?browser-only'.length)
+          if (this.environment.name === 'ssr') {
+            code
+            // const Test = React.lazy(() => import('./test-browser-only?browser-only'))
+            return `\
+export default () => {
+  throw new Error('Browser-only component on SSR')
+};
+`
+          }
+          if (this.environment.name === 'client') {
+            return `\
+export { default } from ${JSON.stringify(id)}
+`
+          }
         }
       },
     },
