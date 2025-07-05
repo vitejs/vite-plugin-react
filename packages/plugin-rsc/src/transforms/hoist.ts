@@ -28,7 +28,7 @@ export function transformHoistInlineDirective(
   names: string[]
 } {
   const output = new MagicString(input)
-  const directiveRegex =
+  const directive =
     typeof options.directive === 'string'
       ? exactRegex(options.directive)
       : options.directive
@@ -56,11 +56,11 @@ export function transformHoistInlineDirective(
           node.type === 'ArrowFunctionExpression') &&
         node.body.type === 'BlockStatement'
       ) {
-        const match = matchDirective(node.body.body, directiveRegex)
+        const match = matchDirective(node.body.body, directive)
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
-            new Error(`"${directiveRegex}" doesn't allow non async function`),
+            new Error(`"${directive}" doesn't allow non async function`),
             {
               pos: node.start,
             },
@@ -151,7 +151,7 @@ export function transformHoistInlineDirective(
 }
 
 const exactRegex = (s: string): RegExp =>
-  new RegExp('^' + s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$', 'u')
+  new RegExp('^' + s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$')
 
 function matchDirective(
   body: Program['body'],
@@ -161,8 +161,7 @@ function matchDirective(
     if (
       stable.type === 'ExpressionStatement' &&
       stable.expression.type === 'Literal' &&
-      typeof stable.expression.value === 'string' &&
-      stable.expression.value.match(directive)
+      typeof stable.expression.value === 'string'
     ) {
       const match = stable.expression.value.match(directive)
       if (match) {
