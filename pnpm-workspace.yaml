@@ -2,6 +2,7 @@ packages:
   - 'packages/*'
   - 'playground/**'
   - 'packages/plugin-react-swc/playground/**'
+  - 'packages/plugin-rsc/examples/*'
 
 catalogs:
   rolldown-vite:
