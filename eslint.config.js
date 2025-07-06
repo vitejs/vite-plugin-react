@@ -9,7 +9,12 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**'],
+    ignores: [
+      '**/dist/**',
+      '**/playground-temp/**',
+      '**/temp/**',
+      'packages/plugin-rsc/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

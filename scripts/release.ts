@@ -1,12 +1,17 @@
 import { readFileSync, writeFileSync } from 'node:fs'
-import { release } from '@vitejs/release-scripts'
+import { generateChangelog, release } from '@vitejs/release-scripts'
 import colors from 'picocolors'
 
 const nextH2RE = /^## /gm
 
 release({
   repo: 'vite-plugin-react',
-  packages: ['plugin-react', 'plugin-react-swc', 'plugin-react-oxc'],
+  packages: [
+    'plugin-react',
+    'plugin-react-swc',
+    'plugin-react-oxc',
+    'plugin-rsc',
+  ],
   getPkgDir(pkg) {
     if (pkg === 'plugin-react-swc') {
       return `packages/${pkg}/dist`
@@ -15,6 +20,8 @@ release({
   },
   toTag: (pkg, version) => `${pkg}@${version}`,
   logChangelog: async (pkgName) => {
+    if (pkgName === 'plugin-rsc') return
+
     const changelog = readFileSync(`packages/${pkgName}/CHANGELOG.md`, 'utf-8')
     if (!changelog.includes('## Unreleased')) {
       throw new Error("Can't find '## Unreleased' section in CHANGELOG.md")
@@ -25,6 +32,14 @@ release({
     console.log(colors.dim(changelog.slice(index, nextH2Pos).trim()))
   },
   generateChangelog: async (pkgName, version) => {
+    if (pkgName === 'plugin-rsc') {
+      await generateChangelog({
+        getPkgDir: () => `packages/${pkgName}`,
+        tagPrefix: `${pkgName}@`,
+      })
+      return
+    }
+
     if (pkgName === 'plugin-react-swc') {
       console.log(colors.cyan('\nUpdating package.json version...'))
       const pkgJsonPath = `packages/${pkgName}/package.json`

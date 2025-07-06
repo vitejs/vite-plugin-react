@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["src", "*.ts", "types"],
+  "compilerOptions": {
+    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitReturns": false,
+    "checkJs": false,
+    "declaration": true,
+    "isolatedDeclarations": true,
+    "types": ["vite/client"],
+    "jsx": "react-jsx"
+  }
+}
