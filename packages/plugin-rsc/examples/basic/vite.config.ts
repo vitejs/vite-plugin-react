@@ -107,10 +107,20 @@ export default defineConfig({
           'src/routes/browser-only/browser-dep.tsx',
         )
         if (this.environment.name === 'client') {
-          assert(moduleIds.includes(browserId))
+          assert(
+            moduleIds.includes(browserId),
+            `Expected browser-only module '${browserId}' be included in client build, but got: ${moduleIds.join(
+              ', ',
+            )}`,
+          )
         }
         if (this.environment.name === 'ssr') {
-          assert(!moduleIds.includes(browserId))
+          assert(
+            !moduleIds.includes(browserId),
+            `Expected browser-only module '${browserId}' be included in client build, but got: ${moduleIds.join(
+              ', ',
+            )}`,
+          )
         }
       },
     },
