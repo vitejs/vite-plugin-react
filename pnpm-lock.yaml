@@ -515,20 +515,20 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.4
         version: 4.1.11(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
       '@types/react':
-        specifier: latest
+        specifier: ^19.1.8
         version: 19.1.8
       '@types/react-dom':
-        specifier: latest
+        specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: latest
@@ -561,10 +561,10 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
       react-router:
         specifier: 0.0.0-experimental-23decd7bc
@@ -583,10 +583,10 @@ importers:
         specifier: ^4.1.4
         version: 4.1.11(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
       '@types/react':
-        specifier: latest
+        specifier: ^19.1.8
         version: 19.1.8
       '@types/react-dom':
-        specifier: latest
+        specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: latest
@@ -610,26 +610,26 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.0
         version: 3.1.0(rollup@4.44.1)
       '@types/react':
-        specifier: latest
+        specifier: ^19.1.8
         version: 19.1.8
       '@types/react-dom':
-        specifier: latest
+        specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: latest
         version: 4.6.0(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
       vite-plugin-inspect:
-        specifier: latest
+        specifier: ^11.2.0
         version: 11.3.0(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
 
   packages/plugin-rsc/examples/starter:
@@ -638,17 +638,17 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
     devDependencies:
       '@types/react':
-        specifier: latest
+        specifier: ^19.1.8
         version: 19.1.8
       '@types/react-dom':
-        specifier: latest
+        specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: latest
@@ -657,7 +657,7 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
       vite-plugin-inspect:
-        specifier: latest
+        specifier: ^11.2.0
         version: 11.3.0(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
 
   packages/plugin-rsc/examples/starter-cf-single:
@@ -666,20 +666,20 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: latest
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.8.0
         version: 1.9.0(rollup@4.44.1)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(workerd@1.20250617.0)(wrangler@4.23.0)
       '@types/react':
-        specifier: latest
+        specifier: ^19.1.8
         version: 19.1.8
       '@types/react-dom':
-        specifier: latest
+        specifier: ^19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@vitejs/plugin-react':
         specifier: latest
@@ -7495,7 +7495,7 @@ snapshots:
 
   '@types/hoist-non-react-statics@3.3.6':
     dependencies:
-      '@types/react': 19.1.8
+      '@types/react': 18.3.20
       hoist-non-react-statics: 3.3.2
 
   '@types/json-schema@7.0.15': {}
