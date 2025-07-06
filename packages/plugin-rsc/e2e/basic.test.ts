@@ -12,10 +12,10 @@ test.describe('dev-default', () => {
   defineTest(f)
 })
 
-test.describe('dev-initial-ssr', () => {
+test.describe('dev-initial', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
 
-  // verifies css is collected on clean server startup
+  // verify css is collected properly on server startup (i.e. empty module graph)
   testNoJs('style', async ({ page }) => {
     await page.goto(f.url('./'))
     await expect(page.locator('.test-style-client')).toHaveCSS(
