@@ -5,6 +5,7 @@ import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
 
 // TODO: parallel?
+// TODO: all tests don't need to be tested in all variants?
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -927,5 +928,28 @@ function defineTest(f: Fixture) {
     await expect(locator.locator('span')).toHaveText(
       '(actionCount: 5, innerFnCount: 3)',
     )
+  })
+
+  test('hydration mismatch', async ({ page }) => {
+    const errors: Error[] = []
+    page.on('pageerror', (error) => {
+      errors.push(error)
+    })
+    await page.goto(f.url('/?test-hydration-mismatch'))
+    await waitForHydration(page)
+    expect(errors).toMatchObject([
+      {
+        message: expect.stringContaining(
+          f.mode === 'dev'
+            ? `Hydration failed because the server rendered HTML didn't match the client.`
+            : `Minified React error #418`,
+        ),
+      },
+    ])
+
+    errors.length = 0
+    await page.goto(f.url())
+    await waitForHydration(page)
+    expect(errors).toEqual([])
   })
 }
