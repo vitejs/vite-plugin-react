@@ -24,7 +24,6 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vitePluginUseCache(),
-    vitePluginBrowserOnly(),
     rsc({
       entries: {
         client: './src/client.tsx',
@@ -190,35 +189,6 @@ function vitePluginUseCache(): Plugin[] {
         return {
           code: result.output.toString(),
           map: result.output.generateMap({ hires: 'boundary' }),
-        }
-      },
-    },
-  ]
-}
-
-function vitePluginBrowserOnly(): Plugin[] {
-  return [
-    {
-      name: 'browser-only-component',
-      load(id, code) {
-        if (id.endsWith('?browser-only')) {
-          if (this.environment.name === 'rsc') return
-
-          id = id.slice(0, -'?browser-only'.length)
-          if (this.environment.name === 'ssr') {
-            code
-            // const Test = React.lazy(() => import('./test-browser-only?browser-only'))
-            return `\
-export default () => {
-  throw new Error('Browser-only component on SSR')
-};
-`
-          }
-          if (this.environment.name === 'client') {
-            return `\
-export { default } from ${JSON.stringify(id)}
-`
-          }
         }
       },
     },
