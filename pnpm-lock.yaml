@@ -10,9 +10,6 @@ catalogs:
       specifier: npm:rolldown-vite@^6.3.21
       version: 6.3.21
 
-overrides:
-  '@vitejs/plugin-rsc': workspace:*
-
 packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
 
 importers:
@@ -515,7 +512,7 @@ importers:
   packages/plugin-rsc/examples/basic:
     dependencies:
       '@vitejs/plugin-rsc':
-        specifier: workspace:*
+        specifier: latest
         version: link:../..
       react:
         specifier: latest
@@ -561,7 +558,7 @@ importers:
   packages/plugin-rsc/examples/react-router:
     dependencies:
       '@vitejs/plugin-rsc':
-        specifier: workspace:*
+        specifier: latest
         version: link:../..
       react:
         specifier: latest
@@ -610,7 +607,7 @@ importers:
   packages/plugin-rsc/examples/ssg:
     dependencies:
       '@vitejs/plugin-rsc':
-        specifier: workspace:*
+        specifier: latest
         version: link:../..
       react:
         specifier: latest
@@ -638,7 +635,7 @@ importers:
   packages/plugin-rsc/examples/starter:
     dependencies:
       '@vitejs/plugin-rsc':
-        specifier: workspace:*
+        specifier: latest
         version: link:../..
       react:
         specifier: latest
@@ -666,7 +663,7 @@ importers:
   packages/plugin-rsc/examples/starter-cf-single:
     dependencies:
       '@vitejs/plugin-rsc':
-        specifier: workspace:*
+        specifier: latest
         version: link:../..
       react:
         specifier: latest
