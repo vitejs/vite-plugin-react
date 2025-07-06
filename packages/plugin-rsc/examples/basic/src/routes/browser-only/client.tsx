@@ -35,7 +35,7 @@ const useHydrated = () =>
   )
 
 /*
-If we were to implement this whole logic via `browserOnly` helper with transform:
+If we were to implement this whole logic via hypothetical `browserOnly` helper with transform:
 
 ======= input ======
 
