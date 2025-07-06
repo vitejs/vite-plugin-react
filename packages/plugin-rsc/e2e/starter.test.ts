@@ -24,7 +24,7 @@ test.describe('build-cloudflare', () => {
 })
 
 test.describe(() => {
-  const root = '.tmp/starter-react-compiler'
+  const root = 'temp/starter-react-compiler'
   test.beforeAll(async () => {
     fs.rmSync(root, { recursive: true, force: true })
     fs.cpSync('examples/starter', root, { recursive: true })
