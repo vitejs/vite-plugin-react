@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, defineConfig, parseAstAsync } from 'vite'
+import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
@@ -103,24 +103,14 @@ export default defineConfig({
         const moduleIds = Object.values(bundle).flatMap((c) =>
           c.type === 'chunk' ? [...c.moduleIds] : [],
         )
-        const browserId = path.resolve(
-          'src/routes/browser-only/browser-dep.tsx',
+        const browserId = normalizePath(
+          path.resolve('src/routes/browser-only/browser-dep.tsx'),
         )
         if (this.environment.name === 'client') {
-          assert(
-            moduleIds.includes(browserId),
-            `Expected browser-only module '${browserId}' be included in client build, but got: ${moduleIds.join(
-              ', ',
-            )}`,
-          )
+          assert(moduleIds.includes(browserId))
         }
         if (this.environment.name === 'ssr') {
-          assert(
-            !moduleIds.includes(browserId),
-            `Expected browser-only module '${browserId}' be included in client build, but got: ${moduleIds.join(
-              ', ',
-            )}`,
-          )
+          assert(!moduleIds.includes(browserId))
         }
       },
     },
