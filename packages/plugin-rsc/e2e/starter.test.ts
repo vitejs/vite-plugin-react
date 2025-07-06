@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
-import fs from 'node:fs'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -21,24 +20,6 @@ test.describe('dev-cloudflare', () => {
 test.describe('build-cloudflare', () => {
   const f = useFixture({ root: 'examples/starter-cf-single', mode: 'build' })
   defineTest(f)
-})
-
-test.describe(() => {
-  const root = 'temp/starter-react-compiler'
-  test.beforeAll(async () => {
-    fs.rmSync(root, { recursive: true, force: true })
-    fs.cpSync('examples/starter', root, { recursive: true })
-  })
-
-  test.describe('dev-react-compiler', () => {
-    const f = useFixture({ root, mode: 'dev' })
-    defineTest(f)
-  })
-
-  test.describe('build-react-compiler', () => {
-    const f = useFixture({ root, mode: 'build' })
-    defineTest(f)
-  })
 })
 
 function defineTest(f: Fixture) {

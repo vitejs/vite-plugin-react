@@ -43,6 +43,32 @@ test.describe('build-base', () => {
   defineTest(f)
 })
 
+test.describe('dev-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
+      },
+    },
+  })
+  defineTest(f)
+})
+
+test.describe('build-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'build',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
+      },
+    },
+  })
+  defineTest(f)
+})
+
 test.describe(() => {
   // disabled by default
   if (!process.env.TEST_ISOLATED) return
