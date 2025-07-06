@@ -952,4 +952,17 @@ function defineTest(f: Fixture) {
     await waitForHydration(page)
     expect(errors).toEqual([])
   })
+
+  test('browser only', async ({ page, browser }) => {
+    await page.goto(f.url())
+    await expect(page.getByTestId('test-browser-only')).toHaveText(
+      'test-browser-only: true',
+    )
+
+    const pageNoJs = await browser.newPage({ javaScriptEnabled: false })
+    await pageNoJs.goto(f.url())
+    await expect(pageNoJs.getByTestId('test-browser-only')).toHaveText(
+      'test-browser-only: loading...',
+    )
+  })
 }
