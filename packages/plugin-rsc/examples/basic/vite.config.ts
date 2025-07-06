@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
-import react, { type ViteReactPluginApi } from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
@@ -23,20 +23,12 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     process.env.TEST_REACT_COMPILER
-      ? [
-          react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
-          // skip react compiler in non CSR environments
-          {
-            name: 'react-babel-override',
-            api: {
-              reactBabel: (babelConfig, context) => {
-                if (context.ssr) {
-                  babelConfig.plugins = []
-                }
-              },
-            } satisfies ViteReactPluginApi,
-          },
-        ]
+      ? (react({
+          babel: { plugins: ['babel-plugin-react-compiler'] },
+        }).map((p) => ({
+          ...p,
+          applyToEnvironment: (e: any) => e.name === 'client',
+        })) as any)
       : react(),
     vitePluginUseCache(),
     rsc({
