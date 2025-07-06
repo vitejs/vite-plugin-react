@@ -13,13 +13,13 @@
   },
   "dependencies": {
     "@vitejs/plugin-rsc": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.4",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
@@ -28,6 +28,7 @@
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "tailwindcss": "^4.1.4",
     "vite": "^7.0.2",
-    "vite-plugin-inspect": "^11.2.0"
+    "vite-plugin-inspect": "^11.2.0",
+    "wrangler": "^4.22.0"
   }
 }
