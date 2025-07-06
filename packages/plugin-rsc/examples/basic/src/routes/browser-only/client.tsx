@@ -56,6 +56,10 @@ const SomeDep = ({ browserOnlyFallback, ...props }) => {
     </React.Suspense>
   )
 }
-*/
 
-// declare function browserOnly<T>(fn: () => Promise<{ default: React.ComponentType<T> }>): React.ComponentType<T & { browserOnlyFallback?: React.ReactNode }>
+=== helper types ===
+
+declare function browserOnly<T>(fn: () => Promise<{ default: React.ComponentType<T> }>):
+  React.ComponentType<T & { browserOnlyFallback?: React.ReactNode }>
+
+*/
