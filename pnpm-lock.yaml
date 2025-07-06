@@ -558,15 +558,6 @@ importers:
         specifier: ^11.2.0
         version: 11.3.0(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
 
-  packages/plugin-rsc/examples/hono:
-    dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: workspace:*
-        version: link:../..
-      hono:
-        specifier: ^4.7.5
-        version: 4.8.3
-
   packages/plugin-rsc/examples/react-router:
     dependencies:
       '@vitejs/plugin-rsc':
@@ -4031,10 +4022,6 @@ packages:
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
-
-  hono@4.8.3:
-    resolution: {integrity: sha512-jYZ6ZtfWjzBdh8H/0CIFfCBHaFL75k+KMzaM177hrWWm2TWL39YMYaJgB74uK/niRc866NMlH9B8uCvIo284WQ==}
-    engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
@@ -8851,8 +8838,6 @@ snapshots:
   hoist-non-react-statics@3.3.2:
     dependencies:
       react-is: 16.13.1
-
-  hono@4.8.3: {}
 
   hookable@5.5.3: {}
 
