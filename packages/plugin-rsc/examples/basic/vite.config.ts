@@ -29,7 +29,14 @@ export default defineConfig({
   clearScreen: false,
   plugins: [
     tailwindcss(),
-    react(),
+    process.env.TEST_REACT_COMPILER
+      ? (react({
+          babel: { plugins: ['babel-plugin-react-compiler'] },
+        }).map((p) => ({
+          ...p,
+          applyToEnvironment: (e: any) => e.name === 'client',
+        })) as any)
+      : react(),
     vitePluginUseCache(),
     rsc({
       entries: {
@@ -45,23 +52,6 @@ export default defineConfig({
     }),
     // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
     !process.env.ECOSYSTEM_CI && inspect(),
-    {
-      // test server restart scenario on e2e
-      name: 'test-api',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = new URL(req.url!, 'http://localhost')
-          if (url.pathname === '/__test_restart') {
-            setTimeout(() => {
-              server.restart()
-            }, 10)
-            res.end('ok')
-            return
-          }
-          next()
-        })
-      },
-    },
     {
       name: 'test-client-reference-tree-shaking',
       enforce: 'post',
