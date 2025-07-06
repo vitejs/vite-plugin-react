@@ -548,6 +548,9 @@ importers:
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)
+      babel-plugin-react-compiler:
+        specifier: 19.1.0-rc.2
+        version: 19.1.0-rc.2
       tailwindcss:
         specifier: ^4.1.4
         version: 4.1.11
@@ -7931,7 +7934,7 @@ snapshots:
 
   babel-plugin-react-compiler@19.1.0-rc.2:
     dependencies:
-      '@babel/types': 7.27.6
+      '@babel/types': 7.27.7
 
   bail@2.0.2: {}
 

@@ -22,7 +22,14 @@ export default defineConfig({
   clearScreen: false,
   plugins: [
     tailwindcss(),
-    react(),
+    process.env.TEST_REACT_COMPILER
+      ? (react({
+          babel: { plugins: ['babel-plugin-react-compiler'] },
+        }).map((p) => ({
+          ...p,
+          applyToEnvironment: (e: any) => e.name === 'client',
+        })) as any)
+      : react(),
     vitePluginUseCache(),
     rsc({
       entries: {

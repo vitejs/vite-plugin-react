@@ -43,6 +43,39 @@ test.describe('build-base', () => {
   defineTest(f)
 })
 
+test.describe('dev-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
+      },
+    },
+  })
+  defineTest(f)
+
+  test('verify react compiler', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const res = await page.request.get(f.url('src/routes/client.tsx'))
+    expect(await res.text()).toContain('react.memo_cache_sentinel')
+  })
+})
+
+test.describe('build-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'build',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
+      },
+    },
+  })
+  defineTest(f)
+})
+
 test.describe(() => {
   // disabled by default
   if (!process.env.TEST_ISOLATED) return
