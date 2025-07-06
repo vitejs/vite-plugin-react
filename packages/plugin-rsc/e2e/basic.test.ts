@@ -12,6 +12,33 @@ test.describe('dev-default', () => {
   defineTest(f)
 })
 
+test.describe('dev-initial-ssr', () => {
+  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+
+  // verifies css is collected on clean server startup
+  testNoJs('style', async ({ page }) => {
+    await page.goto(f.url('./'))
+    await expect(page.locator('.test-style-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-tw-client')).toHaveCSS(
+      'color',
+      // blue-500
+      'rgb(0, 0, 255)',
+    )
+    await expect(page.locator('.test-tw-server')).toHaveCSS(
+      'color',
+      // red-500
+      'rgb(255, 0, 0)',
+    )
+  })
+})
+
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
@@ -655,15 +682,6 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 0, 0)',
       )
-    })
-
-    testNoJs('no FOUC after server restart @nojs', async ({ page }) => {
-      const res = await page.request.get(f.url('/__test_restart'))
-      expect(await res.text()).toBe('ok')
-      await new Promise((r) => setTimeout(r, 100))
-      await page.goto(f.url('./'))
-      await testCss(page)
-      await testTailwind(page)
     })
   })
 
