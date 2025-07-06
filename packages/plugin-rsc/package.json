@@ -34,8 +34,7 @@
     "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
     "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
     "dev": "tsdown --sourcemap --watch src",
-    "build": "tsdown",
-    "prepack": "tsdown --clean"
+    "build": "tsdown"
   },
   "dependencies": {
     "@mjackson/node-fetch-server": "^0.6.1",

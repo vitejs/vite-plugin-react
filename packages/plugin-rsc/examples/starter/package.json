@@ -18,6 +18,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "vite": "^7.0.2",
     "vite-plugin-inspect": "latest"
   }
 }
