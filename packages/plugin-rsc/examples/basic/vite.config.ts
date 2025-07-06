@@ -23,7 +23,23 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     process.env.TEST_REACT_COMPILER
-      ? react({ babel: { plugins: ['babel-plugin-react-compiler'] } })
+      ? [
+          react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+          {
+            name: 'patch-react-transform',
+            configResolved(config) {
+              const plugin: any = config.plugins.find(
+                (p) => p.name === 'vite:react-babel',
+              )
+              const original = plugin.transform.handler
+              plugin.transform.handler = function () {
+                if (this.environment.name === 'client') {
+                  return original.apply(this, arguments)
+                }
+              }
+            },
+          },
+        ]
       : react(),
     vitePluginUseCache(),
     rsc({

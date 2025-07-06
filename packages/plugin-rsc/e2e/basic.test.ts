@@ -54,6 +54,8 @@ test.describe('dev-react-compiler', () => {
     },
   })
   defineTest(f)
+
+  // TODO: actually verify compiler is enabled in client environment
 })
 
 test.describe('build-react-compiler', () => {
