@@ -55,7 +55,12 @@ test.describe('dev-react-compiler', () => {
   })
   defineTest(f)
 
-  // TODO: actually verify compiler is enabled in client environment
+  test('verify react compiler', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const res = await page.request.get(f.url('src/routes/client.tsx'))
+    expect(await res.text()).toContain('react.memo_cache_sentinel')
+  })
 })
 
 test.describe('build-react-compiler', () => {
