@@ -9,5 +9,5 @@ input {
 }
 
 a {
-  @apply text-gray-500 underline hover:text-gray-700;
+  @apply text-gray-500 underline hover:text-gray-700 cursor-pointer;
 }
