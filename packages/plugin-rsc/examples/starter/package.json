@@ -19,6 +19,6 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
     "vite": "^7.0.2",
-    "vite-plugin-inspect": "^11.2.0"
+    "vite-plugin-inspect": "^11.3.0"
   }
 }
