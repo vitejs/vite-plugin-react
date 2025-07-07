@@ -1,8 +1,8 @@
 # Vite + RSC
 
-This example shows how to setup a React application with [Server Component](https://react.dev/reference/rsc/server-components) features on Vite using [`@vitejs/plugin-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc).
+This example shows how to setup a React application with [Server Component](https://react.dev/reference/rsc/server-components) features on Vite using [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc).
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hi-ogawa/vite-plugins/tree/main/packages/rsc/examples/starter)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/starter)
 
 ```sh
 # run dev server
@@ -15,7 +15,7 @@ npm run preview
 
 ## API usages
 
-See [`@vitejs/plugin-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc) for the documentation.
+See [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc) for the documentation.
 
 - [`vite.config.ts`](./vite.config.ts)
   - `@higoawa/vite-rsc/plugin`

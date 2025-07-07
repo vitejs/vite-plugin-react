@@ -1,4 +1,7 @@
 name: ci-rsc
+
+permissions: {}
+
 on:
   push:
     branches:

@@ -2,8 +2,9 @@ import assert from 'node:assert'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, defineConfig, parseAstAsync } from 'vite'
+import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
+import path from 'node:path'
 
 // log unhandled rejection to debug e2e failures
 if (!(globalThis as any).__debugHandlerRegisterd) {
@@ -21,7 +22,14 @@ export default defineConfig({
   clearScreen: false,
   plugins: [
     tailwindcss(),
-    react(),
+    process.env.TEST_REACT_COMPILER
+      ? (react({
+          babel: { plugins: ['babel-plugin-react-compiler'] },
+        }).map((p) => ({
+          ...p,
+          applyToEnvironment: (e: any) => e.name === 'client',
+        })) as any)
+      : react(),
     vitePluginUseCache(),
     rsc({
       entries: {
@@ -37,23 +45,6 @@ export default defineConfig({
     }),
     // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
     !process.env.ECOSYSTEM_CI && inspect(),
-    {
-      // test server restart scenario on e2e
-      name: 'test-api',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = new URL(req.url!, 'http://localhost')
-          if (url.pathname === '/__test_restart') {
-            setTimeout(() => {
-              server.restart()
-            }, 10)
-            res.end('ok')
-            return
-          }
-          next()
-        })
-      },
-    },
     {
       name: 'test-client-reference-tree-shaking',
       enforce: 'post',
@@ -93,6 +84,23 @@ export default defineConfig({
         if (this.environment.name === 'client') {
           assert(!viteManifest.source.includes('src/server.tsx'))
           assert(viteManifest.source.includes('src/client.tsx'))
+        }
+      },
+    },
+    {
+      name: 'test-browser-only',
+      writeBundle(_options, bundle) {
+        const moduleIds = Object.values(bundle).flatMap((c) =>
+          c.type === 'chunk' ? [...c.moduleIds] : [],
+        )
+        const browserId = normalizePath(
+          path.resolve('src/routes/browser-only/browser-dep.tsx'),
+        )
+        if (this.environment.name === 'client') {
+          assert(moduleIds.includes(browserId))
+        }
+        if (this.environment.name === 'ssr') {
+          assert(!moduleIds.includes(browserId))
         }
       },
     },

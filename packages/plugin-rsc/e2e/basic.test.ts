@@ -12,6 +12,33 @@ test.describe('dev-default', () => {
   defineTest(f)
 })
 
+test.describe('dev-initial', () => {
+  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+
+  // verify css is collected properly on server startup (i.e. empty module graph)
+  testNoJs('style', async ({ page }) => {
+    await page.goto(f.url('./'))
+    await expect(page.locator('.test-style-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-tw-client')).toHaveCSS(
+      'color',
+      // blue-500
+      'rgb(0, 0, 255)',
+    )
+    await expect(page.locator('.test-tw-server')).toHaveCSS(
+      'color',
+      // red-500
+      'rgb(255, 0, 0)',
+    )
+  })
+})
+
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
@@ -37,6 +64,39 @@ test.describe('build-base', () => {
     cliOptions: {
       env: {
         TEST_BASE: 'true',
+      },
+    },
+  })
+  defineTest(f)
+})
+
+test.describe('dev-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
+      },
+    },
+  })
+  defineTest(f)
+
+  test('verify react compiler', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const res = await page.request.get(f.url('src/routes/client.tsx'))
+    expect(await res.text()).toContain('react.memo_cache_sentinel')
+  })
+})
+
+test.describe('build-react-compiler', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'build',
+    cliOptions: {
+      env: {
+        TEST_REACT_COMPILER: 'true',
       },
     },
   })
@@ -623,15 +683,6 @@ function defineTest(f: Fixture) {
         'rgb(255, 0, 0)',
       )
     })
-
-    testNoJs('no FOUC after server restart @nojs', async ({ page }) => {
-      const res = await page.request.get(f.url('/__test_restart'))
-      expect(await res.text()).toBe('ok')
-      await new Promise((r) => setTimeout(r, 100))
-      await page.goto(f.url('./'))
-      await testCss(page)
-      await testTailwind(page)
-    })
   })
 
   test('temporary references @js', async ({ page }) => {
@@ -951,5 +1002,18 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     expect(errors).toEqual([])
+  })
+
+  test('browser only', async ({ page, browser }) => {
+    await page.goto(f.url())
+    await expect(page.getByTestId('test-browser-only')).toHaveText(
+      'test-browser-only: true',
+    )
+
+    const pageNoJs = await browser.newPage({ javaScriptEnabled: false })
+    await pageNoJs.goto(f.url())
+    await expect(pageNoJs.getByTestId('test-browser-only')).toHaveText(
+      'test-browser-only: loading...',
+    )
   })
 }

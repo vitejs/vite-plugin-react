@@ -98,7 +98,6 @@ export default defineConfig({
     // this environment is responsible for:
     // - RSC stream deserialization (RSC stream -> React VDOM)
     // - traditional SSR (React VDOM -> HTML string/stream)
-    // (NOTE: as it can be seen in the above diagram. SSR is technically an optional mechanism.)
     ssr: {
       build: {
         rollupOptions: {
