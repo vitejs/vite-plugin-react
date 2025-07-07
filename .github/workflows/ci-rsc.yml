@@ -31,19 +31,20 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} - ${{ matrix.browser }} - ${{ matrix.shared }}/${{ matrix.shardTotal }})
+    name: test-rsc (${{ matrix.os }} - ${{ matrix.browser }} - ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        shared: [1, 2]
+        shardIndex: [1, 2]
         shardTotal: [2]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        browser: [chromium]
-        include:
-          - os: ubuntu-latest
-            browser: firefox
-          - os: macos-latest
-            browser: webkit
+        config:
+          - { os: ubuntu-latest, browser: chromium }
+          - { os: macos-latest, browser: chromium }
+          - { os: windows-latest, browser: chromium }
+          - { os: ubuntu-latest, browser: firefox }
+          - { os: macos-latest, browser: webkit }
+        os: ${{ matrix.config.os }}
+        browser: ${{ matrix.config.browser }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -54,12 +55,12 @@ jobs:
       - run: pnpm i
       - run: pnpm build
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
-      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }} --shard=${{ matrix.shared }}/${{ matrix.shardTotal }}
+      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           TEST_ISOLATED: true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}-${{ matrix.shared }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}-${{ matrix.shardIndex }}
           path: |
             packages/plugin-rsc/test-results
