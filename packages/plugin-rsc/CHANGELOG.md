@@ -26,15 +26,13 @@
 * **rsc:** test browser only component ([#528](https://github.com/vitejs/vite-plugin-react/issues/528)) ([795303e](https://github.com/vitejs/vite-plugin-react/commit/795303efe78fed2cff2237c6d6d066d76c284ced))
 * **rsc:** test react compiler ([#529](https://github.com/vitejs/vite-plugin-react/issues/529)) ([2966af5](https://github.com/vitejs/vite-plugin-react/commit/2966af52393514e0c23d3236afccba699b042322))
 
-# Changelog
-
-## v0.4.10 (2025-07-04)
+## v0.4.10-alpha.1 (2025-07-04)
 
 - feat: add `@vitejs/plugin-rsc` ([#521](https://github.com/vitejs/vite-plugin-react/pull/521))
 
 ---
 
-Older versions were released as [`@hi-ogawa/vite-rsc`](https://github.com/hi-ogawa/vite-plugins/tree/main/packages/rsc).
+Older versions were released as [`@hi-ogawa/vite-rsc`](https://www.npmjs.com/package/@hiogawa/vite-rsc).
 
 ## v0.4.9 (2025-07-03)
 
