@@ -72,9 +72,6 @@
     ]
   },
   "pnpm": {
-    "overrides": {
-      "@vitejs/plugin-rsc": "workspace:*"
-    },
     "packageExtensions": {
       "generouted": {
         "peerDependencies": {
