@@ -37,14 +37,12 @@ jobs:
       matrix:
         shardIndex: [1, 2]
         shardTotal: [2]
-        config:
+        include:
           - { os: ubuntu-latest, browser: chromium }
-          - { os: macos-latest, browser: chromium }
-          - { os: windows-latest, browser: chromium }
           - { os: ubuntu-latest, browser: firefox }
+          - { os: macos-latest, browser: chromium }
           - { os: macos-latest, browser: webkit }
-        os: ${{ matrix.config.os }}
-        browser: ${{ matrix.config.browser }}
+          - { os: windows-latest, browser: chromium }
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
