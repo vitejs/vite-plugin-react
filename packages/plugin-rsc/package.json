@@ -37,20 +37,20 @@
     "build": "tsdown"
   },
   "dependencies": {
-    "@mjackson/node-fetch-server": "^0.6.1",
-    "es-module-lexer": "^1.6.0",
+    "@mjackson/node-fetch-server": "^0.7.0",
+    "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.17",
     "periscopic": "^4.0.2",
     "turbo-stream": "^3.1.0",
-    "vitefu": "^1.0.5"
+    "vitefu": "^1.1.1"
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.53.1",
+    "@playwright/test": "^1.53.2",
     "@tsconfig/strictest": "^2.0.5",
     "@types/estree": "^1.0.8",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.16.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "workspace:*",
