@@ -13,21 +13,22 @@
   },
   "dependencies": {
     "@vitejs/plugin-rsc": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
     "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
-    "tailwindcss": "^4.1.4",
+    "tailwindcss": "^4.1.11",
     "vite": "^7.0.2",
-    "vite-plugin-inspect": "^11.2.0"
+    "vite-plugin-inspect": "^11.3.0",
+    "wrangler": "^4.23.0"
   }
 }
