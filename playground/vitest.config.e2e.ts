@@ -15,7 +15,7 @@ export default defineConfig({
     pool: 'forks',
     include: ['./playground/**/*.spec.[tj]s'],
     exclude: isBelowNode20
-      ? ['__tests__/oxc', ...defaultExclude] // plugin-oxc only supports node >= 20
+      ? ['**/__tests__/oxc/**', ...defaultExclude] // plugin-oxc only supports node >= 20
       : defaultExclude,
     setupFiles: ['./playground/vitestSetup.ts'],
     globalSetup: ['./playground/vitestGlobalSetup.ts'],
