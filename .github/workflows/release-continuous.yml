@@ -64,6 +64,11 @@ jobs:
           cp -rf packages/plugin-rsc packages/plugin-rsc-experimental
           sed -i 's#"name": "@vitejs/plugin-rsc"#"name": "@vitejs/plugin-rsc-experimental"#' packages/plugin-rsc-experimental/package.json
 
+      # strip prepack to avoid duplicate builds
+      - run: |
+          sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-canary/package.json
+          sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-experimental/package.json
+
       - run: |
           pnpx pkg-pr-new publish --comment=off \
             packages/plugin-rsc-canary \
