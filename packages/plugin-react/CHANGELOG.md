@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Return `Plugin[]` instead of `PluginOption[]`
+
+The return type has changed from `react(): PluginOption[]` to more specialized type `react(): Plugin[]`. This allows for type-safe manipulation of plugins, for example:
+
+```tsx
+// previously this causes type errors
+react({ babel: { plugins: ['babel-plugin-react-compiler'] } })
+  .map(p => ({ ...p, applyToEnvironment: e => e.name === 'client' }))
+```
+
 ## 4.6.0 (2025-06-23)
 
 ### Add raw Rolldown support

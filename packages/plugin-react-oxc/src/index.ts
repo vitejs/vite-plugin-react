@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
-import type { BuildOptions, Plugin, PluginOption } from 'vite'
+import type { BuildOptions, Plugin } from 'vite'
 import {
   addRefreshWrapper,
   avoidSourceMapOption,
@@ -30,7 +30,7 @@ export interface Options {
 
 const defaultIncludeRE = /\.[tj]sx?(?:$|\?)/
 
-export default function viteReact(opts: Options = {}): PluginOption[] {
+export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = [
     ...(Array.isArray(opts.exclude)

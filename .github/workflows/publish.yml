@@ -55,8 +55,17 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - if: steps.tag.outputs.isAlpha == 'false'
+      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName != 'plugin-rsc'
         uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
         with:
           path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
           tag-name: ${{ github.ref_name }}
+
+      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName == 'plugin-rsc'
+        uses: yyx990803/release-tag@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          body: |
+            Please refer to [CHANGELOG.md](https://github.com/vitejs/vite-plugin-react/blob/${{ github.ref_name }}/packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md) for details.
