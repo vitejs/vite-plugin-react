@@ -31,7 +31,7 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }})
+    name: test-rsc (${{ matrix.os }} - ${{ matrix.browser }} - ${{ matrix.shared }}/${{ matrix.shardTotal }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
