@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Return `Plugin[]` instead of `PluginOption[]`
+
 ## 3.10.2 (2025-06-10)
 
 ### Suggest `@vitejs/plugin-react-oxc` if rolldown-vite is detected [#491](https://github.com/vitejs/vite-plugin-react/pull/491)

@@ -5,7 +5,7 @@ import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
 import * as vite from 'vite'
-import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -109,7 +109,7 @@ export type ViteReactPluginApi = {
 const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
-export default function viteReact(opts: Options = {}): PluginOption[] {
+export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude
   const filter = createFilter(include, exclude)
