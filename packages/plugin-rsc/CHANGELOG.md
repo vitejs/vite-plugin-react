@@ -1,3 +1,8 @@
+## <small>[0.4.11](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.10...plugin-rsc@0.4.11) (2025-07-07)</small>
+### Miscellaneous Chores
+
+* fix rsc release ([#543](https://github.com/vitejs/vite-plugin-react/issues/543)) ([58c8bfd](https://github.com/vitejs/vite-plugin-react/commit/58c8bfd1f4e9584d81cb5e85aa466119fd72bbbc))
+
 ## <small>0.4.10 (2025-07-07)</small>
 ### Features
 
