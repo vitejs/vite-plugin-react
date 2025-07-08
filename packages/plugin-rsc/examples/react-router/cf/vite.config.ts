@@ -36,19 +36,6 @@ export default defineConfig({
         },
       ],
     }),
-    {
-      name: 'react-router-fixup',
-      transform(code) {
-        if (code.includes(`import { AsyncLocalStorage } from 'async_hooks';`)) {
-          code = code.replaceAll('async_hooks', 'node:async_hooks')
-          code = code.replaceAll(
-            `global.___reactRouterServerStorage___`,
-            `globalThis.___reactRouterServerStorage___`,
-          )
-          return code
-        }
-      },
-    },
   ],
   environments: {
     client: {
