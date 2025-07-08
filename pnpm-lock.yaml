@@ -7,7 +7,7 @@ settings:
 catalogs:
   rolldown-vite:
     vite:
-      specifier: npm:rolldown-vite@^7.0.5
+      specifier: https://pkg.pr.new/vitejs/rolldown-vite@318
       version: 7.0.5
 
 packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
@@ -136,7 +136,7 @@ importers:
         version: 3.5.0(typescript@5.8.3)
       vite:
         specifier: catalog:rolldown-vite
-        version: rolldown-vite@7.0.5(@types/node@22.16.0)(esbuild@0.25.5)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
+        version: rolldown-vite@https://pkg.pr.new/vitejs/rolldown-vite@318(@types/node@22.16.0)(esbuild@0.25.5)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1)
 
   packages/plugin-react-swc:
     dependencies:
@@ -5039,8 +5039,9 @@ packages:
       vue-tsc:
         optional: true
 
-  rolldown-vite@7.0.5:
-    resolution: {integrity: sha512-z239GrVtwr+DVgFw6s64Wa+OLjE4aG1Ux+MeVdQKXes0XaIDja5ouacPDLExgpSlplbe0zxSb1JbYtFvOr+pIw==}
+  rolldown-vite@https://pkg.pr.new/vitejs/rolldown-vite@318:
+    resolution: {tarball: https://pkg.pr.new/vitejs/rolldown-vite@318}
+    version: 7.0.5
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -9829,7 +9830,7 @@ snapshots:
       - oxc-resolver
       - supports-color
 
-  rolldown-vite@7.0.5(@types/node@22.16.0)(esbuild@0.25.5)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1):
+  rolldown-vite@https://pkg.pr.new/vitejs/rolldown-vite@318(@types/node@22.16.0)(esbuild@0.25.5)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.7.1):
     dependencies:
       '@oxc-project/runtime': 0.75.0
       fdir: 6.4.6(picomatch@4.0.2)
