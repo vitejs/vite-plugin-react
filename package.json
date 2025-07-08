@@ -72,6 +72,9 @@
     ]
   },
   "pnpm": {
+    "overrides": {
+      "vite": "catalog:rolldown-vite"
+    },
     "packageExtensions": {
       "generouted": {
         "peerDependencies": {
