@@ -43,6 +43,9 @@ jobs:
             browser: firefox
           - os: macos-latest
             browser: webkit
+          # - os: ubuntu-latest
+          #   browser: chromium
+          #   rolldown: true
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -62,3 +65,30 @@ jobs:
           name: test-results-${{ matrix.os }}-${{ matrix.browser }}
           path: |
             packages/plugin-rsc/test-results
+
+  # test-e2e-rolldown:
+  #   name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }})
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #       browser: [chromium]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 22
+  #     - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+  #     - run: pnpm i -w vite@npm:rolldown-vite@latest
+  #     - run: pnpm i --no-frozen-lockfile
+  #     - run: pnpm build
+  #     - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
+  #     - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
+  #       env:
+  #         TEST_ISOLATED: true
+  #     - uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: test-results-${{ matrix.os }}-${{ matrix.browser }}
+  #         path: |
+  #           packages/plugin-rsc/test-results
