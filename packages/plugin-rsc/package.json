@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.10-alpha.1",
+  "version": "0.4.11",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "vite",
@@ -34,7 +34,8 @@
     "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
     "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
     "dev": "tsdown --sourcemap --watch src",
-    "build": "tsdown"
+    "build": "tsdown",
+    "prepack": "tsdown"
   },
   "dependencies": {
     "@mjackson/node-fetch-server": "^0.7.0",
