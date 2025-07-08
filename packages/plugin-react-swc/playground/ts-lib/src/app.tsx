@@ -1,15 +1,15 @@
-import { Link, Outlet } from 'react-router-dom'
+import TestNonJs from '@vitejs/test-dep-non-js'
 
 export default function App() {
   return (
     <section style={{ margin: 24 }}>
       <header style={{ display: 'flex', gap: 24 }}>
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
+        {/* <Link to="/">Home</Link>
+        <Link to="/about">About</Link> */}
       </header>
 
       <main>
-        <Outlet />
+        <TestNonJs />
       </main>
     </section>
   )
