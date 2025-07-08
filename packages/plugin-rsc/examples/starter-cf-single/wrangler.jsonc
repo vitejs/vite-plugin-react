@@ -1,0 +1,8 @@
+{
+  "$schema": "https://www.unpkg.com/wrangler@4.19.1/config-schema.json",
+  "name": "vite-rsc-starter",
+  "main": "./src/framework/entry.rsc.tsx",
+  "workers_dev": true,
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_als"]
+}

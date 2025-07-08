@@ -1,0 +1,70 @@
+{
+  "name": "@vitejs/plugin-rsc",
+  "version": "0.4.11",
+  "description": "React Server Components (RSC) support for Vite.",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "react",
+    "react-server-components",
+    "rsc"
+  ],
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-rsc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    "./types": "./types/index.d.ts",
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "test-e2e": "playwright test --project=chromium",
+    "test-e2e-ci": "playwright test",
+    "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
+    "tsc-dev": "pnpm tsc --watch --preserveWatchOutput",
+    "dev": "tsdown --sourcemap --watch src",
+    "build": "tsdown",
+    "prepack": "tsdown"
+  },
+  "dependencies": {
+    "@mjackson/node-fetch-server": "^0.7.0",
+    "es-module-lexer": "^1.7.0",
+    "estree-walker": "^3.0.3",
+    "magic-string": "^0.30.17",
+    "periscopic": "^4.0.2",
+    "turbo-stream": "^3.1.0",
+    "vitefu": "^1.1.1"
+  },
+  "devDependencies": {
+    "@hiogawa/utils": "^1.7.0",
+    "@playwright/test": "^1.53.2",
+    "@tsconfig/strictest": "^2.0.5",
+    "@types/estree": "^1.0.8",
+    "@types/node": "^22.16.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "workspace:*",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-server-dom-webpack": "^19.1.0",
+    "rsc-html-stream": "^0.0.6",
+    "tinyexec": "^1.0.1",
+    "tsdown": "^0.12.9"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "vite": "*"
+  }
+}

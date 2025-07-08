@@ -9,4 +9,7 @@ export default defineBuildConfig({
     emitCJS: true,
     inlineDependencies: true,
   },
+  replace: {
+    'globalThis.__IS_BUILD__': 'true',
+  },
 })

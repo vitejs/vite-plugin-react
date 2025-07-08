@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { ConsoleMessage, ElementHandle } from 'playwright-chromium'
 import { expect } from 'vitest'
-import { isBuild, page, testDir } from './vitestSetup'
+import { page, testDir } from './vitestSetup'
 
 export * from './vitestSetup'
 
@@ -37,8 +37,6 @@ function rgbToHex(rgb: string): string {
   }
 }
 
-const timeout = (n: number) => new Promise((r) => setTimeout(r, n))
-
 async function toEl(el: string | ElementHandle): Promise<ElementHandle> {
   if (typeof el === 'string') {
     return await page.$(el)
@@ -69,9 +67,7 @@ export function readFile(filename: string): string {
 export function editFile(
   filename: string,
   replacer: (str: string) => string,
-  runInBuild: boolean = false,
 ): void {
-  if (isBuild && !runInBuild) return
   filename = path.resolve(testDir, filename)
   const content = fs.readFileSync(filename, 'utf-8')
   const modified = replacer(content)
@@ -84,27 +80,6 @@ export function addFile(filename: string, content: string): void {
 
 export function removeFile(filename: string): void {
   fs.unlinkSync(path.resolve(testDir, filename))
-}
-
-/**
- * Poll a getter until the value it returns includes the expected value.
- */
-export async function untilUpdated(
-  poll: () => string | Promise<string>,
-  expected: string,
-  runInBuild = false,
-): Promise<void> {
-  if (isBuild && !runInBuild) return
-  const maxTries = process.env.CI ? 100 : 50
-  for (let tries = 0; tries < maxTries; tries++) {
-    const actual = (await poll()) ?? ''
-    if (actual.indexOf(expected) > -1 || tries === maxTries - 1) {
-      expect(actual).toMatch(expected)
-      break
-    } else {
-      await timeout(50)
-    }
-  }
 }
 
 type UntilBrowserLogAfterCallback = (logs: string[]) => PromiseLike<void> | void
@@ -204,6 +179,11 @@ async function untilBrowserLog(
   await promise
 
   return logs
+}
+
+const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g
+export function escapeRegex(str: string): string {
+  return str.replace(escapeRegexRE, '\\$&')
 }
 
 /**

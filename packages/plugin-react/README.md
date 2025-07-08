@@ -2,7 +2,7 @@
 
 The default Vite plugin for React projects.
 
-- enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development
+- enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development (requires react >= 16.9)
 - use the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
 - use custom Babel plugins/presets
 - small installation size
@@ -46,7 +46,7 @@ Control where the JSX factory is imported from. Default to `'react'`
 react({ jsxImportSource: '@emotion/react' })
 ```
 
-## jsxRuntime
+### jsxRuntime
 
 By default, the plugin uses the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html). However, if you encounter any issues, you may opt out using the `jsxRuntime` option.
 
@@ -94,9 +94,19 @@ This option does not enable _code transformation_. That is handled by esbuild.
 
 Here's the [complete list of Babel parser plugins](https://babeljs.io/docs/en/babel-parser#ecmascript-proposalshttpsgithubcombabelproposals).
 
+### reactRefreshHost
+
+The `reactRefreshHost` option is only necessary in a module federation context. It enables HMR to work between a remote & host application. In your remote Vite config, you would add your host origin:
+
+```js
+react({ reactRefreshHost: 'http://localhost:3000' })
+```
+
+Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
+
 ## Middleware mode
 
-In [middleware mode](https://vitejs.dev/config/server-options.html#server-middlewaremode), you should make sure your entry `index.html` file is transformed by Vite. Here's an example for an Express server:
+In [middleware mode](https://vite.dev/config/server-options.html#server-middlewaremode), you should make sure your entry `index.html` file is transformed by Vite. Here's an example for an Express server:
 
 ```js
 app.get('/', async (req, res, next) => {
@@ -118,6 +128,10 @@ Otherwise, you'll probably get this error:
 ```
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
 ```
+
+### disableOxcRecommendation
+
+If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and `babel` is not configured).
 
 ## Consistent components exports
 

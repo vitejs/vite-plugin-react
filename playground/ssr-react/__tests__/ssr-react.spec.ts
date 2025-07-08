@@ -1,15 +1,13 @@
 import fetch from 'node-fetch'
 import { expect, test } from 'vitest'
-import { port } from './serve'
 import {
   browserLogs,
   editFile,
+  isBuild,
   page,
   untilBrowserLogAfter,
-  untilUpdated,
+  viteTestUrl as url,
 } from '~utils'
-
-const url = `http://localhost:${port}`
 
 test('/env', async () => {
   await untilBrowserLogAfter(() => page.goto(url + '/env'), 'hydrated')
@@ -49,23 +47,31 @@ test('/', async () => {
   expect(html).toMatch('Home')
 })
 
-test('hmr', async () => {
+test.skipIf(isBuild)('hmr', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
+  await expect.poll(() => page.textContent('h1')).toMatch('Home')
   editFile('src/pages/Home.jsx', (code) =>
     code.replace('<h1>Home', '<h1>changed'),
   )
-  await untilUpdated(() => page.textContent('h1'), 'changed')
+  await expect.poll(() => page.textContent('h1')).toMatch('changed')
+
+  // verify the change also affects next SSR
+  const res = await page.reload()
+  expect(await res?.text()).toContain('<h1>changed')
 })
 
 test('client navigation', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
-  await untilUpdated(() => page.textContent('a[href="/about"]'), 'About')
+  await expect.poll(() => page.textContent('a[href="/about"]')).toMatch('About')
   await page.click('a[href="/about"]')
-  await untilUpdated(() => page.textContent('h1'), 'About')
-  editFile('src/pages/About.jsx', (code) =>
-    code.replace('<h1>About', '<h1>changed'),
-  )
-  await untilUpdated(() => page.textContent('h1'), 'changed')
+  await expect.poll(() => page.textContent('h1')).toMatch('About')
+
+  if (!isBuild) {
+    editFile('src/pages/About.jsx', (code) =>
+      code.replace('<h1>About', '<h1>changed'),
+    )
+    await expect.poll(() => page.textContent('h1')).toMatch('changed')
+  }
 })

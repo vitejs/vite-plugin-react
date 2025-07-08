@@ -1,7 +1,9 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'vitest/config'
+import { defaultExclude, defineConfig } from 'vitest/config'
 
-const timeout = process.env.CI ? 20_000 : 10_000
+const timeout = process.env.PWDEBUG ? Infinity : process.env.CI ? 20_000 : 5_000
+
+const isBelowNode20 = +process.versions.node.split('.')[0] < 20
 
 export default defineConfig({
   resolve: {
@@ -10,15 +12,20 @@ export default defineConfig({
     },
   },
   test: {
+    pool: 'forks',
     include: ['./playground/**/*.spec.[tj]s'],
+    exclude: isBelowNode20
+      ? ['**/__tests__/oxc/**', ...defaultExclude] // plugin-oxc only supports node >= 20
+      : defaultExclude,
     setupFiles: ['./playground/vitestSetup.ts'],
     globalSetup: ['./playground/vitestGlobalSetup.ts'],
     testTimeout: timeout,
     hookTimeout: timeout,
     reporters: 'dot',
-    onConsoleLog(log) {
-      if (log.match(/experimental|jit engine|emitted file|tailwind/i))
-        return false
+    expect: {
+      poll: {
+        timeout: 50 * (process.env.CI ? 200 : 50),
+      },
     },
   },
   esbuild: {

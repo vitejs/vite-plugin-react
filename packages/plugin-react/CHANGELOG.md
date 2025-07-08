@@ -2,6 +2,157 @@
 
 ## Unreleased
 
+### Return `Plugin[]` instead of `PluginOption[]`
+
+The return type has changed from `react(): PluginOption[]` to more specialized type `react(): Plugin[]`. This allows for type-safe manipulation of plugins, for example:
+
+```tsx
+// previously this causes type errors
+react({ babel: { plugins: ['babel-plugin-react-compiler'] } })
+  .map(p => ({ ...p, applyToEnvironment: e => e.name === 'client' }))
+```
+
+## 4.6.0 (2025-06-23)
+
+### Add raw Rolldown support
+
+This plugin only worked with Vite. But now it can also be used with raw Rolldown. The main purpose for using this plugin with Rolldown is to use react compiler.
+
+## 4.5.2 (2025-06-10)
+
+### Suggest `@vitejs/plugin-react-oxc` if rolldown-vite is detected [#491](https://github.com/vitejs/vite-plugin-react/pull/491)
+
+Emit a log which recommends `@vitejs/plugin-react-oxc` when `rolldown-vite` is detected to improve performance and use Oxc under the hood. The warning can be disabled by setting `disableOxcRecommendation: true` in the plugin options.
+
+### Use `optimizeDeps.rollupOptions` instead of `optimizeDeps.esbuildOptions` for rolldown-vite [#489](https://github.com/vitejs/vite-plugin-react/pull/489)
+
+This suppresses the warning about `optimizeDeps.esbuildOptions` being deprecated in rolldown-vite.
+
+### Add Vite 7-beta to peerDependencies range [#497](https://github.com/vitejs/vite-plugin-react/pull/497)
+
+React plugins are compatible with Vite 7, this removes the warning when testing the beta.
+
+## 4.5.1 (2025-06-03)
+
+### Add explicit semicolon in preambleCode [#485](https://github.com/vitejs/vite-plugin-react/pull/485)
+
+This fixes an edge case when using HTML minifiers that strips line breaks aggressively.
+
+## 4.5.0 (2025-05-23)
+
+### Add `filter` for rolldown-vite [#470](https://github.com/vitejs/vite-plugin-react/pull/470)
+
+Added `filter` so that it is more performant when running this plugin with rolldown-powered version of Vite.
+
+### Skip HMR for JSX files with hooks [#480](https://github.com/vitejs/vite-plugin-react/pull/480)
+
+This removes the HMR warning for hooks with JSX.
+
+## 4.4.1 (2025-04-19)
+
+Fix type issue when using `moduleResolution: "node"` in tsconfig [#462](https://github.com/vitejs/vite-plugin-react/pull/462)
+
+## 4.4.0 (2025-04-15)
+
+### Make compatible with rolldown-vite
+
+This plugin is now compatible with rolldown-powered version of Vite.
+Note that currently the `__source` property value position might be incorrect. This will be fixed in the near future.
+
+## 4.4.0-beta.2 (2025-04-15)
+
+### Add `reactRefreshHost` option
+
+Add `reactRefreshHost` option to set a React Fast Refresh runtime URL prefix.
+This is useful in a module federation context to enable HMR by specifying the host application URL in the Vite config of a remote application.
+See full discussion here: https://github.com/module-federation/vite/issues/183#issuecomment-2751825367
+
+```ts
+export default defineConfig({
+  plugins: [react({ reactRefreshHost: 'http://localhost:3000' })],
+})
+```
+
+## 4.4.0-beta.1 (2025-04-09)
+
+## 4.4.0-beta.0 (2025-04-09)
+
+## 4.3.4 (2024-11-26)
+
+### Add Vite 6 to peerDependencies range
+
+Vite 6 is highly backward compatible, not much to add!
+
+### Force Babel to output spec compliant import attributes [#386](https://github.com/vitejs/vite-plugin-react/pull/386)
+
+The default was an old spec (`with type: "json"`). We now enforce spec compliant (`with { type: "json" }`)
+
+## 4.3.3 (2024-10-19)
+
+### React Compiler runtimeModule option removed
+
+React Compiler was updated to accept a `target` option and `runtimeModule` was removed. vite-plugin-react will still detect `runtimeModule` for backwards compatibility.
+
+When using a custom `runtimeModule` or `target !== '19'`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
+
+The [react-compiler-runtime](https://www.npmjs.com/package/react-compiler-runtime) is now available on npm can be used instead of the local shim for people using the compiler with React < 19.
+
+Here is the configuration to use the compiler with React 18 and correct source maps in development:
+
+```bash
+npm install babel-plugin-react-compiler react-compiler-runtime @babel/plugin-transform-react-jsx-development
+```
+
+```ts
+export default defineConfig(({ command }) => {
+  const babelPlugins = [['babel-plugin-react-compiler', { target: '18' }]]
+  if (command === 'serve') {
+    babelPlugins.push(['@babel/plugin-transform-react-jsx-development', {}])
+  }
+
+  return {
+    plugins: [react({ babel: { plugins: babelPlugins } })],
+  }
+})
+````
+
+## 4.3.2 (2024-09-29)
+
+Ignore directive sourcemap error [#369](https://github.com/vitejs/vite-plugin-react/issues/369)
+
+## 4.3.1 (2024-06-10)
+
+### Fix support for React Compiler with React 18
+
+The previous version made this assumption that the compiler was only usable with React 19, but it's possible to use it with React 18 and a custom `runtimeModule`: https://gist.github.com/poteto/37c076bf112a07ba39d0e5f0645fec43
+
+When using a custom `runtimeModule`, the plugin will not try to pre-optimize `react/compiler-runtime` dependency.
+
+Reminder: Vite expect code outside of `node_modules` to be ESM, so you will need to update the gist with `import React from 'react'`.
+
+## 4.3.0 (2024-05-22)
+
+### Fix support for React compiler
+
+Don't set `retainLines: true` when the React compiler is used. This creates whitespace issues and the compiler is modifying the JSX too much to get correct line numbers after that. If you want to use the React compiler and get back correct line numbers for tools like [vite-plugin-react-click-to-component](https://github.com/ArnaudBarre/vite-plugin-react-click-to-component) to work, you should update your config to something like:
+
+```ts
+export default defineConfig(({ command }) => {
+  const babelPlugins = [['babel-plugin-react-compiler', {}]]
+  if (command === 'serve') {
+    babelPlugins.push(['@babel/plugin-transform-react-jsx-development', {}])
+  }
+
+  return {
+    plugins: [react({ babel: { plugins: babelPlugins } })],
+  }
+})
+```
+
+### Support HMR for class components
+
+This is a long overdue and should fix some issues people had with HMR when migrating from CRA.
+
 ## 4.2.1 (2023-12-04)
 
 Remove generic parameter on `Plugin` to avoid type error with Rollup 4/Vite 5 and `skipLibCheck: false`.
@@ -391,7 +542,7 @@ See the [readme](https://github.com/aleclarson/vite/blob/f8129ce6e87684eb7a4edd8
 
 - Support for [automatic JSX runtime](https://github.com/alloc/vite-react-jsx)
 - Babel integration for both development and production builds
-- Add `react` and `react-dom` to [`resolve.dedupe`](https://vitejs.dev/config/#resolve-dedupe) automatically
+- Add `react` and `react-dom` to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
 
 Thanks to @aleclarson and @pengx17 for preparing this release!
 

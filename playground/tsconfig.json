@@ -1,5 +1,5 @@
 {
-  "include": ["."],
+  "include": ["*.ts", "**/__tests__/*.ts", "**/vite.config.ts"],
   "exclude": ["**/dist/**"],
   "compilerOptions": {
     "target": "ES2020",

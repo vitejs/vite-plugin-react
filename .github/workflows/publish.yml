@@ -8,18 +8,21 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # for ArnaudBarre/github-release to create a release
+      id-token: write # for provenance generation
     environment: Release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3.0.0
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
-      - name: Set node version to 16.x
+      - name: Set node version to 20
         uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20
           registry-url: https://registry.npmjs.org/
           cache: "pnpm"
 
@@ -28,11 +31,41 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
+      - name: Get pkgName for tag
+        id: tag
+        run: |
+          # Check if the tag contains "alpha"
+          if [[ $GITHUB_REF_NAME =~ alpha ]]; then
+            echo "isAlpha=true" >> $GITHUB_OUTPUT
+          else
+            echo "isAlpha=false" >> $GITHUB_OUTPUT
+          fi
+
+          # `%@*` truncates @ and version number from the right side.
+          # https://stackoverflow.com/questions/9532654/expression-after-last-specific-character
+          pkgName=${GITHUB_REF_NAME%@*}
+          echo "pkgName=$pkgName" >> $GITHUB_OUTPUT
+
+      - if: steps.tag.outputs.pkgName == 'plugin-react-swc'
+        working-directory: packages/plugin-react-swc
+        run: pnpm build
+
       - name: Publish package
         run: pnpm run ci-publish ${{ github.ref_name }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - uses: ArnaudBarre/github-release@v1
+      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName != 'plugin-rsc'
+        uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
         with:
-          path: packages/plugin-react/CHANGELOG.md
+          path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
+          tag-name: ${{ github.ref_name }}
+
+      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName == 'plugin-rsc'
+        uses: yyx990803/release-tag@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          body: |
+            Please refer to [CHANGELOG.md](https://github.com/vitejs/vite-plugin-react/blob/${{ github.ref_name }}/packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md) for details.

@@ -1,11 +1,24 @@
 name: "\U0001F41E Bug report"
 description: Report an issue
 labels: [pending triage]
+type: Bug
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: plugins
+    attributes:
+      label: Related plugins
+      description: Select the plugin which is related
+      options:
+        - label: |
+            [plugin-react](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react)
+        - label: |
+            [plugin-react-swc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc)
+        - label: |
+            [plugin-react-oxc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-oxc)
   - type: textarea
     id: bug-description
     attributes:
@@ -32,7 +45,7 @@ body:
     id: system-info
     attributes:
       label: System Info
-      description: Output of `npx envinfo --system --npmPackages '{vite,@vitejs/*}' --binaries --browsers`
+      description: Output of `npx envinfo --system --npmPackages '{vite,@vitejs/*,rollup}' --binaries --browsers`
       render: shell
       placeholder: System, Binaries, Browsers
     validations:
@@ -46,6 +59,7 @@ body:
         - npm
         - yarn
         - pnpm
+        - bun
     validations:
       required: true
   - type: textarea
@@ -77,13 +91,13 @@ body:
           required: true
         - label: Read the [Contributing Guidelines](https://github.com/vitejs/vite-plugin-react/blob/main/CONTRIBUTING.md).
           required: true
-        - label: Read the [docs](https://vitejs.dev/guide).
+        - label: Read the [docs](https://vite.dev/guide).
           required: true
         - label: Check that there isn't [already an issue](https://github.com/vitejs/vite-plugin-react/issues) that reports the same bug to avoid creating a duplicate.
           required: true
         - label: Make sure this is a Vite issue and not a framework-specific issue.
           required: true
-        - label: Check that this is a concrete bug. For Q&A open a [GitHub Discussion](https://github.com/vitejs/vite-plugin-react/discussions) or join our [Discord Chat Server](https://chat.vitejs.dev/).
+        - label: Check that this is a concrete bug. For Q&A open a [GitHub Discussion](https://github.com/vitejs/vite-plugin-react/discussions) or join our [Discord Chat Server](https://chat.vite.dev/).
           required: true
         - label: The provided reproduction is a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) of the bug.
           required: true
