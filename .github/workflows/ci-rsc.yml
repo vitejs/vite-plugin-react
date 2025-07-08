@@ -31,7 +31,7 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
