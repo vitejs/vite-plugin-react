@@ -50,7 +50,7 @@ export default defineConfig({
       },
       build: {
         rollupOptions: {
-          // @ts-ignore rolldown only
+          // @ts-ignore rolldown
           platform: 'neutral',
         },
       },
@@ -62,7 +62,7 @@ export default defineConfig({
       },
       build: {
         rollupOptions: {
-          // @ts-ignore rolldown only
+          // @ts-ignore rolldown
           platform: 'neutral',
         },
       },
