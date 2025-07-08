@@ -7,6 +7,3 @@ packages:
 catalogs:
   rolldown-vite:
     vite: npm:rolldown-vite@^7.0.5
-
-# overrides:
-#   vite: "npm:rolldown-vite@latest"
