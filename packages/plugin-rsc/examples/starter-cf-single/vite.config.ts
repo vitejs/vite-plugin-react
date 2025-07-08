@@ -3,7 +3,7 @@ import rsc from '@vitejs/plugin-rsc'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-export default defineConfig((_env) => ({
+export default defineConfig({
   clearScreen: false,
   build: {
     minify: false,
@@ -31,6 +31,14 @@ export default defineConfig((_env) => ({
         rollupOptions: {
           // ensure `default` export only in cloudflare entry output
           preserveEntrySignatures: 'exports-only',
+          // @ts-ignore rolldown
+          platform: 'neutral',
+        },
+      },
+      optimizeDeps: {
+        // @ts-ignore rolldown
+        rollupOptions: {
+          platform: 'neutral',
         },
       },
     },
@@ -43,4 +51,4 @@ export default defineConfig((_env) => ({
       },
     },
   },
-}))
+})

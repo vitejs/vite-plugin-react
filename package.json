@@ -70,15 +70,5 @@
     "playground/**/__tests__/**/*.ts": [
       "eslint --cache --fix"
     ]
-  },
-  "pnpm": {
-    "packageExtensions": {
-      "generouted": {
-        "peerDependencies": {
-          "react": "*",
-          "react-router-dom": "*"
-        }
-      }
-    }
   }
 }

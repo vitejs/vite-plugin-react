@@ -10,8 +10,6 @@ catalogs:
       specifier: npm:rolldown-vite@^7.0.5
       version: 7.0.5
 
-packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
-
 importers:
 
   .:
@@ -397,21 +395,15 @@ importers:
 
   packages/plugin-react-swc/playground/ts-lib:
     dependencies:
-      '@generouted/react-router':
-        specifier: ^1.20.0
-        version: 1.20.0(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-router@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
-      generouted:
-        specifier: 1.11.7
-        version: 1.11.7(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
+      '@vitejs/test-dep-non-js':
+        specifier: file:./test-dep/non-js
+        version: file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.1.0)
       react:
         specifier: ^19.1.0
         version: 19.1.0
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
-      react-router-dom:
-        specifier: ^7.6.3
-        version: 7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@types/react':
         specifier: ^19.1.8
@@ -422,6 +414,8 @@ importers:
       '@vitejs/plugin-react-swc':
         specifier: ../../dist
         version: link:../../dist
+
+  packages/plugin-react-swc/playground/ts-lib/test-dep/non-js: {}
 
   packages/plugin-react-swc/playground/worker:
     dependencies:
@@ -1947,13 +1941,6 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@generouted/react-router@1.20.0':
-    resolution: {integrity: sha512-VAOdbH/Z2MzroTB61XYsS1uMJvX5am7CKuF/MgF3ZXS6YSvA6rz9pvQxZbg5PIK4R9h7bsA/oRQlJNLSgQKjEA==}
-    peerDependencies:
-      react: '>=18'
-      react-router: '>=7'
-      vite: '>=5'
-
   '@hiogawa/utils@1.7.0':
     resolution: {integrity: sha512-ghiEFWBR1NENoHn+lSuW7liicTIzVPN+8Srm5UedCTw43gus0mlse6Wp2lz6GmbOXJ/CalMPp/0Tz2X8tajkAg==}
 
@@ -3010,6 +2997,11 @@ packages:
     peerDependencies:
       react: '*'
 
+  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js':
+    resolution: {directory: packages/plugin-react-swc/playground/ts-lib/test-dep/non-js, type: directory}
+    peerDependencies:
+      react: '*'
+
   '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/server-in-client, type: directory}
     peerDependencies:
@@ -3805,20 +3797,6 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
-
-  generouted@1.11.7:
-    resolution: {integrity: sha512-CFOF2N8upP84E5Lh7l1F9lC7XgHHkokKMptC+zD/T7K2f++gQH6OEIUv7XIIuwWfZAz8DtdQXVph4bB5Wg8vcw==}
-    peerDependencies:
-      react: '*'
-      react-router-dom: '*'
-      vite: '>=3'
-
-  generouted@1.20.0:
-    resolution: {integrity: sha512-VXU5dFsWdm/faFo2fTGW5obYxy8hhM6B1WXYhCLAV+5pODhrsu8RBc/1IsOQKqtHFYqsuSE5C5KpzmBaLllUqg==}
-    peerDependencies:
-      react: '*'
-      react-router-dom: '*'
-      vite: '>=5'
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -4924,25 +4902,8 @@ packages:
     resolution: {integrity: sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==}
     engines: {node: '>=0.10.0'}
 
-  react-router-dom@7.6.3:
-    resolution: {integrity: sha512-DiWJm9qdUAmiJrVWaeJdu4TKu13+iB/8IEi0EW/XgaHCjW/vWGrwzup0GVvaMteuZjKnh5bEvJP/K0MDnzawHw==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
   react-router@0.0.0-experimental-23decd7bc:
     resolution: {integrity: sha512-oTDa74rdP6WACxX8wihI71TiwQa+3aAXNjGGm20OAyA4hGdfe0VBEbJvuIT0vxR+LKsJisI4rpaq0boBGY3m+g==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-
-  react-router@7.6.3:
-    resolution: {integrity: sha512-zf45LZp5skDC6I3jDLXQUu0u26jtuP4lEGbc7BbdyxenBN1vJSTA18czM2D+h5qyMBuMrD+9uB+mU37HIoKGRA==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
@@ -6584,16 +6545,6 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@generouted/react-router@1.20.0(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-router@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))':
-    dependencies:
-      fast-glob: 3.3.3
-      generouted: 1.20.0(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
-      react: 19.1.0
-      react-router: 7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      vite: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
-    transitivePeerDependencies:
-      - react-router-dom
-
   '@hiogawa/utils@1.7.0': {}
 
   '@humanfs/core@0.19.1': {}
@@ -7572,6 +7523,10 @@ snapshots:
     dependencies:
       react: 19.1.0
 
+  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+
   '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -8475,18 +8430,6 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
-
-  generouted@1.11.7(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)):
-    dependencies:
-      react: 19.1.0
-      react-router-dom: 7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      vite: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
-
-  generouted@1.20.0(react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)):
-    dependencies:
-      react: 19.1.0
-      react-router-dom: 7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      vite: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
 
   gensync@1.0.0-beta.2: {}
 
@@ -9712,21 +9655,7 @@ snapshots:
 
   react-refresh@0.17.0: {}
 
-  react-router-dom@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
-      react-router: 7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-
   react-router@0.0.0-experimental-23decd7bc(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      cookie: 1.0.2
-      react: 19.1.0
-      set-cookie-parser: 2.7.1
-    optionalDependencies:
-      react-dom: 19.1.0(react@19.1.0)
-
-  react-router@7.6.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       cookie: 1.0.2
       react: 19.1.0
