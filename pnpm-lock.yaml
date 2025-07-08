@@ -10,8 +10,6 @@ catalogs:
       specifier: npm:rolldown-vite@^7.0.5
       version: 7.0.5
 
-packageExtensionsChecksum: sha256-S82yCctxnlOTNFuHWCyTFRo/B6Y3jque/4DnsDO4WZA=
-
 importers:
 
   .:
