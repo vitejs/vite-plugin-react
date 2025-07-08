@@ -48,10 +48,6 @@ export default defineConfig({
         // build `ssr` inside `rsc` directory so that
         // wrangler can deploy self-contained `dist/rsc`
         outDir: './dist/rsc/ssr',
-        rollupOptions: {
-          // @ts-ignore rolldown
-          platform: 'neutral',
-        },
       },
     },
   },
