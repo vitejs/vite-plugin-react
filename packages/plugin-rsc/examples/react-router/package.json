@@ -26,6 +26,8 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
+    "h3": "^1.15.3",
+    "nitropack": "^2.11.13",
     "tailwindcss": "^4.1.11",
     "vite": "^7.0.2",
     "vite-plugin-inspect": "^11.3.0",
