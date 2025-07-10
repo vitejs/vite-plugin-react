@@ -214,11 +214,12 @@ main();
 
 ### `@vitejs/plugin-rsc/rsc`
 
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge`
+This module re-exports RSC runtime API provided by `react-server-dom/server.edge` adn `react-server-dom/client.edge` such as:
 
 - `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serailized RSC and deserializing it for later use.
-- `decodeAction/decodeReply/loadServerAction`: server function related...
+- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
+- `encodeReply/createClientTemporaryReferenceSet`
 
 ### `@vitejs/plugin-rsc/ssr`
 
