@@ -54,8 +54,8 @@ importers:
         specifier: ^1.53.2
         version: 1.53.2
       prettier:
-        specifier: ^3.0.3
-        version: 3.1.0
+        specifier: ^3.6.2
+        version: 3.6.2
       simple-git-hooks:
         specifier: ^2.13.0
         version: 2.13.0
@@ -4811,6 +4811,11 @@ packages:
 
   prettier@3.1.0:
     resolution: {integrity: sha512-TQLvXjq5IAibjh8EpBIkNKxO749UEWABoiIZehEPiY4GNpVdhaFKqSTu+QrlU6D2dPAfubRmtJTi4K4YkQ5eXw==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prettier@3.6.2:
+    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -9577,6 +9582,8 @@ snapshots:
   prettier@2.8.8: {}
 
   prettier@3.1.0: {}
+
+  prettier@3.6.2: {}
 
   pretty-bytes@6.1.1: {}
 
