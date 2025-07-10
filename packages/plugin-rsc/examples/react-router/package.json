@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build --app",
     "preview": "vite preview",
+    "vc-build": "NITRO_PRESET=vercel vite build",
+    "vc-release": "vercel deploy --prebuilt",
     "cf-dev": "vite -c ./cf/vite.config.ts",
     "cf-build": "vite -c ./cf/vite.config.ts build",
     "cf-preview": "vite -c ./cf/vite.config.ts preview",

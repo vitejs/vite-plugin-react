@@ -99,7 +99,7 @@ export default defineEventHandler((event) => handler(toWebRequest(event)))
     // === basic settings
     // ===
     buildDir: 'dist/nitro/build',
-    output: { dir: 'dist/nitro/output' },
+    // output: { dir: 'dist/nitro/output' },
 
     // ===
     // === disable other features
