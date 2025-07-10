@@ -6,6 +6,7 @@ export default defineConfig({
   entry: 'src/index.ts',
   format: ['esm', 'cjs'],
   dts: true,
+  tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
