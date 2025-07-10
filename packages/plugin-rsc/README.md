@@ -130,7 +130,7 @@ export default defineConfig({
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
 
 ```tsx
-import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge
+import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
