@@ -1,6 +1,7 @@
 # rsc react-router
 
-https://vite-rsc-react-router.hiro18181.workers.dev
+- https://vite-rsc-react-router.hiro18181.workers.dev
+- https://vite-rsc-react-router-hiro18181.vercel.app
 
 Vite RSC example based on demo made by React router team with Parcel:
 
