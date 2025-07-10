@@ -167,7 +167,8 @@ async function prerender(nitro: Nitro, pages: string[]) {
   await nodeNitro.close()
 
   async function prerenderPage(page: { path: string }) {
-    const encodedRoute = encodeURI(page.path)
+    // const encodedRoute = encodeURI(page.path)
+    const encodedRoute = page.path
 
     const res = await localFetch<Response>(
       withBase(encodedRoute, nodeNitro.options.baseURL),
@@ -185,7 +186,10 @@ async function prerender(nitro: Nitro, pages: string[]) {
     // const cleanPagePath = (prerenderOptions.outputPath || page.path).split(
     //   /[?#]/,
     // )[0]!
-    const cleanPagePath = page.path
+    const cleanPagePath = page// prerenderOptions.outputPath ||
+    .path
+      .split(/[?#]/)[0]!
+    // const cleanPagePath = page.path
 
     // Guess route type and populate fileName
     const contentType = res.headers.get('content-type') || ''
