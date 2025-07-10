@@ -1,5 +1,5 @@
 {
-  "include": ["src", "scripts"],
+  "include": ["src"],
   "compilerOptions": {
     "outDir": "dist",
     "target": "ES2020",
