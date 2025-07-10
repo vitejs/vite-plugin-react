@@ -53,7 +53,7 @@ export default defineConfig({
           // '/about',
           '/about.rsc',
           // TODO(react-router): what is this?
-          '/.manifest?p=%2F&p=%2Fabout',
+          // '/.manifest?p=%2F&p=%2Fabout',
         ],
       }),
     ],

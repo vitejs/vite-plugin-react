@@ -186,8 +186,7 @@ async function prerender(nitro: Nitro, pages: string[]) {
     // const cleanPagePath = (prerenderOptions.outputPath || page.path).split(
     //   /[?#]/,
     // )[0]!
-    const cleanPagePath = page// prerenderOptions.outputPath ||
-    .path
+    const cleanPagePath = page.path // prerenderOptions.outputPath ||
       .split(/[?#]/)[0]!
     // const cleanPagePath = page.path
 
@@ -220,5 +219,13 @@ async function prerender(nitro: Nitro, pages: string[]) {
     })
 
     await fsp.writeFile(filepath, html)
+
+    // need to update internal state e.g. for vercel route `overrides`
+    // https://github.com/nitrojs/nitro/blob/c468de271cff8d56361c3b09ea1071ed545a550f/src/presets/vercel/utils.ts#L117
+    nitro._prerenderedRoutes ??= []
+    nitro._prerenderedRoutes.push({
+      route: page.path,
+      fileName: filename,
+    })
   }
 }
