@@ -23,7 +23,13 @@ export default defineConfig({
   ],
   outputOptions(outputOpts, format) {
     if (format === 'cjs') {
-      outputOpts.footer = 'module.exports.default = module.exports'
+      outputOpts.footer = (chunk) => {
+        // don't append to dts files
+        if (chunk.fileName.endsWith('.cjs')) {
+          return 'module.exports.default = module.exports'
+        }
+        return ''
+      }
     }
     return outputOpts
   },
