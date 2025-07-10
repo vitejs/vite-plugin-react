@@ -135,7 +135,7 @@ export default defineEventHandler((event) => handler(toWebRequest(event)))
   await nitro.close()
 }
 
-// TODO
+// In Waku's case, it currently has own prerender pass, so this is not necessary.
 // https://github.com/TanStack/router/blob/5fd079e482b1252b8b11a936f1524a0dee368cae/packages/start-plugin-core/src/nitro-plugin/prerender.ts#L53
 // https://github.com/nitrojs/nitro/blob/c468de271cff8d56361c3b09ea1071ed545a550f/src/prerender/prerender.ts#L62-L74
 async function prerender(nitro: Nitro, pages: string[]) {
