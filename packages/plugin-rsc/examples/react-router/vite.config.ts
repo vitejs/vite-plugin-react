@@ -35,6 +35,7 @@ export default defineConfig({
         // - builder.environments.client.config.build.outDir
         clientDir: path.resolve('./dist/client'),
         serverEntry: path.resolve('./dist/ssr/index.js'),
+        // prerender: ['/'],
       }),
   ],
   optimizeDeps: {

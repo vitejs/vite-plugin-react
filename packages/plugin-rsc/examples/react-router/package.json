@@ -29,6 +29,7 @@
     "h3": "^1.15.3",
     "nitropack": "^2.11.13",
     "tailwindcss": "^4.1.11",
+    "ufo": "^1.6.1",
     "vite": "^7.0.2",
     "vite-plugin-inspect": "^11.3.0",
     "wrangler": "^4.23.0"
