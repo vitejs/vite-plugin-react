@@ -1,0 +1,27 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    /* Target node 22 */
+    "module": "ESNext",
+    "lib": ["ES2023", "DOM"],
+    "target": "ES2023",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "declaration": true,
+    "isolatedDeclarations": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
+    "noUncheckedSideEffectImports": true,
+    "noPropertyAccessFromIndexSignature": true
+  }
+}
