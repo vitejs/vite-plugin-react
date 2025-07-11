@@ -10,6 +10,9 @@ catalogs:
       specifier: npm:rolldown-vite@^7.0.5
       version: 7.0.5
 
+overrides:
+  '@types/estree': ^1.0.8
+
 importers:
 
   .:
@@ -2753,9 +2756,6 @@ packages:
 
   '@types/estree-jsx@1.0.3':
     resolution: {integrity: sha512-pvQ+TKeRHeiUGRhvYwRrQ/ISnohKkSJR14fT2yqyZ4e9K5vqc7hrtY2Y1Dw0ZwAzQ6DQsxsaCUuSIIi8v0Cq6w==}
-
-  '@types/estree@1.0.6':
-    resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -7276,8 +7276,6 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
 
-  '@types/estree@1.0.6': {}
-
   '@types/estree@1.0.8': {}
 
   '@types/fs-extra@11.0.4':
@@ -9805,7 +9803,7 @@ snapshots:
 
   rollup@4.37.0:
     dependencies:
-      '@types/estree': 1.0.6
+      '@types/estree': 1.0.8
     optionalDependencies:
       '@rollup/rollup-android-arm-eabi': 4.37.0
       '@rollup/rollup-android-arm64': 4.37.0
