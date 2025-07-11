@@ -105,7 +105,7 @@ test.describe('build-react-compiler', () => {
 
 test.describe(() => {
   // disabled by default
-  if (!process.env.TEST_ISOLATED) return
+  if (process.env.TEST_ISOLATED !== 'true') return
 
   let tmpRoot = '/tmp/test-vite-rsc'
   test.beforeAll(async () => {
