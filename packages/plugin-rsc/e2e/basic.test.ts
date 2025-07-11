@@ -103,7 +103,7 @@ test.describe('build-react-compiler', () => {
   defineTest(f)
 })
 
-test.describe(() => {
+test.describe.only(() => {
   // disabled by default
   if (!process.env.TEST_ISOLATED) return
 

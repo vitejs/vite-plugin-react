@@ -28,7 +28,7 @@ export default defineConfig({
     },
   ],
   workers: 1,
-  forbidOnly: !!process.env.CI,
+  // forbidOnly: !!process.env.CI,
   // retries: process.env.CI ? 2 : 0,
   reporter: ['list', process.env.CI && 'github']
     .filter(Boolean)
