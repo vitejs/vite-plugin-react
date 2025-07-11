@@ -226,18 +226,22 @@ export default function vitePluginRsc(
             async buildApp(builder) {
               isScanBuild = true
               builder.environments.rsc!.config.build.write = false
-              builder.environments.ssr!.config.build.write = false
               await builder.build(builder.environments.rsc!)
-              await builder.build(builder.environments.ssr!)
+              if (builder.environments.ssr?.config.build.rollupOptions.input) {
+                builder.environments.ssr!.config.build.write = false
+                await builder.build(builder.environments.ssr!)
+              }
               isScanBuild = false
               builder.environments.rsc!.config.build.write = true
-              builder.environments.ssr!.config.build.write = true
               await builder.build(builder.environments.rsc!)
               // sort for stable build
               clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
               serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
               await builder.build(builder.environments.client!)
-              await builder.build(builder.environments.ssr!)
+              if (builder.environments.ssr?.config.build.rollupOptions.input) {
+                builder.environments.ssr!.config.build.write = true
+                await builder.build(builder.environments.ssr!)
+              }
             },
           },
         }
