@@ -351,7 +351,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     jsxImportRuntime,
   ]
   const staticBabelPlugins =
-    typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
+    typeof opts.babel === 'object' ? (opts.babel?.plugins ?? []) : []
   const reactCompilerPlugin = getReactCompilerPlugin(staticBabelPlugins)
   if (reactCompilerPlugin != null) {
     const reactCompilerRuntimeModule =
