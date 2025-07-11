@@ -63,7 +63,7 @@ jobs:
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
         env:
-          TEST_ISOLATED: true
+          TEST_ISOLATED: ${{ matrix.os === 'windows-latest' && 'false' || 'true' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
