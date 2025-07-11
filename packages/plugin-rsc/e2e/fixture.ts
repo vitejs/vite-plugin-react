@@ -170,17 +170,20 @@ export async function setupIsolatedFixture(options: {
   })
 
   // install
+  console.log('[setupIsolatedFixture] before pnpm')
   await x('pnpm', ['i'], {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
       stdio: [
         'ignore',
-        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        // process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        'inherit',
         'inherit',
       ],
     },
   })
+  console.log('[setupIsolatedFixture] after pnpm')
 }
 
 function editFileJson(filepath: string, edit: (s: string) => string) {
