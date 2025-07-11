@@ -58,15 +58,15 @@ jobs:
       - name: install rolldown
         if: ${{ matrix.rolldown }}
         run: |
-          echo 'overrides: { vite: "npm:rolldown-vite@latest" }' >> pnpm-workspace.yaml
+          sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
         env:
-          TEST_ISOLATED: true
+          TEST_ISOLATED: ${{ matrix.os != 'windows-latest' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}
           path: |
             packages/plugin-rsc/test-results

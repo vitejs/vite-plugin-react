@@ -10,6 +10,9 @@ catalogs:
       specifier: npm:rolldown-vite@^7.0.5
       version: 7.0.5
 
+overrides:
+  '@types/estree': ^1.0.8
+
 importers:
 
   .:
@@ -113,9 +116,9 @@ importers:
       rolldown:
         specifier: 1.0.0-beta.24
         version: 1.0.0-beta.24
-      unbuild:
-        specifier: ^3.5.0
-        version: 3.5.0(typescript@5.8.3)
+      tsdown:
+        specifier: ^0.12.9
+        version: 0.12.9(publint@0.3.12)(typescript@5.8.3)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
@@ -129,6 +132,9 @@ importers:
       '@vitejs/react-common':
         specifier: workspace:*
         version: link:../common
+      tsdown:
+        specifier: ^0.12.9
+        version: 0.12.9(publint@0.3.12)(typescript@5.8.3)
       unbuild:
         specifier: ^3.5.0
         version: 3.5.0(typescript@5.8.3)
@@ -2750,9 +2756,6 @@ packages:
 
   '@types/estree-jsx@1.0.3':
     resolution: {integrity: sha512-pvQ+TKeRHeiUGRhvYwRrQ/ISnohKkSJR14fT2yqyZ4e9K5vqc7hrtY2Y1Dw0ZwAzQ6DQsxsaCUuSIIi8v0Cq6w==}
-
-  '@types/estree@1.0.6':
-    resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -7270,8 +7273,6 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
 
-  '@types/estree@1.0.6': {}
-
   '@types/estree@1.0.8': {}
 
   '@types/fs-extra@11.0.4':
@@ -9797,7 +9798,7 @@ snapshots:
 
   rollup@4.37.0:
     dependencies:
-      '@types/estree': 1.0.6
+      '@types/estree': 1.0.8
     optionalDependencies:
       '@rollup/rollup-android-arm-eabi': 4.37.0
       '@rollup/rollup-android-arm64': 4.37.0
