@@ -170,7 +170,7 @@ export async function setupIsolatedFixture(options: {
   })
 
   // install
-  console.log('[setupIsolatedFixture] before pnpm')
+  console.error('[setupIsolatedFixture] before pnpm')
   // await x('pnpm', ['i'], {
   //   throwOnError: true,
   //   nodeOptions: {
@@ -183,7 +183,7 @@ export async function setupIsolatedFixture(options: {
   //     ],
   //   },
   // })
-  console.log('[setupIsolatedFixture] after pnpm')
+  console.error('[setupIsolatedFixture] after pnpm')
 }
 
 function editFileJson(filepath: string, edit: (s: string) => string) {

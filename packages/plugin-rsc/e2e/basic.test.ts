@@ -107,16 +107,17 @@ test.describe.configure({ mode: 'serial' })
 
 test.describe.only(() => {
   // disabled by default
-  if (process.env.TEST_ISOLATED !== 'true') return
+  // if (process.env.TEST_ISOLATED !== 'true') return
 
   let tmpRoot = '/tmp/test-vite-rsc'
   test.beforeAll(async () => {
-    try {
-      await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
-    } catch (e) {
-      console.error('[setupIsolatedFixture]', e)
-      throw e
-    }
+    await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
+    // try {
+    //   await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
+    // } catch (e) {
+    //   console.error('[setupIsolatedFixture]', e)
+    //   throw e
+    // }
   })
 
   test.describe('dev-isolated', () => {
