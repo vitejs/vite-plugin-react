@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: 'e2e',
   use: {
-    trace: 'on-first-retry',
+    // trace: 'on-first-retry',
+    trace: 'retain-on-failure',
   },
   expect: {
     toPass: { timeout: 5000 },
@@ -27,8 +28,8 @@ export default defineConfig({
     },
   ],
   workers: 1,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  // forbidOnly: !!process.env.CI,
+  // retries: process.env.CI ? 2 : 0,
   reporter: ['list', process.env.CI && 'github']
     .filter(Boolean)
     .map((name) => [name] as any),

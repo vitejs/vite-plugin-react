@@ -153,10 +153,9 @@ export async function setupIsolatedFixture(options: {
 }) {
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
-  fs.cpSync(options.src, options.dest, { recursive: true })
-  fs.rmSync(path.join(options.dest, 'node_modules'), {
+  fs.cpSync(options.src, options.dest, {
     recursive: true,
-    force: true,
+    filter: (src) => !src.includes('node_modules'),
   })
 
   // setup package.json overrides
@@ -174,7 +173,11 @@ export async function setupIsolatedFixture(options: {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
-      stdio: process.env.TEST_DEBUG ? 'inherit' : undefined,
+      stdio: [
+        'ignore',
+        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        'inherit',
+      ],
     },
   })
 }
