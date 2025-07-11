@@ -118,14 +118,7 @@ test.describe.only(() => {
     'test-vite-rsc',
   )
   test.beforeAll(async () => {
-    console.error('[beforeAll]')
     await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
-    // try {
-    //   await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
-    // } catch (e) {
-    //   console.error('[setupIsolatedFixture]', e)
-    //   throw e
-    // }
   })
 
   test.describe('dev-isolated', () => {
