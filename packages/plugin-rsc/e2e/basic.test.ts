@@ -103,6 +103,8 @@ test.describe('build-react-compiler', () => {
   defineTest(f)
 })
 
+test.describe.configure({ mode: 'serial' })
+
 test.describe.only(() => {
   // disabled by default
   if (!process.env.TEST_ISOLATED) return
