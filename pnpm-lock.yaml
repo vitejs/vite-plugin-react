@@ -163,18 +163,15 @@ importers:
       '@vitejs/react-common':
         specifier: workspace:*
         version: link:../common
-      esbuild:
-        specifier: ^0.25.5
-        version: 0.25.5
       fs-extra:
         specifier: ^11.3.0
         version: 11.3.0
-      picocolors:
-        specifier: ^1.1.1
-        version: 1.1.1
       prettier:
         specifier: ^3.0.3
         version: 3.1.0
+      tsdown:
+        specifier: ^0.12.9
+        version: 0.12.9(publint@0.3.12)(typescript@5.8.3)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
