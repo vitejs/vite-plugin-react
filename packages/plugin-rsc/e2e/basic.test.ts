@@ -113,6 +113,7 @@ test.describe.only(() => {
 
   let tmpRoot = path.join(os.tmpdir(), 'test-vite-rsc')
   test.beforeAll(async () => {
+    console.error('[beforeAll]')
     await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
     // try {
     //   await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })

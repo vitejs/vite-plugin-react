@@ -151,6 +151,7 @@ export async function setupIsolatedFixture(options: {
   src: string
   dest: string
 }) {
+  console.error('[setupIsolatedFixture]')
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.cpSync(options.src, options.dest, { recursive: true })
@@ -158,6 +159,8 @@ export async function setupIsolatedFixture(options: {
     recursive: true,
     force: true,
   })
+
+  console.error('[setupIsolatedFixture] copy done')
 
   // setup package.json overrides
   const packagesDir = path.join(import.meta.dirname, '..', '..')
@@ -171,18 +174,18 @@ export async function setupIsolatedFixture(options: {
 
   // install
   console.error('[setupIsolatedFixture] before pnpm')
-  // await x('pnpm', ['i'], {
-  //   throwOnError: true,
-  //   nodeOptions: {
-  //     cwd: options.dest,
-  //     stdio: [
-  //       'ignore',
-  //       // process.env.TEST_DEBUG ? 'inherit' : 'ignore',
-  //       'inherit',
-  //       'inherit',
-  //     ],
-  //   },
-  // })
+  await x('pnpm', ['i'], {
+    throwOnError: true,
+    nodeOptions: {
+      cwd: options.dest,
+      stdio: [
+        'ignore',
+        // process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        'inherit',
+        'inherit',
+      ],
+    },
+  })
   console.error('[setupIsolatedFixture] after pnpm')
 }
 
