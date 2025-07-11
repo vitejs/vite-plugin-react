@@ -21,18 +21,17 @@
   ],
   "type": "module",
   "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
   "scripts": {
-    "dev": "unbuild --stub",
-    "build": "unbuild && pnpm run patch-cjs && tsx scripts/copyRefreshRuntime.ts",
-    "patch-cjs": "tsx ../../scripts/patchCJS.ts",
+    "dev": "tsdown --watch",
+    "build": "tsdown",
     "prepublishOnly": "npm run build",
     "test-unit": "vitest run"
   },
@@ -65,7 +64,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rolldown": "1.0.0-beta.24",
-    "unbuild": "^3.5.0",
+    "tsdown": "^0.12.9",
     "vitest": "^3.2.4"
   }
 }
