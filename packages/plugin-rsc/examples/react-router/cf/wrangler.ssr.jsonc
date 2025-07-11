@@ -5,5 +5,5 @@
   "workers_dev": true,
   "services": [{ "binding": "RSC", "service": "vite-rsc-react-router-rsc" }],
   "compatibility_date": "2025-04-01",
-  "compatibility_flags": ["nodejs_als"]
+  "compatibility_flags": ["nodejs_als"],
 }
