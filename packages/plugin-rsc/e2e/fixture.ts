@@ -156,13 +156,11 @@ export async function setupIsolatedFixture(options: {
   console.error('[setupIsolatedFixture] rmSync', options.dest)
   fs.rmSync(options.dest, { recursive: true, force: true })
   console.error('[setupIsolatedFixture] cpSync', options.src, options.dest)
-  fs.cpSync(options.src, options.dest, { recursive: true })
-  console.error('[setupIsolatedFixture] cp done')
-  fs.rmSync(path.join(options.dest, 'node_modules'), {
+  fs.cpSync(options.src, options.dest, {
     recursive: true,
-    force: true,
+    filter: (src) => !src.includes('node_modules'),
   })
-  console.error('[setupIsolatedFixture] rm node_modules done')
+  console.error('[setupIsolatedFixture] cp done')
 
   // setup package.json overrides
   const packagesDir = path.join(import.meta.dirname, '..', '..')

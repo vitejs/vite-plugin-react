@@ -111,7 +111,7 @@ test.describe.only(() => {
   // disabled by default
   // if (process.env.TEST_ISOLATED !== 'true') return
 
-  // RUNNER_TEMP is for Github Actions
+  // use RUNNER_TEMP on Github Actions
   // https://github.com/actions/toolkit/issues/518
   const tmpRoot = path.join(
     process.env['RUNNER_TEMP'] || os.tmpdir(),
