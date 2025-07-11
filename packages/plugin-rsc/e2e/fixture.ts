@@ -174,7 +174,11 @@ export async function setupIsolatedFixture(options: {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
-      stdio: process.env.TEST_DEBUG ? 'inherit' : undefined,
+      stdio: [
+        'ignore',
+        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        'inherit',
+      ],
     },
   })
 }
