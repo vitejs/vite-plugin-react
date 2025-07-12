@@ -994,17 +994,16 @@ function defineTest(f: Fixture) {
       errors.push(error)
     })
     await page.goto(f.url('/?test-hydration-mismatch'))
-    await expect(() => {
-      expect(errors).toMatchObject([
-        {
-          message: expect.stringContaining(
-            f.mode === 'dev'
-              ? `Hydration failed because the server rendered HTML didn't match the client.`
-              : `Minified React error #418`,
-          ),
-        },
-      ])
-    }).toPass()
+    await waitForHydration(page)
+    expect(errors).toMatchObject([
+      {
+        message: expect.stringContaining(
+          f.mode === 'dev'
+            ? `Hydration failed because the server rendered HTML didn't match the client.`
+            : `Minified React error #418`,
+        ),
+      },
+    ])
 
     errors.length = 0
     await page.goto(f.url())
