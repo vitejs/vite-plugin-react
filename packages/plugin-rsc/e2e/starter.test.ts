@@ -33,7 +33,6 @@ test.describe('build-no-ssr', () => {
 })
 
 function defineTest(f: Fixture, variant?: 'no-ssr') {
-  f.root.includes('no-ssr')
   test('basic', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
