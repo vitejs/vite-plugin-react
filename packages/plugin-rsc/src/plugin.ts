@@ -220,10 +220,39 @@ export default function vitePluginRsc(
               },
             },
           },
+          // TODO: buildApp hook on v7
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
             async buildApp(builder) {
+              if (!builder.environments.ssr?.config.build.rollupOptions.input) {
+                isScanBuild = true
+                builder.environments.rsc!.config.build.write = false
+                builder.environments.client!.config.build.write = false
+                await builder.build(builder.environments.rsc!)
+                await builder.build(builder.environments.client!)
+                isScanBuild = false
+                builder.environments.rsc!.config.build.write = true
+                builder.environments.client!.config.build.write = true
+                await builder.build(builder.environments.rsc!)
+                // sort for stable build
+                clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+                serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+                await builder.build(builder.environments.client!)
+
+                const assetsManifestCode = `export default ${JSON.stringify(
+                  buildAssetsManifest,
+                  null,
+                  2,
+                )}`
+                const manifestPath = path.join(
+                  builder.environments!.rsc!.config.build!.outDir!,
+                  BUILD_ASSETS_MANIFEST_NAME,
+                )
+                fs.writeFileSync(manifestPath, assetsManifestCode)
+                return
+              }
+
               isScanBuild = true
               builder.environments.rsc!.config.build.write = false
               await builder.build(builder.environments.rsc!)
@@ -636,6 +665,7 @@ export default function vitePluginRsc(
         return
       },
       writeBundle() {
+        // TODO: this doesn't happen when no-ssr build
         if (this.environment.name === 'ssr') {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.
