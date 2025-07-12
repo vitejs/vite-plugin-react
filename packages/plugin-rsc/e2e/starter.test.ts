@@ -22,7 +22,18 @@ test.describe('build-cloudflare', () => {
   defineTest(f)
 })
 
-function defineTest(f: Fixture) {
+test.describe('dev-no-ssr', () => {
+  const f = useFixture({ root: 'examples/no-ssr', mode: 'dev' })
+  defineTest(f, 'no-ssr')
+})
+
+test.describe('build-no-ssr', () => {
+  const f = useFixture({ root: 'examples/no-ssr', mode: 'build' })
+  defineTest(f, 'no-ssr')
+})
+
+function defineTest(f: Fixture, variant?: 'no-ssr') {
+  f.root.includes('no-ssr')
   test('basic', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -48,6 +59,8 @@ function defineTest(f: Fixture) {
   })
 
   testNoJs('server action @nojs', async ({ page }) => {
+    test.skip(variant === 'no-ssr')
+
     await page.goto(f.url())
     await page.getByRole('button', { name: 'Server Counter: 1' }).click()
     await expect(
@@ -70,6 +83,12 @@ function defineTest(f: Fixture) {
     await expect(
       page.getByRole('button', { name: 'Client [edit] Counter: 1' }),
     ).toBeVisible()
+
+    if (variant === 'no-ssr') {
+      editor.reset()
+      await page.getByRole('button', { name: 'Client Counter: 1' }).click()
+      return
+    }
 
     // check next ssr is also updated
     const res = await page.goto(f.url())

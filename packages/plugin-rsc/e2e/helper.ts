@@ -9,7 +9,7 @@ export async function waitForHydration(page: Page) {
     .poll(
       () =>
         page
-          .locator('body')
+          .locator('body > *')
           .evaluate(
             (el) =>
               el &&

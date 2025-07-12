@@ -61,7 +61,7 @@ async function main() {
       <BrowserRoot />
     </React.StrictMode>
   )
-  ReactDOMClient.createRoot(document).render(browserRoot)
+  ReactDOMClient.createRoot(document.body).render(browserRoot)
 
   // implement server HMR by trigering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
