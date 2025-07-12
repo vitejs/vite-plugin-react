@@ -558,6 +558,31 @@ importers:
         specifier: ^4.23.0
         version: 4.23.0
 
+  packages/plugin-rsc/examples/no-ssr:
+    dependencies:
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: ^19.1.6
+        version: 19.1.6(@types/react@19.1.8)
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      vite:
+        specifier: ^7.0.2
+        version: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
+
   packages/plugin-rsc/examples/react-router:
     dependencies:
       '@vitejs/plugin-rsc':
