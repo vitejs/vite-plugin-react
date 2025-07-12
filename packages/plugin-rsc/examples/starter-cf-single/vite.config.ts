@@ -35,12 +35,6 @@ export default defineConfig({
           platform: 'neutral',
         },
       },
-      optimizeDeps: {
-        // @ts-ignore rolldown
-        rollupOptions: {
-          platform: 'neutral',
-        },
-      },
     },
     ssr: {
       keepProcessEnv: false,
