@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import path from 'node:path'
+import fs from 'node:fs'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -30,6 +32,10 @@ test.describe('dev-no-ssr', () => {
 test.describe('build-no-ssr', () => {
   const f = useFixture({ root: 'examples/no-ssr', mode: 'build' })
   defineTest(f, 'no-ssr')
+
+  test('no ssr build', () => {
+    expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
+  })
 })
 
 function defineTest(f: Fixture, variant?: 'no-ssr') {
