@@ -20,11 +20,11 @@
     "dist"
   ],
   "type": "module",
-  "types": "./dist/index.d.mts",
-  "exports": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": "./dist/index.js",
   "scripts": {
-    "dev": "unbuild --stub",
-    "build": "unbuild && tsx scripts/copyRefreshRuntime.ts",
+    "dev": "tsdown --watch",
+    "build": "tsdown",
     "prepublishOnly": "npm run build"
   },
   "engines": {
@@ -44,10 +44,11 @@
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
+    "tsdown": "^0.12.9",
     "unbuild": "^3.5.0",
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.23"
+    "@rolldown/pluginutils": "1.0.0-beta.24"
   }
 }

@@ -5,7 +5,7 @@ import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import { createFilter } from 'vite'
 import * as vite from 'vite'
-import type { Plugin, PluginOption, ResolvedConfig } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -19,10 +19,7 @@ import {
 } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-
-const refreshRuntimePath = globalThis.__IS_BUILD__
-  ? join(_dirname, 'refresh-runtime.js')
-  : join(_dirname, '../../common/refresh-runtime.js')
+const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
 // lazy load babel since it's not used during build if plugins are not used
 let babel: typeof babelCore | undefined
@@ -109,7 +106,7 @@ export type ViteReactPluginApi = {
 const defaultIncludeRE = /\.[tj]sx?$/
 const tsRE = /\.tsx?$/
 
-export default function viteReact(opts: Options = {}): PluginOption[] {
+export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude
   const filter = createFilter(include, exclude)
@@ -351,7 +348,7 @@ export default function viteReact(opts: Options = {}): PluginOption[] {
     jsxImportRuntime,
   ]
   const staticBabelPlugins =
-    typeof opts.babel === 'object' ? opts.babel?.plugins ?? [] : []
+    typeof opts.babel === 'object' ? (opts.babel?.plugins ?? []) : []
   const reactCompilerPlugin = getReactCompilerPlugin(staticBabelPlugins)
   if (reactCompilerPlugin != null) {
     const reactCompilerRuntimeModule =

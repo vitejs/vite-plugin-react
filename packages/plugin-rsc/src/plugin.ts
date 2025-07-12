@@ -220,10 +220,42 @@ export default function vitePluginRsc(
               },
             },
           },
+          // TODO: use buildApp hook on v7?
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
             async buildApp(builder) {
+              // no-ssr case
+              // rsc -> client -> rsc -> client
+              if (!builder.environments.ssr?.config.build.rollupOptions.input) {
+                isScanBuild = true
+                builder.environments.rsc!.config.build.write = false
+                builder.environments.client!.config.build.write = false
+                await builder.build(builder.environments.rsc!)
+                await builder.build(builder.environments.client!)
+                isScanBuild = false
+                builder.environments.rsc!.config.build.write = true
+                builder.environments.client!.config.build.write = true
+                await builder.build(builder.environments.rsc!)
+                // sort for stable build
+                clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+                serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+                await builder.build(builder.environments.client!)
+
+                const assetsManifestCode = `export default ${JSON.stringify(
+                  buildAssetsManifest,
+                  null,
+                  2,
+                )}`
+                const manifestPath = path.join(
+                  builder.environments!.rsc!.config.build!.outDir!,
+                  BUILD_ASSETS_MANIFEST_NAME,
+                )
+                fs.writeFileSync(manifestPath, assetsManifestCode)
+                return
+              }
+
+              // rsc -> ssr -> rsc -> client -> ssr
               isScanBuild = true
               builder.environments.rsc!.config.build.write = false
               builder.environments.ssr!.config.build.write = false
@@ -632,6 +664,8 @@ export default function vitePluginRsc(
         return
       },
       writeBundle() {
+        // TODO: move this to `buildApp`.
+        // note that we already do this in buildApp for no-ssr case.
         if (this.environment.name === 'ssr') {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.

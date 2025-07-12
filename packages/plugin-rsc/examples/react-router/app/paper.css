@@ -87,8 +87,8 @@
 }
 
 @utility btn-* {
-  border-color: --value(--btn-color- *);
-  color: --value(--btn-color- *);
+  border-color: --value(--btn-color-*);
+  color: --value(--btn-color-*);
 }
 
 @utility btn-sm {
