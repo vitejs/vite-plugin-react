@@ -10,11 +10,10 @@ export async function waitForHydration(page: Page) {
       () =>
         page
           .locator('body > *')
-          .nth(0)
-          .evaluate(
-            (el) =>
-              el &&
+          .evaluateAll((elements) =>
+            elements.some((el) =>
               Object.keys(el).some((key) => key.startsWith('__reactFiber')),
+            ),
           ),
       { timeout: 3000 },
     )
