@@ -16,11 +16,11 @@ export default defineConfig({
 })
 
 function spaPlugin(): Plugin[] {
+  // serve index.html before rsc server
   return [
     {
       name: 'serve-spa',
       configureServer(server) {
-        // pre-middleware for index.html request
         return () => {
           server.middlewares.use(async (req, res, next) => {
             try {
