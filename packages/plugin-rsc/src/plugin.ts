@@ -220,11 +220,13 @@ export default function vitePluginRsc(
               },
             },
           },
-          // TODO: buildApp hook on v7
+          // TODO: use buildApp hook on v7?
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
             async buildApp(builder) {
+              // no-ssr case
+              // rsc -> client -> rsc -> client
               if (!builder.environments.ssr?.config.build.rollupOptions.input) {
                 isScanBuild = true
                 builder.environments.rsc!.config.build.write = false
@@ -253,24 +255,21 @@ export default function vitePluginRsc(
                 return
               }
 
+              // rsc -> ssr -> rsc -> client -> ssr
               isScanBuild = true
               builder.environments.rsc!.config.build.write = false
+              builder.environments.ssr!.config.build.write = false
               await builder.build(builder.environments.rsc!)
-              if (builder.environments.ssr?.config.build.rollupOptions.input) {
-                builder.environments.ssr!.config.build.write = false
-                await builder.build(builder.environments.ssr!)
-              }
+              await builder.build(builder.environments.ssr!)
               isScanBuild = false
               builder.environments.rsc!.config.build.write = true
+              builder.environments.ssr!.config.build.write = true
               await builder.build(builder.environments.rsc!)
               // sort for stable build
               clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
               serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
               await builder.build(builder.environments.client!)
-              if (builder.environments.ssr?.config.build.rollupOptions.input) {
-                builder.environments.ssr!.config.build.write = true
-                await builder.build(builder.environments.ssr!)
-              }
+              await builder.build(builder.environments.ssr!)
             },
           },
         }
@@ -665,7 +664,8 @@ export default function vitePluginRsc(
         return
       },
       writeBundle() {
-        // TODO: this doesn't happen when no-ssr build
+        // TODO: move this to `buildApp`.
+        // note that we already do this in buildApp for no-ssr case.
         if (this.environment.name === 'ssr') {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.
