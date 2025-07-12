@@ -10,6 +10,7 @@ export async function waitForHydration(page: Page) {
       () =>
         page
           .locator('body > *')
+          .nth(0)
           .evaluate(
             (el) =>
               el &&
