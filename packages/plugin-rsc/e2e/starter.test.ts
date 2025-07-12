@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
-import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import {
+  expectNoReload,
+  testNoJs,
+  waitForHydration as waitForHydration_,
+} from './helper'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -39,6 +43,9 @@ test.describe('build-no-ssr', () => {
 })
 
 function defineTest(f: Fixture, variant?: 'no-ssr') {
+  const waitForHydration: typeof waitForHydration_ = (page) =>
+    waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
+
   test('basic', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

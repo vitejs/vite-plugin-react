@@ -4,16 +4,16 @@ export const testNoJs = test.extend({
   javaScriptEnabled: ({}, use) => use(false),
 })
 
-export async function waitForHydration(page: Page) {
+export async function waitForHydration(page: Page, locator: string = 'body') {
   await expect
     .poll(
       () =>
         page
-          .locator('body > *')
-          .evaluateAll((elements) =>
-            elements.some((el) =>
+          .locator(locator)
+          .evaluate(
+            (el) =>
+              el &&
               Object.keys(el).some((key) => key.startsWith('__reactFiber')),
-            ),
           ),
       { timeout: 3000 },
     )
