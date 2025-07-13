@@ -15,8 +15,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx scripts/bundle.ts --dev",
-    "build": "tsx scripts/bundle.ts",
+    "dev": "tsdown --watch",
+    "build": "tsdown",
     "test": "playwright test"
   },
   "repository": {
@@ -40,10 +40,9 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.16.0",
     "@vitejs/react-common": "workspace:*",
-    "esbuild": "^0.25.5",
     "fs-extra": "^11.3.0",
-    "picocolors": "^1.1.1",
     "prettier": "^3.0.3",
+    "tsdown": "^0.12.9",
     "typescript": "^5.8.3"
   }
 }

@@ -19,10 +19,7 @@ import {
 } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-
-const refreshRuntimePath = globalThis.__IS_BUILD__
-  ? join(_dirname, 'refresh-runtime.js')
-  : join(_dirname, '../../common/refresh-runtime.js')
+const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
 // lazy load babel since it's not used during build if plugins are not used
 let babel: typeof babelCore | undefined

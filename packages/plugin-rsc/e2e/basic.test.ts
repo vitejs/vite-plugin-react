@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
 import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import path from 'node:path'
+import os from 'node:os'
 
 // TODO: parallel?
 // TODO: all tests don't need to be tested in all variants?
@@ -105,9 +107,14 @@ test.describe('build-react-compiler', () => {
 
 test.describe(() => {
   // disabled by default
-  if (!process.env.TEST_ISOLATED) return
+  if (process.env.TEST_ISOLATED !== 'true') return
 
-  let tmpRoot = '/tmp/test-vite-rsc'
+  // use RUNNER_TEMP on Github Actions
+  // https://github.com/actions/toolkit/issues/518
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc',
+  )
   test.beforeAll(async () => {
     await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
   })

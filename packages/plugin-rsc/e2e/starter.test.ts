@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
-import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import {
+  expectNoReload,
+  testNoJs,
+  waitForHydration as waitForHydration_,
+} from './helper'
+import path from 'node:path'
+import fs from 'node:fs'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -22,7 +28,24 @@ test.describe('build-cloudflare', () => {
   defineTest(f)
 })
 
-function defineTest(f: Fixture) {
+test.describe('dev-no-ssr', () => {
+  const f = useFixture({ root: 'examples/no-ssr', mode: 'dev' })
+  defineTest(f, 'no-ssr')
+})
+
+test.describe('build-no-ssr', () => {
+  const f = useFixture({ root: 'examples/no-ssr', mode: 'build' })
+  defineTest(f, 'no-ssr')
+
+  test('no ssr build', () => {
+    expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
+  })
+})
+
+function defineTest(f: Fixture, variant?: 'no-ssr') {
+  const waitForHydration: typeof waitForHydration_ = (page) =>
+    waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
+
   test('basic', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -48,6 +71,8 @@ function defineTest(f: Fixture) {
   })
 
   testNoJs('server action @nojs', async ({ page }) => {
+    test.skip(variant === 'no-ssr')
+
     await page.goto(f.url())
     await page.getByRole('button', { name: 'Server Counter: 1' }).click()
     await expect(
@@ -70,6 +95,12 @@ function defineTest(f: Fixture) {
     await expect(
       page.getByRole('button', { name: 'Client [edit] Counter: 1' }),
     ).toBeVisible()
+
+    if (variant === 'no-ssr') {
+      editor.reset()
+      await page.getByRole('button', { name: 'Client Counter: 1' }).click()
+      return
+    }
 
     // check next ssr is also updated
     const res = await page.goto(f.url())

@@ -4,12 +4,12 @@ export const testNoJs = test.extend({
   javaScriptEnabled: ({}, use) => use(false),
 })
 
-export async function waitForHydration(page: Page) {
+export async function waitForHydration(page: Page, locator: string = 'body') {
   await expect
     .poll(
       () =>
         page
-          .locator('body')
+          .locator(locator)
           .evaluate(
             (el) =>
               el &&
