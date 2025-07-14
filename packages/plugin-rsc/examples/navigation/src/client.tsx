@@ -5,21 +5,21 @@ import { createFromFetch, createFromReadableStream } from "@vitejs/plugin-rsc/br
 import "@vitejs/plugin-rsc/browser-LizIyxet";
 // @ts-ignore
 import { rscStream } from "@vitejs/plugin-rsc/client-edAdk2GF";
-import React from "react";
+import { useState, useMemo, StrictMode } from "react";
 import ReactDomClient from "react-dom/client";
 import { BundlerContext } from 'navigation-react';
 
 async function hydrate() {
     const initialPayload = await createFromReadableStream(rscStream);
     function Shell() {
-        const [payload, setPayload] = React.useState(initialPayload);
-        const bundler = React.useMemo(() => ({setRoot: setPayload, deserialize: fetchRSC}), []);
+        const [payload, setPayload] = useState(initialPayload);
+        const bundler = useMemo(() => ({setRoot: setPayload, deserialize: fetchRSC}), []);
         return (
-            <React.StrictMode>
+            <StrictMode>
                 <BundlerContext.Provider value={bundler}>
                     {payload.root}
                 </BundlerContext.Provider>
-            </React.StrictMode>
+            </StrictMode>
         );
     }
     ReactDomClient.hydrateRoot(document, <Shell />);
