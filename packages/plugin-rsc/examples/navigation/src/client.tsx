@@ -14,8 +14,8 @@ import { BundlerContext } from 'navigation-react';
 async function hydrate() {
     const initialPayload = await createFromReadableStream(rscStream);
     function Shell() {
-        const [payload, setPayload_] = React.useState(initialPayload);
-        const bundler = React.useMemo(() => ({setRoot: setPayload_, deserialize: fetchRSC}), []);
+        const [payload, setPayload] = React.useState(initialPayload);
+        const bundler = React.useMemo(() => ({setRoot: setPayload, deserialize: fetchRSC}), []);
         return  jsx(BundlerContext.Provider, { value: bundler, children: payload.root });
     }
     const browserRoot = /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(Shell, {}) });
