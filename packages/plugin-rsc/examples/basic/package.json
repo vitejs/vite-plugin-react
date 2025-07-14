@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --app",
+    "build": "vite build",
     "preview": "vite preview",
     "cf-build": "CF_BUILD=1 pnpm build",
     "cf-preview": "wrangler dev",
