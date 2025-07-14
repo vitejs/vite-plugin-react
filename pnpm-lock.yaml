@@ -558,6 +558,49 @@ importers:
         specifier: ^4.23.0
         version: 4.23.0
 
+  packages/plugin-rsc/examples/navigation:
+    dependencies:
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      navigation:
+        specifier: ^6.3.0
+        version: 6.3.0
+      navigation-react:
+        specifier: ^4.12.0
+        version: 4.12.0(navigation@6.3.0)(react@19.1.0)
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@tailwindcss/vite':
+        specifier: ^4.1.11
+        version: 4.1.11(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: ^19.1.6
+        version: 19.1.6(@types/react@19.1.8)
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      babel-plugin-react-compiler:
+        specifier: 19.1.0-rc.2
+        version: 19.1.0-rc.2
+      vite:
+        specifier: ^7.0.2
+        version: 7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
+      vite-plugin-inspect:
+        specifier: ^11.3.0
+        version: 11.3.0(vite@7.0.2(@types/node@22.16.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
+      wrangler:
+        specifier: ^4.23.0
+        version: 4.23.0
+
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
       '@vitejs/plugin-rsc':
@@ -4456,6 +4499,15 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+
+  navigation-react@4.12.0:
+    resolution: {integrity: sha512-sYCWeqyB7Ev4nLcIs2REkA9WbL74XpFagto9VOVPloKwVb6zgSlRbt0CwQKtFVLU/iL4VncdSmlp6OnJaSSfYw==}
+    peerDependencies:
+      navigation: '*'
+      react: '*'
+
+  navigation@6.3.0:
+    resolution: {integrity: sha512-FzpKHKcqn0c1Qcm6e6UHSJY2TvIWHHXMRYzSHXdCVOTnnMQO012gzsqtxu5aCD4qNK9ffAgn48wOn3umczgVaw==}
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
@@ -9233,6 +9285,13 @@ snapshots:
   napi-postinstall@0.2.4: {}
 
   natural-compare@1.4.0: {}
+
+  navigation-react@4.12.0(navigation@6.3.0)(react@19.1.0):
+    dependencies:
+      navigation: 6.3.0
+      react: 19.1.0
+
+  navigation@6.3.0: {}
 
   neo-async@2.6.2: {}
 
