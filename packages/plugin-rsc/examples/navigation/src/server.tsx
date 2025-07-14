@@ -15,6 +15,7 @@ export default async function handler(request: Request): Promise<Response> {
       </NavigationHandler>
     </>
   )
+  // @ts-ignore
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
   const response = await renderRequest(request, root, { nonce })
   if (nonce) {
