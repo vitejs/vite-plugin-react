@@ -80,6 +80,8 @@ function injectRSCPayload(rscStream, options) {
       if (timeout) {
         clearTimeout(timeout)
         flushBufferedChunks(controller)
+        // this would kill server
+        // if (1) throw new Error("test")
       }
       controller.enqueue(encoder.encode(trailer))
     },
