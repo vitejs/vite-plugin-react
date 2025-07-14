@@ -7,22 +7,25 @@ import "@vitejs/plugin-rsc/browser-LizIyxet";
 import { rscStream } from "@vitejs/plugin-rsc/client-edAdk2GF";
 import React from "react";
 import ReactDomClient from "react-dom/client";
-import { jsx } from "react/jsx-runtime";
 import { BundlerContext } from 'navigation-react';
 
-//#region src/extra/browser.tsx
 async function hydrate() {
     const initialPayload = await createFromReadableStream(rscStream);
     function Shell() {
         const [payload, setPayload] = React.useState(initialPayload);
         const bundler = React.useMemo(() => ({setRoot: setPayload, deserialize: fetchRSC}), []);
-        return  jsx(BundlerContext.Provider, { value: bundler, children: payload.root });
+        return (
+            <React.StrictMode>
+                <BundlerContext.Provider value={bundler}>
+                    {payload.root}
+                </BundlerContext.Provider>
+            </React.StrictMode>
+        );
     }
-    const browserRoot = /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(Shell, {}) });
-    ReactDomClient.hydrateRoot(document, browserRoot);
+    ReactDomClient.hydrateRoot(document, <Shell />);
 }
-async function fetchRSC(request: any) {
-    const payload = await createFromFetch(fetch(request));
+async function fetchRSC(url: string, options: any) {
+    const payload = await createFromFetch(fetch(url));
     return payload.root;
 }
 hydrate();
