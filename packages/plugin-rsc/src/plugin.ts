@@ -303,7 +303,10 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
-              createRequestListener(mod.default)(req, res)
+              await createRequestListener(mod.default)(req, res)
+
+              // const { getRequestListener } = await import('@hono/node-server')
+              // await getRequestListener(mod.default)(req, res)
             } catch (e) {
               next(e)
             }
@@ -336,7 +339,7 @@ export default function vitePluginRsc(
         return () => {
           server.middlewares.use(async (req, res, next) => {
             try {
-              handler(req, res)
+              await handler(req, res)
             } catch (e) {
               next(e)
             }

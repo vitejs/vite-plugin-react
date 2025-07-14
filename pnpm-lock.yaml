@@ -466,6 +466,9 @@ importers:
       '@hiogawa/utils':
         specifier: ^1.7.0
         version: 1.7.0
+      '@hono/node-server':
+        specifier: ^1.16.0
+        version: 1.16.0
       '@playwright/test':
         specifier: ^1.53.2
         version: 1.53.2
@@ -1971,6 +1974,12 @@ packages:
 
   '@hiogawa/utils@1.7.0':
     resolution: {integrity: sha512-ghiEFWBR1NENoHn+lSuW7liicTIzVPN+8Srm5UedCTw43gus0mlse6Wp2lz6GmbOXJ/CalMPp/0Tz2X8tajkAg==}
+
+  '@hono/node-server@1.16.0':
+    resolution: {integrity: sha512-9LwRb5XOrTFapOABiQjGC50wRVlzUvWZsDHINCnkBniP+Q+LQf4waN0nzk9t+2kqcTsnGnieSmqpHsr6kH2bdw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -6568,6 +6577,8 @@ snapshots:
   '@fastify/busboy@2.1.1': {}
 
   '@hiogawa/utils@1.7.0': {}
+
+  '@hono/node-server@1.16.0': {}
 
   '@humanfs/core@0.19.1': {}
 

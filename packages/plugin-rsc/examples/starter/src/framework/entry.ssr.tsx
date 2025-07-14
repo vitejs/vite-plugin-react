@@ -35,6 +35,7 @@ export async function renderHTML(
       ? undefined
       : bootstrapScriptContent,
     nonce: options?.nonce,
+    // signal: undefined,
     // no types
     ...{ formState: options?.formState },
   })
@@ -49,6 +50,7 @@ export async function renderHTML(
       }),
     )
     console.log('[responseStream.pipeThrough:after]')
+    // responseStream.cancel()
   }
 
   return responseStream

@@ -80,8 +80,11 @@ function injectRSCPayload(rscStream, options) {
       if (timeout) {
         clearTimeout(timeout)
         flushBufferedChunks(controller)
-        // this would kill server
-        // if (1) throw new Error("test")
+        // this would crash '@mjackson/node-fetch-server'
+        // but not '@hono/node-server'
+        // likely because it swallows `reader.cancel()` error
+        // https://github.com/honojs/node-server/blob/cb52c36d1d5d5b68416c807ce4b231c8bc549e29/src/utils.ts#L21
+        if (1) throw new Error('test')
       }
       controller.enqueue(encoder.encode(trailer))
     },
