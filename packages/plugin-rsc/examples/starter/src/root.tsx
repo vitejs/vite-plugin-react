@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
+import React from 'react'
 
 export function Root() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <button>Server Counter: {getServerCounter()}</button>
         </form>
       </div>
+      <TestSuspence />
       <ul className="read-the-docs">
         <li>
           Edit <code>src/client.tsx</code> to test client HMR.
@@ -66,5 +68,18 @@ function App() {
         </li>
       </ul>
     </div>
+  )
+}
+
+function TestSuspence() {
+  async function Inner() {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    return <div>[suspense-resolved]</div>
+  }
+
+  return (
+    <React.Suspense fallback={<div>[suspense-fallback]</div>}>
+      <Inner />
+    </React.Suspense>
   )
 }

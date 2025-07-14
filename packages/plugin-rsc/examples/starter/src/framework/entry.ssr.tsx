@@ -41,12 +41,14 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
+    console.log('[responseStream.pipeThrough:before]')
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
     responseStream = responseStream.pipeThrough(
       injectRscStreamToHtml(rscStream2, {
         nonce: options?.nonce,
       }),
     )
+    console.log('[responseStream.pipeThrough:after]')
   }
 
   return responseStream
