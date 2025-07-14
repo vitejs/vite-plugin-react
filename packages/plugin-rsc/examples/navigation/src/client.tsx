@@ -13,13 +13,13 @@ import { BundlerContext } from 'navigation-react';
 //#region src/extra/browser.tsx
 async function hydrate() {
     const initialPayload = await createFromReadableStream(rscStream);
-    function BrowserRoot() {
+    function Shell() {
         const [payload, setPayload_] = React.useState(initialPayload);
         const bundler = React.useMemo(() => ({setRoot: setPayload_, deserialize: fetchRSC}), []);
         return  jsx(BundlerContext.Provider, { value: bundler, children: payload.root });
     }
-    const browserRoot = /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(BrowserRoot, {}) });
-    ReactDomClient.hydrateRoot(document, browserRoot, { formState: initialPayload.formState });
+    const browserRoot = /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(Shell, {}) });
+    ReactDomClient.hydrateRoot(document, browserRoot);
 }
 async function fetchRSC(request: any) {
     const payload = await createFromFetch(fetch(request));
