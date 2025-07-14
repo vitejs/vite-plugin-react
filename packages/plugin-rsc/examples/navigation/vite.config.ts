@@ -13,7 +13,12 @@ export default defineConfig({
         ssr: './src/server.ssr.tsx',
         rsc: './src/server.tsx',
       },
+      ignoredPackageWarnings: ['navigation-react'],
     }),
     inspect(),
   ],
+  optimizeDeps: {
+    include: ['navigation'],
+    exclude: ['navigation-react'],
+  },
 })
