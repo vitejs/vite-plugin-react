@@ -303,10 +303,13 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
-              await createRequestListener(mod.default)(req, res)
 
               // const { getRequestListener } = await import('@hono/node-server')
               // await getRequestListener(mod.default)(req, res)
+
+              // ensure catching rejected promise
+              // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
+              await createRequestListener(mod.default)(req, res)
             } catch (e) {
               next(e)
             }
