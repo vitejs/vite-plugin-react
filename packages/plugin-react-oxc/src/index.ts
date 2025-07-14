@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
-import type { BuildOptions, Plugin, PluginOption } from 'vite'
+import type { BuildOptions, Plugin } from 'vite'
 import {
   addRefreshWrapper,
   avoidSourceMapOption,
@@ -12,11 +12,7 @@ import {
 import { exactRegex } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-
-const refreshRuntimePath = globalThis.__IS_BUILD__
-  ? join(_dirname, 'refresh-runtime.js')
-  : // eslint-disable-next-line n/no-unsupported-features/node-builtins -- only used in dev
-    fileURLToPath(import.meta.resolve('@vitejs/react-common/refresh-runtime'))
+const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
@@ -30,7 +26,7 @@ export interface Options {
 
 const defaultIncludeRE = /\.[tj]sx?(?:$|\?)/
 
-export default function viteReact(opts: Options = {}): PluginOption[] {
+export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = [
     ...(Array.isArray(opts.exclude)

@@ -15,8 +15,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx scripts/bundle.ts --dev",
-    "build": "tsx scripts/bundle.ts",
+    "dev": "tsdown --watch",
+    "build": "tsdown",
     "test": "playwright test"
   },
   "repository": {
@@ -29,22 +29,20 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#readme",
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.19",
-    "@swc/core": "^1.12.5"
+    "@rolldown/pluginutils": "1.0.0-beta.24",
+    "@swc/core": "^1.12.11"
   },
   "peerDependencies": {
     "vite": "^4 || ^5 || ^6 || ^7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.53.1",
+    "@playwright/test": "^1.53.2",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.15.32",
+    "@types/node": "^22.16.0",
     "@vitejs/react-common": "workspace:*",
-    "esbuild": "^0.25.5",
     "fs-extra": "^11.3.0",
-    "picocolors": "^1.1.1",
     "prettier": "^3.0.3",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.3"
+    "tsdown": "^0.12.9",
+    "typescript": "^5.8.3"
   }
 }

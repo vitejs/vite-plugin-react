@@ -1,0 +1,9 @@
+{
+  "$schema": "https://www.unpkg.com/wrangler@4.19.1/config-schema.json",
+  "name": "vite-rsc-react-router",
+  "main": "./entry.ssr.tsx",
+  "workers_dev": true,
+  "services": [{ "binding": "RSC", "service": "vite-rsc-react-router-rsc" }],
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_als"],
+}

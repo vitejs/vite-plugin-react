@@ -8,11 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@generouted/react-router": "^1.20.0",
-    "generouted": "1.11.7",
+    "@vitejs/test-dep-non-js": "file:./test-dep/non-js",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.2"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.8",

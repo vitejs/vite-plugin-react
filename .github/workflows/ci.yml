@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node_version: [18, 20, 22]
+        node_version: [18, 20, 22, 24]
         include:
           # Active LTS + other OS
           - os: macos-latest
@@ -80,6 +80,9 @@ jobs:
       - name: Install Playwright
         # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
         run: pnpm playwright install chromium
+
+      - if: matrix.node_version == '18'
+        run: pnpm i -D vite@6.3.5 -w
 
       - name: Build
         run: pnpm run build
