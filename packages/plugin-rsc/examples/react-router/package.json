@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --app",
+    "build": "vite build",
     "preview": "vite preview",
     "cf-dev": "vite -c ./cf/vite.config.ts",
     "cf-build": "vite -c ./cf/vite.config.ts build",
