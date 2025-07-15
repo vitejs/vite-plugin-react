@@ -547,8 +547,7 @@ function isLikelyComponentType(type) {
 
 function isCompoundComponent(type) {
   if (!isPlainObject(type)) return false
-  const keys = Object.keys(type)
-  for (const key of keys) {
+  for (const key in type) {
     if (!isLikelyComponentType(type[key])) return false
   }
   return true
