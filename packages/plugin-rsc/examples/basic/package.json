@@ -27,8 +27,8 @@
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "tailwindcss": "^4.1.11",
-    "vite": "^7.0.2",
+    "vite": "^7.0.4",
     "vite-plugin-inspect": "^11.3.0",
-    "wrangler": "^4.23.0"
+    "wrangler": "^4.24.3"
   }
 }
