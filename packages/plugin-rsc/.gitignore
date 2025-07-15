@@ -1,0 +1,13 @@
+node_modules
+dist
+.vercel
+.vite-node
+.wrangler
+.netlify
+*.log
+*.tgz
+test-results
+*.tsbuildinfo
+.debug
+.vite-inspect
+.claude

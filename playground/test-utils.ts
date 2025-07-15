@@ -37,8 +37,6 @@ function rgbToHex(rgb: string): string {
   }
 }
 
-const timeout = (n: number) => new Promise((r) => setTimeout(r, n))
-
 async function toEl(el: string | ElementHandle): Promise<ElementHandle> {
   if (typeof el === 'string') {
     return await page.$(el)
@@ -82,25 +80,6 @@ export function addFile(filename: string, content: string): void {
 
 export function removeFile(filename: string): void {
   fs.unlinkSync(path.resolve(testDir, filename))
-}
-
-/**
- * Poll a getter until the value it returns includes the expected value.
- */
-export async function untilUpdated(
-  poll: () => string | Promise<string>,
-  expected: string,
-): Promise<void> {
-  const maxTries = process.env.CI ? 100 : 50
-  for (let tries = 0; tries < maxTries; tries++) {
-    const actual = (await poll()) ?? ''
-    if (actual.indexOf(expected) > -1 || tries === maxTries - 1) {
-      expect(actual).toMatch(expected)
-      break
-    } else {
-      await timeout(50)
-    }
-  }
 }
 
 type UntilBrowserLogAfterCallback = (logs: string[]) => PromiseLike<void> | void

@@ -2,7 +2,11 @@ packages:
   - 'packages/*'
   - 'playground/**'
   - 'packages/plugin-react-swc/playground/**'
+  - 'packages/plugin-rsc/examples/*'
 
 catalogs:
   rolldown-vite:
-    vite: npm:rolldown-vite@^6.3.18
+    vite: npm:rolldown-vite@^7.0.9
+
+overrides:
+  '@types/estree': ^1.0.8

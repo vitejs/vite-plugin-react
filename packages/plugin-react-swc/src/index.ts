@@ -11,7 +11,7 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { PluginOption } from 'vite'
+import type { Plugin } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -83,7 +83,7 @@ type Options = {
   disableOxcRecommendation?: boolean
 }
 
-const react = (_options?: Options): PluginOption[] => {
+const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = false
   let base: string
   const options = {

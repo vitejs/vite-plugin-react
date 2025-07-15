@@ -9,7 +9,12 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**'],
+    ignores: [
+      '**/dist/**',
+      '**/playground-temp/**',
+      '**/temp/**',
+      'packages/plugin-rsc/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -127,6 +132,7 @@ export default tseslint.config(
   {
     name: 'disables/playground',
     files: [
+      'packages/**/*.test.?([cm])[jt]s?(x)',
       'playground/**/*.?([cm])[jt]s?(x)',
       'packages/plugin-react-swc/playground/**/*.?([cm])[jt]s?(x)',
     ],

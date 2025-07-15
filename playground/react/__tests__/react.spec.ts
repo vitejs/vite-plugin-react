@@ -6,7 +6,6 @@ import {
   isServe,
   page,
   untilBrowserLogAfter,
-  untilUpdated,
   viteTestUrl,
 } from '~utils'
 
@@ -24,14 +23,16 @@ test.runIf(isServe)('should hmr', async () => {
   editFile('App.jsx', (code) =>
     code.replace('Vite + React', 'Vite + React Updated'),
   )
-  await untilUpdated(() => page.textContent('h1'), 'Hello Vite + React Updated')
+  await expect
+    .poll(() => page.textContent('h1'))
+    .toMatch('Hello Vite + React Updated')
   // preserve state
   expect(await page.textContent('#state-button')).toMatch('count is: 1')
 
   editFile('App.jsx', (code) =>
     code.replace('Vite + React Updated', 'Vite + React'),
   )
-  await untilUpdated(() => page.textContent('h1'), 'Hello Vite + React')
+  await expect.poll(() => page.textContent('h1')).toMatch('Hello Vite + React')
 })
 
 // test.runIf(isServe)('should not invalidate when code is invalid', async () => {
@@ -39,10 +40,9 @@ test.runIf(isServe)('should hmr', async () => {
 //     code.replace('<div className="App">', '<div className="App"}>'),
 //   )
 
-//   await untilUpdated(
-//     () => page.textContent('vite-error-overlay .message-body'),
-//     'Unexpected token',
-//   )
+//   await expect
+//     .poll(() => page.textContent('vite-error-overlay .message-body'))
+//     .toMatch('Unexpected token')
 //   // if import.meta.invalidate happened, the old page won't be shown because the page is reloaded
 //   expect(await page.textContent('h1')).toMatch('Hello Vite + React')
 
@@ -93,7 +93,7 @@ if (!isBuild) {
         'Parent rendered',
       ],
     )
-    await untilUpdated(() => page.textContent('#parent'), 'Updated')
+    await expect.poll(() => page.textContent('#parent')).toMatch('Updated')
   })
 
   // #3301
@@ -125,10 +125,9 @@ if (!isBuild) {
         'Parent rendered',
       ],
     )
-    await untilUpdated(
-      () => page.textContent('#context-provider'),
-      'context provider updated',
-    )
+    await expect
+      .poll(() => page.textContent('#context-provider'))
+      .toMatch('context provider updated')
   })
 
   test('should hmr files with "react/jsx-runtime"', async () => {
@@ -146,10 +145,9 @@ if (!isBuild) {
         ),
       ['[vite] hot updated: /hmr/jsx-import-runtime.js'],
     )
-    await untilUpdated(
-      () => page.textContent('#jsx-import-runtime'),
-      'JSX import runtime updated',
-    )
+    await expect
+      .poll(() => page.textContent('#jsx-import-runtime'))
+      .toMatch('JSX import runtime updated')
 
     expect(await page.textContent('#state-button')).toMatch('count is: 1')
   })
