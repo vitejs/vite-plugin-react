@@ -9,14 +9,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "workspace:*",
-    "typescript": "^5.5.3",
-    "vite": "^6.0.5"
+    "typescript": "^5.8.3",
+    "vite": "^7.0.4"
   }
 }

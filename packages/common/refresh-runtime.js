@@ -534,16 +534,6 @@ function isLikelyComponentType(type) {
             // Definitely React components.
             return true
           default:
-            // Check if this is a compound component (object with all properties being React components)
-            if (isPlainObject(type)) {
-              const keys = Object.keys(type)
-              if (
-                keys.length > 0 &&
-                keys.every((key) => isLikelyComponentType(type[key]))
-              ) {
-                return true
-              }
-            }
             return false
         }
       }
@@ -553,6 +543,15 @@ function isLikelyComponentType(type) {
       return false
     }
   }
+}
+
+function isCompoundComponent(type) {
+  if (!isPlainObject(type)) return false
+  const keys = Object.keys(type)
+  for (const key of keys) {
+    if (!isLikelyComponentType(type[key])) return false
+  }
+  return true
 }
 
 function isPlainObject(obj) {
@@ -582,23 +581,12 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       // The register function has an identity check to not register twice the same component,
       // so this is safe to not used the same key here.
       register(exportValue, filename + ' export ' + key)
-
-      // If it's a compound component (plain object with component properties),
-      // also register the individual components
-      if (
-        typeof exportValue === 'object' &&
-        exportValue != null &&
-        isPlainObject(exportValue) &&
-        Object.keys(exportValue).every((subKey) =>
-          isLikelyComponentType(exportValue[subKey]),
+    } else if (isCompoundComponent(exportValue)) {
+      for (const subKey in exportValue) {
+        register(
+          exportValue[subKey],
+          filename + ' export ' + key + '$' + subKey,
         )
-      ) {
-        for (const subKey in exportValue) {
-          register(
-            exportValue[subKey],
-            filename + ' export ' + key + '$' + subKey,
-          )
-        }
       }
     }
   }
@@ -653,6 +641,7 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
     (key, value) => {
       hasExports = true
       if (isLikelyComponentType(value)) return true
+      if (isCompoundComponent(value)) return true
       return prevExports[key] === nextExports[key]
     },
   )
