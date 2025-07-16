@@ -1456,6 +1456,24 @@ export async function findSourceMapURL(
 // css support
 //
 
+/**
+ * Check if a CSS import ID has special queries that should be excluded from CSS collection.
+ * These queries transform CSS imports to return different data types rather than actual CSS to be linked.
+ */
+function hasSpecialCssQuery(id: string): boolean {
+  try {
+    const url = new URL(id, 'file://')
+    return (
+      url.searchParams.has('url') ||
+      url.searchParams.has('inline') ||
+      url.searchParams.has('raw')
+    )
+  } catch {
+    // If URL parsing fails, check with simple string matching as fallback
+    return id.includes('?url') || id.includes('?inline') || id.includes('?raw')
+  }
+}
+
 export function vitePluginRscCss(
   rscCssOptions?: Pick<RscPluginOptions, 'rscCssTransform'>,
 ): Plugin[] {
@@ -1475,7 +1493,7 @@ export function vitePluginRscCss(
       }
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
-          if (isCSSRequest(next.id)) {
+          if (isCSSRequest(next.id) && !hasSpecialCssQuery(next.id)) {
             cssIds.add(next.id)
           } else {
             recurse(next.id)
