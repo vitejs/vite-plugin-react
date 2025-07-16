@@ -584,7 +584,7 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       for (const subKey in exportValue) {
         register(
           exportValue[subKey],
-          filename + ' export ' + key + '$' + subKey,
+          filename + ' export ' + key + '-' + subKey,
         )
       }
     }

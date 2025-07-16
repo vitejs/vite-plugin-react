@@ -1,6 +1,4 @@
-import React from 'react'
-
-const Root: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+function Root({ children }) {
   return (
     <div
       style={{
@@ -9,7 +7,10 @@ const Root: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         margin: '16px 0',
       }}
     >
-      <h3 style={{ padding: '12px', margin: '0', backgroundColor: '#f5f5f5' }}>
+      <h3
+        id="accordion-root"
+        style={{ padding: '12px', margin: '0', backgroundColor: '#f5f5f5' }}
+      >
         Accordion Root
       </h3>
       <div style={{ padding: '12px' }}>{children}</div>
@@ -17,7 +18,7 @@ const Root: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   )
 }
 
-const Item: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+function Item({ children }) {
   return (
     <div
       style={{
