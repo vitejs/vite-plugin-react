@@ -30,6 +30,7 @@ import { TestUseCache } from './use-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestCssQueries } from './css-queries/client'
+import { TestCssQueriesServer } from './css-queries/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -71,6 +72,7 @@ export function Root(props: { url: URL }) {
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestCssQueries />
+        <TestCssQueriesServer />
         <TestUseCache />
       </body>
     </html>

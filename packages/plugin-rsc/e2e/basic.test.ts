@@ -414,6 +414,7 @@ function defineTest(f: Fixture) {
   })
 
   async function testCssQueries(page: Page) {
+    // Test client component
     // Normal CSS import should have styles applied in SSR
     await expect(page.locator('[data-testid="css-normal"]')).toHaveCSS(
       'color',
@@ -446,6 +447,42 @@ function defineTest(f: Fixture) {
     expect(rawContent).toContain('CSS raw content length: ')
     const rawLength = parseInt(rawContent!.split(': ')[1])
     expect(rawLength).toBeGreaterThan(0) // Should have CSS content
+
+    // Test server component
+    // Normal CSS import should have styles applied in SSR for server component too
+    await expect(page.locator('[data-testid="css-normal-server"]')).toHaveCSS(
+      'color',
+      'rgb(75, 85, 99)', // gray-600
+    )
+    await expect(page.locator('[data-testid="css-normal-server"]')).toHaveCSS(
+      'font-weight',
+      '700', // bold
+    )
+
+    // CSS?url should return a URL string from server component
+    const urlValueServer = await page
+      .locator('[data-testid="css-url-value-server"]')
+      .textContent()
+    expect(urlValueServer).toContain('CSS URL value (server): ')
+    expect(urlValueServer).toMatch(/\.css(\?|$)/) // Should contain .css
+
+    // CSS?inline should return CSS content as string from server component
+    const inlineContentServer = await page
+      .locator('[data-testid="css-inline-content-server"]')
+      .textContent()
+    expect(inlineContentServer).toContain(
+      'CSS inline content length (server): ',
+    )
+    const inlineLengthServer = parseInt(inlineContentServer!.split(': ')[1])
+    expect(inlineLengthServer).toBeGreaterThan(0) // Should have CSS content
+
+    // CSS?raw should return raw CSS content from server component
+    const rawContentServer = await page
+      .locator('[data-testid="css-raw-content-server"]')
+      .textContent()
+    expect(rawContentServer).toContain('CSS raw content length (server): ')
+    const rawLengthServer = parseInt(rawContentServer!.split(': ')[1])
+    expect(rawLengthServer).toBeGreaterThan(0) // Should have CSS content
   }
 
   test('css @js', async ({ page }) => {
