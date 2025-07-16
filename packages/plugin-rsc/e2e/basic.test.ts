@@ -379,6 +379,75 @@ function defineTest(f: Fixture) {
     })
   })
 
+  test('css queries @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await testCssQueries(page)
+  })
+
+  testNoJs('css queries @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    await testCssQueries(page)
+  })
+
+  testNoJs('css queries ssr collection', async ({ page }) => {
+    await page.goto(f.url())
+
+    // Get the HTML source to check what CSS links are included
+    const htmlContent = await page.content()
+
+    // Normal CSS import should be included as a link tag
+    expect(htmlContent).toMatch(
+      /<link[^>]*href="[^"]*test\.css[^"]*"[^>]*rel="stylesheet"/,
+    )
+
+    // CSS imports with special queries should NOT be included as link tags
+    expect(htmlContent).not.toMatch(
+      /<link[^>]*href="[^"]*test\.css\?url[^"]*"[^>]*rel="stylesheet"/,
+    )
+    expect(htmlContent).not.toMatch(
+      /<link[^>]*href="[^"]*test\.css\?inline[^"]*"[^>]*rel="stylesheet"/,
+    )
+    expect(htmlContent).not.toMatch(
+      /<link[^>]*href="[^"]*test\.css\?raw[^"]*"[^>]*rel="stylesheet"/,
+    )
+  })
+
+  async function testCssQueries(page: Page) {
+    // Normal CSS import should have styles applied in SSR
+    await expect(page.locator('[data-testid="css-normal"]')).toHaveCSS(
+      'color',
+      'rgb(75, 85, 99)', // gray-600
+    )
+    await expect(page.locator('[data-testid="css-normal"]')).toHaveCSS(
+      'font-weight',
+      '700', // bold
+    )
+
+    // CSS?url should return a URL string
+    const urlValue = await page
+      .locator('[data-testid="css-url-value"]')
+      .textContent()
+    expect(urlValue).toContain('CSS URL value: ')
+    expect(urlValue).toMatch(/\.css(\?|$)/) // Should contain .css
+
+    // CSS?inline should return CSS content as string
+    const inlineContent = await page
+      .locator('[data-testid="css-inline-content"]')
+      .textContent()
+    expect(inlineContent).toContain('CSS inline content length: ')
+    const inlineLength = parseInt(inlineContent!.split(': ')[1])
+    expect(inlineLength).toBeGreaterThan(0) // Should have CSS content
+
+    // CSS?raw should return raw CSS content
+    const rawContent = await page
+      .locator('[data-testid="css-raw-content"]')
+      .textContent()
+    expect(rawContent).toContain('CSS raw content length: ')
+    const rawLength = parseInt(rawContent!.split(': ')[1])
+    expect(rawLength).toBeGreaterThan(0) // Should have CSS content
+  }
+
   test('css @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

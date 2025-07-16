@@ -1,0 +1,19 @@
+.test-css-query-normal {
+  color: rgb(75, 85, 99); /* gray-600 */
+  font-weight: bold;
+}
+
+.test-css-query-url {
+  color: rgb(220, 38, 127); /* pink-600 */
+  text-decoration: underline;
+}
+
+.test-css-query-inline {
+  color: rgb(101, 163, 13); /* lime-600 */
+  font-style: italic;
+}
+
+.test-css-query-raw {
+  color: rgb(147, 51, 234); /* purple-600 */
+  text-transform: uppercase;
+}
