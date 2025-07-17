@@ -22,7 +22,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 - [`./examples/starter`](./examples/starter)
   - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 - [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview) with this plugin.
+  - This demonstrates how to integrate [React Router RSC](https://reactrouter.com/how-to/react-server-components) with this plugin.
     It also includes `@cloudflare/vite-plugin` integration.
 - [`./examples/basic`](./examples/basic)
   - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
@@ -443,5 +443,5 @@ Additionally, Parcel and React Router's work on standardizing the RSC bundler/ap
 - [Waku](https://github.com/wakujs/waku)
 - [@lazarv/react-server](https://github.com/lazarv/react-server)
 - [@jacob-ebey/vite-react-server-dom](https://github.com/jacob-ebey/vite-plugins/tree/main/packages/vite-react-server-dom)
-- [React Router RSC](https://remix.run/blog/rsc-preview)
+- [React Router RSC](https://reactrouter.com/how-to/react-server-components)
 - [Parcel RSC](https://parceljs.org/recipes/rsc)
