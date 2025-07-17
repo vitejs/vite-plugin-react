@@ -2,7 +2,10 @@
 
 https://vite-rsc-react-router.hiro18181.workers.dev
 
-This example demonstrates how to integrate [React Router RSC](https://reactrouter.com/how-to/react-server-components) with `@vitejs/plugin-rsc`. React Router now provides official React Server Components support, allowing you to build full-stack applications with server-side rendering and client-side routing.
+> [!NOTE]
+> This example demonstrates a custom integration of React Router with RSC using `@vitejs/plugin-rsc`. While React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), this example represents a less official setup that predates the official implementation. It's kept for posterity and as an alternative approach for those who prefer this integration method.
+
+This example demonstrates how to integrate React Router with React Server Components using `@vitejs/plugin-rsc`.
 
 See also:
 
