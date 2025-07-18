@@ -4,9 +4,9 @@
 
 ### `react` and `react-dom` is no longer added to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
 
-Adding values to `resolve.dedupe` will force Vite to resolve them in a different way than Node.js does, which is confusing and may not be expected. This plugin no longer adds `react` and `react-dom` to `resolve.dedupe` automatically.
+Adding values to `resolve.dedupe` forces Vite to resolve them differently from how Node.js does, which can be confusing and may not be expected. This plugin no longer adds `react` and `react-dom` to `resolve.dedupe` automatically.
 
-If you encounter an error after upgrading, check the `dependencies` / `devDependencies` in `package.json` and the package manager's configuration. If you want the previous behavior, you can add `react` and `react-dom` to `resolve.dedupe` manually.
+If you encounter errors after upgrading, check your package.json for version mismatches in `dependencies` or `devDependencies`, as well as your package manager’s configuration. If you prefer the previous behavior, you can manually add `react` and `react-dom` to `resolve.dedupe`.
 
 ## 4.7.0 (2025-07-18)
 
