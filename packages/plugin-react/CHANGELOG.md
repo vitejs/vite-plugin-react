@@ -13,7 +13,7 @@ const Item = () => <div>Accordion Item</div>
 export const Accordion = { Root, Item }
 ```
 
-### Return `Plugin[]` instead of `PluginOption[]`
+### Return `Plugin[]` instead of `PluginOption[]` ([#537](https://github.com/vitejs/vite-plugin-react/pull/537))
 
 The return type has changed from `react(): PluginOption[]` to more specialized type `react(): Plugin[]`. This allows for type-safe manipulation of plugins, for example:
 
