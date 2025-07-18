@@ -655,8 +655,13 @@ function predicateOnExport(ignoredExports, moduleExports, predicate) {
   for (const key in moduleExports) {
     if (key === '__esModule') continue
     if (ignoredExports.includes(key)) continue
-    const desc = Object.getOwnPropertyDescriptor(moduleExports, key)
-    if (desc && desc.get) return key
+    // NOTE: this condition was added in https://github.com/vitejs/vite/pull/10239
+    //       this is needed to avoid triggering side effects in getters
+    //       but this is not needed when `moduleExports` is an ESM module namespace
+    //       also this is problematic for full-bundle mode because rolldown converts
+    //       exports to getters for live bindings
+    // const desc = Object.getOwnPropertyDescriptor(moduleExports, key)
+    // if (desc && desc.get) return key
     if (!predicate(key, moduleExports[key])) return key
   }
   return true

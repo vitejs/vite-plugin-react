@@ -10,3 +10,5 @@ catalogs:
 
 overrides:
   '@types/estree': ^1.0.8
+  'vitest>vite': npm:vite@^6.2.6
+  'vite': https://pkg.pr.new/vitejs/rolldown-vite@bdb70a9
