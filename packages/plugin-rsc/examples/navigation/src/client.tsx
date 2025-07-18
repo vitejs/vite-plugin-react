@@ -1,16 +1,33 @@
-import "@vitejs/plugin-rsc/dist-DEF94lDJ";
-import "@vitejs/plugin-rsc/browser-QWbIPyhO";
-// @ts-ignore
-import { createFromFetch, createFromReadableStream } from "@vitejs/plugin-rsc/browser-D8OPzpF5";
-import "@vitejs/plugin-rsc/browser-LizIyxet";
-// @ts-ignore
-import { rscStream } from "@vitejs/plugin-rsc/client-edAdk2GF";
+import { hydrate as _hydrate } from '@vitejs/plugin-rsc/extra/browser'
+import { createFromFetch, createFromReadableStream } from "@vitejs/plugin-rsc/browser";
 import { useState, useMemo } from "react";
 import ReactDomClient from "react-dom/client";
 import { BundlerContext } from 'navigation-react';
 
+declare global{interface Window { __FLIGHT_DATA: any;}}
+
+let encoder = new TextEncoder();
+let streamController: any;
+let rscStream = new ReadableStream({ start(controller) {
+	if (typeof window === "undefined") return;
+	let handleChunk = (chunk: any) => {
+		if (typeof chunk === "string") controller.enqueue(encoder.encode(chunk));
+		else controller.enqueue(chunk);
+	};
+	window.__FLIGHT_DATA ||= [];
+	window.__FLIGHT_DATA.forEach(handleChunk);
+	window.__FLIGHT_DATA.push = (chunk: any) => {
+		handleChunk(chunk);
+	};
+	streamController = controller;
+} });
+if (typeof document !== "undefined" && document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => {
+	streamController?.close();
+});
+else streamController?.close();
+
 async function hydrate() {
-    const initialPayload = await createFromReadableStream(rscStream);
+    const initialPayload = await createFromReadableStream(rscStream) as any;
     function Shell() {
         const [root, setRoot] = useState(initialPayload.root);
         const bundler = useMemo(() => ({setRoot, deserialize: fetchRSC}), []);
@@ -23,7 +40,7 @@ async function hydrate() {
     ReactDomClient.hydrateRoot(document, <Shell />);
 }
 async function fetchRSC(url: string, {body, ...options}: any) {
-    const payload = await createFromFetch(fetch(url, {...options, body: JSON.stringify(body), method: 'PUT'}));
+    const payload = await createFromFetch(fetch(url, {...options, body: JSON.stringify(body), method: 'PUT'})) as any;
     return payload.root;
 }
 hydrate();
