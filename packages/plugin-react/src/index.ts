@@ -33,6 +33,13 @@ async function loadBabel() {
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
   exclude?: string | RegExp | Array<string | RegExp>
+
+  /**
+   * Whether to exclude `node_modules` from being processed.
+   * @default true
+   */
+  excludeNodeModules?: boolean
+
   /**
    * Control where the JSX factory is imported from.
    * https://esbuild.github.io/api/#jsx-import-source
@@ -109,6 +116,7 @@ const tsRE = /\.tsx?$/
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude
+  const excludeNodeModules = opts.excludeNodeModules ?? true
   const filter = createFilter(include, exclude)
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
@@ -232,12 +240,12 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             ...(exclude
               ? makeIdFiltersToMatchWithQuery(ensureArray(exclude))
               : []),
-            /\/node_modules\//,
+            ...(excludeNodeModules ? [/\/node_modules\//] : []),
           ],
         },
       },
       async handler(code, id, options) {
-        if (id.includes('/node_modules/')) return
+        if (excludeNodeModules && id.includes('/node_modules/')) return
 
         const [filepath] = id.split('?')
         if (!filter(filepath)) return
