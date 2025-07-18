@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))
+
+HMR now works for compound components like this:
+
+```tsx
+const Root = () => <div>Accordion Root</div>
+const Item = () => <div>Accordion Item</div>
+
+export const Accordion = { Root, Item }
+```
+
 ### Return `Plugin[]` instead of `PluginOption[]`
 
 ## 3.10.2 (2025-06-10)
