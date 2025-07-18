@@ -292,3 +292,12 @@ const transformWithOptions = async (
 }
 
 export default react
+
+// Compat for require
+function pluginForCjs(this: unknown, options: Options): Plugin[] {
+  return react.call(this, options)
+}
+Object.assign(pluginForCjs, {
+  default: pluginForCjs,
+})
+export { pluginForCjs as 'module.exports' }

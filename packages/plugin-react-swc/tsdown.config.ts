@@ -4,7 +4,6 @@ import packageJSON from './package.json' with { type: 'json' }
 
 export default defineConfig({
   entry: 'src/index.ts',
-  format: ['esm', 'cjs'],
   dts: true,
   tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
   copy: [
@@ -21,18 +20,6 @@ export default defineConfig({
       to: 'dist/README.md',
     },
   ],
-  outputOptions(outputOpts, format) {
-    if (format === 'cjs') {
-      outputOpts.footer = (chunk) => {
-        // don't append to dts files
-        if (chunk.fileName.endsWith('.cjs')) {
-          return 'module.exports.default = module.exports'
-        }
-        return ''
-      }
-    }
-    return outputOpts
-  },
   onSuccess() {
     writeFileSync(
       'dist/package.json',
@@ -46,15 +33,7 @@ export default defineConfig({
                 key !== 'private',
             ),
           ),
-          main: 'index.cjs',
-          types: 'index.d.ts',
-          module: 'index.js',
-          exports: {
-            '.': {
-              require: './index.cjs',
-              import: './index.js',
-            },
-          },
+          exports: './index.js',
         },
         null,
         2,
