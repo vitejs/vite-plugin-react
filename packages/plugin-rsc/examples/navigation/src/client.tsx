@@ -1,7 +1,7 @@
+import { useState, useMemo } from "react";
+import ReactDOM from "react-dom/client";
 import { hydrate as _hydrate } from '@vitejs/plugin-rsc/extra/browser'
 import { createFromFetch, createFromReadableStream } from "@vitejs/plugin-rsc/browser";
-import { useState, useMemo } from "react";
-import ReactDomClient from "react-dom/client";
 import { BundlerContext } from 'navigation-react';
 
 declare global{interface Window { __FLIGHT_DATA: any;}}
@@ -37,7 +37,7 @@ async function hydrate() {
             </BundlerContext.Provider>
         );
     }
-    ReactDomClient.hydrateRoot(document, <Shell />);
+    ReactDOM.hydrateRoot(document, <Shell />);
 }
 async function fetchRSC(url: string, {body, ...options}: any) {
     const payload = await createFromFetch(fetch(url, {...options, body: JSON.stringify(body), method: 'PUT'})) as any;
