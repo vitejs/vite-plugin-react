@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.7.0 (2025-07-18)
+
 ### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))
 
 HMR now works for compound components like this:
