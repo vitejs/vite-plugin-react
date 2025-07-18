@@ -468,9 +468,6 @@ function getReactCompilerRuntimeModule(
   if (Array.isArray(plugin)) {
     if (plugin[1]?.target === '17' || plugin[1]?.target === '18') {
       moduleName = 'react-compiler-runtime'
-    } else if (typeof plugin[1]?.runtimeModule === 'string') {
-      // backward compatibility from (#374), can be removed in next major
-      moduleName = plugin[1]?.runtimeModule
     }
   }
   return moduleName
