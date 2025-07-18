@@ -2,13 +2,16 @@
 
 https://vite-rsc-react-router.hiro18181.workers.dev
 
-Vite RSC example based on demo made by React router team with Parcel:
+> [!NOTE]
+> This example demonstrates a custom integration of React Router with RSC using `@vitejs/plugin-rsc`. While React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), this example represents a less official setup that predates the official implementation. It's kept for posterity and as an alternative approach for those who prefer this integration method.
 
-- https://github.com/jacob-ebey/parcel-plugin-react-router/
-- https://github.com/jacob-ebey/experimental-parcel-react-router-starter
-- https://github.com/remix-run/react-router/tree/rsc/playground/rsc-vite
+This example demonstrates how to integrate React Router with React Server Components using `@vitejs/plugin-rsc`.
 
-See also [`rsc-movies`](https://github.com/hi-ogawa/rsc-movies/).
+See also:
+
+- [React Router RSC documentation](https://reactrouter.com/how-to/react-server-components)
+- [React Router RSC announcement](https://remix.run/blog/react-router-and-react-server-components)
+- [`rsc-movies`](https://github.com/hi-ogawa/rsc-movies/)
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/react-router?file=src%2Froutes%2Froot.tsx)
 
