@@ -6,8 +6,7 @@ const HmrProvider = ({ children }: any) => {
   const { setRoot, deserialize } = useContext(BundlerContext)
   const { stateNavigator } = useNavigationEvent()
   useEffect(() => {
-    const onHmrReload = (e: any) => {
-      e.preventDefault()
+    const onHmrReload = () => {
       const {
         stateContext: {
           state,
@@ -34,8 +33,8 @@ const HmrProvider = ({ children }: any) => {
       stateNavigator.historyManager.stop()
       setRoot(root)
     }
-    window.addEventListener('parcelhmrreload', onHmrReload)
-    return () => window.removeEventListener('parcelhmrreload', onHmrReload)
+    import.meta.hot?.on("rsc:update", onHmrReload);
+    return () => import.meta.hot?.off("rsc:update", onHmrReload);
   })
   return children
 }

@@ -12,11 +12,11 @@ import { BundlerContext } from 'navigation-react';
 async function hydrate() {
     const initialPayload = await createFromReadableStream(rscStream);
     function Shell() {
-        const [payload, setPayload] = useState(initialPayload);
+        const [payload, setPayload] = useState(initialPayload.root);
         const bundler = useMemo(() => ({setRoot: setPayload, deserialize: fetchRSC}), []);
         return (
             <BundlerContext.Provider value={bundler}>
-                {payload.root}
+                {payload}
             </BundlerContext.Provider>
         );
     }
