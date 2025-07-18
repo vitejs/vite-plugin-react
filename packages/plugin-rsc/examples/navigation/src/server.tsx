@@ -2,7 +2,7 @@ import { renderRequest } from '@vitejs/plugin-rsc/extra/rsc'
 import { StateNavigator } from 'navigation'
 import stateNavigator from './stateNavigator.ts'
 
-export default async function handler(request: Request): Promise<Response> {
+export default async function handler(request: Request, res): Promise<Response> {
   let url: string;
   let view: any;
   const serverNavigator = new StateNavigator(stateNavigator);
@@ -33,7 +33,11 @@ export default async function handler(request: Request): Promise<Response> {
       view = <App url={url} />;
     }
   }
-  serverNavigator.navigateLink(url)
+  try {
+    serverNavigator.navigateLink(url)
+  } catch(e) {
+    return new Response('Not Found', { status: 404 });
+  }
   const { NavigationHandler } = await import('navigation-react');
   const root = (
     <>
