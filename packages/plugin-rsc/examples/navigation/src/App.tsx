@@ -4,7 +4,7 @@ import HmrProvider from './HmrProvider'
 import People from './People'
 import Person from './Person'
 
-export function App({ url }: any) {
+const App = async ({ url }: any) => {
   return (
     <html>
       <head>
@@ -25,3 +25,5 @@ export function App({ url }: any) {
     </html>
   )
 }
+
+export default App;

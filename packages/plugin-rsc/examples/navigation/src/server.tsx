@@ -18,7 +18,7 @@ export default async function handler(request: Request): Promise<Response> {
   } else {    
     let reqUrl = new URL(request.url);
     url = `${reqUrl.pathname}${reqUrl.search}`;
-    const { App } = await import('./App.tsx');
+    const App = (await import('./App.tsx')).default;
     view = <App url={url} />;
   }
   const { NavigationHandler } = await import('navigation-react');
