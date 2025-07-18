@@ -42,21 +42,7 @@ export default async function handler(request: Request): Promise<Response> {
       </NavigationHandler>
     </>
   );
-  // @ts-ignore
-  const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined;
-  const response = await renderRequest(request, root, { nonce });
-  if (nonce) {
-    response.headers.set(
-      'content-security-policy',
-      `default-src 'self'; ` +
-        // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
-        `script-src 'self' 'nonce-${nonce}' ${
-          import.meta.env.DEV ? `'unsafe-eval'` : ``
-        } ; ` +
-        `style-src 'self' 'nonce-${nonce}'; `,
-    );
-  }
-  return response;
+  return renderRequest(request, root);
 }
 
 if (import.meta.hot) {
