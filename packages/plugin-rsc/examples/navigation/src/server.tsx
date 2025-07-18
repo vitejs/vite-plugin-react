@@ -6,7 +6,12 @@ export default async function handler(request: Request): Promise<Response> {
   let url: string;
   let view: any;
   const serverNavigator = new StateNavigator(stateNavigator);
-  if (request.method === 'PUT') {
+  if (request.method === 'GET') {
+    let reqUrl = new URL(request.url);
+    url = `${reqUrl.pathname}${reqUrl.search}`;
+    const App = (await import('./App.tsx')).default;
+    view = <App url={url} />;
+  } else {    
     const sceneViews: any = {
       people: await import('./People.tsx'),
       person: await import('./Person.tsx'),
@@ -27,11 +32,6 @@ export default async function handler(request: Request): Promise<Response> {
       const App = (await import('./App.tsx')).default;
       view = <App url={url} />;
     }
-  } else {    
-    let reqUrl = new URL(request.url);
-    url = `${reqUrl.pathname}${reqUrl.search}`;
-    const App = (await import('./App.tsx')).default;
-    view = <App url={url} />;
   }
   serverNavigator.navigateLink(url)
   const { NavigationHandler } = await import('navigation-react');
