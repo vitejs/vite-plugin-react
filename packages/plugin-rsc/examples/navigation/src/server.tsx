@@ -5,7 +5,6 @@ import stateNavigator from './stateNavigator.ts'
 export default async function handler(request: Request): Promise<Response> {
   let url: string;
   let view: any;
-  const { NavigationHandler } = await import('navigation-react');
   const serverNavigator = new StateNavigator(stateNavigator);
   if (request.method === 'PUT') {
     const sceneViews: any = {
@@ -35,6 +34,7 @@ export default async function handler(request: Request): Promise<Response> {
     view = <App url={url} />;
   }
   serverNavigator.navigateLink(url)
+  const { NavigationHandler } = await import('navigation-react');
   const root = (
     <>
       <NavigationHandler stateNavigator={serverNavigator}>
