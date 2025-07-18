@@ -364,9 +364,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       optimizeDeps: {
         include: dependencies,
       },
-      resolve: {
-        dedupe: ['react', 'react-dom'],
-      },
     }),
     resolveId: {
       filter: { id: exactRegex(runtimePublicPath) },
