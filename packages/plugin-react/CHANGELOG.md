@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### `react` and `react-dom` is no longer added to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
+
+Adding values to `resolve.dedupe` forces Vite to resolve them differently from how Node.js does, which can be confusing and may not be expected. This plugin no longer adds `react` and `react-dom` to `resolve.dedupe` automatically.
+
+If you encounter errors after upgrading, check your package.json for version mismatches in `dependencies` or `devDependencies`, as well as your package manager’s configuration. If you prefer the previous behavior, you can manually add `react` and `react-dom` to `resolve.dedupe`.
+
 ## 4.7.0 (2025-07-18)
 
 ### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))
