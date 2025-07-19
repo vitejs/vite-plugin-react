@@ -1,0 +1,34 @@
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const args = process.argv.slice(2);
+
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    icon: path.join(__dirname, 'assets', 'logo.png'),
+    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+  });
+  win.loadFile('index.html');
+}
+
+app.whenReady().then(() => {
+  // handle --email arg
+  const emailArg = args.find(a => a.startsWith('--email='));
+  if (emailArg) {
+    console.log('Logging in with email:', emailArg.split('=')[1]);
+    // (placeholder for OAuth initiation)
+  }
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+// IPC: listen for commands from the renderer
+ipcMain.on('run-command', (event, cmd) => {
+  console.log('Received command:', cmd);
+  const result = `Executed: ${cmd}`;
+  event.reply('command-response', result);
+});
