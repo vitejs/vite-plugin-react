@@ -175,12 +175,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         config.command === 'build' ||
         config.server.hmr === false
 
-      if ('jsxPure' in opts) {
-        config.logger.warnOnce(
-          '[@vitejs/plugin-react] jsxPure was removed. You can configure esbuild.jsxSideEffects directly.',
-        )
-      }
-
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
