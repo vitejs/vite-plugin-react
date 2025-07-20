@@ -1459,6 +1459,10 @@ export async function findSourceMapURL(
 export function vitePluginRscCss(
   rscCssOptions?: Pick<RscPluginOptions, 'rscCssTransform'>,
 ): Plugin[] {
+  function hasSpecialCssQuery(id: string): boolean {
+    return /[?&](url|inline|raw)(\b|=|&|$)/.test(id)
+  }
+
   function collectCss(environment: DevEnvironment, entryId: string) {
     const visited = new Set<string>()
     const cssIds = new Set<string>()
@@ -1475,7 +1479,7 @@ export function vitePluginRscCss(
       }
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
-          if (isCSSRequest(next.id)) {
+          if (isCSSRequest(next.id) && !hasSpecialCssQuery(next.id)) {
             cssIds.add(next.id)
           } else {
             recurse(next.id)
