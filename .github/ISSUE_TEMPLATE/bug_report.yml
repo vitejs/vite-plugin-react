@@ -19,6 +19,8 @@ body:
             [plugin-react-swc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc)
         - label: |
             [plugin-react-oxc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-oxc)
+        - label: |
+            [plugin-rsc](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc)
   - type: textarea
     id: bug-description
     attributes:
