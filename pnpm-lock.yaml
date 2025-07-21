@@ -542,9 +542,6 @@ importers:
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)
-      babel-plugin-react-compiler:
-        specifier: 19.1.0-rc.2
-        version: 19.1.0-rc.2
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.11
@@ -557,6 +554,18 @@ importers:
       wrangler:
         specifier: ^4.24.3
         version: 4.24.3
+
+  packages/plugin-rsc/examples/e2e:
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      babel-plugin-react-compiler:
+        specifier: 19.1.0-rc.2
+        version: 19.1.0-rc.2
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
@@ -7741,7 +7750,7 @@ snapshots:
 
   babel-plugin-react-compiler@19.1.0-rc.2:
     dependencies:
-      '@babel/types': 7.27.7
+      '@babel/types': 7.28.0
 
   bail@2.0.2: {}
 
