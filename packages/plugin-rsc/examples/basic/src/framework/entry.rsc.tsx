@@ -97,7 +97,7 @@ export async function handleRequest({
   // respond html
   return new Response(htmlStream, {
     headers: {
-      'Content-type': 'text/html',
+      'content-type': 'text/html;charset=utf-8',
       vary: 'accept',
     },
   })
