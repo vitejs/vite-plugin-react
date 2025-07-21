@@ -419,7 +419,10 @@ export default defineConfig({
 })
 ```
 
-## Higher level API
+## High level API
+
+> [!NOTE]
+> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
 
 This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
 

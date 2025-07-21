@@ -148,4 +148,19 @@ if (!isBuild) {
 
     expect(await page.textContent('#state-button')).toMatch('count is: 1')
   })
+
+  // #493
+  test('should hmr compound components', async () => {
+    await untilBrowserLogAfter(
+      () =>
+        editFile('components/Accordion.jsx', (code) =>
+          code.replace('Accordion Root', 'Accordion Root Updated'),
+        ),
+      ['[vite] hot updated: /components/Accordion.jsx'],
+    )
+
+    await expect
+      .poll(() => page.textContent('#accordion-root'))
+      .toMatch('Accordion Root Updated')
+  })
 }
