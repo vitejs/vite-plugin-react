@@ -1,4 +1,4 @@
-import { injectRscStreamToHtml } from '@vitejs/plugin-rsc/rsc-html-stream/ssr'
+import { injectRSCPayload } from 'rsc-html-stream/server'
 import * as ReactClient from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import * as ReactDomServer from 'react-dom/server.edge'
@@ -24,6 +24,6 @@ export async function renderHtml(rscStream: ReadableStream<Uint8Array>) {
   await htmlStream.allReady
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
-  responseStream = responseStream.pipeThrough(injectRscStreamToHtml(rscStream2))
+  responseStream = responseStream.pipeThrough(injectRSCPayload(rscStream2))
   return responseStream
 }
