@@ -12,35 +12,16 @@ import {
 import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
-// log unhandled rejection to debug e2e failures
-if (!(globalThis as any).__debugHandlerRegisterd) {
-  process.on('uncaughtException', (err) => {
-    console.error('⚠️⚠️⚠️ uncaughtException ⚠️⚠️⚠️', err)
-  })
-  process.on('unhandledRejection', (err) => {
-    console.error('⚠️⚠️⚠️ unhandledRejection ⚠️⚠️⚠️', err)
-  })
-  ;(globalThis as any).__debugHandlerRegisterd = true
-}
-
 export default defineConfig({
-  base: process.env.TEST_BASE ? '/custom-base/' : undefined,
   clearScreen: false,
   plugins: [
     tailwindcss(),
-    process.env.TEST_REACT_COMPILER
-      ? react({
-          babel: { plugins: ['babel-plugin-react-compiler'] },
-        }).map((p) => ({
-          ...p,
-          applyToEnvironment: (e) => e.name === 'client',
-        }))
-      : react(),
+    react(),
     vitePluginUseCache(),
     rsc({
       entries: {
-        client: './src/client.tsx',
-        ssr: './src/server.ssr.tsx',
+        client: './src/framework/entry.browser.tsx',
+        ssr: './src/framework/entry.ssr.tsx',
         rsc: './src/server.tsx',
       },
       // disable auto css injection to manually test `loadCss` feature.
@@ -85,11 +66,15 @@ export default defineConfig({
         assert(typeof viteManifest.source === 'string')
         if (this.environment.name === 'rsc') {
           assert(viteManifest.source.includes('src/server.tsx'))
-          assert(!viteManifest.source.includes('src/client.tsx'))
+          assert(
+            !viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
         if (this.environment.name === 'client') {
           assert(!viteManifest.source.includes('src/server.tsx'))
-          assert(viteManifest.source.includes('src/client.tsx'))
+          assert(
+            viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
       },
     },
@@ -205,7 +190,7 @@ function vitePluginUseCache(): Plugin[] {
         })
         if (!result.output.hasChanged()) return
         result.output.prepend(
-          `import __vite_rsc_cache from "/src/use-cache-runtime";`,
+          `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
         )
         return {
           code: result.output.toString(),

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import {
   expectNoReload,
   testNoJs,
@@ -39,6 +39,107 @@ test.describe('build-no-ssr', () => {
 
   test('no ssr build', () => {
     expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
+  })
+})
+
+test.describe(() => {
+  const root = 'examples/e2e/temp/react-compiler'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            plugins: [
+              react({
+                babel: { plugins: ['babel-plugin-react-compiler'] },
+              }).map((p) => ({
+                ...p,
+                applyToEnvironment: (e) => e.name === 'client',
+              })),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-react-compiler', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest(f)
+
+    test('verify react compiler', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration_(page)
+      const res = await page.request.get(f.url('src/client.tsx'))
+      expect(await res.text()).toContain('react.memo_cache_sentinel')
+    })
+  })
+
+  test.describe('build-react-compiler', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest(f)
+  })
+})
+
+test.describe(() => {
+  const root = 'examples/e2e/temp/base'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            base: '/custom-base/',
+            plugins: [
+              react(),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-base', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+
+  test.describe('build-base', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
   })
 })
 
@@ -110,6 +211,24 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
     await page.getByRole('button', { name: 'Client Counter: 0' }).click()
   })
 
+  test.describe(() => {
+    test.skip(f.mode === 'build')
+
+    test('server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
+      const editor = f.createEditor('src/root.tsx')
+      editor.edit((s) =>
+        s.replace('<h1>Vite + RSC</h1>', '<h1>Vite x RSC</h1>'),
+      )
+      await expect(page.getByText('Vite x RSC')).toBeVisible()
+      editor.reset()
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
+    })
+  })
+
   test('image assets', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -121,5 +240,26 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
       'naturalWidth',
       0,
     )
+  })
+
+  test('css @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.read-the-docs')).toHaveCSS(
+      'color',
+      'rgb(136, 136, 136)',
+    )
+  })
+
+  test.describe(() => {
+    test.skip(variant === 'no-ssr')
+
+    testNoJs('css @nojs', async ({ page }) => {
+      await page.goto(f.url())
+      await expect(page.locator('.read-the-docs')).toHaveCSS(
+        'color',
+        'rgb(136, 136, 136)',
+      )
+    })
   })
 }

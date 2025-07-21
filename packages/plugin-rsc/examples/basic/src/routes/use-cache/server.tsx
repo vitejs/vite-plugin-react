@@ -1,4 +1,4 @@
-import { revalidateCache } from '../../use-cache-runtime'
+import { revalidateCache } from '../../framework/use-cache-runtime'
 
 export function TestUseCache() {
   return (
