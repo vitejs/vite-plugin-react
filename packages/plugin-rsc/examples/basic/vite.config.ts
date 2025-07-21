@@ -2,7 +2,13 @@ import assert from 'node:assert'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
+import {
+  type Plugin,
+  createRunnableDevEnvironment,
+  defineConfig,
+  normalizePath,
+  parseAstAsync,
+} from 'vite'
 import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
@@ -156,6 +162,30 @@ export default { fetch: handler };
       '@vitejs/test-dep-client-in-server2/client',
       '@vitejs/test-dep-server-in-client/client',
     ],
+  },
+  environments: {
+    ssr: {
+      dev: {
+        createEnvironment(name, config) {
+          return createRunnableDevEnvironment(name, config, {
+            runnerOptions: {
+              hmr: false,
+            },
+          })
+        },
+      },
+    },
+    rsc: {
+      dev: {
+        createEnvironment(name, config) {
+          return createRunnableDevEnvironment(name, config, {
+            runnerOptions: {
+              hmr: false,
+            },
+          })
+        },
+      },
+    },
   },
 }) as any
 
