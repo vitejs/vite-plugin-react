@@ -43,7 +43,7 @@ test.describe('build-no-ssr', () => {
 })
 
 test.describe(() => {
-  const root = 'examples/e2e/temp/starter-react-compiler'
+  const root = 'examples/e2e/temp/react-compiler'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
