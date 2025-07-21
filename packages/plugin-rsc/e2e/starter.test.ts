@@ -95,6 +95,54 @@ test.describe(() => {
   })
 })
 
+test.describe(() => {
+  const root = 'examples/e2e/temp/base'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            base: '/custom-base/',
+            plugins: [
+              react(),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-base', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+
+  test.describe('build-base', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+})
+
 function defineTest(f: Fixture, variant?: 'no-ssr') {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
