@@ -43,18 +43,50 @@ test.describe('build-no-ssr', () => {
 })
 
 test.describe(() => {
-  const root = 'temp/starter-react-compiler'
+  const root = 'examples/e2e/temp/starter-react-compiler'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
       src: 'examples/starter',
       dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            plugins: [
+              react({
+                babel: { plugins: ['babel-plugin-react-compiler'] },
+              }).map((p) => ({
+                ...p,
+                applyToEnvironment: (e) => e.name === 'client',
+              })),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+          })
+        `,
+      },
     })
   })
 
   test.describe('dev-react-compiler', () => {
     const f = useFixture({ root, mode: 'dev' })
     defineTest(f)
+
+    test('verify react compiler', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration_(page)
+      const res = await page.request.get(f.url('src/client.tsx'))
+      expect(await res.text()).toContain('react.memo_cache_sentinel')
+    })
   })
 
   test.describe('build-react-compiler', () => {

@@ -1,0 +1,10 @@
+{
+  "name": "@vitejs/plugin-rsc-examples-e2e-temp",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@vitejs/plugin-rsc": "latest",
+    "@vitejs/plugin-react": "latest",
+    "babel-plugin-react-compiler": "19.1.0-rc.2"
+  }
+}
