@@ -443,5 +443,5 @@ Additionally, Parcel and React Router's work on standardizing the RSC bundler/ap
 - [Waku](https://github.com/wakujs/waku)
 - [@lazarv/react-server](https://github.com/lazarv/react-server)
 - [@jacob-ebey/vite-react-server-dom](https://github.com/jacob-ebey/vite-plugins/tree/main/packages/vite-react-server-dom)
-- [React Router RSC](https://reactrouter.com/how-to/react-server-components)
+- [React Router RSC](https://remix.run/blog/rsc-preview)
 - [Parcel RSC](https://parceljs.org/recipes/rsc)
