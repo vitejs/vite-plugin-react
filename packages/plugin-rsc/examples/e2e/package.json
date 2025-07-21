@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-e2e-temp",
+  "name": "@vitejs/plugin-rsc-examples-e2e",
   "private": true,
   "type": "module",
   "devDependencies": {
