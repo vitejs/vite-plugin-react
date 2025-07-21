@@ -10,6 +10,7 @@ export default async function handler(request: Request): Promise<Response> {
   const nonceMeta = nonce && <meta property="csp-nonce" nonce={nonce} />
   const root = (
     <>
+      {/* this `loadCss` only collects `styles.css` but not css inside dynamic import `root.tsx` */}
       {import.meta.viteRsc.loadCss()}
       {nonceMeta}
       <Root url={url} />
