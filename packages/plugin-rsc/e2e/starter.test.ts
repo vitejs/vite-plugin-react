@@ -143,6 +143,66 @@ test.describe(() => {
   })
 })
 
+test.describe(() => {
+  const root = 'examples/e2e/temp/module-runner-hmr-false'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig, createRunnableDevEnvironment } from 'vite'
+
+          export default defineConfig({
+            plugins: [
+              react(),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+            environments: {
+              ssr: {
+                dev: {
+                  createEnvironment(name, config) {
+                    return createRunnableDevEnvironment(name, config, {
+                      runnerOptions: {
+                        hmr: false,
+                      },
+                    })
+                  },
+                },
+              },
+              rsc: {
+                dev: {
+                  createEnvironment(name, config) {
+                    return createRunnableDevEnvironment(name, config, {
+                      runnerOptions: {
+                        hmr: false,
+                      },
+                    })
+                  },
+                },
+              },
+            },
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-module-runner-hmr-false', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest(f)
+  })
+})
+
 function defineTest(f: Fixture, variant?: 'no-ssr') {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')

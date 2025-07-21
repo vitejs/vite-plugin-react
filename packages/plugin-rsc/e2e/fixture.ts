@@ -213,10 +213,11 @@ export async function setupInlineFixture(options: {
 
   // write additional files
   if (options.files) {
-    for (const [filename, contents] of Object.entries(options.files)) {
+    for (let [filename, contents] of Object.entries(options.files)) {
       let filepath = path.join(options.dest, filename)
       fs.mkdirSync(path.dirname(filepath), { recursive: true })
       // strip indent
+      contents = contents.replace(/^\n/, '')
       const indent = contents.match(/^\s*/)?.[0] ?? ''
       const strippedContents = contents
         .split('\n')
