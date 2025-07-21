@@ -24,7 +24,15 @@ export async function renderHTML(
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
-    return React.use(payload).root
+    const root = React.use(payload).root
+    return <SsrUseWorkaround>{root}</SsrUseWorkaround>
+  }
+
+  // Add an empty component in between SsrRoot and user's root to avoid React SSR bugs.
+  // > SsrRoot (use) -> SsrUseWorkaround -> root (which potentially has `lazy` + `use`)
+  // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
+  function SsrUseWorkaround(props: React.PropsWithChildren) {
+    return props.children
   }
 
   // render html (traditional SSR)
