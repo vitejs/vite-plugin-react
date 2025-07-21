@@ -22,7 +22,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 - [`./examples/starter`](./examples/starter)
   - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 - [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). Note that React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow the update from React Router team for the latest integration.
+  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 - [`./examples/basic`](./examples/basic)
   - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
     It also uses a high level `@vitejs/plugin-rsc/extra/{rsc,ssr,browser}` API for quick setup.
