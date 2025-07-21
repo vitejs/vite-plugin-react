@@ -3,7 +3,7 @@
 https://vite-rsc-react-router.hiro18181.workers.dev
 
 > [!NOTE]
-> React router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components) for Vite. The example might not be kept up to date with the latest version. Please refer to React router's official documentation for the latest updates.
+> React router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components) for Vite. The example might not be kept up to date with the latest version. Please refer to React router's official documentation for the latest integrations.
 
 Vite RSC example based on demo made by React router team with Parcel:
 
