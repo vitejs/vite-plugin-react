@@ -11,7 +11,11 @@ export default async function handler(request: Request): Promise<Response> {
     </>
   )
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
-  const response = await handleRequest({ request, getRoot: () => root })
+  const response = await handleRequest({
+    request,
+    getRoot: () => root,
+    nonce,
+  })
   if (nonce && response.headers.get('content-type')?.includes('text/html')) {
     response.headers.set(
       'content-security-policy',
