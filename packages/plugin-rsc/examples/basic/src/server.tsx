@@ -4,13 +4,17 @@ import './styles.css'
 export default async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const { Root } = await import('./routes/root.tsx')
+  const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
+  // https://vite.dev/guide/features.html#content-security-policy-csp
+  // this isn't needed if `style-src: 'unsafe-inline'` (dev) and `script-src: 'self'`
+  const nonceMeta = nonce && <meta property="csp-nonce" nonce={nonce} />
   const root = (
     <>
       {import.meta.viteRsc.loadCss()}
+      {nonceMeta}
       <Root url={url} />
     </>
   )
-  const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
   const response = await handleRequest({
     request,
     getRoot: () => root,
