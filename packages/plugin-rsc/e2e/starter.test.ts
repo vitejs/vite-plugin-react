@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import {
   expectNoReload,
   testNoJs,
@@ -39,6 +39,27 @@ test.describe('build-no-ssr', () => {
 
   test('no ssr build', () => {
     expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
+  })
+})
+
+test.describe(() => {
+  const root = 'temp/starter-react-compiler'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+    })
+  })
+
+  test.describe('dev-react-compiler', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest(f)
+  })
+
+  test.describe('build-react-compiler', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest(f)
   })
 })
 

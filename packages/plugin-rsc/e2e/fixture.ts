@@ -192,3 +192,8 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
     ),
   )
 }
+
+export async function setupInlineFixture(options: {
+  src: string
+  dest: string
+}) {}
