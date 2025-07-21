@@ -110,6 +110,25 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
     await page.getByRole('button', { name: 'Client Counter: 0' }).click()
   })
 
+  test.describe(() => {
+    test.skip(f.mode === 'build')
+
+    test('server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const editor = f.createEditor('src/root.tsx')
+      editor.edit((s) => s.replace('Server Counter', 'Server [edit] Counter'))
+      await expect(
+        page.getByRole('button', { name: 'Server [edit] Counter: 0' }),
+      ).toBeVisible()
+      editor.reset()
+      await expect(
+        page.getByRole('button', { name: 'Server Counter: 0' }),
+      ).toBeVisible()
+    })
+  })
+
   test('image assets', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
