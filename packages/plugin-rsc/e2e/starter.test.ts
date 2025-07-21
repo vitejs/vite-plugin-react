@@ -141,4 +141,23 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
       0,
     )
   })
+
+  test('css @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.read-the-docs')).toHaveCSS(
+      'color',
+      'rgb(136, 136, 136)',
+    )
+  })
+
+  testNoJs('css @nojs', async ({ page }) => {
+    test.skip(variant === 'no-ssr')
+
+    await page.goto(f.url())
+    await expect(page.locator('.read-the-docs')).toHaveCSS(
+      'color',
+      'rgb(136, 136, 136)',
+    )
+  })
 }
