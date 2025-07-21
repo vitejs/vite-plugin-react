@@ -175,7 +175,7 @@ function vitePluginUseCache(): Plugin[] {
         })
         if (!result.output.hasChanged()) return
         result.output.prepend(
-          `import __vite_rsc_cache from "/src/use-cache-runtime";`,
+          `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
         )
         return {
           code: result.output.toString(),
