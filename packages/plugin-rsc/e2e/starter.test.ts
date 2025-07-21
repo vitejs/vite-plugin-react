@@ -110,6 +110,24 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
     await page.getByRole('button', { name: 'Client Counter: 0' }).click()
   })
 
+  test.describe(() => {
+    test.skip(f.mode === 'build')
+
+    test('server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
+      const editor = f.createEditor('src/root.tsx')
+      editor.edit((s) =>
+        s.replace('<h1>Vite + RSC</h1>', '<h1>Vite x RSC</h1>'),
+      )
+      await expect(page.getByText('Vite x RSC')).toBeVisible()
+      editor.reset()
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
+    })
+  })
+
   test('image assets', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -121,5 +139,26 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
       'naturalWidth',
       0,
     )
+  })
+
+  test('css @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.read-the-docs')).toHaveCSS(
+      'color',
+      'rgb(136, 136, 136)',
+    )
+  })
+
+  test.describe(() => {
+    test.skip(variant === 'no-ssr')
+
+    testNoJs('css @nojs', async ({ page }) => {
+      await page.goto(f.url())
+      await expect(page.locator('.read-the-docs')).toHaveCSS(
+        'color',
+        'rgb(136, 136, 136)',
+      )
+    })
   })
 }
