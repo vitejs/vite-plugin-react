@@ -33,9 +33,9 @@ export default defineConfig({
     vitePluginUseCache(),
     rsc({
       entries: {
-        client: './src/client.tsx',
-        ssr: './src/server.ssr.tsx',
-        rsc: './src/server.tsx',
+        client: './src/framework/entry.browser.tsx',
+        ssr: './src/framework/entry.ssr.tsx',
+        rsc: './src/framework/entry.rsc.tsx',
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,

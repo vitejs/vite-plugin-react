@@ -1,5 +1,5 @@
+import { handleRequest } from './framework/entry.rsc.tsx'
 import './styles.css'
-import { renderRequest } from '@vitejs/plugin-rsc/extra/rsc'
 
 export default async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
@@ -11,8 +11,8 @@ export default async function handler(request: Request): Promise<Response> {
     </>
   )
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
-  const response = await renderRequest(request, root, { nonce })
-  if (nonce) {
+  const response = await handleRequest({ request, getRoot: () => root })
+  if (nonce && response.headers.get('content-type')?.includes('text/html')) {
     response.headers.set(
       'content-security-policy',
       `default-src 'self'; ` +
