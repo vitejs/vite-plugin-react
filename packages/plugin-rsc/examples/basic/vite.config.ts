@@ -7,18 +7,10 @@ import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
 export default defineConfig({
-  base: process.env.TEST_BASE ? '/custom-base/' : undefined,
   clearScreen: false,
   plugins: [
     tailwindcss(),
-    process.env.TEST_REACT_COMPILER
-      ? react({
-          babel: { plugins: ['babel-plugin-react-compiler'] },
-        }).map((p) => ({
-          ...p,
-          applyToEnvironment: (e) => e.name === 'client',
-        }))
-      : react(),
+    react(),
     vitePluginUseCache(),
     rsc({
       entries: {
