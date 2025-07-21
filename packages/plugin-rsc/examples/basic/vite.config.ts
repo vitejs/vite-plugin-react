@@ -6,17 +6,6 @@ import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
-// log unhandled rejection to debug e2e failures
-// if (!(globalThis as any).__debugHandlerRegisterd) {
-//   process.on('uncaughtException', (err) => {
-//     console.error('⚠️⚠️⚠️ uncaughtException ⚠️⚠️⚠️', err)
-//   })
-//   process.on('unhandledRejection', (err) => {
-//     console.error('⚠️⚠️⚠️ unhandledRejection ⚠️⚠️⚠️', err)
-//   })
-//   ;(globalThis as any).__debugHandlerRegisterd = true
-// }
-
 export default defineConfig({
   base: process.env.TEST_BASE ? '/custom-base/' : undefined,
   clearScreen: false,
