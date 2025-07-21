@@ -56,11 +56,12 @@ export async function handleRequest({
   }
 
   const url = new URL(request.url)
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>({
-    root: getRoot(),
-    returnValue,
-    formState,
-  })
+  const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
+  const rscOptions = { temporaryReferences }
+  const rscStream = ReactServer.renderToReadableStream<RscPayload>(
+    rscPayload,
+    rscOptions,
+  )
 
   // respond RSC stream without HTML rendering based on framework's convention.
   // here we use request header `content-type`.
