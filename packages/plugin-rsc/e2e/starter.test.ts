@@ -117,15 +117,14 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
       await page.goto(f.url())
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
       const editor = f.createEditor('src/root.tsx')
-      editor.edit((s) => s.replace('Server Counter', 'Server [edit] Counter'))
-      await expect(
-        page.getByRole('button', { name: 'Server [edit] Counter: 0' }),
-      ).toBeVisible()
+      editor.edit((s) =>
+        s.replace('<h1>Vite + RSC</h1>', '<h1>Vite x RSC</h1>'),
+      )
+      await expect(page.getByText('Vite x RSC')).toBeVisible()
       editor.reset()
-      await expect(
-        page.getByRole('button', { name: 'Server Counter: 0' }),
-      ).toBeVisible()
+      await expect(page.getByText('Vite + RSC')).toBeVisible()
     })
   })
 
