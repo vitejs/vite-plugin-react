@@ -1,7 +1,7 @@
 import * as ReactClient from '@vitejs/plugin-rsc/browser'
-import { rscStream } from 'rsc-html-stream/client'
 import React from 'react'
 import ReactDomClient from 'react-dom/client'
+import { rscStream } from 'rsc-html-stream/client'
 import { RSC_POSTFIX, type RscPayload } from './shared'
 
 async function hydrate(): Promise<void> {

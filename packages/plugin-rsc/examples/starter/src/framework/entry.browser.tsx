@@ -1,7 +1,7 @@
 import * as ReactClient from '@vitejs/plugin-rsc/browser'
-import { rscStream } from 'rsc-html-stream/client'
 import React from 'react'
 import * as ReactDOMClient from 'react-dom/client'
+import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 
 async function main() {
