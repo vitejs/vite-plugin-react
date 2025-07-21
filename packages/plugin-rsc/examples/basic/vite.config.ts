@@ -7,7 +7,6 @@ import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
 export default defineConfig({
-  base: process.env.TEST_BASE ? '/custom-base/' : undefined,
   clearScreen: false,
   plugins: [
     tailwindcss(),

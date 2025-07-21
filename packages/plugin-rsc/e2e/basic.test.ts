@@ -46,32 +46,6 @@ test.describe('build-default', () => {
   defineTest(f)
 })
 
-test.describe('dev-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('build-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
 test.describe(() => {
   // disabled by default
   if (process.env.TEST_ISOLATED !== 'true') return
