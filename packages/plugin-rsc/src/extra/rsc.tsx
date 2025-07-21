@@ -14,6 +14,9 @@ export type RscPayload = {
   returnValue?: unknown
 }
 
+/**
+ * @deprecated Use `@vitejs/plugin-rsc/rsc` API instead.
+ */
 export async function renderRequest(
   request: Request,
   root: React.ReactNode,
