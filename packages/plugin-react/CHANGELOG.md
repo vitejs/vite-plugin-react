@@ -6,6 +6,10 @@
 
 `runtimeModule` option is no longer needed in newer `babel-plugin-react-compiler` versions. Make sure to use a newer version of `babel-plugin-react-compiler` that supports `target` option.
 
+### Require Node 20.19+, 22.12+
+
+This plugin now requires Node 20.19+ or 22.12+.
+
 ## 4.7.0 (2025-07-18)
 
 ### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))

@@ -11,6 +11,9 @@ import {
 } from '../browser'
 import type { RscPayload } from './rsc'
 
+/**
+ * @deprecated Use `@vitejs/plugin-rsc/browser` API instead.
+ */
 export async function hydrate(): Promise<void> {
   const callServer: CallServerCallback = async (id, args) => {
     const url = new URL(window.location.href)
@@ -71,6 +74,9 @@ export async function hydrate(): Promise<void> {
   }
 }
 
+/**
+ * @deprecated Use `@vitejs/plugin-rsc/browser` API instead.
+ */
 export async function fetchRSC(
   request: string | URL | Request,
 ): Promise<RscPayload['root']> {

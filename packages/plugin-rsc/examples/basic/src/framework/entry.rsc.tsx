@@ -1,14 +1,32 @@
 import * as ReactServer from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import { Root } from '../root.tsx'
+import type React from 'react'
 
+// The schema of payload which is serialized into RSC stream on rsc environment
+// and deserialized on ssr/client environments.
 export type RscPayload = {
+  // this demo renders/serializes/deserizlies entire root html element
+  // but this mechanism can be changed to render/fetch different parts of components
+  // based on your own route conventions.
   root: React.ReactNode
+  // server action return value of non-progressive enhancement case
   returnValue?: unknown
+  // server action form state (e.g. useActionState) of progressive enhancement case
   formState?: ReactFormState
 }
 
-async function handler(request: Request): Promise<Response> {
+// the plugin by default assumes `rsc` entry having default export of request handler.
+// however, how server entries are executed can be customized by registering
+// own server handler e.g. `@cloudflare/vite-plugin`.
+export async function handleRequest({
+  request,
+  getRoot,
+  nonce,
+}: {
+  request: Request
+  getRoot: () => React.ReactNode
+  nonce?: string
+}): Promise<Response> {
   // handle server function request
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
@@ -37,11 +55,8 @@ async function handler(request: Request): Promise<Response> {
     }
   }
 
-  // serialization from React VDOM tree to RSC stream.
-  // we render RSC stream after handling server function request
-  // so that new render reflects updated state from server function call
-  // to achieve single round trip to mutate and fetch from server.
-  const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
+  const url = new URL(request.url)
+  const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
   const rscStream = ReactServer.renderToReadableStream<RscPayload>(
     rscPayload,
@@ -51,7 +66,6 @@ async function handler(request: Request): Promise<Response> {
   // respond RSC stream without HTML rendering based on framework's convention.
   // here we use request header `content-type`.
   // additionally we allow `?__rsc` and `?__html` to easily view payload directly.
-  const url = new URL(request.url)
   const isRscRequest =
     (!request.headers.get('accept')?.includes('text/html') &&
       !url.searchParams.has('__html')) ||
@@ -66,11 +80,16 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const { renderHTML } = await import.meta.viteRsc.loadModule<
+  // Delegate to SSR environment for html rendering.
+  // The plugin provides `loadSsrModule` helper to allow loading SSR environment entry module
+  // in RSC environment. however this can be customized by implementing own runtime communication
+  // e.g. `@cloudflare/vite-plugin`'s service binding.
+  const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  const htmlStream = await renderHTML(rscStream, {
+  const htmlStream = await ssrEntryModule.renderHTML(rscStream, {
     formState,
+    nonce,
     // allow quick simulation of javscript disabled browser
     debugNojs: url.searchParams.has('__nojs'),
   })
@@ -78,16 +97,10 @@ async function handler(request: Request): Promise<Response> {
   // respond html
   return new Response(htmlStream, {
     headers: {
-      'Content-type': 'text/html',
+      'content-type': 'text/html;charset=utf-8',
       vary: 'accept',
     },
   })
-}
-
-export default {
-  fetch(request: Request) {
-    return handler(request)
-  },
 }
 
 if (import.meta.hot) {

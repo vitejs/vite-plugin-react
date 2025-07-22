@@ -35,6 +35,9 @@ export default defineConfig({
           platform: 'neutral',
         },
       },
+      optimizeDeps: {
+        include: ['turbo-stream'],
+      },
     },
     ssr: {
       keepProcessEnv: false,
@@ -42,6 +45,9 @@ export default defineConfig({
         // build `ssr` inside `rsc` directory so that
         // wrangler can deploy self-contained `dist/rsc`
         outDir: './dist/rsc/ssr',
+      },
+      resolve: {
+        noExternal: true,
       },
     },
   },
