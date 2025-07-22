@@ -80,7 +80,6 @@ test.describe('build-development', () => {
     })
     await page.goto(f.url())
     await waitForHydration_(page)
-    console.log({ output })
     expect(output).toContain('jsxDEV')
   })
 })
