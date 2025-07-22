@@ -1,8 +1,8 @@
-import { injectRscStreamToHtml } from '@vitejs/plugin-rsc/rsc-html-stream/ssr' // helper API
 import * as ReactClient from '@vitejs/plugin-rsc/ssr' // RSC API
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import * as ReactDOMServer from 'react-dom/server.edge'
+import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
 
 export async function renderHTML(
@@ -42,8 +42,9 @@ export async function renderHTML(
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
-      injectRscStreamToHtml(rscStream2, {
+      injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
       }),
     )

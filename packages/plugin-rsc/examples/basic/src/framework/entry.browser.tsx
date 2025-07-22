@@ -1,7 +1,7 @@
 import * as ReactClient from '@vitejs/plugin-rsc/browser'
-import { getRscStreamFromHtml } from '@vitejs/plugin-rsc/rsc-html-stream/browser'
 import React from 'react'
 import * as ReactDOMClient from 'react-dom/client'
+import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 
 async function main() {
@@ -12,7 +12,7 @@ async function main() {
   // deserialize RSC stream back to React VDOM for CSR
   const initialPayload = await ReactClient.createFromReadableStream<RscPayload>(
     // initial RSC stream is injected in SSR stream as <script>...FLIGHT_DATA...</script>
-    getRscStreamFromHtml(),
+    rscStream,
   )
 
   // browser root component to (re-)render RSC payload as state
