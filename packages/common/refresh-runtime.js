@@ -545,6 +545,21 @@ function isLikelyComponentType(type) {
   }
 }
 
+function isCompoundComponent(type) {
+  if (!isPlainObject(type)) return false
+  for (const key in type) {
+    if (!isLikelyComponentType(type[key])) return false
+  }
+  return true
+}
+
+function isPlainObject(obj) {
+  return (
+    Object.prototype.toString.call(obj) === '[object Object]' &&
+    (obj.constructor === Object || obj.constructor === undefined)
+  )
+}
+
 /**
  * Plugin utils
  */
@@ -565,6 +580,13 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
       // The register function has an identity check to not register twice the same component,
       // so this is safe to not used the same key here.
       register(exportValue, filename + ' export ' + key)
+    } else if (isCompoundComponent(exportValue)) {
+      for (const subKey in exportValue) {
+        register(
+          exportValue[subKey],
+          filename + ' export ' + key + '-' + subKey,
+        )
+      }
     }
   }
 }
@@ -618,6 +640,7 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
     (key, value) => {
       hasExports = true
       if (isLikelyComponentType(value)) return true
+      if (isCompoundComponent(value)) return true
       return prevExports[key] === nextExports[key]
     },
   )

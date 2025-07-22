@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Button from 'jsx-entry'
 import Dummy from './components/Dummy?qs-should-not-break-plugin-react'
+import { Accordion } from './components/Accordion'
 import Parent from './hmr/parent'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
@@ -39,6 +40,10 @@ function App() {
       </header>
 
       <Dummy />
+      <Accordion.Root>
+        <Accordion.Item>First Item</Accordion.Item>
+        <Accordion.Item>Second Item</Accordion.Item>
+      </Accordion.Root>
       <Parent />
       <JsxImportRuntime />
       <Button>button</Button>

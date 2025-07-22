@@ -12,11 +12,7 @@ import {
 import { exactRegex } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-
-const refreshRuntimePath = globalThis.__IS_BUILD__
-  ? join(_dirname, 'refresh-runtime.js')
-  : // eslint-disable-next-line n/no-unsupported-features/node-builtins -- only used in dev
-    fileURLToPath(import.meta.resolve('@vitejs/react-common/refresh-runtime'))
+const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
