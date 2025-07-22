@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import {
+  expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration as waitForHydration_,
@@ -51,6 +52,13 @@ test.describe('dev-production', () => {
     },
   })
   defineTest(f, 'dev-production')
+
+  test('verify production', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration_(page)
+    const res = await page.request.get(f.url('src/client.tsx'))
+    expect(await res.text()).not.toContain('jsxDev')
+  })
 })
 
 test.describe('build-development', () => {
@@ -62,6 +70,10 @@ test.describe('build-development', () => {
     },
   })
   defineTest(f)
+
+  test('verify development', async () => {
+    // TODO
+  })
 })
 
 test.describe(() => {
@@ -230,6 +242,7 @@ function defineTest(f: Fixture, variant?: 'no-ssr' | 'dev-production') {
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
 
   test('basic', async ({ page }) => {
+    using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
   })
