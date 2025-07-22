@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import {
+  expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration as waitForHydration_,
@@ -39,6 +40,48 @@ test.describe('build-no-ssr', () => {
 
   test('no ssr build', () => {
     expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
+  })
+})
+
+test.describe('dev-production', () => {
+  const f = useFixture({
+    root: 'examples/starter',
+    mode: 'dev',
+    cliOptions: {
+      env: { NODE_ENV: 'production' },
+    },
+  })
+  defineTest(f, 'dev-production')
+
+  test('verify production', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration_(page)
+    const res = await page.request.get(f.url('src/client.tsx'))
+    expect(await res.text()).not.toContain('jsxDEV')
+  })
+})
+
+test.describe('build-development', () => {
+  const f = useFixture({
+    root: 'examples/starter',
+    mode: 'build',
+    cliOptions: {
+      env: { NODE_ENV: 'development' },
+    },
+  })
+  defineTest(f)
+
+  test('verify development', async ({ page }) => {
+    let output!: string
+    page.on('response', async (response) => {
+      if (response.url().match(/\/assets\/client-[\w-]+\.js$/)) {
+        output = await response.text()
+      }
+    })
+    await page.goto(f.url())
+    await waitForHydration_(page)
+    console.log({ output })
+    expect(output).toContain('jsxDEV')
   })
 })
 
@@ -203,11 +246,12 @@ test.describe(() => {
   })
 })
 
-function defineTest(f: Fixture, variant?: 'no-ssr') {
+function defineTest(f: Fixture, variant?: 'no-ssr' | 'dev-production') {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
 
   test('basic', async ({ page }) => {
+    using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
   })
@@ -242,7 +286,7 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
   })
 
   test('client hmr', async ({ page }) => {
-    test.skip(f.mode === 'build')
+    test.skip(f.mode === 'build' || variant === 'dev-production')
 
     await page.goto(f.url())
     await waitForHydration(page)
