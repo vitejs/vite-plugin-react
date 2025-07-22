@@ -18,6 +18,7 @@ export default defineConfig({
         ssr: './src/framework/entry.ssr.tsx',
         rsc: './src/server.tsx',
       },
+      frameworkPackages: ['react'],
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
       ignoredPackageWarnings: [/@vitejs\/test-dep-/],
