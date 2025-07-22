@@ -398,6 +398,15 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
 viteReact.preambleCode = preambleCode
 
+// Compat for require
+function viteReactForCjs(this: unknown, options: Options): Plugin[] {
+  return viteReact.call(this, options)
+}
+Object.assign(viteReactForCjs, {
+  default: viteReactForCjs,
+})
+export { viteReactForCjs as 'module.exports' }
+
 function canSkipBabel(
   plugins: ReactBabelOptions['plugins'],
   babelOptions: ReactBabelOptions,
