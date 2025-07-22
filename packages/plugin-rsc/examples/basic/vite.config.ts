@@ -135,12 +135,28 @@ export default { fetch: handler };
     minify: false,
     manifest: true,
   },
-  optimizeDeps: {
-    exclude: [
-      '@vitejs/test-dep-client-in-server/client',
-      '@vitejs/test-dep-client-in-server2/client',
-      '@vitejs/test-dep-server-in-client/client',
-    ],
+  environments: {
+    client: {
+      optimizeDeps: {
+        entries: [
+          './src/routes/**/client.tsx',
+          './src/framework/browser.entry.tsx',
+        ],
+        exclude: [
+          '@vitejs/test-dep-client-in-server/client',
+          '@vitejs/test-dep-client-in-server2/client',
+          '@vitejs/test-dep-server-in-client/client',
+        ],
+      },
+    },
+    ssr: {
+      optimizeDeps: {
+        // TODO: this should be somehow auto inferred
+        include: [
+          '@vitejs/test-dep-deep-cjs > use-sync-external-store/shim/index.js',
+        ],
+      },
+    },
   },
 }) as any
 
