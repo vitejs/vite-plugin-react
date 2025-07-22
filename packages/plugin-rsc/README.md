@@ -11,7 +11,7 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Getting Started
 
-You can start a project by copying an example locally by:
+You can create a starter project by:
 
 ```sh
 npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
