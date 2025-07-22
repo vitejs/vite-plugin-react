@@ -31,18 +31,21 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }})
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # TODO: shard?
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
+        rolldown: [false]
         include:
           - os: ubuntu-latest
             browser: firefox
           - os: macos-latest
             browser: webkit
+          - os: ubuntu-latest
+            browser: chromium
+            rolldown: true
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +55,11 @@ jobs:
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - run: pnpm i
       - run: pnpm build
+      - name: install rolldown
+        if: ${{ matrix.rolldown }}
+        run: |
+          sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
         env:
@@ -59,6 +67,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}
           path: |
             packages/plugin-rsc/test-results

@@ -34,6 +34,7 @@ export function Root(props: { url: URL }) {
   return (
     <html>
       <head>
+        <meta charSet="utf-8" />
         <title>vite-rsc</title>
         {import.meta.viteRsc.loadCss('/src/routes/root.tsx')}
       </head>

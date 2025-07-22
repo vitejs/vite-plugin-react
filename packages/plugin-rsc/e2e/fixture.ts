@@ -153,10 +153,9 @@ export async function setupIsolatedFixture(options: {
 }) {
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
-  fs.cpSync(options.src, options.dest, { recursive: true })
-  fs.rmSync(path.join(options.dest, 'node_modules'), {
+  fs.cpSync(options.src, options.dest, {
     recursive: true,
-    force: true,
+    filter: (src) => !src.includes('node_modules'),
   })
 
   // setup package.json overrides
@@ -174,7 +173,11 @@ export async function setupIsolatedFixture(options: {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
-      stdio: process.env.TEST_DEBUG ? 'inherit' : undefined,
+      stdio: [
+        'ignore',
+        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+        'inherit',
+      ],
     },
   })
 }
@@ -188,4 +191,39 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
       2,
     ),
   )
+}
+
+// inspired by
+//   https://github.com/remix-run/react-router/blob/433872f6ab098eaf946cc6c9cf80abf137420ad2/integration/helpers/vite.ts#L239
+// for syntax highlighting of /* js */, use this extension
+//   https://github.com/mjbvz/vscode-comment-tagged-templates
+export async function setupInlineFixture(options: {
+  src: string
+  dest: string
+  files?: Record<string, string>
+}) {
+  fs.rmSync(options.dest, { recursive: true, force: true })
+  fs.mkdirSync(options.dest, { recursive: true })
+
+  // copy src
+  fs.cpSync(options.src, options.dest, {
+    recursive: true,
+    filter: (src) => !src.includes('node_modules') && !src.includes('dist'),
+  })
+
+  // write additional files
+  if (options.files) {
+    for (let [filename, contents] of Object.entries(options.files)) {
+      let filepath = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(filepath), { recursive: true })
+      // strip indent
+      contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
+      const indent = contents.match(/^\s*/)?.[0] ?? ''
+      const strippedContents = contents
+        .split('\n')
+        .map((line) => line.replace(new RegExp(`^${indent}`), ''))
+        .join('\n')
+      fs.writeFileSync(filepath, strippedContents)
+    }
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "name": "@vitejs/test-dep-non-js",
+  "private": true,
+  "type": "module",
+  "exports": "./index.tsx",
+  "peerDependencies": {
+    "react": "*"
+  }
+}

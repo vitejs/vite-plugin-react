@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
 import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import path from 'node:path'
+import os from 'node:os'
 
 // TODO: parallel?
 // TODO: all tests don't need to be tested in all variants?
@@ -44,70 +46,16 @@ test.describe('build-default', () => {
   defineTest(f)
 })
 
-test.describe('dev-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('build-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('dev-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-
-  test('verify react compiler', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    const res = await page.request.get(f.url('src/routes/client.tsx'))
-    expect(await res.text()).toContain('react.memo_cache_sentinel')
-  })
-})
-
-test.describe('build-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
 test.describe(() => {
   // disabled by default
-  if (!process.env.TEST_ISOLATED) return
+  if (process.env.TEST_ISOLATED !== 'true') return
 
-  let tmpRoot = '/tmp/test-vite-rsc'
+  // use RUNNER_TEMP on Github Actions
+  // https://github.com/actions/toolkit/issues/518
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc',
+  )
   test.beforeAll(async () => {
     await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
   })

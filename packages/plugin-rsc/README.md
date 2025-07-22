@@ -11,7 +11,7 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Getting Started
 
-You can start a project by copying an example locally by:
+You can create a starter project by:
 
 ```sh
 npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
@@ -22,11 +22,9 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 - [`./examples/starter`](./examples/starter)
   - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 - [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview) with this plugin.
-    It also includes `@cloudflare/vite-plugin` integration.
+  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 - [`./examples/basic`](./examples/basic)
   - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
-    It also uses a high level `@vitejs/plugin-rsc/extra/{rsc,ssr,browser}` API for quick setup.
 - [`./examples/ssg`](./examples/ssg)
   - Static site generation (SSG) example with MDX and client components for interactivity.
 
@@ -130,7 +128,7 @@ export default defineConfig({
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
 
 ```tsx
-import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge
+import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
@@ -214,11 +212,12 @@ main();
 
 ### `@vitejs/plugin-rsc/rsc`
 
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge`
+This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
 
 - `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serailized RSC and deserializing it for later use.
-- `decodeAction/decodeReply/loadServerAction`: server function related...
+- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
+- `encodeReply/createClientTemporaryReferenceSet`
 
 ### `@vitejs/plugin-rsc/ssr`
 
@@ -418,7 +417,10 @@ export default defineConfig({
 })
 ```
 
-## Higher level API
+## High level API
+
+> [!NOTE]
+> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
 
 This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
 

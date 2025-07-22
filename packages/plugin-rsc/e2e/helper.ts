@@ -4,12 +4,12 @@ export const testNoJs = test.extend({
   javaScriptEnabled: ({}, use) => use(false),
 })
 
-export async function waitForHydration(page: Page) {
+export async function waitForHydration(page: Page, locator: string = 'body') {
   await expect
     .poll(
       () =>
         page
-          .locator('body')
+          .locator(locator)
           .evaluate(
             (el) =>
               el &&
@@ -39,6 +39,18 @@ export async function expectNoReload(page: Page) {
       await page.evaluate(() => {
         document.querySelector(`meta[name="x-reload-check"]`)!.remove()
       })
+    },
+  }
+}
+
+export function expectNoPageError(page: Page) {
+  const errors: Error[] = []
+  page.on('pageerror', (error) => {
+    errors.push(error)
+  })
+  return {
+    [Symbol.dispose]: () => {
+      expect(errors).toEqual([])
     },
   }
 }
