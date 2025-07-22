@@ -19,7 +19,7 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "^7.0.4",
+    "vite": "^7.0.5",
     "vite-plugin-inspect": "^11.3.0"
   }
 }
