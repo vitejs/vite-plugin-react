@@ -42,6 +42,28 @@ test.describe('build-no-ssr', () => {
   })
 })
 
+test.describe('dev-production', () => {
+  const f = useFixture({
+    root: 'examples/starter',
+    mode: 'dev',
+    cliOptions: {
+      env: { NODE_ENV: 'production' },
+    },
+  })
+  defineTest(f)
+})
+
+test.describe('build-development', () => {
+  const f = useFixture({
+    root: 'examples/starter',
+    mode: 'build',
+    cliOptions: {
+      env: { NODE_ENV: 'development' },
+    },
+  })
+  defineTest(f)
+})
+
 test.describe(() => {
   const root = 'examples/e2e/temp/react-compiler'
 
