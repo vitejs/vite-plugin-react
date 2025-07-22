@@ -1,0 +1,14 @@
+{
+  "name": "@vitejs/test-dep-deep-cjs",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./client.js"
+  },
+  "dependencies": {
+    "use-sync-external-store": "^1.5.0"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}
