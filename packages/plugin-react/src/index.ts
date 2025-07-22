@@ -223,11 +223,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       filter: {
         id: {
           include: makeIdFiltersToMatchWithQuery(include),
-          exclude: [
-            ...(exclude
-              ? makeIdFiltersToMatchWithQuery(ensureArray(exclude))
-              : []),
-          ],
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
         },
       },
       async handler(code, id, options) {
@@ -469,8 +465,4 @@ function getReactCompilerRuntimeModule(
     }
   }
   return moduleName
-}
-
-function ensureArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
 }
