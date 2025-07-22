@@ -11,11 +11,3 @@ export function ClientCounter() {
     </button>
   )
 }
-
-const promise = Promise.resolve('ok')
-
-export function TestClientUse() {
-  const value = React.use(promise)
-  console.log(value)
-  return <span>TestClientUse: {value}</span>
-}
