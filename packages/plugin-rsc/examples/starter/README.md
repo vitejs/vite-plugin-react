@@ -24,11 +24,11 @@ See [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main
   - `import.meta.viteRsc.loadModule`
 - [`./src/framework/entry.ssr.tsx`](./src/framework/entry.ssr.tsx)
   - `@vitejs/plugin-rsc/ssr`
-  - `@vitejs/plugin-rsc/rsc-html-stream/ssr`
   - `import.meta.viteRsc.loadBootstrapScriptContent`
+  - `rsc-html-stream/server`
 - [`./src/framework/entry.browser.tsx`](./src/framework/entry.browser.tsx)
   - `@vitejs/plugin-rsc/browser`
-  - `@vitejs/plugin-rsc/rsc-html-stream/browser`
+  - `rsc-html-stream/client`
 
 ## Notes
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --app",
+    "build": "vite build",
     "preview": "vite preview",
     "cf-build": "CF_BUILD=1 pnpm build",
     "cf-preview": "wrangler dev",
@@ -25,10 +25,10 @@
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
     "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
-    "babel-plugin-react-compiler": "19.1.0-rc.2",
+    "rsc-html-stream": "^0.0.7",
     "tailwindcss": "^4.1.11",
-    "vite": "^7.0.2",
+    "vite": "^7.0.4",
     "vite-plugin-inspect": "^11.3.0",
-    "wrangler": "^4.23.0"
+    "wrangler": "^4.24.3"
   }
 }

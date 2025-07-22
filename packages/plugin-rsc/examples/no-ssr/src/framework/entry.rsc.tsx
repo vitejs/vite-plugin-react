@@ -32,11 +32,12 @@ export default async function handler(request: Request): Promise<Response> {
     }
   }
 
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>({
-    root: <Root />,
-    returnValue,
-    formState,
-  })
+  const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
+  const rscOptions = { temporaryReferences }
+  const rscStream = ReactServer.renderToReadableStream<RscPayload>(
+    rscPayload,
+    rscOptions,
+  )
 
   return new Response(rscStream, {
     headers: {
