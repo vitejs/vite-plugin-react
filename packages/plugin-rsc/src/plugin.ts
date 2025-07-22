@@ -136,7 +136,7 @@ export default function vitePluginRsc(
           root: process.cwd(),
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
-            // these are added by default
+            // these are added by default and don't need to crawl further
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
               return false
             }
