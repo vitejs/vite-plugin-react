@@ -110,6 +110,12 @@ export type RscPluginOptions = {
 
   /** Escape hatch for Waku's `allowServer` */
   keepUseCientProxy?: boolean
+
+  /**
+   * The packages which depends on `frameworkPackages` will be added to `noExternal`
+   * @default ["react"]
+   */
+  frameworkPackages?: string[]
 }
 
 export default function vitePluginRsc(
@@ -128,10 +134,14 @@ export default function vitePluginRsc(
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
-              return
+              return false
             }
-            const deps = pkgJson['peerDependencies']
-            return deps && 'react' in deps
+            const deps = {
+              ...pkgJson['dependencies'],
+              ...pkgJson['peerDependencies'],
+            }
+            Object.keys(deps)
+            return 'react' in deps
           },
         })
         const noExternal = [
