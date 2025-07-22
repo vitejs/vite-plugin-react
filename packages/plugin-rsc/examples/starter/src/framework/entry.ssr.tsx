@@ -19,19 +19,21 @@ export async function renderHTML(
   const [rscStream1, rscStream2] = rscStream.tee()
 
   // deserialize RSC stream back to React VDOM
-  let payload: Promise<RscPayload>
+  let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
     const root = React.use(payload).root
-    return <SsrUseWorkaround>{root}</SsrUseWorkaround>
+    return <FixSsrThenable>{root}</FixSsrThenable>
   }
 
-  // Add an empty component in between SsrRoot and user's root to avoid React SSR bugs.
-  // > SsrRoot (use) -> SsrUseWorkaround -> root (which potentially has `lazy` + `use`)
+  // Add an empty component in between `SsrRoot` and user `root` to avoid React SSR bugs.
+  //   SsrRoot (use)
+  //     => FixSsrThenable
+  //       => root (which potentially has `lazy` + `use`)
   // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
-  function SsrUseWorkaround(props: React.PropsWithChildren) {
+  function FixSsrThenable(props: React.PropsWithChildren) {
     return props.children
   }
 
