@@ -163,4 +163,10 @@ if (!isBuild) {
       .poll(() => page.textContent('#accordion-root'))
       .toMatch('Accordion Root Updated')
   })
+
+  test('no refresh transform for non-jsx files', async () => {
+    const res = await page.request.get(viteTestUrl + '/non-jsx/test.ts')
+    const code = await res.text()
+    expect(code).not.toContain('$RefreshReg$')
+  })
 }
