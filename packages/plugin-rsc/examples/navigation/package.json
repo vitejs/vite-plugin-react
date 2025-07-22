@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-basic",
+  "name": "@vitejs/plugin-rsc-examples-navigation",
   "private": true,
   "license": "MIT",
   "type": "module",
