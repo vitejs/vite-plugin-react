@@ -19,6 +19,9 @@
     "build": "tsdown",
     "test": "playwright test"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitejs/vite-plugin-react.git",

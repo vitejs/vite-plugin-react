@@ -175,12 +175,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         config.command === 'build' ||
         config.server.hmr === false
 
-      if ('jsxPure' in opts) {
-        config.logger.warnOnce(
-          '[@vitejs/plugin-react] jsxPure was removed. You can configure esbuild.jsxSideEffects directly.',
-        )
-      }
-
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
@@ -401,6 +395,15 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
 viteReact.preambleCode = preambleCode
 
+// Compat for require
+function viteReactForCjs(this: unknown, options: Options): Plugin[] {
+  return viteReact.call(this, options)
+}
+Object.assign(viteReactForCjs, {
+  default: viteReactForCjs,
+})
+export { viteReactForCjs as 'module.exports' }
+
 function canSkipBabel(
   plugins: ReactBabelOptions['plugins'],
   babelOptions: ReactBabelOptions,
@@ -465,9 +468,6 @@ function getReactCompilerRuntimeModule(
   if (Array.isArray(plugin)) {
     if (plugin[1]?.target === '17' || plugin[1]?.target === '18') {
       moduleName = 'react-compiler-runtime'
-    } else if (typeof plugin[1]?.runtimeModule === 'string') {
-      // backward compatibility from (#374), can be removed in next major
-      moduleName = plugin[1]?.runtimeModule
     }
   }
   return moduleName
