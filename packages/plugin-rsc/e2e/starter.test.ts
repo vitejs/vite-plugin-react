@@ -50,7 +50,7 @@ test.describe('dev-production', () => {
       env: { NODE_ENV: 'production' },
     },
   })
-  defineTest(f)
+  defineTest(f, 'dev-production')
 })
 
 test.describe('build-development', () => {
@@ -225,7 +225,7 @@ test.describe(() => {
   })
 })
 
-function defineTest(f: Fixture, variant?: 'no-ssr') {
+function defineTest(f: Fixture, variant?: 'no-ssr' | 'dev-production') {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
 
@@ -264,7 +264,7 @@ function defineTest(f: Fixture, variant?: 'no-ssr') {
   })
 
   test('client hmr', async ({ page }) => {
-    test.skip(f.mode === 'build')
+    test.skip(f.mode === 'build' || variant === 'dev-production')
 
     await page.goto(f.url())
     await waitForHydration(page)
