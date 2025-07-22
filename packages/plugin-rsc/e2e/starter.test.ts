@@ -57,7 +57,7 @@ test.describe('dev-production', () => {
     await page.goto(f.url())
     await waitForHydration_(page)
     const res = await page.request.get(f.url('src/client.tsx'))
-    expect(await res.text()).not.toContain('jsxDev')
+    expect(await res.text()).not.toContain('jsxDEV')
   })
 })
 
@@ -71,8 +71,17 @@ test.describe('build-development', () => {
   })
   defineTest(f)
 
-  test('verify development', async () => {
-    // TODO
+  test('verify development', async ({ page }) => {
+    let output!: string
+    page.on('response', async (response) => {
+      if (response.url().match(/\/assets\/client-[\w-]+\.js$/)) {
+        output = await response.text()
+      }
+    })
+    await page.goto(f.url())
+    await waitForHydration_(page)
+    console.log({ output })
+    expect(output).toContain('jsxDEV')
   })
 })
 
