@@ -112,7 +112,7 @@ export type RscPluginOptions = {
   keepUseCientProxy?: boolean
 
   /**
-   * The packages which depends on `frameworkPackages` will be added to `noExternal`
+   * The packages which depend on `frameworkPackages` will be automatically added to `noExternal`.
    * @default ["react"]
    */
   frameworkPackages?: string[]
@@ -129,10 +129,14 @@ export default function vitePluginRsc(
 
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
+        const frameworkPackages = rscPluginOptions.frameworkPackages || [
+          'react',
+        ]
         const result = await crawlFrameworkPkgs({
           root: process.cwd(),
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
+            // these are added by default
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
               return false
             }
@@ -140,8 +144,7 @@ export default function vitePluginRsc(
               ...pkgJson['dependencies'],
               ...pkgJson['peerDependencies'],
             }
-            Object.keys(deps)
-            return 'react' in deps
+            return frameworkPackages.some((name) => name in deps)
           },
         })
         const noExternal = [
