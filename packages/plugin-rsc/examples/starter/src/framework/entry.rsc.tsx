@@ -51,12 +51,12 @@ export default async function handler(request: Request): Promise<Response> {
   // we render RSC stream after handling server function request
   // so that new render reflects updated state from server function call
   // to achieve single round trip to mutate and fetch from server.
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>({
-    // in this example, we always render the same `<Root />`
-    root: <Root />,
-    returnValue,
-    formState,
-  })
+  const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
+  const rscOptions = { temporaryReferences }
+  const rscStream = ReactServer.renderToReadableStream<RscPayload>(
+    rscPayload,
+    rscOptions,
+  )
 
   // respond RSC stream without HTML rendering based on framework's convention.
   // here we use request header `content-type`.
