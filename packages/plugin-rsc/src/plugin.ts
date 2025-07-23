@@ -391,18 +391,18 @@ export default function vitePluginRsc(
             // Server files can be included in client module graph, for example,
             // when `addWatchFile` is used to track js files as style dependency (e.g. tailwind)
             // In this case, reload all importers (for css hmr), and return empty modules to avoid full-reload.
-            const env = ctx.server.environments.rsc!
-            const mod = env.moduleGraph.getModuleById(ctx.file)
-            if (mod) {
-              for (const clientMod of ctx.modules) {
-                for (const importer of clientMod.importers) {
-                  if (importer.id && isCSSRequest(importer.id)) {
-                    await this.environment.reloadModule(importer)
-                  }
-                }
-              }
-              return []
-            }
+            // const env = ctx.server.environments.rsc!
+            // const mod = env.moduleGraph.getModuleById(ctx.file)
+            // if (mod) {
+            //   for (const clientMod of ctx.modules) {
+            //     for (const importer of clientMod.importers) {
+            //       if (importer.id && isCSSRequest(importer.id)) {
+            //         await this.environment.reloadModule(importer)
+            //       }
+            //     }
+            //   }
+            //   return []
+            // }
           }
         }
       },
