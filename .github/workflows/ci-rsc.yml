@@ -3,6 +3,7 @@ name: ci-rsc
 permissions: {}
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
