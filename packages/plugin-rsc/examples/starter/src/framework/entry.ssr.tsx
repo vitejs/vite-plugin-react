@@ -19,12 +19,21 @@ export async function renderHTML(
   const [rscStream1, rscStream2] = rscStream.tee()
 
   // deserialize RSC stream back to React VDOM
-  let payload: Promise<RscPayload>
+  let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
-    return React.use(payload).root
+    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
+  }
+
+  // Add an empty component in between `SsrRoot` and user `root` to avoid React SSR bugs.
+  //   SsrRoot (use)
+  //     => FixSsrThenable
+  //       => root (which potentially has `lazy` + `use`)
+  // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
+  function FixSsrThenable(props: React.PropsWithChildren) {
+    return props.children
   }
 
   // render html (traditional SSR)
@@ -42,6 +51,7 @@ export async function renderHTML(
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,

@@ -2,7 +2,12 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
 import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
-import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import {
+  expectNoPageError,
+  expectNoReload,
+  testNoJs,
+  waitForHydration,
+} from './helper'
 import path from 'node:path'
 import os from 'node:os'
 
@@ -73,6 +78,7 @@ test.describe(() => {
 
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
+    using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
   })

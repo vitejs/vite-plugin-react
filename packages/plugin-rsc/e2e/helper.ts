@@ -42,3 +42,15 @@ export async function expectNoReload(page: Page) {
     },
   }
 }
+
+export function expectNoPageError(page: Page) {
+  const errors: Error[] = []
+  page.on('pageerror', (error) => {
+    errors.push(error)
+  })
+  return {
+    [Symbol.dispose]: () => {
+      expect(errors).toEqual([])
+    },
+  }
+}
