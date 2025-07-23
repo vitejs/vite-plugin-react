@@ -4,7 +4,7 @@
 /*! Copyright (c) Meta Platforms, Inc. and affiliates. **/
 /**
  * This is simplified pure-js version of https://github.com/facebook/react/blob/main/packages/react-refresh/src/ReactFreshRuntime.js
- * without IE11 compatibility and verbose isDev checks.
+ * without IE11 compatibility , verbose isDev checks.
  * Some utils are appended at the bottom for HMR integration.
  */
 
