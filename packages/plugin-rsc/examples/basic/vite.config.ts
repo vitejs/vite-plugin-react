@@ -140,7 +140,7 @@ export default { fetch: handler };
       optimizeDeps: {
         entries: [
           './src/routes/**/client.tsx',
-          './src/framework/browser.entry.tsx',
+          './src/framework/entry.browser.tsx',
         ],
         exclude: [
           '@vitejs/test-dep-client-in-server/client',
@@ -152,7 +152,7 @@ export default { fetch: handler };
     ssr: {
       optimizeDeps: {
         // TODO: this should be somehow auto inferred or at least show a warning
-        // to guide users about `optimizeDeps.include`
+        // to guide users to `optimizeDeps.include`
         include: [
           '@vitejs/test-dep-deep-cjs > use-sync-external-store/shim/index.js',
         ],

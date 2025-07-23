@@ -821,6 +821,12 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('transitive cjs dep', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('deep-cjs-client')).toHaveText('ok:browser')
+  })
+
   test('use cache function', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
