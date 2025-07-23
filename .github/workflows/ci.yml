@@ -95,7 +95,7 @@ jobs:
 
       - name: Setup rolldown-vite
         run: |
-          sed -i "" "s/overrides:/overrides:\n  vite: catalog:rolldown-vite/" pnpm-workspace.yaml
+          sed -i "" -e "s/overrides:/overrides:\n  vite: catalog:rolldown-vite/" pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
 
       - name: Test serve (rolldown-vite)
