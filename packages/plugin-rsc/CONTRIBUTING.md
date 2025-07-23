@@ -6,13 +6,13 @@ This guide provides essential tips for contributors working on the RSC plugin.
 
 ### E2E Test Setup
 
-Tests use Playwright and are located in `e2e/` and uses `examples` as test app.
+Tests use Playwright and are located in `e2e/` and use `examples` as test apps.
 
 #### Test Fixture Patterns
 
-- `examples/basic` as the comprehensive test suite for the RSC plugin
-- `examples/starter` as the lightweight base template for writing more targeted tests using `setupInlineFixture` utility
-- `examples/e2e/temp/` as base directory for test projects
+- `examples/basic` - comprehensive test suite for the RSC plugin
+- `examples/starter` - lightweight base template for writing more targeted tests using `setupInlineFixture` utility
+- `examples/e2e/temp/` - base directory for test projects
 
 ### Adding New Test Cases
 
