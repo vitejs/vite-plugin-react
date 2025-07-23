@@ -10,30 +10,31 @@ The e2e testing uses a scalable approach inspired by React Router's integration 
 
 #### Test Fixture Patterns
 
-**1. Using existing examples directly:** See `e2e/starter.test.ts` for examples using `useFixture` with existing example projects.
+**1. Using existing examples directly:** See `e2e/basic.test.ts` and `e2e/starter.test.ts` for examples using `useFixture` with existing example projects.
 
 **2. Creating isolated fixtures:** See `e2e/basic.test.ts` for examples using `setupIsolatedFixture` for tests that need to modify files.
 
-**3. Creating inline fixtures (recommended for new tests):** See `e2e/ssr-thenable.test.ts` for examples using `setupInlineFixture` to create test-specific variations.
+**3. Creating inline fixtures (for specific edge cases):** See `e2e/ssr-thenable.test.ts` for examples using `setupInlineFixture` to create test-specific variations.
 
 The new test structure uses:
 
 - `examples/e2e/temp/` as base directory for test projects
 - `setupInlineFixture` utility for creating test environments
-- `examples/starter` as the lightweight base template (faster than `examples/basic`)
+- `examples/basic` as the comprehensive base (mainly used for e2e testing, includes various advanced RSC usages)
+- `examples/starter` as the lightweight base template for simple tests
 - Each test project is runnable locally
 
 ### Adding New Test Cases
 
-**Option 1: Using `setupInlineFixture` (Recommended)**
-Best for testing specific features or edge cases. See `e2e/ssr-thenable.test.ts` for the pattern.
-
-**Option 2: Expanding `examples/basic`**
-Best for comprehensive features that should be part of the main test suite:
+**Option 1: Expanding `examples/basic` (Recommended for comprehensive features)**
+Best for features that should be part of the main test suite. `examples/basic` is mainly used for e2e testing:
 
 1. Add your test case files to `examples/basic/src/routes/`
 2. Update the routing in `examples/basic/src/routes/root.tsx`
 3. Add corresponding tests in `e2e/basic.test.ts`
+
+**Option 2: Using `setupInlineFixture` (Recommended for specific edge cases)**
+Best for testing specific features or edge cases. See `e2e/ssr-thenable.test.ts` for the pattern.
 
 ### Running Tests
 
