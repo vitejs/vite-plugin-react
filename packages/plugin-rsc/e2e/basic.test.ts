@@ -11,9 +11,6 @@ import {
 import path from 'node:path'
 import os from 'node:os'
 
-// TODO: parallel?
-// TODO: all tests don't need to be tested in all variants?
-
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
@@ -821,6 +818,14 @@ function defineTest(f: Fixture) {
     await page.getByTestId('server-in-client').click()
     await expect(page.getByTestId('server-in-client')).toHaveText(
       'server-in-client: 2',
+    )
+  })
+
+  test('transitive cjs dep', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('transitive-cjs-client')).toHaveText(
+      'ok:browser',
     )
   })
 
