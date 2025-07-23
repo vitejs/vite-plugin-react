@@ -104,11 +104,12 @@ export type ViteReactPluginApi = {
 }
 
 const defaultIncludeRE = /\.[tj]sx?$/
+const defaultExcludeRE = /\/node_modules\//
 const tsRE = /\.tsx?$/
 
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
-  const exclude = opts.exclude
+  const exclude = opts.exclude ?? defaultExcludeRE
   const filter = createFilter(include, exclude)
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
@@ -222,17 +223,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       filter: {
         id: {
           include: makeIdFiltersToMatchWithQuery(include),
-          exclude: [
-            ...(exclude
-              ? makeIdFiltersToMatchWithQuery(ensureArray(exclude))
-              : []),
-            /\/node_modules\//,
-          ],
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
         },
       },
       async handler(code, id, options) {
-        if (id.includes('/node_modules/')) return
-
         const [filepath] = id.split('?')
         if (!filter(filepath)) return
 
@@ -471,8 +465,4 @@ function getReactCompilerRuntimeModule(
     }
   }
   return moduleName
-}
-
-function ensureArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
 }
