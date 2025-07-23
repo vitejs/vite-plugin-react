@@ -245,6 +245,112 @@ test.describe(() => {
   })
 })
 
+test.describe(() => {
+  const root = 'examples/e2e/temp/base'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            plugins: [
+              react(),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+            experimental: {
+              renderBuiltUrl(filename) {
+                return {
+                  runtime: \`'/' + \${JSON.stringify(filename)}\`
+                }
+              }
+            }
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-render-built-url-runtime', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+
+  test.describe('build-render-built-url-runtime', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+})
+
+test.describe(() => {
+  const root = 'examples/e2e/temp/base'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'vite.config.ts': /* js */ `
+          import rsc from '@vitejs/plugin-rsc'
+          import react from '@vitejs/plugin-react'
+          import { defineConfig } from 'vite'
+
+          export default defineConfig({
+            plugins: [
+              react(),
+              rsc({
+                entries: {
+                  client: './src/framework/entry.browser.tsx',
+                  ssr: './src/framework/entry.ssr.tsx',
+                  rsc: './src/framework/entry.rsc.tsx',
+                }
+              }),
+            ],
+            experimental: {
+              renderBuiltUrl(filename) {
+                return '/' + filename;
+              }
+            }
+          })
+        `,
+      },
+    })
+  })
+
+  test.describe('dev-render-built-url-string', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+
+  test.describe('build-render-built-url-string', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest({
+      ...f,
+      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
+    })
+  })
+})
+
 function defineTest(f: Fixture, variant?: 'no-ssr' | 'dev-production') {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')

@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
 import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
+  loadRSCManifest,
   testNoJs,
   waitForHydration,
 } from './helper'
@@ -177,12 +177,9 @@ function defineTest(f: Fixture) {
         .evaluateAll((elements) =>
           elements.map((el) => el.getAttribute('href')),
         )
-      const manifest = JSON.parse(
-        readFileSync(
-          f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
-          'utf-8',
-        ).slice('export default '.length),
-      )
+
+      const manifest = await loadRSCManifest(f.root)
+
       const hashString = (v: string) =>
         createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
       const deps =
