@@ -151,7 +151,8 @@ export default { fetch: handler };
     },
     ssr: {
       optimizeDeps: {
-        // TODO: this should be somehow auto inferred
+        // TODO: this should be somehow auto inferred or at least show a warning
+        // to guide users about `optimizeDeps.include`
         include: [
           '@vitejs/test-dep-deep-cjs > use-sync-external-store/shim/index.js',
         ],
