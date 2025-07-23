@@ -6,7 +6,7 @@ This guide provides essential tips for contributors working on the RSC plugin.
 
 ### E2E Test Setup
 
-The e2e testing uses a scalable approach inspired by React Router's integration tests. Tests use Playwright and are located in `e2e/`.
+Tests use Playwright and are located in `e2e/` and uses `examples` as test app.
 
 #### Test Fixture Patterns
 
@@ -16,15 +16,17 @@ The e2e testing uses a scalable approach inspired by React Router's integration 
 
 ### Adding New Test Cases
 
-**Option 1: Using `setupInlineFixture` (Recommended for specific use cases)**
-Best for testing specific use cases. See `e2e/ssr-thenable.test.ts` for the pattern.
-
-**Option 2: Expanding `examples/basic` (Recommended for comprehensive features)**
+**Expanding `examples/basic` (for comprehensive features)**
 Best for features that should be part of the main test suite. `examples/basic` is mainly used for e2e testing:
 
 1. Add your test case files to `examples/basic/src/routes/`
 2. Update the routing in `examples/basic/src/routes/root.tsx`
 3. Add corresponding tests in `e2e/basic.test.ts`
+
+**Using `setupInlineFixture` (for specific edge cases)**
+Best for testing specific edge cases or isolated features. See `e2e/ssr-thenable.test.ts` for the pattern.
+
+<!-- TODO: mention unit test -->
 
 ## Development Workflow
 
