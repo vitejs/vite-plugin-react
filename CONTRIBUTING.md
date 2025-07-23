@@ -127,6 +127,10 @@ Some errors are masked and hidden away because of the layers of abstraction and 
 
 6. To close everything, just stop the test process back in your terminal.
 
+## Package-Specific Contributing Guides
+
+- [RSC Plugin Contributing Guide](./packages/plugin-rsc/CONTRIBUTING.md) - Development tips for @vitejs/plugin-rsc
+
 ## Note on Test Dependencies
 
 In many test cases, we need to mock dependencies using `link:` and `file:` protocols. `pnpm` treats `link:` as symlinks and `file:` as hardlinks. To test dependencies as if they were copied into `node_modules`, use the `file:` protocol. Otherwise, use the `link:` protocol.
