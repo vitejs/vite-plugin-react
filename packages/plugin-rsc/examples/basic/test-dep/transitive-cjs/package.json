@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/test-dep-deep-cjs",
+  "name": "@vitejs/test-dep-transitive-cjs",
   "private": true,
   "type": "module",
   "exports": {

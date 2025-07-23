@@ -29,7 +29,7 @@ import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
-import { TestDeepCjsClient } from './deps/deep-cjs/client'
+import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -68,7 +68,7 @@ export function Root(props: { url: URL }) {
         <TestClientInServer />
         <TestServerInServer />
         <TestServerInClient />
-        <TestDeepCjsClient />
+        <TestTransitiveCjsClient />
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />

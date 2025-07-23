@@ -20,7 +20,7 @@ export function TestClient() {
   return h(
     'span',
     {
-      'data-testid': 'deep-cjs-client',
+      'data-testid': 'transitive-cjs-client',
     },
     value,
   )

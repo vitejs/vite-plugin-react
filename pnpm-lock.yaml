@@ -536,15 +536,15 @@ importers:
       '@vitejs/test-dep-client-in-server2':
         specifier: file:./test-dep/client-in-server2
         version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.0)
-      '@vitejs/test-dep-deep-cjs':
-        specifier: file:./test-dep/deep-cjs
-        version: file:packages/plugin-rsc/examples/basic/test-dep/deep-cjs(react@19.1.0)
       '@vitejs/test-dep-server-in-client':
         specifier: file:./test-dep/server-in-client
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.0)
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)
+      '@vitejs/test-dep-transitive-cjs':
+        specifier: file:./test-dep/transitive-cjs
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.0)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -3082,11 +3082,6 @@ packages:
     peerDependencies:
       react: '*'
 
-  '@vitejs/test-dep-deep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/deep-cjs':
-    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/deep-cjs, type: directory}
-    peerDependencies:
-      react: '*'
-
   '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js':
     resolution: {directory: packages/plugin-react-swc/playground/ts-lib/test-dep/non-js, type: directory}
     peerDependencies:
@@ -3099,6 +3094,11 @@ packages:
 
   '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/server-in-server, type: directory}
+    peerDependencies:
+      react: '*'
+
+  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs':
+    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/transitive-cjs, type: directory}
     peerDependencies:
       react: '*'
 
@@ -7657,11 +7657,6 @@ snapshots:
     dependencies:
       react: 19.1.0
 
-  '@vitejs/test-dep-deep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/deep-cjs(react@19.1.0)':
-    dependencies:
-      react: 19.1.0
-      use-sync-external-store: 1.5.0(react@19.1.0)
-
   '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -7673,6 +7668,11 @@ snapshots:
   '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)':
     dependencies:
       react: 19.1.0
+
+  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      use-sync-external-store: 1.5.0(react@19.1.0)
 
   '@vitest/expect@3.2.4':
     dependencies:
