@@ -249,13 +249,12 @@ test.describe(() => {
   const root = 'examples/e2e/temp/renderBuiltUrl-runtime'
 
   test.beforeAll(async () => {
-    // TODO: test `globalThis`-based dynamic base
     // TODO: test client shared chunk
     const renderBuiltUrl = (filename: string) => {
       return {
-        runtime: `"/" + ${JSON.stringify(filename)}`,
+        runtime: `globalThis.__dynamicBase + ${JSON.stringify(filename)}`,
       }
-    };
+    }
     await setupInlineFixture({
       src: 'examples/starter',
       dest: root,
@@ -275,6 +274,25 @@ test.describe(() => {
                   rsc: './src/framework/entry.rsc.tsx',
                 }
               }),
+              {
+                // simulate custom asset server
+                name: 'custom-server',
+                config(_config, env) {
+                  if (env.isPreview) {
+                    globalThis.__dynamicBase = '/custom-server/';
+                  }
+                },
+                configurePreviewServer(server) {
+                  globalThis.__dynamicBase = '/custom-server/';
+                  server.middlewares.use((req, res, next) => {
+                    const url = new URL(req.url ?? '', "http://localhost");
+                    if (url.pathname.startsWith('/custom-server/')) {
+                      req.url = url.pathname.replace('/custom-server/', '/');
+                    }
+                    next();
+                  });
+                }
+              }
             ],
             experimental: {
               renderBuiltUrl: ${renderBuiltUrl.toString()}
