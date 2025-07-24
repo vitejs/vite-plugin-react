@@ -246,7 +246,7 @@ test.describe(() => {
 })
 
 test.describe(() => {
-  const root = 'examples/e2e/temp/render-built-url-runtime'
+  const root = 'examples/e2e/temp/renderBuiltUrl-runtime'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
@@ -282,25 +282,14 @@ test.describe(() => {
     })
   })
 
-  test.describe('dev-render-built-url-runtime', () => {
-    const f = useFixture({ root, mode: 'dev' })
-    defineTest({
-      ...f,
-      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
-  })
-
-  test.describe('build-render-built-url-runtime', () => {
+  test.describe('build-renderBuiltUrl-runtime', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest({
-      ...f,
-      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
+    defineTest(f)
   })
 })
 
 test.describe(() => {
-  const root = 'examples/e2e/temp/render-built-url-string'
+  const root = 'examples/e2e/temp/renderBuiltUrl-string'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
@@ -334,20 +323,9 @@ test.describe(() => {
     })
   })
 
-  test.describe('dev-render-built-url-string', () => {
-    const f = useFixture({ root, mode: 'dev' })
-    defineTest({
-      ...f,
-      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
-  })
-
-  test.describe('build-render-built-url-string', () => {
+  test.describe('build-renderBuiltUrl-string', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest({
-      ...f,
-      url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
+    defineTest(f)
   })
 })
 
