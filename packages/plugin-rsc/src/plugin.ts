@@ -9,7 +9,6 @@ import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
   type DevEnvironment,
-  type Environment,
   type EnvironmentModuleNode,
   type Plugin,
   type ResolvedConfig,
@@ -583,9 +582,7 @@ export default function vitePluginRsc(
         if (id === '\0virtual:vite-rsc/assets-manifest') {
           assert(this.environment.name !== 'client')
           assert(this.environment.mode === 'dev')
-          const entryUrl = assetsURL('@id/__x00__' + VIRTUAL_ENTRIES.browser, {
-            environment: this.environment,
-          })
+          const entryUrl = assetsURL('@id/__x00__' + VIRTUAL_ENTRIES.browser)
           const manifest: AssetsManifest = {
             bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
@@ -622,16 +619,10 @@ export default function vitePluginRsc(
           const serverResources: Record<string, AssetDeps> = {}
           const rscAssetDeps = collectAssetDeps(rscBundle)
           for (const [id, meta] of Object.entries(serverResourcesMetaMap)) {
-            serverResources[meta.key] = assetsURLOfDeps(
-              {
-                js: [],
-                css: rscAssetDeps[id]?.deps.css ?? [],
-              },
-              {
-                environment: this.environment,
-                enableRuntimeValue: true,
-              },
-            )
+            serverResources[meta.key] = assetsURLOfDeps({
+              js: [],
+              css: rscAssetDeps[id]?.deps.css ?? [],
+            })
           }
 
           const assetDeps = collectAssetDeps(bundle)
@@ -639,19 +630,12 @@ export default function vitePluginRsc(
             (v) => v.chunk.name === 'index',
           )
           assert(entry)
-          const entryUrl = assetsURL(entry.chunk.fileName, {
-            environment: this.environment,
-            enableRuntimeValue: true,
-          })
+          const entryUrl = assetsURL(entry.chunk.fileName)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const [id, meta] of Object.entries(clientReferenceMetaMap)) {
             const deps: AssetDeps = assetDeps[id]?.deps ?? { js: [], css: [] }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
               mergeAssetDeps(deps, entry.deps),
-              {
-                environment: this.environment,
-                enableRuntimeValue: true,
-              },
             )
           }
           buildAssetsManifest = {
@@ -1311,25 +1295,15 @@ function serializeValueWithRuntime(value: any) {
   return result
 }
 
-function assetsURL(
-  url: string,
-  {
-    environment,
-    enableRuntimeValue = false,
-  }: {
-    environment: Environment
-    enableRuntimeValue?: boolean
-  },
-) {
+function assetsURL(url: string) {
   if (
-    enableRuntimeValue &&
-    environment.mode === 'build' &&
+    config.command === 'build' &&
     typeof config.experimental?.renderBuiltUrl === 'function'
   ) {
     const result = config.experimental.renderBuiltUrl(url, {
       type: 'asset',
       hostType: 'js',
-      ssr: environment.name === 'ssr',
+      ssr: true,
       hostId: '',
     })
 
@@ -1354,24 +1328,15 @@ function assetsURL(
   return config.base + url
 }
 
-function assetsURLOfDeps(
-  deps: AssetDeps,
-  {
-    environment,
-    enableRuntimeValue = false,
-  }: {
-    environment: Environment
-    enableRuntimeValue?: boolean
-  },
-) {
+function assetsURLOfDeps(deps: AssetDeps) {
   return {
     js: deps.js.map((href) => {
       assert(typeof href === 'string')
-      return assetsURL(href, { environment, enableRuntimeValue })
+      return assetsURL(href)
     }),
     css: deps.css.map((href) => {
       assert(typeof href === 'string')
-      return assetsURL(href, { environment, enableRuntimeValue })
+      return assetsURL(href)
     }),
   }
 }
@@ -1675,9 +1640,7 @@ export function vitePluginRscCss(
           for (const file of [mod.file, ...result.visitedFiles]) {
             this.addWatchFile(file)
           }
-          const hrefs = result.hrefs.map((href) =>
-            assetsURL(href.slice(1), { environment: this.environment }),
-          )
+          const hrefs = result.hrefs.map((href) => assetsURL(href.slice(1)))
           return `export default ${serializeValueWithRuntime(hrefs)}`
         }
       },
@@ -1764,10 +1727,7 @@ export function vitePluginRscCss(
               '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
                 encodeURIComponent(importer),
             ]
-            const deps = assetsURLOfDeps(
-              { css: cssHrefs, js: jsHrefs },
-              { environment: this.environment },
-            )
+            const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
             return generateResourcesCode(serializeValueWithRuntime(deps))
           } else {
             const key = normalizePath(path.relative(config.root, importer))
