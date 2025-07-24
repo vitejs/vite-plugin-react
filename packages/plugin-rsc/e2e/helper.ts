@@ -1,5 +1,4 @@
 import test, { type Page, expect } from '@playwright/test'
-import { readFileSync } from 'node:fs'
 
 export const testNoJs = test.extend({
   javaScriptEnabled: ({}, use) => use(false),
@@ -54,17 +53,4 @@ export function expectNoPageError(page: Page) {
       expect(errors).toEqual([])
     },
   }
-}
-
-export async function loadRSCManifest(root: string) {
-  // Use dynamic "data:" import instead of URL path imports so it is
-  // not cached by the runtime.
-  const manifestFileContent = readFileSync(
-    root + '/dist/ssr/__vite_rsc_assets_manifest.js',
-    'utf-8',
-  )
-  const manifest = (await import('data:text/javascript,' + manifestFileContent))
-    .default
-
-  return manifest
 }
