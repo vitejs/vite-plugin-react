@@ -214,19 +214,17 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
+      const filepath = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(filepath), { recursive: true })
+
       // custom command
       if (typeof contents === 'object' && 'cp' in contents) {
         const srcFile = path.join(options.dest, contents.cp)
-        const destFile = path.join(options.dest, filename)
-        fs.mkdirSync(path.dirname(srcFile), { recursive: true })
-        fs.mkdirSync(path.dirname(destFile), { recursive: true })
-        fs.cpSync(srcFile, destFile, { recursive: true })
+        fs.cpSync(srcFile, filepath, { recursive: true })
         continue
       }
-      // write a file
-      const filepath = path.join(options.dest, filename)
-      fs.mkdirSync(path.dirname(filepath), { recursive: true })
-      // strip indent
+
+      // write a new file
       contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
       const indent = contents.match(/^\s*/)?.[0] ?? ''
       const strippedContents = contents
