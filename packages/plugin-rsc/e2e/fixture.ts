@@ -214,13 +214,13 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
-      const filepath = path.join(options.dest, filename)
-      fs.mkdirSync(path.dirname(filepath), { recursive: true })
+      const destFile = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
 
       // custom command
       if (typeof contents === 'object' && 'cp' in contents) {
         const srcFile = path.join(options.dest, contents.cp)
-        fs.cpSync(srcFile, filepath, { recursive: true })
+        fs.copyFileSync(srcFile, destFile)
         continue
       }
 
@@ -231,7 +231,7 @@ export async function setupInlineFixture(options: {
         .split('\n')
         .map((line) => line.replace(new RegExp(`^${indent}`), ''))
         .join('\n')
-      fs.writeFileSync(filepath, strippedContents)
+      fs.writeFileSync(destFile, strippedContents)
     }
   }
 }
