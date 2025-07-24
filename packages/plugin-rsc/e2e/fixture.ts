@@ -200,7 +200,10 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string | { cp: string }>
+  files?: Record<
+    string,
+    string | { cp: string } | { edit: (s: string) => string }
+  >
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -221,6 +224,11 @@ export async function setupInlineFixture(options: {
       if (typeof contents === 'object' && 'cp' in contents) {
         const srcFile = path.join(options.dest, contents.cp)
         fs.copyFileSync(srcFile, destFile)
+        continue
+      }
+      if (typeof contents === 'object' && 'edit' in contents) {
+        const editted = contents.edit(fs.readFileSync(destFile, 'utf-8'))
+        fs.writeFileSync(destFile, editted)
         continue
       }
 

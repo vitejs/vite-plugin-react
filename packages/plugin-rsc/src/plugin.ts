@@ -242,10 +242,8 @@ export default function vitePluginRsc(
                 serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
                 await builder.build(builder.environments.client!)
 
-                const assetsManifestCode = `export default ${JSON.stringify(
+                const assetsManifestCode = `export default ${serializeValueWithRuntime(
                   buildAssetsManifest,
-                  null,
-                  2,
                 )}`
                 const manifestPath = path.join(
                   builder.environments!.rsc!.config.build!.outDir!,
@@ -586,7 +584,7 @@ export default function vitePluginRsc(
           assert(this.environment.mode === 'dev')
           const entryUrl = assetsURL('@id/__x00__' + VIRTUAL_ENTRIES.browser)
           const manifest: AssetsManifest = {
-            bootstrapScriptContent: `import(${JSON.stringify(entryUrl)})`,
+            bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
           }
           return `export default ${JSON.stringify(manifest, null, 2)}`
@@ -640,8 +638,16 @@ export default function vitePluginRsc(
               mergeAssetDeps(deps, entry.deps),
             )
           }
+          let bootstrapScriptContent: string | RuntimeAsset
+          if (typeof entryUrl === 'string') {
+            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+          } else {
+            bootstrapScriptContent = new RuntimeAsset(
+              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+            )
+          }
           buildAssetsManifest = {
-            bootstrapScriptContent: `import(${JSON.stringify(entryUrl)})`,
+            bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
           }
@@ -671,10 +677,8 @@ export default function vitePluginRsc(
         if (this.environment.name === 'ssr') {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.
-          const assetsManifestCode = `export default ${JSON.stringify(
+          const assetsManifestCode = `export default ${serializeValueWithRuntime(
             buildAssetsManifest,
-            null,
-            2,
           )}`
           for (const name of ['ssr', 'rsc']) {
             const manifestPath = path.join(
@@ -1273,15 +1277,76 @@ function generateDynamicImportCode(map: Record<string, string>) {
   return `export default {${code}};\n`
 }
 
-// // https://github.com/vitejs/vite/blob/2a7473cfed96237711cda9f736465c84d442ddef/packages/vite/src/node/plugins/importAnalysisBuild.ts#L222-L230
+class RuntimeAsset {
+  runtime: string
+  constructor(value: string) {
+    this.runtime = value
+  }
+}
+
+function serializeValueWithRuntime(value: any) {
+  const replacements: [string, string][] = []
+  let result = JSON.stringify(
+    value,
+    (_key, value) => {
+      if (value instanceof RuntimeAsset) {
+        const placeholder = `__runtime_placeholder_${replacements.length}__`
+        replacements.push([placeholder, value.runtime])
+        return placeholder
+      }
+
+      return value
+    },
+    2,
+  )
+
+  for (const [placeholder, runtime] of replacements) {
+    result = result.replace(`"${placeholder}"`, runtime)
+  }
+
+  return result
+}
+
 function assetsURL(url: string) {
+  if (
+    config.command === 'build' &&
+    typeof config.experimental?.renderBuiltUrl === 'function'
+  ) {
+    // https://github.com/vitejs/vite/blob/bdde0f9e5077ca1a21a04eefc30abad055047226/packages/vite/src/node/build.ts#L1369
+    const result = config.experimental.renderBuiltUrl(url, {
+      type: 'asset',
+      hostType: 'js',
+      ssr: true,
+      hostId: '',
+    })
+
+    if (typeof result === 'object') {
+      if (result.runtime) {
+        return new RuntimeAsset(result.runtime)
+      }
+      assert(
+        !result.relative,
+        '"result.relative" not supported on renderBuiltUrl() for RSC',
+      )
+    } else if (result) {
+      return result satisfies string
+    }
+  }
+
+  // https://github.com/vitejs/vite/blob/2a7473cfed96237711cda9f736465c84d442ddef/packages/vite/src/node/plugins/importAnalysisBuild.ts#L222-L230
   return config.base + url
 }
 
 function assetsURLOfDeps(deps: AssetDeps) {
   return {
-    js: deps.js.map((href) => assetsURL(href)),
-    css: deps.css.map((href) => assetsURL(href)),
+    js: deps.js.map((href) => {
+      assert(typeof href === 'string')
+      return assetsURL(href)
+    }),
+    css: deps.css.map((href) => {
+      assert(typeof href === 'string')
+      return assetsURL(href)
+    }),
   }
 }
 
@@ -1290,12 +1355,23 @@ function assetsURLOfDeps(deps: AssetDeps) {
 //
 
 export type AssetsManifest = {
-  bootstrapScriptContent: string
+  bootstrapScriptContent: string | RuntimeAsset
   clientReferenceDeps: Record<string, AssetDeps>
-  serverResources?: Record<string, { css: string[] }>
+  serverResources?: Record<string, Pick<AssetDeps, 'css'>>
 }
 
 export type AssetDeps = {
+  js: (string | RuntimeAsset)[]
+  css: (string | RuntimeAsset)[]
+}
+
+export type ResolvedAssetsManifest = {
+  bootstrapScriptContent: string
+  clientReferenceDeps: Record<string, ResolvedAssetDeps>
+  serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
+}
+
+export type ResolvedAssetDeps = {
   js: string[]
   css: string[]
 }
@@ -1574,7 +1650,7 @@ export function vitePluginRscCss(
             this.addWatchFile(file)
           }
           const hrefs = result.hrefs.map((href) => assetsURL(href.slice(1)))
-          return `export default ${JSON.stringify(hrefs)}`
+          return `export default ${serializeValueWithRuntime(hrefs)}`
         }
       },
     },
@@ -1661,7 +1737,7 @@ export function vitePluginRscCss(
                 encodeURIComponent(importer),
             ]
             const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
-            return generateResourcesCode(JSON.stringify(deps, null, 2))
+            return generateResourcesCode(serializeValueWithRuntime(deps))
           } else {
             const key = normalizePath(path.relative(config.root, importer))
             serverResourcesMetaMap[importer] = { key }
@@ -1742,7 +1818,10 @@ function collectModuleDependents(mods: EnvironmentModuleNode[]) {
 }
 
 function generateResourcesCode(depsCode: string) {
-  const ResourcesFn = (React: typeof import('react'), deps: AssetDeps) => {
+  const ResourcesFn = (
+    React: typeof import('react'),
+    deps: ResolvedAssetDeps,
+  ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
         ...deps.css.map((href: string) =>
