@@ -1293,7 +1293,7 @@ class RuntimeAsset {
 }
 
 function serializeValueWithRuntime(value: any) {
-  const replacements = []
+  const replacements: [string, string][] = []
   let result = JSON.stringify(value, (_key, value) => {
     if (value instanceof RuntimeAsset) {
       const placeholder = `__runtime_placeholder_${replacements.length}__`
@@ -1389,6 +1389,17 @@ export type AssetsManifest = {
 export type AssetDeps = {
   js: (string | RuntimeAsset)[]
   css: (string | RuntimeAsset)[]
+}
+
+export type ResolvedAssetsManifest = {
+  bootstrapScriptContent: string
+  clientReferenceDeps: Record<string, ResolvedAssetDeps>
+  serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
+}
+
+export type ResolvedAssetDeps = {
+  js: string[]
+  css: string[]
 }
 
 function mergeAssetDeps(a: AssetDeps, b: AssetDeps): AssetDeps {
@@ -1838,10 +1849,13 @@ function collectModuleDependents(mods: EnvironmentModuleNode[]) {
 }
 
 function generateResourcesCode(depsCode: string) {
-  const ResourcesFn = (React: typeof import('react'), deps: AssetDeps) => {
+  const ResourcesFn = (
+    React: typeof import('react'),
+    deps: ResolvedAssetDeps,
+  ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
-        ...deps.css.map((href) =>
+        ...deps.css.map((href: string) =>
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
@@ -1850,7 +1864,7 @@ function generateResourcesCode(depsCode: string) {
           }),
         ),
         // js is only for dev to forward css import on browser to have hmr
-        ...deps.js.map((href) =>
+        ...deps.js.map((href: string) =>
           React.createElement('script', {
             key: 'js:' + href,
             type: 'module',
