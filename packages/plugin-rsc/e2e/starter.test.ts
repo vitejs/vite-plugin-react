@@ -249,6 +249,13 @@ test.describe(() => {
   const root = 'examples/e2e/temp/renderBuiltUrl-runtime'
 
   test.beforeAll(async () => {
+    // TODO: test `globalThis`-based dynamic base
+    // TODO: test client shared chunk
+    const renderBuiltUrl = (filename: string) => {
+      return {
+        runtime: `"/" + ${JSON.stringify(filename)}`,
+      }
+    };
     await setupInlineFixture({
       src: 'examples/starter',
       dest: root,
@@ -270,11 +277,7 @@ test.describe(() => {
               }),
             ],
             experimental: {
-              renderBuiltUrl(filename) {
-                return {
-                  runtime: \`'/' + \${JSON.stringify(filename)}\`
-                }
-              }
+              renderBuiltUrl: ${renderBuiltUrl.toString()}
             }
           })
         `,
