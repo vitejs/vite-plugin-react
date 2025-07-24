@@ -1312,6 +1312,7 @@ function assetsURL(url: string) {
     config.command === 'build' &&
     typeof config.experimental?.renderBuiltUrl === 'function'
   ) {
+    // https://github.com/vitejs/vite/blob/bdde0f9e5077ca1a21a04eefc30abad055047226/packages/vite/src/node/build.ts#L1369
     const result = config.experimental.renderBuiltUrl(url, {
       type: 'asset',
       hostType: 'js',
@@ -1328,11 +1329,7 @@ function assetsURL(url: string) {
         '"result.relative" not supported on renderBuiltUrl() for RSC',
       )
     } else if (result) {
-      assert(
-        typeof result === 'string',
-        '"renderBuiltUrl" should return a string!',
-      )
-      return result
+      return result satisfies string
     }
   }
 
