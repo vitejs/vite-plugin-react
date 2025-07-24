@@ -1300,7 +1300,7 @@ function serializeValueWithRuntime(value: any) {
     2,
   )
 
-  for (let [placeholder, runtime] of replacements) {
+  for (const [placeholder, runtime] of replacements) {
     result = result.replace(`"${placeholder}"`, runtime)
   }
 
