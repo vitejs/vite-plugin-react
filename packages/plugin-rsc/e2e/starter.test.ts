@@ -249,10 +249,9 @@ test.describe(() => {
   const root = 'examples/e2e/temp/renderBuiltUrl-runtime'
 
   test.beforeAll(async () => {
-    // TODO: test client shared chunk
     const renderBuiltUrl = (filename: string) => {
       return {
-        runtime: `globalThis.__dynamicBase + ${JSON.stringify(filename)}`,
+        runtime: `__dynamicBase + ${JSON.stringify(filename)}`,
       }
     }
     await setupInlineFixture({
@@ -293,11 +292,36 @@ test.describe(() => {
                 }
               }
             ],
+            // tweak chunks to test "__dynamicBase" used on browser for "__vite__mapDeps"
+            environments: {
+              client: {
+                build: {
+                  rollupOptions: {
+                    output: {
+                      manualChunks: (id) => {
+                        if (id.includes('node_modules/react/')) {
+                          return 'lib-react';
+                        }
+                      }
+                    },
+                  }
+                }
+              }
+            },
             experimental: {
               renderBuiltUrl: ${renderBuiltUrl.toString()}
-            }
+            },
           })
         `,
+        'src/root.tsx': {
+          // define __dynamicBase on browser via head script
+          edit: (s: string) =>
+            s.replace(
+              '</head>',
+              () =>
+                `<script>{\`globalThis.__dynamicBase = $\{JSON.stringify(globalThis.__dynamicBase ?? "/")}\`}</script></head>`,
+            ),
+        },
       },
     })
   })

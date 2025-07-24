@@ -200,7 +200,7 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string>
+  files?: Record<string, string | { edit: (s: string) => string }>
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -214,6 +214,12 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
+      if (typeof contents === 'object' && 'edit' in contents) {
+        const file = path.join(options.dest, filename)
+        const editted = contents.edit(fs.readFileSync(file, 'utf-8'))
+        fs.writeFileSync(file, editted)
+        continue
+      }
       let filepath = path.join(options.dest, filename)
       fs.mkdirSync(path.dirname(filepath), { recursive: true })
       // strip indent
