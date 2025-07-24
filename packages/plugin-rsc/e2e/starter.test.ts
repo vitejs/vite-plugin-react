@@ -246,7 +246,7 @@ test.describe(() => {
 })
 
 test.describe(() => {
-  const root = 'examples/e2e/temp/base'
+  const root = 'examples/e2e/temp/render-built-url-runtime'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
@@ -300,7 +300,7 @@ test.describe(() => {
 })
 
 test.describe(() => {
-  const root = 'examples/e2e/temp/base'
+  const root = 'examples/e2e/temp/render-built-url-string'
 
   test.beforeAll(async () => {
     await setupInlineFixture({
