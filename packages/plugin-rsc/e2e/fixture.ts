@@ -200,7 +200,7 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string>
+  files?: Record<string, string | { cp: string }>
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -214,16 +214,24 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
-      let filepath = path.join(options.dest, filename)
-      fs.mkdirSync(path.dirname(filepath), { recursive: true })
-      // strip indent
+      const destFile = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
+
+      // custom command
+      if (typeof contents === 'object' && 'cp' in contents) {
+        const srcFile = path.join(options.dest, contents.cp)
+        fs.copyFileSync(srcFile, destFile)
+        continue
+      }
+
+      // write a new file
       contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
       const indent = contents.match(/^\s*/)?.[0] ?? ''
       const strippedContents = contents
         .split('\n')
         .map((line) => line.replace(new RegExp(`^${indent}`), ''))
         .join('\n')
-      fs.writeFileSync(filepath, strippedContents)
+      fs.writeFileSync(destFile, strippedContents)
     }
   }
 }

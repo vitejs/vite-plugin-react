@@ -92,12 +92,16 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
           import rsc from '@vitejs/plugin-rsc'
           import react from '@vitejs/plugin-react'
-          import { defineConfig } from 'vite'
+          import { defineConfig, mergeConfig } from 'vite'
+          import baseConfig from './vite.config.base.ts'
+          
+          delete baseConfig.plugins
 
-          export default defineConfig({
+          const overrideConfig = defineConfig({
             plugins: [
               react({
                 babel: { plugins: ['babel-plugin-react-compiler'] },
@@ -105,15 +109,11 @@ test.describe(() => {
                 ...p,
                 applyToEnvironment: (e) => e.name === 'client',
               })),
-              rsc({
-                entries: {
-                  client: './src/framework/entry.browser.tsx',
-                  ssr: './src/framework/entry.ssr.tsx',
-                  rsc: './src/framework/entry.rsc.tsx',
-                }
-              }),
+              rsc(),
             ],
           })
+
+          export default mergeConfig(baseConfig, overrideConfig)
         `,
       },
     })
@@ -145,24 +145,16 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
-          import rsc from '@vitejs/plugin-rsc'
-          import react from '@vitejs/plugin-react'
-          import { defineConfig } from 'vite'
+          import { defineConfig, mergeConfig } from 'vite'
+          import baseConfig from './vite.config.base.ts'
 
-          export default defineConfig({
+          const overrideConfig = defineConfig({
             base: '/custom-base/',
-            plugins: [
-              react(),
-              rsc({
-                entries: {
-                  client: './src/framework/entry.browser.tsx',
-                  ssr: './src/framework/entry.ssr.tsx',
-                  rsc: './src/framework/entry.rsc.tsx',
-                }
-              }),
-            ],
           })
+
+          export default mergeConfig(baseConfig, overrideConfig)
         `,
       },
     })
@@ -193,22 +185,12 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
-          import rsc from '@vitejs/plugin-rsc'
-          import react from '@vitejs/plugin-react'
-          import { defineConfig, createRunnableDevEnvironment } from 'vite'
+          import { defineConfig, mergeConfig, createRunnableDevEnvironment } from 'vite'
+          import baseConfig from './vite.config.base.ts'
 
-          export default defineConfig({
-            plugins: [
-              react(),
-              rsc({
-                entries: {
-                  client: './src/framework/entry.browser.tsx',
-                  ssr: './src/framework/entry.ssr.tsx',
-                  rsc: './src/framework/entry.rsc.tsx',
-                }
-              }),
-            ],
+          const overrideConfig = defineConfig({
             environments: {
               ssr: {
                 dev: {
@@ -234,6 +216,8 @@ test.describe(() => {
               },
             },
           })
+
+          export default mergeConfig(baseConfig, overrideConfig)
         `,
       },
     })
