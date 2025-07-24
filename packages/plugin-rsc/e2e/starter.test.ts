@@ -311,10 +311,23 @@ test.describe(() => {
                   rsc: './src/framework/entry.rsc.tsx',
                 }
               }),
+              {
+                // simulate custom asset server
+                name: 'custom-server',
+                configurePreviewServer(server) {
+                  server.middlewares.use((req, res, next) => {
+                    const url = new URL(req.url ?? '', "http://localhost");
+                    if (url.pathname.startsWith('/custom-server/')) {
+                      req.url = url.pathname.replace('/custom-server/', '/');
+                    }
+                    next();
+                  });
+                }
+              }
             ],
             experimental: {
               renderBuiltUrl(filename) {
-                return '/' + filename;
+                return '/custom-server/' + filename;
               }
             }
           })
