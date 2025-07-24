@@ -1286,15 +1286,19 @@ class RuntimeAsset {
 
 function serializeValueWithRuntime(value: any) {
   const replacements: [string, string][] = []
-  let result = JSON.stringify(value, (_key, value) => {
-    if (value instanceof RuntimeAsset) {
-      const placeholder = `__runtime_placeholder_${replacements.length}__`
-      replacements.push([placeholder, value.runtime])
-      return placeholder
-    }
+  let result = JSON.stringify(
+    value,
+    (_key, value) => {
+      if (value instanceof RuntimeAsset) {
+        const placeholder = `__runtime_placeholder_${replacements.length}__`
+        replacements.push([placeholder, value.runtime])
+        return placeholder
+      }
 
-    return value
-  })
+      return value
+    },
+    2,
+  )
 
   for (let [placeholder, runtime] of replacements) {
     result = result.replace(`"${placeholder}"`, runtime)
