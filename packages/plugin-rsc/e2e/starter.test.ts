@@ -283,7 +283,6 @@ test.describe(() => {
                   }
                 },
                 configurePreviewServer(server) {
-                  globalThis.__dynamicBase = '/custom-server/';
                   server.middlewares.use((req, res, next) => {
                     const url = new URL(req.url ?? '', "http://localhost");
                     if (url.pathname.startsWith('/custom-server/')) {
