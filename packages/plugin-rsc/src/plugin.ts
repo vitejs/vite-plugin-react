@@ -638,8 +638,16 @@ export default function vitePluginRsc(
               mergeAssetDeps(deps, entry.deps),
             )
           }
+          let bootstrapScriptContent: string | RuntimeAsset
+          if (typeof entryUrl === 'string') {
+            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+          } else {
+            bootstrapScriptContent = new RuntimeAsset(
+              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+            )
+          }
           buildAssetsManifest = {
-            bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
+            bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
           }
@@ -1346,7 +1354,7 @@ function assetsURLOfDeps(deps: AssetDeps) {
 //
 
 export type AssetsManifest = {
-  bootstrapScriptContent: string
+  bootstrapScriptContent: string | RuntimeAsset
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
 }
