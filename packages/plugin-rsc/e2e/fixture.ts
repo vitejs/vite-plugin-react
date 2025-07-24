@@ -200,7 +200,7 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string>
+  files?: Record<string, string | { cp: string }>
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -214,20 +214,17 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
-      // custom fs command
-      if (contents.startsWith('fs:cp:')) {
-        const src = contents.slice('fs:cp:'.length)
-        const srcPath = path.resolve(options.src, src)
-        if (!fs.existsSync(srcPath)) {
-          throw new Error(`Source file does not exist: ${srcPath}`)
-        }
-        fs.cpSync(srcPath, path.join(options.dest, filename), {
-          recursive: true,
-        })
+      // custom command
+      if (typeof contents === 'object' && 'cp' in contents) {
+        const srcFile = path.join(options.dest, contents.cp)
+        const destFile = path.join(options.dest, filename)
+        fs.mkdirSync(path.dirname(srcFile), { recursive: true })
+        fs.mkdirSync(path.dirname(destFile), { recursive: true })
+        fs.cpSync(srcFile, destFile, { recursive: true })
         continue
       }
-      // write new file
-      let filepath = path.join(options.dest, filename)
+      // write a file
+      const filepath = path.join(options.dest, filename)
       fs.mkdirSync(path.dirname(filepath), { recursive: true })
       // strip indent
       contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')

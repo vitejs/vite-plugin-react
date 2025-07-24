@@ -92,7 +92,7 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
-        'vite.config.base.ts': 'fs:cp:vite.config.ts',
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
           import rsc from '@vitejs/plugin-rsc'
           import react from '@vitejs/plugin-react'
@@ -145,7 +145,7 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
-        'vite.config.base.ts': 'fs:cp:vite.config.ts',
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
           import { defineConfig, mergeConfig } from 'vite'
           import baseConfig from './vite.config.base.ts'
@@ -185,7 +185,7 @@ test.describe(() => {
       src: 'examples/starter',
       dest: root,
       files: {
-        'vite.config.base.ts': 'fs:cp:vite.config.ts',
+        'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
           import { defineConfig, mergeConfig, createRunnableDevEnvironment } from 'vite'
           import baseConfig from './vite.config.base.ts'
