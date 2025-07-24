@@ -303,6 +303,16 @@ test.describe(() => {
     })
   })
 
+  test.describe('dev-renderBuiltUrl-runtime', () => {
+    const f = useFixture({ root, mode: 'dev' })
+
+    test('basic', async ({ page }) => {
+      using _ = expectNoPageError(page)
+      await page.goto(f.url())
+      await waitForHydration_(page)
+    })
+  })
+
   test.describe('build-renderBuiltUrl-runtime', () => {
     const f = useFixture({ root, mode: 'build' })
     defineTest(f)
