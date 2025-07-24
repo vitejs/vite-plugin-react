@@ -214,6 +214,19 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
+      // custom fs command
+      if (contents.startsWith('fs:cp:')) {
+        const src = contents.slice('fs:cp:'.length)
+        const srcPath = path.resolve(options.src, src)
+        if (!fs.existsSync(srcPath)) {
+          throw new Error(`Source file does not exist: ${srcPath}`)
+        }
+        fs.cpSync(srcPath, path.join(options.dest, filename), {
+          recursive: true,
+        })
+        continue
+      }
+      // write new file
       let filepath = path.join(options.dest, filename)
       fs.mkdirSync(path.dirname(filepath), { recursive: true })
       // strip indent
