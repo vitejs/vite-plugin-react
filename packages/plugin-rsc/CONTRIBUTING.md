@@ -36,6 +36,9 @@ Best for testing specific edge cases or isolated features. See `e2e/ssr-thenable
 # Build packages
 pnpm dev # pnpm -C packages/plugin-rsc dev
 
+# Type check
+pnpm -C packages/plugin-rsc tsc-dev
+
 # Run examples
 pnpm -C packages/plugin-rsc/examples/basic dev # build / preview
 pnpm -C packages/plugin-rsc/examples/starter dev # build / preview
