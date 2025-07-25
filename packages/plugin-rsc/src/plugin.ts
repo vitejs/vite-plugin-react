@@ -95,18 +95,25 @@ export type RscPluginOptions = {
 
   /**
    * This option allows customizing how client build copies assets from server build.
-   * By default, all assets are copied, but frameworks might want to establish some convention
-   * to tighten security based on this option.
+   * By default, all assets are copied, but frameworks can establish server asset convention
+   * to tighten security using this option.
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
-  defineEncryptionKey?: string
-
   /**
-   * Allows enabling action closure encryption for debugging purpose.
+   * This option allows disabling action closure encryption for debugging purpose.
    * @default true
    */
   enableActionEncryption?: boolean
+
+  /**
+   * By default, the plugin uses a build-time generated encryption key for
+   * "use server" closure argument binding.
+   * This can be overwritten by configuring `defineEncryptionKey` option,
+   * for example, to obtain a key through environment variable during runtime.
+   * cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
+   */
+  defineEncryptionKey?: string
 
   /** Escape hatch for Waku's `allowServer` */
   keepUseCientProxy?: boolean
