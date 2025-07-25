@@ -10,5 +10,6 @@ catalogs:
 
 overrides:
   '@types/estree': ^1.0.8
-
+  vite: https://pkg.pr.new/vite@20391
+  
 dedupeInjectedDeps: false
