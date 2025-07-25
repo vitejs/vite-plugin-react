@@ -167,7 +167,7 @@ const react = (_options?: Options): Plugin[] => {
           return [
             {
               tag: 'script',
-              attrs: { type: 'module' },
+              attrs: { type: 'module', async: true },
               children: getPreambleCode(config.server!.config.base),
             },
           ]
