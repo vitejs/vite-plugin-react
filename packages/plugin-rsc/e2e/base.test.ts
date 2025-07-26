@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineTest } from './starter'
+import { defineStarterTest } from './starter'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/base'
@@ -27,7 +27,7 @@ test.describe(() => {
 
   test.describe('dev-base', () => {
     const f = useFixture({ root, mode: 'dev' })
-    defineTest({
+    defineStarterTest({
       ...f,
       url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
     })
@@ -35,7 +35,7 @@ test.describe(() => {
 
   test.describe('build-base', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest({
+    defineStarterTest({
       ...f,
       url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
     })

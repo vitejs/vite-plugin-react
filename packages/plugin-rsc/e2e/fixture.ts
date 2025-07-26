@@ -162,6 +162,7 @@ export async function setupIsolatedFixture(options: {
   const packagesDir = path.join(import.meta.dirname, '..', '..')
   const overrides = {
     '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+    '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
   }
   editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
     Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)

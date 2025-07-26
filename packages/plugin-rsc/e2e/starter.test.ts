@@ -1,26 +1,26 @@
 import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
-import { defineTest } from './starter'
+import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
-  defineTest(f)
+  defineStarterTest(f)
 })
 
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'build' })
-  defineTest(f)
+  defineStarterTest(f)
 })
 
 test.describe('dev-cloudflare', () => {
   const f = useFixture({ root: 'examples/starter-cf-single', mode: 'dev' })
-  defineTest(f)
+  defineStarterTest(f)
 })
 
 test.describe('build-cloudflare', () => {
   const f = useFixture({ root: 'examples/starter-cf-single', mode: 'build' })
-  defineTest(f)
+  defineStarterTest(f)
 })
 
 test.describe('dev-production', () => {
@@ -31,7 +31,7 @@ test.describe('dev-production', () => {
       env: { NODE_ENV: 'production' },
     },
   })
-  defineTest(f, 'dev-production')
+  defineStarterTest(f, 'dev-production')
 
   test('verify production', async ({ page }) => {
     await page.goto(f.url())
@@ -49,7 +49,7 @@ test.describe('build-development', () => {
       env: { NODE_ENV: 'development' },
     },
   })
-  defineTest(f)
+  defineStarterTest(f)
 
   test('verify development', async ({ page }) => {
     let output!: string

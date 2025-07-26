@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineTest } from './starter'
+import { defineStarterTest } from './starter'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/module-runner-hmr-false'
@@ -50,6 +50,6 @@ test.describe(() => {
 
   test.describe('dev-module-runner-hmr-false', () => {
     const f = useFixture({ root, mode: 'dev' })
-    defineTest(f)
+    defineStarterTest(f)
   })
 })

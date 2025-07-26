@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineTest } from './starter'
+import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
 
 test.describe(() => {
@@ -40,7 +40,7 @@ test.describe(() => {
 
   test.describe('dev-react-compiler', () => {
     const f = useFixture({ root, mode: 'dev' })
-    defineTest(f)
+    defineStarterTest(f)
 
     test('verify react compiler', async ({ page }) => {
       await page.goto(f.url())
@@ -52,6 +52,6 @@ test.describe(() => {
 
   test.describe('build-react-compiler', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest(f)
+    defineStarterTest(f)
   })
 })

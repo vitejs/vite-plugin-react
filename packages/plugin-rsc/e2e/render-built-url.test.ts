@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineTest } from './starter'
+import { defineStarterTest } from './starter'
 import { expectNoPageError, waitForHydration } from './helper'
 import fs from 'node:fs'
 
@@ -97,7 +97,7 @@ test.describe(() => {
 
   test.describe('build-renderBuiltUrl-runtime', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest(f)
+    defineStarterTest(f)
 
     test('verify runtime url', () => {
       const manifestFileContent = fs.readFileSync(
@@ -159,6 +159,6 @@ test.describe(() => {
 
   test.describe('build-renderBuiltUrl-string', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineTest(f)
+    defineStarterTest(f)
   })
 })

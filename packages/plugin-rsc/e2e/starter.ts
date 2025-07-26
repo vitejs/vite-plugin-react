@@ -7,7 +7,10 @@ import {
   waitForHydration as waitForHydration_,
 } from './helper'
 
-export function defineTest(f: Fixture, variant?: 'no-ssr' | 'dev-production') {
+export function defineStarterTest(
+  f: Fixture,
+  variant?: 'no-ssr' | 'dev-production',
+) {
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
 
