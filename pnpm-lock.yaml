@@ -4,14 +4,8 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-catalogs:
-  rolldown-vite:
-    vite:
-      specifier: npm:rolldown-vite@^7.0.10
-      version: 7.0.10
-
 overrides:
-  '@types/estree': ^1.0.8
+  '@vitejs/plugin-rsc': file:../../..
 
 importers:
 
@@ -572,6 +566,19 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.2
         version: 19.1.0-rc.2
+
+  packages/plugin-rsc/examples/e2e/temp/manual-test:
+    dependencies:
+      '@vitejs/plugin-rsc':
+        specifier: file:../../../../../../../../..
+        version: runner@file:../../..
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../../../plugin-react
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
@@ -5146,6 +5153,9 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
+  runner@file:../../..:
+    resolution: {directory: ../../.., type: directory}
+
   sade@1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
@@ -5171,6 +5181,9 @@ packages:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   set-cookie-parser@2.7.1:
     resolution: {integrity: sha512-IOc8uWeOZgnb3ptbCURJWNjWUPcO3ZnTTdzsurqERrP6nPyv+paC55vJM0LpOlT2ne+Ix+9+CRG1MNLlyZ4GjQ==}
@@ -9970,6 +9983,8 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
+  runner@file:../../..: {}
+
   sade@1.8.1:
     dependencies:
       mri: 1.2.0
@@ -9991,6 +10006,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.2: {}
+
+  server-only@0.0.1: {}
 
   set-cookie-parser@2.7.1: {}
 
