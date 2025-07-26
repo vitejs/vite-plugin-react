@@ -4,8 +4,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "cross-env NODE_ENV=development vite",
     "build": "vite build",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "cf-dev": "vite -c ./cf/vite.config.ts",
     "cf-build": "vite -c ./cf/vite.config.ts build",
@@ -13,21 +15,29 @@
     "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
   },
   "dependencies": {
+    "@remix-run/node-fetch-server": "0.8.0",
     "@vitejs/plugin-rsc": "latest",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router": "0.0.0-experimental-23decd7bc"
+    "compression": "^1.8.0",
+    "cross-env": "^7.0.3",
+    "express": "^5.1.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-router": "7.7.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.10.0",
-    "@react-router/dev": "0.0.0-experimental-23decd7bc",
-    "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.1.11",
+    "@tailwindcss/typography": "0.5.16",
+    "@tailwindcss/vite": "^4.1.10",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest",
-    "tailwindcss": "^4.1.11",
-    "vite": "^7.0.5",
+    "tailwindcss": "^4.1.10",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-devtools-json": "0.2.0",
     "vite-plugin-inspect": "^11.3.0",
     "wrangler": "^4.25.1"
   }
