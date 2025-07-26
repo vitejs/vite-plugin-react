@@ -162,6 +162,7 @@ export async function setupIsolatedFixture(options: {
   const packagesDir = path.join(import.meta.dirname, '..', '..')
   const overrides = {
     '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+    '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
   }
   editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
     Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
@@ -200,7 +201,10 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string>
+  files?: Record<
+    string,
+    string | { cp: string } | { edit: (s: string) => string }
+  >
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -214,16 +218,29 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
-      let filepath = path.join(options.dest, filename)
-      fs.mkdirSync(path.dirname(filepath), { recursive: true })
-      // strip indent
+      const destFile = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
+
+      // custom command
+      if (typeof contents === 'object' && 'cp' in contents) {
+        const srcFile = path.join(options.dest, contents.cp)
+        fs.copyFileSync(srcFile, destFile)
+        continue
+      }
+      if (typeof contents === 'object' && 'edit' in contents) {
+        const editted = contents.edit(fs.readFileSync(destFile, 'utf-8'))
+        fs.writeFileSync(destFile, editted)
+        continue
+      }
+
+      // write a new file
       contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
       const indent = contents.match(/^\s*/)?.[0] ?? ''
       const strippedContents = contents
         .split('\n')
         .map((line) => line.replace(new RegExp(`^${indent}`), ''))
         .join('\n')
-      fs.writeFileSync(filepath, strippedContents)
+      fs.writeFileSync(destFile, strippedContents)
     }
   }
 }

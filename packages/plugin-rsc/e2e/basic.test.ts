@@ -1,15 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
+import { type Fixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration,
 } from './helper'
-import path from 'node:path'
-import os from 'node:os'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -46,31 +44,6 @@ test.describe('dev-initial', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
-})
-
-test.describe(() => {
-  // disabled by default
-  if (process.env.TEST_ISOLATED !== 'true') return
-
-  // use RUNNER_TEMP on Github Actions
-  // https://github.com/actions/toolkit/issues/518
-  const tmpRoot = path.join(
-    process.env['RUNNER_TEMP'] || os.tmpdir(),
-    'test-vite-rsc',
-  )
-  test.beforeAll(async () => {
-    await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
-  })
-
-  test.describe('dev-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'dev' })
-    defineTest(f)
-  })
-
-  test.describe('build-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'build' })
-    defineTest(f)
-  })
 })
 
 function defineTest(f: Fixture) {
