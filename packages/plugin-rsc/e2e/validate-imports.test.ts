@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
 import { x } from 'tinyexec'
+import path from 'node:path'
 
 test.describe('validate imports', () => {
   test('should fail build when server-only is imported in client component', async () => {
@@ -13,6 +14,14 @@ test.describe('validate imports', () => {
         'package.json': {
           edit: (content) => {
             const pkg = JSON.parse(content)
+            // Add package.json overrides like setupIsolatedFixture
+            const packagesDir = path.join(import.meta.dirname, '..', '..')
+            const overrides = {
+              '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+              '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
+            }
+            Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
+            // Add external dependencies that are managed in examples/e2e/package.json
             pkg.dependencies = {
               ...pkg.dependencies,
               'server-only': '^0.0.1',
@@ -47,7 +56,7 @@ test.describe('validate imports', () => {
       },
     })
 
-    // Install dependencies including server-only
+    // Install dependencies
     await x('pnpm', ['i'], {
       throwOnError: true,
       nodeOptions: {
@@ -79,6 +88,14 @@ test.describe('validate imports', () => {
         'package.json': {
           edit: (content) => {
             const pkg = JSON.parse(content)
+            // Add package.json overrides like setupIsolatedFixture
+            const packagesDir = path.join(import.meta.dirname, '..', '..')
+            const overrides = {
+              '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+              '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
+            }
+            Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
+            // Add external dependencies that are managed in examples/e2e/package.json
             pkg.dependencies = {
               ...pkg.dependencies,
               'client-only': '^0.0.1',
@@ -112,7 +129,7 @@ test.describe('validate imports', () => {
       },
     })
 
-    // Install dependencies including client-only
+    // Install dependencies
     await x('pnpm', ['i'], {
       throwOnError: true,
       nodeOptions: {
@@ -144,6 +161,14 @@ test.describe('validate imports', () => {
         'package.json': {
           edit: (content) => {
             const pkg = JSON.parse(content)
+            // Add package.json overrides like setupIsolatedFixture
+            const packagesDir = path.join(import.meta.dirname, '..', '..')
+            const overrides = {
+              '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+              '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
+            }
+            Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
+            // Add external dependencies that are managed in examples/e2e/package.json
             pkg.dependencies = {
               ...pkg.dependencies,
               'server-only': '^0.0.1',
@@ -219,6 +244,14 @@ test.describe('validate imports', () => {
         'package.json': {
           edit: (content) => {
             const pkg = JSON.parse(content)
+            // Add package.json overrides like setupIsolatedFixture
+            const packagesDir = path.join(import.meta.dirname, '..', '..')
+            const overrides = {
+              '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
+              '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
+            }
+            Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
+            // Add external dependencies that are managed in examples/e2e/package.json
             pkg.dependencies = {
               ...pkg.dependencies,
               'server-only': '^0.0.1',
@@ -226,19 +259,15 @@ test.describe('validate imports', () => {
             return JSON.stringify(pkg, null, 2)
           },
         },
-        'vite.config.ts': /* ts */ `
-          import rsc from '@vitejs/plugin-rsc'
-          import react from '@vitejs/plugin-react'
-          
-          export default {
-            plugins: [
-              react(),
-              rsc({
-                validateImports: false, // Disable validation
-              }),
-            ],
-          }
-        `,
+        'vite.config.ts': {
+          edit: (content) => {
+            // Only modify the rsc plugin options to disable validation
+            return content.replace(
+              'rsc({',
+              'rsc({\n      validateImports: false, // Disable validation',
+            )
+          },
+        },
         'src/client.tsx': /* tsx */ `
           "use client";
           import 'server-only';

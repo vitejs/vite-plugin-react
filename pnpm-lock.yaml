@@ -4,8 +4,14 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  rolldown-vite:
+    vite:
+      specifier: npm:rolldown-vite@^7.0.10
+      version: 7.0.10
+
 overrides:
-  '@vitejs/plugin-rsc': file:../../..
+  '@types/estree': ^1.0.8
 
 importers:
 
@@ -556,6 +562,13 @@ importers:
         version: 4.25.1
 
   packages/plugin-rsc/examples/e2e:
+    dependencies:
+      client-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@vitejs/plugin-react':
         specifier: latest
@@ -566,19 +579,6 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.2
         version: 19.1.0-rc.2
-
-  packages/plugin-rsc/examples/e2e/temp/manual-test:
-    dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: file:../../../../../../../../..
-        version: runner@file:../../..
-      server-only:
-        specifier: ^0.0.1
-        version: 0.0.1
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: latest
-        version: link:../../../../../plugin-react
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
@@ -3336,6 +3336,9 @@ packages:
     resolution: {integrity: sha512-nPdaFdQ0h/GEigbPClz11D0v/ZJEwxmeVZGeMo3Z5StPtUTkA9o1lD6QwoirYiSDzbcwn2XcjwmCp68W1IS4TA==}
     engines: {node: '>=18'}
 
+  client-only@0.0.1:
+    resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
+
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
 
@@ -5152,9 +5155,6 @@ packages:
 
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
-
-  runner@file:../../..:
-    resolution: {directory: ../../.., type: directory}
 
   sade@1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
@@ -7891,6 +7891,8 @@ snapshots:
       slice-ansi: 5.0.0
       string-width: 7.0.0
 
+  client-only@0.0.1: {}
+
   collapse-white-space@2.1.0: {}
 
   color-convert@2.0.1:
@@ -9982,8 +9984,6 @@ snapshots:
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
-
-  runner@file:../../..: {}
 
   sade@1.8.1:
     dependencies:

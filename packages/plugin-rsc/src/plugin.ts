@@ -1964,7 +1964,7 @@ function validateImportPlugin(): Plugin {
   return {
     name: 'rsc:validate-imports',
     enforce: 'pre',
-    resolveId(source, importer, options) {
+    async resolveId(source, importer, options) {
       // skip validation during optimizeDeps scan since for now
       // we want to allow going through server/client boundary loosely
       if (isScanBuild || ('scan' in options && options.scan)) {
@@ -1976,6 +1976,20 @@ function validateImportPlugin(): Plugin {
         source === 'client-only' &&
         (this.environment.name === 'rsc' || this.environment.name === 'ssr')
       ) {
+        // Allow client-only in client components during SSR builds
+        if (importer && this.environment.name === 'ssr') {
+          try {
+            const code = await this.load({ id: importer })
+            if (
+              code?.code?.includes('"use client"') ||
+              code?.code?.includes("'use client'")
+            ) {
+              return
+            }
+          } catch (e) {
+            // If we can't load the importer, proceed with validation
+          }
+        }
         throw new Error(
           `'client-only' is included in server build (importer: ${importer ?? 'unknown'})`,
         )
