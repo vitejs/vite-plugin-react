@@ -62,18 +62,18 @@ jobs:
           node-version: 22
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - run: pnpm i
-      - run: pnpm build
-      - name: install rolldown
-        if: ${{ matrix.rolldown }}
-        run: |
-          sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
-          pnpm i --no-frozen-lockfile
       - name: install react
         if: ${{ matrix.react_version }}
         run: |
           sed -i "/^overrides:/a\  react: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
           sed -i "/^overrides:/a\  react-dom: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
           sed -i "/^overrides:/a\  react-server-dom-webpack: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+      - run: pnpm build
+      - name: install rolldown
+        if: ${{ matrix.rolldown }}
+        run: |
+          sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
