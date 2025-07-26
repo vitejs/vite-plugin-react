@@ -175,11 +175,12 @@ export async function setupIsolatedFixture(options: {
       nodeOptions: { cwd: path.join(import.meta.dirname, '..') },
     },
   )
-  const deps = JSON.parse(listResult.stdout)[0].devDependencies
-  overrides.react = deps.react.version
-  overrides['react-dom'] = deps.react.version
-  overrides['react-server-dom-webpack'] = deps.react.version
-  overrides.vite = deps.vite.version
+  const pkg = JSON.parse(listResult.stdout)[0]
+  const allDeps = { ...pkg.dependencies, ...pkg.devDependencies }
+  overrides.react = allDeps.react.version
+  overrides['react-dom'] = allDeps.react.version
+  overrides['react-server-dom-webpack'] = allDeps.react.version
+  overrides.vite = allDeps.vite.version
 
   editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
     Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
