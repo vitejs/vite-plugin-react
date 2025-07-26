@@ -20,15 +20,15 @@ Or try it locally by:
 ```sh
 npx giget gh:vitejs/vite-plugin-react/packages/plugin-rsc/examples/react-router my-app
 cd my-app
-npm i
-npm run dev
-npm run build
-npm run preview
+pnpm i
+pnpm run dev
+pnpm run build
+pnpm run preview
 
 # run on @cloudflare/vite-plugin and deploy.
 # a separate configuration is found in ./cf/vite.config.ts
-npm run cf-dev
-npm run cf-build
-npm run cf-preview
-npm run cf-release
+pnpm run cf-dev
+pnpm run cf-build
+pnpm run cf-preview
+pnpm run cf-release
 ```
