@@ -923,9 +923,7 @@ function defineTest(f: Fixture) {
     expect(errors).toMatchObject([
       {
         message: expect.stringContaining(
-          f.mode === 'dev'
-            ? `Hydration failed because the server rendered HTML didn't match the client.`
-            : `Minified React error #418`,
+          f.mode === 'dev' ? `Hydration failed` : `Minified React error #418`,
         ),
       },
     ])
