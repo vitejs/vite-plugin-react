@@ -70,6 +70,7 @@ function defineSyntaxErrorTests(f: Fixture) {
   test('client syntax error triggers error overlay', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
+    await using _ = await expectNoReload(page)
 
     await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
 
@@ -96,6 +97,7 @@ function defineSyntaxErrorTests(f: Fixture) {
   test('server syntax error triggers error overlay', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
+    await using _ = await expectNoReload(page)
 
     await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
 
