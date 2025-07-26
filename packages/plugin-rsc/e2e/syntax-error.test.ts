@@ -152,9 +152,7 @@ test.describe(() => {
         ),
       )
       await page.goto(f.url())
-      await expect(page.locator('body')).toContainText(
-        'Transform failed with 1 error',
-      )
+      await expect(page.locator('body')).toContainText('src/client.tsx:15')
 
       // fix syntax error
       await page.waitForTimeout(200)
@@ -187,9 +185,7 @@ test.describe(() => {
         ),
       )
       await page.goto(f.url())
-      await expect(page.locator('body')).toContainText(
-        'Transform failed with 1 error',
-      )
+      await expect(page.locator('body')).toContainText('src/root.tsx:11')
 
       // fix syntax error
       await page.waitForTimeout(200)
