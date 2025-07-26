@@ -1,9 +1,66 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture, useFixture } from './fixture'
+import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { x } from 'tinyexec'
 import path from 'node:path'
+import { expectNoPageError, waitForHydration } from './helper'
 
 test.describe('validate imports', () => {
+  test.describe('valid imports', () => {
+    const root = 'examples/e2e/temp/validate-imports-server-only-client'
+    test.beforeAll(async () => {
+      await setupInlineFixture({
+        src: 'examples/starter',
+        dest: root,
+        files: {
+          'src/client.tsx': /* tsx */ `
+            "use client";
+            import 'client-only';
+            
+            export function TestClient() {
+              return <div>[test-client]</div>
+            }
+          `,
+          'src/root.tsx': /* tsx */ `
+            import { TestClient } from './client.tsx'
+            import 'server-only';
+  
+            export function Root() {
+              return (
+                <html lang="en">
+                  <head>
+                    <meta charSet="UTF-8" />
+                  </head>
+                  <body>
+                    <div>[test-server]</div>
+                    <TestClient />
+                  </body>
+                </html>
+              )
+            }
+          `,
+        },
+      })
+    })
+
+    test.describe('dev', () => {
+      const f = useFixture({ root, mode: 'dev' })
+      defineTest(f)
+    })
+
+    test.describe('build', () => {
+      const f = useFixture({ root, mode: 'build' })
+      defineTest(f)
+    })
+
+    function defineTest(f: Fixture) {
+      test('basic', async ({ page }) => {
+        using _ = expectNoPageError(page)
+        await page.goto(f.url())
+        await waitForHydration(page)
+      })
+    }
+  })
+
   test('should fail build when server-only is imported in client component', async () => {
     const root = 'examples/e2e/temp/validate-imports-server-only-client'
 
@@ -99,15 +156,6 @@ test.describe('validate imports', () => {
             )
           }
         `,
-      },
-    })
-
-    // Install dependencies
-    await x('pnpm', ['i'], {
-      throwOnError: true,
-      nodeOptions: {
-        cwd: root,
-        stdio: 'ignore',
       },
     })
 
