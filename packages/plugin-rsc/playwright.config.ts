@@ -26,7 +26,7 @@ export default defineConfig({
       use: devices['Desktop Safari'],
     },
   ],
-  workers: 2,
+  workers: 3,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: ['list', process.env.CI && 'github']
