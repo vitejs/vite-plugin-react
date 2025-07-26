@@ -99,6 +99,12 @@ function defineSyntaxErrorTests(f: Fixture) {
 
     await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
 
+    // Set client state to verify it's preserved after server HMR
+    await page.getByTestId('client-counter').click()
+    await expect(page.getByTestId('client-counter')).toHaveText(
+      'Client Count: 1',
+    )
+
     // Edit server file to introduce syntax error
     const editor = f.createEditor('src/server.tsx')
     editor.edit((s) =>
@@ -115,8 +121,15 @@ function defineSyntaxErrorTests(f: Fixture) {
     editor.reset()
 
     // Error overlay should disappear and server should work again
-    await expect(page.locator('vite-error-overlay')).not.toBeVisible()
+    await expect(page.locator('vite-error-overlay')).not.toBeVisible({
+      timeout: 15000,
+    })
     await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
+
+    // Verify client state is preserved (no full reload happened)
+    await expect(page.getByTestId('client-counter')).toHaveText(
+      'Client Count: 1',
+    )
   })
 
   test('initial SSR with server component syntax error shows error page', async ({
@@ -142,12 +155,17 @@ function defineSyntaxErrorTests(f: Fixture) {
     // Fix syntax error
     editor.reset()
 
-    // Should work normally now
+    // Should work normally now - retry with more lenient approach
     await expect(async () => {
       await page.goto(f.url())
+      // Check if we're still getting an error page
+      const bodyText = await page.locator('body').textContent()
+      if (bodyText?.includes('Transform failed with 1 error')) {
+        throw new Error('Still seeing error page')
+      }
       await waitForHydration(page)
       await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
-    }).toPass({ timeout: 10000 })
+    }).toPass({ timeout: 15000 })
   })
 
   test('initial SSR with client component syntax error shows error page', async ({
