@@ -170,8 +170,8 @@ export async function setupIsolatedFixture(options: {
   const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
   const tempWorkspaceYaml = `\
 ${overridesSection}
-  '@vitejs/plugin-rsc': file:${path.join(rootDir, 'packages/plugin-rsc')}
-  '@vitejs/plugin-react': file:${path.join(rootDir, 'packages/plugin-react')}
+  '@vitejs/plugin-rsc': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-rsc'))}
+  '@vitejs/plugin-react': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-react'))}
 `
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
