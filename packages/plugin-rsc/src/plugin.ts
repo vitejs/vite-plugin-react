@@ -31,7 +31,7 @@ import {
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
-import { normalizeViteImportAnalysisUrl } from './vite-utils'
+import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -382,6 +382,20 @@ export default function vitePluginRsc(
 
         if (!isInsideClientBoundary(ctx.modules)) {
           if (this.environment.name === 'rsc') {
+            // transform js to surface syntax errors
+            for (const mod of ctx.modules) {
+              if (mod.type === 'js') {
+                try {
+                  await this.environment.transformRequest(mod.url)
+                } catch (e) {
+                  server.environments.client.hot.send({
+                    type: 'error',
+                    err: prepareError(e as any),
+                  })
+                  throw e
+                }
+              }
+            }
             // server hmr
             ctx.server.environments.client.hot.send({
               type: 'custom',
@@ -773,6 +787,13 @@ window.__vite_plugin_react_preamble_installed__ = true;
         code += `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => ssrCss.forEach(node => node.remove()));
+`
+        // close error overlay after syntax error is fixed and hmr is triggered.
+        // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
+        code += `
+import.meta.hot.on("rsc:update", () => {
+  document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
+});
 `
         return code
       },
