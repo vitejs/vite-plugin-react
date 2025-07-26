@@ -8,7 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-router'
 
-import { routes } from './routes/config'
+import routes from 'virtual:react-router-routes'
 
 export function fetchServer(request: Request) {
   return matchRSCServerRequest({
@@ -21,7 +21,7 @@ export function fetchServer(request: Request) {
     // The incoming request.
     request,
     // The app routes.
-    routes: routes(),
+    routes,
     // Encode the match with the React Server implementation.
     generateResponse(match) {
       return new Response(renderToReadableStream(match.payload), {

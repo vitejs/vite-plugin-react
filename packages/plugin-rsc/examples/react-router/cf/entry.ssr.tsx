@@ -1,4 +1,4 @@
-import * as entrySSR from '../src/entry.ssr'
+import handler from '../react-router-vite/entry.ssr'
 
 console.log('[debug:cf-ssr-entry]')
 
@@ -8,8 +8,6 @@ console.log('[debug:cf-ssr-entry]')
 
 export default {
   fetch(request: Request, env: any) {
-    return entrySSR.generateHTML(request, (request: Request) =>
-      env.RSC.fetch(request),
-    )
+    return handler(request, (request) => env.RSC.fetch(request))
   },
 }

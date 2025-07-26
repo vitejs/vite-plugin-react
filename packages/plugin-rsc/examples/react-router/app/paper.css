@@ -1,0 +1,150 @@
+@theme {
+  --default-font-family: 'Patrick Hand SC', sans-serif;
+  --default-mono-font-family: 'Patrick Hand SC', sans-serif;
+
+  --color-foreground: black;
+  --color-danger: rgb(167, 52, 45);
+  --color-secondary: rgb(11, 116, 213);
+  --color-success: rgb(134, 163, 97);
+  --color-warning: rgb(221, 205, 69);
+  --color-border: #cdcccb;
+  --color-border-active: rgba(0, 0, 0, 0.2);
+
+  --color-paper-background: white;
+  --color-paper-border: #cdcccb;
+  --shadow-paper: -1px 5px 35px -9px rgba(0, 0, 0, 0.2);
+
+  --shadow-btn: 15px 28px 25px -18px rgba(0, 0, 0, 0.2);
+  --shadow-btn-hover: 2px 8px 8px -5px rgba(0, 0, 0, 0.3);
+  --color-btn-border: black;
+  --btn-color-danger: var(--color-danger);
+  --btn-color-secondary: var(--color-secondary);
+  --btn-color-success: var(--color-success);
+  --btn-color-warning: var(--color-warning);
+}
+
+@utility paper-border {
+  @apply border-2 border-border;
+  border-bottom-left-radius: 25px 115px;
+  border-bottom-right-radius: 155px 25px;
+  border-top-left-radius: 15px 225px;
+  border-top-right-radius: 25px 150px;
+}
+
+@utility no-paper-border {
+  @apply border-0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+@utility paper-underline {
+  @apply border-b-3 border-[currentcolor];
+  border-bottom-left-radius: 15px 3px;
+  border-bottom-right-radius: 15px 5px;
+  border-bottom-style: solid;
+}
+
+@utility paper-underline-hover {
+  @apply paper-underline border-transparent;
+  @variant hover {
+    @apply border-[currentcolor];
+  }
+}
+
+@utility paper {
+  @apply border border-paper-border bg-paper-background p-8 shadow-paper;
+}
+
+@utility breadcrumbs {
+  @apply flex flex-wrap gap-2;
+  & > * {
+    @apply inline-block after:text-lg after:content-[""] not-last:after:ml-2 not-last:after:text-foreground not-last:after:content-["/"];
+  }
+  & > a {
+    @apply text-secondary;
+  }
+}
+
+@utility btn {
+  @apply inline-block cursor-pointer bg-paper-background paper-border px-4 py-2 text-lg shadow-btn transition-[shadow_transition];
+
+  @variant active {
+    @apply border-border-active;
+  }
+  @variant hover {
+    @apply translate-y-1 shadow-btn-hover;
+  }
+
+  &.btn-icon {
+    @apply aspect-square px-2 py-2;
+    & img,
+    & svg {
+      @apply h-7 w-7;
+    }
+  }
+}
+
+@utility btn-* {
+  border-color: --value(--btn-color-*);
+  color: --value(--btn-color-*);
+}
+
+@utility btn-sm {
+  @apply px-2 py-1 text-base;
+}
+
+@utility btn-lg {
+  @apply px-6 py-3 text-2xl;
+}
+
+@utility label {
+  @apply mb-1 block font-semibold;
+}
+
+@utility input {
+  @apply paper-border px-3 py-2;
+
+  @variant disabled {
+    @apply border-border-active;
+  }
+}
+
+@utility checkbox {
+  @apply h-6 w-6 paper-border;
+
+  @variant disabled {
+    @apply border-border-active;
+  }
+}
+
+@utility select {
+  @apply paper-border px-3 py-2;
+
+  @variant disabled {
+    @apply border-border-active;
+  }
+}
+
+@layer base {
+  body {
+    @apply text-foreground;
+  }
+
+  * {
+    @apply outline-secondary;
+  }
+}
+
+@layer utilities {
+  .prose {
+    :where(u):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+      @apply paper-underline no-underline;
+    }
+
+    :where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+      @apply paper-underline-hover no-underline text-secondary;
+    }
+  }
+}

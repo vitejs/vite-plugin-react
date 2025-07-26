@@ -1,85 +1,34 @@
-# Welcome to React Router! (Experimental RSC)
+# rsc react-router
 
-⚠️ **EXPERIMENTAL**: This template demonstrates React Server Components with React Router. This is experimental technology and not recommended for production use.
-
-A modern template for exploring React Server Components (RSC) with React Router, powered by Vite.
+https://vite-rsc-react-router.hiro18181.workers.dev
 
 > [!NOTE]
-> React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components) for Vite. This example is updated to match the latest official template from @remix-run/react-router-templates.
+> React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components) for Vite. The example might not be kept up to date with the latest version. Please refer to React Router's official documentation for the latest integrations.
 
-## Features
+Vite RSC example based on demo made by React router team with Parcel:
 
-- 🧪 **Experimental React Server Components**
-- 🚀 Server-side rendering with RSC
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization with Vite
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-- 📚 [React Server Components guide](https://reactrouter.com/how-to/react-server-components)
+- https://github.com/jacob-ebey/parcel-plugin-react-router/
+- https://github.com/jacob-ebey/experimental-parcel-react-router-starter
+- https://github.com/remix-run/react-router/tree/rsc/playground/rsc-vite
 
-## Getting Started
+See also [`rsc-movies`](https://github.com/hi-ogawa/rsc-movies/).
 
-### Installation
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/react-router?file=src%2Froutes%2Froot.tsx)
 
-Install the dependencies:
+Or try it locally by:
 
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
+```sh
+npx giget gh:vitejs/vite-plugin-react/packages/plugin-rsc/examples/react-router my-app
+cd my-app
+npm i
 npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
 npm run build
-```
+npm run preview
 
-## Running Production Build
-
-Run the production server:
-
-```bash
-npm start
-```
-
-## Understanding React Server Components
-
-This template includes three entry points:
-
-- **`entry.rsc.tsx`** - React Server Components entry point
-- **`entry.ssr.tsx`** - Server-side rendering entry point
-- **`entry.browser.tsx`** - Client-side hydration entry point
-
-Learn more about React Server Components with React Router in our [comprehensive guide](https://reactrouter.com/how-to/react-server-components).
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
-## CloudFlare Support
-
-CloudFlare specific configurations are available in the `cf/` directory:
-
-```bash
+# run on @cloudflare/vite-plugin and deploy.
+# a separate configuration is found in ./cf/vite.config.ts
 npm run cf-dev
 npm run cf-build
 npm run cf-preview
 npm run cf-release
 ```
-
----
-
-Built with ❤️ using React Router.

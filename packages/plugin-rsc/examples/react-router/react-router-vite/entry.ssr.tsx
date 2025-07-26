@@ -36,3 +36,10 @@ export async function generateHTML(
     },
   })
 }
+
+export default async function handler(
+  request: Request,
+  fetchServer: (request: Request) => Promise<Response>,
+): Promise<Response> {
+  return generateHTML(request, fetchServer)
+}
