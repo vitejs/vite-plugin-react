@@ -38,13 +38,14 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
         rolldown: [false]
+        react_version: [""]
         include:
           - os: ubuntu-latest
             browser: firefox
@@ -53,6 +54,12 @@ jobs:
           - os: ubuntu-latest
             browser: chromium
             rolldown: true
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: canary
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: experimental
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +73,13 @@ jobs:
         if: ${{ matrix.rolldown }}
         run: |
           sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+      - name: install react
+        if: ${{ matrix.react_version || (inputs.react_version && inputs.react_version != 'stable') }}
+        run: |
+          REACT_VERSION="${{ matrix.react_version || inputs.react_version }}"
+          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
