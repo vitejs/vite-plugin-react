@@ -4,12 +4,6 @@ permissions: {}
 
 on:
   workflow_dispatch:
-    inputs:
-      # https://github.com/wakujs/waku/blob/fb3968b0fa6ecf3e4a50dca4a61f10ec75b793ad/.github/workflows/canary-ci.yml
-      react_version:
-        required: true
-        type: string
-        default: canary
   push:
     branches:
       - main
@@ -75,11 +69,10 @@ jobs:
           sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - name: install react
-        if: ${{ matrix.react_version || (inputs.react_version && inputs.react_version != 'stable') }}
+        if: ${{ matrix.react_version }}
         run: |
-          REACT_VERSION="${{ matrix.react_version || inputs.react_version }}"
-          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
