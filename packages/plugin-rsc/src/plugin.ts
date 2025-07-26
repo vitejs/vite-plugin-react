@@ -31,7 +31,7 @@ import {
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
-import { normalizeViteImportAnalysisUrl } from './vite-utils'
+import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -385,9 +385,22 @@ export default function vitePluginRsc(
             // transform js to surface syntax errors
             for (const mod of ctx.modules) {
               if (mod.type === 'js') {
-                await this.environment.transformRequest(mod.url)
+                try {
+                  await this.environment.transformRequest(mod.url)
+                } catch (e) {
+                  server.environments.client.hot.send({
+                    type: 'error',
+                    err: prepareError(e as any),
+                  })
+                  throw e
+                }
               }
             }
+            // send empty client updates to clear error overlay if any
+            ctx.server.environments.client.hot.send({
+              type: 'update',
+              updates: [],
+            })
             // server hmr
             ctx.server.environments.client.hot.send({
               type: 'custom',
