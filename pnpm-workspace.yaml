@@ -10,6 +10,5 @@ catalogs:
 
 overrides:
   '@types/estree': ^1.0.8
-  vite: "npm:rolldown-vite@latest"
 
 dedupeInjectedDeps: false
