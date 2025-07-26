@@ -11,24 +11,6 @@ test.describe('validate imports', () => {
       src: 'examples/starter',
       dest: root,
       files: {
-        'package.json': {
-          edit: (content) => {
-            const pkg = JSON.parse(content)
-            // Add package.json overrides like setupIsolatedFixture
-            const packagesDir = path.join(import.meta.dirname, '..', '..')
-            const overrides = {
-              '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
-              '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
-            }
-            Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
-            // Add external dependencies that are managed in examples/e2e/package.json
-            pkg.dependencies = {
-              ...pkg.dependencies,
-              'server-only': '^0.0.1',
-            }
-            return JSON.stringify(pkg, null, 2)
-          },
-        },
         'src/client.tsx': /* tsx */ `
           "use client";
           import 'server-only';
@@ -53,15 +35,6 @@ test.describe('validate imports', () => {
             )
           }
         `,
-      },
-    })
-
-    // Install dependencies
-    await x('pnpm', ['i'], {
-      throwOnError: true,
-      nodeOptions: {
-        cwd: root,
-        stdio: 'ignore',
       },
     })
 

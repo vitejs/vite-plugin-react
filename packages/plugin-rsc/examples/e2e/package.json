@@ -2,10 +2,6 @@
   "name": "@vitejs/plugin-rsc-examples-e2e",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "client-only": "^0.0.1",
-    "server-only": "^0.0.1"
-  },
   "devDependencies": {
     "@vitejs/plugin-rsc": "latest",
     "@vitejs/plugin-react": "latest",

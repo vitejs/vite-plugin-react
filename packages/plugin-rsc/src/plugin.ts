@@ -1963,46 +1963,39 @@ export function __fix_cloudflare(): Plugin {
 function validateImportPlugin(): Plugin {
   return {
     name: 'rsc:validate-imports',
-    enforce: 'pre',
-    async resolveId(source, importer, options) {
-      // skip validation during optimizeDeps scan since for now
-      // we want to allow going through server/client boundary loosely
-      if (isScanBuild || ('scan' in options && options.scan)) {
-        return
-      }
-
-      // Validate client-only imports in server environments
-      if (
-        source === 'client-only' &&
-        (this.environment.name === 'rsc' || this.environment.name === 'ssr')
-      ) {
-        // Allow client-only in client components during SSR builds
-        if (importer && this.environment.name === 'ssr') {
-          try {
-            const code = await this.load({ id: importer })
-            if (
-              code?.code?.includes('"use client"') ||
-              code?.code?.includes("'use client'")
-            ) {
-              return
-            }
-          } catch (e) {
-            // If we can't load the importer, proceed with validation
-          }
+    resolveId: {
+      order: 'pre',
+      async handler(source, importer, options) {
+        // optimizer is not aware of server/client boudnary so skip
+        if ('scan' in options && options.scan) {
+          return
         }
-        throw new Error(
-          `'client-only' is included in server build (importer: ${importer ?? 'unknown'})`,
-        )
-      }
 
-      // Validate server-only imports in client environment
-      if (source === 'server-only' && this.environment.name === 'client') {
-        throw new Error(
-          `'server-only' is included in client build (importer: ${importer ?? 'unknown'})`,
-        )
-      }
+        // Validate client-only imports in server environments
+        if (source === 'client-only') {
+          if (this.environment.name === 'rsc') {
+            throw new Error(
+              `'client-only' cannot be imported in server build (importer: '${importer ?? 'unknown'}', environment: ${this.environment.name})`,
+            )
+          }
+          return { id: `\0virtual:vite-rsc/empty`, moduleSideEffects: false }
+        }
+        if (source === 'server-only') {
+          if (this.environment.name !== 'rsc') {
+            throw new Error(
+              `'server-only' cannot be imported in client build (importer: '${importer ?? 'unknown'}', environment: ${this.environment.name})`,
+            )
+          }
+          return { id: `\0virtual:vite-rsc/empty`, moduleSideEffects: false }
+        }
 
-      return
+        return
+      },
+    },
+    load(id) {
+      if (id.startsWith('\0virtual:vite-rsc/empty')) {
+        return `export {}`
+      }
     },
   }
 }
