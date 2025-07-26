@@ -160,10 +160,27 @@ export async function setupIsolatedFixture(options: {
 
   // setup package.json overrides
   const packagesDir = path.join(import.meta.dirname, '..', '..')
-  const overrides = {
+
+  // override workspace packages
+  const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
   }
+
+  // inherit current overrides
+  const listResult = await x(
+    'pnpm',
+    ['list', '--json', '--depth=0', 'react', 'vite'],
+    {
+      nodeOptions: { cwd: path.join(import.meta.dirname, '..') },
+    },
+  )
+  const deps = JSON.parse(listResult.stdout)[0].devDependencies
+  overrides.react = deps.react.version
+  overrides['react-dom'] = deps.react.version
+  overrides['react-server-dom-webpack'] = deps.react.version
+  overrides.vite = deps.vite.version
+
   editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
     Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
     return pkg

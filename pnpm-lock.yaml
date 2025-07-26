@@ -505,6 +505,9 @@ importers:
       tsdown:
         specifier: ^0.13.0
         version: 0.13.0(publint@0.3.12)(typescript@5.8.3)
+      vite:
+        specifier: ^7.0.5
+        version: 7.0.5(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
 
   packages/plugin-rsc/examples/basic:
     dependencies:
