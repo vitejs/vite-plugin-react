@@ -72,6 +72,14 @@ function defineSyntaxErrorTests(f: Fixture) {
     await waitForHydration(page)
     await using _ = await expectNoReload(page)
 
+    await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
+
+    // Set client state to verify it's preserved after client HMR
+    await page.getByTestId('client-counter').click()
+    await expect(page.getByTestId('client-counter')).toHaveText(
+      'Client Count: 1',
+    )
+
     // Edit client file to introduce syntax error
     const editor = f.createEditor('src/client.tsx')
     editor.edit((s) =>
@@ -90,6 +98,11 @@ function defineSyntaxErrorTests(f: Fixture) {
     // Error overlay should disappear and page should work
     await expect(page.locator('vite-error-overlay')).not.toBeVisible()
     await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
+
+    // Verify client state is preserved (no full reload happened)
+    await expect(page.getByTestId('client-counter')).toHaveText(
+      'Client Count: 1',
+    )
   })
 
   test('server syntax error triggers error overlay', async ({ page }) => {
@@ -122,7 +135,6 @@ function defineSyntaxErrorTests(f: Fixture) {
     await expect(page.locator('vite-error-overlay')).not.toBeVisible()
     await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
 
-    // TODO
     // Verify client state is preserved (no full reload happened)
     await expect(page.getByTestId('client-counter')).toHaveText(
       'Client Count: 1',
