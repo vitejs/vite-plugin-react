@@ -1,9 +1,8 @@
-import rsc from '@vitejs/plugin-rsc'
-import tailwindcss from '@tailwindcss/vite'
+import rsc from '@vitejs/plugin-rsc/plugin'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
-import inspect from 'vite-plugin-inspect'
-import { reactRouter } from './react-router-vite/plugin'
+import devtoolsJson from 'vite-plugin-devtools-json'
 
 export default defineConfig({
   clearScreen: false,
@@ -13,21 +12,13 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
-    reactRouter(),
     rsc({
       entries: {
-        client: './react-router-vite/entry.browser.tsx',
-        ssr: './react-router-vite/entry.ssr.single.tsx',
-        rsc: './react-router-vite/entry.rsc.tsx',
-      },
-      serverHandler: {
-        environmentName: 'ssr',
-        entryName: 'index',
+        client: 'src/entry.browser.tsx',
+        rsc: 'src/entry.rsc.tsx',
+        ssr: 'src/entry.ssr.tsx',
       },
     }),
-    inspect(),
+    devtoolsJson(),
   ],
-  optimizeDeps: {
-    include: ['react-router', 'react-router/internal/react-server-client'],
-  },
 }) as any

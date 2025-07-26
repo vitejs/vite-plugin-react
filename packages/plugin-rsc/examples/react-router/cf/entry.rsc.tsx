@@ -1,4 +1,4 @@
-import { fetchServer } from '../react-router-vite/entry.rsc'
+import { fetchServer } from '../src/entry.rsc'
 
 console.log('[debug:cf-rsc-entry]')
 
