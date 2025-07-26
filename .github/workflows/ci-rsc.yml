@@ -73,6 +73,7 @@ jobs:
         run: |
           sed -i "/^overrides:/a\  react: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
           sed -i "/^overrides:/a\  react-dom: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-server-dom-webpack: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
