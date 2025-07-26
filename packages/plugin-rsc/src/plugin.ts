@@ -382,6 +382,12 @@ export default function vitePluginRsc(
 
         if (!isInsideClientBoundary(ctx.modules)) {
           if (this.environment.name === 'rsc') {
+            // transform js to surface syntax errors
+            for (const mod of ctx.modules) {
+              if (mod.type === 'js') {
+                await this.environment.transformRequest(mod.url)
+              }
+            }
             // server hmr
             ctx.server.environments.client.hot.send({
               type: 'custom',
