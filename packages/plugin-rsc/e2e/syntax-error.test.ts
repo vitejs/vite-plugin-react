@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture, type Fixture, useFixture } from './fixture'
+import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration, expectNoReload } from './helper'
 
 test.describe(() => {
@@ -12,7 +12,6 @@ test.describe(() => {
       files: {
         'src/root.tsx': /* tsx */ `
           import { TestSyntaxErrorClient } from './client.tsx'
-          import { TestSyntaxErrorServer } from './server.tsx'
 
           export function Root() {
             return (
@@ -22,7 +21,7 @@ test.describe(() => {
                 </head>
                 <body>
                   <TestSyntaxErrorClient />
-                  <TestSyntaxErrorServer />
+                  <div data-testid="server-content">server:ok</div>
                 </body>
               </html>
             )
@@ -43,15 +42,7 @@ test.describe(() => {
                 >
                   Client Count: {count}
                 </button>
-              </div>
-            )
-          }
-        `,
-        'src/server.tsx': /* tsx */ `
-          export function TestSyntaxErrorServer() {
-            return (
-              <div data-testid="server-syntax-ready">
-                Server ready for syntax error testing
+                <div data-testid="client-content">client:ok</div>
               </div>
             )
           }
@@ -60,126 +51,161 @@ test.describe(() => {
     })
   })
 
-  test.describe('dev', () => {
+  test.describe(() => {
     const f = useFixture({ root, mode: 'dev' })
-    defineSyntaxErrorTests(f)
+
+    test('client hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      await expect(page.getByTestId('client-content')).toHaveText('client:ok')
+
+      // Set client state to verify preservation after HMR
+      await page.getByTestId('client-counter').click()
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
+
+      // add syntax error
+      const editor = f.createEditor('src/client.tsx')
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="client-content">client:ok</div>',
+          '<div data-testid="client-content">client:broken<</div>',
+        ),
+      )
+      await expect(page.locator('vite-error-overlay')).toBeVisible()
+
+      // fix syntax error
+      await page.waitForTimeout(200)
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="client-content">client:broken<</div>',
+          '<div data-testid="client-content">client:fixed</div>',
+        ),
+      )
+      await expect(page.locator('vite-error-overlay')).not.toBeVisible()
+      await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
+      await expect(page.getByTestId('client-content')).toHaveText(
+        'client:fixed',
+      )
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
+    })
+  })
+
+  test.describe(() => {
+    const f = useFixture({ root, mode: 'dev' })
+
+    test('server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      await expect(page.getByTestId('server-content')).toHaveText('server:ok')
+
+      // Set client state to verify preservation during server HMR
+      await page.getByTestId('client-counter').click()
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
+
+      // add syntax error
+      const editor = f.createEditor('src/root.tsx')
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="server-content">server:ok</div>',
+          '<div data-testid="server-content">server:broken<</div>',
+        ),
+      )
+      await expect(page.locator('vite-error-overlay')).toBeVisible()
+
+      // fix syntax error
+      await page.waitForTimeout(200)
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="server-content">server:broken<</div>',
+          '<div data-testid="server-content">server:fixed</div>',
+        ),
+      )
+      await expect(page.locator('vite-error-overlay')).not.toBeVisible()
+      await expect(page.getByTestId('server-content')).toHaveText(
+        'server:fixed',
+      )
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
+    })
+  })
+
+  test.describe(() => {
+    const f = useFixture({ root, mode: 'dev' })
+
+    test('client ssr', async ({ page }) => {
+      // add syntax error
+      const editor = f.createEditor('src/client.tsx')
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="client-content">client:ok</div>',
+          '<div data-testid="client-content">client:broken<</div>',
+        ),
+      )
+      await page.goto(f.url())
+      await expect(page.locator('body')).toContainText(
+        'Transform failed with 1 error',
+      )
+
+      // fix syntax error
+      await page.waitForTimeout(200)
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="client-content">client:broken<</div>',
+          '<div data-testid="client-content">client:fixed</div>',
+        ),
+      )
+      await expect(async () => {
+        await page.goto(f.url())
+        await waitForHydration(page)
+        await expect(page.getByTestId('client-content')).toHaveText(
+          'client:fixed',
+        )
+      }).toPass()
+    })
+  })
+
+  test.describe(() => {
+    const f = useFixture({ root, mode: 'dev' })
+
+    test('server ssr', async ({ page }) => {
+      // add syntax error
+      const editor = f.createEditor('src/root.tsx')
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="server-content">server:ok</div>',
+          '<div data-testid="server-content">server:broken<</div>',
+        ),
+      )
+      await page.goto(f.url())
+      await expect(page.locator('body')).toContainText(
+        'Transform failed with 1 error',
+      )
+
+      // fix syntax error
+      await page.waitForTimeout(200)
+      editor.edit((s) =>
+        s.replace(
+          '<div data-testid="server-content">server:broken<</div>',
+          '<div data-testid="server-content">server:fixed</div>',
+        ),
+      )
+      await expect(async () => {
+        await page.goto(f.url())
+        await waitForHydration(page)
+        await expect(page.getByTestId('server-content')).toHaveText(
+          'server:fixed',
+        )
+      }).toPass()
+    })
   })
 })
-
-function defineSyntaxErrorTests(f: Fixture) {
-  test('client syntax error triggers error overlay', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    await using _ = await expectNoReload(page)
-
-    await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
-
-    // Set client state to verify preservation after HMR
-    await page.getByTestId('client-counter').click()
-    await expect(page.getByTestId('client-counter')).toHaveText(
-      'Client Count: 1',
-    )
-
-    // Introduce syntax error and verify error overlay
-    const editor = f.createEditor('src/client.tsx')
-    editor.edit((s) =>
-      s.replace(
-        'export function TestSyntaxErrorClient() {',
-        'export function TestSyntaxErrorClient() { const invalid = ;',
-      ),
-    )
-    await expect(page.locator('vite-error-overlay')).toBeVisible()
-
-    // Fix error and verify recovery with preserved client state
-    editor.reset()
-    await expect(page.locator('vite-error-overlay')).not.toBeVisible()
-    await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
-    await expect(page.getByTestId('client-counter')).toHaveText(
-      'Client Count: 1',
-    )
-  })
-
-  test('server syntax error triggers error overlay', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    await using _ = await expectNoReload(page)
-
-    // Set client state to verify preservation during server HMR
-    await page.getByTestId('client-counter').click()
-    await expect(page.getByTestId('client-counter')).toHaveText(
-      'Client Count: 1',
-    )
-
-    // Introduce server syntax error and verify error overlay
-    const editor = f.createEditor('src/server.tsx')
-    editor.edit((s) =>
-      s.replace(
-        'export function TestSyntaxErrorServer() {',
-        'export function TestSyntaxErrorServer() { const invalid = ;',
-      ),
-    )
-    await expect(page.locator('vite-error-overlay')).toBeVisible()
-
-    // Fix error and verify recovery with preserved client state
-    editor.reset()
-    await expect(page.locator('vite-error-overlay')).not.toBeVisible()
-    await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
-    await expect(page.getByTestId('client-counter')).toHaveText(
-      'Client Count: 1',
-    )
-  })
-
-  test('initial SSR with server component syntax error shows error page', async ({
-    page,
-  }) => {
-    // Introduce server syntax error and navigate to page
-    const editor = f.createEditor('src/server.tsx')
-    editor.edit((s) =>
-      s.replace(
-        'export function TestSyntaxErrorServer() {',
-        'export function TestSyntaxErrorServer() { const invalid = ;',
-      ),
-    )
-    await page.goto(f.url())
-    await expect(page.locator('body')).toContainText(
-      'Transform failed with 1 error',
-    )
-
-    // Fix error and verify recovery
-    editor.reset()
-    await expect(async () => {
-      await page.goto(f.url())
-      const bodyText = await page.locator('body').textContent()
-      if (bodyText?.includes('Transform failed with 1 error')) {
-        throw new Error('Still seeing error page')
-      }
-      await waitForHydration(page)
-      await expect(page.getByTestId('server-syntax-ready')).toBeVisible()
-    }).toPass({ timeout: 15000 })
-  })
-
-  test('initial SSR with client component syntax error shows error page', async ({
-    page,
-  }) => {
-    // Introduce client syntax error and navigate to page
-    const editor = f.createEditor('src/client.tsx')
-    editor.edit((s) =>
-      s.replace(
-        'export function TestSyntaxErrorClient() {',
-        'export function TestSyntaxErrorClient() { const invalid = ;',
-      ),
-    )
-    await page.goto(f.url())
-    await expect(page.locator('body')).toContainText(
-      'Transform failed with 1 error',
-    )
-
-    // Fix error and verify recovery
-    editor.reset()
-    await expect(async () => {
-      await page.goto(f.url())
-      await waitForHydration(page)
-      await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
-    }).toPass()
-  })
-}
