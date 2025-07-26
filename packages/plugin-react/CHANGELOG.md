@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Use Oxc for react refresh transform in rolldown-vite
+
+When used with rolldown-vite, this plugin now uses Oxc for react refresh transform.
+
+Since this behavior is what `@vitejs/plugin-react-oxc` did, `@vitejs/plugin-react-oxc` is now deprecated and the `disableOxcRecommendation` option is removed.
+
 ### Allow processing files in `node_modules`
 
 The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.

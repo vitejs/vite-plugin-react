@@ -62,6 +62,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         },
       }
     },
+    configResolved(config) {
+      config.logger.warn(
+        '@vitejs/plugin-react-oxc is deprecated. ' +
+          'Please use @vitejs/plugin-react instead. ' +
+          'The changes of this plugin is now included in @vitejs/plugin-react.',
+      )
+    },
     options() {
       if (!this.meta.rolldownVersion) {
         throw new Error(
