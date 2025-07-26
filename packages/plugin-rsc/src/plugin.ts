@@ -396,11 +396,6 @@ export default function vitePluginRsc(
                 }
               }
             }
-            // send empty client updates to clear error overlay if any
-            ctx.server.environments.client.hot.send({
-              type: 'update',
-              updates: [],
-            })
             // server hmr
             ctx.server.environments.client.hot.send({
               type: 'custom',
@@ -792,6 +787,13 @@ window.__vite_plugin_react_preamble_installed__ = true;
         code += `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => ssrCss.forEach(node => node.remove()));
+`
+        // close error overlay after syntax error is fixed and hmr is triggered.
+        // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
+        code += `
+import.meta.hot.on("rsc:update", () => {
+  document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
+});
 `
         return code
       },
