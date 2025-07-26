@@ -158,34 +158,25 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // setup package.json overrides
-  const packagesDir = path.join(import.meta.dirname, '..', '..')
-
-  // override workspace packages
-  const overrides: Record<string, string> = {
-    '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
-    '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
-  }
-
-  // inherit current overrides
-  const listResult = await x(
-    'pnpm',
-    ['list', '--json', '--depth=0', 'react', 'vite'],
-    {
-      nodeOptions: { cwd: path.join(import.meta.dirname, '..') },
-    },
+  // extract workspace overrides
+  const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  const workspaceYaml = fs.readFileSync(
+    path.join(rootDir, 'pnpm-workspace.yaml'),
+    'utf-8',
   )
-  const pkg = JSON.parse(listResult.stdout)[0]
-  const allDeps = { ...pkg.dependencies, ...pkg.devDependencies }
-  overrides.react = allDeps.react.version
-  overrides['react-dom'] = allDeps.react.version
-  overrides['react-server-dom-webpack'] = allDeps.react.version
-  overrides.vite = allDeps.vite.version
-
-  editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
-    Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
-    return pkg
-  })
+  const overridesMatch = workspaceYaml.match(
+    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
+  )
+  const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
+  const tempWorkspaceYaml = `\
+${overridesSection}
+  '@vitejs/plugin-rsc': file:${path.join(rootDir, 'packages/plugin-rsc')}
+  '@vitejs/plugin-react': file:${path.join(rootDir, 'packages/plugin-react')}
+`
+  fs.writeFileSync(
+    path.join(options.dest, 'pnpm-workspace.yaml'),
+    tempWorkspaceYaml,
+  )
 
   // install
   await x('pnpm', ['i'], {
@@ -199,17 +190,6 @@ export async function setupIsolatedFixture(options: {
       ],
     },
   })
-}
-
-function editFileJson(filepath: string, edit: (s: string) => string) {
-  fs.writeFileSync(
-    filepath,
-    JSON.stringify(
-      edit(JSON.parse(fs.readFileSync(filepath, 'utf-8'))),
-      null,
-      2,
-    ),
-  )
 }
 
 // inspired by
