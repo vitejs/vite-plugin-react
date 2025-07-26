@@ -4,6 +4,12 @@ permissions: {}
 
 on:
   workflow_dispatch:
+    inputs:
+      # https://github.com/wakujs/waku/blob/fb3968b0fa6ecf3e4a50dca4a61f10ec75b793ad/.github/workflows/canary-ci.yml
+      react_version:
+        required: true
+        type: string
+        default: canary
   push:
     branches:
       - main
@@ -63,8 +69,6 @@ jobs:
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
-        env:
-          TEST_ISOLATED: true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
