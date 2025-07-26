@@ -119,7 +119,7 @@ export type RscPluginOptions = {
   keepUseCientProxy?: boolean
 
   /**
-   * Build-time validation for client-only and server-only imports
+   * Enable build-time validation of 'client-only' and 'server-only' imports
    * @default true
    */
   validateImports?: boolean
@@ -418,10 +418,6 @@ export default function vitePluginRsc(
         }
       },
     },
-    // conditionally add import validation plugin
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
     {
       name: 'rsc:patch-browser-raw-import',
       transform: {
@@ -817,6 +813,9 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
+    ...(rscPluginOptions.validateImports !== false
+      ? [validateImportPlugin()]
+      : []),
     scanBuildStripPlugin(),
   ]
 }
