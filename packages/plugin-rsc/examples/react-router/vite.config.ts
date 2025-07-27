@@ -18,7 +18,7 @@ export default defineConfig({
       entries: {
         client: './react-router-vite/entry.browser.tsx',
         ssr: './react-router-vite/entry.ssr.tsx',
-        rsc: './react-router-vite/entry.rsc.tsx',
+        rsc: './react-router-vite/entry.rsc.single.tsx',
       },
     }),
     inspect(),
