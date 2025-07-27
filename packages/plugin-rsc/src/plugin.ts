@@ -853,20 +853,17 @@ function detectNonOptimizedCjsPlugin(): Plugin {
         (code.includes('exports') || code.includes('require'))
       ) {
         id = parseIdQuery(id).filename
-        let isCjs = id.endsWith('.cjs')
-        if (!isCjs && id.endsWith('.js')) {
-          // check closest package.json
+        let isEsm = id.endsWith('.mjs')
+        if (id.endsWith('.js')) {
           const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
           if (pkgJsonPath) {
             const pkgJson = JSON.parse(
               fs.readFileSync(pkgJsonPath, 'utf-8'),
             ) as { type?: string }
-            isCjs = pkgJson.type !== 'module'
-          } else {
-            isCjs = true
+            isEsm = pkgJson.type === 'module'
           }
         }
-        if (isCjs) {
+        if (!isEsm) {
           this.warn(
             `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
               `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
