@@ -1,6 +1,7 @@
 import {
   createTemporaryReferenceSet,
   decodeAction,
+  decodeFormState,
   decodeReply,
   loadServerAction,
   renderToReadableStream,
@@ -9,21 +10,35 @@ import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-r
 
 import routes from 'virtual:react-router-routes'
 
-export async function fetchServer(request: Request): Promise<Response> {
-  return await matchRSCServerRequest({
+export function fetchServer(request: Request) {
+  return matchRSCServerRequest({
+    // Provide the React Server touchpoints.
     createTemporaryReferenceSet,
-    decodeReply,
     decodeAction,
+    decodeFormState,
+    decodeReply,
     loadServerAction,
+    // The incoming request.
     request,
+    // The app routes.
     routes,
-    generateResponse(match, options) {
-      return new Response(renderToReadableStream(match.payload, options), {
+    // Encode the match with the React Server implementation.
+    generateResponse(match) {
+      return new Response(renderToReadableStream(match.payload), {
         status: match.statusCode,
         headers: match.headers,
       })
     },
   })
+}
+
+export default async function handler(request: Request) {
+  // Import the generateHTML function from the client environment
+  const ssr = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr')
+  >('ssr', 'index')
+
+  return ssr.generateHTML(request, fetchServer)
 }
 
 if (import.meta.hot) {
