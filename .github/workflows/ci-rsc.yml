@@ -80,6 +80,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
           path: |
             packages/plugin-rsc/test-results
