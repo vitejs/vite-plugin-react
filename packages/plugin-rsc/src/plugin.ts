@@ -850,7 +850,7 @@ function detectNonOptimizedCjsPlugin(): Plugin {
       if (
         id.includes('/node_modules/') &&
         !id.startsWith(this.environment.config.cacheDir) &&
-        (code.includes('exports') || code.includes('require'))
+        /\b(require|exports)\b/.test(code)
       ) {
         id = parseIdQuery(id).filename
         let isEsm = id.endsWith('.mjs')
