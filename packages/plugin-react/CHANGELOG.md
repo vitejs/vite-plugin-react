@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Allow processing files in `node_modules`
+
+The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.
+
 ### `react` and `react-dom` is no longer added to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
 
 Adding values to `resolve.dedupe` forces Vite to resolve them differently from how Node.js does, which can be confusing and may not be expected. This plugin no longer adds `react` and `react-dom` to `resolve.dedupe` automatically.

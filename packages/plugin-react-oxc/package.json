@@ -43,11 +43,11 @@
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
-    "tsdown": "^0.12.9",
+    "tsdown": "^0.13.0",
     "unbuild": "^3.5.0",
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.27"
+    "@rolldown/pluginutils": "1.0.0-beta.29"
   }
 }

@@ -1,3 +1,71 @@
+## <small>[0.4.14](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.13...plugin-rsc@0.4.14) (2025-07-27)</small>
+### Features
+
+* **rsc:** validate `client-only` and `server-only` import during resolve ([#624](https://github.com/vitejs/vite-plugin-react/issues/624)) ([47d02d0](https://github.com/vitejs/vite-plugin-react/commit/47d02d0643cecc8243c72fddd9e125cc3d020847))
+
+### Bug Fixes
+
+* **rsc:** add `getEntrySource` assertion error message ([#633](https://github.com/vitejs/vite-plugin-react/issues/633)) ([4568556](https://github.com/vitejs/vite-plugin-react/commit/45685561d7e85cd6e2f77dc383cc6728d5fc916f))
+* **rsc:** handle transform errors before server hmr ([#626](https://github.com/vitejs/vite-plugin-react/issues/626)) ([d28356f](https://github.com/vitejs/vite-plugin-react/commit/d28356f5caca2867ced9af3a02a3f441ff4a5238))
+
+### Documentation
+
+* **rsc:** fix jsdoc ([#623](https://github.com/vitejs/vite-plugin-react/issues/623)) ([73d457b](https://github.com/vitejs/vite-plugin-react/commit/73d457b2774c26a9fd1ec0f53aee8b4ff60dacd6))
+
+### Miscellaneous Chores
+
+* **deps:** update react-router ([#632](https://github.com/vitejs/vite-plugin-react/issues/632)) ([b077c4a](https://github.com/vitejs/vite-plugin-react/commit/b077c4a774ebe4a059902f3e0cb043c7194cceeb))
+
+### Tests
+
+* **rsc:** parallel e2e ([#628](https://github.com/vitejs/vite-plugin-react/issues/628)) ([24ddea4](https://github.com/vitejs/vite-plugin-react/commit/24ddea46d016311a8efe34314a4faa9d61af0d9d))
+* **rsc:** split starter tests into multiple files ([#629](https://github.com/vitejs/vite-plugin-react/issues/629)) ([707f35b](https://github.com/vitejs/vite-plugin-react/commit/707f35bfe1fb047a453fca6281885bc1565303fc))
+
+### Continuous Integration
+
+* **rsc:** test react nightly ([#630](https://github.com/vitejs/vite-plugin-react/issues/630)) ([3e2f5a9](https://github.com/vitejs/vite-plugin-react/commit/3e2f5a9e03f56d1a218f030a71be72ef28b91a43))
+
+## <small>[0.4.13](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.12...plugin-rsc@0.4.13) (2025-07-24)</small>
+### Features
+
+* **rsc:** add support for `experimental.renderBuiltUrl` on assets metadata ([#612](https://github.com/vitejs/vite-plugin-react/issues/612)) ([5314ed6](https://github.com/vitejs/vite-plugin-react/commit/5314ed60572e2c89963e5a720d21bcad17687382))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#568](https://github.com/vitejs/vite-plugin-react/issues/568)) ([d14f31d](https://github.com/vitejs/vite-plugin-react/commit/d14f31d3bf8487346ae6f9db7e6ca7263c93066b))
+* **deps:** update all non-major dependencies ([#593](https://github.com/vitejs/vite-plugin-react/issues/593)) ([9ce3b22](https://github.com/vitejs/vite-plugin-react/commit/9ce3b22e4bc7db28f549b9c9b9195d2bd82ff736))
+* **rsc:** await handler to avoid unhandled rejection ([#576](https://github.com/vitejs/vite-plugin-react/issues/576)) ([fa60127](https://github.com/vitejs/vite-plugin-react/commit/fa60127be46d48ecd8a8b0d0e7e6751ed11303e2))
+* **rsc:** ensure trailing slash of `BASE_URL` ([#589](https://github.com/vitejs/vite-plugin-react/issues/589)) ([fa1d260](https://github.com/vitejs/vite-plugin-react/commit/fa1d260ef384d986284aaec6e0984967f3b436ad))
+* **rsc:** update rsc-html-stream v0.0.7 ([#578](https://github.com/vitejs/vite-plugin-react/issues/578)) ([df6a38e](https://github.com/vitejs/vite-plugin-react/commit/df6a38e42339cf5deecd3f1b6c0aa4dd838833c5))
+
+### Documentation
+
+* **rsc:** add `CONTRIBUTING.md` ([#613](https://github.com/vitejs/vite-plugin-react/issues/613)) ([4005dbe](https://github.com/vitejs/vite-plugin-react/commit/4005dbe1bb943b882d8199ef29ccaeb9d268784e))
+
+### Miscellaneous Chores
+
+* replace `build --app` with `build` in examples ([#572](https://github.com/vitejs/vite-plugin-react/issues/572)) ([7c564ff](https://github.com/vitejs/vite-plugin-react/commit/7c564ff4f290a554927f2eef600e82bffee16e6b))
+* **rsc:** comment ([#599](https://github.com/vitejs/vite-plugin-react/issues/599)) ([b550b63](https://github.com/vitejs/vite-plugin-react/commit/b550b63fe7f6ef82588ff0d60389d11906c3cc4e))
+* **rsc:** deprecate `@vitejs/plugin-rsc/extra` API ([#592](https://github.com/vitejs/vite-plugin-react/issues/592)) ([bd6a2a1](https://github.com/vitejs/vite-plugin-react/commit/bd6a2a1ff272c8550f92bc1530c7b28fb81e1c60))
+* **rsc:** deprecate `rsc-html-stream` re-exports ([#602](https://github.com/vitejs/vite-plugin-react/issues/602)) ([8e0e8b6](https://github.com/vitejs/vite-plugin-react/commit/8e0e8b60c511f34df188a8e8b103cf273891d7ad))
+* **rsc:** fix temporary references in examples ([#603](https://github.com/vitejs/vite-plugin-react/issues/603)) ([22e5398](https://github.com/vitejs/vite-plugin-react/commit/22e53987a5548d237fcbe61377bd1da6e86947ef))
+* **rsc:** move comment ([#604](https://github.com/vitejs/vite-plugin-react/issues/604)) ([4d6c72f](https://github.com/vitejs/vite-plugin-react/commit/4d6c72f81d64972ac84735240d27516be81431f8))
+* **rsc:** remove `@vite/plugin-rsc/extra` API usages from examples ([#596](https://github.com/vitejs/vite-plugin-react/issues/596)) ([87319bf](https://github.com/vitejs/vite-plugin-react/commit/87319bf94ddb07061a1a80d3eefbfadb980f7008))
+* **rsc:** remove console.log ([#607](https://github.com/vitejs/vite-plugin-react/issues/607)) ([2a7ff5c](https://github.com/vitejs/vite-plugin-react/commit/2a7ff5c93e600b06aafc7ce1a6d8a11c2ad4cf2e))
+* **rsc:** tweak changelog ([#570](https://github.com/vitejs/vite-plugin-react/issues/570)) ([8804446](https://github.com/vitejs/vite-plugin-react/commit/88044469a6399c8a1d909b564f6ddc039782c066))
+* **rsc:** update React Router RSC references ([#581](https://github.com/vitejs/vite-plugin-react/issues/581)) ([d464e8f](https://github.com/vitejs/vite-plugin-react/commit/d464e8fc9e8e14bdc84051de9ffacec16317d2ae))
+
+### Tests
+
+* **rsc:** add more basic tests to starter ([#600](https://github.com/vitejs/vite-plugin-react/issues/600)) ([d7fcdd8](https://github.com/vitejs/vite-plugin-react/commit/d7fcdd8550a7a11da01887cbf48a646af898b7f1))
+* **rsc:** add SSR thenable workaround in examples ([#591](https://github.com/vitejs/vite-plugin-react/issues/591)) ([bfd434f](https://github.com/vitejs/vite-plugin-react/commit/bfd434f7fdd063ad017aa3c3a41e42983efc0ef4))
+* **rsc:** add transitive cjs dep example ([#611](https://github.com/vitejs/vite-plugin-react/issues/611)) ([2a81b90](https://github.com/vitejs/vite-plugin-react/commit/2a81b9015286558c1463ab8079a7a6e40a82a5c6))
+* **rsc:** refactor variant tests ([#601](https://github.com/vitejs/vite-plugin-react/issues/601)) ([5167266](https://github.com/vitejs/vite-plugin-react/commit/5167266aff6671065cf5b49cf8ada3d0ace2bbb4))
+* **rsc:** remove global unhandled error handlers ([#597](https://github.com/vitejs/vite-plugin-react/issues/597)) ([c5f0bab](https://github.com/vitejs/vite-plugin-react/commit/c5f0babdc06c813bbef08d3c44ee696789416116))
+* **rsc:** support `fs:cp` command in `setupInlineFixture` ([#621](https://github.com/vitejs/vite-plugin-react/issues/621)) ([d9cb926](https://github.com/vitejs/vite-plugin-react/commit/d9cb92650b217abba4144d62737c5c696b55d0bb))
+* **rsc:** test build with `NODE_ENV=development` and vice versa ([#606](https://github.com/vitejs/vite-plugin-react/issues/606)) ([e8fa2d0](https://github.com/vitejs/vite-plugin-react/commit/e8fa2d0b4cb6e1dd3132fe8b7f45529a74d9be03))
+* **rsc:** test module runner `hmr: false` ([#595](https://github.com/vitejs/vite-plugin-react/issues/595)) ([7223093](https://github.com/vitejs/vite-plugin-react/commit/7223093d793242f3d1ef313bbfec692499f0659e))
+
 ## <small>[0.4.12](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.11...plugin-rsc@0.4.12) (2025-07-14)</small>
 ### Features
 

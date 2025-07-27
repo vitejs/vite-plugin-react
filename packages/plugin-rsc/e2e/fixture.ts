@@ -158,15 +158,25 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // setup package.json overrides
-  const packagesDir = path.join(import.meta.dirname, '..', '..')
-  const overrides = {
-    '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
-  }
-  editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
-    Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
-    return pkg
-  })
+  // extract workspace overrides
+  const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  const workspaceYaml = fs.readFileSync(
+    path.join(rootDir, 'pnpm-workspace.yaml'),
+    'utf-8',
+  )
+  const overridesMatch = workspaceYaml.match(
+    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
+  )
+  const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
+  const tempWorkspaceYaml = `\
+${overridesSection}
+  '@vitejs/plugin-rsc': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-rsc'))}
+  '@vitejs/plugin-react': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-react'))}
+`
+  fs.writeFileSync(
+    path.join(options.dest, 'pnpm-workspace.yaml'),
+    tempWorkspaceYaml,
+  )
 
   // install
   await x('pnpm', ['i'], {
@@ -182,17 +192,6 @@ export async function setupIsolatedFixture(options: {
   })
 }
 
-function editFileJson(filepath: string, edit: (s: string) => string) {
-  fs.writeFileSync(
-    filepath,
-    JSON.stringify(
-      edit(JSON.parse(fs.readFileSync(filepath, 'utf-8'))),
-      null,
-      2,
-    ),
-  )
-}
-
 // inspired by
 //   https://github.com/remix-run/react-router/blob/433872f6ab098eaf946cc6c9cf80abf137420ad2/integration/helpers/vite.ts#L239
 // for syntax highlighting of /* js */, use this extension
@@ -200,7 +199,10 @@ function editFileJson(filepath: string, edit: (s: string) => string) {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<string, string>
+  files?: Record<
+    string,
+    string | { cp: string } | { edit: (s: string) => string }
+  >
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -214,16 +216,29 @@ export async function setupInlineFixture(options: {
   // write additional files
   if (options.files) {
     for (let [filename, contents] of Object.entries(options.files)) {
-      let filepath = path.join(options.dest, filename)
-      fs.mkdirSync(path.dirname(filepath), { recursive: true })
-      // strip indent
+      const destFile = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
+
+      // custom command
+      if (typeof contents === 'object' && 'cp' in contents) {
+        const srcFile = path.join(options.dest, contents.cp)
+        fs.copyFileSync(srcFile, destFile)
+        continue
+      }
+      if (typeof contents === 'object' && 'edit' in contents) {
+        const editted = contents.edit(fs.readFileSync(destFile, 'utf-8'))
+        fs.writeFileSync(destFile, editted)
+        continue
+      }
+
+      // write a new file
       contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
       const indent = contents.match(/^\s*/)?.[0] ?? ''
       const strippedContents = contents
         .split('\n')
         .map((line) => line.replace(new RegExp(`^${indent}`), ''))
         .join('\n')
-      fs.writeFileSync(filepath, strippedContents)
+      fs.writeFileSync(destFile, strippedContents)
     }
   }
 }
