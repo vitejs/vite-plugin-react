@@ -23,8 +23,8 @@ export function fetchServer(request: Request) {
     // The app routes.
     routes,
     // Encode the match with the React Server implementation.
-    generateResponse(match) {
-      return new Response(renderToReadableStream(match.payload), {
+    generateResponse(match, options) {
+      return new Response(renderToReadableStream(match.payload, options), {
         status: match.statusCode,
         headers: match.headers,
       })
