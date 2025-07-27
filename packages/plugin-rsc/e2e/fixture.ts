@@ -158,16 +158,25 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // setup package.json overrides
-  const packagesDir = path.join(import.meta.dirname, '..', '..')
-  const overrides = {
-    '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
-    '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
-  }
-  editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
-    Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
-    return pkg
-  })
+  // extract workspace overrides
+  const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  const workspaceYaml = fs.readFileSync(
+    path.join(rootDir, 'pnpm-workspace.yaml'),
+    'utf-8',
+  )
+  const overridesMatch = workspaceYaml.match(
+    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
+  )
+  const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
+  const tempWorkspaceYaml = `\
+${overridesSection}
+  '@vitejs/plugin-rsc': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-rsc'))}
+  '@vitejs/plugin-react': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-react'))}
+`
+  fs.writeFileSync(
+    path.join(options.dest, 'pnpm-workspace.yaml'),
+    tempWorkspaceYaml,
+  )
 
   // install
   await x('pnpm', ['i'], {
@@ -181,17 +190,6 @@ export async function setupIsolatedFixture(options: {
       ],
     },
   })
-}
-
-function editFileJson(filepath: string, edit: (s: string) => string) {
-  fs.writeFileSync(
-    filepath,
-    JSON.stringify(
-      edit(JSON.parse(fs.readFileSync(filepath, 'utf-8'))),
-      null,
-      2,
-    ),
-  )
 }
 
 // inspired by

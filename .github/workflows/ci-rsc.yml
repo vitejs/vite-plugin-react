@@ -32,13 +32,14 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
         rolldown: [false]
+        react_version: [""]
         include:
           - os: ubuntu-latest
             browser: firefox
@@ -47,6 +48,12 @@ jobs:
           - os: ubuntu-latest
             browser: chromium
             rolldown: true
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: canary
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: experimental
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +62,13 @@ jobs:
           node-version: 22
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - run: pnpm i
+      - name: install react
+        if: ${{ matrix.react_version }}
+        run: |
+          sed -i "/^overrides:/a\  react: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-server-dom-webpack: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
       - run: pnpm build
       - name: install rolldown
         if: ${{ matrix.rolldown }}
@@ -63,11 +77,9 @@ jobs:
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
-        env:
-          TEST_ISOLATED: true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
           path: |
             packages/plugin-rsc/test-results
