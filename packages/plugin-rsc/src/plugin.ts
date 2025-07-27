@@ -20,7 +20,7 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs } from 'vitefu'
+import { crawlFrameworkPkgs, findClosestPkgJsonPath } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -838,7 +838,43 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
       ? [validateImportPlugin()]
       : []),
     scanBuildStripPlugin(),
+    detectNonOptimizedCjsPlugin(),
   ]
+}
+
+function detectNonOptimizedCjsPlugin(): Plugin {
+  return {
+    name: 'rsc:detect-non-optimized-cjs',
+    apply: 'serve',
+    async transform(code, id) {
+      if (
+        id.includes('/node_modules/') &&
+        !id.startsWith(this.environment.config.cacheDir) &&
+        (code.includes('exports') || code.includes('require'))
+      ) {
+        id = parseIdQuery(id).filename
+        let isCjs = id.endsWith('.cjs')
+        if (!isCjs && id.endsWith('.js')) {
+          // check closest package.json
+          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
+          if (pkgJsonPath) {
+            const pkgJson = JSON.parse(
+              fs.readFileSync(pkgJsonPath, 'utf-8'),
+            ) as { type?: string }
+            isCjs = pkgJson.type !== 'module'
+          } else {
+            isCjs = true
+          }
+        }
+        if (isCjs) {
+          this.warn(
+            `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
+              `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
+          )
+        }
+      }
+    },
+  }
 }
 
 function scanBuildStripPlugin(): Plugin {
@@ -1900,7 +1936,7 @@ function evalValue<T = any>(rawValue: string): T {
 // https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
 function parseIdQuery(id: string) {
   if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2)
+  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
   const query = Object.fromEntries(new URLSearchParams(rawQuery))
   return { filename, query }
 }
