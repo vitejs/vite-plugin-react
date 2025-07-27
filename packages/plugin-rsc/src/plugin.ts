@@ -869,13 +869,12 @@ function getEntrySource(
   name: string = 'index',
 ) {
   const input = config.build.rollupOptions.input
-  assert(input)
   assert(
     typeof input === 'object' &&
       !Array.isArray(input) &&
       name in input &&
       typeof input[name] === 'string',
-    `[vite-rsc] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
+    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
   return input[name]
 }
