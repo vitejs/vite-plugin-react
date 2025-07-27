@@ -875,6 +875,7 @@ function getEntrySource(
       !Array.isArray(input) &&
       name in input &&
       typeof input[name] === 'string',
+    `[vite-rsc] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
   return input[name]
 }

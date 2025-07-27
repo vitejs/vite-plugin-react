@@ -17,12 +17,8 @@ export default defineConfig({
     rsc({
       entries: {
         client: './react-router-vite/entry.browser.tsx',
-        ssr: './react-router-vite/entry.ssr.single.tsx',
+        ssr: './react-router-vite/entry.ssr.tsx',
         rsc: './react-router-vite/entry.rsc.tsx',
-      },
-      serverHandler: {
-        environmentName: 'ssr',
-        entryName: 'index',
       },
     }),
     inspect(),
