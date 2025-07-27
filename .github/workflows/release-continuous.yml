@@ -66,4 +66,4 @@ jobs:
       #     sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-canary/package.json
       #     sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-experimental/package.json
       - run: |
-          pnpx pkg-pr-new publish --comment=off packages/plugin-rsc
+          pnpm dlx pkg-pr-new@0.0 publish --pnpm --compact --comment=off packages/plugin-rsc
