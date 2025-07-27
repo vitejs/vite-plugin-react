@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Allow processing files in `node_modules`
+
+The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.
+
 ### Require Node 20.19+, 22.12+
 
 This plugin now requires Node 20.19+ or 22.12+.

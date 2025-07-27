@@ -25,17 +25,11 @@ export interface Options {
 }
 
 const defaultIncludeRE = /\.[tj]sx?(?:$|\?)/
+const defaultExcludeRE = /\/node_modules\//
 
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
-  const exclude = [
-    ...(Array.isArray(opts.exclude)
-      ? opts.exclude
-      : opts.exclude
-        ? [opts.exclude]
-        : []),
-    /\/node_modules\//,
-  ]
+  const exclude = opts.exclude ?? defaultExcludeRE
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
