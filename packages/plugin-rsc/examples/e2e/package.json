@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@vitejs/plugin-rsc": "latest",
     "@vitejs/plugin-react": "latest",
-    "babel-plugin-react-compiler": "19.1.0-rc.2"
+    "@vitejs/plugin-rsc": "latest",
+    "babel-plugin-react-compiler": "19.1.0-rc.2",
+    "react-tweet": "^3.2.2"
   }
 }
