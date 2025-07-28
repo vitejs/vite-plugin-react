@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.0-beta.0 (2025-07-28)
+
 ### Deprecate this plugin
 
 The changes of this plugin is now included in `@vitejs/plugin-react`. Please use `@vitejs/plugin-react` instead.
