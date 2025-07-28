@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 5.0.0-beta.0 (2025-07-28)
+
 ### Use Oxc for react refresh transform in rolldown-vite
 
 When used with rolldown-vite, this plugin now uses Oxc for react refresh transform.
