@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
-import * as vite from 'vite'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -25,8 +24,6 @@ test.describe('build-cloudflare', () => {
 })
 
 test.describe('dev-production', () => {
-  test.skip('rolldownVersion' in vite)
-
   const f = useFixture({
     root: 'examples/starter',
     mode: 'dev',
@@ -45,8 +42,6 @@ test.describe('dev-production', () => {
 })
 
 test.describe('build-development', () => {
-  test.skip('rolldownVersion' in vite)
-
   const f = useFixture({
     root: 'examples/starter',
     mode: 'build',
