@@ -533,6 +533,9 @@ importers:
       '@vitejs/test-dep-client-in-server2':
         specifier: file:./test-dep/client-in-server2
         version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.0)
+      '@vitejs/test-dep-css-in-server':
+        specifier: file:./test-dep/css-in-server
+        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.0)
       '@vitejs/test-dep-server-in-client':
         specifier: file:./test-dep/server-in-client
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.0)
@@ -2570,6 +2573,11 @@ packages:
 
   '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/client-in-server, type: directory}
+    peerDependencies:
+      react: '*'
+
+  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server':
+    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/css-in-server, type: directory}
     peerDependencies:
       react: '*'
 
@@ -6314,6 +6322,10 @@ snapshots:
       react: 19.1.0
 
   '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+
+  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.0)':
     dependencies:
       react: 19.1.0
 

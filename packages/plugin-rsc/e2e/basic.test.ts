@@ -322,11 +322,19 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   async function testCss(page: Page, color = 'rgb(255, 165, 0)') {
