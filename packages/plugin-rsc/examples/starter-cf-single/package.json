@@ -16,7 +16,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.10.0",
+    "@cloudflare/vite-plugin": "^1.10.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "latest"
