@@ -155,7 +155,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
                 runtime: 'automatic',
                 importSource: jsxImportSource,
                 refresh: command === 'serve',
-                development: command === 'serve',
               },
               jsxRefreshInclude: include,
               jsxRefreshExclude: exclude,
