@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
-import * as vite from 'vite'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
