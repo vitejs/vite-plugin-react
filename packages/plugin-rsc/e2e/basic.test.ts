@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { type Fixture, setupInlineFixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
@@ -44,6 +44,28 @@ test.describe('dev-initial', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
+})
+
+test.describe('dev-non-optimized-cjs', () => {
+  test.beforeAll(async () => {
+    // remove explicitly added optimizeDeps.include
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(
+        `'@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',`,
+        ``,
+      ),
+    )
+  })
+
+  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toContain(
+      `[vite-rsc] found non-optimized CJS dependency in 'ssr' environment.`,
+    )
+  })
 })
 
 function defineTest(f: Fixture) {
