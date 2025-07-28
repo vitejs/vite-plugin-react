@@ -1659,7 +1659,12 @@ export function vitePluginRscCss(
     const options = rscCssOptions?.rscCssTransform
     if (options === false) return false
     if (options?.filter && !options.filter(id)) return false
-    if (id.includes('/node_modules/') || !/\.[tj]sx$/.test(id)) return false
+    // https://github.com/vitejs/vite/blob/7979f9da555aa16bd221b32ea78ce8cb5292fac4/packages/vite/src/node/constants.ts#L95
+    if (
+      !/\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
+      !/\.[tj]sx?$/.test(id)
+    )
+      return false
 
     // skip transform if no css imports
     const result = esModuleLexer.parse(code)
