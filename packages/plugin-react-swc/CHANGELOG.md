@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.0.0-beta.0 (2025-07-28)
+
 ### Require Node 20.19+, 22.12+
 
 This plugin now requires Node 20.19+ or 22.12+.

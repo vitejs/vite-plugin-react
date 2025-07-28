@@ -1,1 +1,0 @@
-import '../ssr-react.spec'

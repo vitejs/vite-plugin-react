@@ -1,3 +1,39 @@
+## <small>[0.4.15](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.14...plugin-rsc@0.4.15) (2025-07-28)</small>
+### Features
+
+* **rsc:** show warning for non optimized cjs ([#635](https://github.com/vitejs/vite-plugin-react/issues/635)) ([da0a786](https://github.com/vitejs/vite-plugin-react/commit/da0a78607d18be534232fba5ea95bb96cc987449))
+
+### Bug Fixes
+
+* **rsc:** improve auto css heuristics ([#643](https://github.com/vitejs/vite-plugin-react/issues/643)) ([f0b4cff](https://github.com/vitejs/vite-plugin-react/commit/f0b4cff636558a27ed4e5527ed4ea68a2243e40e))
+
+## <small>[0.4.14](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.13...plugin-rsc@0.4.14) (2025-07-27)</small>
+### Features
+
+* **rsc:** validate `client-only` and `server-only` import during resolve ([#624](https://github.com/vitejs/vite-plugin-react/issues/624)) ([47d02d0](https://github.com/vitejs/vite-plugin-react/commit/47d02d0643cecc8243c72fddd9e125cc3d020847))
+
+### Bug Fixes
+
+* **rsc:** add `getEntrySource` assertion error message ([#633](https://github.com/vitejs/vite-plugin-react/issues/633)) ([4568556](https://github.com/vitejs/vite-plugin-react/commit/45685561d7e85cd6e2f77dc383cc6728d5fc916f))
+* **rsc:** handle transform errors before server hmr ([#626](https://github.com/vitejs/vite-plugin-react/issues/626)) ([d28356f](https://github.com/vitejs/vite-plugin-react/commit/d28356f5caca2867ced9af3a02a3f441ff4a5238))
+
+### Documentation
+
+* **rsc:** fix jsdoc ([#623](https://github.com/vitejs/vite-plugin-react/issues/623)) ([73d457b](https://github.com/vitejs/vite-plugin-react/commit/73d457b2774c26a9fd1ec0f53aee8b4ff60dacd6))
+
+### Miscellaneous Chores
+
+* **deps:** update react-router ([#632](https://github.com/vitejs/vite-plugin-react/issues/632)) ([b077c4a](https://github.com/vitejs/vite-plugin-react/commit/b077c4a774ebe4a059902f3e0cb043c7194cceeb))
+
+### Tests
+
+* **rsc:** parallel e2e ([#628](https://github.com/vitejs/vite-plugin-react/issues/628)) ([24ddea4](https://github.com/vitejs/vite-plugin-react/commit/24ddea46d016311a8efe34314a4faa9d61af0d9d))
+* **rsc:** split starter tests into multiple files ([#629](https://github.com/vitejs/vite-plugin-react/issues/629)) ([707f35b](https://github.com/vitejs/vite-plugin-react/commit/707f35bfe1fb047a453fca6281885bc1565303fc))
+
+### Continuous Integration
+
+* **rsc:** test react nightly ([#630](https://github.com/vitejs/vite-plugin-react/issues/630)) ([3e2f5a9](https://github.com/vitejs/vite-plugin-react/commit/3e2f5a9e03f56d1a218f030a71be72ef28b91a43))
+
 ## <small>[0.4.13](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.12...plugin-rsc@0.4.13) (2025-07-24)</small>
 ### Features
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.0-beta.0 (2025-07-28)
+
+### Deprecate this plugin
+
+The changes of this plugin is now included in `@vitejs/plugin-react`. Please use `@vitejs/plugin-react` instead.
+
 ### Allow processing files in `node_modules`
 
 The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.
