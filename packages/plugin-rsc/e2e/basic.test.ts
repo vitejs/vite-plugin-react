@@ -46,6 +46,28 @@ test.describe('build-default', () => {
   defineTest(f)
 })
 
+test.describe('dev-non-optimized-cjs', () => {
+  test.beforeAll(async () => {
+    // remove explicitly added optimizeDeps.include
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(
+        `'@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',`,
+        ``,
+      ),
+    )
+  })
+
+  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toContain(
+      `[vite-rsc] found non-optimized CJS dependency in 'ssr' environment.`,
+    )
+  })
+})
+
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
     using _ = expectNoPageError(page)
