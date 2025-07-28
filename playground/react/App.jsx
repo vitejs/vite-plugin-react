@@ -7,6 +7,7 @@ import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
 import { TestImportAttributes } from './import-attributes/test'
+import { TEST_NON_JSX, TestNonJsx } from './non-jsx/test'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -47,6 +48,8 @@ function App() {
       <JsxImportRuntime />
       <Button>button</Button>
       <TestImportAttributes />
+      {TestNonJsx()}
+      {TEST_NON_JSX()}
     </div>
   )
 }
