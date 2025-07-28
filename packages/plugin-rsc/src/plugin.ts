@@ -1646,7 +1646,7 @@ export function vitePluginRscCss(
     id: string
     code: string
   }): false | TransformWrapExportFilter {
-    const { query } = parseIdQuery(id)
+    const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
       if (value) {
@@ -1658,11 +1658,11 @@ export function vitePluginRscCss(
 
     const options = rscCssOptions?.rscCssTransform
     if (options === false) return false
-    if (options?.filter && !options.filter(id)) return false
+    if (options?.filter && !options.filter(filename)) return false
     // https://github.com/vitejs/vite/blob/7979f9da555aa16bd221b32ea78ce8cb5292fac4/packages/vite/src/node/constants.ts#L95
     if (
       !/\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
-      !/\.[tj]sx?$/.test(id)
+      !/\.[tj]sx?$/.test(filename)
     )
       return false
 
