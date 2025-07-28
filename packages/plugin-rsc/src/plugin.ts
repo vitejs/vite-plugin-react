@@ -357,7 +357,7 @@ export default function vitePluginRsc(
         }
       },
       async hotUpdate(ctx) {
-        if (isCSSRequest(ctx.file)) {
+        if (ctx.modules.every((m) => m.type === 'css')) {
           if (this.environment.name === 'client') {
             // filter out `.css?direct` (injected by SSR) to avoid browser full reload
             // when changing non-self accepting css such as `module.css`.
@@ -421,7 +421,7 @@ export default function vitePluginRsc(
             if (mod) {
               for (const clientMod of ctx.modules) {
                 for (const importer of clientMod.importers) {
-                  if (importer.id && isCSSRequest(importer.id)) {
+                  if (importer.id && importer.type === 'css') {
                     await this.environment.reloadModule(importer)
                   }
                 }
@@ -1621,7 +1621,7 @@ export function vitePluginRscCss(
       }
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
-          if (isCSSRequest(next.id)) {
+          if (next.type === 'css') {
             cssIds.add(next.id)
           } else {
             recurse(next.id)
