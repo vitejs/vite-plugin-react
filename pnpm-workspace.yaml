@@ -12,3 +12,8 @@ overrides:
   '@types/estree': ^1.0.8
 
 dedupeInjectedDeps: false
+
+peerDependencyRules:
+  ignoreMissing:
+    # ignore react-server-dom-webpack -> webpack
+    - webpack
