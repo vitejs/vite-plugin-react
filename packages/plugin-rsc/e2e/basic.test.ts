@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, setupInlineFixture, useFixture } from './fixture'
+import { type Fixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
