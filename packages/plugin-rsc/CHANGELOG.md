@@ -1,3 +1,12 @@
+## <small>[0.4.15](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.14...plugin-rsc@0.4.15) (2025-07-28)</small>
+### Features
+
+* **rsc:** show warning for non optimized cjs ([#635](https://github.com/vitejs/vite-plugin-react/issues/635)) ([da0a786](https://github.com/vitejs/vite-plugin-react/commit/da0a78607d18be534232fba5ea95bb96cc987449))
+
+### Bug Fixes
+
+* **rsc:** improve auto css heuristics ([#643](https://github.com/vitejs/vite-plugin-react/issues/643)) ([f0b4cff](https://github.com/vitejs/vite-plugin-react/commit/f0b4cff636558a27ed4e5527ed4ea68a2243e40e))
+
 ## <small>[0.4.14](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.13...plugin-rsc@0.4.14) (2025-07-27)</small>
 ### Features
 

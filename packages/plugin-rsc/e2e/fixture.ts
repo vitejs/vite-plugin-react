@@ -10,12 +10,16 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
   const [name, ...args] = options.command.split(' ')
   const child = x(name!, args, { nodeOptions: options }).process!
   const label = `[${options.label ?? 'cli'}]`
+  let stdout = ''
+  let stderr = ''
   child.stdout!.on('data', (data) => {
+    stdout += stripVTControlCharacters(String(data))
     if (process.env.TEST_DEBUG) {
       console.log(styleText('cyan', label), data.toString())
     }
   })
   child.stderr!.on('data', (data) => {
+    stderr += stripVTControlCharacters(String(data))
     console.log(styleText('magenta', label), data.toString())
   })
   const done = new Promise<void>((resolve) => {
@@ -48,7 +52,14 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
     }
   }
 
-  return { proc: child, done, findPort, kill }
+  return {
+    proc: child,
+    done,
+    findPort,
+    kill,
+    stdout: () => stdout,
+    stderr: () => stderr,
+  }
 }
 
 export type Fixture = ReturnType<typeof useFixture>
@@ -64,12 +75,13 @@ export function useFixture(options: {
   let baseURL!: string
 
   const cwd = path.resolve(options.root)
+  let proc!: ReturnType<typeof runCli>
 
   // TODO: `beforeAll` is called again on any test failure.
   // https://playwright.dev/docs/test-retries
   test.beforeAll(async () => {
     if (options.mode === 'dev') {
-      const proc = runCli({
+      proc = runCli({
         command: options.command ?? `pnpm dev`,
         label: `${options.root}:dev`,
         cwd,
@@ -144,6 +156,7 @@ export function useFixture(options: {
     root: cwd,
     url: (url: string = './') => new URL(url, baseURL).href,
     createEditor,
+    proc: () => proc,
   }
 }
 

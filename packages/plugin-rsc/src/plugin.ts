@@ -20,7 +20,7 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs } from 'vitefu'
+import { crawlFrameworkPkgs, findClosestPkgJsonPath } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -838,7 +838,40 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
       ? [validateImportPlugin()]
       : []),
     scanBuildStripPlugin(),
+    detectNonOptimizedCjsPlugin(),
   ]
+}
+
+function detectNonOptimizedCjsPlugin(): Plugin {
+  return {
+    name: 'rsc:detect-non-optimized-cjs',
+    apply: 'serve',
+    async transform(code, id) {
+      if (
+        id.includes('/node_modules/') &&
+        !id.startsWith(this.environment.config.cacheDir) &&
+        /\b(require|exports)\b/.test(code)
+      ) {
+        id = parseIdQuery(id).filename
+        let isEsm = id.endsWith('.mjs')
+        if (id.endsWith('.js')) {
+          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
+          if (pkgJsonPath) {
+            const pkgJson = JSON.parse(
+              fs.readFileSync(pkgJsonPath, 'utf-8'),
+            ) as { type?: string }
+            isEsm = pkgJson.type === 'module'
+          }
+        }
+        if (!isEsm) {
+          this.warn(
+            `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
+              `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
+          )
+        }
+      }
+    },
+  }
 }
 
 function scanBuildStripPlugin(): Plugin {
@@ -1613,7 +1646,7 @@ export function vitePluginRscCss(
     id: string
     code: string
   }): false | TransformWrapExportFilter {
-    const { query } = parseIdQuery(id)
+    const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
       if (value) {
@@ -1625,8 +1658,13 @@ export function vitePluginRscCss(
 
     const options = rscCssOptions?.rscCssTransform
     if (options === false) return false
-    if (options?.filter && !options.filter(id)) return false
-    if (id.includes('/node_modules/') || !/\.[tj]sx$/.test(id)) return false
+    if (options?.filter && !options.filter(filename)) return false
+    // https://github.com/vitejs/vite/blob/7979f9da555aa16bd221b32ea78ce8cb5292fac4/packages/vite/src/node/constants.ts#L95
+    if (
+      !/\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
+      !/\.[tj]sx?$/.test(filename)
+    )
+      return false
 
     // skip transform if no css imports
     const result = esModuleLexer.parse(code)
@@ -1900,7 +1938,7 @@ function evalValue<T = any>(rawValue: string): T {
 // https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
 function parseIdQuery(id: string) {
   if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2)
+  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
   const query = Object.fromEntries(new URLSearchParams(rawQuery))
   return { filename, query }
 }
