@@ -367,6 +367,7 @@ export default async () => null;
 describe('client transform examples (for reference)', () => {
   test.skip('top-level use client', () => {
     // Input:
+    // @ts-expect-error - unused in skipped test for documentation
     const input = `
 'use client';
 
@@ -423,6 +424,7 @@ export default function App() {
 
   test.skip('top-level use server for client', () => {
     // Input:
+    // @ts-expect-error - unused in skipped test for documentation
     const input = `
 'use server';
 
@@ -452,6 +454,7 @@ export default async function log4(mesg) {
 
   test.skip('top-level use server for SSR', () => {
     // Input:
+    // @ts-expect-error - unused in skipped test for documentation
     const input = `
 'use server';
 
