@@ -123,6 +123,13 @@ export type RscPluginOptions = {
    * @default true
    */
   validateImports?: boolean
+
+  /**
+   * use `Plugin.buildApp` hook (introduced on Vite 7) instead of `build.buildApp` configuration
+   * for better composability with other plugins.
+   * @default false
+   */
+  useBuildAppHook?: boolean
 }
 
 export default function vitePluginRsc(
