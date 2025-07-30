@@ -485,14 +485,14 @@ importers:
         specifier: workspace:*
         version: link:../plugin-react
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
       react-server-dom-webpack:
-        specifier: ^19.1.0
-        version: 19.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -509,11 +509,11 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.11
@@ -529,22 +529,22 @@ importers:
         version: link:../../../plugin-react
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.1)
       '@vitejs/test-dep-client-in-server2':
         specifier: file:./test-dep/client-in-server2
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.1)
       '@vitejs/test-dep-css-in-server':
         specifier: file:./test-dep/css-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.1)
       '@vitejs/test-dep-server-in-client':
         specifier: file:./test-dep/server-in-client
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.1)
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.1)
       '@vitejs/test-dep-transitive-cjs':
         specifier: file:./test-dep/transitive-cjs
-        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.0)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.1)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -579,11 +579,11 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
     devDependencies:
       '@types/react':
         specifier: ^19.1.8
@@ -604,21 +604,21 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
       react-router:
         specifier: 7.7.0
-        version: 7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.10.1
         version: 1.10.1(rollup@4.44.1)(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(workerd@1.20250712.0)(wrangler@4.26.0)
       '@react-router/dev':
         specifier: 7.7.0
-        version: 7.7.0(@types/node@22.16.5)(babel-plugin-macros@3.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(react-router@7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(wrangler@4.26.0)(yaml@2.7.1)
+        version: 7.7.0(@types/node@22.16.5)(babel-plugin-macros@3.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(react-router@7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(wrangler@4.26.0)(yaml@2.7.1)
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.11)
@@ -653,11 +653,11 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.0
@@ -681,11 +681,11 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
     devDependencies:
       '@types/react':
         specifier: ^19.1.8
@@ -712,11 +712,11 @@ importers:
         specifier: latest
         version: link:../..
       react:
-        specifier: ^19.1.0
-        version: 19.1.0
+        specifier: ^19.1.1
+        version: 19.1.1
       react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.10.1
@@ -4084,6 +4084,11 @@ packages:
     peerDependencies:
       react: ^19.1.0
 
+  react-dom@19.1.1:
+    resolution: {integrity: sha512-Dlq/5LAZgF0Gaz6yiqZCf6VCcZs1ghAJyrsu84Q/GT0gV+mCxbfmKNoGRKBYMJ8IEdGPqu49YWXD02GCknEDkw==}
+    peerDependencies:
+      react: ^19.1.1
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -4108,12 +4113,12 @@ packages:
       react-dom:
         optional: true
 
-  react-server-dom-webpack@19.1.0:
-    resolution: {integrity: sha512-GUbawkNSN0oj8GnuNhMzsvyIHpXqqpAmyOY5NRqNNQ/M8wvUUN8YBoGjDUj9lbmBrmAHS65BByp6325CcWA0eg==}
+  react-server-dom-webpack@19.1.1:
+    resolution: {integrity: sha512-6MJwCAgQKcNxzRQebeyDspWzcncJMxe7JfmA8OFHWCMtp6L++HyJMgScM492iIeQZln3C834HyG4/UeMMZeRMw==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      react: ^19.1.0
-      react-dom: ^19.1.0
+      react: ^19.1.1
+      react-dom: ^19.1.1
       webpack: ^5.59.0
 
   react-switch@7.1.0:
@@ -4128,6 +4133,10 @@ packages:
 
   react@19.1.0:
     resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.1.1:
+    resolution: {integrity: sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==}
     engines: {node: '>=0.10.0'}
 
   readdirp@4.1.2:
@@ -5748,7 +5757,7 @@ snapshots:
     dependencies:
       quansync: 0.2.10
 
-  '@react-router/dev@7.7.0(@types/node@22.16.5)(babel-plugin-macros@3.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(react-router@7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(wrangler@4.26.0)(yaml@2.7.1)':
+  '@react-router/dev@7.7.0(@types/node@22.16.5)(babel-plugin-macros@3.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(react-router@7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(tsx@4.20.3)(typescript@5.8.3)(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))(wrangler@4.26.0)(yaml@2.7.1)':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/generator': 7.28.0
@@ -5758,7 +5767,7 @@ snapshots:
       '@babel/traverse': 7.28.0
       '@babel/types': 7.28.1
       '@npmcli/package-json': 4.0.1
-      '@react-router/node': 7.7.0(react-router@7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.3)
+      '@react-router/node': 7.7.0(react-router@7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(typescript@5.8.3)
       arg: 5.0.2
       babel-dead-code-elimination: 1.0.10
       chokidar: 4.0.3
@@ -5772,7 +5781,7 @@ snapshots:
       picocolors: 1.1.1
       prettier: 2.8.8
       react-refresh: 0.14.2
-      react-router: 7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-router: 7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       semver: 7.7.2
       set-cookie-parser: 2.7.1
       tinyglobby: 0.2.14
@@ -5798,10 +5807,10 @@ snapshots:
       - tsx
       - yaml
 
-  '@react-router/node@7.7.0(react-router@7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.8.3)':
+  '@react-router/node@7.7.0(react-router@7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(typescript@5.8.3)':
     dependencies:
       '@mjackson/node-fetch-server': 0.2.0
-      react-router: 7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-router: 7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     optionalDependencies:
       typescript: 5.8.3
 
@@ -6360,34 +6369,34 @@ snapshots:
     transitivePeerDependencies:
       - conventional-commits-filter
 
-  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.0)':
+  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.1.1)':
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
-  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.0)':
+  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.1)':
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
-  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.0)':
+  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.1.1)':
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
   '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.1.0)':
     dependencies:
       react: 19.1.0
 
-  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.0)':
+  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.1.1)':
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
-  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.0)':
+  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.1.1)':
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
-  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.0)':
+  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.1.1)':
     dependencies:
-      react: 19.1.0
-      use-sync-external-store: 1.5.0(react@19.1.0)
+      react: 19.1.1
+      use-sync-external-store: 1.5.0(react@19.1.1)
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -8062,6 +8071,11 @@ snapshots:
       react: 19.1.0
       scheduler: 0.26.0
 
+  react-dom@19.1.1(react@19.1.1):
+    dependencies:
+      react: 19.1.1
+      scheduler: 0.26.0
+
   react-is@16.13.1: {}
 
   react-is@19.1.0: {}
@@ -8070,20 +8084,20 @@ snapshots:
 
   react-refresh@0.17.0: {}
 
-  react-router@7.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  react-router@7.7.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       cookie: 1.0.2
-      react: 19.1.0
+      react: 19.1.1
       set-cookie-parser: 2.7.1
     optionalDependencies:
-      react-dom: 19.1.0(react@19.1.0)
+      react-dom: 19.1.1(react@19.1.1)
 
-  react-server-dom-webpack@19.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  react-server-dom-webpack@19.1.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
       webpack-sources: 3.3.3
 
   react-switch@7.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
@@ -8097,6 +8111,8 @@ snapshots:
       loose-envify: 1.4.0
 
   react@19.1.0: {}
+
+  react@19.1.1: {}
 
   readdirp@4.1.2: {}
 
@@ -8651,9 +8667,9 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-sync-external-store@1.5.0(react@19.1.0):
+  use-sync-external-store@1.5.0(react@19.1.1):
     dependencies:
-      react: 19.1.0
+      react: 19.1.1
 
   util-deprecate@1.0.2: {}
 
