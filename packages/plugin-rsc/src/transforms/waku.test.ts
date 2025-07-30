@@ -83,7 +83,34 @@ export default function App() {
   );
 }
 `
-    // Expected output would be registerClientReference calls for all exports
+    // Expected output (from Waku server transform):
+    // @ts-expect-error - unused in skipped test for documentation
+    const expectedOutput = `import { registerClientReference as __waku_registerClientReference } from 'react-server-dom-webpack/server.edge';
+import { atom } from 'jotai/vanilla';
+const initialCount = 1;
+const TWO = 2;
+function double(x) {
+    return x * TWO;
+}
+export const countAtom = __waku_registerClientReference(atom(double(initialCount)), "/src/App.tsx", "countAtom");
+export const Empty = __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#Empty');
+}, '/src/App.tsx', 'Empty');
+export const Greet = __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#Greet');
+}, '/src/App.tsx', 'Greet');
+export const MyComponent = __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#MyComponent');
+}, '/src/App.tsx', 'MyComponent');
+export const useMyContext = __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#useMyContext');
+}, '/src/App.tsx', 'useMyContext');
+export const NAME = __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#NAME');
+}, '/src/App.tsx', 'NAME');
+export default __waku_registerClientReference(()=>{
+    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#default');
+}, '/src/App.tsx', 'default');`
   })
 
   test('top-level use server', async () => {
@@ -415,7 +442,7 @@ export const log = (mesg) => {
   console.log(mesg);
 };
 `
-    // Expected: no transformation for client environment
+    // Expected: no transformation (undefined)
   })
 
   test.skip('top-level use server', () => {
@@ -441,7 +468,14 @@ export default async function log4(mesg) {
   console.log(mesg);
 }
 `
-    // Expected Output: createServerReference calls for each export
+    // Expected output (from Waku client transform):
+    // @ts-expect-error - unused in skipped test for documentation
+    const expectedOutput = `import { createServerReference } from 'react-server-dom-webpack/client';
+import { unstable_callServerRsc as callServerRsc } from 'waku/minimal/client';
+export const log1 = createServerReference('/src/func.ts#log1', callServerRsc);
+export const log2 = createServerReference('/src/func.ts#log2', callServerRsc);
+export const log3 = createServerReference('/src/func.ts#log3', callServerRsc);
+export default createServerReference('/src/func.ts#default', callServerRsc);`
   })
 
   test.skip('top-level use server for SSR', () => {
@@ -457,6 +491,10 @@ export async function log(mesg) {
   console.log(mesg);
 }
 `
-    // Expected Output: Error-throwing stubs "You cannot call server functions during SSR"
+    // Expected output (from Waku SSR transform):
+    // @ts-expect-error - unused in skipped test for documentation
+    const expectedOutput = `export const log = ()=>{
+    throw new Error('You cannot call server functions during SSR');
+};`
   })
 })
