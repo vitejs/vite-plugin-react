@@ -491,8 +491,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
       react-server-dom-webpack:
-        specifier: ^19.1.0
-        version: 19.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^19.1.1
+        version: 19.1.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -4108,12 +4108,12 @@ packages:
       react-dom:
         optional: true
 
-  react-server-dom-webpack@19.1.0:
-    resolution: {integrity: sha512-GUbawkNSN0oj8GnuNhMzsvyIHpXqqpAmyOY5NRqNNQ/M8wvUUN8YBoGjDUj9lbmBrmAHS65BByp6325CcWA0eg==}
+  react-server-dom-webpack@19.1.1:
+    resolution: {integrity: sha512-6MJwCAgQKcNxzRQebeyDspWzcncJMxe7JfmA8OFHWCMtp6L++HyJMgScM492iIeQZln3C834HyG4/UeMMZeRMw==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      react: ^19.1.0
-      react-dom: ^19.1.0
+      react: ^19.1.1
+      react-dom: ^19.1.1
       webpack: ^5.59.0
 
   react-switch@7.1.0:
@@ -8078,7 +8078,7 @@ snapshots:
     optionalDependencies:
       react-dom: 19.1.0(react@19.1.0)
 
-  react-server-dom-webpack@19.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  react-server-dom-webpack@19.1.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
