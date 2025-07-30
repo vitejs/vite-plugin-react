@@ -86,6 +86,90 @@ export default async function() {
     `)
   })
 
+  test('server action in object', async () => {
+    const input = `
+const AI = {
+  actions: {
+    foo: async () => {
+      'use server';
+      return 0;
+    },
+  },
+};
+
+export function ServerProvider() {
+  return AI;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      const AI = {
+        actions: {
+          foo: /* #__PURE__ */ __registerServerReference($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
+        },
+      };
+
+      export function ServerProvider() {
+        return AI;
+      }
+
+      ;export async function $$hoist_0_anonymous_server_function() {
+            'use server';
+            return 0;
+          };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
+      "
+    `)
+  })
+
+  test('top-level use server and inline use server', async () => {
+    const input = `
+'use server';
+
+async function innerAction(action, ...args) {
+  'use server';
+  return await action(...args);
+}
+
+function wrapAction(action) {
+  return innerAction.bind(null, action);
+}
+
+export async function exportedAction() {
+  'use server';
+  return null;
+}
+
+export default async () => null;
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      'use server';
+
+      async function innerAction(action, ...args) {
+        'use server';
+        return await action(...args);
+      }
+
+      function wrapAction(action) {
+        return innerAction.bind(null, action);
+      }
+
+      async function exportedAction() {
+        'use server';
+        return null;
+      }
+
+      const $$default = async () => null;
+      exportedAction = /* #__PURE__ */ __registerServerReference(exportedAction, "<id>", "exportedAction");
+      export { exportedAction };
+      ;
+      const $$wrap_$$default = /* #__PURE__ */ __registerServerReference($$default, "<id>", "default");
+      export { $$wrap_$$default as default };
+      "
+    `)
+  })
+
   test('inline use server (function declaration)', async () => {
     const input = `
 export default function App() {
@@ -196,42 +280,6 @@ export default function App() {
     `)
   })
 
-  test('server action in object', async () => {
-    const input = `
-const AI = {
-  actions: {
-    foo: async () => {
-      'use server';
-      return 0;
-    },
-  },
-};
-
-export function ServerProvider() {
-  return AI;
-}
-`
-    expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "
-      const AI = {
-        actions: {
-          foo: /* #__PURE__ */ __registerServerReference($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
-        },
-      };
-
-      export function ServerProvider() {
-        return AI;
-      }
-
-      ;export async function $$hoist_0_anonymous_server_function() {
-            'use server';
-            return 0;
-          };
-      /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
-      "
-    `)
-  })
-
   test('inline use server (various patterns)', async () => {
     const input = `
 const actions = {
@@ -308,54 +356,6 @@ export default defaultFn;
         console.log(mesg);
       };
       /* #__PURE__ */ Object.defineProperty($$hoist_4_defaultFn, "name", { value: "defaultFn" });
-      "
-    `)
-  })
-
-  test('top-level use server and inline use server', async () => {
-    const input = `
-'use server';
-
-async function innerAction(action, ...args) {
-  'use server';
-  return await action(...args);
-}
-
-function wrapAction(action) {
-  return innerAction.bind(null, action);
-}
-
-export async function exportedAction() {
-  'use server';
-  return null;
-}
-
-export default async () => null;
-`
-    expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "
-      'use server';
-
-      async function innerAction(action, ...args) {
-        'use server';
-        return await action(...args);
-      }
-
-      function wrapAction(action) {
-        return innerAction.bind(null, action);
-      }
-
-      async function exportedAction() {
-        'use server';
-        return null;
-      }
-
-      const $$default = async () => null;
-      exportedAction = /* #__PURE__ */ __registerServerReference(exportedAction, "<id>", "exportedAction");
-      export { exportedAction };
-      ;
-      const $$wrap_$$default = /* #__PURE__ */ __registerServerReference($$default, "<id>", "default");
-      export { $$wrap_$$default as default };
       "
     `)
   })
