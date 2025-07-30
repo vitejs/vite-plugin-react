@@ -1,7 +1,30 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
+import { transformDirectiveProxyExport } from './proxy-export'
 import { transformServerActionServer } from './server-action'
 import { debugSourceMap } from './test-utils'
+
+// Unified utility for directive proxy export transforms
+async function testDirectiveTransform(input: string, directive: string) {
+  const ast = await parseAstAsync(input)
+  const result = transformDirectiveProxyExport(ast, {
+    directive,
+    code: input,
+    runtime: (name) =>
+      `$runtime(${JSON.stringify('<id>#' + name)}, ${JSON.stringify(name)})`,
+    keep: directive === 'use client',
+  })
+
+  if (!result || !result.output.hasChanged()) {
+    return
+  }
+
+  if (process.env['DEBUG_SOURCEMAP']) {
+    await debugSourceMap(result.output)
+  }
+
+  return result.output.toString()
+}
 
 describe('internal transform function for server environment', () => {
   async function testTransform(input: string) {
@@ -31,10 +54,7 @@ export default function App() {
     expect(await testTransform(input)).toBeUndefined()
   })
 
-  test.skip('top-level use client', () => {
-    // This test is skipped since transformServerActionServer only handles server transforms
-    // The client transform would be handled by a different function
-    // @ts-expect-error - unused in skipped test for documentation
+  test('top-level use client', async () => {
     const input = `
 'use client';
 
@@ -44,7 +64,7 @@ import { unstable_allowServer as allowServer } from 'waku/client';
 
 const initialCount = 1;
 const TWO = 2;
-function double (x: number) {
+function double (x) {
   return x * TWO;
 }
 export const countAtom = allowServer(atom(double(initialCount)));
@@ -54,16 +74,16 @@ export const Empty = () => null;
 function Private() {
   return "Secret";
 }
-const SecretComponent = () => <p>Secret</p>;
-const SecretFunction = (n: number) => 'Secret' + n;
+const SecretComponent = () => "Secret";
+const SecretFunction = (n) => 'Secret' + n;
 
-export function Greet({ name }: { name: string }) {
-  return <>Hello {name}</>;
+export function Greet({ name }) {
+  return "Hello " + name;
 }
 
 export class MyComponent extends Component {
   render() {
-    return <p>Class Component</p>;
+    return "Class Component";
   }
 }
 
@@ -76,41 +96,51 @@ const MyProvider = memo(MyContext);
 export const NAME = 'World';
 
 export default function App() {
-  return (
-    <MyProvider value="Hello">
-      <div>Hello World</div>
-    </MyProvider>
-  );
+  return "Hello World";
 }
 `
-    // Expected output (from Waku server transform):
-    // @ts-expect-error - unused in skipped test for documentation
-    const expectedOutput = `import { registerClientReference as __waku_registerClientReference } from 'react-server-dom-webpack/server.edge';
-import { atom } from 'jotai/vanilla';
-const initialCount = 1;
-const TWO = 2;
-function double(x) {
-    return x * TWO;
-}
-export const countAtom = __waku_registerClientReference(atom(double(initialCount)), "/src/App.tsx", "countAtom");
-export const Empty = __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#Empty');
-}, '/src/App.tsx', 'Empty');
-export const Greet = __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#Greet');
-}, '/src/App.tsx', 'Greet');
-export const MyComponent = __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#MyComponent');
-}, '/src/App.tsx', 'MyComponent');
-export const useMyContext = __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#useMyContext');
-}, '/src/App.tsx', 'useMyContext');
-export const NAME = __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#NAME');
-}, '/src/App.tsx', 'NAME');
-export default __waku_registerClientReference(()=>{
-    throw new Error('It is not possible to invoke a client function from the server: /src/App.tsx#default');
-}, '/src/App.tsx', 'default');`
+    expect(await testDirectiveTransform(input, 'use client'))
+      .toMatchInlineSnapshot(`
+      "
+      'use client';
+
+      import { Component, createContext, useContext, memo } from 'react';
+      import { atom } from 'jotai/vanilla';
+      import { unstable_allowServer as allowServer } from 'waku/client';
+
+      const initialCount = 1;
+      const TWO = 2;
+      function double (x) {
+        return x * TWO;
+      }
+      export const countAtom = /* #__PURE__ */ $runtime("<id>#countAtom", "countAtom");
+
+      export const Empty = /* #__PURE__ */ $runtime("<id>#Empty", "Empty");
+
+      function Private() {
+        return "Secret";
+      }
+      const SecretComponent = () => "Secret";
+      const SecretFunction = (n) => 'Secret' + n;
+
+      export const Greet = /* #__PURE__ */ $runtime("<id>#Greet", "Greet");
+
+
+      export const MyComponent = /* #__PURE__ */ $runtime("<id>#MyComponent", "MyComponent");
+
+
+      const MyContext = createContext();
+
+      export const useMyContext = /* #__PURE__ */ $runtime("<id>#useMyContext", "useMyContext");
+
+      const MyProvider = memo(MyContext);
+
+      export const NAME = /* #__PURE__ */ $runtime("<id>#NAME", "NAME");
+
+      export default /* #__PURE__ */ $runtime("<id>#default", "default");
+
+      "
+    `)
   })
 
   test('top-level use server', async () => {
@@ -435,18 +465,16 @@ export default defaultFn;
 })
 
 describe('internal transform function for client environment', () => {
-  test.skip('no transformation', () => {
-    // @ts-expect-error - unused in skipped test for documentation
+  test('no transformation', async () => {
     const input = `
 export const log = (mesg) => {
   console.log(mesg);
 };
 `
-    // Expected: no transformation (undefined)
+    expect(await testDirectiveTransform(input, 'use server')).toBeUndefined()
   })
 
-  test.skip('top-level use server', () => {
-    // @ts-expect-error - unused in skipped test for documentation
+  test('top-level use server', async () => {
     const input = `
 'use server';
 
@@ -468,18 +496,29 @@ export default async function log4(mesg) {
   console.log(mesg);
 }
 `
-    // Expected output (from Waku client transform):
-    // @ts-expect-error - unused in skipped test for documentation
-    const expectedOutput = `import { createServerReference } from 'react-server-dom-webpack/client';
-import { unstable_callServerRsc as callServerRsc } from 'waku/minimal/client';
-export const log1 = createServerReference('/src/func.ts#log1', callServerRsc);
-export const log2 = createServerReference('/src/func.ts#log2', callServerRsc);
-export const log3 = createServerReference('/src/func.ts#log3', callServerRsc);
-export default createServerReference('/src/func.ts#default', callServerRsc);`
+    expect(await testDirectiveTransform(input, 'use server'))
+      .toMatchInlineSnapshot(`
+      "
+
+
+
+
+      export const log1 = /* #__PURE__ */ $runtime("<id>#log1", "log1");
+
+
+      export const log2 = /* #__PURE__ */ $runtime("<id>#log2", "log2");
+
+
+      export const log3 = /* #__PURE__ */ $runtime("<id>#log3", "log3");
+
+
+      export default /* #__PURE__ */ $runtime("<id>#default", "default");
+
+      "
+    `)
   })
 
-  test.skip('top-level use server for SSR', () => {
-    // @ts-expect-error - unused in skipped test for documentation
+  test('top-level use server for SSR', async () => {
     const input = `
 'use server';
 
@@ -491,10 +530,18 @@ export async function log(mesg) {
   console.log(mesg);
 }
 `
-    // Expected output (from Waku SSR transform):
-    // @ts-expect-error - unused in skipped test for documentation
-    const expectedOutput = `export const log = ()=>{
-    throw new Error('You cannot call server functions during SSR');
-};`
+    expect(await testDirectiveTransform(input, 'use server'))
+      .toMatchInlineSnapshot(`
+      "
+
+
+
+
+
+
+      export const log = /* #__PURE__ */ $runtime("<id>#log", "log");
+
+      "
+    `)
   })
 })
