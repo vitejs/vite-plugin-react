@@ -29,8 +29,8 @@
     "@vitejs/test-dep-css-in-server": "file:./test-dep/css-in-server",
     "rsc-html-stream": "^0.0.7",
     "tailwindcss": "^4.1.11",
-    "vite": "^7.0.5",
-    "vite-plugin-inspect": "^11.3.0",
-    "wrangler": "^4.25.1"
+    "vite": "^7.0.6",
+    "vite-plugin-inspect": "^11.3.2",
+    "wrangler": "^4.26.0"
   }
 }
