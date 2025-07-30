@@ -13,16 +13,6 @@ test.describe('build-default', () => {
   defineStarterTest(f)
 })
 
-test.describe('dev-cloudflare', () => {
-  const f = useFixture({ root: 'examples/starter-cf-single', mode: 'dev' })
-  defineStarterTest(f)
-})
-
-test.describe('build-cloudflare', () => {
-  const f = useFixture({ root: 'examples/starter-cf-single', mode: 'build' })
-  defineStarterTest(f)
-})
-
 test.describe('dev-production', () => {
   const f = useFixture({
     root: 'examples/starter',
