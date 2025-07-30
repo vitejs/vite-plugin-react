@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { transformServerActionServer } from './server-action'
 import { debugSourceMap } from './test-utils'
 
-describe('transformServerActionServer', () => {
+describe('internal transform function for server environment', () => {
   async function testTransform(input: string) {
     const ast = await parseAstAsync(input)
     const result = transformServerActionServer(input, ast, {
@@ -29,6 +29,61 @@ export default function App() {
 }
 `
     expect(await testTransform(input)).toBeUndefined()
+  })
+
+  test.skip('top-level use client', () => {
+    // This test is skipped since transformServerActionServer only handles server transforms
+    // The client transform would be handled by a different function
+    // @ts-expect-error - unused in skipped test for documentation
+    const input = `
+'use client';
+
+import { Component, createContext, useContext, memo } from 'react';
+import { atom } from 'jotai/vanilla';
+import { unstable_allowServer as allowServer } from 'waku/client';
+
+const initialCount = 1;
+const TWO = 2;
+function double (x: number) {
+  return x * TWO;
+}
+export const countAtom = allowServer(atom(double(initialCount)));
+
+export const Empty = () => null;
+
+function Private() {
+  return "Secret";
+}
+const SecretComponent = () => <p>Secret</p>;
+const SecretFunction = (n: number) => 'Secret' + n;
+
+export function Greet({ name }: { name: string }) {
+  return <>Hello {name}</>;
+}
+
+export class MyComponent extends Component {
+  render() {
+    return <p>Class Component</p>;
+  }
+}
+
+const MyContext = createContext();
+
+export const useMyContext = () => useContext(MyContext);
+
+const MyProvider = memo(MyContext);
+
+export const NAME = 'World';
+
+export default function App() {
+  return (
+    <MyProvider value="Hello">
+      <div>Hello World</div>
+    </MyProvider>
+  );
+}
+`
+    // Expected output would be registerClientReference calls for all exports
   })
 
   test('top-level use server', async () => {
@@ -352,69 +407,18 @@ export default defaultFn;
   })
 })
 
-// Client transform tests for documentation (from Waku)
-// These show expected client-side behavior but are skipped since
-// transformServerActionServer only handles server transforms
-describe('client transform examples (for reference)', () => {
-  test.skip('top-level use client', () => {
-    // Input:
+describe('internal transform function for client environment', () => {
+  test.skip('no transformation', () => {
     // @ts-expect-error - unused in skipped test for documentation
     const input = `
-'use client';
-
-import { Component, createContext, useContext, memo } from 'react';
-import { atom } from 'jotai/vanilla';
-import { unstable_allowServer as allowServer } from 'waku/client';
-
-const initialCount = 1;
-const TWO = 2;
-function double (x: number) {
-  return x * TWO;
-}
-export const countAtom = allowServer(atom(double(initialCount)));
-
-export const Empty = () => null;
-
-function Private() {
-  return "Secret";
-}
-const SecretComponent = () => <p>Secret</p>;
-const SecretFunction = (n: number) => 'Secret' + n;
-
-export function Greet({ name }: { name: string }) {
-  return <>Hello {name}</>;
-}
-
-export class MyComponent extends Component {
-  render() {
-    return <p>Class Component</p>;
-  }
-}
-
-const MyContext = createContext();
-
-export const useMyContext = () => useContext(MyContext);
-
-const MyProvider = memo(MyContext);
-
-export const NAME = 'World';
-
-export default function App() {
-  return (
-    <MyProvider value="Hello">
-      <div>Hello World</div>
-    </MyProvider>
-  );
-}
+export const log = (mesg) => {
+  console.log(mesg);
+};
 `
-
-    // Expected Output (from Waku client transform):
-    // registerClientReference calls for all exports
-    // Error-throwing stubs for server environment
+    // Expected: no transformation for client environment
   })
 
-  test.skip('top-level use server for client', () => {
-    // Input:
+  test.skip('top-level use server', () => {
     // @ts-expect-error - unused in skipped test for documentation
     const input = `
 'use server';
@@ -437,14 +441,10 @@ export default async function log4(mesg) {
   console.log(mesg);
 }
 `
-
-    // Expected Output (from Waku client transform):
-    // createServerReference calls for each export
-    // Client-side proxy functions
+    // Expected Output: createServerReference calls for each export
   })
 
   test.skip('top-level use server for SSR', () => {
-    // Input:
     // @ts-expect-error - unused in skipped test for documentation
     const input = `
 'use server';
@@ -457,8 +457,6 @@ export async function log(mesg) {
   console.log(mesg);
 }
 `
-
-    // Expected Output (from Waku SSR transform):
-    // Error-throwing stubs: "You cannot call server functions during SSR"
+    // Expected Output: Error-throwing stubs "You cannot call server functions during SSR"
   })
 })
