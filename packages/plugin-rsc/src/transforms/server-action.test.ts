@@ -114,6 +114,34 @@ export default function App() {
     `)
   })
 
+  test('inline use server (const function expression)', async () => {
+    const input = `
+export default function App() {
+  const rand = Math.random();
+  const log = async function (mesg) {
+    'use server';
+    console.log(mesg, rand);
+  };
+  return log;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      export default function App() {
+        const rand = Math.random();
+        const log = /* #__PURE__ */ __registerServerReference($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, rand);
+        return log;
+      }
+
+      ;export async function $$hoist_0_log(rand, mesg) {
+          'use server';
+          console.log(mesg, rand);
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
+      "
+    `)
+  })
+
   test('inline use server (const arrow function)', async () => {
     const input = `
 const now = Date.now();
@@ -330,5 +358,113 @@ export default async () => null;
       export { $$wrap_$$default as default };
       "
     `)
+  })
+})
+
+// Client transform tests for documentation (from Waku)
+// These show expected client-side behavior but are skipped since
+// transformServerActionServer only handles server transforms
+describe('client transform examples (for reference)', () => {
+  test.skip('top-level use client', () => {
+    // Input:
+    const input = `
+'use client';
+
+import { Component, createContext, useContext, memo } from 'react';
+import { atom } from 'jotai/vanilla';
+import { unstable_allowServer as allowServer } from 'waku/client';
+
+const initialCount = 1;
+const TWO = 2;
+function double (x: number) {
+  return x * TWO;
+}
+export const countAtom = allowServer(atom(double(initialCount)));
+
+export const Empty = () => null;
+
+function Private() {
+  return "Secret";
+}
+const SecretComponent = () => <p>Secret</p>;
+const SecretFunction = (n: number) => 'Secret' + n;
+
+export function Greet({ name }: { name: string }) {
+  return <>Hello {name}</>;
+}
+
+export class MyComponent extends Component {
+  render() {
+    return <p>Class Component</p>;
+  }
+}
+
+const MyContext = createContext();
+
+export const useMyContext = () => useContext(MyContext);
+
+const MyProvider = memo(MyContext);
+
+export const NAME = 'World';
+
+export default function App() {
+  return (
+    <MyProvider value="Hello">
+      <div>Hello World</div>
+    </MyProvider>
+  );
+}
+`
+
+    // Expected Output (from Waku client transform):
+    // registerClientReference calls for all exports
+    // Error-throwing stubs for server environment
+  })
+
+  test.skip('top-level use server for client', () => {
+    // Input:
+    const input = `
+'use server';
+
+const privateFunction = () => 'Secret';
+
+export const log1 = async function(mesg) {
+  console.log(mesg);
+}
+
+export const log2 = async (mesg) => {
+  console.log(mesg);
+};
+
+export async function log3(mesg) {
+  console.log(mesg);
+}
+
+export default async function log4(mesg) {
+  console.log(mesg);
+}
+`
+
+    // Expected Output (from Waku client transform):
+    // createServerReference calls for each export
+    // Client-side proxy functions
+  })
+
+  test.skip('top-level use server for SSR', () => {
+    // Input:
+    const input = `
+'use server';
+
+import { getEnv } from 'waku';
+
+const privateFunction = () => getEnv('SECRET');
+
+export async function log(mesg) {
+  console.log(mesg);
+}
+`
+
+    // Expected Output (from Waku SSR transform):
+    // Error-throwing stubs: "You cannot call server functions during SSR"
   })
 })
