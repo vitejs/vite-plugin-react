@@ -5,14 +5,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    {
-      name: 'buildApp-pre',
-      buildApp: async () => {
-        console.log('🔶 [buildApp:before]')
-      },
-    },
     rsc({
-      useBuildAppHook: true,
       // `entries` option is only a shorthand for specifying each `rollupOptions.input` below
       // > entries: { rsc, ssr, client },
       //
@@ -20,12 +13,6 @@ export default defineConfig({
       // This can be disabled when setting up own server handler e.g. `@cloudflare/vite-plugin`.
       // > serverHandler: false
     }),
-    {
-      name: 'buildApp-post',
-      buildApp: async () => {
-        console.log('🔷 [buildApp:after]')
-      },
-    },
 
     // use any of react plugins https://github.com/vitejs/vite-plugin-react
     // to enable client component HMR
