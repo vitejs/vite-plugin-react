@@ -31,7 +31,7 @@ describe('internal transform function for server environment', () => {
     const ast = await parseAstAsync(input)
     const result = transformServerActionServer(input, ast, {
       runtime: (value, name) =>
-        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+        `$runtime(${value}, "<id>", ${JSON.stringify(name)})`,
     })
 
     if (!('output' in result) || !result.output.hasChanged()) {
@@ -178,12 +178,12 @@ export default async function() {
       const $$default = async function() {
         return Date.now();
       }
-      log = /* #__PURE__ */ $$register(log, "<id>", "log");
+      log = /* #__PURE__ */ $runtime(log, "<id>", "log");
       export { log };
-      greet = /* #__PURE__ */ $$register(greet, "<id>", "greet");
+      greet = /* #__PURE__ */ $runtime(greet, "<id>", "greet");
       export { greet };
       ;
-      const $$wrap_$$default = /* #__PURE__ */ $$register($$default, "<id>", "default");
+      const $$wrap_$$default = /* #__PURE__ */ $runtime($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
     `)
@@ -208,7 +208,7 @@ export function ServerProvider() {
       "
       const AI = {
         actions: {
-          foo: /* #__PURE__ */ $$register($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
+          foo: /* #__PURE__ */ $runtime($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
         },
       };
 
@@ -264,10 +264,10 @@ export default async () => null;
       }
 
       const $$default = async () => null;
-      exportedAction = /* #__PURE__ */ $$register(exportedAction, "<id>", "exportedAction");
+      exportedAction = /* #__PURE__ */ $runtime(exportedAction, "<id>", "exportedAction");
       export { exportedAction };
       ;
-      const $$wrap_$$default = /* #__PURE__ */ $$register($$default, "<id>", "default");
+      const $$wrap_$$default = /* #__PURE__ */ $runtime($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
     `)
@@ -288,7 +288,7 @@ export default function App() {
       "
       export default function App() {
         const a = 'test';
-        const log = /* #__PURE__ */ $$register($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, a);
+        const log = /* #__PURE__ */ $runtime($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, a);
         return log;
       }
 
@@ -316,7 +316,7 @@ export default function App() {
       "
       export default function App() {
         const rand = Math.random();
-        const log = /* #__PURE__ */ $$register($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, rand);
+        const log = /* #__PURE__ */ $runtime($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, rand);
         return log;
       }
 
@@ -344,7 +344,7 @@ export default function App() {
       "
       const now = Date.now();
       export default function App() {
-        const log = /* #__PURE__ */ $$register($$hoist_0_log, "<id>", "$$hoist_0_log");
+        const log = /* #__PURE__ */ $runtime($$hoist_0_log, "<id>", "$$hoist_0_log");
         return log;
       }
 
@@ -371,7 +371,7 @@ export default function App() {
       "
       const now = Date.now();
       export default function App() {
-        return /* #__PURE__ */ $$register($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function");
+        return /* #__PURE__ */ $runtime($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function");
       }
 
       ;export function $$hoist_0_anonymous_server_function(mesg) {
@@ -417,16 +417,16 @@ export default defaultFn;
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "
       const actions = {
-        log: /* #__PURE__ */ $$register($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
+        log: /* #__PURE__ */ $runtime($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
       };
 
-      const log2 = /* #__PURE__ */ $$register($$hoist_1_log2, "<id>", "$$hoist_1_log2");
+      const log2 = /* #__PURE__ */ $runtime($$hoist_1_log2, "<id>", "$$hoist_1_log2");
 
-      const log3 = /* #__PURE__ */ $$register($$hoist_2_log3, "<id>", "$$hoist_2_log3")
+      const log3 = /* #__PURE__ */ $runtime($$hoist_2_log3, "<id>", "$$hoist_2_log3")
 
-      const log4 = /* #__PURE__ */ $$register($$hoist_3_log4, "<id>", "$$hoist_3_log4");
+      const log4 = /* #__PURE__ */ $runtime($$hoist_3_log4, "<id>", "$$hoist_3_log4");
 
-      const defaultFn = /* #__PURE__ */ $$register($$hoist_4_defaultFn, "<id>", "$$hoist_4_defaultFn")
+      const defaultFn = /* #__PURE__ */ $runtime($$hoist_4_defaultFn, "<id>", "$$hoist_4_defaultFn")
 
       export default defaultFn;
 
