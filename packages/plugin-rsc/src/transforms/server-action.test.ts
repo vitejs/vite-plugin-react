@@ -1,0 +1,334 @@
+import { parseAstAsync } from 'vite'
+import { describe, expect, test } from 'vitest'
+import { transformServerActionServer } from './server-action'
+import { debugSourceMap } from './test-utils'
+
+describe('transformServerActionServer', () => {
+  async function testTransform(
+    input: string,
+    options?: {
+      rejectNonAsyncFunction?: boolean
+      encode?: boolean
+    },
+  ) {
+    const ast = await parseAstAsync(input)
+    const result = transformServerActionServer(input, ast, {
+      runtime: (value, name) =>
+        `__registerServerReference(${value}, "<id>", ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: options?.rejectNonAsyncFunction,
+      encode: options?.encode ? (v) => `__enc(${v})` : undefined,
+      decode: options?.encode ? (v) => `__dec(${v})` : undefined,
+    })
+
+    if (!('output' in result) || !result.output.hasChanged()) {
+      return
+    }
+
+    if (process.env['DEBUG_SOURCEMAP']) {
+      await debugSourceMap(result.output)
+    }
+
+    return result.output.toString()
+  }
+
+  test('no transformation', async () => {
+    const input = `
+export default function App() {
+  return "Hello World";
+}
+`
+    expect(await testTransform(input)).toBeUndefined()
+  })
+
+  test('top-level use server', async () => {
+    const input = `
+'use server';
+
+const privateFunction = () => 'Secret';
+
+export const log = async (mesg) => {
+  console.log(mesg);
+};
+
+export async function greet(name) {
+  return 'Hello ' + name;
+}
+
+export default async function() {
+  return Date.now();
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      'use server';
+
+      const privateFunction = () => 'Secret';
+
+      let log = async (mesg) => {
+        console.log(mesg);
+      };
+
+      async function greet(name) {
+        return 'Hello ' + name;
+      }
+
+      const $$default = async function() {
+        return Date.now();
+      }
+      log = /* #__PURE__ */ __registerServerReference(log, "<id>", "log");
+      export { log };
+      greet = /* #__PURE__ */ __registerServerReference(greet, "<id>", "greet");
+      export { greet };
+      ;
+      const $$wrap_$$default = /* #__PURE__ */ __registerServerReference($$default, "<id>", "default");
+      export { $$wrap_$$default as default };
+      "
+    `)
+  })
+
+  test('inline use server (function declaration)', async () => {
+    const input = `
+export default function App() {
+  const a = 'test';
+  async function log(mesg) {
+    'use server';
+    console.log(mesg, a);
+  }
+  return log;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      export default function App() {
+        const a = 'test';
+        const log = /* #__PURE__ */ __registerServerReference($$hoist_0_log, "<id>", "$$hoist_0_log").bind(null, a);
+        return log;
+      }
+
+      ;export async function $$hoist_0_log(a, mesg) {
+          'use server';
+          console.log(mesg, a);
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
+      "
+    `)
+  })
+
+  test('inline use server (const arrow function)', async () => {
+    const input = `
+const now = Date.now();
+export default function App() {
+  const log = async (mesg) => {
+    'use server';
+    console.log(mesg, now);
+  };
+  return log;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      const now = Date.now();
+      export default function App() {
+        const log = /* #__PURE__ */ __registerServerReference($$hoist_0_log, "<id>", "$$hoist_0_log");
+        return log;
+      }
+
+      ;export async function $$hoist_0_log(mesg) {
+          'use server';
+          console.log(mesg, now);
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
+      "
+    `)
+  })
+
+  test('inline use server (anonymous arrow function)', async () => {
+    const input = `
+const now = Date.now();
+export default function App() {
+  return (mesg) => {
+    'use server';
+    console.log(mesg, now);
+  };
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      const now = Date.now();
+      export default function App() {
+        return /* #__PURE__ */ __registerServerReference($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function");
+      }
+
+      ;export function $$hoist_0_anonymous_server_function(mesg) {
+          'use server';
+          console.log(mesg, now);
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
+      "
+    `)
+  })
+
+  test('server action in object', async () => {
+    const input = `
+const AI = {
+  actions: {
+    foo: async () => {
+      'use server';
+      return 0;
+    },
+  },
+};
+
+export function ServerProvider() {
+  return AI;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      const AI = {
+        actions: {
+          foo: /* #__PURE__ */ __registerServerReference($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
+        },
+      };
+
+      export function ServerProvider() {
+        return AI;
+      }
+
+      ;export async function $$hoist_0_anonymous_server_function() {
+            'use server';
+            return 0;
+          };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
+      "
+    `)
+  })
+
+  test('inline use server (various patterns)', async () => {
+    const input = `
+const actions = {
+  log: async (mesg) => {
+    'use server';
+    console.log(mesg);
+  },
+};
+
+async function log2 (mesg) {
+  'use server';
+  console.log(mesg);
+}
+
+const log3 = async function(mesg) {
+  'use server';
+  console.log(mesg);
+}
+
+const log4 = async (mesg) => {
+  'use server';
+  console.log(mesg);
+};
+
+const defaultFn = async function(mesg) {
+  'use server';
+  console.log(mesg);
+}
+
+export default defaultFn;
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      const actions = {
+        log: /* #__PURE__ */ __registerServerReference($$hoist_0_anonymous_server_function, "<id>", "$$hoist_0_anonymous_server_function"),
+      };
+
+      const log2 = /* #__PURE__ */ __registerServerReference($$hoist_1_log2, "<id>", "$$hoist_1_log2");
+
+      const log3 = /* #__PURE__ */ __registerServerReference($$hoist_2_log3, "<id>", "$$hoist_2_log3")
+
+      const log4 = /* #__PURE__ */ __registerServerReference($$hoist_3_log4, "<id>", "$$hoist_3_log4");
+
+      const defaultFn = /* #__PURE__ */ __registerServerReference($$hoist_4_defaultFn, "<id>", "$$hoist_4_defaultFn")
+
+      export default defaultFn;
+
+      ;export async function $$hoist_0_anonymous_server_function(mesg) {
+          'use server';
+          console.log(mesg);
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
+
+      ;export async function $$hoist_1_log2(mesg) {
+        'use server';
+        console.log(mesg);
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_1_log2, "name", { value: "log2" });
+
+      ;export async function $$hoist_2_log3(mesg) {
+        'use server';
+        console.log(mesg);
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_2_log3, "name", { value: "log3" });
+
+      ;export async function $$hoist_3_log4(mesg) {
+        'use server';
+        console.log(mesg);
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_3_log4, "name", { value: "log4" });
+
+      ;export async function $$hoist_4_defaultFn(mesg) {
+        'use server';
+        console.log(mesg);
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_4_defaultFn, "name", { value: "defaultFn" });
+      "
+    `)
+  })
+
+  test('top-level use server and inline use server', async () => {
+    const input = `
+'use server';
+
+async function innerAction(action, ...args) {
+  'use server';
+  return await action(...args);
+}
+
+function wrapAction(action) {
+  return innerAction.bind(null, action);
+}
+
+export async function exportedAction() {
+  'use server';
+  return null;
+}
+
+export default async () => null;
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      'use server';
+
+      async function innerAction(action, ...args) {
+        'use server';
+        return await action(...args);
+      }
+
+      function wrapAction(action) {
+        return innerAction.bind(null, action);
+      }
+
+      async function exportedAction() {
+        'use server';
+        return null;
+      }
+
+      const $$default = async () => null;
+      exportedAction = /* #__PURE__ */ __registerServerReference(exportedAction, "<id>", "exportedAction");
+      export { exportedAction };
+      ;
+      const $$wrap_$$default = /* #__PURE__ */ __registerServerReference($$default, "<id>", "default");
+      export { $$wrap_$$default as default };
+      "
+    `)
+  })
+})
