@@ -4,7 +4,9 @@ import { transformDirectiveProxyExport } from './proxy-export'
 import { transformServerActionServer } from './server-action'
 import { debugSourceMap } from './test-utils'
 
-// Unified utility for directive proxy export transforms
+// copied from
+// https://github.com/wakujs/waku/blob/55cc5fb3c74b1cd9fa5dac5b20b8626c4d5043ff/packages/waku/tests/vite-plugin-rsc-transform-internals.test.ts
+
 async function testDirectiveTransform(input: string, directive: string) {
   const ast = await parseAstAsync(input)
   const result = transformDirectiveProxyExport(ast, {
