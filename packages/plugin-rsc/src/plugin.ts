@@ -945,6 +945,7 @@ function normalizeReferenceId(id: string, name: 'client' | 'rsc') {
   return normalizeViteImportAnalysisUrl(environment, id)
 }
 
+/** @experimental */
 export function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
@@ -1151,7 +1152,8 @@ export function vitePluginUseClient(
   ]
 }
 
-function vitePluginDefineEncryptionKey(
+/** @experimental */
+export function vitePluginDefineEncryptionKey(
   useServerPluginOptions: Pick<RscPluginOptions, 'defineEncryptionKey'>,
 ): Plugin[] {
   let defineEncryptionKey: string
@@ -1210,6 +1212,7 @@ function vitePluginDefineEncryptionKey(
   ]
 }
 
+/** @experimental */
 export function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
