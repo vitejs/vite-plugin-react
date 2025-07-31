@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
+import { TestUseActionState } from './action-from-client/client.tsx'
 
 export function Root() {
   return <App />
@@ -30,6 +31,9 @@ function App() {
         <form action={updateServerCounter.bind(null, 1)}>
           <button>Server Counter: {getServerCounter()}</button>
         </form>
+      </div>
+      <div className="card">
+        <TestUseActionState />
       </div>
     </div>
   )

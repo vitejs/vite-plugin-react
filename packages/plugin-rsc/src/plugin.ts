@@ -1337,7 +1337,8 @@ export function vitePluginUseServer(
           const output = result?.output
           if (!output?.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          const name = this.environment.name === 'client' ? 'browser' : 'ssr'
+          // TODO
+          const name = this.environment.name === 'ssr' ? 'ssr' : 'browser'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
           output.prepend(`import * as $$ReactClient from "${importSource}";\n`)
           return {
