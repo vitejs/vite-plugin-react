@@ -21,7 +21,7 @@ export default defineConfig({
     }),
     vitePluginDefineEncryptionKey(),
     {
-      name: 'rsc:run-in-browser',
+      name: 'rsc:browser-mode',
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
           const url = new URL(req.url ?? '/', 'https://any.local')
@@ -37,10 +37,16 @@ export default defineConfig({
           next()
         })
       },
-      // hotUpdate(ctx) {
-      //   // TODO find out how to do HMR
-      //   ctx.server.ws.send({ type: "full-reload", path: ctx.file });
-      // },
+      hotUpdate(ctx) {
+        if (this.environment.name === 'react_client') {
+          if (ctx.modules.length > 0) {
+            ctx.server.environments.client.hot.send({
+              type: 'full-reload',
+              path: ctx.file,
+            })
+          }
+        }
+      },
       config() {
         return {
           environments: {
