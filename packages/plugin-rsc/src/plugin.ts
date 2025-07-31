@@ -131,6 +131,15 @@ export type RscPluginOptions = {
    * @default false
    */
   useBuildAppHook?: boolean
+
+  /**
+   * This configuration allows configuring `react-server` conditioned environment.
+   * @experimental
+   * @default { server: ['rsc'] }
+   */
+  environment?: {
+    server?: string[]
+  }
 }
 
 export default function vitePluginRsc(
