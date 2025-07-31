@@ -158,12 +158,13 @@ export function vitePluginRscMinimal(): Plugin[] {
       },
     },
     {
-      name: 'rsc:patch-browser-raw-import',
+      name: 'rsc:vite-client-raw-import',
       transform: {
         order: 'post',
         handler(code) {
           if (code.includes('__vite_rsc_raw_import__')) {
-            // inject dynamic import last to avoid Vite adding `?import` query to client references
+            // inject dynamic import last to avoid Vite adding `?import` query
+            // to client references (and browser mode server references)
             return code.replace('__vite_rsc_raw_import__', 'import')
           }
         },
