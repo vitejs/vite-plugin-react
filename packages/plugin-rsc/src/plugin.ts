@@ -70,8 +70,6 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
-export { vitePluginRscCore }
-
 export type RscPluginOptions = {
   /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
@@ -144,6 +142,25 @@ export type RscPluginOptions = {
   }
 }
 
+/** @experimental */
+export function vitePluginRscMinimal(): Plugin[] {
+  return [
+    {
+      name: 'rsc:minimal',
+      async config() {
+        await esModuleLexer.init
+      },
+      configResolved(config_) {
+        config = config_
+      },
+      configureServer(server_) {
+        server = server_
+      },
+    },
+    ...vitePluginRscCore(),
+  ]
+}
+
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
@@ -194,11 +211,10 @@ export default function vitePluginRsc(
   }
 
   return [
+    ...vitePluginRscMinimal(),
     {
       name: 'rsc',
       async config(config, env) {
-        await esModuleLexer.init
-
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
@@ -306,11 +322,7 @@ export default function vitePluginRsc(
         }
       },
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
-      configResolved(config_) {
-        config = config_
-      },
-      configureServer(server_) {
-        server = server_
+      configureServer() {
         ;(globalThis as any).__viteRscDevServer = server
 
         if (rscPluginOptions.disableServerHandler) return
@@ -849,7 +861,6 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginRscCore(),
     ...vitePluginUseClient(rscPluginOptions),
     ...vitePluginUseServer(rscPluginOptions),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),

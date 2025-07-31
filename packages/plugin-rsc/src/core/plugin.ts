@@ -1,6 +1,5 @@
 import type { Plugin } from 'vite'
 
-/** @experimental */
 export default function vitePluginRscCore(): Plugin[] {
   return [
     {
