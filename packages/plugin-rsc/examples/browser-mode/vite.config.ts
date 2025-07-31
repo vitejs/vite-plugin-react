@@ -21,7 +21,7 @@ export default defineConfig({
         server: ['client'],
       },
     }),
-    vitePluginDefineEncryptionKey(),
+    vitePluginDefineEncryptionKey({}),
     {
       name: 'rsc:browser-mode',
       configureServer(server) {
