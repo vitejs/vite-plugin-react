@@ -1156,7 +1156,7 @@ export function vitePluginUseClient(
 
 /** @experimental */
 export function vitePluginDefineEncryptionKey(
-  useServerPluginOptions: Pick<RscPluginOptions, 'defineEncryptionKey'>,
+  useServerPluginOptions?: Pick<RscPluginOptions, 'defineEncryptionKey'>,
 ): Plugin[] {
   let defineEncryptionKey: string
   let emitEncryptionKey = false
@@ -1169,7 +1169,7 @@ export function vitePluginDefineEncryptionKey(
       async configEnvironment(name, _config, env) {
         if (name === 'rsc' && !env.isPreview) {
           defineEncryptionKey =
-            useServerPluginOptions.defineEncryptionKey ??
+            useServerPluginOptions?.defineEncryptionKey ??
             JSON.stringify(toBase64(await generateEncryptionKey()))
         }
       },
