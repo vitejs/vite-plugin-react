@@ -1210,12 +1210,17 @@ function vitePluginDefineEncryptionKey(
   ]
 }
 
-function vitePluginUseServer(
+export function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'enableActionEncryption'
+    'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
+  const serverEnvironments = useServerPluginOptions.environment?.server ?? [
+    'rsc',
+  ]
+  const isServer = (name: string) => serverEnvironments.includes(name)
+
   return [
     {
       name: 'rsc:use-server',
@@ -1249,7 +1254,7 @@ function vitePluginUseServer(
           return normalizedId_
         }
 
-        if (this.environment.name === 'rsc') {
+        if (isServer(this.environment.name)) {
           const transformServerActionServer_ = withRollupError(
             this,
             transformServerActionServer,
