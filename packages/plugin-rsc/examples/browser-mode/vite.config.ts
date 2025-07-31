@@ -5,11 +5,11 @@ import {
   vitePluginUseServer,
   vitePluginDefineEncryptionKey,
 } from '@vitejs/plugin-rsc/plugin'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
-    inspect(),
+    // inspect(),
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
