@@ -10,8 +10,12 @@ export type RscPayload = {
   root: React.ReactNode
 }
 
-async function main() {
+function initialize() {
   setRequireModule({ load: (id) => import(/* @vite-ignore */ id) })
+}
+
+async function main() {
+  initialize()
 
   const rscStream = renderToReadableStream<RscPayload>({
     root: <Root />,

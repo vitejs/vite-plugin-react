@@ -7,6 +7,12 @@ export function initialize() {
   ReactClient.setRequireModule({
     load: (id) => import(/* @vite-ignore */ id),
   })
+
+  // TODO:
+  ReactClient.setServerCallback(async (id, args) => {
+    id
+    args
+  })
 }
 
 export function render(rscStream: ReadableStream<Uint8Array>) {
