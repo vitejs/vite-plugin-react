@@ -1,6 +1,6 @@
-import './index.css' // css import is automatically injected in exported server components
+import './index.css'
 import viteLogo from '/vite.svg'
-// import { getServerCounter, updateServerCounter } from './action.tsx'
+import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 
@@ -26,11 +26,11 @@ function App() {
       <div className="card">
         <ClientCounter />
       </div>
-      {/* <div className="card">
+      <div className="card">
         <form action={updateServerCounter.bind(null, 1)}>
           <button>Server Counter: {getServerCounter()}</button>
         </form>
-      </div> */}
+      </div>
     </div>
   )
 }

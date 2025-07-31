@@ -5,9 +5,11 @@ import {
   vitePluginUseServer,
   vitePluginDefineEncryptionKey,
 } from '@vitejs/plugin-rsc/plugin'
+import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
+    inspect(),
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
@@ -93,6 +95,8 @@ export default defineConfig({
           },
           resolve: {
             alias: {
+              '@vitejs/plugin-rsc/rsc':
+                '@vitejs/plugin-rsc/react/rsc',
               '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge':
                 '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
               '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
