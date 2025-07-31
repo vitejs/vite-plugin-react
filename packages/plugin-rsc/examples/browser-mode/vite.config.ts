@@ -69,8 +69,11 @@ export default defineConfig({
                   'react-dom/client',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
+                  // TODO: browser build breaks `src/actin-bind` examples
+                  // '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
+                  // '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
                 exclude: ['vite', '@vitejs/plugin-rsc'],
               },
@@ -98,12 +101,12 @@ export default defineConfig({
             },
           },
           resolve: {
-            alias: {
-              '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge':
-                '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-              '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
-                '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
-            },
+            // alias: {
+            //   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge':
+            //     '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
+            //   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
+            //     '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+            // },
           },
         }
       },
