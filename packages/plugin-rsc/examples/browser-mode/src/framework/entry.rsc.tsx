@@ -13,12 +13,6 @@ export function initialize() {
   ReactServer.setRequireModule({ load: (id) => import(/* @vite-ignore */ id) })
 }
 
-let root: React.ReactNode
-
-export function setRoot(root_: React.ReactNode) {
-  root = root_
-}
-
 export async function fetchServer(request: Request): Promise<Response> {
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
