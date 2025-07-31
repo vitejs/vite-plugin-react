@@ -3,6 +3,12 @@ import * as ReactDOMClient from 'react-dom/client'
 import * as ReactClient from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './server'
 
+export function initialize() {
+  ReactClient.setRequireModule({
+    load: (id) => import(/* @vite-ignore */ id),
+  })
+}
+
 export function render(rscStream: ReadableStream<Uint8Array>) {
   let rscPaylod: Promise<RscPayload>
 

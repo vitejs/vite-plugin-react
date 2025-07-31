@@ -1,25 +1,27 @@
-import { renderToReadableStream } from '@vitejs/plugin-rsc/react/rsc'
+import {
+  renderToReadableStream,
+  setRequireModule,
+} from '@vitejs/plugin-rsc/react/rsc'
 import type React from 'react'
 import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
+import { Root } from '../root'
 
 export type RscPayload = {
   root: React.ReactNode
 }
 
 async function main() {
-  const rscRoot = (
-    <div>
-      <h1>RSC Browser Mode</h1>
-    </div>
-  )
+  setRequireModule({ load: (id) => import(/* @vite-ignore */ id) })
+
   const rscStream = renderToReadableStream<RscPayload>({
-    root: rscRoot,
+    root: <Root />,
   })
 
   const clientRunner = createClientRunner()
   const clientEntry = await clientRunner.import<typeof import('./client')>(
     '/src/framework/client.tsx',
   )
+  clientEntry.initialize()
   clientEntry.render(rscStream)
 }
 
