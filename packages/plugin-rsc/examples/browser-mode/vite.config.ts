@@ -89,7 +89,7 @@ export default defineConfig({
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
-                exclude: ['@vitejs/plugin-rsc', 'fsevents'],
+                exclude: ['@vitejs/plugin-rsc'],
                 esbuildOptions: {
                   platform: 'browser',
                 },
