@@ -945,10 +945,10 @@ function normalizeReferenceId(id: string, name: 'client' | 'rsc') {
   return normalizeViteImportAnalysisUrl(environment, id)
 }
 
-function vitePluginUseClient(
+export function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'keepUseCientProxy'
+    'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
   >,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
@@ -956,11 +956,16 @@ function vitePluginUseClient(
   // https://github.com/vitejs/vite/blob/4bcf45863b5f46aa2b41f261283d08f12d3e8675/packages/vite/src/node/utils.ts#L175
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
+  const serverEnvironments = useClientPluginOptions.environment?.server ?? [
+    'rsc',
+  ]
+  const isServer = (name: string) => serverEnvironments.includes(name)
+
   return [
     {
       name: 'rsc:use-client',
       async transform(code, id) {
-        if (this.environment.name !== 'rsc') return
+        if (!isServer(this.environment.name)) return
         if (!code.includes('use client')) return
 
         const ast = await parseAstAsync(code)
@@ -1082,7 +1087,7 @@ function vitePluginUseClient(
           id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
         ) {
           assert.equal(this.environment.mode, 'dev')
-          assert.notEqual(this.environment.name, 'rsc')
+          assert(!isServer(this.environment.name))
           id = decodeURIComponent(
             id.slice(
               '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
@@ -1102,7 +1107,7 @@ function vitePluginUseClient(
       resolveId: {
         order: 'pre',
         async handler(source, importer, options) {
-          if (this.environment.name === 'rsc' && bareImportRE.test(source)) {
+          if (isServer(this.environment.name) && bareImportRE.test(source)) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
               packageSources.set(resolved.id, source)
@@ -1127,7 +1132,7 @@ function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
-        if (this.environment.name !== 'rsc') return
+        if (!isServer(this.environment.name)) return
 
         // track used exports of client references in rsc build
         // to tree shake unused exports in browser and ssr build
