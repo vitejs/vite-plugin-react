@@ -65,8 +65,6 @@ export default defineConfig({
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
               },
