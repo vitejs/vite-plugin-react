@@ -157,6 +157,18 @@ export function vitePluginRscMinimal(): Plugin[] {
         server = server_
       },
     },
+    {
+      name: 'rsc:patch-browser-raw-import',
+      transform: {
+        order: 'post',
+        handler(code) {
+          if (code.includes('__vite_rsc_raw_import__')) {
+            // inject dynamic import last to avoid Vite adding `?import` query to client references
+            return code.replace('__vite_rsc_raw_import__', 'import')
+          }
+        },
+      },
+    },
     ...vitePluginRscCore(),
   ]
 }
@@ -463,18 +475,6 @@ export default function vitePluginRsc(
             }
           }
         }
-      },
-    },
-    {
-      name: 'rsc:patch-browser-raw-import',
-      transform: {
-        order: 'post',
-        handler(code) {
-          if (code.includes('__vite_rsc_raw_import__')) {
-            // inject dynamic import last to avoid Vite adding `?import` query to client references
-            return code.replace('__vite_rsc_raw_import__', 'import')
-          }
-        },
       },
     },
     {

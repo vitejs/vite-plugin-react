@@ -9,8 +9,10 @@ export type RscPayload = {
   formState?: ReactFormState
 }
 
+declare let __vite_rsc_raw_import__: (id: string) => Promise<unknown>
+
 export function initialize() {
-  ReactServer.setRequireModule({ load: (id) => import(/* @vite-ignore */ id) })
+  ReactServer.setRequireModule({ load: (id) => __vite_rsc_raw_import__(id) })
 }
 
 export async function fetchServer(request: Request): Promise<Response> {
