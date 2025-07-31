@@ -947,7 +947,10 @@ function hashString(v: string) {
   return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
 }
 
-function normalizeReferenceId(id: string, name: 'client' | 'rsc') {
+function normalizeReferenceId(
+  id: string,
+  name: 'client' | 'rsc' | (string & {}),
+) {
   if (!server) {
     return hashString(path.relative(config.root, id))
   }
@@ -1022,6 +1025,7 @@ export function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
+              // TODO
               server.environments.client,
               id,
             )
@@ -1265,7 +1269,8 @@ export function vitePluginUseServer(
               // module identity of `import(id)` like browser, so we simply strip it off.
               id = id.split('?v=')[0]!
             }
-            normalizedId_ = normalizeReferenceId(id, 'rsc')
+            // TODO
+            normalizedId_ = normalizeReferenceId(id, serverEnvironments[0]!)
           }
           return normalizedId_
         }
