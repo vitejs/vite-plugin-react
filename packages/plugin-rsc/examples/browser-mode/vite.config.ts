@@ -5,11 +5,11 @@ import {
   vitePluginUseServer,
   vitePluginDefineEncryptionKey,
 } from '@vitejs/plugin-rsc/plugin'
-// import inspect from 'vite-plugin-inspect'
+import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
-    // inspect(),
+    inspect(),
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
@@ -21,7 +21,11 @@ export default defineConfig({
         server: ['client'],
       },
     }),
-    vitePluginDefineEncryptionKey({}),
+    vitePluginDefineEncryptionKey({
+      environment: {
+        server: ['client'],
+      },
+    }),
     {
       name: 'rsc:browser-mode',
       configureServer(server) {
@@ -67,6 +71,7 @@ export default defineConfig({
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
+                exclude: ['vite', '@vitejs/plugin-rsc'],
               },
             },
             react_client: {
@@ -84,7 +89,7 @@ export default defineConfig({
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
-                exclude: ['fsevents'],
+                exclude: ['@vitejs/plugin-rsc', 'fsevents'],
                 esbuildOptions: {
                   platform: 'browser',
                 },

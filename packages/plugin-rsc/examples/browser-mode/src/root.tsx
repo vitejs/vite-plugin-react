@@ -4,6 +4,7 @@ import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 import { TestUseActionState } from './action-from-client/client.tsx'
+import { TestActionBind } from './action-bind/server.tsx'
 
 export function Root() {
   return <App />
@@ -34,6 +35,9 @@ function App() {
       </div>
       <div className="card">
         <TestUseActionState />
+      </div>
+      <div className="card">
+        <TestActionBind />
       </div>
     </div>
   )
