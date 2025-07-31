@@ -6,9 +6,16 @@ packages:
 
 catalogs:
   rolldown-vite:
-    vite: npm:rolldown-vite@^7.0.9
+    vite: npm:rolldown-vite@^7.0.11
 
 overrides:
   '@types/estree': ^1.0.8
-  'vitest>vite': npm:vite@^6.2.6
-  'vite': https://pkg.pr.new/vitejs/rolldown-vite@bdb70a9
+  'vitest>vite': npm:vite@^7.0.6
+  'vite': npm:rolldown-vite@^7.0.11
+
+dedupeInjectedDeps: false
+
+peerDependencyRules:
+  ignoreMissing:
+    # ignore react-server-dom-webpack -> webpack
+    - webpack

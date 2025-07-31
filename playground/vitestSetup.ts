@@ -15,6 +15,14 @@ import type {
 import type { Browser, Page } from 'playwright-chromium'
 import type { RunnerTestFile } from 'vitest'
 import { beforeAll, inject } from 'vitest'
+import {
+  build,
+  createBuilder,
+  createServer,
+  loadConfigFromFile,
+  mergeConfig,
+  preview,
+} from 'vite'
 
 // #region env
 
@@ -169,8 +177,6 @@ beforeAll(async (s) => {
 })
 
 async function loadConfig(configEnv: ConfigEnv) {
-  const { loadConfigFromFile, mergeConfig } = await importVite()
-
   let config: UserConfig | null = null
 
   // config file named by convention as the *.spec.ts folder
@@ -223,29 +229,12 @@ async function loadConfig(configEnv: ConfigEnv) {
 }
 
 export async function startDefaultServe(): Promise<void> {
-  const {
-    build,
-    createBuilder,
-    createServer,
-    mergeConfig,
-    preview,
-    createServerWithResolvedConfig,
-  } = await importVite()
-
   setupConsoleWarnCollector(serverLogs)
 
   if (!isBuild) {
     process.env.VITE_INLINE = 'inline-serve'
     const config = await loadConfig({ command: 'serve', mode: 'development' })
-
-    if (process.env.VITE_TEST_FULL_BUNDLE_MODE) {
-      const builder = await createBuilder(config, null, 'serve')
-      viteServer = server = await createServerWithResolvedConfig(builder.config)
-      await server.listen()
-      await builder.buildApp(server)
-    } else {
-      viteServer = server = await (await createServer(config)).listen()
-    }
+    viteServer = server = await (await createServer(config)).listen()
 
     viteTestUrl = stripTrailingSlashIfNeeded(
       server.resolvedUrls.local[0],
@@ -369,11 +358,6 @@ function stripTrailingSlashIfNeeded(url: string, base: string): string {
     return url.replace(/\/$/, '')
   }
   return url
-}
-
-async function importVite(): Promise<typeof import('vite')> {
-  const vitePath = path.resolve(testDir, '_vite-proxy.js')
-  return await import(vitePath)
 }
 
 declare module 'vite' {

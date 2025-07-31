@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
-import { expectNoReload, testNoJs, waitForHydration } from './helper'
-import path from 'node:path'
-import os from 'node:os'
-
-// TODO: parallel?
-// TODO: all tests don't need to be tested in all variants?
+import { type Fixture, useFixture } from './fixture'
+import {
+  expectNoPageError,
+  expectNoReload,
+  testNoJs,
+  waitForHydration,
+} from './helper'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -46,92 +46,31 @@ test.describe('build-default', () => {
   defineTest(f)
 })
 
-test.describe('dev-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('build-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('dev-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-
-  test('verify react compiler', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    const res = await page.request.get(f.url('src/routes/client.tsx'))
-    expect(await res.text()).toContain('react.memo_cache_sentinel')
-  })
-})
-
-test.describe('build-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe(() => {
-  // disabled by default
-  if (process.env.TEST_ISOLATED !== 'true') return
-
-  // use RUNNER_TEMP on Github Actions
-  // https://github.com/actions/toolkit/issues/518
-  const tmpRoot = path.join(
-    process.env['RUNNER_TEMP'] || os.tmpdir(),
-    'test-vite-rsc',
-  )
+test.describe('dev-non-optimized-cjs', () => {
   test.beforeAll(async () => {
-    await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
+    // remove explicitly added optimizeDeps.include
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(
+        `'@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',`,
+        ``,
+      ),
+    )
   })
 
-  test.describe('dev-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'dev' })
-    defineTest(f)
-  })
+  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
 
-  test.describe('build-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'build' })
-    defineTest(f)
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toContain(
+      `[vite-rsc] found non-optimized CJS dependency in 'ssr' environment.`,
+    )
   })
 })
 
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
+    using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
   })
@@ -383,11 +322,19 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   async function testCss(page: Page, color = 'rgb(255, 165, 0)') {
@@ -877,6 +824,14 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('transitive cjs dep', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('transitive-cjs-client')).toHaveText(
+      'ok:browser',
+    )
+  })
+
   test('use cache function', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -998,9 +953,7 @@ function defineTest(f: Fixture) {
     expect(errors).toMatchObject([
       {
         message: expect.stringContaining(
-          f.mode === 'dev'
-            ? `Hydration failed because the server rendered HTML didn't match the client.`
-            : `Minified React error #418`,
+          f.mode === 'dev' ? `Hydration failed` : `Minified React error #418`,
         ),
       },
     ])

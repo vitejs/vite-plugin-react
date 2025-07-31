@@ -8,6 +8,7 @@ import { createRequestListener } from '@mjackson/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
+  type BuilderOptions,
   type DevEnvironment,
   type EnvironmentModuleNode,
   type Plugin,
@@ -20,7 +21,7 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs } from 'vitefu'
+import { crawlFrameworkPkgs, findClosestPkgJsonPath } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -31,7 +32,7 @@ import {
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
-import { normalizeViteImportAnalysisUrl } from './vite-utils'
+import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -95,26 +96,92 @@ export type RscPluginOptions = {
 
   /**
    * This option allows customizing how client build copies assets from server build.
-   * By default, all assets are copied, but frameworks might want to establish some convention
-   * to tighten security based on this option.
+   * By default, all assets are copied, but frameworks can establish server asset convention
+   * to tighten security using this option.
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
-  defineEncryptionKey?: string
-
   /**
-   * Allows enabling action closure encryption for debugging purpose.
+   * This option allows disabling action closure encryption for debugging purpose.
    * @default true
    */
   enableActionEncryption?: boolean
 
+  /**
+   * By default, the plugin uses a build-time generated encryption key for
+   * "use server" closure argument binding.
+   * This can be overwritten by configuring `defineEncryptionKey` option,
+   * for example, to obtain a key through environment variable during runtime.
+   * cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
+   */
+  defineEncryptionKey?: string
+
   /** Escape hatch for Waku's `allowServer` */
   keepUseCientProxy?: boolean
+
+  /**
+   * Enable build-time validation of 'client-only' and 'server-only' imports
+   * @default true
+   */
+  validateImports?: boolean
+
+  /**
+   * use `Plugin.buildApp` hook (introduced on Vite 7) instead of `builder.buildApp` configuration
+   * for better composability with other plugins.
+   * @default false
+   */
+  useBuildAppHook?: boolean
 }
 
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
+  const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    // no-ssr case
+    // rsc -> client -> rsc -> client
+    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
+      isScanBuild = true
+      builder.environments.rsc!.config.build.write = false
+      builder.environments.client!.config.build.write = false
+      await builder.build(builder.environments.rsc!)
+      await builder.build(builder.environments.client!)
+      isScanBuild = false
+      builder.environments.rsc!.config.build.write = true
+      builder.environments.client!.config.build.write = true
+      await builder.build(builder.environments.rsc!)
+      // sort for stable build
+      clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+      serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+      await builder.build(builder.environments.client!)
+
+      const assetsManifestCode = `export default ${serializeValueWithRuntime(
+        buildAssetsManifest,
+      )}`
+      const manifestPath = path.join(
+        builder.environments!.rsc!.config.build!.outDir!,
+        BUILD_ASSETS_MANIFEST_NAME,
+      )
+      fs.writeFileSync(manifestPath, assetsManifestCode)
+      return
+    }
+
+    // rsc -> ssr -> rsc -> client -> ssr
+    isScanBuild = true
+    builder.environments.rsc!.config.build.write = false
+    builder.environments.ssr!.config.build.write = false
+    await builder.build(builder.environments.rsc!)
+    await builder.build(builder.environments.ssr!)
+    isScanBuild = false
+    builder.environments.rsc!.config.build.write = true
+    builder.environments.ssr!.config.build.write = true
+    await builder.build(builder.environments.rsc!)
+    // sort for stable build
+    clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+    serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+    await builder.build(builder.environments.client!)
+    await builder.build(builder.environments.ssr!)
+  }
+
   return [
     {
       name: 'rsc',
@@ -220,60 +287,14 @@ export default function vitePluginRsc(
               },
             },
           },
-          // TODO: use buildApp hook on v7?
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
-            async buildApp(builder) {
-              // no-ssr case
-              // rsc -> client -> rsc -> client
-              if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-                isScanBuild = true
-                builder.environments.rsc!.config.build.write = false
-                builder.environments.client!.config.build.write = false
-                await builder.build(builder.environments.rsc!)
-                await builder.build(builder.environments.client!)
-                isScanBuild = false
-                builder.environments.rsc!.config.build.write = true
-                builder.environments.client!.config.build.write = true
-                await builder.build(builder.environments.rsc!)
-                // sort for stable build
-                clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
-                serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
-                await builder.build(builder.environments.client!)
-
-                const assetsManifestCode = `export default ${JSON.stringify(
-                  buildAssetsManifest,
-                  null,
-                  2,
-                )}`
-                const manifestPath = path.join(
-                  builder.environments!.rsc!.config.build!.outDir!,
-                  BUILD_ASSETS_MANIFEST_NAME,
-                )
-                fs.writeFileSync(manifestPath, assetsManifestCode)
-                return
-              }
-
-              // rsc -> ssr -> rsc -> client -> ssr
-              isScanBuild = true
-              builder.environments.rsc!.config.build.write = false
-              builder.environments.ssr!.config.build.write = false
-              await builder.build(builder.environments.rsc!)
-              await builder.build(builder.environments.ssr!)
-              isScanBuild = false
-              builder.environments.rsc!.config.build.write = true
-              builder.environments.ssr!.config.build.write = true
-              await builder.build(builder.environments.rsc!)
-              // sort for stable build
-              clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
-              serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
-              await builder.build(builder.environments.client!)
-              await builder.build(builder.environments.ssr!)
-            },
+            buildApp: rscPluginOptions.useBuildAppHook ? undefined : buildApp,
           },
         }
       },
+      buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
       configResolved(config_) {
         config = config_
       },
@@ -377,6 +398,20 @@ export default function vitePluginRsc(
 
         if (!isInsideClientBoundary(ctx.modules)) {
           if (this.environment.name === 'rsc') {
+            // transform js to surface syntax errors
+            for (const mod of ctx.modules) {
+              if (mod.type === 'js') {
+                try {
+                  await this.environment.transformRequest(mod.url)
+                } catch (e) {
+                  server.environments.client.hot.send({
+                    type: 'error',
+                    err: prepareError(e as any),
+                  })
+                  throw e
+                }
+              }
+            }
             // server hmr
             ctx.server.environments.client.hot.send({
               type: 'custom',
@@ -586,7 +621,7 @@ export default function vitePluginRsc(
           assert(this.environment.mode === 'dev')
           const entryUrl = assetsURL('@id/__x00__' + VIRTUAL_ENTRIES.browser)
           const manifest: AssetsManifest = {
-            bootstrapScriptContent: `import(${JSON.stringify(entryUrl)})`,
+            bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
           }
           return `export default ${JSON.stringify(manifest, null, 2)}`
@@ -640,8 +675,16 @@ export default function vitePluginRsc(
               mergeAssetDeps(deps, entry.deps),
             )
           }
+          let bootstrapScriptContent: string | RuntimeAsset
+          if (typeof entryUrl === 'string') {
+            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+          } else {
+            bootstrapScriptContent = new RuntimeAsset(
+              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+            )
+          }
           buildAssetsManifest = {
-            bootstrapScriptContent: `import(${JSON.stringify(entryUrl)})`,
+            bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
           }
@@ -671,10 +714,8 @@ export default function vitePluginRsc(
         if (this.environment.name === 'ssr') {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.
-          const assetsManifestCode = `export default ${JSON.stringify(
+          const assetsManifestCode = `export default ${serializeValueWithRuntime(
             buildAssetsManifest,
-            null,
-            2,
           )}`
           for (const name of ['ssr', 'rsc']) {
             const manifestPath = path.join(
@@ -763,6 +804,13 @@ window.__vite_plugin_react_preamble_installed__ = true;
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => ssrCss.forEach(node => node.remove()));
 `
+        // close error overlay after syntax error is fixed and hmr is triggered.
+        // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
+        code += `
+import.meta.hot.on("rsc:update", () => {
+  document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
+});
+`
         return code
       },
     ),
@@ -796,8 +844,43 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
+    ...(rscPluginOptions.validateImports !== false
+      ? [validateImportPlugin()]
+      : []),
     scanBuildStripPlugin(),
+    detectNonOptimizedCjsPlugin(),
   ]
+}
+function detectNonOptimizedCjsPlugin(): Plugin {
+  return {
+    name: 'rsc:detect-non-optimized-cjs',
+    apply: 'serve',
+    async transform(code, id) {
+      if (
+        id.includes('/node_modules/') &&
+        !id.startsWith(this.environment.config.cacheDir) &&
+        /\b(require|exports)\b/.test(code)
+      ) {
+        id = parseIdQuery(id).filename
+        let isEsm = id.endsWith('.mjs')
+        if (id.endsWith('.js')) {
+          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
+          if (pkgJsonPath) {
+            const pkgJson = JSON.parse(
+              fs.readFileSync(pkgJsonPath, 'utf-8'),
+            ) as { type?: string }
+            isEsm = pkgJson.type === 'module'
+          }
+        }
+        if (!isEsm) {
+          this.warn(
+            `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
+              `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
+          )
+        }
+      }
+    },
+  }
 }
 
 function scanBuildStripPlugin(): Plugin {
@@ -828,12 +911,12 @@ function getEntrySource(
   name: string = 'index',
 ) {
   const input = config.build.rollupOptions.input
-  assert(input)
   assert(
     typeof input === 'object' &&
       !Array.isArray(input) &&
       name in input &&
       typeof input[name] === 'string',
+    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
   return input[name]
 }
@@ -1273,15 +1356,76 @@ function generateDynamicImportCode(map: Record<string, string>) {
   return `export default {${code}};\n`
 }
 
-// // https://github.com/vitejs/vite/blob/2a7473cfed96237711cda9f736465c84d442ddef/packages/vite/src/node/plugins/importAnalysisBuild.ts#L222-L230
+class RuntimeAsset {
+  runtime: string
+  constructor(value: string) {
+    this.runtime = value
+  }
+}
+
+function serializeValueWithRuntime(value: any) {
+  const replacements: [string, string][] = []
+  let result = JSON.stringify(
+    value,
+    (_key, value) => {
+      if (value instanceof RuntimeAsset) {
+        const placeholder = `__runtime_placeholder_${replacements.length}__`
+        replacements.push([placeholder, value.runtime])
+        return placeholder
+      }
+
+      return value
+    },
+    2,
+  )
+
+  for (const [placeholder, runtime] of replacements) {
+    result = result.replace(`"${placeholder}"`, runtime)
+  }
+
+  return result
+}
+
 function assetsURL(url: string) {
+  if (
+    config.command === 'build' &&
+    typeof config.experimental?.renderBuiltUrl === 'function'
+  ) {
+    // https://github.com/vitejs/vite/blob/bdde0f9e5077ca1a21a04eefc30abad055047226/packages/vite/src/node/build.ts#L1369
+    const result = config.experimental.renderBuiltUrl(url, {
+      type: 'asset',
+      hostType: 'js',
+      ssr: true,
+      hostId: '',
+    })
+
+    if (typeof result === 'object') {
+      if (result.runtime) {
+        return new RuntimeAsset(result.runtime)
+      }
+      assert(
+        !result.relative,
+        '"result.relative" not supported on renderBuiltUrl() for RSC',
+      )
+    } else if (result) {
+      return result satisfies string
+    }
+  }
+
+  // https://github.com/vitejs/vite/blob/2a7473cfed96237711cda9f736465c84d442ddef/packages/vite/src/node/plugins/importAnalysisBuild.ts#L222-L230
   return config.base + url
 }
 
 function assetsURLOfDeps(deps: AssetDeps) {
   return {
-    js: deps.js.map((href) => assetsURL(href)),
-    css: deps.css.map((href) => assetsURL(href)),
+    js: deps.js.map((href) => {
+      assert(typeof href === 'string')
+      return assetsURL(href)
+    }),
+    css: deps.css.map((href) => {
+      assert(typeof href === 'string')
+      return assetsURL(href)
+    }),
   }
 }
 
@@ -1290,12 +1434,23 @@ function assetsURLOfDeps(deps: AssetDeps) {
 //
 
 export type AssetsManifest = {
-  bootstrapScriptContent: string
+  bootstrapScriptContent: string | RuntimeAsset
   clientReferenceDeps: Record<string, AssetDeps>
-  serverResources?: Record<string, { css: string[] }>
+  serverResources?: Record<string, Pick<AssetDeps, 'css'>>
 }
 
 export type AssetDeps = {
+  js: (string | RuntimeAsset)[]
+  css: (string | RuntimeAsset)[]
+}
+
+export type ResolvedAssetsManifest = {
+  bootstrapScriptContent: string
+  clientReferenceDeps: Record<string, ResolvedAssetDeps>
+  serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
+}
+
+export type ResolvedAssetDeps = {
   js: string[]
   css: string[]
 }
@@ -1500,7 +1655,7 @@ export function vitePluginRscCss(
     id: string
     code: string
   }): false | TransformWrapExportFilter {
-    const { query } = parseIdQuery(id)
+    const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
       if (value) {
@@ -1512,8 +1667,13 @@ export function vitePluginRscCss(
 
     const options = rscCssOptions?.rscCssTransform
     if (options === false) return false
-    if (options?.filter && !options.filter(id)) return false
-    if (id.includes('/node_modules/') || !/\.[tj]sx$/.test(id)) return false
+    if (options?.filter && !options.filter(filename)) return false
+    // https://github.com/vitejs/vite/blob/7979f9da555aa16bd221b32ea78ce8cb5292fac4/packages/vite/src/node/constants.ts#L95
+    if (
+      !/\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
+      !/\.[tj]sx?$/.test(filename)
+    )
+      return false
 
     // skip transform if no css imports
     const result = esModuleLexer.parse(code)
@@ -1574,7 +1734,7 @@ export function vitePluginRscCss(
             this.addWatchFile(file)
           }
           const hrefs = result.hrefs.map((href) => assetsURL(href.slice(1)))
-          return `export default ${JSON.stringify(hrefs)}`
+          return `export default ${serializeValueWithRuntime(hrefs)}`
         }
       },
     },
@@ -1661,7 +1821,7 @@ export function vitePluginRscCss(
                 encodeURIComponent(importer),
             ]
             const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
-            return generateResourcesCode(JSON.stringify(deps, null, 2))
+            return generateResourcesCode(serializeValueWithRuntime(deps))
           } else {
             const key = normalizePath(path.relative(config.root, importer))
             serverResourcesMetaMap[importer] = { key }
@@ -1742,7 +1902,10 @@ function collectModuleDependents(mods: EnvironmentModuleNode[]) {
 }
 
 function generateResourcesCode(depsCode: string) {
-  const ResourcesFn = (React: typeof import('react'), deps: AssetDeps) => {
+  const ResourcesFn = (
+    React: typeof import('react'),
+    deps: ResolvedAssetDeps,
+  ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
         ...deps.css.map((href: string) =>
@@ -1784,7 +1947,7 @@ function evalValue<T = any>(rawValue: string): T {
 // https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
 function parseIdQuery(id: string) {
   if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2)
+  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
   const query = Object.fromEntries(new URLSearchParams(rawQuery))
   return { filename, query }
 }
@@ -1857,6 +2020,49 @@ export function __fix_cloudflare(): Plugin {
       // workaround (fixed in Vite 7) https://github.com/vitejs/vite/pull/20077
       ;(config.environments as any).ssr.resolve.noExternal = true
       ;(config.environments as any).rsc.resolve.noExternal = true
+    },
+  }
+}
+
+// https://github.com/vercel/next.js/blob/90f564d376153fe0b5808eab7b83665ee5e08aaf/packages/next/src/build/webpack-config.ts#L1249-L1280
+// https://github.com/pcattori/vite-env-only/blob/68a0cc8546b9a37c181c0b0a025eb9b62dbedd09/src/deny-imports.ts
+// https://github.com/sveltejs/kit/blob/84298477a014ec471839adf7a4448d91bc7949e4/packages/kit/src/exports/vite/index.js#L513
+function validateImportPlugin(): Plugin {
+  return {
+    name: 'rsc:validate-imports',
+    resolveId: {
+      order: 'pre',
+      async handler(source, importer, options) {
+        // optimizer is not aware of server/client boudnary so skip
+        if ('scan' in options && options.scan) {
+          return
+        }
+
+        // Validate client-only imports in server environments
+        if (source === 'client-only') {
+          if (this.environment.name === 'rsc') {
+            throw new Error(
+              `'client-only' cannot be imported in server build (importer: '${importer ?? 'unknown'}', environment: ${this.environment.name})`,
+            )
+          }
+          return { id: `\0virtual:vite-rsc/empty`, moduleSideEffects: false }
+        }
+        if (source === 'server-only') {
+          if (this.environment.name !== 'rsc') {
+            throw new Error(
+              `'server-only' cannot be imported in client build (importer: '${importer ?? 'unknown'}', environment: ${this.environment.name})`,
+            )
+          }
+          return { id: `\0virtual:vite-rsc/empty`, moduleSideEffects: false }
+        }
+
+        return
+      },
+    },
+    load(id) {
+      if (id.startsWith('\0virtual:vite-rsc/empty')) {
+        return `export {}`
+      }
     },
   }
 }
