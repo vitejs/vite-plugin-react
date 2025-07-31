@@ -1,0 +1,2 @@
+- https://github.com/kasperpeulen/vitest-plugin-rsc/
+- https://github.com/kasperpeulen/rsc-browser-vite-demo
