@@ -37,6 +37,7 @@ export default defineConfig({
               await server.environments['react_client']!.hot.handleInvoke(
                 payload,
               )
+            res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(result))
             return
           }
