@@ -70,6 +70,8 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
+export { vitePluginRscCore }
+
 export type RscPluginOptions = {
   /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
