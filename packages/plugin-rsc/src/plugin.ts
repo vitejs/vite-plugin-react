@@ -133,7 +133,7 @@ export type RscPluginOptions = {
   useBuildAppHook?: boolean
 
   /**
-   * This configuration allows configuring `react-server` conditioned environment.
+   * This allows configuring `react-server` condition environment.
    * @experimental
    * @default { server: ['rsc'] }
    */
