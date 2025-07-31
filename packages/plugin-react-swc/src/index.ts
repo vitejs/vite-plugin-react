@@ -140,7 +140,6 @@ const react = (_options?: Options): Plugin[] => {
       configResolved(config) {
         base = config.base
         if (config.server.hmr === false) hmrDisabled = true
-        base = config.base
 
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',

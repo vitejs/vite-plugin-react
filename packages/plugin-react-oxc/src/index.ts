@@ -124,7 +124,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     configResolved(config) {
       base = config.base
       skipFastRefresh = config.isProduction || config.server.hmr === false
-      base = config.base
     },
     transform: {
       filter: {
