@@ -164,11 +164,11 @@ test.describe(() => {
       )
       await expect(async () => {
         await page.goto(f.url())
-        await waitForHydration(page)
         await expect(page.getByTestId('client-content')).toHaveText(
           'client:fixed',
         )
       }).toPass()
+      await waitForHydration(page)
     })
   })
 
@@ -197,11 +197,11 @@ test.describe(() => {
       )
       await expect(async () => {
         await page.goto(f.url())
-        await waitForHydration(page)
         await expect(page.getByTestId('server-content')).toHaveText(
           'server:fixed',
         )
       }).toPass()
+      await waitForHydration(page)
     })
   })
 })

@@ -131,6 +131,55 @@ export type RscPluginOptions = {
    * @default false
    */
   useBuildAppHook?: boolean
+
+  /**
+   * Custom environment configuration
+   * @experimental
+   * @default { browser: 'client', ssr: 'ssr', rsc: 'rsc' }
+   */
+  environment?: {
+    browser?: string
+    ssr?: string
+    rsc?: string
+  }
+}
+
+/** @experimental */
+export function vitePluginRscMinimal(
+  rscPluginOptions: RscPluginOptions = {},
+): Plugin[] {
+  return [
+    {
+      name: 'rsc:minimal',
+      enforce: 'pre',
+      async config() {
+        await esModuleLexer.init
+      },
+      configResolved(config_) {
+        config = config_
+      },
+      configureServer(server_) {
+        server = server_
+      },
+    },
+    {
+      name: 'rsc:vite-client-raw-import',
+      transform: {
+        order: 'post',
+        handler(code) {
+          if (code.includes('__vite_rsc_raw_import__')) {
+            // inject dynamic import last to avoid Vite adding `?import` query
+            // to client references (and browser mode server references)
+            return code.replace('__vite_rsc_raw_import__', 'import')
+          }
+        },
+      },
+    },
+    ...vitePluginRscCore(),
+    ...vitePluginUseClient(rscPluginOptions),
+    ...vitePluginUseServer(rscPluginOptions),
+    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+  ]
 }
 
 export default function vitePluginRsc(
@@ -186,8 +235,6 @@ export default function vitePluginRsc(
     {
       name: 'rsc',
       async config(config, env) {
-        await esModuleLexer.init
-
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
@@ -295,11 +342,7 @@ export default function vitePluginRsc(
         }
       },
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
-      configResolved(config_) {
-        config = config_
-      },
-      configureServer(server_) {
-        server = server_
+      configureServer() {
         ;(globalThis as any).__viteRscDevServer = server
 
         if (rscPluginOptions.disableServerHandler) return
@@ -453,18 +496,6 @@ export default function vitePluginRsc(
             }
           }
         }
-      },
-    },
-    {
-      name: 'rsc:patch-browser-raw-import',
-      transform: {
-        order: 'post',
-        handler(code) {
-          if (code.includes('__vite_rsc_raw_import__')) {
-            // inject dynamic import last to avoid Vite adding `?import` query to client references
-            return code.replace('__vite_rsc_raw_import__', 'import')
-          }
-        },
       },
     },
     {
@@ -851,10 +882,7 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginRscCore(),
-    ...vitePluginUseClient(rscPluginOptions),
-    ...vitePluginUseServer(rscPluginOptions),
-    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    ...vitePluginRscMinimal(rscPluginOptions),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
     ...(rscPluginOptions.validateImports !== false
@@ -941,7 +969,7 @@ function hashString(v: string) {
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'keepUseCientProxy'
+    'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
   >,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
@@ -949,11 +977,15 @@ function vitePluginUseClient(
   // https://github.com/vitejs/vite/blob/4bcf45863b5f46aa2b41f261283d08f12d3e8675/packages/vite/src/node/utils.ts#L175
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
+  const serverEnvironmentName = useClientPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useClientPluginOptions.environment?.browser ?? 'client'
+
   return [
     {
       name: 'rsc:use-client',
       async transform(code, id) {
-        if (this.environment.name !== 'rsc') return
+        if (this.environment.name !== serverEnvironmentName) return
         if (!code.includes('use client')) return
 
         const ast = await parseAstAsync(code)
@@ -996,7 +1028,7 @@ function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
-              server.environments.client,
+              server.environments[browserEnvironmentName]!,
               id,
             )
             referenceKey = importId
@@ -1075,7 +1107,7 @@ function vitePluginUseClient(
           id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
         ) {
           assert.equal(this.environment.mode, 'dev')
-          assert.notEqual(this.environment.name, 'rsc')
+          assert(this.environment.name !== serverEnvironmentName)
           id = decodeURIComponent(
             id.slice(
               '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
@@ -1095,7 +1127,10 @@ function vitePluginUseClient(
       resolveId: {
         order: 'pre',
         async handler(source, importer, options) {
-          if (this.environment.name === 'rsc' && bareImportRE.test(source)) {
+          if (
+            this.environment.name === serverEnvironmentName &&
+            bareImportRE.test(source)
+          ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
               packageSources.set(resolved.id, source)
@@ -1120,7 +1155,7 @@ function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
-        if (this.environment.name !== 'rsc') return
+        if (this.environment.name !== serverEnvironmentName) return
 
         // track used exports of client references in rsc build
         // to tree shake unused exports in browser and ssr build
@@ -1140,18 +1175,23 @@ function vitePluginUseClient(
 }
 
 function vitePluginDefineEncryptionKey(
-  useServerPluginOptions: Pick<RscPluginOptions, 'defineEncryptionKey'>,
+  useServerPluginOptions: Pick<
+    RscPluginOptions,
+    'defineEncryptionKey' | 'environment'
+  >,
 ): Plugin[] {
   let defineEncryptionKey: string
   let emitEncryptionKey = false
   const KEY_PLACEHOLDER = '__vite_rsc_define_encryption_key'
   const KEY_FILE = '__vite_rsc_encryption_key.js'
 
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
+
   return [
     {
       name: 'rsc:encryption-key',
       async configEnvironment(name, _config, env) {
-        if (name === 'rsc' && !env.isPreview) {
+        if (name === serverEnvironmentName && !env.isPreview) {
           defineEncryptionKey =
             useServerPluginOptions.defineEncryptionKey ??
             JSON.stringify(toBase64(await generateEncryptionKey()))
@@ -1201,9 +1241,13 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'enableActionEncryption'
+    'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useServerPluginOptions.environment?.browser ?? 'client'
+
   return [
     {
       name: 'rsc:use-server',
@@ -1236,7 +1280,7 @@ function vitePluginUseServer(
               normalizedId_ = hashString(path.relative(config.root, id))
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
-                server.environments.rsc!,
+                server.environments[serverEnvironmentName]!,
                 id,
               )
             }
@@ -1244,7 +1288,7 @@ function vitePluginUseServer(
           return normalizedId_
         }
 
-        if (this.environment.name === 'rsc') {
+        if (this.environment.name === serverEnvironmentName) {
           const transformServerActionServer_ = withRollupError(
             this,
             transformServerActionServer,
@@ -1305,7 +1349,8 @@ function vitePluginUseServer(
           const output = result?.output
           if (!output?.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          const name = this.environment.name === 'client' ? 'browser' : 'ssr'
+          const name =
+            this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
           output.prepend(`import * as $$ReactClient from "${importSource}";\n`)
           return {

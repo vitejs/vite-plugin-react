@@ -502,6 +502,9 @@ importers:
       tsdown:
         specifier: ^0.13.0
         version: 0.13.0(publint@0.3.12)(typescript@5.8.3)
+      vite-plugin-inspect:
+        specifier: ^11.3.2
+        version: 11.3.2(vite@7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
 
   packages/plugin-rsc/examples/basic:
     dependencies:
@@ -560,6 +563,31 @@ importers:
       wrangler:
         specifier: ^4.26.0
         version: 4.26.0
+
+  packages/plugin-rsc/examples/browser-mode:
+    dependencies:
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: ^19.1.6
+        version: 19.1.6(@types/react@19.1.8)
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      vite:
+        specifier: ^7.0.6
+        version: 7.0.6(@types/node@22.16.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
@@ -8615,7 +8643,7 @@ snapshots:
   unplugin-utils@0.2.4:
     dependencies:
       pathe: 2.0.3
-      picomatch: 4.0.2
+      picomatch: 4.0.3
 
   unrs-resolver@1.9.2:
     dependencies:
