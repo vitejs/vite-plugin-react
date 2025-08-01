@@ -1262,17 +1262,26 @@ function vitePluginUseServer(
               )}, ${JSON.stringify(name)})`,
             rejectNonAsyncFunction: true,
             encode: enableEncryption
-              ? (value) => `$$ReactServer.encryptActionBoundArgs(${value})`
+              ? (value) =>
+                  `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
               : undefined,
             decode: enableEncryption
               ? (value) =>
-                  `await $$ReactServer.decryptActionBoundArgs(${value})`
+                  `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
               : undefined,
           })
           if (!output.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          const importSource = resolvePackage(`${PKG_NAME}/rsc`)
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
+          if (enableEncryption) {
+            const importSource = resolvePackage(
+              `${PKG_NAME}/utils/encryption-runtime`,
+            )
+            output.prepend(
+              `import * as __vite_rsc_encryption_runtime from ${JSON.stringify(importSource)};\n`,
+            )
+          }
           return {
             code: output.toString(),
             map: output.generateMap({ hires: 'boundary' }),
