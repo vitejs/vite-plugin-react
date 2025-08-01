@@ -978,6 +978,8 @@ function vitePluginUseClient(
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
   const serverEnvironmentName = useClientPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useClientPluginOptions.environment?.browser ?? 'client'
 
   return [
     {
@@ -1026,8 +1028,7 @@ function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
-              // TODO
-              server.environments.client,
+              server.environments[browserEnvironmentName]!,
               id,
             )
             referenceKey = importId
