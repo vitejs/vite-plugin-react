@@ -135,10 +135,12 @@ export type RscPluginOptions = {
   /**
    * Custom environment configuration
    * @experimental
-   * @default { serverEnvironmentName: 'rsc' }
+   * @default { browser: 'client', ssr: 'ssr', rsc: 'rsc' }
    */
   environment?: {
-    serverEnvironmentName?: string
+    browser?: string
+    ssr?: string
+    rsc?: string
   }
 }
 
@@ -974,8 +976,7 @@ export function vitePluginUseClient(
   // https://github.com/vitejs/vite/blob/4bcf45863b5f46aa2b41f261283d08f12d3e8675/packages/vite/src/node/utils.ts#L175
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
-  const serverEnvironmentName =
-    useClientPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
+  const serverEnvironmentName = useClientPluginOptions.environment?.rsc ?? 'rsc'
 
   return [
     {
@@ -1183,8 +1184,7 @@ export function vitePluginDefineEncryptionKey(
   const KEY_PLACEHOLDER = '__vite_rsc_define_encryption_key'
   const KEY_FILE = '__vite_rsc_encryption_key.js'
 
-  const serverEnvironmentName =
-    useServerPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
 
   return [
     {
@@ -1244,8 +1244,9 @@ export function vitePluginUseServer(
     'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
-  const serverEnvironmentName =
-    useServerPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useServerPluginOptions.environment?.browser ?? 'browser'
 
   return [
     {
@@ -1341,8 +1342,8 @@ export function vitePluginUseServer(
           const output = result?.output
           if (!output?.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          // TODO
-          const name = this.environment.name === 'ssr' ? 'ssr' : 'browser'
+          const name =
+            this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
           output.prepend(`import * as $$ReactClient from "${importSource}";\n`)
           return {

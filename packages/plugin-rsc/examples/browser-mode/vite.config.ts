@@ -13,17 +13,20 @@ export default defineConfig({
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
-        serverEnvironmentName: 'client',
+        rsc: 'client',
+        browser: 'react_client',
       },
     }),
     vitePluginUseServer({
       environment: {
-        serverEnvironmentName: 'client',
+        rsc: 'client',
+        browser: 'react_client',
       },
     }),
     vitePluginDefineEncryptionKey({
       environment: {
-        serverEnvironmentName: 'client',
+        rsc: 'client',
+        browser: 'react_client',
       },
     }),
     {
