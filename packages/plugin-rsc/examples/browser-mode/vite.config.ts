@@ -5,11 +5,11 @@ import {
   vitePluginUseServer,
   vitePluginDefineEncryptionKey,
 } from '@vitejs/plugin-rsc/plugin'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
-    inspect(),
+    // inspect(),
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
@@ -44,6 +44,10 @@ export default defineConfig({
           next()
         })
       },
+      // for "react_client" hmr, it requires:
+      // - enable fast-refresh transform on `react_client` environment
+      //   - currently `@vitejs/plugin-react` doesn't support it
+      // - implement and enable module runner hmr
       hotUpdate(ctx) {
         if (this.environment.name === 'react_client') {
           if (ctx.modules.length > 0) {
