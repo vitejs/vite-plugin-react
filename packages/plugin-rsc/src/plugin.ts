@@ -145,10 +145,13 @@ export type RscPluginOptions = {
 }
 
 /** @experimental */
-export function vitePluginRscMinimal(): Plugin[] {
+export function vitePluginRscMinimal(
+  rscPluginOptions: RscPluginOptions = {},
+): Plugin[] {
   return [
     {
       name: 'rsc:minimal',
+      enforce: 'pre',
       async config() {
         await esModuleLexer.init
       },
@@ -173,6 +176,9 @@ export function vitePluginRscMinimal(): Plugin[] {
       },
     },
     ...vitePluginRscCore(),
+    ...vitePluginUseClient(rscPluginOptions),
+    ...vitePluginUseServer(rscPluginOptions),
+    ...vitePluginDefineEncryptionKey(rscPluginOptions),
   ]
 }
 
@@ -877,9 +883,7 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginUseClient(rscPluginOptions),
-    ...vitePluginUseServer(rscPluginOptions),
-    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    ...vitePluginRscMinimal(rscPluginOptions),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
     ...(rscPluginOptions.validateImports !== false
@@ -963,8 +967,7 @@ function hashString(v: string) {
   return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
 }
 
-/** @experimental */
-export function vitePluginUseClient(
+function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
     'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
@@ -1171,8 +1174,7 @@ export function vitePluginUseClient(
   ]
 }
 
-/** @experimental */
-export function vitePluginDefineEncryptionKey(
+function vitePluginDefineEncryptionKey(
   useServerPluginOptions: Pick<
     RscPluginOptions,
     'defineEncryptionKey' | 'environment'
@@ -1236,8 +1238,7 @@ export function vitePluginDefineEncryptionKey(
   ]
 }
 
-/** @experimental */
-export function vitePluginUseServer(
+function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
     'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'

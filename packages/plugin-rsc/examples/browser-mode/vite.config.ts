@@ -1,29 +1,11 @@
 import { defaultClientConditions, defineConfig } from 'vite'
-import {
-  vitePluginRscMinimal,
-  vitePluginUseClient,
-  vitePluginUseServer,
-  vitePluginDefineEncryptionKey,
-} from '@vitejs/plugin-rsc/plugin'
+import { vitePluginRscMinimal } from '@vitejs/plugin-rsc/plugin'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
     // inspect(),
-    vitePluginRscMinimal(),
-    vitePluginUseClient({
-      environment: {
-        rsc: 'client',
-        browser: 'react_client',
-      },
-    }),
-    vitePluginUseServer({
-      environment: {
-        rsc: 'client',
-        browser: 'react_client',
-      },
-    }),
-    vitePluginDefineEncryptionKey({
+    vitePluginRscMinimal({
       environment: {
         rsc: 'client',
         browser: 'react_client',
