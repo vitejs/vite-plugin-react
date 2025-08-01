@@ -400,12 +400,14 @@ export default function vitePluginRsc(
           if (this.environment.name === 'rsc') {
             // detect if this module is only created as css deps (e.g. tailwind)
             // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
-            if (
-              ctx.modules
-                .flatMap((m) => [...m.importers])
-                .every((m) => m.id && isCSSRequest(m.id))
-            ) {
-              return
+            if (ctx.modules.length === 1) {
+              const importers = [...ctx.modules[0]!.importers]
+              if (
+                importers.length > 0 &&
+                importers.every((m) => m.id && isCSSRequest(m.id))
+              ) {
+                return
+              }
             }
 
             // transform js to surface syntax errors
