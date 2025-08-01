@@ -1,1 +1,1 @@
-console.log('unused file text-[#f12345]')
+console.log(<div className="unused">unused</div>)

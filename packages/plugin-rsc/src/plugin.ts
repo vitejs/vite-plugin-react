@@ -406,7 +406,7 @@ export default function vitePluginRsc(
                 importers.length > 0 &&
                 importers.every((m) => m.id && isCSSRequest(m.id))
               ) {
-                return
+                return []
               }
             }
 
