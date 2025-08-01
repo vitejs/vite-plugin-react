@@ -133,12 +133,12 @@ export type RscPluginOptions = {
   useBuildAppHook?: boolean
 
   /**
-   * This allows configuring `react-server` condition environment.
+   * Custom environment configuration
    * @experimental
-   * @default { server: ['rsc'] }
+   * @default { serverEnvironmentName: 'rsc' }
    */
   environment?: {
-    server?: string[]
+    serverEnvironmentName?: string
   }
 }
 
@@ -974,16 +974,14 @@ export function vitePluginUseClient(
   // https://github.com/vitejs/vite/blob/4bcf45863b5f46aa2b41f261283d08f12d3e8675/packages/vite/src/node/utils.ts#L175
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
-  const serverEnvironments = useClientPluginOptions.environment?.server ?? [
-    'rsc',
-  ]
-  const isServer = (name: string) => serverEnvironments.includes(name)
+  const serverEnvironmentName =
+    useClientPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
 
   return [
     {
       name: 'rsc:use-client',
       async transform(code, id) {
-        if (!isServer(this.environment.name)) return
+        if (this.environment.name !== serverEnvironmentName) return
         if (!code.includes('use client')) return
 
         const ast = await parseAstAsync(code)
@@ -1106,7 +1104,7 @@ export function vitePluginUseClient(
           id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
         ) {
           assert.equal(this.environment.mode, 'dev')
-          assert(!isServer(this.environment.name))
+          assert(this.environment.name !== serverEnvironmentName)
           id = decodeURIComponent(
             id.slice(
               '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
@@ -1126,7 +1124,10 @@ export function vitePluginUseClient(
       resolveId: {
         order: 'pre',
         async handler(source, importer, options) {
-          if (isServer(this.environment.name) && bareImportRE.test(source)) {
+          if (
+            this.environment.name === serverEnvironmentName &&
+            bareImportRE.test(source)
+          ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
               packageSources.set(resolved.id, source)
@@ -1151,7 +1152,7 @@ export function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
-        if (!isServer(this.environment.name)) return
+        if (this.environment.name !== serverEnvironmentName) return
 
         // track used exports of client references in rsc build
         // to tree shake unused exports in browser and ssr build
@@ -1182,16 +1183,14 @@ export function vitePluginDefineEncryptionKey(
   const KEY_PLACEHOLDER = '__vite_rsc_define_encryption_key'
   const KEY_FILE = '__vite_rsc_encryption_key.js'
 
-  const serverEnvironments = useServerPluginOptions.environment?.server ?? [
-    'rsc',
-  ]
-  const isServer = (name: string) => serverEnvironments.includes(name)
+  const serverEnvironmentName =
+    useServerPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
 
   return [
     {
       name: 'rsc:encryption-key',
       async configEnvironment(name, _config, env) {
-        if (isServer(name) && !env.isPreview) {
+        if (name === serverEnvironmentName && !env.isPreview) {
           defineEncryptionKey =
             useServerPluginOptions.defineEncryptionKey ??
             JSON.stringify(toBase64(await generateEncryptionKey()))
@@ -1245,10 +1244,8 @@ export function vitePluginUseServer(
     'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
-  const serverEnvironments = useServerPluginOptions.environment?.server ?? [
-    'rsc',
-  ]
-  const isServer = (name: string) => serverEnvironments.includes(name)
+  const serverEnvironmentName =
+    useServerPluginOptions.environment?.serverEnvironmentName ?? 'rsc'
 
   return [
     {
@@ -1278,13 +1275,12 @@ export function vitePluginUseServer(
               // module identity of `import(id)` like browser, so we simply strip it off.
               id = id.split('?v=')[0]!
             }
-            // TODO
-            normalizedId_ = normalizeReferenceId(id, serverEnvironments[0]!)
+            normalizedId_ = normalizeReferenceId(id, serverEnvironmentName)
           }
           return normalizedId_
         }
 
-        if (isServer(this.environment.name)) {
+        if (this.environment.name === serverEnvironmentName) {
           const transformServerActionServer_ = withRollupError(
             this,
             transformServerActionServer,

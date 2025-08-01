@@ -13,17 +13,17 @@ export default defineConfig({
     vitePluginRscMinimal(),
     vitePluginUseClient({
       environment: {
-        server: ['client'],
+        serverEnvironmentName: 'client',
       },
     }),
     vitePluginUseServer({
       environment: {
-        server: ['client'],
+        serverEnvironmentName: 'client',
       },
     }),
     vitePluginDefineEncryptionKey({
       environment: {
-        server: ['client'],
+        serverEnvironmentName: 'client',
       },
     }),
     {
