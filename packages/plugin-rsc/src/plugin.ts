@@ -398,6 +398,18 @@ export default function vitePluginRsc(
 
         if (!isInsideClientBoundary(ctx.modules)) {
           if (this.environment.name === 'rsc') {
+            // detect if this module is only created as css deps (e.g. tailwind)
+            // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
+            if (ctx.modules.length === 1) {
+              const importers = [...ctx.modules[0]!.importers]
+              if (
+                importers.length > 0 &&
+                importers.every((m) => m.id && isCSSRequest(m.id))
+              ) {
+                return []
+              }
+            }
+
             // transform js to surface syntax errors
             for (const mod of ctx.modules) {
               if (mod.type === 'js') {
@@ -426,6 +438,7 @@ export default function vitePluginRsc(
             // Server files can be included in client module graph, for example,
             // when `addWatchFile` is used to track js files as style dependency (e.g. tailwind)
             // In this case, reload all importers (for css hmr), and return empty modules to avoid full-reload.
+            // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
             const env = ctx.server.environments.rsc!
             const mod = env.moduleGraph.getModuleById(ctx.file)
             if (mod) {
