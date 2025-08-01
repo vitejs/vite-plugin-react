@@ -153,15 +153,7 @@ export default function vitePluginRsc(
       clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
       serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
       await builder.build(builder.environments.client!)
-
-      const assetsManifestCode = `export default ${serializeValueWithRuntime(
-        buildAssetsManifest,
-      )}`
-      const manifestPath = path.join(
-        builder.environments!.rsc!.config.build!.outDir!,
-        BUILD_ASSETS_MANIFEST_NAME,
-      )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
+      writeAssetsManifest(['rsc'])
       return
     }
 
@@ -180,19 +172,16 @@ export default function vitePluginRsc(
     serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
-
-    if (rscPluginOptions.useBuildAppHook) {
-      writeAssetsManifest()
-    }
+    writeAssetsManifest(['ssr', 'rsc'])
   }
 
-  function writeAssetsManifest() {
+  function writeAssetsManifest(environmentNames: string[]) {
     // output client manifest to non-client build directly.
     // this makes server build to be self-contained and deploy-able for cloudflare.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       buildAssetsManifest,
     )}`
-    for (const name of ['ssr', 'rsc']) {
+    for (const name of environmentNames) {
       const manifestPath = path.join(
         config.environments[name]!.build.outDir,
         BUILD_ASSETS_MANIFEST_NAME,
@@ -726,27 +715,6 @@ export default function vitePluginRsc(
           return { code }
         }
         return
-      },
-      writeBundle() {
-        // TODO: move this to `buildApp`.
-        // note that we already do this in buildApp for no-ssr case.
-        if (
-          !rscPluginOptions.useBuildAppHook &&
-          this.environment.name === 'ssr'
-        ) {
-          // output client manifest to non-client build directly.
-          // this makes server build to be self-contained and deploy-able for cloudflare.
-          const assetsManifestCode = `export default ${serializeValueWithRuntime(
-            buildAssetsManifest,
-          )}`
-          for (const name of ['ssr', 'rsc']) {
-            const manifestPath = path.join(
-              config.environments[name]!.build.outDir,
-              BUILD_ASSETS_MANIFEST_NAME,
-            )
-            fs.writeFileSync(manifestPath, assetsManifestCode)
-          }
-        }
       },
     },
     createVirtualPlugin('vite-rsc/bootstrap-script-content', function () {
