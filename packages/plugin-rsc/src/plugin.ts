@@ -1246,7 +1246,7 @@ function vitePluginUseServer(
 ): Plugin[] {
   const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
   const browserEnvironmentName =
-    useServerPluginOptions.environment?.browser ?? 'browser'
+    useServerPluginOptions.environment?.browser ?? 'client'
 
   return [
     {
