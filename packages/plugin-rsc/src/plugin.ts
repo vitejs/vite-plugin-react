@@ -232,7 +232,6 @@ export default function vitePluginRsc(
   }
 
   return [
-    ...vitePluginRscMinimal(),
     {
       name: 'rsc',
       async config(config, env) {
