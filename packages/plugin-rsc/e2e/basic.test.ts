@@ -637,6 +637,24 @@ function defineTest(f: Fixture) {
         'rgb(255, 0, 0)',
       )
     })
+
+    test('tailwind no redundant server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      const logs: string[] = []
+      page.on('console', (msg) => {
+        if (msg.type() === 'log') {
+          logs.push(msg.text())
+        }
+      })
+      f.createEditor('src/routes/tailwind/unused.tsx').resave()
+      await page.waitForTimeout(200)
+      f.createEditor('src/routes/tailwind/server.tsx').resave()
+      await page.waitForTimeout(200)
+      expect(logs).toEqual([
+        expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),
+      ])
+    })
   })
 
   test('temporary references @js', async ({ page }) => {
