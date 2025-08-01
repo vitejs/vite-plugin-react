@@ -180,6 +180,25 @@ export default function vitePluginRsc(
     serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
+
+    if (rscPluginOptions.useBuildAppHook) {
+      writeAssetsManifest()
+    }
+  }
+
+  function writeAssetsManifest() {
+    // output client manifest to non-client build directly.
+    // this makes server build to be self-contained and deploy-able for cloudflare.
+    const assetsManifestCode = `export default ${serializeValueWithRuntime(
+      buildAssetsManifest,
+    )}`
+    for (const name of ['ssr', 'rsc']) {
+      const manifestPath = path.join(
+        config.environments[name]!.build.outDir,
+        BUILD_ASSETS_MANIFEST_NAME,
+      )
+      fs.writeFileSync(manifestPath, assetsManifestCode)
+    }
   }
 
   return [
@@ -711,7 +730,10 @@ export default function vitePluginRsc(
       writeBundle() {
         // TODO: move this to `buildApp`.
         // note that we already do this in buildApp for no-ssr case.
-        if (this.environment.name === 'ssr') {
+        if (
+          !rscPluginOptions.useBuildAppHook &&
+          this.environment.name === 'ssr'
+        ) {
           // output client manifest to non-client build directly.
           // this makes server build to be self-contained and deploy-able for cloudflare.
           const assetsManifestCode = `export default ${serializeValueWithRuntime(
