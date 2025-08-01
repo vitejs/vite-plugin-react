@@ -938,17 +938,6 @@ function hashString(v: string) {
   return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
 }
 
-function normalizeReferenceId(id: string, name: 'client' | 'rsc') {
-  if (!server) {
-    return hashString(path.relative(config.root, id))
-  }
-
-  // align with how Vite import analysis would rewrite id
-  // to avoid double modules on browser and ssr.
-  const environment = server.environments[name]!
-  return normalizeViteImportAnalysisUrl(environment, id)
-}
-
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
@@ -1243,7 +1232,14 @@ function vitePluginUseServer(
               // module identity of `import(id)` like browser, so we simply strip it off.
               id = id.split('?v=')[0]!
             }
-            normalizedId_ = normalizeReferenceId(id, 'rsc')
+            if (config.command === 'build') {
+              normalizedId_ = hashString(path.relative(config.root, id))
+            } else {
+              normalizedId_ = normalizeViteImportAnalysisUrl(
+                server.environments.rsc!,
+                id,
+              )
+            }
           }
           return normalizedId_
         }
