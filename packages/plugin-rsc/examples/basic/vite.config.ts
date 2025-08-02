@@ -135,12 +135,27 @@ export default { fetch: handler };
     minify: false,
     manifest: true,
   },
-  optimizeDeps: {
-    exclude: [
-      '@vitejs/test-dep-client-in-server/client',
-      '@vitejs/test-dep-client-in-server2/client',
-      '@vitejs/test-dep-server-in-client/client',
-    ],
+  environments: {
+    client: {
+      optimizeDeps: {
+        entries: [
+          './src/routes/**/client.tsx',
+          './src/framework/entry.browser.tsx',
+        ],
+        exclude: [
+          '@vitejs/test-dep-client-in-server/client',
+          '@vitejs/test-dep-client-in-server2/client',
+          '@vitejs/test-dep-server-in-client/client',
+        ],
+      },
+    },
+    ssr: {
+      optimizeDeps: {
+        include: [
+          '@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',
+        ],
+      },
+    },
   },
 }) as any
 

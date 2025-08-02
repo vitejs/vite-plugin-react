@@ -31,8 +31,6 @@ export default defineConfig({
         rollupOptions: {
           // ensure `default` export only in cloudflare entry output
           preserveEntrySignatures: 'exports-only',
-          // @ts-ignore rolldown
-          platform: 'neutral',
         },
       },
       optimizeDeps: {

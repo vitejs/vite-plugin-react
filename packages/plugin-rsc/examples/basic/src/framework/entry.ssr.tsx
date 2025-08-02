@@ -24,7 +24,11 @@ export async function renderHTML(
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
-    return React.use(payload).root
+    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
+  }
+
+  function FixSsrThenable(props: React.PropsWithChildren) {
+    return props.children
   }
 
   // render html (traditional SSR)
@@ -42,7 +46,6 @@ export async function renderHTML(
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
-    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
