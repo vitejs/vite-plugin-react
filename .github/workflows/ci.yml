@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node_version: [18, 20, 22, 24]
+        node_version: [20, 22, 24]
         include:
           # Active LTS + other OS
           - os: macos-latest
@@ -81,9 +81,6 @@ jobs:
         # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
         run: pnpm playwright install chromium
 
-      - if: matrix.node_version == '18'
-        run: pnpm i -D vite@6.3.5 -w
-
       - name: Build
         run: pnpm run build
 
@@ -95,6 +92,17 @@ jobs:
 
       - name: Test SWC
         run: pnpm --filter ./packages/plugin-react-swc run test
+
+      - name: Setup rolldown-vite
+        run: |
+          sed -i"" -e "s/overrides:/overrides:\n  vite: catalog:rolldown-vite/" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+
+      - name: Test serve (rolldown-vite)
+        run: pnpm run test-serve
+
+      - name: Test build (rolldown-vite)
+        run: pnpm run test-build
 
   lint:
     if: github.repository == 'vitejs/vite-plugin-react'

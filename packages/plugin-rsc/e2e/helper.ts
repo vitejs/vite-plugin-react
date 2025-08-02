@@ -15,7 +15,7 @@ export async function waitForHydration(page: Page, locator: string = 'body') {
               el &&
               Object.keys(el).some((key) => key.startsWith('__reactFiber')),
           ),
-      { timeout: 3000 },
+      { timeout: 10000 },
     )
     .toBeTruthy()
 }
@@ -39,6 +39,18 @@ export async function expectNoReload(page: Page) {
       await page.evaluate(() => {
         document.querySelector(`meta[name="x-reload-check"]`)!.remove()
       })
+    },
+  }
+}
+
+export function expectNoPageError(page: Page) {
+  const errors: Error[] = []
+  page.on('pageerror', (error) => {
+    errors.push(error)
+  })
+  return {
+    [Symbol.dispose]: () => {
+      expect(errors).toEqual([])
     },
   }
 }

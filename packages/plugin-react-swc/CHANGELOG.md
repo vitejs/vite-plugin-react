@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 4.0.0-beta.0 (2025-07-28)
+
+### Require Node 20.19+, 22.12+
+
+This plugin now requires Node 20.19+ or 22.12+.
+
 ## 3.11.0 (2025-07-18)
 
 ### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))

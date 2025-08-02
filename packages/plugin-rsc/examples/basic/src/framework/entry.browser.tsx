@@ -70,7 +70,8 @@ async function main() {
 
   // implement server HMR by trigering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
-    import.meta.hot.on('rsc:update', () => {
+    import.meta.hot.on('rsc:update', (e) => {
+      console.log('[vite-rsc:update]', e.file)
       fetchRscPayload()
     })
   }

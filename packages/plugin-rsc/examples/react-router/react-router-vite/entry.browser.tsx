@@ -4,35 +4,42 @@ import {
   encodeReply,
   setServerCallback,
 } from '@vitejs/plugin-rsc/browser'
-import * as React from 'react'
+import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import {
-  unstable_RSCHydratedRouter as RSCHydratedRouter,
-  type unstable_RSCPayload as RSCPayload,
   unstable_createCallServer as createCallServer,
   unstable_getRSCStream as getRSCStream,
+  unstable_RSCHydratedRouter as RSCHydratedRouter,
+  type unstable_RSCPayload as RSCServerPayload,
 } from 'react-router'
 
+// Create and set the callServer function to support post-hydration server actions.
 setServerCallback(
   createCallServer({
     createFromReadableStream,
-    encodeReply,
     createTemporaryReferenceSet,
+    encodeReply,
   }),
 )
 
-createFromReadableStream<RSCPayload>(getRSCStream()).then(
-  (payload: RSCPayload) => {
-    React.startTransition(() => {
-      hydrateRoot(
-        document,
-        <React.StrictMode>
-          <RSCHydratedRouter
-            createFromReadableStream={createFromReadableStream}
-            payload={payload}
-          />
-        </React.StrictMode>,
-      )
-    })
-  },
-)
+// Get and decode the initial server payload
+createFromReadableStream<RSCServerPayload>(getRSCStream()).then((payload) => {
+  startTransition(async () => {
+    const formState =
+      payload.type === 'render' ? await payload.formState : undefined
+
+    hydrateRoot(
+      document,
+      <StrictMode>
+        <RSCHydratedRouter
+          createFromReadableStream={createFromReadableStream}
+          payload={payload}
+        />
+      </StrictMode>,
+      {
+        // @ts-expect-error - no types for this yet
+        formState,
+      },
+    )
+  })
+})

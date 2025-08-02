@@ -48,23 +48,11 @@ export default defineConfig({
         include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
       },
-      build: {
-        rollupOptions: {
-          // @ts-ignore rolldown
-          platform: 'neutral',
-        },
-      },
     },
     rsc: {
       optimizeDeps: {
         include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
-      },
-      build: {
-        rollupOptions: {
-          // @ts-ignore rolldown
-          platform: 'neutral',
-        },
       },
     },
   },
