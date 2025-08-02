@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.15",
+  "version": "0.4.16",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "vite",
@@ -60,7 +60,8 @@
     "react-server-dom-webpack": "^19.1.0",
     "rsc-html-stream": "^0.0.7",
     "tinyexec": "^1.0.1",
-    "tsdown": "^0.13.0"
+    "tsdown": "^0.13.0",
+    "vite-plugin-inspect": "^11.3.2"
   },
   "peerDependencies": {
     "react": "*",

@@ -1,3 +1,29 @@
+## <small>[0.4.16](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.15...plugin-rsc@0.4.16) (2025-08-01)</small>
+### Features
+
+* merge `plugin-react-oxc` into `plugin-react` ([#609](https://github.com/vitejs/vite-plugin-react/issues/609)) ([133d786](https://github.com/vitejs/vite-plugin-react/commit/133d7865f42aa3376b5d3119fdb6a71eaf600275))
+* **rsc:** add `useBuildAppHook` option to switch `plugin.buildApp` or `builder.buildApp` ([#653](https://github.com/vitejs/vite-plugin-react/issues/653)) ([83a5741](https://github.com/vitejs/vite-plugin-react/commit/83a57414169684bc705a5f6ca13cf097225117d8))
+* **rsc:** support `client` environment as `react-server` ([#657](https://github.com/vitejs/vite-plugin-react/issues/657)) ([5df0070](https://github.com/vitejs/vite-plugin-react/commit/5df00707522ecbcda40f2c53c620f46b517e68e6))
+
+### Bug Fixes
+
+* **react:** use development jsx transform for `NODE_ENV=development` build ([#649](https://github.com/vitejs/vite-plugin-react/issues/649)) ([9ffd86d](https://github.com/vitejs/vite-plugin-react/commit/9ffd86df3c0cfc2060669cac7cc0b86144158b1b))
+* **rsc:** avoid unnecessary server hmr due to tailwind module deps ([#658](https://github.com/vitejs/vite-plugin-react/issues/658)) ([c1383f8](https://github.com/vitejs/vite-plugin-react/commit/c1383f870137c0f152d7687250e8095635a1177c))
+
+### Miscellaneous Chores
+
+* **deps:** update all non-major dependencies ([#639](https://github.com/vitejs/vite-plugin-react/issues/639)) ([1a02ba7](https://github.com/vitejs/vite-plugin-react/commit/1a02ba7f4d3fe4a1696b43bc5161d6d466802faf))
+
+### Code Refactoring
+
+* **rsc:** move `writeManifest` inside `buildApp` hook ([#659](https://github.com/vitejs/vite-plugin-react/issues/659)) ([a34f8c5](https://github.com/vitejs/vite-plugin-react/commit/a34f8c537df2efc27d55a510bfd3597c639842f6))
+* **rsc:** split encryption runtime exports ([#660](https://github.com/vitejs/vite-plugin-react/issues/660)) ([ff44ae4](https://github.com/vitejs/vite-plugin-react/commit/ff44ae49697e6ebca4ae4b241ab8337ebe659b5e))
+
+### Tests
+
+* **rsc:** port transform tests from waku ([#655](https://github.com/vitejs/vite-plugin-react/issues/655)) ([c602225](https://github.com/vitejs/vite-plugin-react/commit/c602225271d4acf462ba00f8d6d8a2e42492c5cd))
+* **rsc:** split more independent tests ([#652](https://github.com/vitejs/vite-plugin-react/issues/652)) ([ac0cac7](https://github.com/vitejs/vite-plugin-react/commit/ac0cac7465cc94e91e8ac40269f36e91599b8162))
+
 ## <small>[0.4.15](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.14...plugin-rsc@0.4.15) (2025-07-28)</small>
 ### Features
 
