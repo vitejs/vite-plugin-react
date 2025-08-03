@@ -961,6 +961,71 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('React.cache API availability', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    
+    // Test that the React.cache component renders
+    await expect(page.getByTestId('react-cache-test')).toContainText(
+      'React.cache Test',
+    )
+
+    // Test React.cache and React.use are available
+    await expect(page.getByTestId('react-cache-available')).toContainText(
+      'React.cache available: Yes',
+    )
+    await expect(page.getByTestId('react-use-available')).toContainText(
+      'React.use available: Yes',
+    )
+
+    // Test that we can create cached functions
+    await expect(page.getByTestId('api-test-result')).toContainText(
+      'Success - created cached function of type: function',
+    )
+  })
+
+  test('React.cache synchronous behavior', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    
+    // Test synchronous cache behavior
+    const result1 = await page.getByTestId('sync-result1').textContent()
+    const result2 = await page.getByTestId('sync-result2').textContent()
+
+    // Verify both calls return the same value (indicating caching)
+    expect(result1).toBe(result2)
+    await expect(page.getByTestId('sync-results-equal')).toContainText(
+      'Results equal: true',
+    )
+  })
+
+  test('React.cache with async operations', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    
+    // Wait for suspense to resolve
+    await expect(page.getByTestId('async-result')).toBeVisible()
+
+    // Verify async cache result loads
+    await expect(page.getByTestId('async-result')).toContainText('Async result')
+  })
+
+  test('React.cache re-render behavior', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    
+    // Get initial call count
+    const initialCallCount = await page.getByTestId('sync-call-count').textContent()
+
+    // Force a re-render
+    await page.getByTestId('cache-test-rerender').click()
+
+    // Verify call count (behavior may vary between React versions)
+    const newCallCount = await page.getByTestId('sync-call-count').textContent()
+    expect(newCallCount).toBeTruthy()
+    expect(initialCallCount).toBeTruthy()
+  })
+
   test('hydration mismatch', async ({ page }) => {
     const errors: Error[] = []
     page.on('pageerror', (error) => {

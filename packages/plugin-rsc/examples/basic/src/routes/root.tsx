@@ -31,6 +31,7 @@ import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
 import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
+import { ReactCacheTest } from './react-cache/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -75,6 +76,7 @@ export function Root(props: { url: URL }) {
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestUseCache />
+        <ReactCacheTest />
       </body>
     </html>
   )
