@@ -27,6 +27,7 @@ import { TestTailwindClient } from './tailwind/client'
 import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
+import { TestReactCache } from './react-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
@@ -75,6 +76,7 @@ export function Root(props: { url: URL }) {
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestUseCache />
+        <TestReactCache />
       </body>
     </html>
   )
