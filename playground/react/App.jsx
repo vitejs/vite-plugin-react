@@ -8,6 +8,7 @@ import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
 import { TestImportAttributes } from './import-attributes/test'
 import { TEST_NON_JSX, TestNonJsx } from './non-jsx/test'
+import { ReactCacheTest } from './cache/ReactCacheTest'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -50,6 +51,7 @@ function App() {
       <TestImportAttributes />
       {TestNonJsx()}
       {TEST_NON_JSX()}
+      <ReactCacheTest />
     </div>
   )
 }

@@ -69,6 +69,68 @@ test('import attributes', async () => {
   expect(await page.textContent('.import-attributes')).toBe('ok')
 })
 
+test('React.cache API availability', async () => {
+  // Test that the React.cache component renders
+  expect(await page.textContent('.react-cache-test h3')).toBe(
+    'React.cache Test',
+  )
+
+  // Test React.cache and React.use are available in React 19
+  expect(await page.textContent('#react-cache-available')).toBe(
+    'React.cache available: Yes',
+  )
+  expect(await page.textContent('#react-use-available')).toBe(
+    'React.use available: Yes',
+  )
+
+  // Test that we can create cached functions
+  expect(await page.textContent('#api-test-result')).toContain(
+    'Success - created cached function of type: function',
+  )
+})
+
+test('React.cache synchronous behavior', async () => {
+  // Test synchronous cache behavior
+  await expect.poll(() => page.textContent('#sync-result1')).toBeTruthy()
+  await expect.poll(() => page.textContent('#sync-result2')).toBeTruthy()
+
+  const result1 = await page.textContent('#sync-result1')
+  const result2 = await page.textContent('#sync-result2')
+
+  // Verify both calls return the same value (indicating caching)
+  expect(result1).toBe(result2)
+  expect(await page.textContent('#sync-results-equal')).toBe(
+    'Results equal: true',
+  )
+})
+
+test('React.cache with async operations', async () => {
+  // Wait for suspense to resolve
+  await expect.poll(() => page.textContent('#async-result')).toBeTruthy()
+
+  // Verify async cache result loads
+  const asyncResult = await page.textContent('#async-result')
+  expect(asyncResult).toContain('Async result')
+})
+
+test('React.cache re-render behavior', async () => {
+  // Get initial call count
+  const initialCallCount = await page.textContent('#sync-call-count')
+
+  // Force a re-render
+  await page.click('#cache-test-rerender')
+
+  // Wait for re-render to complete
+  await expect
+    .poll(() => page.textContent('#cache-test-rerender'))
+    .toContain('count: 1')
+
+  // Check that results are still equal after re-render
+  expect(await page.textContent('#sync-results-equal')).toBe(
+    'Results equal: true',
+  )
+})
+
 if (!isBuild) {
   // #9869
   test('should only hmr files with exported react components', async () => {
