@@ -834,9 +834,15 @@ window.__vite_plugin_react_preamble_installed__ = true;
         // technically this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
         // TODO: there migth be a clever way to let Vite deduplicate itself.
         // cf. https://github.com/withastro/astro/blob/acb9b302f56e38833a1ab01147f7fde0bf967889/packages/astro/src/vite-plugin-astro-server/pipeline.ts#L133-L135
-        code += `
+        code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
-import.meta.hot.on("vite:beforeUpdate", () => ssrCss.forEach(node => node.remove()));
+import.meta.hot.on("vite:beforeUpdate", () => {
+  ssrCss.forEach(node => {
+    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+      node.remove();
+    }
+  })
+});
 `
         // close error overlay after syntax error is fixed and hmr is triggered.
         // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
