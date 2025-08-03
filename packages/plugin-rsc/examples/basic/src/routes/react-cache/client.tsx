@@ -76,7 +76,7 @@ function ApiAvailabilityTest() {
     const testCache = React.cache(() => 'test')
     result = `Success - created cached function of type: ${typeof testCache}`
   } catch (error) {
-    result = `Error: ${error.message}`
+    result = `Error: ${error instanceof Error ? error.message : String(error)}`
   }
 
   return (
