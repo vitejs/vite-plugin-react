@@ -1,0 +1,36 @@
+{
+  "name": "vite-plugin-react",
+  "description": "Official React plugins for Vite",
+  "type": "monorepo",
+  "packageManager": "pnpm",
+  "language": "TypeScript",
+  "framework": "Vite",
+  "testFramework": "Vitest + Playwright",
+  "packages": [
+    {
+      "name": "@vitejs/plugin-react",
+      "path": "packages/plugin-react",
+      "description": "React plugin using Babel transformations"
+    },
+    {
+      "name": "@vitejs/plugin-react-swc",
+      "path": "packages/plugin-react-swc",
+      "description": "React plugin using SWC transformations"
+    },
+    {
+      "name": "@vitejs/plugin-react-oxc",
+      "path": "packages/plugin-react-oxc",
+      "description": "React plugin using Oxc transformations"
+    },
+    {
+      "name": "@vitejs/plugin-rsc",
+      "path": "packages/plugin-rsc",
+      "description": "React Server Components plugin"
+    }
+  ],
+  "conventions": {
+    "commits": "Conventional Commits",
+    "codeStyle": "Prettier + ESLint",
+    "testing": "Vitest for unit, Playwright for E2E"
+  }
+}

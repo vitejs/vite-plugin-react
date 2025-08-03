@@ -1,0 +1,193 @@
+name: GitHub Copilot Setup
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - ".github/copilot/**"
+      - "AGENTS.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  setup-copilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: "Setup GitHub Copilot Environment"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Set node version to 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Create Copilot workspace instructions
+        run: |
+          mkdir -p .github/copilot
+          cat > .github/copilot/instructions.md << 'EOF'
+          # GitHub Copilot Instructions for Vite Plugin React
+
+          This workspace contains multiple Vite plugins for React:
+
+          ## Package Structure
+          - `packages/plugin-react/` - Babel-based React plugin
+          - `packages/plugin-react-swc/` - SWC-based React plugin  
+          - `packages/plugin-react-oxc/` - Oxc-based React plugin
+          - `packages/plugin-rsc/` - React Server Components plugin
+
+          ## Key Conventions
+          - Use TypeScript with strict typing
+          - Follow existing patterns in each package
+          - Write tests for new features using Vitest + Playwright
+          - Use pnpm for package management
+          - Follow semantic commit conventions
+
+          ## Development Patterns
+          - Plugin exports should follow Vite plugin conventions
+          - Options interfaces should be well-typed
+          - Error handling should be consistent across packages
+          - Tests should cover both serve and build modes
+
+          ## Common Code Patterns
+          ```typescript
+          // Plugin definition pattern
+          export interface PluginOptions {
+            // options interface
+          }
+
+          export function pluginName(options: PluginOptions = {}): Plugin {
+            return {
+              name: 'vite:plugin-name',
+              // plugin implementation
+            }
+          }
+          ```
+
+          When suggesting code, prioritize:
+          1. Type safety and proper TypeScript usage
+          2. Consistency with existing code patterns
+          3. Performance considerations for build tools
+          4. Proper error handling and edge cases
+          5. Test coverage for new functionality
+          EOF
+
+      - name: Generate project context for Copilot
+        run: |
+          cat > .github/copilot/project-context.json << 'EOF'
+          {
+            "name": "vite-plugin-react",
+            "description": "Official React plugins for Vite",
+            "type": "monorepo",
+            "packageManager": "pnpm",
+            "language": "TypeScript",
+            "framework": "Vite",
+            "testFramework": "Vitest + Playwright",
+            "packages": [
+              {
+                "name": "@vitejs/plugin-react",
+                "path": "packages/plugin-react",
+                "description": "React plugin using Babel transformations"
+              },
+              {
+                "name": "@vitejs/plugin-react-swc", 
+                "path": "packages/plugin-react-swc",
+                "description": "React plugin using SWC transformations"
+              },
+              {
+                "name": "@vitejs/plugin-react-oxc",
+                "path": "packages/plugin-react-oxc", 
+                "description": "React plugin using Oxc transformations"
+              },
+              {
+                "name": "@vitejs/plugin-rsc",
+                "path": "packages/plugin-rsc",
+                "description": "React Server Components plugin"
+              }
+            ],
+            "conventions": {
+              "commits": "Conventional Commits",
+              "codeStyle": "Prettier + ESLint",
+              "testing": "Vitest for unit, Playwright for E2E"
+            }
+          }
+          EOF
+
+      - name: Create VS Code Copilot settings template
+        run: |
+          mkdir -p .github/copilot
+          cat > .github/copilot/vscode-settings-template.json << 'EOF'
+          {
+            "github.copilot.enable": {
+              "*": true,
+              "plaintext": true,
+              "markdown": true,
+              "typescript": true,
+              "javascript": true,
+              "json": true,
+              "yaml": true
+            },
+            "github.copilot.editor.enableAutoCompletions": true,
+            "github.copilot.chat.localeOverride": "en",
+            "typescript.preferences.allowRenameOfImportPath": false,
+            "typescript.suggest.autoImports": true,
+            "typescript.updateImportsOnFileMove.enabled": "always",
+            "editor.inlineSuggest.enabled": true,
+            "editor.suggestSelection": "first",
+            "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue"
+          }
+          EOF
+
+      - name: Validate Copilot configuration
+        run: |
+          echo "✅ Copilot workspace instructions created"
+          echo "✅ Project context generated"
+          echo "✅ VS Code settings template created"
+
+          # Validate JSON files
+          node -e "JSON.parse(require('fs').readFileSync('.github/copilot/project-context.json', 'utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('.github/copilot/vscode-settings-template.json', 'utf8'))"
+
+          echo "✅ All configuration files are valid"
+
+      - name: Check AGENTS.md exists
+        run: |
+          if [ -f "AGENTS.md" ]; then
+            echo "✅ AGENTS.md documentation found"
+            echo "📄 File size: $(wc -c < AGENTS.md) bytes"
+            echo "📝 Lines: $(wc -l < AGENTS.md)"
+          else
+            echo "❌ AGENTS.md not found - please ensure AI documentation exists"
+            exit 1
+          fi
+
+      - name: Display setup completion
+        run: |
+          echo "🤖 GitHub Copilot setup completed successfully!"
+          echo ""
+          echo "📋 What was configured:"
+          echo "  • Copilot workspace instructions (.github/copilot/instructions.md)"
+          echo "  • Project context metadata (.github/copilot/project-context.json)"  
+          echo "  • VS Code settings template (.github/copilot/vscode-settings-template.json)"
+          echo "  • Validated AGENTS.md documentation"
+          echo ""
+          echo "💡 For VS Code users:"
+          echo "  Copy .github/copilot/vscode-settings-template.json to .vscode/settings.json"
+          echo "  (Note: .vscode/ is gitignored for personal preferences)"
+          echo ""
+          echo "🚀 Developers can now use GitHub Copilot effectively with this project!"
+          echo "📖 See AGENTS.md for detailed AI assistance guidelines"
