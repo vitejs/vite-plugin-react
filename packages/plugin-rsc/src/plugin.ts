@@ -829,11 +829,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
-        // TODO
-        // should remove only the ones we injected during ssr, which are duplicated by browser imports for HMR.
-        // technically this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
-        // TODO: there migth be a clever way to let Vite deduplicate itself.
-        // cf. https://github.com/withastro/astro/blob/acb9b302f56e38833a1ab01147f7fde0bf967889/packages/astro/src/vite-plugin-astro-server/pipeline.ts#L133-L135
+        // TODO: this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
         code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
@@ -841,7 +837,7 @@ import.meta.hot.on("vite:beforeUpdate", () => {
     if (node.dataset.precedence?.startsWith("vite-rsc/")) {
       node.remove();
     }
-  })
+  });
 });
 `
         // close error overlay after syntax error is fixed and hmr is triggered.
