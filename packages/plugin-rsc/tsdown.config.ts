@@ -44,15 +44,6 @@ export default defineConfig({
           recursive: true,
           force: true,
         })
-        fs.cpSync(
-          './node_modules/use-sync-external-store',
-          './dist/vendor/use-sync-external-store',
-          { recursive: true, dereference: true },
-        )
-        fs.rmSync('./dist/vendor/use-sync-external-store/node_modules', {
-          recursive: true,
-          force: true,
-        })
       },
     },
   ],
