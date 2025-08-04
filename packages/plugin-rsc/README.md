@@ -265,7 +265,7 @@ export function renderHTML(...) {}
 #### `import.meta.viteRsc.loadCss`
 
 > [!NOTE]
-> The plugin automatically injects CSS for React components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
+> The plugin automatically injects CSS for server components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
 
 - Type: `(importer?: string) => React.ReactNode`
 
@@ -441,9 +441,9 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 
 ## CSS Support
 
-The plugin automatically handles CSS code-splitting and injection for React server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
+The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
 
-1. **Component Detection**: The plugin automatically detects React server components by looking for:
+1. **Component Detection**: The plugin automatically detects server components by looking for:
    - Function exports with capital letter names (e.g., `export function Page() {}`)
    - Default exports that are functions with capital names (e.g., `export default function Page() {}`)
    - Const exports assigned to functions with capital names (e.g., `export const Page = () => {}`)
