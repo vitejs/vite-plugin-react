@@ -2127,7 +2127,8 @@ function validateImportPlugin(): Plugin {
 
 function vendorUseSyncExternalStorePlugin(): Plugin[] {
   // vendor and optimize use-sync-external-store out of the box
-  // since this is a commonly used cjs dep (e.g. swr, @tanstack/react-store)
+  // since this is a common enough cjs, which tends to break
+  // other packages (e.g. swr, @tanstack/react-store)
 
   // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
   const exports = [
