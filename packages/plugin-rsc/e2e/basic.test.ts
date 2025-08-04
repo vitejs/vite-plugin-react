@@ -318,11 +318,83 @@ function defineTest(f: Fixture) {
     })
 
     test('shared hmr', async ({ page }) => {
-      // TODO:
-      // modify src/routes/hmr-shared/shared1.tsx to confirm component hmr
-      // modify src/routes/hmr-shared/shared2.tsx to confirm non-comonent hmr
-      // modify src/routes/hmr-shared/aomic/shared.tsx to confirm server/client updates are not atomic
-      page
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      // Test initial state
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ok (test-shared)',
+      )
+
+      // Test 1: Component HMR (shared1.tsx)
+      const editor1 = f.createEditor('src/routes/hmr-shared/shared1.tsx')
+      editor1.edit((s) => s.replace('shared1', 'shared1-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+
+      editor1.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 2: Non-component HMR (shared2.tsx)
+      const editor2 = f.createEditor('src/routes/hmr-shared/shared2.tsx')
+      editor2.edit((s) => s.replace('shared2', 'shared2-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+
+      editor2.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 3: Atomic updates (atomic/shared.tsx)
+      // This tests if server/client updates are atomic or if there can be temporary mismatches
+      const editor3 = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
+      editor3.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+
+      // The atomic test should either:
+      // 1. Update atomically and show "ok (test-shared-edit)" immediately
+      // 2. Show a temporary error if updates are not atomic, then recover
+      await expect(async () => {
+        const text = await page
+          .getByTestId('test-hmr-shared-atomic')
+          .textContent()
+        // Should eventually show either the updated value or recover from error
+        expect(text).toMatch(/ok \(test-shared-edit\)|ErrorBoundary caught/)
+      }).toPass({ timeout: 5000 })
+
+      // Wait a bit longer to see if it recovers to the correct state
+      await page.waitForTimeout(1000)
+      await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
+
+      editor3.reset()
+      await expect(page.getByText('ok (test-shared)')).toBeVisible()
     })
   })
 

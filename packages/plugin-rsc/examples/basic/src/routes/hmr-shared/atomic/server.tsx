@@ -4,7 +4,7 @@ import { testShared } from './shared'
 
 export function TestHmrSharedAtomic() {
   return (
-    <div>
+    <div data-testid="test-hmr-shared-atomic">
       test-hmr-shared-atomic:{' '}
       <ErrorBoundary>
         <TestClient testSharedFromServer={testShared} />
