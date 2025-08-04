@@ -43,7 +43,7 @@
     "@babel/core": "^7.28.0",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.29",
+    "@rolldown/pluginutils": "1.0.0-beta.30",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.17.0"
   },
@@ -53,10 +53,10 @@
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "rolldown": "1.0.0-beta.29",
-    "tsdown": "^0.13.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "rolldown": "1.0.0-beta.30",
+    "tsdown": "^0.13.2",
     "vitest": "^3.2.4"
   }
 }
