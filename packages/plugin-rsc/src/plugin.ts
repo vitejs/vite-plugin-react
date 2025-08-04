@@ -309,6 +309,7 @@ export default function vitePluginRsc(
                   'react-dom',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
+                  'react-dom/server',
                   'react-dom/server.edge',
                   `${REACT_SERVER_DOM_NAME}/client.edge`,
                 ],
