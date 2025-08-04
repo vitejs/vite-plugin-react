@@ -76,7 +76,7 @@ export function Root(props: { url: URL }) {
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestUseCache />
-        <TestReactCache />
+        <TestReactCache url={props.url} />
       </body>
     </html>
   )

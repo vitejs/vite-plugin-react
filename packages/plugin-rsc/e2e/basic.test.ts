@@ -1007,40 +1007,16 @@ function defineTest(f: Fixture) {
     )
   })
 
-  test('react cache function', async ({ page }) => {
+  test('React.cache', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    const locator = page.getByTestId('test-react-cache-fn')
-
-    // Just verify the functionality exists and works
-    await expect(locator.locator('span')).toContainText('actionCount:')
-    await expect(locator.locator('span')).toContainText('cacheFnCount:')
-
-    // Click button and verify counters update
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toContainText('actionCount:')
-    await expect(locator.locator('span')).toContainText('cacheFnCount:')
-
-    // Test with different argument
-    await locator.getByRole('textbox').fill('test-arg')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toContainText('actionCount:')
-    await expect(locator.locator('span')).toContainText('cacheFnCount:')
-  })
-
-  test('react cache component', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-
-    // Check that the React.cache test components are rendered
-    await expect(page.getByTestId('test-react-cache-component')).toBeVisible()
-    await expect(page.getByTestId('test-react-cache-basic')).toContainText(
-      'React.cache basic test:',
+    await page.getByRole('link', { name: 'test-react-cache' }).click()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 2, nonCacheFnCount = 3)',
     )
-
-    // Check that the async inner component loads
-    await expect(
-      page.getByTestId('test-react-cache-async-inner'),
-    ).toContainText('Async inner: cacheFnCount =')
+    await page.reload()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 4, nonCacheFnCount = 6)',
+    )
   })
 }
