@@ -61,6 +61,7 @@
     "rsc-html-stream": "^0.0.7",
     "tinyexec": "^1.0.1",
     "tsdown": "^0.13.2",
+    "use-sync-external-store": "^1.5.0",
     "vite-plugin-inspect": "^11.3.2"
   },
   "peerDependencies": {
