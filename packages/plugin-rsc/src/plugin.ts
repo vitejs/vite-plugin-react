@@ -265,6 +265,18 @@ export default function vitePluginRsc(
           ...result.ssr.noExternal.sort(),
         ]
 
+        // vendor and optimize use-sync-external-store since
+        // this is a common transitive cjs dep, which tends to cause a cryptic error.
+        const vendorDeps = [
+          `${PKG_NAME}/vendor/use-sync-external-store`,
+          `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
+          `${PKG_NAME}/vendor/use-sync-external-store/with-selector.js`,
+          `${PKG_NAME}/vendor/use-sync-external-store/shim`,
+          `${PKG_NAME}/vendor/use-sync-external-store/shim/index.js`,
+          `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
+          `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector.js`,
+        ]
+
         return {
           appType: 'custom',
           define: {
@@ -311,6 +323,7 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  ...vendorDeps,
                 ],
                 exclude: [PKG_NAME],
               },
