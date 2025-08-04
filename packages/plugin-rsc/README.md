@@ -441,7 +441,7 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 
 ## CSS Support
 
-The plugin automatically handles CSS code-splitting and injection for React server components. This eliminates the need to manually call `import.meta.viteRsc.loadCss()` in most cases.
+The plugin automatically handles CSS code-splitting and injection for React server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
 
 1. **Component Detection**: The plugin automatically detects React server components by looking for:
    - Function exports with capital letter names (e.g., `export function Page() {}`)
@@ -459,25 +459,18 @@ import './styles.css'
 export function Page() {
   return <div>Hello</div>
 }
-```
 
-```tsx
 // After transformation
 import './styles.css'
 
-function Page() {
-  return <div>Hello</div>
-}
-
-function __wrapper(props) {
+export function Page() {
   return (
     <>
       {import.meta.viteRsc.loadCss()}
-      <Page {...props} />
+      <div>Hello</div>
     </>
   )
 }
-export { __wrapper as Page }
 ```
 
 ## Credits
