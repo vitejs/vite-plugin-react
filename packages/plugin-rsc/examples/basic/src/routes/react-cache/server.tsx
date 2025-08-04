@@ -1,5 +1,9 @@
 import React from 'react'
 
+// Note that `React.cache` doesn't have effect inside action
+// since it's outside of RSC render request context.
+// https://github.com/hi-ogawa/reproductions/tree/main/next-rsc-action-cache
+
 export async function TestReactCache(props: { url: URL }) {
   if (props.url.searchParams.has('test-react-cache')) {
     await Promise.all([
