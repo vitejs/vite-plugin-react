@@ -32,6 +32,8 @@ import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
 import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
+import { TestHmrSharedServer } from './hmr-shared/server'
+import { TestHmrSharedClient } from './hmr-shared/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -56,6 +58,8 @@ export function Root(props: { url: URL }) {
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />
+        <TestHmrSharedServer />
+        <TestHmrSharedClient />
         <TestTemporaryReference />
         <TestServerActionError />
         <TestReplayConsoleLogs url={props.url} />
