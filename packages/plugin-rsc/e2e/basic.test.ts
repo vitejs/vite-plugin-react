@@ -316,6 +316,14 @@ function defineTest(f: Fixture) {
       editor.reset()
       await expect(locator).toContainText('[dep: 1]')
     })
+
+    test('shared hmr', async ({ page }) => {
+      // TODO:
+      // modify src/routes/hmr-shared/shared1.tsx to confirm component hmr
+      // modify src/routes/hmr-shared/shared2.tsx to confirm non-comonent hmr
+      // modify src/routes/hmr-shared/aomic/shared.tsx to confirm server/client updates are not atomic
+      page
+    })
   })
 
   test('css @js', async ({ page }) => {
