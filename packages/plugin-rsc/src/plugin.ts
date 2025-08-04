@@ -2128,24 +2128,19 @@ function validateImportPlugin(): Plugin {
 function vendorUseSyncExternalStorePlugin(): Plugin[] {
   // vendor and optimize use-sync-external-store out of the box
   // since this is a commonly used cjs dep (e.g. swr, @tanstack/react-store)
+  const DEP_NAME = 'use-sync-external-store'
+  const VENDOR_DEP_NAME = `${PKG_NAME}/vendor/use-sync-external-store`
 
-  const vendorDeps = [
-    `${PKG_NAME}/vendor/use-sync-external-store/index`,
-    `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
-    `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
-    `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
-  ]
-
-  // map exports to vendor deps
+  // map exports
   // cf. https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
   const alias: Record<string, string> = {
-    'use-sync-external-store': `${PKG_NAME}/vendor/use-sync-external-store/index`,
-    'use-sync-external-store/with-selector': `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
-    'use-sync-external-store/with-selector.js': `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
-    'use-sync-external-store/shim': `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
-    'use-sync-external-store/shim/index.js': `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
-    'use-sync-external-store/shim/with-selector': `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
-    'use-sync-external-store/shim/with-selector.js': `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
+    [DEP_NAME]: `${VENDOR_DEP_NAME}/index`,
+    [`${DEP_NAME}/with-selector`]: `${VENDOR_DEP_NAME}/with-selector`,
+    [`${DEP_NAME}/with-selector.js`]: `${VENDOR_DEP_NAME}/with-selector`,
+    [`${DEP_NAME}/shim`]: `${VENDOR_DEP_NAME}/shim/index`,
+    [`${DEP_NAME}/shim/index.js`]: `${VENDOR_DEP_NAME}/shim/index`,
+    [`${DEP_NAME}/shim/with-selector`]: `${VENDOR_DEP_NAME}/shim/with-selector`,
+    [`${DEP_NAME}/shim/with-selector.js`]: `${VENDOR_DEP_NAME}/shim/with-selector`,
   }
 
   return [
@@ -2157,7 +2152,7 @@ function vendorUseSyncExternalStorePlugin(): Plugin[] {
           environments: {
             ssr: {
               optimizeDeps: {
-                include: vendorDeps,
+                include: [...new Set(Object.values(alias))],
               },
             },
           },
