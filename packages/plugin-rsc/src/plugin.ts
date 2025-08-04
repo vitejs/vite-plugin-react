@@ -265,18 +265,6 @@ export default function vitePluginRsc(
           ...result.ssr.noExternal.sort(),
         ]
 
-        // vendor and optimize use-sync-external-store since
-        // this is a common transitive cjs dep, which tends to cause a cryptic error.
-        const vendorDeps = [
-          `${PKG_NAME}/vendor/use-sync-external-store`,
-          `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
-          `${PKG_NAME}/vendor/use-sync-external-store/with-selector.js`,
-          `${PKG_NAME}/vendor/use-sync-external-store/shim`,
-          `${PKG_NAME}/vendor/use-sync-external-store/shim/index.js`,
-          `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
-          `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector.js`,
-        ]
-
         return {
           appType: 'custom',
           define: {
@@ -323,7 +311,6 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   `${REACT_SERVER_DOM_NAME}/client.edge`,
-                  ...vendorDeps,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -895,6 +882,7 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
+    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
     detectNonOptimizedCjsPlugin(),
   ]
@@ -2135,6 +2123,64 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
+}
+
+function vendorUseSyncExternalStorePlugin(): Plugin[] {
+  // vendor and optimize use-sync-external-store out of the box
+  // since this is a commonly used cjs dep (e.g. swr, @tanstack/react-store)
+
+  const vendorDeps = [
+    `${PKG_NAME}/vendor/use-sync-external-store/index`,
+    `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
+    `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
+    `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
+  ]
+
+  // map exports to vendor deps
+  // cf. https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
+  const alias: Record<string, string> = {
+    'use-sync-external-store': `${PKG_NAME}/vendor/use-sync-external-store/index`,
+    'use-sync-external-store/with-selector': `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
+    'use-sync-external-store/with-selector.js': `${PKG_NAME}/vendor/use-sync-external-store/with-selector`,
+    'use-sync-external-store/shim': `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
+    'use-sync-external-store/shim/index.js': `${PKG_NAME}/vendor/use-sync-external-store/shim/index`,
+    'use-sync-external-store/shim/with-selector': `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
+    'use-sync-external-store/shim/with-selector.js': `${PKG_NAME}/vendor/use-sync-external-store/shim/with-selector`,
+  }
+
+  return [
+    {
+      name: 'rsc:vendor-use-sync-external-store',
+      apply: 'serve',
+      config() {
+        return {
+          environments: {
+            ssr: {
+              optimizeDeps: {
+                include: vendorDeps,
+              },
+            },
+          },
+        }
+      },
+    },
+    // TODO: why not alias?
+    {
+      name: 'rsc:vendor-use-sync-external-store:resolve',
+      applyToEnvironment: (e) => e.name === 'ssr',
+      enforce: 'pre',
+      resolveId: {
+        order: 'pre',
+        async handler(source) {
+          const target = alias[source]
+          if (target) {
+            const resolved = await this.resolve(target)
+            return resolved
+          }
+        },
+      },
+    },
+  ]
 }
 
 function sortObject<T extends object>(o: T) {
