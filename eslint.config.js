@@ -9,12 +9,7 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: [
-      '**/dist/**',
-      '**/playground-temp/**',
-      '**/temp/**',
-      'packages/plugin-rsc/**',
-    ],
+    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -166,6 +161,85 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/consistent-indexed-object-style': 'off',
       '@typescript-eslint/triple-slash-reference': 'off',
+    },
+  },
+  {
+    name: 'plugin-rsc/import-sorting-only',
+    files: ['packages/plugin-rsc/**/*.?([cm])[jt]s?(x)'],
+    plugins: {
+      'import-x': pluginImportX,
+    },
+    rules: {
+      // Disable all existing rules from the main config
+      eqeqeq: 'off',
+      'no-debugger': 'off',
+      'no-empty': 'off',
+      'no-empty-pattern': 'off',
+      'no-constant-condition': 'off',
+      'no-extra-boolean-cast': 'off',
+      'prefer-const': 'off',
+      'prefer-spread': 'off',
+
+      // Disable Node.js plugin rules
+      'n/no-process-exit': 'off',
+      'n/no-deprecated-api': 'off',
+      'n/no-unpublished-import': 'off',
+      'n/no-unpublished-require': 'off',
+      'n/no-unsupported-features/es-syntax': 'off',
+      'n/no-unsupported-features/node-builtins': 'off',
+      'n/no-unsupported-features/es-builtins': 'off',
+      'n/no-missing-import': 'off',
+      'n/no-missing-require': 'off',
+      'n/no-extraneous-import': 'off',
+      'n/no-extraneous-require': 'off',
+
+      // Disable TypeScript rules
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-empty-interface': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-extra-semi': 'off',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/prefer-for-of': 'off',
+      '@typescript-eslint/prefer-function-type': 'off',
+      '@typescript-eslint/consistent-indexed-object-style': 'off',
+      '@typescript-eslint/triple-slash-reference': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+
+      // Disable regexp rules
+      'regexp/prefer-regexp-exec': 'off',
+      'regexp/prefer-regexp-test': 'off',
+      'regexp/use-ignore-case': 'off',
+      'regexp/no-super-linear-backtracking': 'off',
+      'regexp/no-unused-capturing-group': 'off',
+
+      // Disable other import rules except the ones we want
+      'import-x/no-nodejs-modules': 'off',
+
+      // Disable globals restriction
+      'no-restricted-globals': 'off',
+
+      // Enable only import sorting related rules
+      'import-x/no-duplicates': 'error',
+      'import-x/order': 'error',
+      'sort-imports': [
+        'error',
+        {
+          ignoreCase: false,
+          ignoreDeclarationSort: true,
+          ignoreMemberSort: false,
+          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+          allowSeparatedGroups: false,
+        },
+      ],
     },
   },
 )

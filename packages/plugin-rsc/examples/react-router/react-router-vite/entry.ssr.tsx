@@ -1,8 +1,8 @@
 import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream as renderHTMLToReadableStream } from 'react-dom/server.edge'
 import {
-  unstable_routeRSCServerRequest as routeRSCServerRequest,
   unstable_RSCStaticRouter as RSCStaticRouter,
+  unstable_routeRSCServerRequest as routeRSCServerRequest,
 } from 'react-router'
 
 export async function generateHTML(

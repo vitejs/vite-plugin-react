@@ -1,6 +1,6 @@
 import { dirname } from 'path'
-import { hashString } from '@hiogawa/utils'
 import { mkdir, writeFile } from 'fs/promises'
+import { hashString } from '@hiogawa/utils'
 import type MagicString from 'magic-string'
 
 export async function debugSourceMap(output: MagicString): Promise<void> {

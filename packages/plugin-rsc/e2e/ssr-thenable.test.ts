@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { setupInlineFixture, type Fixture, useFixture } from './fixture'
+import { type Fixture, setupInlineFixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   waitForHydration as waitForHydration_,

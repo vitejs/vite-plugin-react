@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { waitForHydration, expectNoReload } from './helper'
+import { expectNoReload, waitForHydration } from './helper'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/syntax-error'

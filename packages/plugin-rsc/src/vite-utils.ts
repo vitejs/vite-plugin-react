@@ -2,8 +2,8 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import type { DevEnvironment, ErrorPayload, Rollup } from 'vite'
 import { stripVTControlCharacters as strip } from 'node:util'
+import type { DevEnvironment, ErrorPayload, Rollup } from 'vite'
 
 export const VALID_ID_PREFIX = `/@id/`
 

@@ -1,7 +1,7 @@
 import * as ReactServer from '@vitejs/plugin-rsc/react/rsc'
 import type React from 'react'
-import { Root } from '../root'
 import type { ReactFormState } from 'react-dom/client'
+import { Root } from '../root'
 
 export type RscPayload = {
   root: React.ReactNode

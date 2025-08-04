@@ -1,8 +1,8 @@
+import path from 'node:path'
+import os from 'node:os'
 import { test } from '@playwright/test'
 import { setupIsolatedFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
-import path from 'node:path'
-import os from 'node:os'
 
 test.describe(() => {
   // use RUNNER_TEMP on Github Actions
