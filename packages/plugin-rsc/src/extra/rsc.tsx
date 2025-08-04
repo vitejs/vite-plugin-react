@@ -61,7 +61,7 @@ export async function renderRequest(
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
       const action = await loadServerAction(actionId)
-      returnValue = await action.apply(null, args)
+      returnValue = await action(...args)
     } else {
       // progressive enhancement
       const formData = await request.formData()

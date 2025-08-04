@@ -1,10 +1,10 @@
 import assert from 'node:assert'
+import path from 'node:path'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
 import inspect from 'vite-plugin-inspect'
-import path from 'node:path'
 
 export default defineConfig({
   clearScreen: false,

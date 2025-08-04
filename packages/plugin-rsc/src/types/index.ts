@@ -5,15 +5,9 @@ export interface ImportManifestEntry {
   async?: boolean
 }
 
-export interface BundlerConfig {
-  [bundlerId: string]: ImportManifestEntry
-}
+export type BundlerConfig = Record<string, ImportManifestEntry>
 
-export type ModuleMap = {
-  [id: string]: {
-    [exportName: string]: ImportManifestEntry
-  }
-}
+export type ModuleMap = Record<string, Record<string, ImportManifestEntry>>
 
 export interface ServerConsumerManifest {
   moduleMap?: ModuleMap

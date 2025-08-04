@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error React server vendor import
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
 import { createServerConsumerManifest } from '../core/ssr'
 

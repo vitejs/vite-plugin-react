@@ -5,7 +5,7 @@ import { RSC_POSTFIX, type RscPayload } from './shared'
 export { getStaticPaths }
 
 export default async function handler(request: Request): Promise<Response> {
-  let url = new URL(request.url)
+  const url = new URL(request.url)
   let isRscRequest = false
   if (url.pathname.endsWith(RSC_POSTFIX)) {
     isRscRequest = true

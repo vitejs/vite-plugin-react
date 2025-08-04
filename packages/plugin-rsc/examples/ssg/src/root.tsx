@@ -35,7 +35,7 @@ export async function Root({ url }: { url: URL }) {
     }
 
     const module = posts[url.pathname]
-    if (!!module) {
+    if (module) {
       const Component = (module as any).default
       return <Component />
     }

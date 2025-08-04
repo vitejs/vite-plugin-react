@@ -9,12 +9,7 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: [
-      '**/dist/**',
-      '**/playground-temp/**',
-      '**/temp/**',
-      'packages/plugin-rsc/**',
-    ],
+    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -166,6 +161,66 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/consistent-indexed-object-style': 'off',
       '@typescript-eslint/triple-slash-reference': 'off',
+    },
+  },
+  {
+    name: 'plugin-rsc/node-features',
+    files: ['packages/plugin-rsc/**/*.?([cm])[jt]s?(x)'],
+    rules: {
+      'n/no-unsupported-features/node-builtins': 'off',
+      'n/no-missing-import': [
+        'error',
+        {
+          tryExtensions: ['.ts', '.js', '.jsx', '.tsx', '.d.ts'],
+          allowModules: ['estree'],
+        },
+      ],
+    },
+  },
+  {
+    name: 'plugin-rsc/virtual-imports',
+    files: [
+      'packages/plugin-rsc/src/utils/encryption-runtime.ts',
+      'packages/plugin-rsc/src/rsc.tsx',
+      'packages/plugin-rsc/src/ssr.tsx',
+      'packages/plugin-rsc/src/browser.ts',
+      'packages/plugin-rsc/src/react/**/*.?([cm])[jt]s',
+      'packages/plugin-rsc/src/core/**/*.?([cm])[jt]s',
+      'packages/plugin-rsc/src/index.ts',
+      'packages/plugin-rsc/src/plugin.ts',
+    ],
+    rules: {
+      'n/no-missing-import': 'off',
+    },
+  },
+  {
+    name: 'plugin-rsc/examples-and-test-files',
+    files: [
+      'packages/plugin-rsc/examples/**/*.?([cm])[jt]s?(x)',
+      'packages/plugin-rsc/e2e/**/*.?([cm])[jt]s?(x)',
+      'packages/plugin-rsc/**/*.test.?([cm])[jt]s?(x)',
+      'packages/plugin-rsc/vitest.config.ts',
+      'packages/plugin-rsc/tsdown.config.ts',
+    ],
+    rules: {
+      'n/no-missing-import': 'off',
+      'n/no-extraneous-import': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      'no-empty-pattern': 'off',
+      'import-x/no-nodejs-modules': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      'prefer-spread': 'off',
+      'no-constant-condition': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      'regexp/no-super-linear-backtracking': 'off',
+    },
+  },
+  {
+    name: 'plugin-rsc/test-utils',
+    files: ['packages/plugin-rsc/src/transforms/test-utils.ts'],
+    rules: {
+      'import-x/no-nodejs-modules': 'off',
     },
   },
 )

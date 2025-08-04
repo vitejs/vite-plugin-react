@@ -102,7 +102,7 @@ function listenNavigation(onNavigation: () => void): () => void {
   }
 
   function onClick(e: MouseEvent) {
-    let link = (e.target as Element).closest('a')
+    const link = (e.target as Element).closest('a')
     if (
       link &&
       link instanceof HTMLAnchorElement &&

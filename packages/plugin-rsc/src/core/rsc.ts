@@ -7,9 +7,9 @@ import {
   removeReferenceCacheTag,
   setInternalRequire,
 } from './shared'
-
-// @ts-ignore
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
+
+// @ts-expect-error Import polyfill
 
 let init = false
 let requireModule!: (id: string) => unknown
@@ -56,7 +56,9 @@ export function setRequireModule(options: {
   setInternalRequire()
 }
 
-export async function loadServerAction(id: string): Promise<Function> {
+export async function loadServerAction(
+  id: string,
+): Promise<(...args: any[]) => any> {
   const [file, name] = id.split('#') as [string, string]
   const mod: any = await requireModule(file)
   return mod[name]
@@ -70,7 +72,7 @@ export function createServerManifest(): BundlerConfig {
     {
       get(_target, $$id, _receiver) {
         tinyassert(typeof $$id === 'string')
-        let [id, name] = $$id.split('#')
+        const [id, name] = $$id.split('#')
         tinyassert(id)
         tinyassert(name)
         return {
@@ -115,7 +117,7 @@ export function createClientManifest(): BundlerConfig {
     {
       get(_target, $$id, _receiver) {
         tinyassert(typeof $$id === 'string')
-        let [id, name] = $$id.split('#')
+        const [id, name] = $$id.split('#')
         tinyassert(id)
         tinyassert(name)
         return {

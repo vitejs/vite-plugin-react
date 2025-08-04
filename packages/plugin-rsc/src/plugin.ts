@@ -35,7 +35,7 @@ import { createRpcServer } from './utils/rpc'
 import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
 
 // state for build orchestration
-let serverReferences: Record<string, string> = {}
+const serverReferences: Record<string, string> = {}
 let server: ViteDevServer
 let config: ResolvedConfig
 let rscBundle: Rollup.OutputBundle
@@ -426,7 +426,7 @@ export default function vitePluginRsc(
           }
         }
 
-        const ids = ctx.modules.map((mod) => mod.id).filter((v) => v !== null)
+        const ids = ctx.modules.map((mod) => mod.id).filter((v) => v != null)
         if (ids.length === 0) return
 
         // a shared component/module will have `isInsideClientBoundary = false` on `rsc` environment
@@ -794,7 +794,7 @@ export default assetsManifest.bootstrapScriptContent;
             entryName,
             `[vite-rsc] expected 'loadBootstrapScriptContent("index")' but got ${argCode}`,
           )
-          let replacement: string = `Promise.resolve(__vite_rsc_assets_manifest.bootstrapScriptContent)`
+          const replacement: string = `Promise.resolve(__vite_rsc_assets_manifest.bootstrapScriptContent)`
           const [start, end] = match.indices![0]!
           output.overwrite(start, end, replacement)
         }
@@ -894,7 +894,7 @@ function detectNonOptimizedCjsPlugin(): Plugin {
       if (
         id.includes('/node_modules/') &&
         !id.startsWith(this.environment.config.cacheDir) &&
-        /\b(require|exports)\b/.test(code)
+        /\b(?:require|exports)\b/.test(code)
       ) {
         id = parseIdQuery(id).filename
         let isEsm = id.endsWith('.mjs')
@@ -1397,14 +1397,14 @@ function createVirtualPlugin(name: string, load: Plugin['load']) {
     },
     load(id, options) {
       if (id === '\0' + name) {
-        return (load as Function).apply(this, [id, options])
+        return (load as (...args: any[]) => any).apply(this, [id, options])
       }
     },
   } satisfies Plugin
 }
 
 function generateDynamicImportCode(map: Record<string, string>) {
-  let code = Object.entries(map)
+  const code = Object.entries(map)
     .map(
       ([key, id]) =>
         `${JSON.stringify(key)}: () => import(${JSON.stringify(id)}),`,
@@ -1583,8 +1583,8 @@ export function vitePluginFindSourceMapURL(): Plugin[] {
         server.middlewares.use(async (req, res, next) => {
           const url = new URL(req.url!, `http://localhost`)
           if (url.pathname === '/__vite_rsc_findSourceMapURL') {
-            let filename = url.searchParams.get('filename')!
-            let environmentName = url.searchParams.get('environmentName')!
+            const filename = url.searchParams.get('filename')!
+            const environmentName = url.searchParams.get('environmentName')!
             try {
               const map = await findSourceMapURL(
                 server,
@@ -1655,7 +1655,7 @@ export async function findSourceMapURL(
       const url = new URL(filename).pathname.slice(base.length)
       mod = server.environments.client.moduleGraph.urlToModuleMap.get(url)
       map = mod?.transformResult?.map
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   if (mod && map) {
@@ -1727,7 +1727,7 @@ export function vitePluginRscCss(
     if (options?.filter && !options.filter(filename)) return false
     // https://github.com/vitejs/vite/blob/7979f9da555aa16bd221b32ea78ce8cb5292fac4/packages/vite/src/node/constants.ts#L95
     if (
-      !/\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
+      !/\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)\b/.test(code) ||
       !/\.[tj]sx?$/.test(filename)
     )
       return false
@@ -2071,7 +2071,7 @@ export function __fix_cloudflare(): Plugin {
       ;(plugin as any).configResolved = function (this: any, ...args: any[]) {
         try {
           return original.apply(this, args)
-        } catch (e) {}
+        } catch (_e) {}
       }
 
       // workaround (fixed in Vite 7) https://github.com/vitejs/vite/pull/20077

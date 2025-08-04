@@ -1,4 +1,5 @@
 import React from 'react'
+import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
 import {
   TestServerActionBindAction,
   TestServerActionBindClient,
@@ -31,7 +32,6 @@ import { TestReactCache } from './react-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
-import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
 import { TestHmrSharedServer } from './hmr-shared/server'
 import { TestHmrSharedClient } from './hmr-shared/client'
 import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'

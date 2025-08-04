@@ -1,6 +1,6 @@
-// @ts-ignore
+// @ts-expect-error React server vendor import
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
-// @ts-ignore
+// @ts-expect-error React server vendor import
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 import type { ReactFormState } from 'react-dom/client'
 import {

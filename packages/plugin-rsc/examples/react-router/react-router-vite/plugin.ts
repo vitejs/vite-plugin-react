@@ -75,7 +75,7 @@ function generateRoutesCode(config: {
 }) {
   let code = 'export default ['
   const closeRouteSymbol = Symbol('CLOSE_ROUTE')
-  let stack: Array<typeof closeRouteSymbol | RouteConfigEntry> = [
+  const stack: Array<typeof closeRouteSymbol | RouteConfigEntry> = [
     ...config.routes,
   ]
   while (stack.length > 0) {

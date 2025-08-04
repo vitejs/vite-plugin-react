@@ -45,7 +45,7 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
     const res = await fetch(options.endpoint, {
       method: 'POST',
       body,
-      // @ts-ignore undici compat
+      // @ts-expect-error undici compat
       duplex: 'half',
     })
     if (!res.ok || !res.body) {

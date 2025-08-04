@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test'
-import { setupInlineFixture, useFixture } from './fixture'
+import { expect, test } from '@playwright/test'
 import { x } from 'tinyexec'
+import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
 test.describe('buildApp hook', () => {
