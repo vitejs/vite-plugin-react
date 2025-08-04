@@ -2128,20 +2128,17 @@ function validateImportPlugin(): Plugin {
 function vendorUseSyncExternalStorePlugin(): Plugin[] {
   // vendor and optimize use-sync-external-store out of the box
   // since this is a commonly used cjs dep (e.g. swr, @tanstack/react-store)
-  const DEP_NAME = 'use-sync-external-store'
-  const VENDOR_DEP_NAME = `${PKG_NAME}/vendor/use-sync-external-store`
 
-  // map exports
-  // cf. https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
-  const alias: Record<string, string> = {
-    [DEP_NAME]: `${VENDOR_DEP_NAME}/index`,
-    [`${DEP_NAME}/with-selector`]: `${VENDOR_DEP_NAME}/with-selector`,
-    [`${DEP_NAME}/with-selector.js`]: `${VENDOR_DEP_NAME}/with-selector`,
-    [`${DEP_NAME}/shim`]: `${VENDOR_DEP_NAME}/shim/index`,
-    [`${DEP_NAME}/shim/index.js`]: `${VENDOR_DEP_NAME}/shim/index`,
-    [`${DEP_NAME}/shim/with-selector`]: `${VENDOR_DEP_NAME}/shim/with-selector`,
-    [`${DEP_NAME}/shim/with-selector.js`]: `${VENDOR_DEP_NAME}/shim/with-selector`,
-  }
+  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
+  const exports = [
+    'use-sync-external-store',
+    'use-sync-external-store/with-selector',
+    'use-sync-external-store/with-selector.js',
+    'use-sync-external-store/shim',
+    'use-sync-external-store/shim/index.js',
+    'use-sync-external-store/shim/with-selector',
+    'use-sync-external-store/shim/with-selector.js',
+  ]
 
   return [
     {
@@ -2152,27 +2149,11 @@ function vendorUseSyncExternalStorePlugin(): Plugin[] {
           environments: {
             ssr: {
               optimizeDeps: {
-                include: [...new Set(Object.values(alias))],
+                include: exports.map((e) => `${PKG_NAME} > ${e}`),
               },
             },
           },
         }
-      },
-    },
-    // TODO: why not alias?
-    {
-      name: 'rsc:vendor-use-sync-external-store:resolve',
-      applyToEnvironment: (e) => e.name === 'ssr',
-      enforce: 'pre',
-      resolveId: {
-        order: 'pre',
-        async handler(source) {
-          const target = alias[source]
-          if (target) {
-            const resolved = await this.resolve(target)
-            return resolved
-          }
-        },
       },
     },
   ]
