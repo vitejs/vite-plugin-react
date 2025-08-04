@@ -317,7 +317,7 @@ function defineTest(f: Fixture) {
       await expect(locator).toContainText('[dep: 1]')
     })
 
-    test('shared hmr', async ({ page }) => {
+    test('shared hmr basic', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
@@ -328,9 +328,6 @@ function defineTest(f: Fixture) {
       )
       await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
         '(shared1, shared2)',
-      )
-      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
-        'ok (test-shared)',
       )
 
       // Test 1: Component HMR (shared1.tsx)
@@ -372,28 +369,35 @@ function defineTest(f: Fixture) {
       await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
         '(shared1, shared2)',
       )
+    })
 
-      // Test 3: Atomic updates (atomic/shared.tsx)
-      // This tests if server/client updates are atomic or if there can be temporary mismatches
-      const editor3 = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
-      editor3.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+    // for this use case to work, server refetch/render and client hmr needs to applied atomically
+    // at the same time. Next.js doesn't seem to support this either.
+    // https://github.com/hi-ogawa/reproductions/tree/main/next-rsc-hmr-shared-module
+    test('shared hmr not atomic', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ok (test-shared)',
+      )
 
-      // The atomic test should either:
-      // 1. Update atomically and show "ok (test-shared-edit)" immediately
-      // 2. Show a temporary error if updates are not atomic, then recover
-      await expect(async () => {
-        const text = await page
-          .getByTestId('test-hmr-shared-atomic')
-          .textContent()
-        // Should eventually show either the updated value or recover from error
-        expect(text).toMatch(/ok \(test-shared-edit\)|ErrorBoundary caught/)
-      }).toPass({ timeout: 5000 })
+      // non-atomic update causes an error
+      const editor = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
+      editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
 
-      // Wait a bit longer to see if it recovers to the correct state
-      await page.waitForTimeout(1000)
+      await page.reload()
       await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
 
-      editor3.reset()
+      // non-atomic update causes an error
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
+
+      await page.reload()
       await expect(page.getByText('ok (test-shared)')).toBeVisible()
     })
   })

@@ -24,7 +24,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.error) {
       return (
         <span>
-          ERROR
+          ErrorBoundary: {this.state.error.message}
           <button
             onClick={() => {
               this.setState({ error: null })
