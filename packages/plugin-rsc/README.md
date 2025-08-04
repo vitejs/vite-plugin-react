@@ -540,7 +540,7 @@ You can also specify multiple component names:
 
 ### Manual CSS Loading
 
-For cases where you need manual control, you can still use `import.meta.viteRsc.loadCss()`:
+For cases where you need manual control, you can still use [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss):
 
 ```tsx
 export function Layout() {
