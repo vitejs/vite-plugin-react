@@ -326,12 +326,20 @@ function defineTest(f: Fixture) {
       'color',
       'rgb(255, 165, 0)',
     )
+    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
     await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
     )
@@ -450,6 +458,10 @@ function defineTest(f: Fixture) {
       )
       editor.reset()
       await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+      await expect(page.locator('.test-style-server-manual')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
       )
