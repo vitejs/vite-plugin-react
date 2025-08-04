@@ -1006,4 +1006,17 @@ function defineTest(f: Fixture) {
       'test-browser-only: loading...',
     )
   })
+
+  test('React.cache', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await page.getByRole('link', { name: 'test-react-cache' }).click()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 2, nonCacheFnCount = 3)',
+    )
+    await page.reload()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 4, nonCacheFnCount = 6)',
+    )
+  })
 }
