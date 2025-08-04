@@ -265,7 +265,7 @@ export function renderHTML(...) {}
 #### `import.meta.viteRsc.loadCss`
 
 > [!NOTE]
-> The plugin automatically injects CSS for React components through the `rscCssTransform` feature. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
+> The plugin automatically injects CSS for React components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
 
 - Type: `(importer?: string) => React.ReactNode`
 
@@ -441,11 +441,9 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 
 ## CSS Support
 
-The plugin provides automatic CSS code-splitting and injection for both client and server components through the `rscCssTransform` feature. This eliminates the need to manually call `import.meta.viteRsc.loadCss()` in most cases.
-
 ### How Auto CSS Injection Works
 
-The core mechanism is implemented in the `rscCssTransform` function in `packages/plugin-rsc/src/plugin.ts`. Here's how it works:
+The plugin automatically handles CSS code-splitting and injection for React components. This eliminates the need to manually call `import.meta.viteRsc.loadCss()` in most cases.
 
 1. **Component Detection**: The plugin automatically detects React components by looking for:
    - Function exports with capital letter names (e.g., `export function Page() {}`)
@@ -484,77 +482,6 @@ function __wrapper(props) {
 }
 Object.defineProperty(__wrapper, 'name', { value: 'Page' })
 export { __wrapper as Page }
-```
-
-### Configuration
-
-You can configure or disable the auto CSS injection feature:
-
-```js
-// vite.config.ts
-export default defineConfig({
-  plugins: [
-    rsc({
-      // Disable auto CSS injection entirely
-      rscCssTransform: false,
-
-      // Or configure with a custom filter
-      rscCssTransform: {
-        filter: (id) => {
-          // Only apply to files in specific directories
-          return id.includes('/components/') || id.includes('/pages/')
-        },
-      },
-    }),
-  ],
-})
-```
-
-### Manual Control with Query Parameters
-
-For fine-grained control, you can use the `?vite-rsc-css-export=<name>` query parameter:
-
-```tsx
-// my-component.tsx?vite-rsc-css-export=MyComponent
-import './styles.css'
-
-export function MyComponent() {
-  return <div>Only this component gets CSS injection</div>
-}
-
-export function AnotherComponent() {
-  return <div>This one doesn't</div>
-}
-```
-
-You can also specify multiple component names:
-
-```tsx
-// my-components.tsx?vite-rsc-css-export=ComponentA,ComponentB
-```
-
-### Development vs Production
-
-- **Development**: CSS injection happens dynamically to support HMR (Hot Module Replacement)
-- **Production**: CSS dependencies are collected during build and injected as `<link>` tags in the HTML
-
-### Manual CSS Loading
-
-For cases where you need manual control, you can still use [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss):
-
-```tsx
-export function Layout() {
-  return (
-    <html>
-      <head>
-        {/* Load CSS for specific routes */}
-        {import.meta.viteRsc.loadCss('/routes/home.tsx')}
-        {import.meta.viteRsc.loadCss('/routes/about.tsx')}
-      </head>
-      <body>...</body>
-    </html>
-  )
-}
 ```
 
 ## Credits
