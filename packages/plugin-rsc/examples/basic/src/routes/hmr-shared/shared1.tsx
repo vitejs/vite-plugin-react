@@ -1,3 +1,3 @@
 export function TestHmrSharedComponent() {
-  return <>component</>
+  return <>shared1</>
 }

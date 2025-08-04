@@ -1,3 +1,3 @@
 export const testHmrSharedObject = {
-  value: 'object',
+  value: 'shared2',
 }
