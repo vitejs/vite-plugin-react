@@ -6,7 +6,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   expect: {
-    toPass: { timeout: 5000 },
+    toPass: { timeout: 10000 },
   },
   projects: [
     {

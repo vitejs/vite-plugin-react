@@ -123,6 +123,8 @@ export default { fetch: handler };
             source: `\
 /favicon.ico
   Cache-Control: public, max-age=3600, s-maxage=3600
+/test.css
+  Cache-Control: public, max-age=3600, s-maxage=3600
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 `,
@@ -151,9 +153,7 @@ export default { fetch: handler };
     },
     ssr: {
       optimizeDeps: {
-        include: [
-          '@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',
-        ],
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
       },
     },
   },

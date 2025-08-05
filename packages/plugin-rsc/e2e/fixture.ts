@@ -142,6 +142,9 @@ export function useFixture(options: {
       reset(): void {
         fs.writeFileSync(filepath, originalFiles[filepath]!)
       },
+      resave(): void {
+        fs.writeFileSync(filepath, current)
+      },
     }
   }
 

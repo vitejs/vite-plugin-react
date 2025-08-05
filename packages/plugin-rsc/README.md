@@ -264,6 +264,9 @@ export function renderHTML(...) {}
 
 #### `import.meta.viteRsc.loadCss`
 
+> [!NOTE]
+> The plugin automatically injects CSS for server components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
+
 - Type: `(importer?: string) => React.ReactNode`
 
 This allows collecting css which is imported through a current server module and injecting them inside server components.
@@ -435,6 +438,40 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 ### `@vitejs/plugin-rsc/extra/browser`
 
 - `hydrate`
+
+## CSS Support
+
+The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
+
+1. **Component Detection**: The plugin automatically detects server components by looking for:
+   - Function exports with capital letter names (e.g., `export function Page() {}`)
+   - Default exports that are functions with capital names (e.g., `export default function Page() {}`)
+   - Const exports assigned to functions with capital names (e.g., `export const Page = () => {}`)
+
+2. **CSS Import Detection**: For detected components, the plugin checks if the module imports any CSS files (`.css`, `.scss`, `.sass`, etc.)
+
+3. **Automatic Wrapping**: When both conditions are met, the plugin wraps the component with a CSS injection wrapper:
+
+```tsx
+// Before transformation
+import './styles.css'
+
+export function Page() {
+  return <div>Hello</div>
+}
+
+// After transformation
+import './styles.css'
+
+export function Page() {
+  return (
+    <>
+      {import.meta.viteRsc.loadCss()}
+      <div>Hello</div>
+    </>
+  )
+}
+```
 
 ## Credits
 

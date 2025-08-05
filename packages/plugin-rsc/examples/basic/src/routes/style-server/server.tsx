@@ -10,6 +10,12 @@ export async function TestStyleServer() {
       <div data-testid="css-module-server" className={styles.server}>
         test-css-module-server
       </div>
+      <link
+        rel="stylesheet"
+        href="/test.css"
+        precedence="test-style-server-manual"
+      />
+      <div className="test-style-server-manual">test-style-server-manual</div>
       <TestStyleServerNotDetected />
     </>
   )

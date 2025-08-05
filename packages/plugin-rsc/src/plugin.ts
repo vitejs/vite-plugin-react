@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { createRequestListener } from '@mjackson/node-fetch-server'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
@@ -131,6 +131,55 @@ export type RscPluginOptions = {
    * @default false
    */
   useBuildAppHook?: boolean
+
+  /**
+   * Custom environment configuration
+   * @experimental
+   * @default { browser: 'client', ssr: 'ssr', rsc: 'rsc' }
+   */
+  environment?: {
+    browser?: string
+    ssr?: string
+    rsc?: string
+  }
+}
+
+/** @experimental */
+export function vitePluginRscMinimal(
+  rscPluginOptions: RscPluginOptions = {},
+): Plugin[] {
+  return [
+    {
+      name: 'rsc:minimal',
+      enforce: 'pre',
+      async config() {
+        await esModuleLexer.init
+      },
+      configResolved(config_) {
+        config = config_
+      },
+      configureServer(server_) {
+        server = server_
+      },
+    },
+    {
+      name: 'rsc:vite-client-raw-import',
+      transform: {
+        order: 'post',
+        handler(code) {
+          if (code.includes('__vite_rsc_raw_import__')) {
+            // inject dynamic import last to avoid Vite adding `?import` query
+            // to client references (and browser mode server references)
+            return code.replace('__vite_rsc_raw_import__', 'import')
+          }
+        },
+      },
+    },
+    ...vitePluginRscCore(),
+    ...vitePluginUseClient(rscPluginOptions),
+    ...vitePluginUseServer(rscPluginOptions),
+    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+  ]
 }
 
 export default function vitePluginRsc(
@@ -153,15 +202,7 @@ export default function vitePluginRsc(
       clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
       serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
       await builder.build(builder.environments.client!)
-
-      const assetsManifestCode = `export default ${serializeValueWithRuntime(
-        buildAssetsManifest,
-      )}`
-      const manifestPath = path.join(
-        builder.environments!.rsc!.config.build!.outDir!,
-        BUILD_ASSETS_MANIFEST_NAME,
-      )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
+      writeAssetsManifest(['rsc'])
       return
     }
 
@@ -180,14 +221,28 @@ export default function vitePluginRsc(
     serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
+    writeAssetsManifest(['ssr', 'rsc'])
+  }
+
+  function writeAssetsManifest(environmentNames: string[]) {
+    // output client manifest to non-client build directly.
+    // this makes server build to be self-contained and deploy-able for cloudflare.
+    const assetsManifestCode = `export default ${serializeValueWithRuntime(
+      buildAssetsManifest,
+    )}`
+    for (const name of environmentNames) {
+      const manifestPath = path.join(
+        config.environments[name]!.build.outDir,
+        BUILD_ASSETS_MANIFEST_NAME,
+      )
+      fs.writeFileSync(manifestPath, assetsManifestCode)
+    }
   }
 
   return [
     {
       name: 'rsc',
       async config(config, env) {
-        await esModuleLexer.init
-
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
@@ -295,11 +350,7 @@ export default function vitePluginRsc(
         }
       },
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
-      configResolved(config_) {
-        config = config_
-      },
-      configureServer(server_) {
-        server = server_
+      configureServer() {
         ;(globalThis as any).__viteRscDevServer = server
 
         if (rscPluginOptions.disableServerHandler) return
@@ -378,7 +429,9 @@ export default function vitePluginRsc(
         const ids = ctx.modules.map((mod) => mod.id).filter((v) => v !== null)
         if (ids.length === 0) return
 
-        // TODO: what if shared component?
+        // a shared component/module will have `isInsideClientBoundary = false` on `rsc` environment
+        // and `isInsideClientBoundary = true` on `client` environment,
+        // which means both server hmr and client hmr will be triggered.
         function isInsideClientBoundary(mods: EnvironmentModuleNode[]) {
           const visited = new Set<string>()
           function recurse(mod: EnvironmentModuleNode): boolean {
@@ -398,6 +451,18 @@ export default function vitePluginRsc(
 
         if (!isInsideClientBoundary(ctx.modules)) {
           if (this.environment.name === 'rsc') {
+            // detect if this module is only created as css deps (e.g. tailwind)
+            // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
+            if (ctx.modules.length === 1) {
+              const importers = [...ctx.modules[0]!.importers]
+              if (
+                importers.length > 0 &&
+                importers.every((m) => m.id && isCSSRequest(m.id))
+              ) {
+                return []
+              }
+            }
+
             // transform js to surface syntax errors
             for (const mod of ctx.modules) {
               if (mod.type === 'js') {
@@ -426,6 +491,7 @@ export default function vitePluginRsc(
             // Server files can be included in client module graph, for example,
             // when `addWatchFile` is used to track js files as style dependency (e.g. tailwind)
             // In this case, reload all importers (for css hmr), and return empty modules to avoid full-reload.
+            // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
             const env = ctx.server.environments.rsc!
             const mod = env.moduleGraph.getModuleById(ctx.file)
             if (mod) {
@@ -440,18 +506,6 @@ export default function vitePluginRsc(
             }
           }
         }
-      },
-    },
-    {
-      name: 'rsc:patch-browser-raw-import',
-      transform: {
-        order: 'post',
-        handler(code) {
-          if (code.includes('__vite_rsc_raw_import__')) {
-            // inject dynamic import last to avoid Vite adding `?import` query to client references
-            return code.replace('__vite_rsc_raw_import__', 'import')
-          }
-        },
       },
     },
     {
@@ -708,24 +762,6 @@ export default function vitePluginRsc(
         }
         return
       },
-      writeBundle() {
-        // TODO: move this to `buildApp`.
-        // note that we already do this in buildApp for no-ssr case.
-        if (this.environment.name === 'ssr') {
-          // output client manifest to non-client build directly.
-          // this makes server build to be self-contained and deploy-able for cloudflare.
-          const assetsManifestCode = `export default ${serializeValueWithRuntime(
-            buildAssetsManifest,
-          )}`
-          for (const name of ['ssr', 'rsc']) {
-            const manifestPath = path.join(
-              config.environments[name]!.build.outDir,
-              BUILD_ASSETS_MANIFEST_NAME,
-            )
-            fs.writeFileSync(manifestPath, assetsManifestCode)
-          }
-        }
-      },
     },
     createVirtualPlugin('vite-rsc/bootstrap-script-content', function () {
       assert(this.environment.name !== 'client')
@@ -795,14 +831,16 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
-        // TODO
-        // should remove only the ones we injected during ssr, which are duplicated by browser imports for HMR.
-        // technically this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
-        // TODO: there migth be a clever way to let Vite deduplicate itself.
-        // cf. https://github.com/withastro/astro/blob/acb9b302f56e38833a1ab01147f7fde0bf967889/packages/astro/src/vite-plugin-astro-server/pipeline.ts#L133-L135
-        code += `
+        // TODO: this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
+        code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
-import.meta.hot.on("vite:beforeUpdate", () => ssrCss.forEach(node => node.remove()));
+import.meta.hot.on("vite:beforeUpdate", () => {
+  ssrCss.forEach(node => {
+    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+      node.remove();
+    }
+  });
+});
 `
         // close error overlay after syntax error is fixed and hmr is triggered.
         // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
@@ -838,15 +876,13 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginRscCore(),
-    ...vitePluginUseClient(rscPluginOptions),
-    ...vitePluginUseServer(rscPluginOptions),
-    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    ...vitePluginRscMinimal(rscPluginOptions),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
+    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
     detectNonOptimizedCjsPlugin(),
   ]
@@ -925,21 +961,10 @@ function hashString(v: string) {
   return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
 }
 
-function normalizeReferenceId(id: string, name: 'client' | 'rsc') {
-  if (!server) {
-    return hashString(path.relative(config.root, id))
-  }
-
-  // align with how Vite import analysis would rewrite id
-  // to avoid double modules on browser and ssr.
-  const environment = server.environments[name]!
-  return normalizeViteImportAnalysisUrl(environment, id)
-}
-
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'keepUseCientProxy'
+    'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
   >,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
@@ -947,11 +972,15 @@ function vitePluginUseClient(
   // https://github.com/vitejs/vite/blob/4bcf45863b5f46aa2b41f261283d08f12d3e8675/packages/vite/src/node/utils.ts#L175
   const bareImportRE = /^(?![a-zA-Z]:)[\w@](?!.*:\/\/)/
 
+  const serverEnvironmentName = useClientPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useClientPluginOptions.environment?.browser ?? 'client'
+
   return [
     {
       name: 'rsc:use-client',
       async transform(code, id) {
-        if (this.environment.name !== 'rsc') return
+        if (this.environment.name !== serverEnvironmentName) return
         if (!code.includes('use client')) return
 
         const ast = await parseAstAsync(code)
@@ -994,7 +1023,7 @@ function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
-              server.environments.client,
+              server.environments[browserEnvironmentName]!,
               id,
             )
             referenceKey = importId
@@ -1073,7 +1102,7 @@ function vitePluginUseClient(
           id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
         ) {
           assert.equal(this.environment.mode, 'dev')
-          assert.notEqual(this.environment.name, 'rsc')
+          assert(this.environment.name !== serverEnvironmentName)
           id = decodeURIComponent(
             id.slice(
               '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
@@ -1093,7 +1122,10 @@ function vitePluginUseClient(
       resolveId: {
         order: 'pre',
         async handler(source, importer, options) {
-          if (this.environment.name === 'rsc' && bareImportRE.test(source)) {
+          if (
+            this.environment.name === serverEnvironmentName &&
+            bareImportRE.test(source)
+          ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
               packageSources.set(resolved.id, source)
@@ -1118,7 +1150,7 @@ function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
-        if (this.environment.name !== 'rsc') return
+        if (this.environment.name !== serverEnvironmentName) return
 
         // track used exports of client references in rsc build
         // to tree shake unused exports in browser and ssr build
@@ -1138,18 +1170,23 @@ function vitePluginUseClient(
 }
 
 function vitePluginDefineEncryptionKey(
-  useServerPluginOptions: Pick<RscPluginOptions, 'defineEncryptionKey'>,
+  useServerPluginOptions: Pick<
+    RscPluginOptions,
+    'defineEncryptionKey' | 'environment'
+  >,
 ): Plugin[] {
   let defineEncryptionKey: string
   let emitEncryptionKey = false
   const KEY_PLACEHOLDER = '__vite_rsc_define_encryption_key'
   const KEY_FILE = '__vite_rsc_encryption_key.js'
 
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
+
   return [
     {
       name: 'rsc:encryption-key',
       async configEnvironment(name, _config, env) {
-        if (name === 'rsc' && !env.isPreview) {
+        if (name === serverEnvironmentName && !env.isPreview) {
           defineEncryptionKey =
             useServerPluginOptions.defineEncryptionKey ??
             JSON.stringify(toBase64(await generateEncryptionKey()))
@@ -1199,9 +1236,13 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'enableActionEncryption'
+    'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
+  const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
+  const browserEnvironmentName =
+    useServerPluginOptions.environment?.browser ?? 'client'
+
   return [
     {
       name: 'rsc:use-server',
@@ -1230,12 +1271,19 @@ function vitePluginUseServer(
               // module identity of `import(id)` like browser, so we simply strip it off.
               id = id.split('?v=')[0]!
             }
-            normalizedId_ = normalizeReferenceId(id, 'rsc')
+            if (config.command === 'build') {
+              normalizedId_ = hashString(path.relative(config.root, id))
+            } else {
+              normalizedId_ = normalizeViteImportAnalysisUrl(
+                server.environments[serverEnvironmentName]!,
+                id,
+              )
+            }
           }
           return normalizedId_
         }
 
-        if (this.environment.name === 'rsc') {
+        if (this.environment.name === serverEnvironmentName) {
           const transformServerActionServer_ = withRollupError(
             this,
             transformServerActionServer,
@@ -1249,17 +1297,26 @@ function vitePluginUseServer(
               )}, ${JSON.stringify(name)})`,
             rejectNonAsyncFunction: true,
             encode: enableEncryption
-              ? (value) => `$$ReactServer.encryptActionBoundArgs(${value})`
+              ? (value) =>
+                  `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
               : undefined,
             decode: enableEncryption
               ? (value) =>
-                  `await $$ReactServer.decryptActionBoundArgs(${value})`
+                  `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
               : undefined,
           })
           if (!output.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          const importSource = resolvePackage(`${PKG_NAME}/rsc`)
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
+          if (enableEncryption) {
+            const importSource = resolvePackage(
+              `${PKG_NAME}/utils/encryption-runtime`,
+            )
+            output.prepend(
+              `import * as __vite_rsc_encryption_runtime from ${JSON.stringify(importSource)};\n`,
+            )
+          }
           return {
             code: output.toString(),
             map: output.generateMap({ hires: 'boundary' }),
@@ -1287,7 +1344,8 @@ function vitePluginUseServer(
           const output = result?.output
           if (!output?.hasChanged()) return
           serverReferences[getNormalizedId()] = id
-          const name = this.environment.name === 'client' ? 'browser' : 'ssr'
+          const name =
+            this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
           output.prepend(`import * as $$ReactClient from "${importSource}";\n`)
           return {
@@ -2065,6 +2123,41 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
+}
+
+function vendorUseSyncExternalStorePlugin(): Plugin[] {
+  // vendor and optimize use-sync-external-store out of the box
+  // since this is a common enough cjs, which tends to break
+  // other packages (e.g. swr, @tanstack/react-store)
+
+  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
+  const exports = [
+    'use-sync-external-store',
+    'use-sync-external-store/with-selector',
+    'use-sync-external-store/with-selector.js',
+    'use-sync-external-store/shim',
+    'use-sync-external-store/shim/index.js',
+    'use-sync-external-store/shim/with-selector',
+    'use-sync-external-store/shim/with-selector.js',
+  ]
+
+  return [
+    {
+      name: 'rsc:vendor-use-sync-external-store',
+      apply: 'serve',
+      config() {
+        return {
+          environments: {
+            ssr: {
+              optimizeDeps: {
+                include: exports.map((e) => `${PKG_NAME} > ${e}`),
+              },
+            },
+          },
+        }
+      },
+    },
+  ]
 }
 
 function sortObject<T extends object>(o: T) {
