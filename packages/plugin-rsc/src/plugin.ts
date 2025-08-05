@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { createRequestListener } from '@mjackson/node-fetch-server'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
@@ -429,7 +429,9 @@ export default function vitePluginRsc(
         const ids = ctx.modules.map((mod) => mod.id).filter((v) => v !== null)
         if (ids.length === 0) return
 
-        // TODO: what if shared component?
+        // a shared component/module will have `isInsideClientBoundary = false` on `rsc` environment
+        // and `isInsideClientBoundary = true` on `client` environment,
+        // which means both server hmr and client hmr will be triggered.
         function isInsideClientBoundary(mods: EnvironmentModuleNode[]) {
           const visited = new Set<string>()
           function recurse(mod: EnvironmentModuleNode): boolean {

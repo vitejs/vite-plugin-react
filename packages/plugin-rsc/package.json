@@ -38,7 +38,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@mjackson/node-fetch-server": "^0.7.0",
+    "@remix-run/node-fetch-server": "^0.8.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.17",

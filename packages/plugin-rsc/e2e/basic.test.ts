@@ -316,6 +316,90 @@ function defineTest(f: Fixture) {
       editor.reset()
       await expect(locator).toContainText('[dep: 1]')
     })
+
+    test('shared hmr basic', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      // Test initial state
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 1: Component HMR (shared1.tsx)
+      const editor1 = f.createEditor('src/routes/hmr-shared/shared1.tsx')
+      editor1.edit((s) => s.replace('shared1', 'shared1-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+
+      editor1.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 2: Non-component HMR (shared2.tsx)
+      const editor2 = f.createEditor('src/routes/hmr-shared/shared2.tsx')
+      editor2.edit((s) => s.replace('shared2', 'shared2-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+
+      editor2.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+    })
+
+    // for this use case to work, server refetch/render and client hmr needs to applied atomically
+    // at the same time. Next.js doesn't seem to support this either.
+    // https://github.com/hi-ogawa/reproductions/tree/main/next-rsc-hmr-shared-module
+    test('shared hmr not atomic', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ok (test-shared)',
+      )
+
+      // non-atomic update causes an error
+      const editor = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
+      editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
+
+      await page.reload()
+      await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
+
+      // non-atomic update causes an error
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
+
+      await page.reload()
+      await expect(page.getByText('ok (test-shared)')).toBeVisible()
+    })
   })
 
   test('css @js', async ({ page }) => {
