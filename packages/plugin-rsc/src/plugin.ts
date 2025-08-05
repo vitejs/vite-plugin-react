@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { createRequestListener } from '@mjackson/node-fetch-server'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
