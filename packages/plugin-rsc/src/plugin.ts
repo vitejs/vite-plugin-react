@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { createRequestListener } from '@mjackson/node-fetch-server'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import {
@@ -883,6 +883,7 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
+    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
     detectNonOptimizedCjsPlugin(),
   ]
@@ -2123,6 +2124,41 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
+}
+
+function vendorUseSyncExternalStorePlugin(): Plugin[] {
+  // vendor and optimize use-sync-external-store out of the box
+  // since this is a common enough cjs, which tends to break
+  // other packages (e.g. swr, @tanstack/react-store)
+
+  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
+  const exports = [
+    'use-sync-external-store',
+    'use-sync-external-store/with-selector',
+    'use-sync-external-store/with-selector.js',
+    'use-sync-external-store/shim',
+    'use-sync-external-store/shim/index.js',
+    'use-sync-external-store/shim/with-selector',
+    'use-sync-external-store/shim/with-selector.js',
+  ]
+
+  return [
+    {
+      name: 'rsc:vendor-use-sync-external-store',
+      apply: 'serve',
+      config() {
+        return {
+          environments: {
+            ssr: {
+              optimizeDeps: {
+                include: exports.map((e) => `${PKG_NAME} > ${e}`),
+              },
+            },
+          },
+        }
+      },
+    },
+  ]
 }
 
 function sortObject<T extends object>(o: T) {
