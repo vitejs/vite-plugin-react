@@ -9,8 +9,8 @@ export function TestClient({
   testSharedFromServer: string
 }) {
   React.useEffect(() => {
-    console.log({ testShared, testSharedFromServer })
     if (testShared !== testSharedFromServer) {
+      console.log({ testShared, testSharedFromServer })
       throw new Error(
         `Mismatch: ${JSON.stringify({ testShared, testSharedFromServer })}`,
       )

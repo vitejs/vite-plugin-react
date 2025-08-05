@@ -1521,7 +1521,7 @@ function mergeAssetDeps(a: AssetDeps, b: AssetDeps): AssetDeps {
 }
 
 function collectAssetDeps(bundle: Rollup.OutputBundle) {
-  const chunkToDeps = new Map<Rollup.OutputChunk, AssetDeps>()
+  const chunkToDeps = new Map<Rollup.OutputChunk, ResolvedAssetDeps>()
   for (const chunk of Object.values(bundle)) {
     if (chunk.type === 'chunk') {
       chunkToDeps.set(chunk, collectAssetDepsInner(chunk.fileName, bundle))
@@ -1529,7 +1529,7 @@ function collectAssetDeps(bundle: Rollup.OutputBundle) {
   }
   const idToDeps: Record<
     string,
-    { chunk: Rollup.OutputChunk; deps: AssetDeps }
+    { chunk: Rollup.OutputChunk; deps: ResolvedAssetDeps }
   > = {}
   for (const [chunk, deps] of chunkToDeps.entries()) {
     for (const id of chunk.moduleIds) {
@@ -1542,7 +1542,7 @@ function collectAssetDeps(bundle: Rollup.OutputBundle) {
 function collectAssetDepsInner(
   fileName: string,
   bundle: Rollup.OutputBundle,
-): AssetDeps {
+): ResolvedAssetDeps {
   const visited = new Set<string>()
   const css: string[] = []
 
