@@ -836,7 +836,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
   ssrCss.forEach(node => {
-    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+    if (node.dataset.precedence === "vite-rsc/client-reference") {
       node.remove();
     }
   });
@@ -1910,6 +1910,20 @@ export function vitePluginRscCss(
           // ensure hmr boundary at this virtual since otherwise non-self accepting css
           // (e.g. css module) causes full reload
           code += `if (import.meta.hot) { import.meta.hot.accept() }\n`
+          // remove server rendered <link> after inline <style> is injected on client
+          // to avoid duplicate styles
+          function removeFn(hrefs: string[]) {
+            for (const href of hrefs) {
+              const el = document.querySelector(
+                `link[rel="stylesheet"][href="${href}"]`,
+              )
+              console.log({ href, el })
+              if (el) {
+                el.remove()
+              }
+            }
+          }
+          code += `(${removeFn.toString()})(${JSON.stringify(result.hrefs)});\n`
           return code
         }
       },
