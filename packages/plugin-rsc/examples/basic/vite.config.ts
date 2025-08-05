@@ -151,6 +151,11 @@ export default { fetch: handler };
         ],
       },
     },
+    ssr: {
+      optimizeDeps: {
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
+      },
+    },
   },
 }) as any
 
