@@ -52,7 +52,7 @@ test.describe('dev-non-optimized-cjs', () => {
     const editor = f.createEditor('vite.config.ts')
     editor.edit((s) =>
       s.replace(
-        `'@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',`,
+        `include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],`,
         ``,
       ),
     )
@@ -941,9 +941,10 @@ function defineTest(f: Fixture) {
   test('transitive cjs dep', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.getByTestId('transitive-cjs-client')).toHaveText(
-      'ok:browser',
-    )
+    await expect(page.getByTestId('transitive-cjs-client')).toHaveText('ok')
+    await expect(
+      page.getByTestId('transitive-use-sync-external-store-client'),
+    ).toHaveText('ok:browser')
   })
 
   test('use cache function', async ({ page }) => {

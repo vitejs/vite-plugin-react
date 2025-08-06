@@ -153,9 +153,7 @@ export default { fetch: handler };
     },
     ssr: {
       optimizeDeps: {
-        include: [
-          '@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',
-        ],
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
       },
     },
   },

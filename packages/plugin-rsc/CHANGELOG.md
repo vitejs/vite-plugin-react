@@ -1,3 +1,27 @@
+## <small>[0.4.17](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.16...plugin-rsc@0.4.17) (2025-08-05)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#670](https://github.com/vitejs/vite-plugin-react/issues/670)) ([61d777d](https://github.com/vitejs/vite-plugin-react/commit/61d777ddc8524256f890f43a2a78dbfbfd1e97ac))
+* **rsc:** keep manually added link stylesheet during dev ([#663](https://github.com/vitejs/vite-plugin-react/issues/663)) ([ac20b31](https://github.com/vitejs/vite-plugin-react/commit/ac20b31279f6884169503ef6e5786639c93251df))
+* **rsc:** optimize `use-sync-external-store` ([#674](https://github.com/vitejs/vite-plugin-react/issues/674)) ([556de15](https://github.com/vitejs/vite-plugin-react/commit/556de15191eb2dfa26d9c0ba396c219d4b4a2dd4))
+
+### Documentation
+
+* **rsc:** notes on CSS support ([#673](https://github.com/vitejs/vite-plugin-react/issues/673)) ([9b2741f](https://github.com/vitejs/vite-plugin-react/commit/9b2741f3dc3da8e9e2ef486ab8d7eaa317230f7d))
+
+### Miscellaneous Chores
+
+* **rsc:** tweak types and examples ([#682](https://github.com/vitejs/vite-plugin-react/issues/682)) ([7b07098](https://github.com/vitejs/vite-plugin-react/commit/7b07098746a672950f278ea7edffd04834133d1f))
+
+### Code Refactoring
+
+* **rsc:** update `@mjackson/node-fetch-server` to `@remix-run/node-fetch-server` ([#680](https://github.com/vitejs/vite-plugin-react/issues/680)) ([97b5f1b](https://github.com/vitejs/vite-plugin-react/commit/97b5f1b26c2260825447c7e9781f1b168bebbe62))
+
+### Tests
+
+* **rsc:** test `React.cache`  ([#668](https://github.com/vitejs/vite-plugin-react/issues/668)) ([26ad4ad](https://github.com/vitejs/vite-plugin-react/commit/26ad4adcb69affb8932151f245b25a8fcf95c85a))
+* **rsc:** test shared module hmr ([#671](https://github.com/vitejs/vite-plugin-react/issues/671)) ([775ac61](https://github.com/vitejs/vite-plugin-react/commit/775ac6157ef7af545b4cb03ff116a01c7cffa815))
+
 ## <small>[0.4.16](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.15...plugin-rsc@0.4.16) (2025-08-01)</small>
 ### Features
 

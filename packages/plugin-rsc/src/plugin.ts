@@ -882,6 +882,7 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
+    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
     detectNonOptimizedCjsPlugin(),
   ]
@@ -1520,7 +1521,7 @@ function mergeAssetDeps(a: AssetDeps, b: AssetDeps): AssetDeps {
 }
 
 function collectAssetDeps(bundle: Rollup.OutputBundle) {
-  const chunkToDeps = new Map<Rollup.OutputChunk, AssetDeps>()
+  const chunkToDeps = new Map<Rollup.OutputChunk, ResolvedAssetDeps>()
   for (const chunk of Object.values(bundle)) {
     if (chunk.type === 'chunk') {
       chunkToDeps.set(chunk, collectAssetDepsInner(chunk.fileName, bundle))
@@ -1528,7 +1529,7 @@ function collectAssetDeps(bundle: Rollup.OutputBundle) {
   }
   const idToDeps: Record<
     string,
-    { chunk: Rollup.OutputChunk; deps: AssetDeps }
+    { chunk: Rollup.OutputChunk; deps: ResolvedAssetDeps }
   > = {}
   for (const [chunk, deps] of chunkToDeps.entries()) {
     for (const id of chunk.moduleIds) {
@@ -1541,7 +1542,7 @@ function collectAssetDeps(bundle: Rollup.OutputBundle) {
 function collectAssetDepsInner(
   fileName: string,
   bundle: Rollup.OutputBundle,
-): AssetDeps {
+): ResolvedAssetDeps {
   const visited = new Set<string>()
   const css: string[] = []
 
@@ -2122,6 +2123,41 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
+}
+
+function vendorUseSyncExternalStorePlugin(): Plugin[] {
+  // vendor and optimize use-sync-external-store out of the box
+  // since this is a common enough cjs, which tends to break
+  // other packages (e.g. swr, @tanstack/react-store)
+
+  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
+  const exports = [
+    'use-sync-external-store',
+    'use-sync-external-store/with-selector',
+    'use-sync-external-store/with-selector.js',
+    'use-sync-external-store/shim',
+    'use-sync-external-store/shim/index.js',
+    'use-sync-external-store/shim/with-selector',
+    'use-sync-external-store/shim/with-selector.js',
+  ]
+
+  return [
+    {
+      name: 'rsc:vendor-use-sync-external-store',
+      apply: 'serve',
+      config() {
+        return {
+          environments: {
+            ssr: {
+              optimizeDeps: {
+                include: exports.map((e) => `${PKG_NAME} > ${e}`),
+              },
+            },
+          },
+        }
+      },
+    },
+  ]
 }
 
 function sortObject<T extends object>(o: T) {
