@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'vitest'
-import { cjsModuleRunnerTransform } from './cjs'
+import { cjsModuleRunnerPlugin, cjsModuleRunnerTransform } from './cjs'
 import { createServer } from 'vite'
 
 describe(cjsModuleRunnerTransform, () => {
@@ -49,5 +49,13 @@ if (process.env.NODE_ENV === 'production') {
       },
     })
     expect(output).toMatchSnapshot()
+    const server = await createServer({
+      configFile: false,
+      plugins: [cjsModuleRunnerPlugin()],
+    })
+    const mod = await server.ssrLoadModule(
+      'use-sync-external-store/shim/index.js',
+    )
+    expect(mod).toMatchInlineSnapshot(`{}`)
   })
 })
