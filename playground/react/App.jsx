@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import Button from 'jsx-entry'
 import Dummy from './components/Dummy?qs-should-not-break-plugin-react'
+import { Accordion } from './components/Accordion'
 import Parent from './hmr/parent'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
 import { TestImportAttributes } from './import-attributes/test'
+import { TEST_NON_JSX, TestNonJsx } from './non-jsx/test'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -38,10 +40,16 @@ function App() {
       </header>
 
       <Dummy />
+      <Accordion.Root>
+        <Accordion.Item>First Item</Accordion.Item>
+        <Accordion.Item>Second Item</Accordion.Item>
+      </Accordion.Root>
       <Parent />
       <JsxImportRuntime />
       <Button>button</Button>
       <TestImportAttributes />
+      {TestNonJsx()}
+      {TEST_NON_JSX()}
     </div>
   )
 }

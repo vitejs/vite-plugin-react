@@ -31,9 +31,10 @@ export default defineConfig({
         rollupOptions: {
           // ensure `default` export only in cloudflare entry output
           preserveEntrySignatures: 'exports-only',
-          // @ts-ignore rolldown
-          platform: 'neutral',
         },
+      },
+      optimizeDeps: {
+        include: ['turbo-stream'],
       },
     },
     ssr: {
@@ -42,6 +43,9 @@ export default defineConfig({
         // build `ssr` inside `rsc` directory so that
         // wrangler can deploy self-contained `dist/rsc`
         outDir: './dist/rsc/ssr',
+      },
+      resolve: {
+        noExternal: true,
       },
     },
   },

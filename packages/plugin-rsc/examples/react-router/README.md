@@ -3,6 +3,9 @@
 - https://vite-rsc-react-router.hiro18181.workers.dev
 - https://vite-rsc-react-router-hiro18181.vercel.app
 
+> [!NOTE]
+> React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components) for Vite. The example might not be kept up to date with the latest version. Please refer to React Router's official documentation for the latest integrations.
+
 Vite RSC example based on demo made by React router team with Parcel:
 
 - https://github.com/jacob-ebey/parcel-plugin-react-router/

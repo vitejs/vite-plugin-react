@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto'
-import path from 'node:path'
 import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
+import { readFileSync } from 'node:fs'
+import React from 'react'
 
 test.describe('dev-default', () => {
+  test.skip(/canary|experimental/.test(React.version))
+
   const f = useFixture({ root: 'examples/react-router', mode: 'dev' })
   defineTest(f)
 })
@@ -15,6 +18,8 @@ test.describe('build-default', () => {
 })
 
 test.describe('dev-cloudflare', () => {
+  test.skip(/canary|experimental/.test(React.version))
+
   const f = useFixture({
     root: 'examples/react-router',
     mode: 'dev',
@@ -74,8 +79,11 @@ function defineTest(f: Fixture) {
         .evaluateAll((elements) =>
           elements.map((el) => el.getAttribute('href')),
         )
-      const { default: manifest } = await import(
-        path.resolve(f.root, 'dist/ssr/__vite_rsc_assets_manifest.js')
+      const manifest = JSON.parse(
+        readFileSync(
+          f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
+          'utf-8',
+        ).slice('export default '.length),
       )
       const hashString = (v: string) =>
         createHash('sha256').update(v).digest().toString('hex').slice(0, 12)

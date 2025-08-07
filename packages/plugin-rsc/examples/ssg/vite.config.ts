@@ -21,6 +21,7 @@ export default defineConfig((env) => ({
         ssr: './src/framework/entry.ssr.tsx',
       },
       serverHandler: env.isPreview ? false : undefined,
+      useBuildAppHook: true,
     }),
     rscSsgPlugin(),
     inspect(),
@@ -38,15 +39,9 @@ function rscSsgPlugin(): Plugin[] {
           }
         }
       },
-      // Use post ssr writeBundle to wait for app is fully built.
-      // On Vite 7, you can use `buildApp` hook instead.
-      writeBundle: {
-        order: 'post',
-        async handler() {
-          if (this.environment.name === 'ssr') {
-            const config = this.environment.getTopLevelConfig()
-            await renderStatic(config)
-          }
+      buildApp: {
+        async handler(builder) {
+          await renderStatic(builder.config)
         },
       },
     },

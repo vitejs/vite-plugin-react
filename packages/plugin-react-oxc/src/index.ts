@@ -12,11 +12,7 @@ import {
 import { exactRegex } from '@rolldown/pluginutils'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
-
-const refreshRuntimePath = globalThis.__IS_BUILD__
-  ? join(_dirname, 'refresh-runtime.js')
-  : // eslint-disable-next-line n/no-unsupported-features/node-builtins -- only used in dev
-    fileURLToPath(import.meta.resolve('@vitejs/react-common/refresh-runtime'))
+const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
 export interface Options {
   include?: string | RegExp | Array<string | RegExp>
@@ -29,17 +25,11 @@ export interface Options {
 }
 
 const defaultIncludeRE = /\.[tj]sx?(?:$|\?)/
+const defaultExcludeRE = /\/node_modules\//
 
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
-  const exclude = [
-    ...(Array.isArray(opts.exclude)
-      ? opts.exclude
-      : opts.exclude
-        ? [opts.exclude]
-        : []),
-    /\/node_modules\//,
-  ]
+  const exclude = opts.exclude ?? defaultExcludeRE
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
@@ -71,6 +61,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           rollupOptions: { jsx: { mode: 'automatic' } },
         },
       }
+    },
+    configResolved(config) {
+      config.logger.warn(
+        '@vitejs/plugin-react-oxc is deprecated. ' +
+          'Please use @vitejs/plugin-react instead. ' +
+          'The changes of this plugin is now included in @vitejs/plugin-react.',
+      )
     },
     options() {
       if (!this.meta.rolldownVersion) {

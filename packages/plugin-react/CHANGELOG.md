@@ -2,7 +2,48 @@
 
 ## Unreleased
 
-### Return `Plugin[]` instead of `PluginOption[]`
+## 5.0.0-beta.0 (2025-07-28)
+
+### Use Oxc for react refresh transform in rolldown-vite
+
+When used with rolldown-vite, this plugin now uses Oxc for react refresh transform.
+
+Since this behavior is what `@vitejs/plugin-react-oxc` did, `@vitejs/plugin-react-oxc` is now deprecated and the `disableOxcRecommendation` option is removed.
+
+Also, while `@vitejs/plugin-react-oxc` used the production JSX transform even for `NODE_ENV=development` build, `@vitejs/plugin-react` uses the development JSX transform for `NODE_ENV=development` build.
+
+### Allow processing files in `node_modules`
+
+The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.
+
+### `react` and `react-dom` is no longer added to [`resolve.dedupe`](https://vite.dev/config/#resolve-dedupe) automatically
+
+Adding values to `resolve.dedupe` forces Vite to resolve them differently from how Node.js does, which can be confusing and may not be expected. This plugin no longer adds `react` and `react-dom` to `resolve.dedupe` automatically.
+
+If you encounter errors after upgrading, check your package.json for version mismatches in `dependencies` or `devDependencies`, as well as your package manager’s configuration. If you prefer the previous behavior, you can manually add `react` and `react-dom` to `resolve.dedupe`.
+
+### Remove old `babel-plugin-react-compiler` support that requires `runtimeModule` option
+
+`runtimeModule` option is no longer needed in newer `babel-plugin-react-compiler` versions. Make sure to use a newer version of `babel-plugin-react-compiler` that supports `target` option.
+
+### Require Node 20.19+, 22.12+
+
+This plugin now requires Node 20.19+ or 22.12+.
+
+## 4.7.0 (2025-07-18)
+
+### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))
+
+HMR now works for compound components like this:
+
+```tsx
+const Root = () => <div>Accordion Root</div>
+const Item = () => <div>Accordion Item</div>
+
+export const Accordion = { Root, Item }
+```
+
+### Return `Plugin[]` instead of `PluginOption[]` ([#537](https://github.com/vitejs/vite-plugin-react/pull/537))
 
 The return type has changed from `react(): PluginOption[]` to more specialized type `react(): Plugin[]`. This allows for type-safe manipulation of plugins, for example:
 

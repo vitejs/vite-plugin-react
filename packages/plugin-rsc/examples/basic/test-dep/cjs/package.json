@@ -1,0 +1,9 @@
+{
+  "name": "@vitejs/test-dep-cjs",
+  "private": true,
+  "type": "commonjs",
+  "exports": "./index.js",
+  "peerDependencies": {
+    "react": "*"
+  }
+}

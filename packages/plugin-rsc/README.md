@@ -11,7 +11,7 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Getting Started
 
-You can start a project by copying an example locally by:
+You can create a starter project by:
 
 ```sh
 npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
@@ -22,11 +22,9 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 - [`./examples/starter`](./examples/starter)
   - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 - [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview) with this plugin.
-    It also includes `@cloudflare/vite-plugin` integration.
+  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 - [`./examples/basic`](./examples/basic)
   - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
-    It also uses a high level `@vitejs/plugin-rsc/extra/{rsc,ssr,browser}` API for quick setup.
 - [`./examples/ssg`](./examples/ssg)
   - Static site generation (SSG) example with MDX and client components for interactivity.
 
@@ -266,6 +264,9 @@ export function renderHTML(...) {}
 
 #### `import.meta.viteRsc.loadCss`
 
+> [!NOTE]
+> The plugin automatically injects CSS for server components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
+
 - Type: `(importer?: string) => React.ReactNode`
 
 This allows collecting css which is imported through a current server module and injecting them inside server components.
@@ -419,7 +420,10 @@ export default defineConfig({
 })
 ```
 
-## Higher level API
+## High level API
+
+> [!NOTE]
+> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
 
 This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
 
@@ -434,6 +438,40 @@ This is a wrapper of `react-server-dom` API and helper API to setup a minimal RS
 ### `@vitejs/plugin-rsc/extra/browser`
 
 - `hydrate`
+
+## CSS Support
+
+The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
+
+1. **Component Detection**: The plugin automatically detects server components by looking for:
+   - Function exports with capital letter names (e.g., `export function Page() {}`)
+   - Default exports that are functions with capital names (e.g., `export default function Page() {}`)
+   - Const exports assigned to functions with capital names (e.g., `export const Page = () => {}`)
+
+2. **CSS Import Detection**: For detected components, the plugin checks if the module imports any CSS files (`.css`, `.scss`, `.sass`, etc.)
+
+3. **Automatic Wrapping**: When both conditions are met, the plugin wraps the component with a CSS injection wrapper:
+
+```tsx
+// Before transformation
+import './styles.css'
+
+export function Page() {
+  return <div>Hello</div>
+}
+
+// After transformation
+import './styles.css'
+
+export function Page() {
+  return (
+    <>
+      {import.meta.viteRsc.loadCss()}
+      <div>Hello</div>
+    </>
+  )
+}
+```
 
 ## Credits
 
