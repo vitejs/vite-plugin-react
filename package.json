@@ -51,6 +51,7 @@
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.38.0",
+    "use-sync-external-store": "^1.5.0",
     "vite": "^7.0.6",
     "vitest": "^3.2.4"
   },
