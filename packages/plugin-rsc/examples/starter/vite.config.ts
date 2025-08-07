@@ -2,6 +2,7 @@ import rsc from '@vitejs/plugin-rsc'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 // import inspect from "vite-plugin-inspect";
+import nitro from '@hiogawa/vite-plugin-nitro'
 
 export default defineConfig({
   plugins: [
@@ -21,6 +22,11 @@ export default defineConfig({
     // use https://github.com/antfu-collective/vite-plugin-inspect
     // to understand internal transforms required for RSC.
     // inspect(),
+
+    // use Nitro plugin to build
+    nitro({
+      server: { environmentName: 'rsc' },
+    }),
   ],
 
   // specify entry point for each environment.
