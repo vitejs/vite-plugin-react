@@ -81,7 +81,7 @@ export async function cjsModuleRunnerTransform(
         load(id) {
           if (id === '\0virtual:entry') {
             return `
-import m from "virtual:entry-inner";
+import * as m from "virtual:entry-inner";
 __vite_ssr_exportAll__(m);
 `
           }
@@ -91,7 +91,7 @@ __vite_ssr_exportAll__(m);
           if (id.startsWith('\0virtual:require-to-import/')) {
             id = id.slice('\0virtual:require-to-import/'.length)
             return `
-import m from ${JSON.stringify(id)};
+import * as m from ${JSON.stringify(id)};
 module.exports = m;
 `
           }

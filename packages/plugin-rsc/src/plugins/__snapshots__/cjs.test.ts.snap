@@ -35,13 +35,13 @@ var require___virtual_entry_inner = /* @__PURE__ */ __commonJS({ "\\\\0virtual:e
 //#endregion
 //#region \\0virtual:entry
 var import___virtual_entry_inner = /* @__PURE__ */ __toESM(require___virtual_entry_inner());
-__vite_ssr_exportAll__(import___virtual_entry_inner.default);
+__vite_ssr_exportAll__(import___virtual_entry_inner);
 
 //#endregion"
 `;
 
 exports[`cjsModuleRunnerTransform > basic 3`] = `
-"import m from "./cjs/use-sync-external-store.development.js";
+"import * as m from "./cjs/use-sync-external-store.development.js";
 
 //#region rolldown:runtime
 var __create = Object.create;
@@ -83,7 +83,7 @@ var require___virtual_entry_inner = /* @__PURE__ */ __commonJS({ "\\\\0virtual:e
 //#endregion
 //#region \\0virtual:entry
 var import___virtual_entry_inner = /* @__PURE__ */ __toESM(require___virtual_entry_inner());
-__vite_ssr_exportAll__(import___virtual_entry_inner.default);
+__vite_ssr_exportAll__(import___virtual_entry_inner);
 
 //#endregion"
 `;

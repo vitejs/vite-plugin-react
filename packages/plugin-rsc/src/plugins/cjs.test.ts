@@ -56,6 +56,10 @@ if (process.env.NODE_ENV === 'production') {
     const mod = await server.ssrLoadModule(
       'use-sync-external-store/shim/index.js',
     )
-    expect(mod).toMatchInlineSnapshot(`{}`)
+    expect(mod).toMatchInlineSnapshot(`
+      {
+        "useSyncExternalStore": [Function],
+      }
+    `)
   })
 })
