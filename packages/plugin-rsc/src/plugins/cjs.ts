@@ -22,7 +22,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           /\b(require|exports)\b/.test(code)
         ) {
           id = parseIdQuery(id).filename
-          if (!id.match(/\.[cm]js$/)) return
+          if (!/\.[cm]?js$/.test(id)) return
           if (id.endsWith('.mjs')) return
           if (id.endsWith('.js')) {
             const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
