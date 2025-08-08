@@ -33,6 +33,7 @@ import {
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
+import { cjsModuleRunnerPlugin } from './plugins/cjs'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -885,8 +886,10 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
     detectNonOptimizedCjsPlugin(),
+    ...cjsModuleRunnerPlugin(),
   ]
 }
+
 function detectNonOptimizedCjsPlugin(): Plugin {
   return {
     name: 'rsc:detect-non-optimized-cjs',

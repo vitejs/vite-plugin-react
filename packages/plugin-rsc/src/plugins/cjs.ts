@@ -4,49 +4,79 @@ import { findClosestPkgJsonPath } from 'vitefu'
 import path from 'node:path'
 import fs from 'node:fs'
 import * as rolldown from 'rolldown'
+import * as esModuleLexer from 'es-module-lexer'
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
+  const warnedPackages = new Set<string>()
+
   return [
     {
       name: 'cjs-module-runner-transform',
+      apply: 'serve',
+      applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       async transform(code, id) {
         if (
           id.includes('/node_modules/') &&
           !id.startsWith(this.environment.config.cacheDir) &&
-          this.environment.config.dev.moduleRunnerTransform &&
           /\b(require|exports)\b/.test(code)
         ) {
           id = parseIdQuery(id).filename
-          let isEsm = id.endsWith('.mjs')
-          if (id.endsWith('.js')) {
-            const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
-            if (pkgJsonPath) {
-              const pkgJson = JSON.parse(
-                fs.readFileSync(pkgJsonPath, 'utf-8'),
-              ) as { type?: string }
-              isEsm = pkgJson.type === 'module'
-            }
+          if (id.endsWith('.mjs')) return
+
+          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
+          if (pkgJsonPath) {
+            const pkgJson = JSON.parse(
+              fs.readFileSync(pkgJsonPath, 'utf-8'),
+            ) as { type?: string }
+            if (pkgJson.type === 'module') return
           }
-          if (!isEsm) {
-            // TODO: warning once per package
+
+          // it can be esm build from "module" exports, which should be skipped
+          const [, , , hasModuleSyntax] = esModuleLexer.parse(code)
+          if (hasModuleSyntax) return
+
+          // warning once per package
+          const packageKey = extractPackageKey(id)
+          if (!warnedPackages.has(packageKey)) {
+            warnedPackages.add(packageKey)
             this.warn(
               `Found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
                 `It is recommended to add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
             )
-            return cjsModuleRunnerTransform(code, {
-              define: {
-                'process.env.NODE_ENV': JSON.stringify(
-                  this.environment.config.isProduction
-                    ? 'production'
-                    : 'development',
-                ),
-              },
-            })
           }
+
+          return cjsModuleRunnerTransform(code, {
+            define: {
+              'process.env.NODE_ENV': JSON.stringify(
+                this.environment.config.isProduction
+                  ? 'production'
+                  : 'development',
+              ),
+            },
+          })
         }
       },
     },
   ]
+}
+
+function extractPackageKey(id: string): string {
+  // .../.yarn/cache/abc/... => abc
+  const yarnMatch = id.match(/\/.yarn\/cache\/([^/]+)/)
+  if (yarnMatch) {
+    return yarnMatch[1]!
+  }
+  // .../node_modules/@x/y/... => @x/y
+  // .../node_modules/x/... => x
+  if (id.includes('/node_modules')) {
+    id = id.split('/node_modules/').at(-1)!
+    let [x, y] = id.split('/')
+    if (x!.startsWith('@')) {
+      return `${x}/${y}`
+    }
+    return x!
+  }
+  return id
 }
 
 export async function cjsModuleRunnerTransform(
