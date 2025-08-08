@@ -7,7 +7,7 @@ import * as rolldown from 'rolldown'
 import * as esModuleLexer from 'es-module-lexer'
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
-  const warnedPackages = new Set<string>()
+  const warnedPackages = new Set<string>(['use-sync-external-store'])
 
   return [
     {
@@ -38,11 +38,11 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           // warning once per package
           const packageKey = extractPackageKey(id)
           if (!warnedPackages.has(packageKey)) {
-            warnedPackages.add(packageKey)
             this.warn(
               `Found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
                 `It is recommended to add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
             )
+            warnedPackages.add(packageKey)
           }
 
           return cjsModuleRunnerTransform(code, {

@@ -21,7 +21,7 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs, findClosestPkgJsonPath } from 'vitefu'
+import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -34,6 +34,7 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { evalValue, parseIdQuery } from './plugins/utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -883,43 +884,9 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
-    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
-    detectNonOptimizedCjsPlugin(),
     ...cjsModuleRunnerPlugin(),
   ]
-}
-
-function detectNonOptimizedCjsPlugin(): Plugin {
-  return {
-    name: 'rsc:detect-non-optimized-cjs',
-    apply: 'serve',
-    async transform(code, id) {
-      if (
-        id.includes('/node_modules/') &&
-        !id.startsWith(this.environment.config.cacheDir) &&
-        /\b(require|exports)\b/.test(code)
-      ) {
-        id = parseIdQuery(id).filename
-        let isEsm = id.endsWith('.mjs')
-        if (id.endsWith('.js')) {
-          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
-          if (pkgJsonPath) {
-            const pkgJson = JSON.parse(
-              fs.readFileSync(pkgJsonPath, 'utf-8'),
-            ) as { type?: string }
-            isEsm = pkgJson.type === 'module'
-          }
-        }
-        if (!isEsm) {
-          this.warn(
-            `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
-              `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
-          )
-        }
-      }
-    },
-  }
 }
 
 function scanBuildStripPlugin(): Plugin {
@@ -1996,23 +1963,6 @@ function generateResourcesCode(depsCode: string) {
   `
 }
 
-// https://github.com/vitejs/vite/blob/ea9aed7ebcb7f4be542bd2a384cbcb5a1e7b31bd/packages/vite/src/node/utils.ts#L1469-L1475
-function evalValue<T = any>(rawValue: string): T {
-  const fn = new Function(`
-    var console, exports, global, module, process, require
-    return (\n${rawValue}\n)
-  `)
-  return fn()
-}
-
-// https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
-function parseIdQuery(id: string) {
-  if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
-  const query = Object.fromEntries(new URLSearchParams(rawQuery))
-  return { filename, query }
-}
-
 export async function transformRscCssExport(options: {
   ast: Awaited<ReturnType<typeof parseAstAsync>>
   code: string
@@ -2126,41 +2076,6 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
-}
-
-function vendorUseSyncExternalStorePlugin(): Plugin[] {
-  // vendor and optimize use-sync-external-store out of the box
-  // since this is a common enough cjs, which tends to break
-  // other packages (e.g. swr, @tanstack/react-store)
-
-  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
-  const exports = [
-    'use-sync-external-store',
-    'use-sync-external-store/with-selector',
-    'use-sync-external-store/with-selector.js',
-    'use-sync-external-store/shim',
-    'use-sync-external-store/shim/index.js',
-    'use-sync-external-store/shim/with-selector',
-    'use-sync-external-store/shim/with-selector.js',
-  ]
-
-  return [
-    {
-      name: 'rsc:vendor-use-sync-external-store',
-      apply: 'serve',
-      config() {
-        return {
-          environments: {
-            ssr: {
-              optimizeDeps: {
-                include: exports.map((e) => `${PKG_NAME} > ${e}`),
-              },
-            },
-          },
-        }
-      },
-    },
-  ]
 }
 
 function sortObject<T extends object>(o: T) {
