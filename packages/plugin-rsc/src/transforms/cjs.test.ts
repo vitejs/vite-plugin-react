@@ -23,8 +23,6 @@ exports.ok = true;
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "const exports = {}; const module = { exports };
       exports.ok = true;
-      ;
-      export const ok = exports["ok"];
       "
     `)
   })
@@ -44,7 +42,6 @@ if (true) {
       } else {
         module.exports = (await import('./cjs/use-sync-external-store.development.js'));
       }
-      ;
       "
     `)
   })
@@ -66,8 +63,6 @@ if (true) {
         var ReactDOM = __cjs_to_esm_hoist_1;
         exports.useSyncExternalStoreWithSelector = function () {}
       })()
-      ;
-      export const useSyncExternalStoreWithSelector = exports["useSyncExternalStoreWithSelector"];
       "
     `)
   })
@@ -85,7 +80,6 @@ if (true) {
         const require = () => {};
         require("test");
       }
-      ;
       "
     `)
   })
