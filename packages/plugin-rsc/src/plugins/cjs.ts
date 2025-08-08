@@ -1,10 +1,11 @@
-import type { Plugin } from 'vite'
+import { parseAstAsync, type Plugin } from 'vite'
 import { parseIdQuery } from './utils'
 import { findClosestPkgJsonPath } from 'vitefu'
 import path from 'node:path'
 import fs from 'node:fs'
 import * as rolldown from 'rolldown'
 import * as esModuleLexer from 'es-module-lexer'
+import { transformCjsToEsm } from '../transforms/cjs'
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
   // use-sync-external-store is known to work fine so don't show warning
@@ -46,15 +47,15 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
             warnedPackages.add(packageKey)
           }
 
-          return cjsModuleRunnerTransform(code, {
-            define: {
-              'process.env.NODE_ENV': JSON.stringify(
-                this.environment.config.isProduction
-                  ? 'production'
-                  : 'development',
-              ),
-            },
-          })
+          const ast = await parseAstAsync(code)
+          const result = transformCjsToEsm(code, ast)
+          const output = result.output
+          // TODO: can we use cjs-module-lexer to properly define named exports?
+          output.append(`__vite_ssr_exportAll__(module.exports)`)
+          return {
+            code: output.toString(),
+            map: output.generateMap({ hires: 'boundary' }),
+          }
         }
       },
     },

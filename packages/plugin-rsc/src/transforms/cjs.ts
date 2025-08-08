@@ -1,7 +1,6 @@
 import type { Program, Node } from 'estree'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
-import * as cjsModuleLexer from 'cjs-module-lexer'
 import { walk } from 'estree-walker'
 
 export function transformCjsToEsm(
@@ -60,21 +59,6 @@ export function transformCjsToEsm(
       parentNodes.pop()!
     },
   })
-
-  // TODO: (we can move this out and handle eagerly transforming in vite transform?)
-  // cjs-module-lexer to detect export names and re-exports
-  cjsModuleLexer.initSync()
-  const cjsParsed = cjsModuleLexer.parse(code)
-  output.append(`;\n`)
-  for (const e of cjsParsed.exports) {
-    output.append(`export const ${e} = exports[${JSON.stringify(e)}];\n`)
-  }
-  // TODO: re-exports need to be parsed eagerly to find export names
-  // https://github.com/nodejs/node/blob/f3adc11e37b8bfaaa026ea85c1cf22e3a0e29ae9/lib/internal/modules/esm/translators.js#L382-L409
-  // for (const e of cjsParsed.reexports) {
-  //   output.append(`export * from ${JSON.stringify(e)}';\n`)
-  // }
-
   output.prepend(`const exports = {}; const module = { exports };\n`)
   return { output }
 }
