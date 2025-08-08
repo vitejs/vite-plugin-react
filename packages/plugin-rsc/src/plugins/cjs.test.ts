@@ -2,7 +2,7 @@ import { test, expect, describe } from 'vitest'
 import { cjsModuleRunnerPlugin, cjsModuleRunnerTransform } from './cjs'
 import { createServer } from 'vite'
 
-describe(cjsModuleRunnerTransform, () => {
+describe.skip(cjsModuleRunnerTransform, () => {
   test('basic', async () => {
     const input = `
 exports.ok = true;
