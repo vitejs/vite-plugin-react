@@ -7,6 +7,7 @@ import * as rolldown from 'rolldown'
 import * as esModuleLexer from 'es-module-lexer'
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
+  // use-sync-external-store is known to work fine so don't show warning
   const warnedPackages = new Set<string>(['use-sync-external-store'])
 
   return [
@@ -79,6 +80,7 @@ function extractPackageKey(id: string): string {
   return id
 }
 
+// TODO: replace rolldown with single parsing + magic-string
 export async function cjsModuleRunnerTransform(
   code: string,
   config?: rolldown.BuildOptions,
