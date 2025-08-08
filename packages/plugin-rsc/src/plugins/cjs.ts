@@ -3,7 +3,6 @@ import { parseIdQuery } from './utils'
 import { findClosestPkgJsonPath } from 'vitefu'
 import path from 'node:path'
 import fs from 'node:fs'
-import * as rolldown from 'rolldown'
 import * as esModuleLexer from 'es-module-lexer'
 import { transformCjsToEsm } from '../transforms/cjs'
 
@@ -23,14 +22,16 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           /\b(require|exports)\b/.test(code)
         ) {
           id = parseIdQuery(id).filename
+          if (!id.match(/\.[cm]js$/)) return
           if (id.endsWith('.mjs')) return
-
-          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
-          if (pkgJsonPath) {
-            const pkgJson = JSON.parse(
-              fs.readFileSync(pkgJsonPath, 'utf-8'),
-            ) as { type?: string }
-            if (pkgJson.type === 'module') return
+          if (id.endsWith('.js')) {
+            const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
+            if (pkgJsonPath) {
+              const pkgJson = JSON.parse(
+                fs.readFileSync(pkgJsonPath, 'utf-8'),
+              ) as { type?: string }
+              if (pkgJson.type === 'module') return
+            }
           }
 
           // it can be esm build from "module" exports, which should be skipped
@@ -79,58 +80,4 @@ function extractPackageKey(id: string): string {
     return x!
   }
   return id
-}
-
-// TODO: replace rolldown with single parsing + magic-string
-export async function cjsModuleRunnerTransform(
-  code: string,
-  config?: rolldown.BuildOptions,
-): Promise<string> {
-  const output = await rolldown.build({
-    ...config,
-    write: false,
-    output: {
-      format: 'esm',
-    },
-    input: 'virtual:entry',
-    plugins: [
-      {
-        name: 'entry',
-        resolveId(source, _importer, options) {
-          if (source === 'virtual:entry') {
-            return '\0' + source
-          }
-          if (source === 'virtual:entry-inner') {
-            return '\0' + source
-          }
-          if (options.kind === 'require-call') {
-            return '\0virtual:require-to-import/' + source
-          }
-          return {
-            id: source,
-            external: true,
-          }
-        },
-        load(id) {
-          if (id === '\0virtual:entry') {
-            return `
-import * as m from "virtual:entry-inner";
-__vite_ssr_exportAll__(m);
-`
-          }
-          if (id === '\0virtual:entry-inner') {
-            return code
-          }
-          if (id.startsWith('\0virtual:require-to-import/')) {
-            id = id.slice('\0virtual:require-to-import/'.length)
-            return `
-import * as m from ${JSON.stringify(id)};
-module.exports = m;
-`
-          }
-        },
-      },
-    ],
-  })
-  return output.output[0].code
 }
