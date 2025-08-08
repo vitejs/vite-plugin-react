@@ -23,6 +23,8 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
         ) {
           id = parseIdQuery(id).filename
           if (!/\.[cm]?js$/.test(id)) return
+
+          // skip genuine esm
           if (id.endsWith('.mjs')) return
           if (id.endsWith('.js')) {
             const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
@@ -34,7 +36,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
             }
           }
 
-          // it can be esm build from "module" exports, which should be skipped
+          // skip faux esm (e.g. from "module" field)
           const [, , , hasModuleSyntax] = esModuleLexer.parse(code)
           if (hasModuleSyntax) return
 
