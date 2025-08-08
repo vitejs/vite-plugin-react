@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@remix-run/node-fetch-server": "^0.8.0",
+    "cjs-module-lexer": "^2.1.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.17",
