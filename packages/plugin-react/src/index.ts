@@ -245,6 +245,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         })()
         const plugins = [...babelOptions.plugins]
 
+        // remove react-compiler plugin on non client environment
+        if (ssr) {
+          const reactCompilerPlugin = getReactCompilerPlugin(plugins)
+          if (reactCompilerPlugin) {
+            plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          }
+        }
+
         const isJSX = filepath.endsWith('x')
         const useFastRefresh =
           !skipFastRefresh &&
