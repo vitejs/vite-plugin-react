@@ -63,7 +63,7 @@ test.describe('dev-non-optimized-cjs', () => {
   test('show warning', async ({ page }) => {
     await page.goto(f.url())
     expect(f.proc().stderr()).toContain(
-      `[vite-rsc] found non-optimized CJS dependency in 'ssr' environment.`,
+      `Found non-optimized CJS dependency in 'ssr' environment.`,
     )
   })
 })
