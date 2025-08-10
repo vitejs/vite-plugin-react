@@ -1958,7 +1958,7 @@ function generateResourcesCode(depsCode: string) {
   }
 
   return `
-    import __vite_rsc_react__ from "react";
+    import * as __vite_rsc_react__ from "react";
     export const Resources = (${ResourcesFn.toString()})(__vite_rsc_react__, ${depsCode});
   `
 }
@@ -1983,7 +1983,7 @@ export async function transformRscCssExport(options: {
   })
   if (result.output.hasChanged()) {
     if (!options.code.includes('__vite_rsc_react__')) {
-      result.output.prepend(`import __vite_rsc_react__ from "react";`)
+      result.output.prepend(`import * as __vite_rsc_react__ from "react";`)
     }
     result.output.append(`
 function __vite_rsc_wrap_css__(value, name) {

@@ -1,5 +1,5 @@
 import * as ReactClient from '@vitejs/plugin-rsc/ssr' // RSC API
-import React from 'react'
+import * as React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import * as ReactDOMServer from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
