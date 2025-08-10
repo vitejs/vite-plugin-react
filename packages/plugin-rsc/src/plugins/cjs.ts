@@ -18,6 +18,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       async transform(code, id) {
         if (
           (id.includes('/node_modules/') ||
+            // it's not inside node_modules when developing rsc plugin inside pnpm workspace.
             id.includes(
               '/packages/plugin-rsc/dist/vendor/react-server-dom/',
             )) &&
