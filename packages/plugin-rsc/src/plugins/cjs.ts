@@ -17,7 +17,10 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       async transform(code, id) {
         if (
-          id.includes('/node_modules/') &&
+          (id.includes('/node_modules/') ||
+            id.includes(
+              '/packages/plugin-rsc/dist/vendor/react-server-dom/',
+            )) &&
           !id.startsWith(this.environment.config.cacheDir) &&
           /\b(require|exports)\b/.test(code)
         ) {
