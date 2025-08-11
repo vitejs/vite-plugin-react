@@ -5,6 +5,9 @@ import path from 'node:path'
 import fs from 'node:fs'
 import * as esModuleLexer from 'es-module-lexer'
 import { transformCjsToEsm } from '../transforms/cjs'
+import { createDebug } from '@hiogawa/utils'
+
+const debug = createDebug('vite-rsc:cjs')
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
   // use-sync-external-store is known to work fine so don't show warning
@@ -43,7 +46,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           // warning once per package
           const packageKey = extractPackageKey(id)
           if (!warnedPackages.has(packageKey)) {
-            this.warn(
+            debug(
               `Found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
                 `It is recommended to add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
             )
