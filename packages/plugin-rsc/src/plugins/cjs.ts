@@ -60,7 +60,9 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           // TODO: can we use cjs-module-lexer to properly define named exports?
           // for re-exports, we need to eagerly transform dependencies though.
           // https://github.com/nodejs/node/blob/f3adc11e37b8bfaaa026ea85c1cf22e3a0e29ae9/lib/internal/modules/esm/translators.js#L382-L409
-          output.append(`__vite_ssr_exportAll__(module.exports)`)
+          output.append(
+            `\n;__vite_ssr_exportAll__(module.exports);\nexport default module.exports;\n`,
+          )
           return {
             code: output.toString(),
             map: output.generateMap({ hires: 'boundary' }),
