@@ -1232,19 +1232,8 @@ function vitePluginUseServer(
               this.environment.mode === 'dev' &&
               id.includes('/node_modules/')
             ) {
-              const ignored =
-                useServerPluginOptions.ignoredPackageWarnings?.some(
-                  (pattern) =>
-                    pattern instanceof RegExp
-                      ? pattern.test(id)
-                      : id.includes(`/node_modules/${pattern}/`),
-                )
-              if (!ignored) {
-                this.warn(
-                  `[vite-rsc] detected an internal server function created by a package imported on ${this.environment.name} environment`,
-                )
-              }
-              // module runner has additional resolution step and it's not strict about
+              // similar situation as `use client` (see `virtual:client-in-server-package-proxy`)
+              // but module runner has additional resolution step and it's not strict about
               // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
               id = cleanUrl(id)
             }
