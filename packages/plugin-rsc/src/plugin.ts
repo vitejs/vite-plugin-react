@@ -963,8 +963,11 @@ function vitePluginUseClient(
         let importId: string
         let referenceKey: string
         const packageSource = packageSources.get(id)
-        if (!packageSource && id.includes('/node_modules/')) {
-          assert(this.environment.mode === 'dev')
+        if (
+          !packageSource &&
+          this.environment.mode === 'dev' &&
+          id.includes('/node_modules/')
+        ) {
           // If non package source reached here (often with ?v=... query), this is a client boundary
           // created by a package imported on server environment, which breaks the
           // expectation on dependency optimizer on browser. Directly copying over
@@ -1225,8 +1228,10 @@ function vitePluginUseServer(
         let normalizedId_: string | undefined
         const getNormalizedId = () => {
           if (!normalizedId_) {
-            if (id.includes('/node_modules/')) {
-              assert(this.environment.mode === 'dev')
+            if (
+              this.environment.mode === 'dev' &&
+              id.includes('/node_modules/')
+            ) {
               const ignored =
                 useServerPluginOptions.ignoredPackageWarnings?.some(
                   (pattern) =>
