@@ -32,7 +32,11 @@ import {
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
-import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
+import {
+  cleanUrl,
+  normalizeViteImportAnalysisUrl,
+  prepareError,
+} from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { evalValue, parseIdQuery } from './plugins/utils'
 
@@ -978,9 +982,7 @@ function vitePluginUseClient(
               `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
             )
           }
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(
-            id.split('?v=')[0]!,
-          )}`
+          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(cleanUrl(id))}`
           referenceKey = importId
         } else if (packageSource) {
           if (this.environment.mode === 'dev') {
