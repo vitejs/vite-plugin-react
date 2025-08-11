@@ -15,10 +15,10 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-rsc": "latest",
     "@cloudflare/vite-plugin": "^1.11.2",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
-    "@vitejs/plugin-react": "latest"
+    "@vitejs/plugin-react": "latest",
+    "@vitejs/plugin-rsc": "latest"
   }
 }
