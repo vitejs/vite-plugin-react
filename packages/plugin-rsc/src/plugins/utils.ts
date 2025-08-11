@@ -19,3 +19,9 @@ export function parseIdQuery(id: string): {
   const query = Object.fromEntries(new URLSearchParams(rawQuery))
   return { filename, query }
 }
+
+// https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/shared/utils.ts#L31-L34
+const postfixRE = /[?#].*$/
+export function cleanUrl(url: string): string {
+  return url.replace(postfixRE, '')
+}
