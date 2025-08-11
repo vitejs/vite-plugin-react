@@ -10,8 +10,7 @@ import { createDebug } from '@hiogawa/utils'
 const debug = createDebug('vite-rsc:cjs')
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
-  // use-sync-external-store is known to work fine so don't show warning
-  const warnedPackages = new Set<string>(['use-sync-external-store'])
+  const warnedPackages = new Set<string>()
 
   return [
     {
