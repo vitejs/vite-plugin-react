@@ -8,7 +8,12 @@ import { transformCjsToEsm } from '../transforms/cjs'
 
 export function cjsModuleRunnerPlugin(): Plugin[] {
   // use-sync-external-store is known to work fine so don't show warning
-  const warnedPackages = new Set<string>(['use-sync-external-store'])
+  const warnedPackages = new Set<string>([
+    'use-sync-external-store',
+    'react',
+    'react-dom',
+    '@vitejs/plugin-rsc',
+  ])
 
   return [
     {
@@ -74,6 +79,10 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
 }
 
 function extractPackageKey(id: string): string {
+  if (id.includes('/packages/plugin-rsc/dist/vendor/react-server-dom/')) {
+    return '@vitejs/plugin-rsc'
+  }
+
   // .../.yarn/cache/abc/... => abc
   const yarnMatch = id.match(/\/.yarn\/cache\/([^/]+)/)
   if (yarnMatch) {
