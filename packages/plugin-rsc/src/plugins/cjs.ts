@@ -46,8 +46,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           const packageKey = extractPackageKey(id)
           if (!warnedPackages.has(packageKey)) {
             debug(
-              `Found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
-                `It is recommended to add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
+              `non-optimized CJS dependency in '${this.environment.name}' environment: ${id}`,
             )
             warnedPackages.add(packageKey)
           }

@@ -58,7 +58,15 @@ test.describe('dev-non-optimized-cjs', () => {
     )
   })
 
-  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        DEBUG: 'vite-rsc:cjs',
+      },
+    },
+  })
 
   test('show warning', async ({ page }) => {
     await page.goto(f.url())
