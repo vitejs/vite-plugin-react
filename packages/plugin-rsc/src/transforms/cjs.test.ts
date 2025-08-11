@@ -1,9 +1,8 @@
-import { createServer, isRunnableDevEnvironment, parseAstAsync } from 'vite'
+import { createServer, createServerModuleRunner, parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { debugSourceMap } from './test-utils'
 import { transformCjsToEsm } from './cjs'
 import path from 'node:path'
-import assert from 'node:assert'
 
 describe(transformCjsToEsm, () => {
   async function testTransform(input: string) {
@@ -111,8 +110,10 @@ export default module.exports;
         },
       ],
     })
-    assert(isRunnableDevEnvironment(server.environments.ssr))
-    const mod = await server.environments.ssr.runner.import('/entry.mjs')
+    const runner = createServerModuleRunner(server.environments.ssr, {
+      hmr: false,
+    })
+    const mod = await runner.import('/entry.mjs')
     expect(mod).toMatchInlineSnapshot(`
       {
         "depDefault": {
