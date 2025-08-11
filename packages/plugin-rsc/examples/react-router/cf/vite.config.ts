@@ -36,6 +36,21 @@ export default defineConfig({
         },
       ],
     }),
+    {
+      name: 'no-server-optimize-deps',
+      configEnvironment: {
+        order: 'post',
+        handler(name) {
+          if (name === 'ssr' || name === 'rsc') {
+            return {
+              optimizeDeps: {
+                noDiscovery: true,
+              },
+            }
+          }
+        },
+      },
+    },
   ],
   environments: {
     client: {
@@ -45,14 +60,14 @@ export default defineConfig({
     },
     ssr: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
-        exclude: ['react-router'],
+        // include: ['react-router > cookie', 'react-router > set-cookie-parser'],
+        // exclude: ['react-router'],
       },
     },
     rsc: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
-        exclude: ['react-router'],
+        // include: ['react-router > cookie', 'react-router > set-cookie-parser'],
+        // exclude: ['react-router'],
       },
     },
   },
