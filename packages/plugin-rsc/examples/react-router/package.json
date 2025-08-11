@@ -13,12 +13,12 @@
     "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
   },
   "dependencies": {
-    "@vitejs/plugin-rsc": "latest",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "7.7.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-rsc": "latest",
     "@cloudflare/vite-plugin": "^1.11.2",
     "@react-router/dev": "7.7.0",
     "@tailwindcss/typography": "^0.5.16",
