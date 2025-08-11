@@ -1,7 +1,9 @@
-import { parseAstAsync } from 'vite'
+import { createServer, isRunnableDevEnvironment, parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { debugSourceMap } from './test-utils'
 import { transformCjsToEsm } from './cjs'
+import path from 'node:path'
+import assert from 'node:assert'
 
 describe(transformCjsToEsm, () => {
   async function testTransform(input: string) {
@@ -81,6 +83,51 @@ if (true) {
         require("test");
       }
       "
+    `)
+  })
+
+  it('e2e', async () => {
+    const server = await createServer({
+      configFile: false,
+      logLevel: 'error',
+      root: path.join(import.meta.dirname, 'fixtures/cjs'),
+      plugins: [
+        {
+          name: 'cjs-module-runner-transform',
+          async transform(code, id) {
+            if (id.endsWith('.cjs')) {
+              const ast = await parseAstAsync(code)
+              const { output } = transformCjsToEsm(code, ast)
+              output.append(`
+;__vite_ssr_exportAll__(module.exports);
+export default module.exports;
+`)
+              return {
+                code: output.toString(),
+                map: output.generateMap({ hires: 'boundary' }),
+              }
+            }
+          },
+        },
+      ],
+    })
+    assert(isRunnableDevEnvironment(server.environments.ssr))
+    const mod = await server.environments.ssr.runner.import('/entry.mjs')
+    expect(mod).toMatchInlineSnapshot(`
+      {
+        "depDefault": {
+          "a": "a",
+          "b": "b",
+        },
+        "depNamespace": {
+          "a": "a",
+          "b": "b",
+          "default": {
+            "a": "a",
+            "b": "b",
+          },
+        },
+      }
     `)
   })
 })
