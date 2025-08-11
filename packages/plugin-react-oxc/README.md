@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This package is deprecated. Use [@vitejs/plugin-react](https://www.npmjs.com/package/@vitejs/plugin-react) instead, which automatically enables Oxc-based Fast Refresh transform on [`rolldown-vite`](https://vitejs.dev/guide/rolldown)
+
 # @vitejs/plugin-react-oxc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-oxc.svg)](https://npmjs.com/package/@vitejs/plugin-react-oxc)
 
 The future default Vite plugin for React projects.
