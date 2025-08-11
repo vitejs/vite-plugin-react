@@ -19,11 +19,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       async transform(code, id) {
         if (
-          (id.includes('/node_modules/') ||
-            // it's not inside node_modules when developing rsc plugin inside pnpm workspace.
-            id.includes(
-              '/packages/plugin-rsc/dist/vendor/react-server-dom/',
-            )) &&
+          (id.includes('/node_modules/') || isDevCjs(id)) &&
           !id.startsWith(this.environment.config.cacheDir) &&
           /\b(require|exports)\b/.test(code)
         ) {
@@ -76,7 +72,7 @@ export default module.exports;
 }
 
 function extractPackageKey(id: string): string {
-  if (id.includes('/packages/plugin-rsc/dist/vendor/react-server-dom/')) {
+  if (isDevCjs(id)) {
     return '@vitejs/plugin-rsc'
   }
 
@@ -96,4 +92,12 @@ function extractPackageKey(id: string): string {
     return x!
   }
   return id
+}
+
+// this is needed only when developing package itself within pnpm workspace
+function isDevCjs(id: string): boolean {
+  return (
+    !import.meta.url.includes('/node_modules/') &&
+    id.includes('/vendor/react-server-dom/')
+  )
 }
