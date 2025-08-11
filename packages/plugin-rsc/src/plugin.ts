@@ -311,7 +311,7 @@ export default function vitePluginRsc(
               },
               optimizeDeps: {
                 include: [
-                  'react',
+                  // 'react',
                   // 'react-dom',
                   // 'react/jsx-runtime',
                   // 'react/jsx-dev-runtime',
@@ -337,7 +337,7 @@ export default function vitePluginRsc(
               },
               optimizeDeps: {
                 include: [
-                  'react',
+                  // 'react',
                   // 'react-dom',
                   // 'react/jsx-runtime',
                   // 'react/jsx-dev-runtime',
