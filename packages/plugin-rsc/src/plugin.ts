@@ -98,6 +98,7 @@ export type RscPluginOptions = {
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
+  /** @deprecated no warning is emitted anymore. */
   ignoredPackageWarnings?: (string | RegExp)[]
 
   /**
