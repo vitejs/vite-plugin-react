@@ -508,9 +508,6 @@ importers:
 
   packages/plugin-rsc/examples/basic:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -530,6 +527,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.1.1)
@@ -569,9 +569,6 @@ importers:
 
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -588,6 +585,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       vite:
         specifier: ^7.1.1
         version: 7.1.1(@types/node@22.17.1)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
@@ -606,9 +606,6 @@ importers:
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -625,15 +622,15 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       vite:
         specifier: ^7.1.1
         version: 7.1.1(@types/node@22.17.1)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1)
 
   packages/plugin-rsc/examples/react-router:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -665,6 +662,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.11
@@ -680,9 +680,6 @@ importers:
 
   packages/plugin-rsc/examples/ssg:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -702,15 +699,15 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       vite-plugin-inspect:
         specifier: ^11.3.2
         version: 11.3.2(vite@7.1.1(@types/node@22.17.1)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.1))
 
   packages/plugin-rsc/examples/starter:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -727,6 +724,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -739,9 +739,6 @@ importers:
 
   packages/plugin-rsc/examples/starter-cf-single:
     dependencies:
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -761,6 +758,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
 
   playground:
     devDependencies:
