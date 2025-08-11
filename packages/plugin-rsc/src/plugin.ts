@@ -963,9 +963,9 @@ function vitePluginUseClient(
         let importId: string
         let referenceKey: string
         const packageSource = packageSources.get(id)
-        if (!packageSource && id.includes('?v=')) {
+        if (!packageSource && id.includes('/node_modules/')) {
           assert(this.environment.mode === 'dev')
-          // If non package source `?v=<hash>` reached here, this is a client boundary
+          // If non package source reached here (often with ?v=... query), this is a client boundary
           // created by a package imported on server environment, which breaks the
           // expectation on dependency optimizer on browser. Directly copying over
           // "?v=<hash>" from client optimizer in client reference can make a hashed
@@ -1225,7 +1225,7 @@ function vitePluginUseServer(
         let normalizedId_: string | undefined
         const getNormalizedId = () => {
           if (!normalizedId_) {
-            if (id.includes('?v=')) {
+            if (id.includes('/node_modules/')) {
               assert(this.environment.mode === 'dev')
               const ignored =
                 useServerPluginOptions.ignoredPackageWarnings?.some(
@@ -1240,8 +1240,8 @@ function vitePluginUseServer(
                 )
               }
               // module runner has additional resolution step and it's not strict about
-              // module identity of `import(id)` like browser, so we simply strip it off.
-              id = id.split('?v=')[0]!
+              // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
+              id = cleanUrl(id)
             }
             if (config.command === 'build') {
               normalizedId_ = hashString(path.relative(config.root, id))
