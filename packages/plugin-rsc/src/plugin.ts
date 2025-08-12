@@ -1849,14 +1849,24 @@ export function vitePluginRscCss(
             parseIdQuery(id).query['importer']!,
           )
           if (this.environment.mode === 'dev') {
+            const environment = server.environments.rsc!
             const result = collectCss(server.environments.rsc!, importer)
-            const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const jsHrefs = [
-              '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
-                encodeURIComponent(importer),
-            ]
-            const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
-            return generateResourcesCode(serializeValueWithRuntime(deps))
+            for (const id of result.ids) {
+              const mod = environment.moduleGraph.getModuleById(id)
+              console.log(mod)
+            }
+            // const cssHrefs = result.hrefs.map((href) => href.slice(1))
+            const cssHmrJs = `@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=${encodeURIComponent(importer)}`
+            // const jsHrefs = [
+            //   '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
+            //     encodeURIComponent(importer),
+            // ]
+            // const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
+            // return generateResourcesCode(serializeValueWithRuntime(deps))
+            return generateResourcesCodeDev({
+              css: [],
+              js: [assetsURL(cssHmrJs) as string],
+            })
           } else {
             const key = normalizePath(path.relative(config.root, importer))
             serverResourcesMetaMap[importer] = { key }
@@ -1936,6 +1946,46 @@ function collectModuleDependents(mods: EnvironmentModuleNode[]) {
   return [...visited]
 }
 
+function generateResourcesCodeDev(deps: {
+  css: { id: string; content: string }[]
+  js: string[]
+}) {
+  const ResourcesFn = (
+    React: typeof import('react'),
+    deps: Parameters<typeof generateResourcesCodeDev>[0],
+  ) => {
+    return function Resources() {
+      return React.createElement(React.Fragment, null, [
+        ...deps.css.map((v) =>
+          React.createElement(
+            'style',
+            {
+              key: 'css:' + v.id,
+              'data-vite-dev-id': v.id,
+              precedence: 'vite-rsc/importer-resources',
+            },
+            v.content,
+          ),
+        ),
+        // js is only for dev to forward css import on browser to have hmr
+        ...deps.js.map((href: string) =>
+          React.createElement('script', {
+            key: 'js:' + href,
+            type: 'module',
+            async: true,
+            src: href,
+          }),
+        ),
+      ])
+    }
+  }
+
+  return `
+    import __vite_rsc_react__ from "react";
+    export const Resources = (${ResourcesFn.toString()})(__vite_rsc_react__, ${JSON.stringify(deps)});
+  `
+}
+
 function generateResourcesCode(depsCode: string) {
   const ResourcesFn = (
     React: typeof import('react'),
@@ -1951,6 +2001,7 @@ function generateResourcesCode(depsCode: string) {
             href: href,
           }),
         ),
+        // TODO: remove
         // js is only for dev to forward css import on browser to have hmr
         ...deps.js.map((href: string) =>
           React.createElement('script', {
