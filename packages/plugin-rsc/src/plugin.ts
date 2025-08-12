@@ -953,6 +953,24 @@ function vitePluginUseClient(
 
   const nonOptimizedClientIds = new Set<string>()
 
+  // TODO: handle when optimizer discovers this later
+  // TODO: use logger
+  function warnNonOptimizedClientId(id: string) {
+    const { depsOptimizer } = server.environments.client
+    if (!depsOptimizer) return
+
+    nonOptimizedClientIds.add(id)
+    for (const dep of depsOptimizer.metadata.depInfoList) {
+      if (dep.src === id) {
+        console.error(
+          `\
+[vite-rsc] client component dependency is inconsistently optimized. It's recommended to add the dependency it to 'optimizeDeps.exclude'.
+File: ${id}`,
+        )
+      }
+    }
+  }
+
   return [
     {
       name: 'rsc:use-client',
@@ -989,7 +1007,7 @@ function vitePluginUseClient(
             )
           }
           id = cleanUrl(id)
-          nonOptimizedClientIds.add(id)
+          warnNonOptimizedClientId(id)
           importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
