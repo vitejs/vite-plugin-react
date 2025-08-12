@@ -951,6 +951,24 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
+  // TODO: warning for late optimizer discovery
+  function warnInoncistentClientOptimization(
+    ctx: Rollup.TransformPluginContext,
+    id: string,
+  ) {
+    const { depsOptimizer } = server.environments.client
+    if (depsOptimizer) {
+      for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
+        if (dep.src === id) {
+          ctx.warn(
+            `client component dependency is inconsistently optimized. ` +
+              `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
+          )
+        }
+      }
+    }
+  }
+
   return [
     {
       name: 'rsc:use-client',
@@ -986,7 +1004,9 @@ function vitePluginUseClient(
               `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
             )
           }
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(cleanUrl(id))}`
+          id = cleanUrl(id)
+          warnInoncistentClientOptimization(this, id)
+          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
           if (this.environment.mode === 'dev') {

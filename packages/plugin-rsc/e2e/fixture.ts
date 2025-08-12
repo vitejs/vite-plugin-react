@@ -106,7 +106,7 @@ export function useFixture(options: {
         await proc.done
         assert(proc.proc.exitCode === 0)
       }
-      const proc = runCli({
+      proc = runCli({
         command: options.command ?? `pnpm preview`,
         label: `${options.root}:preview`,
         cwd,
