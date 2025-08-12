@@ -6,12 +6,6 @@ import { waitForHydration } from './helper'
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
   defineStarterTest(f)
-
-  test('no duplicate css', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    // TODO
-  })
 })
 
 test.describe('build-default', () => {
