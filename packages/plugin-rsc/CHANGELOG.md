@@ -1,3 +1,22 @@
+## <small>[0.4.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.18...plugin-rsc@0.4.19) (2025-08-11)</small>
+### Bug Fixes
+
+* **rsc:** fix cjs default import on module runner ([#695](https://github.com/vitejs/vite-plugin-react/issues/695)) ([c329914](https://github.com/vitejs/vite-plugin-react/commit/c329914c572473d4f09261fa0eba77484e720d2e))
+* **rsc:** replace `?v=` check with more robust `node_modules` detection ([#696](https://github.com/vitejs/vite-plugin-react/issues/696)) ([f0359c4](https://github.com/vitejs/vite-plugin-react/commit/f0359c4eca48ca6eb2ba98254a272949a13f149e))
+* **rsc:** replace non-optimized server cjs warning with debug only log ([#698](https://github.com/vitejs/vite-plugin-react/issues/698)) ([a88fb2d](https://github.com/vitejs/vite-plugin-react/commit/a88fb2ded4c8b9f42f2fee70a482615f331122f4))
+
+## <small>[0.4.18](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.17...plugin-rsc@0.4.18) (2025-08-11)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#694](https://github.com/vitejs/vite-plugin-react/issues/694)) ([5057858](https://github.com/vitejs/vite-plugin-react/commit/50578587472d23125980a46ff993fedaabca28d2))
+* **react:** always skip react-compiler on non client envrionment ([#689](https://github.com/vitejs/vite-plugin-react/issues/689)) ([2f62dc0](https://github.com/vitejs/vite-plugin-react/commit/2f62dc0778e8c527c7951d6e35b0658a07f1e6fc))
+* **rsc:** support cjs on module runner ([#687](https://github.com/vitejs/vite-plugin-react/issues/687)) ([7a92083](https://github.com/vitejs/vite-plugin-react/commit/7a92083eadb6ad8d92e6e560de414bc600e977c0))
+
+### Miscellaneous Chores
+
+* **rsc:** add .gitignore to create-vite example ([#686](https://github.com/vitejs/vite-plugin-react/issues/686)) ([6df7192](https://github.com/vitejs/vite-plugin-react/commit/6df71929ea5c2176408054bc40bcb8dfbb370018))
+* **rsc:** mention deploy example ([#685](https://github.com/vitejs/vite-plugin-react/issues/685)) ([dea484a](https://github.com/vitejs/vite-plugin-react/commit/dea484ab8c740babab89da0f716bb929e57ba2af))
+
 ## <small>[0.4.17](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.16...plugin-rsc@0.4.17) (2025-08-05)</small>
 ### Bug Fixes
 

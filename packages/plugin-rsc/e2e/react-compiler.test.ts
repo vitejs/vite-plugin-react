@@ -22,12 +22,7 @@ test.describe(() => {
 
           const overrideConfig = defineConfig({
             plugins: [
-              react({
-                babel: { plugins: ['babel-plugin-react-compiler'] },
-              }).map((p) => ({
-                ...p,
-                applyToEnvironment: (e) => e.name === 'client',
-              })),
+              react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
               rsc(),
             ],
           })

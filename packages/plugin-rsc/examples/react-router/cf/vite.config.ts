@@ -45,13 +45,11 @@ export default defineConfig({
     },
     ssr: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
       },
     },
     rsc: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
       },
     },

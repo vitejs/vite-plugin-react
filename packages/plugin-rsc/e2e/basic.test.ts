@@ -58,12 +58,20 @@ test.describe('dev-non-optimized-cjs', () => {
     )
   })
 
-  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        DEBUG: 'vite-rsc:cjs',
+      },
+    },
+  })
 
   test('show warning', async ({ page }) => {
     await page.goto(f.url())
-    expect(f.proc().stderr()).toContain(
-      `[vite-rsc] found non-optimized CJS dependency in 'ssr' environment.`,
+    expect(f.proc().stderr()).toMatch(
+      /non-optimized CJS dependency in 'ssr' environment.*@vitejs\/test-dep-cjs\/index.js/,
     )
   })
 })
