@@ -324,7 +324,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         })
 
         if (result) {
-          if (!useFastRefresh) {
+          // refresh wrapper is added later for rolldown-vite
+          if (!useFastRefresh || isRolldownVite) {
             return { code: result.code!, map: result.map }
           }
           return addRefreshWrapper(
