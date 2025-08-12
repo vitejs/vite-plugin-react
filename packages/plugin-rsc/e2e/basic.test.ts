@@ -476,9 +476,10 @@ function defineTest(f: Fixture) {
       await expectNoServerLinkStylesheet(page)
     })
 
-    function expectNoServerLinkStylesheet(page: Page) {
+    async function expectNoServerLinkStylesheet(page: Page) {
       // check only manually inserted stylesheet link exists
-      return expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
+      // (toHaveAttribute passes only when locator matches single element)
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
         'href',
         '/test-style-server-manual.css',
       )
