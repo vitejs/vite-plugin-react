@@ -1913,6 +1913,8 @@ export function vitePluginRscCss(
     createVirtualPlugin(
       'vite-rsc/remove-duplicate-server-css',
       async function () {
+        // Remove duplicate css during dev due to server rendered <link> and client inline <style>
+        // https://github.com/remix-run/react-router/blob/166fd940e7d5df9ed005ca68e12de53b1d88324a/packages/react-router/lib/dom-export/hydrated-router.tsx#L245-L274
         assert.equal(this.environment.mode, 'dev')
         function removeFn() {
           document
@@ -1990,7 +1992,9 @@ function generateResourcesCode(depsCode: string) {
           }),
         ),
         RemoveDuplicateServerCss &&
-          React.createElement(RemoveDuplicateServerCss, { key: '' }),
+          React.createElement(RemoveDuplicateServerCss, {
+            key: 'remove-duplicate-css',
+          }),
       ])
     }
   }
