@@ -68,6 +68,32 @@ if (true) {
     `)
   })
 
+  it('edge cases', async () => {
+    const input = `\
+const x = require("te" + "st");
+
+function test() {
+  const y = require("te" + "st");
+}
+
+require("test")();
+require("test").test;
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const exports = {}; const module = { exports };
+      const __cjs_to_esm_hoist_0 = await import("te" + "st");
+      const x = (await import("te" + "st"));
+
+      function test() {
+        const y = __cjs_to_esm_hoist_0;
+      }
+
+      (await import("test"))();
+      (await import("test")).test;
+      "
+    `)
+  })
+
   it('local require', async () => {
     const input = `\
 {
