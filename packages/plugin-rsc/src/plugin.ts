@@ -42,8 +42,6 @@ import { evalValue, parseIdQuery } from './plugins/utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
-let server: ViteDevServer
-let config: ResolvedConfig
 let rscBundle: Rollup.OutputBundle
 let buildAssetsManifest: AssetsManifest | undefined
 let isScanBuild = false
@@ -153,7 +151,13 @@ export type RscPluginOptions = {
 /** @experimental */
 export function vitePluginRscMinimal(
   rscPluginOptions: RscPluginOptions = {},
+  getServerInstance?: () => ViteDevServer | undefined,
+  getConfigInstance?: () => ResolvedConfig | undefined,
 ): Plugin[] {
+  // Only use local instances if no getter functions are provided
+  let serverInstance: ViteDevServer | undefined
+  let configInstance: ResolvedConfig | undefined
+
   return [
     {
       name: 'rsc:minimal',
@@ -162,10 +166,14 @@ export function vitePluginRscMinimal(
         await esModuleLexer.init
       },
       configResolved(config_) {
-        config = config_
+        if (!getConfigInstance) {
+          configInstance = config_
+        }
       },
       configureServer(server_) {
-        server = server_
+        if (!getServerInstance) {
+          serverInstance = server_
+        }
       },
     },
     {
@@ -182,8 +190,28 @@ export function vitePluginRscMinimal(
       },
     },
     ...vitePluginRscCore(),
-    ...vitePluginUseClient(rscPluginOptions),
-    ...vitePluginUseServer(rscPluginOptions),
+    ...(getServerInstance && getConfigInstance
+      ? vitePluginUseClient(
+          rscPluginOptions,
+          getServerInstance,
+          getConfigInstance,
+        )
+      : vitePluginUseClient(
+          rscPluginOptions,
+          () => serverInstance,
+          () => configInstance,
+        )),
+    ...(getServerInstance && getConfigInstance
+      ? vitePluginUseServer(
+          rscPluginOptions,
+          getServerInstance,
+          getConfigInstance,
+        )
+      : vitePluginUseServer(
+          rscPluginOptions,
+          () => serverInstance,
+          () => configInstance,
+        )),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
   ]
 }
@@ -191,7 +219,30 @@ export function vitePluginRscMinimal(
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
+  let serverInstance: ViteDevServer | undefined
+  let configInstance: ResolvedConfig | undefined
+
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    const config =
+      builder.environments.client?.config ||
+      builder.environments.rsc?.config ||
+      builder.environments.ssr?.config!
+
+    function writeAssetsManifest(environmentNames: string[]) {
+      // output client manifest to non-client build directly.
+      // this makes server build to be self-contained and deploy-able for cloudflare.
+      const assetsManifestCode = `export default ${serializeValueWithRuntime(
+        buildAssetsManifest,
+      )}`
+      for (const name of environmentNames) {
+        const manifestPath = path.join(
+          config.environments[name]!.build.outDir,
+          BUILD_ASSETS_MANIFEST_NAME,
+        )
+        fs.writeFileSync(manifestPath, assetsManifestCode)
+      }
+    }
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
@@ -228,21 +279,6 @@ export default function vitePluginRsc(
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
-  }
-
-  function writeAssetsManifest(environmentNames: string[]) {
-    // output client manifest to non-client build directly.
-    // this makes server build to be self-contained and deploy-able for cloudflare.
-    const assetsManifestCode = `export default ${serializeValueWithRuntime(
-      buildAssetsManifest,
-    )}`
-    for (const name of environmentNames) {
-      const manifestPath = path.join(
-        config.environments[name]!.build.outDir,
-        BUILD_ASSETS_MANIFEST_NAME,
-      )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
-    }
   }
 
   return [
@@ -356,7 +392,11 @@ export default function vitePluginRsc(
         }
       },
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
-      configureServer() {
+      configResolved(resolvedConfig) {
+        configInstance = resolvedConfig
+      },
+      configureServer(server) {
+        serverInstance = server
         ;(globalThis as any).__viteRscDevServer = server
 
         if (rscPluginOptions.disableServerHandler) return
@@ -399,7 +439,7 @@ export default function vitePluginRsc(
         }
 
         const entryFile = path.join(
-          config.environments[options.environmentName]!.build.outDir,
+          configInstance!.environments[options.environmentName]!.build.outDir,
           `${options.entryName}.js`,
         )
         const entry = pathToFileURL(entryFile).href
@@ -475,7 +515,7 @@ export default function vitePluginRsc(
                 try {
                   await this.environment.transformRequest(mod.url)
                 } catch (e) {
-                  server.environments.client.hot.send({
+                  ctx.server.environments.client.hot.send({
                     type: 'error',
                     err: prepareError(e as any),
                   })
@@ -544,7 +584,7 @@ export default function vitePluginRsc(
             this.environment.mode === 'dev' &&
             rscPluginOptions.loadModuleDevProxy
           ) {
-            const origin = server.resolvedUrls?.local[0]
+            const origin = serverInstance?.resolvedUrls?.local[0]
             assert(origin, '[vite-rsc] no server for loadModueleDevProxy')
             const endpoint =
               origin +
@@ -557,7 +597,7 @@ export default function vitePluginRsc(
               `import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";`,
             )
           } else if (this.environment.mode === 'dev') {
-            const environment = server.environments[environmentName]!
+            const environment = serverInstance!.environments[environmentName]!
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
@@ -590,12 +630,12 @@ export default function vitePluginRsc(
           const importPath = normalizeRelativePath(
             path.relative(
               path.join(
-                config.environments[fromEnv!]!.build.outDir,
+                configInstance!.environments[fromEnv!]!.build.outDir,
                 chunk.fileName,
                 '..',
               ),
               path.join(
-                config.environments[toEnv!]!.build.outDir,
+                configInstance!.environments[toEnv!]!.build.outDir,
                 // TODO: this breaks when custom entyFileNames
                 `${entryName}.js`,
               ),
@@ -679,7 +719,10 @@ export default function vitePluginRsc(
         if (id === '\0virtual:vite-rsc/assets-manifest') {
           assert(this.environment.name !== 'client')
           assert(this.environment.mode === 'dev')
-          const entryUrl = assetsURL('@id/__x00__' + VIRTUAL_ENTRIES.browser)
+          const entryUrl = assetsURL(
+            '@id/__x00__' + VIRTUAL_ENTRIES.browser,
+            configInstance!,
+          )
           const manifest: AssetsManifest = {
             bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
@@ -697,7 +740,7 @@ export default function vitePluginRsc(
         if (this.environment.name === 'client') {
           const filterAssets =
             rscPluginOptions.copyServerAssetsToClient ?? (() => true)
-          const rscBuildOptions = config.environments.rsc!.build
+          const rscBuildOptions = configInstance!.environments.rsc!.build
           const rscViteManifest =
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
@@ -716,10 +759,13 @@ export default function vitePluginRsc(
           const serverResources: Record<string, AssetDeps> = {}
           const rscAssetDeps = collectAssetDeps(rscBundle)
           for (const [id, meta] of Object.entries(serverResourcesMetaMap)) {
-            serverResources[meta.key] = assetsURLOfDeps({
-              js: [],
-              css: rscAssetDeps[id]?.deps.css ?? [],
-            })
+            serverResources[meta.key] = assetsURLOfDeps(
+              {
+                js: [],
+                css: rscAssetDeps[id]?.deps.css ?? [],
+              },
+              configInstance!,
+            )
           }
 
           const assetDeps = collectAssetDeps(bundle)
@@ -727,12 +773,13 @@ export default function vitePluginRsc(
             (v) => v.chunk.name === 'index',
           )
           assert(entry)
-          const entryUrl = assetsURL(entry.chunk.fileName)
+          const entryUrl = assetsURL(entry.chunk.fileName, configInstance!)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const [id, meta] of Object.entries(clientReferenceMetaMap)) {
             const deps: AssetDeps = assetDeps[id]?.deps ?? { js: [], css: [] }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
               mergeAssetDeps(deps, entry.deps),
+              configInstance!,
             )
           }
           let bootstrapScriptContent: string | RuntimeAsset
@@ -882,9 +929,17 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginRscMinimal(rscPluginOptions),
+    ...vitePluginRscMinimal(
+      rscPluginOptions,
+      () => serverInstance,
+      () => configInstance,
+    ),
     ...vitePluginFindSourceMapURL(),
-    ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
+    ...vitePluginRscCss({
+      rscCssTransform: rscPluginOptions.rscCssTransform,
+      getServerInstance: () => serverInstance,
+      getConfigInstance: () => configInstance,
+    }),
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
@@ -940,6 +995,8 @@ function vitePluginUseClient(
     RscPluginOptions,
     'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
   >,
+  getServerInstance: () => ViteDevServer | undefined,
+  getConfigInstance: () => ResolvedConfig | undefined,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
 
@@ -998,14 +1055,14 @@ function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
-              server.environments[browserEnvironmentName]!,
+              getServerInstance()!.environments[browserEnvironmentName]!,
               id,
             )
             referenceKey = importId
           } else {
             importId = id
             referenceKey = hashString(
-              normalizePath(path.relative(config.root, id)),
+              normalizePath(path.relative(getConfigInstance()!.root, id)),
             )
           }
         }
@@ -1213,6 +1270,8 @@ function vitePluginUseServer(
     RscPluginOptions,
     'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
   >,
+  getServerInstance: () => ViteDevServer | undefined,
+  getConfigInstance: () => ResolvedConfig | undefined,
 ): Plugin[] {
   const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
   const browserEnvironmentName =
@@ -1248,11 +1307,13 @@ function vitePluginUseServer(
               // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
               id = cleanUrl(id)
             }
-            if (config.command === 'build') {
-              normalizedId_ = hashString(path.relative(config.root, id))
+            if (getConfigInstance()!.command === 'build') {
+              normalizedId_ = hashString(
+                path.relative(getConfigInstance()!.root, id),
+              )
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
-                server.environments[serverEnvironmentName]!,
+                getServerInstance()!.environments[serverEnvironmentName]!,
                 id,
               )
             }
@@ -1421,7 +1482,7 @@ function serializeValueWithRuntime(value: any) {
   return result
 }
 
-function assetsURL(url: string) {
+function assetsURL(url: string, config: ResolvedConfig) {
   if (
     config.command === 'build' &&
     typeof config.experimental?.renderBuiltUrl === 'function'
@@ -1451,15 +1512,15 @@ function assetsURL(url: string) {
   return config.base + url
 }
 
-function assetsURLOfDeps(deps: AssetDeps) {
+function assetsURLOfDeps(deps: AssetDeps, config: ResolvedConfig) {
   return {
     js: deps.js.map((href) => {
       assert(typeof href === 'string')
-      return assetsURL(href)
+      return assetsURL(href, config)
     }),
     css: deps.css.map((href) => {
       assert(typeof href === 'string')
-      return assetsURL(href)
+      return assetsURL(href, config)
     }),
   }
 }
@@ -1647,7 +1708,10 @@ export async function findSourceMapURL(
 //
 
 export function vitePluginRscCss(
-  rscCssOptions?: Pick<RscPluginOptions, 'rscCssTransform'>,
+  rscCssOptions: Pick<RscPluginOptions, 'rscCssTransform'> & {
+    getServerInstance: () => ViteDevServer | undefined
+    getConfigInstance: () => ResolvedConfig | undefined
+  },
 ): Plugin[] {
   function collectCss(environment: DevEnvironment, entryId: string) {
     const visited = new Set<string>()
@@ -1758,17 +1822,21 @@ export function vitePluginRscCss(
       async load(id) {
         if (id.startsWith('\0virtual:vite-rsc/css/dev-ssr/')) {
           id = id.slice('\0virtual:vite-rsc/css/dev-ssr/'.length)
+          const serverInstance = rscCssOptions.getServerInstance()!
+          const configInstance = rscCssOptions.getConfigInstance()!
           const mod =
-            await server.environments.ssr.moduleGraph.getModuleByUrl(id)
+            await serverInstance.environments.ssr.moduleGraph.getModuleByUrl(id)
           if (!mod?.id || !mod?.file) {
             return `export default []`
           }
-          const result = collectCss(server.environments.ssr, mod.id)
+          const result = collectCss(serverInstance.environments.ssr, mod.id)
           // invalidate virtual module on js file changes to reflect added/deleted css import
           for (const file of [mod.file, ...result.visitedFiles]) {
             this.addWatchFile(file)
           }
-          const hrefs = result.hrefs.map((href) => assetsURL(href.slice(1)))
+          const hrefs = result.hrefs.map((href) =>
+            assetsURL(href.slice(1), configInstance),
+          )
           return `export default ${serializeValueWithRuntime(hrefs)}`
         }
       },
@@ -1848,17 +1916,27 @@ export function vitePluginRscCss(
           const importer = decodeURIComponent(
             parseIdQuery(id).query['importer']!,
           )
+          const serverInstance = rscCssOptions.getServerInstance()!
+          const configInstance = rscCssOptions.getConfigInstance()!
           if (this.environment.mode === 'dev') {
-            const result = collectCss(server.environments.rsc!, importer)
+            const result = collectCss(
+              serverInstance.environments.rsc!,
+              importer,
+            )
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const jsHrefs = [
               '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
                 encodeURIComponent(importer),
             ]
-            const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
+            const deps = assetsURLOfDeps(
+              { css: cssHrefs, js: jsHrefs },
+              configInstance,
+            )
             return generateResourcesCode(serializeValueWithRuntime(deps))
           } else {
-            const key = normalizePath(path.relative(config.root, importer))
+            const key = normalizePath(
+              path.relative(configInstance.root, importer),
+            )
             serverResourcesMetaMap[importer] = { key }
             return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
@@ -1880,7 +1958,10 @@ export function vitePluginRscCss(
           const importer = decodeURIComponent(
             parseIdQuery(id).query['importer']!,
           )
-          const result = collectCss(server.environments.rsc!, importer)
+          const result = collectCss(
+            rscCssOptions.getServerInstance()!.environments.rsc!,
+            importer,
+          )
           let code = result.ids
             .map((id) => id.replace(/^\0/, ''))
             .map((id) => `import ${JSON.stringify(id)};\n`)
@@ -1897,12 +1978,13 @@ export function vitePluginRscCss(
           for (const mod of mods) {
             if (mod.id) {
               const importer = encodeURIComponent(mod.id)
+              const serverInstance = rscCssOptions.getServerInstance()!
               invalidteModuleById(
-                server.environments.rsc!,
+                serverInstance.environments.rsc!,
                 `\0virtual:vite-rsc/importer-resources?importer=${importer}`,
               )
               invalidteModuleById(
-                server.environments.client,
+                serverInstance.environments.client,
                 `\0virtual:vite-rsc/importer-resources-browser?importer=${importer}`,
               )
             }
