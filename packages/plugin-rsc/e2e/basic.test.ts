@@ -76,11 +76,34 @@ test.describe('dev-non-optimized-cjs', () => {
   })
 })
 
+test.describe('dev-inconsistent-client-optimization', () => {
+  test.beforeAll(async () => {
+    // remove explicitly added optimizeDeps.exclude
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``),
+    )
+  })
+
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+  })
+
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toContain(
+      'client component dependency is inconsistently optimized.',
+    )
+  })
+})
+
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
     using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
+    expect(f.proc().stderr()).toBe('')
   })
 
   test('client component', async ({ page }) => {

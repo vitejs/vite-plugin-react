@@ -952,7 +952,7 @@ function vitePluginUseClient(
     useClientPluginOptions.environment?.browser ?? 'client'
 
   // TODO: warning for late optimizer discovery
-  function warnNonOptimizedClientId(
+  function warnInoncistentClientOptimization(
     ctx: Rollup.TransformPluginContext,
     id: string,
   ) {
@@ -961,7 +961,7 @@ function vitePluginUseClient(
       for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
         if (dep.src === id) {
           ctx.warn(
-            `Client component dependency is inconsistently optimized. ` +
+            `client component dependency is inconsistently optimized. ` +
               `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
           )
         }
@@ -1005,7 +1005,7 @@ function vitePluginUseClient(
             )
           }
           id = cleanUrl(id)
-          warnNonOptimizedClientId(this, id)
+          warnInoncistentClientOptimization(this, id)
           importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
