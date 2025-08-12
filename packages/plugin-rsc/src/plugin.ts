@@ -1910,6 +1910,34 @@ export function vitePluginRscCss(
         }
       },
     },
+    createVirtualPlugin(
+      'vite-rsc/remove-duplicate-server-css',
+      async function () {
+        assert.equal(this.environment.mode, 'dev')
+        function removeFn() {
+          document
+            .querySelectorAll("link[rel='stylesheet']")
+            .forEach((node) => {
+              if (
+                node instanceof HTMLElement &&
+                node.dataset.precedence?.startsWith('vite-rsc/')
+              ) {
+                node.remove()
+              }
+            })
+        }
+        return `\
+"use client"
+import React from "react";
+export default function RemoveDuplicateServerCss() {
+  React.useEffect(() => {
+    (${removeFn.toString()})();
+  }, []);
+  return null;
+}
+`
+      },
+    ),
   ]
 }
 
@@ -1940,6 +1968,7 @@ function generateResourcesCode(depsCode: string) {
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
+    RemoveDuplicateServerCss?: React.FC,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
@@ -1960,14 +1989,27 @@ function generateResourcesCode(depsCode: string) {
             src: href,
           }),
         ),
+        RemoveDuplicateServerCss &&
+          React.createElement(RemoveDuplicateServerCss, { key: '' }),
       ])
     }
   }
 
   return `
-    import __vite_rsc_react__ from "react";
-    export const Resources = (${ResourcesFn.toString()})(__vite_rsc_react__, ${depsCode});
-  `
+import __vite_rsc_react__ from "react";
+
+${
+  config.mode === 'serve'
+    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css"`
+    : `const RemoveDuplicateServerCss = undefined;`
+}
+
+export const Resources = (${ResourcesFn.toString()})(
+  __vite_rsc_react__,
+  ${depsCode},
+  RemoveDuplicateServerCss,
+);
+`
 }
 
 export async function transformRscCssExport(options: {
