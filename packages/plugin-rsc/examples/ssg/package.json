@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-rsc": "latest",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -19,6 +18,7 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "latest",
+    "@vitejs/plugin-rsc": "latest",
     "vite-plugin-inspect": "^11.3.2"
   }
 }

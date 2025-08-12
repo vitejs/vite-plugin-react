@@ -473,6 +473,22 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expectNoDuplicateServerCss(page)
+    })
+
+    async function expectNoDuplicateServerCss(page: Page) {
+      // check only manually inserted stylesheet link exists
+      // (toHaveAttribute passes only when locator matches single element)
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
+        'href',
+        '/test-style-server-manual.css',
+      )
+    }
+
+    test('no duplicate server css', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expectNoDuplicateServerCss(page)
     })
 
     test('adding/removing css client @js', async ({ page }) => {
@@ -557,6 +573,7 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expectNoDuplicateServerCss(page)
     })
 
     // TODO: need a way to add/remove links on server hmr. for now, it requires a manually reload.
