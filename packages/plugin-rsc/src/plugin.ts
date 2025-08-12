@@ -951,6 +951,8 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
+  const nonOptimizedClientIds = new Set<string>()
+
   return [
     {
       name: 'rsc:use-client',
@@ -986,7 +988,9 @@ function vitePluginUseClient(
               `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
             )
           }
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(cleanUrl(id))}`
+          id = cleanUrl(id)
+          nonOptimizedClientIds.add(id)
+          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
           if (this.environment.mode === 'dev') {
