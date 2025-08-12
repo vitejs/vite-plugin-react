@@ -837,7 +837,8 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
-        // TODO: this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
+        // server css is normally removed via `RemoveDuplicateServerCss` on useEffect.
+        // this also makes sure they are removed on hmr in case initial rendering failed.
         code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
