@@ -2000,7 +2000,7 @@ import __vite_rsc_react__ from "react";
 
 ${
   config.mode === 'serve'
-    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css"`
+    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css";`
     : `const RemoveDuplicateServerCss = undefined;`
 }
 
