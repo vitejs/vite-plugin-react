@@ -57,8 +57,8 @@ if (true) {
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "const exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_1 = await import("react-dom");
       const __cjs_to_esm_hoist_0 = await import("react");
+      const __cjs_to_esm_hoist_1 = await import("react-dom");
       "production" !== process.env.NODE_ENV && (function() { 
         var React = __cjs_to_esm_hoist_0;
         var ReactDOM = __cjs_to_esm_hoist_1;
