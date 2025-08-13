@@ -165,6 +165,9 @@ export function vitePluginRscMinimal(
       },
       configResolved(config_) {
         config = config_
+        for (const e of Object.values(config.environments)) {
+          e.build.outDir = path.resolve(config.root, e.build.outDir)
+        }
       },
       configureServer(server_) {
         server = server_
