@@ -1040,6 +1040,25 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
 
+  playground/ssr-react-streaming:
+    dependencies:
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.1.2
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.1.2(@types/react@19.1.2)
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+
 packages:
 
   '@aashutoshrathi/word-wrap@1.2.6':
