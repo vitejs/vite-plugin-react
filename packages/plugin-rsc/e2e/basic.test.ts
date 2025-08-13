@@ -58,12 +58,42 @@ test.describe('dev-non-optimized-cjs', () => {
     )
   })
 
-  const f = useFixture({ root: 'examples/basic', mode: 'dev' })
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        DEBUG: 'vite-rsc:cjs',
+      },
+    },
+  })
+
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toMatch(
+      /non-optimized CJS dependency in 'ssr' environment.*@vitejs\/test-dep-cjs\/index.js/,
+    )
+  })
+})
+
+test.describe('dev-inconsistent-client-optimization', () => {
+  test.beforeAll(async () => {
+    // remove explicitly added optimizeDeps.exclude
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``),
+    )
+  })
+
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+  })
 
   test('show warning', async ({ page }) => {
     await page.goto(f.url())
     expect(f.proc().stderr()).toContain(
-      `Found non-optimized CJS dependency in 'ssr' environment.`,
+      'client component dependency is inconsistently optimized.',
     )
   })
 })
@@ -73,6 +103,7 @@ function defineTest(f: Fixture) {
     using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
+    expect(f.proc().stderr()).toBe('')
   })
 
   test('client component', async ({ page }) => {
@@ -465,6 +496,22 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expectNoDuplicateServerCss(page)
+    })
+
+    async function expectNoDuplicateServerCss(page: Page) {
+      // check only manually inserted stylesheet link exists
+      // (toHaveAttribute passes only when locator matches single element)
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
+        'href',
+        '/test-style-server-manual.css',
+      )
+    }
+
+    test('no duplicate server css', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expectNoDuplicateServerCss(page)
     })
 
     test('adding/removing css client @js', async ({ page }) => {
@@ -549,6 +596,7 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expectNoDuplicateServerCss(page)
     })
 
     // TODO: need a way to add/remove links on server hmr. for now, it requires a manually reload.

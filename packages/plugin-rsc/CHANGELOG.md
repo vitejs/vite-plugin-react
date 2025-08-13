@@ -1,3 +1,10 @@
+## <small>[0.4.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.18...plugin-rsc@0.4.19) (2025-08-11)</small>
+### Bug Fixes
+
+* **rsc:** fix cjs default import on module runner ([#695](https://github.com/vitejs/vite-plugin-react/issues/695)) ([c329914](https://github.com/vitejs/vite-plugin-react/commit/c329914c572473d4f09261fa0eba77484e720d2e))
+* **rsc:** replace `?v=` check with more robust `node_modules` detection ([#696](https://github.com/vitejs/vite-plugin-react/issues/696)) ([f0359c4](https://github.com/vitejs/vite-plugin-react/commit/f0359c4eca48ca6eb2ba98254a272949a13f149e))
+* **rsc:** replace non-optimized server cjs warning with debug only log ([#698](https://github.com/vitejs/vite-plugin-react/issues/698)) ([a88fb2d](https://github.com/vitejs/vite-plugin-react/commit/a88fb2ded4c8b9f42f2fee70a482615f331122f4))
+
 ## <small>[0.4.18](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.17...plugin-rsc@0.4.18) (2025-08-11)</small>
 ### Bug Fixes
 
