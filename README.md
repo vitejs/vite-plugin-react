@@ -26,7 +26,7 @@ See [`@vitejs/plugin-rsc` documentation](packages/plugin-rsc/README.md)
 | [@vitejs/plugin-react](packages/plugin-react)         | [![plugin-react version](https://img.shields.io/npm/v/@vitejs/plugin-react.svg?label=%20)](packages/plugin-react/CHANGELOG.md)             |
 | [@vitejs/plugin-react-swc](packages/plugin-react-swc) | [![plugin-react-swc version](https://img.shields.io/npm/v/@vitejs/plugin-react-swc.svg?label=%20)](packages/plugin-react-swc/CHANGELOG.md) |
 | [@vitejs/plugin-rsc](packages/plugin-rsc)             | [![plugin-rsc version](https://img.shields.io/npm/v/@vitejs/plugin-rsc.svg?label=%20)](packages/plugin-rsc/CHANGELOG.md)                   |
-| [@vitejs/plugin-react-oxc](packages/plugin-react-oxc) | [Deprecated](packages/plugin-react-oxc/CHANGELOG.md), merged with [`@vitejs/plugin-react`](packages/plugin-react) |
+| [@vitejs/plugin-react-oxc](packages/plugin-react-oxc) | [Deprecated](packages/plugin-react-oxc/CHANGELOG.md), merged with [`@vitejs/plugin-react`](packages/plugin-react)                          |
 
 ## License
 
