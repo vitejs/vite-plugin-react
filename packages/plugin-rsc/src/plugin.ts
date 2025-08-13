@@ -837,7 +837,8 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
-        // TODO: this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
+        // server css is normally removed via `RemoveDuplicateServerCss` on useEffect.
+        // this also makes sure they are removed on hmr in case initial rendering failed.
         code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
@@ -950,6 +951,24 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
+  // TODO: warning for late optimizer discovery
+  function warnInoncistentClientOptimization(
+    ctx: Rollup.TransformPluginContext,
+    id: string,
+  ) {
+    const { depsOptimizer } = server.environments.client
+    if (depsOptimizer) {
+      for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
+        if (dep.src === id) {
+          ctx.warn(
+            `client component dependency is inconsistently optimized. ` +
+              `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
+          )
+        }
+      }
+    }
+  }
+
   return [
     {
       name: 'rsc:use-client',
@@ -985,7 +1004,9 @@ function vitePluginUseClient(
               `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
             )
           }
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(cleanUrl(id))}`
+          id = cleanUrl(id)
+          warnInoncistentClientOptimization(this, id)
+          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
           if (this.environment.mode === 'dev') {
@@ -1910,6 +1931,36 @@ export function vitePluginRscCss(
         }
       },
     },
+    createVirtualPlugin(
+      'vite-rsc/remove-duplicate-server-css',
+      async function () {
+        // Remove duplicate css during dev due to server rendered <link> and client inline <style>
+        // https://github.com/remix-run/react-router/blob/166fd940e7d5df9ed005ca68e12de53b1d88324a/packages/react-router/lib/dom-export/hydrated-router.tsx#L245-L274
+        assert.equal(this.environment.mode, 'dev')
+        function removeFn() {
+          document
+            .querySelectorAll("link[rel='stylesheet']")
+            .forEach((node) => {
+              if (
+                node instanceof HTMLElement &&
+                node.dataset.precedence?.startsWith('vite-rsc/')
+              ) {
+                node.remove()
+              }
+            })
+        }
+        return `\
+"use client"
+import React from "react";
+export default function RemoveDuplicateServerCss() {
+  React.useEffect(() => {
+    (${removeFn.toString()})();
+  }, []);
+  return null;
+}
+`
+      },
+    ),
   ]
 }
 
@@ -1940,6 +1991,7 @@ function generateResourcesCode(depsCode: string) {
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
+    RemoveDuplicateServerCss?: React.FC,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
@@ -1960,14 +2012,29 @@ function generateResourcesCode(depsCode: string) {
             src: href,
           }),
         ),
+        RemoveDuplicateServerCss &&
+          React.createElement(RemoveDuplicateServerCss, {
+            key: 'remove-duplicate-css',
+          }),
       ])
     }
   }
 
   return `
-    import __vite_rsc_react__ from "react";
-    export const Resources = (${ResourcesFn.toString()})(__vite_rsc_react__, ${depsCode});
-  `
+import __vite_rsc_react__ from "react";
+
+${
+  config.command === 'serve'
+    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css";`
+    : `const RemoveDuplicateServerCss = undefined;`
+}
+
+export const Resources = (${ResourcesFn.toString()})(
+  __vite_rsc_react__,
+  ${depsCode},
+  RemoveDuplicateServerCss,
+);
+`
 }
 
 export async function transformRscCssExport(options: {
