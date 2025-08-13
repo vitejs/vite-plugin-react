@@ -39,6 +39,7 @@ import {
 } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { evalValue, parseIdQuery } from './plugins/utils'
+import { createDebug } from '@hiogawa/utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -98,7 +99,7 @@ export type RscPluginOptions = {
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
-  /** @deprecated no warning is emitted anymore. */
+  /** @deprecated use "DEBUG=vite-env:*" to see warnings. */
   ignoredPackageWarnings?: (string | RegExp)[]
 
   /**
@@ -940,7 +941,7 @@ function hashString(v: string) {
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
+    'keepUseCientProxy' | 'environment'
   >,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
@@ -970,6 +971,8 @@ function vitePluginUseClient(
     }
   }
 
+  const debug = createDebug('vite-rsc:use-client')
+
   return [
     {
       name: 'rsc:use-client',
@@ -993,18 +996,9 @@ function vitePluginUseClient(
           // expectation on dependency optimizer on browser. Directly copying over
           // "?v=<hash>" from client optimizer in client reference can make a hashed
           // module stale, so we use another virtual module wrapper to delay such process.
-          // TODO: suggest `optimizeDeps.exclude` and skip warning if that's already the case.
-          const ignored = useClientPluginOptions.ignoredPackageWarnings?.some(
-            (pattern) =>
-              pattern instanceof RegExp
-                ? pattern.test(id)
-                : id.includes(`/node_modules/${pattern}/`),
+          debug(
+            `internal client reference created through a package imported in '${this.environment.name}' environment: ${id}`,
           )
-          if (!ignored) {
-            this.warn(
-              `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
-            )
-          }
           id = cleanUrl(id)
           warnInoncistentClientOptimization(this, id)
           importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
@@ -1233,12 +1227,14 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
+    'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
   const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
   const browserEnvironmentName =
     useServerPluginOptions.environment?.browser ?? 'client'
+
+  const debug = createDebug('vite-rsc:use-server')
 
   return [
     {
@@ -1257,6 +1253,9 @@ function vitePluginUseServer(
               // similar situation as `use client` (see `virtual:client-in-server-package-proxy`)
               // but module runner has additional resolution step and it's not strict about
               // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
+              debug(
+                `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
+              )
               id = cleanUrl(id)
             }
             if (config.command === 'build') {
