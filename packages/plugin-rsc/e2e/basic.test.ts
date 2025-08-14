@@ -1153,7 +1153,7 @@ function defineTest(f: Fixture) {
     )
   })
 
-  test('css queries @js', async ({ page }) => {
+  test('css queries', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
 
