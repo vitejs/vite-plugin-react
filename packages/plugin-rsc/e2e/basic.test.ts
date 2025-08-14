@@ -1156,74 +1156,27 @@ function defineTest(f: Fixture) {
   test('css queries @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await testCssQueries(page)
+
+    const tests = [
+      ['.test-css-url-client', 'rgb(255, 100, 0)'],
+      ['.test-css-inline-client', 'rgb(255, 50, 0)'],
+      ['.test-css-raw-client', 'rgb(255, 0, 0)'],
+      ['.test-css-url-server', 'rgb(0, 255, 100)'],
+      ['.test-css-inline-server', 'rgb(0, 255, 50)'],
+      ['.test-css-raw-server', 'rgb(0, 255, 0)'],
+    ] as const
+
+    // css with queries are not injected automatically
+    for (const [selector] of tests) {
+      await expect(page.locator(selector)).toHaveCSS('color', 'rgb(0, 0, 0)')
+    }
+
+    // inject css manually
+    await page.getByRole('button', { name: 'test-css-queries' }).click()
+
+    // verify styles
+    for (const [selector, color] of tests) {
+      await expect(page.locator(selector)).toHaveCSS('color', color)
+    }
   })
-
-  testNoJs('css queries @nojs', async ({ page }) => {
-    await page.goto(f.url())
-    await testCssQueries(page)
-  })
-
-  async function testCssQueries(page: Page) {
-    // Test that CSS with special queries (?url, ?inline, ?raw) don't break the page
-    // and that normal CSS imports still work for both server and client components
-
-    // Server component tests
-    await expect(
-      page.getByTestId('test-css-queries-server-normal'),
-    ).toBeVisible()
-
-    // Client component tests
-    await expect(
-      page.getByTestId('test-css-queries-client-normal'),
-    ).toBeVisible()
-
-    // Test that normal CSS imports are applied correctly to server component
-    await expect(page.locator('.test-css-query-server-normal')).toHaveCSS(
-      'background-color',
-      'rgb(255, 0, 0)',
-    )
-    await expect(page.locator('.test-css-query-server-normal')).toHaveCSS(
-      'color',
-      'rgb(0, 255, 0)',
-    )
-
-    // Test that normal CSS imports are applied correctly to client component
-    await expect(page.locator('.test-css-query-client-normal')).toHaveCSS(
-      'background-color',
-      'rgb(0, 0, 255)',
-    )
-    await expect(page.locator('.test-css-query-client-normal')).toHaveCSS(
-      'color',
-      'rgb(255, 255, 0)',
-    )
-
-    // Verify that URL query returns a string URL for server component (with filename pattern)
-    const serverUrlText = await page
-      .getByTestId('test-css-queries-server-url')
-      .textContent()
-    expect(serverUrlText).toMatch(/CSS URL \(server\): .*server-url.*\.css/)
-
-    // Verify that URL query returns a string URL for client component (with filename pattern)
-    const clientUrlText = await page
-      .getByTestId('test-css-queries-client-url')
-      .textContent()
-    expect(clientUrlText).toMatch(/CSS URL \(client\): .*client-url.*\.css/)
-
-    // Verify that inline and raw queries return strings for server component (should not be collected for SSR)
-    await expect(
-      page.getByTestId('test-css-queries-server-inline'),
-    ).toContainText('CSS Inline (server): string')
-    await expect(page.getByTestId('test-css-queries-server-raw')).toContainText(
-      'CSS Raw (server): string',
-    )
-
-    // Verify that inline and raw queries return strings for client component (should not be collected for SSR)
-    await expect(
-      page.getByTestId('test-css-queries-client-inline'),
-    ).toContainText('CSS Inline (client): string')
-    await expect(page.getByTestId('test-css-queries-client-raw')).toContainText(
-      'CSS Raw (client): string',
-    )
-  }
 }
