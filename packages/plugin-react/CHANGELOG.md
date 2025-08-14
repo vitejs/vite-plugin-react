@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
+
 ## 5.0.0 (2025-08-07)
 
 ## 5.0.0-beta.0 (2025-07-28)
