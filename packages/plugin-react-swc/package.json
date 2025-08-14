@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react-swc",
-  "version": "3.10.2",
+  "version": "4.0.0",
   "license": "MIT",
   "author": "Arnaud Barré (https://github.com/ArnaudBarre)",
   "description": "Speed up your Vite dev server with SWC",
@@ -19,6 +19,9 @@
     "build": "tsdown",
     "test": "playwright test"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitejs/vite-plugin-react.git",
@@ -29,20 +32,20 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc#readme",
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.27",
-    "@swc/core": "^1.12.11"
+    "@rolldown/pluginutils": "1.0.0-beta.31",
+    "@swc/core": "^1.13.2"
   },
   "peerDependencies": {
     "vite": "^4 || ^5 || ^6 || ^7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.1",
+    "@playwright/test": "^1.54.2",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.16.3",
+    "@types/node": "^22.17.1",
     "@vitejs/react-common": "workspace:*",
-    "fs-extra": "^11.3.0",
+    "fs-extra": "^11.3.1",
     "prettier": "^3.0.3",
-    "tsdown": "^0.12.9",
-    "typescript": "^5.8.3"
+    "tsdown": "^0.14.0",
+    "typescript": "^5.9.2"
   }
 }

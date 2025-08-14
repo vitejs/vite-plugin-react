@@ -2,7 +2,8 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import type { DevEnvironment, Rollup } from 'vite'
+import type { DevEnvironment, ErrorPayload, Rollup } from 'vite'
+import { stripVTControlCharacters as strip } from 'node:util'
 
 export const VALID_ID_PREFIX = `/@id/`
 
@@ -124,4 +125,30 @@ export function normalizeViteImportAnalysisUrl(
   }
 
   return url
+}
+
+// error formatting
+// https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/node/server/middlewares/error.ts#L11
+
+type RollupError = Rollup.RollupError
+
+export function prepareError(err: Error | RollupError): ErrorPayload['err'] {
+  // only copy the information we need and avoid serializing unnecessary
+  // properties, since some errors may attach full objects (e.g. PostCSS)
+  return {
+    message: strip(err.message),
+    stack: strip(cleanStack(err.stack || '')),
+    id: (err as RollupError).id,
+    frame: strip((err as RollupError).frame || ''),
+    plugin: (err as RollupError).plugin,
+    pluginCode: (err as RollupError).pluginCode?.toString(),
+    loc: (err as RollupError).loc,
+  }
+}
+
+function cleanStack(stack: string) {
+  return stack
+    .split(/\n/)
+    .filter((l) => /^\s*at/.test(l))
+    .join('\n')
 }

@@ -1,5 +1,5 @@
 declare module 'virtual:vite-rsc/assets-manifest' {
-  const assetsManifest: import('../plugin').AssetsManifest
+  const assetsManifest: import('../plugin').ResolvedAssetsManifest
   export default assetsManifest
 }
 

@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, setupIsolatedFixture, useFixture } from './fixture'
-import { expectNoReload, testNoJs, waitForHydration } from './helper'
-import path from 'node:path'
-import os from 'node:os'
-
-// TODO: parallel?
-// TODO: all tests don't need to be tested in all variants?
+import { type Fixture, useFixture } from './fixture'
+import {
+  expectNoPageError,
+  expectNoReload,
+  testNoJs,
+  waitForHydration,
+} from './helper'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -46,94 +46,64 @@ test.describe('build-default', () => {
   defineTest(f)
 })
 
-test.describe('dev-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('build-base', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_BASE: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe('dev-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'dev',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-
-  test('verify react compiler', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    const res = await page.request.get(f.url('src/routes/client.tsx'))
-    expect(await res.text()).toContain('react.memo_cache_sentinel')
-  })
-})
-
-test.describe('build-react-compiler', () => {
-  const f = useFixture({
-    root: 'examples/basic',
-    mode: 'build',
-    cliOptions: {
-      env: {
-        TEST_REACT_COMPILER: 'true',
-      },
-    },
-  })
-  defineTest(f)
-})
-
-test.describe(() => {
-  // disabled by default
-  if (process.env.TEST_ISOLATED !== 'true') return
-
-  // use RUNNER_TEMP on Github Actions
-  // https://github.com/actions/toolkit/issues/518
-  const tmpRoot = path.join(
-    process.env['RUNNER_TEMP'] || os.tmpdir(),
-    'test-vite-rsc',
-  )
+test.describe('dev-non-optimized-cjs', () => {
   test.beforeAll(async () => {
-    await setupIsolatedFixture({ src: 'examples/basic', dest: tmpRoot })
+    // remove explicitly added optimizeDeps.include
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(
+        `include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],`,
+        ``,
+      ),
+    )
   })
 
-  test.describe('dev-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'dev' })
-    defineTest(f)
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+    cliOptions: {
+      env: {
+        DEBUG: 'vite-rsc:cjs',
+      },
+    },
   })
 
-  test.describe('build-isolated', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'build' })
-    defineTest(f)
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toMatch(
+      /non-optimized CJS dependency in 'ssr' environment.*@vitejs\/test-dep-cjs\/index.js/,
+    )
+  })
+})
+
+test.describe('dev-inconsistent-client-optimization', () => {
+  test.beforeAll(async () => {
+    // remove explicitly added optimizeDeps.exclude
+    const editor = f.createEditor('vite.config.ts')
+    editor.edit((s) =>
+      s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``),
+    )
+  })
+
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'dev',
+  })
+
+  test('show warning', async ({ page }) => {
+    await page.goto(f.url())
+    expect(f.proc().stderr()).toContain(
+      'client component dependency is inconsistently optimized.',
+    )
   })
 })
 
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
+    using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
+    expect(f.proc().stderr()).toBe('')
   })
 
   test('client component', async ({ page }) => {
@@ -377,17 +347,117 @@ function defineTest(f: Fixture) {
       editor.reset()
       await expect(locator).toContainText('[dep: 1]')
     })
+
+    test('shared hmr basic', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      // Test initial state
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 1: Component HMR (shared1.tsx)
+      const editor1 = f.createEditor('src/routes/hmr-shared/shared1.tsx')
+      editor1.edit((s) => s.replace('shared1', 'shared1-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1-edit, shared2)',
+      )
+
+      editor1.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+
+      // Test 2: Non-component HMR (shared2.tsx)
+      const editor2 = f.createEditor('src/routes/hmr-shared/shared2.tsx')
+      editor2.edit((s) => s.replace('shared2', 'shared2-edit'))
+
+      // Verify both server and client components updated
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2-edit)',
+      )
+
+      editor2.reset()
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
+    })
+
+    // for this use case to work, server refetch/render and client hmr needs to applied atomically
+    // at the same time. Next.js doesn't seem to support this either.
+    // https://github.com/hi-ogawa/reproductions/tree/main/next-rsc-hmr-shared-module
+    test('shared hmr not atomic', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ok (test-shared)',
+      )
+
+      // non-atomic update causes an error
+      const editor = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
+      editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
+
+      await page.reload()
+      await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
+
+      // non-atomic update causes an error
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
+
+      await page.reload()
+      await expect(page.getByText('ok (test-shared)')).toBeVisible()
+    })
   })
 
   test('css @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   })
 
   async function testCss(page: Page, color = 'rgb(255, 165, 0)') {
@@ -426,6 +496,22 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expectNoDuplicateServerCss(page)
+    })
+
+    async function expectNoDuplicateServerCss(page: Page) {
+      // check only manually inserted stylesheet link exists
+      // (toHaveAttribute passes only when locator matches single element)
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
+        'href',
+        '/test-style-server-manual.css',
+      )
+    }
+
+    test('no duplicate server css', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expectNoDuplicateServerCss(page)
     })
 
     test('adding/removing css client @js', async ({ page }) => {
@@ -506,6 +592,11 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 165, 0)',
       )
+      await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+      await expectNoDuplicateServerCss(page)
     })
 
     // TODO: need a way to add/remove links on server hmr. for now, it requires a manually reload.
@@ -689,6 +780,24 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(255, 0, 0)',
       )
+    })
+
+    test('tailwind no redundant server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      const logs: string[] = []
+      page.on('console', (msg) => {
+        if (msg.type() === 'log') {
+          logs.push(msg.text())
+        }
+      })
+      f.createEditor('src/routes/tailwind/unused.tsx').resave()
+      await page.waitForTimeout(200)
+      f.createEditor('src/routes/tailwind/server.tsx').resave()
+      await page.waitForTimeout(200)
+      expect(logs).toEqual([
+        expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),
+      ])
     })
   })
 
@@ -877,6 +986,15 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('transitive cjs dep', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('transitive-cjs-client')).toHaveText('ok')
+    await expect(
+      page.getByTestId('transitive-use-sync-external-store-client'),
+    ).toHaveText('ok:browser')
+  })
+
   test('use cache function', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -998,9 +1116,7 @@ function defineTest(f: Fixture) {
     expect(errors).toMatchObject([
       {
         message: expect.stringContaining(
-          f.mode === 'dev'
-            ? `Hydration failed because the server rendered HTML didn't match the client.`
-            : `Minified React error #418`,
+          f.mode === 'dev' ? `Hydration failed` : `Minified React error #418`,
         ),
       },
     ])
@@ -1021,6 +1137,19 @@ function defineTest(f: Fixture) {
     await pageNoJs.goto(f.url())
     await expect(pageNoJs.getByTestId('test-browser-only')).toHaveText(
       'test-browser-only: loading...',
+    )
+  })
+
+  test('React.cache', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await page.getByRole('link', { name: 'test-react-cache' }).click()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 2, nonCacheFnCount = 3)',
+    )
+    await page.reload()
+    await expect(page.getByTestId('test-react-cache-result')).toHaveText(
+      '(cacheFnCount = 4, nonCacheFnCount = 6)',
     )
   })
 

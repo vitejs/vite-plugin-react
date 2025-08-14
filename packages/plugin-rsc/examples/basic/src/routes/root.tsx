@@ -27,14 +27,21 @@ import { TestTailwindClient } from './tailwind/client'
 import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
+import { TestReactCache } from './react-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
 import CssQueriesTest from './css-queries/server'
+import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
+import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
+import { TestHmrSharedServer } from './hmr-shared/server'
+import { TestHmrSharedClient } from './hmr-shared/client'
+import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
 
 export function Root(props: { url: URL }) {
   return (
     <html>
       <head>
+        <meta charSet="utf-8" />
         <title>vite-rsc</title>
         {import.meta.viteRsc.loadCss('/src/routes/root.tsx')}
       </head>
@@ -50,8 +57,12 @@ export function Root(props: { url: URL }) {
         <TestCssClientNoSsr url={props.url} />
         <TestTailwindClient />
         <TestTailwindServer />
+        <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />
+        <TestHmrSharedServer />
+        <TestHmrSharedClient />
+        <TestHmrSharedAtomic />
         <TestTemporaryReference />
         <TestServerActionError />
         <TestReplayConsoleLogs url={props.url} />
@@ -67,10 +78,12 @@ export function Root(props: { url: URL }) {
         <TestClientInServer />
         <TestServerInServer />
         <TestServerInClient />
+        <TestTransitiveCjsClient />
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestUseCache />
+        <TestReactCache url={props.url} />
         <CssQueriesTest />
       </body>
     </html>

@@ -1,0 +1,14 @@
+{
+  "name": "@vitejs/test-dep-transitive-cjs",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./client.js"
+  },
+  "dependencies": {
+    "@vitejs/test-dep-cjs": "file:../cjs"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

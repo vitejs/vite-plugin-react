@@ -6,7 +6,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   expect: {
-    toPass: { timeout: 5000 },
+    toPass: { timeout: 10000 },
   },
   projects: [
     {
@@ -26,7 +26,7 @@ export default defineConfig({
       use: devices['Desktop Safari'],
     },
   ],
-  workers: 1,
+  workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: ['list', process.env.CI && 'github']
