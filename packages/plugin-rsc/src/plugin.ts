@@ -165,6 +165,11 @@ export function vitePluginRscMinimal(
       },
       configResolved(config_) {
         config = config_
+        // ensure outDir is fully resolved to take custom root into account
+        // https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/node/build.ts#L574
+        for (const e of Object.values(config.environments)) {
+          e.build.outDir = path.resolve(config.root, e.build.outDir)
+        }
       },
       configureServer(server_) {
         server = server_
