@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Skip `babel-plugin-react-compiler` on non client environment ([689](https://github.com/vitejs/vite-plugin-react/pull/689))
+
 ## 5.0.0 (2025-08-07)
 
 ## 5.0.0-beta.0 (2025-07-28)
