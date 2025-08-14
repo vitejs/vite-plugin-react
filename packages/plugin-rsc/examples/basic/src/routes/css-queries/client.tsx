@@ -13,7 +13,10 @@ export function TestCssQueriesClient(props: {
   const [enabled, setEnabled] = React.useState(false)
 
   function urlWithHmr(href: string) {
-    return href + (import.meta.env.BASE_URL ? '?t=' + Date.now() : '')
+    if (import.meta.hot) {
+      href += '?t=' + Date.now()
+    }
+    return href
   }
 
   return (
@@ -29,14 +32,9 @@ export function TestCssQueriesClient(props: {
           <style>{props.serverRaw}</style>
         </>
       )}
-      <div className="test-css-url-client">test-css-url-client: {cssUrl}</div>
-      <div className="test-css-inline-client">
-        test-css-inline-client:{' '}
-        {typeof cssInline === 'string' ? 'string' : 'other'}
-      </div>
-      <div className="test-css-raw-client">
-        test-css-raw-client: {typeof cssRaw === 'string' ? 'string' : 'other'}
-      </div>
+      <div className="test-css-url-client">test-css-url-client</div>
+      <div className="test-css-inline-client">test-css-inline-client</div>
+      <div className="test-css-raw-client">test-css-raw-client</div>
     </div>
   )
 }

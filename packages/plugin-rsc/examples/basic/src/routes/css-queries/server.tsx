@@ -12,14 +12,9 @@ export function TestCssQueries() {
         serverRaw={cssRaw}
       />
       <div>
-        <div className="test-css-url-server">test-css-url-server: {cssUrl}</div>
-        <div className="test-css-inline-server">
-          test-css-inline-server:{' '}
-          {typeof cssInline === 'string' ? 'string' : 'other'}
-        </div>
-        <div className="test-css-raw-server">
-          test-css-raw-server: {typeof cssRaw === 'string' ? 'string' : 'other'}
-        </div>
+        <div className="test-css-url-server">test-css-url-server</div>
+        <div className="test-css-inline-server">test-css-inline-server</div>
+        <div className="test-css-raw-server">test-css-raw-server</div>
       </div>
     </div>
   )
