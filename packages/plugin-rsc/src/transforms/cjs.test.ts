@@ -57,13 +57,43 @@ if (true) {
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "const exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_1 = await import("react-dom");
       const __cjs_to_esm_hoist_0 = await import("react");
+      const __cjs_to_esm_hoist_1 = await import("react-dom");
       "production" !== process.env.NODE_ENV && (function() { 
         var React = __cjs_to_esm_hoist_0;
         var ReactDOM = __cjs_to_esm_hoist_1;
         exports.useSyncExternalStoreWithSelector = function () {}
       })()
+      "
+    `)
+  })
+
+  it('edge cases', async () => {
+    const input = `\
+const x1 = require("te" + "st");
+const x2 = require("test")().test;
+console.log(require("test"))
+
+function test() {
+  const y1 = require("te" + "st");
+  const y2 = require("test")().test;
+  consoe.log(require("test"))
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const exports = {}; const module = { exports };
+      const __cjs_to_esm_hoist_0 = await import("te" + "st");
+      const __cjs_to_esm_hoist_1 = await import("test");
+      const __cjs_to_esm_hoist_2 = await import("test");
+      const x1 = (await import("te" + "st"));
+      const x2 = (await import("test"))().test;
+      console.log((await import("test")))
+
+      function test() {
+        const y1 = __cjs_to_esm_hoist_0;
+        const y2 = __cjs_to_esm_hoist_1().test;
+        consoe.log(__cjs_to_esm_hoist_2)
+      }
       "
     `)
   })
