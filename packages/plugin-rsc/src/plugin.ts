@@ -1684,7 +1684,10 @@ export function vitePluginRscCss(
       }
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
-          if (isCSSRequest(next.id) && !hasSpecialCssQuery(next.id)) {
+          if (isCSSRequest(next.id)) {
+            if (hasSpecialCssQuery(next.id)) {
+              continue
+            }
             cssIds.add(next.id)
           } else {
             recurse(next.id)
