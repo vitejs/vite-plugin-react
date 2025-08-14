@@ -1,3 +1,20 @@
+## <small>[0.4.20](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.19...plugin-rsc@0.4.20) (2025-08-13)</small>
+### Bug Fixes
+
+* **rsc:** deprecate opt-out `ignoredPackageWarnings` option in favor of ont-in `DEBUG` env ([#697](https://github.com/vitejs/vite-plugin-react/issues/697)) ([5d5edd4](https://github.com/vitejs/vite-plugin-react/commit/5d5edd4d896fe6d064dddd5a3cf76594b0b0171c))
+* **rsc:** keep hoisted require order ([#706](https://github.com/vitejs/vite-plugin-react/issues/706)) ([ad7584a](https://github.com/vitejs/vite-plugin-react/commit/ad7584a29b02238d685504ff356515e6f78275dc))
+* **rsc:** remove duplicate server css on initial render ([#702](https://github.com/vitejs/vite-plugin-react/issues/702)) ([3114e88](https://github.com/vitejs/vite-plugin-react/commit/3114e88bcd8303d7c42da29eb7215c54ed43ce0d))
+* **rsc:** warn dual module of optimized and non-optimized client reference ([#705](https://github.com/vitejs/vite-plugin-react/issues/705)) ([e5c3517](https://github.com/vitejs/vite-plugin-react/commit/e5c351776e9a6269a37a171c830a902381af8011))
+
+### Miscellaneous Chores
+
+* **rsc:** fix csp example for Vite server ping SharedWorker ([#704](https://github.com/vitejs/vite-plugin-react/issues/704)) ([5b73cbe](https://github.com/vitejs/vite-plugin-react/commit/5b73cbe134466650a7aabc02dc794e7d6e35b135))
+* **rsc:** update package.json for starter-cf-single ([#707](https://github.com/vitejs/vite-plugin-react/issues/707)) ([2d93ee4](https://github.com/vitejs/vite-plugin-react/commit/2d93ee42cf8b4b544fd09400f1c6ed1dfdb6652d))
+
+### Code Refactoring
+
+* move @vitejs/plugin-rsc to devDependencies in examples ([#699](https://github.com/vitejs/vite-plugin-react/issues/699)) ([a1f4311](https://github.com/vitejs/vite-plugin-react/commit/a1f4311f87d0f983b8332ab393514e0d71263374))
+
 ## <small>[0.4.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.18...plugin-rsc@0.4.19) (2025-08-11)</small>
 ### Bug Fixes
 
