@@ -30,12 +30,12 @@ import { TestUseCache } from './use-cache/server'
 import { TestReactCache } from './react-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
-import CssQueriesTest from './css-queries/server'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
 import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
 import { TestHmrSharedServer } from './hmr-shared/server'
 import { TestHmrSharedClient } from './hmr-shared/client'
 import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
+import { TestCssQueries } from './css-queries/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -84,7 +84,7 @@ export function Root(props: { url: URL }) {
         <TestBrowserOnly />
         <TestUseCache />
         <TestReactCache url={props.url} />
-        <CssQueriesTest />
+        <TestCssQueries />
       </body>
     </html>
   )
