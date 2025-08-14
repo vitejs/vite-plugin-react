@@ -7,18 +7,13 @@ export function TestCssQueries() {
   return (
     <div>
       <div>
-        <div data-testid="test-css-queries-server-url">
-          CSS URL (server): {cssUrl}
-        </div>
-        <div data-testid="test-css-queries-server-inline">
-          CSS Inline (server):{' '}
+        <div className="test-css-url-server">test-css-url-server: {cssUrl}</div>
+        <div className="test-css-inline-server">
+          test-css-inline-server:{' '}
           {typeof cssInline === 'string' ? 'string' : 'other'}
         </div>
-        <div data-testid="test-css-queries-server-raw">
-          CSS Raw (server): {typeof cssRaw === 'string' ? 'string' : 'other'}
-        </div>
-        <div data-testid="test-css-queries-server-normal">
-          Normal CSS import works (server)
+        <div className="test-css-raw-server">
+          test-css-raw-server: {typeof cssRaw === 'string' ? 'string' : 'other'}
         </div>
       </div>
       <TestCssQueriesClient />
