@@ -1152,4 +1152,31 @@ function defineTest(f: Fixture) {
       '(cacheFnCount = 4, nonCacheFnCount = 6)',
     )
   })
+
+  test('css queries', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    const tests = [
+      ['.test-css-url-client', 'rgb(255, 100, 0)'],
+      ['.test-css-inline-client', 'rgb(255, 50, 0)'],
+      ['.test-css-raw-client', 'rgb(255, 0, 0)'],
+      ['.test-css-url-server', 'rgb(0, 255, 100)'],
+      ['.test-css-inline-server', 'rgb(0, 255, 50)'],
+      ['.test-css-raw-server', 'rgb(0, 255, 0)'],
+    ] as const
+
+    // css with queries are not injected automatically
+    for (const [selector] of tests) {
+      await expect(page.locator(selector)).toHaveCSS('color', 'rgb(0, 0, 0)')
+    }
+
+    // inject css manually
+    await page.getByRole('button', { name: 'test-css-queries' }).click()
+
+    // verify styles
+    for (const [selector, color] of tests) {
+      await expect(page.locator(selector)).toHaveCSS('color', color)
+    }
+  })
 }
