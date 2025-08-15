@@ -4,10 +4,10 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Features
 
-- **Framework-agnostic**: The plugin implements [RSC conventions](https://react.dev/reference/rsc/server-components) and provides low level `react-server-dom` runtime API without framework-specific abstractions.
-- **CSS support**: CSS is automatically code-split both at client and server components and they are injected upon rendering.
+- **Framework-agnostic**: The plugin implements [RSC bundler features](https://react.dev/reference/rsc/server-components) and provides low level `react-server-dom` runtime API without framework-specific abstractions.
+- **Runtime-agnostic**: Built on [Vite environment API](https://vite.dev/guide/api-environment.html) and works with other runtimes (e.g., [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare)).
 - **HMR support**: Enables editing both client and server components without full page reloads.
-- **Runtime agnostic**: Built on [Vite environment API](https://vite.dev/guide/api-environment.html) and works with other runtimes (e.g., [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare)).
+- **CSS support**: CSS is automatically code-split both at client and server components and they are injected upon rendering.
 
 ## Getting Started
 
@@ -25,11 +25,11 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 
 **Integration examples:**
 
-- [`./examples/react-router`](./examples/react-router) - React Router RSC integration
-  - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
-- [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
   - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
+- [`./examples/react-router`](./examples/react-router) - React Router RSC integration
+  - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 
 ## Basic Concepts
 
@@ -215,7 +215,7 @@ main();
 
 The plugin provides an additional helper for multi environment interaction.
 
-### available on `rsc` or `ssr` environment
+### Available on `rsc` or `ssr` environment
 
 #### `import.meta.viteRsc.loadModule`
 
@@ -238,7 +238,7 @@ ssrModule.renderHTML(...);
 export function renderHTML(...) {}
 ```
 
-### available on `rsc` environment
+### Available on `rsc` environment
 
 #### `import.meta.viteRsc.loadCss`
 
@@ -319,7 +319,7 @@ function __Page(props) {
 export { __Page as Page }
 ```
 
-### available on `ssr` environment
+### Available on `ssr` environment
 
 #### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
 
@@ -336,7 +336,7 @@ const htmlStream = await renderToReadableStream(reactNode, {
 })
 ```
 
-### available on `client` environment
+### Available on `client` environment
 
 #### `rsc:update` event
 
@@ -353,31 +353,6 @@ import.meta.hot.on('rsc:update', async () => {
   // re-render ...
 })
 ```
-
-## `react-server-dom` API
-
-### `@vitejs/plugin-rsc/rsc`
-
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
-
-- `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serialized RSC and deserializing it for later use.
-- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
-- `encodeReply/createClientTemporaryReferenceSet`
-
-### `@vitejs/plugin-rsc/ssr`
-
-This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
-
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-
-### `@vitejs/plugin-rsc/browser`
-
-This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
-
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
-- `encodeReply/setServerCallback`: server function related...
 
 ## Plugin API
 
@@ -422,6 +397,31 @@ export default defineConfig({
   ],
 })
 ```
+
+## RSC runtime (react-server-dom) API
+
+### `@vitejs/plugin-rsc/rsc`
+
+This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
+
+- `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serialized RSC and deserializing it for later use.
+- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
+- `encodeReply/createClientTemporaryReferenceSet`
+
+### `@vitejs/plugin-rsc/ssr`
+
+This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
+
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+
+### `@vitejs/plugin-rsc/browser`
+
+This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
+
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
+- `encodeReply/setServerCallback`: server function related...
 
 ## High level API
 
@@ -475,6 +475,10 @@ export function Page() {
   )
 }
 ```
+
+## Canary/Experimental channel releases
+
+TODO
 
 ## Credits
 
