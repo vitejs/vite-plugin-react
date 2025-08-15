@@ -26,7 +26,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 **Integration examples:**
 
 - [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
-  - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
+  - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/react-router`](./examples/react-router) - React Router RSC integration
   - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
@@ -135,7 +135,7 @@ import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-serv
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
-  // serialization React VDOM to RSC stream
+  // serialize React VDOM to RSC stream
   const root = (
     <html>
       <body>
@@ -265,7 +265,7 @@ export function ServerPage() {
 }
 ```
 
-Where specifying `loadCss(<id>)`, it will collect css through the server module resolved by `<id>`.
+When specifying `loadCss(<id>)`, it will collect css through the server module resolved by `<id>`.
 
 ```tsx
 // virtual:my-framework-helper
