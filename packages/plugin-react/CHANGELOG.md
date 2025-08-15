@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fix `reactRefreshHost` option on rolldown-vite ([#716](https://github.com/vitejs/vite-plugin-react/pull/716))
+
+### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
+
+### Skip `babel-plugin-react-compiler` on non client environment ([689](https://github.com/vitejs/vite-plugin-react/pull/689))
+
+## 5.0.0 (2025-08-07)
+
 ## 5.0.0-beta.0 (2025-07-28)
 
 ### Use Oxc for react refresh transform in rolldown-vite

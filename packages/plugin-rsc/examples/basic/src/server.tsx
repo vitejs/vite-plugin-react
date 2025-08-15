@@ -22,15 +22,17 @@ export default async function handler(request: Request): Promise<Response> {
     nonce,
   })
   if (nonce && response.headers.get('content-type')?.includes('text/html')) {
-    response.headers.set(
-      'content-security-policy',
-      `default-src 'self'; ` +
-        // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
-        `script-src 'self' 'nonce-${nonce}' ${
-          import.meta.env.DEV ? `'unsafe-eval'` : ``
-        } ; ` +
-        `style-src 'self' 'nonce-${nonce}'; `,
-    )
+    const cspValue = [
+      `default-src 'self';`,
+      // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
+      `script-src 'self' 'nonce-${nonce}' ${import.meta.env.DEV ? `'unsafe-eval'` : ``};`,
+      `style-src 'self' 'unsafe-inline';`,
+      // allow blob: worker for Vite server ping shared worker
+      import.meta.hot && `worker-src 'self' blob:;`,
+    ]
+      .filter(Boolean)
+      .join('')
+    response.headers.set('content-security-policy', cspValue)
   }
   return response
 }

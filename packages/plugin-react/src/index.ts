@@ -245,8 +245,17 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         })()
         const plugins = [...babelOptions.plugins]
 
+        // remove react-compiler plugin on non client environment
+        if (ssr) {
+          const reactCompilerPlugin = getReactCompilerPlugin(plugins)
+          if (reactCompilerPlugin) {
+            plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          }
+        }
+
         const isJSX = filepath.endsWith('x')
         const useFastRefresh =
+          !isRolldownVite &&
           !skipFastRefresh &&
           !ssr &&
           (isJSX ||
@@ -254,7 +263,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               ? importReactRE.test(code)
               : code.includes(jsxImportDevRuntime) ||
                 code.includes(jsxImportRuntime)))
-        if (useFastRefresh && !isRolldownVite) {
+        if (useFastRefresh) {
           plugins.push([
             await loadPlugin('react-refresh/babel'),
             { skipEnvCheck: true },
@@ -331,42 +340,43 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
+  // for rolldown-vite
   const viteRefreshWrapper: Plugin = {
     name: 'vite:react:refresh-wrapper',
     apply: 'serve',
-    transform: isRolldownVite
-      ? {
-          filter: {
-            id: {
-              include: makeIdFiltersToMatchWithQuery(include),
-              exclude: makeIdFiltersToMatchWithQuery(exclude),
-            },
-          },
-          handler(code, id, options) {
-            const ssr = options?.ssr === true
+    transform: {
+      filter: {
+        id: {
+          include: makeIdFiltersToMatchWithQuery(include),
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
+        },
+      },
+      handler(code, id, options) {
+        const ssr = options?.ssr === true
 
-            const [filepath] = id.split('?')
-            const isJSX = filepath.endsWith('x')
-            const useFastRefresh =
-              !skipFastRefresh &&
-              !ssr &&
-              (isJSX ||
-                code.includes(jsxImportDevRuntime) ||
-                code.includes(jsxImportRuntime))
-            if (!useFastRefresh) return
+        const [filepath] = id.split('?')
+        const isJSX = filepath.endsWith('x')
+        const useFastRefresh =
+          !skipFastRefresh &&
+          !ssr &&
+          (isJSX ||
+            code.includes(jsxImportDevRuntime) ||
+            code.includes(jsxImportRuntime))
+        if (!useFastRefresh) return
 
-            const { code: newCode } = addRefreshWrapper(
-              code,
-              avoidSourceMapOption,
-              '@vitejs/plugin-react',
-              id,
-            )
-            return { code: newCode, map: null }
-          },
-        }
-      : undefined,
+        const { code: newCode } = addRefreshWrapper(
+          code,
+          avoidSourceMapOption,
+          '@vitejs/plugin-react',
+          id,
+          opts.reactRefreshHost,
+        )
+        return { code: newCode, map: null }
+      },
+    },
   }
 
+  // for rolldown-vite
   const viteConfigPost: Plugin = {
     name: 'vite:react:config-post',
     enforce: 'post',
@@ -439,7 +449,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
-  return [viteBabel, viteRefreshWrapper, viteConfigPost, viteReactRefresh]
+  return [
+    viteBabel,
+    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost] : []),
+    viteReactRefresh,
+  ]
 }
 
 viteReact.preambleCode = preambleCode

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.0 (2025-08-07)
+
 ## 0.4.0-beta.0 (2025-07-28)
 
 ### Deprecate this plugin

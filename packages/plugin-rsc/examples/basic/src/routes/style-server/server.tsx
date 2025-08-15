@@ -12,7 +12,7 @@ export async function TestStyleServer() {
       </div>
       <link
         rel="stylesheet"
-        href="/test.css"
+        href="/test-style-server-manual.css"
         precedence="test-style-server-manual"
       />
       <div className="test-style-server-manual">test-style-server-manual</div>

@@ -21,7 +21,7 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs, findClosestPkgJsonPath } from 'vitefu'
+import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -32,7 +32,14 @@ import {
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
-import { normalizeViteImportAnalysisUrl, prepareError } from './vite-utils'
+import {
+  cleanUrl,
+  normalizeViteImportAnalysisUrl,
+  prepareError,
+} from './vite-utils'
+import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { evalValue, parseIdQuery } from './plugins/utils'
+import { createDebug } from '@hiogawa/utils'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -92,6 +99,7 @@ export type RscPluginOptions = {
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
+  /** @deprecated use "DEBUG=vite-env:*" to see warnings. */
   ignoredPackageWarnings?: (string | RegExp)[]
 
   /**
@@ -157,6 +165,11 @@ export function vitePluginRscMinimal(
       },
       configResolved(config_) {
         config = config_
+        // ensure outDir is fully resolved to take custom root into account
+        // https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/node/build.ts#L574
+        for (const e of Object.values(config.environments)) {
+          e.build.outDir = path.resolve(config.root, e.build.outDir)
+        }
       },
       configureServer(server_) {
         server = server_
@@ -855,7 +868,8 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
-        // TODO: this doesn't have to wait for "vite:beforeUpdate" and should do it right after browser css import.
+        // server css is normally removed via `RemoveDuplicateServerCss` on useEffect.
+        // this also makes sure they are removed on hmr in case initial rendering failed.
         code += /* js */ `
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
@@ -906,41 +920,9 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
-    ...vendorUseSyncExternalStorePlugin(),
     scanBuildStripPlugin(),
-    detectNonOptimizedCjsPlugin(),
+    ...cjsModuleRunnerPlugin(),
   ]
-}
-function detectNonOptimizedCjsPlugin(): Plugin {
-  return {
-    name: 'rsc:detect-non-optimized-cjs',
-    apply: 'serve',
-    async transform(code, id) {
-      if (
-        id.includes('/node_modules/') &&
-        !id.startsWith(this.environment.config.cacheDir) &&
-        /\b(require|exports)\b/.test(code)
-      ) {
-        id = parseIdQuery(id).filename
-        let isEsm = id.endsWith('.mjs')
-        if (id.endsWith('.js')) {
-          const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
-          if (pkgJsonPath) {
-            const pkgJson = JSON.parse(
-              fs.readFileSync(pkgJsonPath, 'utf-8'),
-            ) as { type?: string }
-            isEsm = pkgJson.type === 'module'
-          }
-        }
-        if (!isEsm) {
-          this.warn(
-            `[vite-rsc] found non-optimized CJS dependency in '${this.environment.name}' environment. ` +
-              `It is recommended to manually add the dependency to 'environments.${this.environment.name}.optimizeDeps.include'.`,
-          )
-        }
-      }
-    },
-  }
 }
 
 function scanBuildStripPlugin(): Plugin {
@@ -988,7 +970,7 @@ function hashString(v: string) {
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'keepUseCientProxy' | 'environment'
+    'keepUseCientProxy' | 'environment'
   >,
 ): Plugin[] {
   const packageSources = new Map<string, string>()
@@ -999,6 +981,26 @@ function vitePluginUseClient(
   const serverEnvironmentName = useClientPluginOptions.environment?.rsc ?? 'rsc'
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
+
+  // TODO: warning for late optimizer discovery
+  function warnInoncistentClientOptimization(
+    ctx: Rollup.TransformPluginContext,
+    id: string,
+  ) {
+    const { depsOptimizer } = server.environments.client
+    if (depsOptimizer) {
+      for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
+        if (dep.src === id) {
+          ctx.warn(
+            `client component dependency is inconsistently optimized. ` +
+              `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
+          )
+        }
+      }
+    }
+  }
+
+  const debug = createDebug('vite-rsc:use-client')
 
   return [
     {
@@ -1013,28 +1015,22 @@ function vitePluginUseClient(
         let importId: string
         let referenceKey: string
         const packageSource = packageSources.get(id)
-        if (!packageSource && id.includes('?v=')) {
-          assert(this.environment.mode === 'dev')
-          // If non package source `?v=<hash>` reached here, this is a client boundary
+        if (
+          !packageSource &&
+          this.environment.mode === 'dev' &&
+          id.includes('/node_modules/')
+        ) {
+          // If non package source reached here (often with ?v=... query), this is a client boundary
           // created by a package imported on server environment, which breaks the
           // expectation on dependency optimizer on browser. Directly copying over
           // "?v=<hash>" from client optimizer in client reference can make a hashed
           // module stale, so we use another virtual module wrapper to delay such process.
-          // TODO: suggest `optimizeDeps.exclude` and skip warning if that's already the case.
-          const ignored = useClientPluginOptions.ignoredPackageWarnings?.some(
-            (pattern) =>
-              pattern instanceof RegExp
-                ? pattern.test(id)
-                : id.includes(`/node_modules/${pattern}/`),
+          debug(
+            `internal client reference created through a package imported in '${this.environment.name}' environment: ${id}`,
           )
-          if (!ignored) {
-            this.warn(
-              `[vite-rsc] detected an internal client boundary created by a package imported on rsc environment`,
-            )
-          }
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(
-            id.split('?v=')[0]!,
-          )}`
+          id = cleanUrl(id)
+          warnInoncistentClientOptimization(this, id)
+          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
           referenceKey = importId
         } else if (packageSource) {
           if (this.environment.mode === 'dev') {
@@ -1260,12 +1256,14 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'ignoredPackageWarnings' | 'enableActionEncryption' | 'environment'
+    'enableActionEncryption' | 'environment'
   >,
 ): Plugin[] {
   const serverEnvironmentName = useServerPluginOptions.environment?.rsc ?? 'rsc'
   const browserEnvironmentName =
     useServerPluginOptions.environment?.browser ?? 'client'
+
+  const debug = createDebug('vite-rsc:use-server')
 
   return [
     {
@@ -1277,23 +1275,17 @@ function vitePluginUseServer(
         let normalizedId_: string | undefined
         const getNormalizedId = () => {
           if (!normalizedId_) {
-            if (id.includes('?v=')) {
-              assert(this.environment.mode === 'dev')
-              const ignored =
-                useServerPluginOptions.ignoredPackageWarnings?.some(
-                  (pattern) =>
-                    pattern instanceof RegExp
-                      ? pattern.test(id)
-                      : id.includes(`/node_modules/${pattern}/`),
-                )
-              if (!ignored) {
-                this.warn(
-                  `[vite-rsc] detected an internal server function created by a package imported on ${this.environment.name} environment`,
-                )
-              }
-              // module runner has additional resolution step and it's not strict about
-              // module identity of `import(id)` like browser, so we simply strip it off.
-              id = id.split('?v=')[0]!
+            if (
+              this.environment.mode === 'dev' &&
+              id.includes('/node_modules/')
+            ) {
+              // similar situation as `use client` (see `virtual:client-in-server-package-proxy`)
+              // but module runner has additional resolution step and it's not strict about
+              // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
+              debug(
+                `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
+              )
+              id = cleanUrl(id)
             }
             if (config.command === 'build') {
               normalizedId_ = hashString(path.relative(config.root, id))
@@ -1696,6 +1688,10 @@ export async function findSourceMapURL(
 export function vitePluginRscCss(
   rscCssOptions?: Pick<RscPluginOptions, 'rscCssTransform'>,
 ): Plugin[] {
+  function hasSpecialCssQuery(id: string): boolean {
+    return /[?&](url|inline|raw)(\b|=|&|$)/.test(id)
+  }
+
   function collectCss(environment: DevEnvironment, entryId: string) {
     const visited = new Set<string>()
     const cssIds = new Set<string>()
@@ -1713,6 +1709,9 @@ export function vitePluginRscCss(
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
           if (isCSSRequest(next.id)) {
+            if (hasSpecialCssQuery(next.id)) {
+              continue
+            }
             cssIds.add(next.id)
           } else {
             recurse(next.id)
@@ -1957,6 +1956,36 @@ export function vitePluginRscCss(
         }
       },
     },
+    createVirtualPlugin(
+      'vite-rsc/remove-duplicate-server-css',
+      async function () {
+        // Remove duplicate css during dev due to server rendered <link> and client inline <style>
+        // https://github.com/remix-run/react-router/blob/166fd940e7d5df9ed005ca68e12de53b1d88324a/packages/react-router/lib/dom-export/hydrated-router.tsx#L245-L274
+        assert.equal(this.environment.mode, 'dev')
+        function removeFn() {
+          document
+            .querySelectorAll("link[rel='stylesheet']")
+            .forEach((node) => {
+              if (
+                node instanceof HTMLElement &&
+                node.dataset.precedence?.startsWith('vite-rsc/')
+              ) {
+                node.remove()
+              }
+            })
+        }
+        return `\
+"use client"
+import React from "react";
+export default function RemoveDuplicateServerCss() {
+  React.useEffect(() => {
+    (${removeFn.toString()})();
+  }, []);
+  return null;
+}
+`
+      },
+    ),
   ]
 }
 
@@ -1987,6 +2016,7 @@ function generateResourcesCode(depsCode: string) {
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
+    RemoveDuplicateServerCss?: React.FC,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
@@ -2007,31 +2037,29 @@ function generateResourcesCode(depsCode: string) {
             src: href,
           }),
         ),
+        RemoveDuplicateServerCss &&
+          React.createElement(RemoveDuplicateServerCss, {
+            key: 'remove-duplicate-css',
+          }),
       ])
     }
   }
 
   return `
-    import __vite_rsc_react__ from "react";
-    export const Resources = (${ResourcesFn.toString()})(__vite_rsc_react__, ${depsCode});
-  `
+import __vite_rsc_react__ from "react";
+
+${
+  config.command === 'serve'
+    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css";`
+    : `const RemoveDuplicateServerCss = undefined;`
 }
 
-// https://github.com/vitejs/vite/blob/ea9aed7ebcb7f4be542bd2a384cbcb5a1e7b31bd/packages/vite/src/node/utils.ts#L1469-L1475
-function evalValue<T = any>(rawValue: string): T {
-  const fn = new Function(`
-    var console, exports, global, module, process, require
-    return (\n${rawValue}\n)
-  `)
-  return fn()
-}
-
-// https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
-function parseIdQuery(id: string) {
-  if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
-  const query = Object.fromEntries(new URLSearchParams(rawQuery))
-  return { filename, query }
+export const Resources = (${ResourcesFn.toString()})(
+  __vite_rsc_react__,
+  ${depsCode},
+  RemoveDuplicateServerCss,
+);
+`
 }
 
 export async function transformRscCssExport(options: {
@@ -2147,41 +2175,6 @@ function validateImportPlugin(): Plugin {
       }
     },
   }
-}
-
-function vendorUseSyncExternalStorePlugin(): Plugin[] {
-  // vendor and optimize use-sync-external-store out of the box
-  // since this is a common enough cjs, which tends to break
-  // other packages (e.g. swr, @tanstack/react-store)
-
-  // https://github.com/facebook/react/blob/c499adf8c89bbfd884f4d3a58c4e510001383525/packages/use-sync-external-store/package.json#L5-L20
-  const exports = [
-    'use-sync-external-store',
-    'use-sync-external-store/with-selector',
-    'use-sync-external-store/with-selector.js',
-    'use-sync-external-store/shim',
-    'use-sync-external-store/shim/index.js',
-    'use-sync-external-store/shim/with-selector',
-    'use-sync-external-store/shim/with-selector.js',
-  ]
-
-  return [
-    {
-      name: 'rsc:vendor-use-sync-external-store',
-      apply: 'serve',
-      config() {
-        return {
-          environments: {
-            ssr: {
-              optimizeDeps: {
-                include: exports.map((e) => `${PKG_NAME} > ${e}`),
-              },
-            },
-          },
-        }
-      },
-    },
-  ]
 }
 
 function sortObject<T extends object>(o: T) {
