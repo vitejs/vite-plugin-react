@@ -369,6 +369,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               avoidSourceMapOption,
               '@vitejs/plugin-react',
               id,
+              opts.reactRefreshHost,
             )
             return { code: newCode, map: null }
           },
