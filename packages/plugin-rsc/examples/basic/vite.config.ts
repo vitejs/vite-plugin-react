@@ -131,6 +131,7 @@ export default { fetch: handler };
         }
       },
     },
+    testScanPlugin(),
   ],
   build: {
     minify: false,
@@ -157,6 +158,36 @@ export default { fetch: handler };
     },
   },
 }) as any
+
+function testScanPlugin(): Plugin[] {
+  const moduleIds: { name: string; ids: string[] }[] = []
+  return [
+    {
+      name: 'test-scan',
+      apply: 'build',
+      buildEnd() {
+        moduleIds.push({
+          name: this.environment.name,
+          ids: [...this.getModuleIds()],
+        })
+      },
+      buildApp: {
+        order: 'post',
+        async handler() {
+          // client scan build discovers additional modules for server references.
+          const [m1, m2] = moduleIds.filter((m) => m.name === 'rsc')
+          const diff = m2.ids.filter((id) => !m1.ids.includes(id))
+          assert(diff.length > 0)
+          console.log(diff)
+
+          // but make sure it's not due to import.meta.glob
+          // https://github.com/vitejs/rolldown-vite/issues/373
+          // TODO: assert
+        },
+      },
+    },
+  ]
+}
 
 function vitePluginUseCache(): Plugin[] {
   return [
