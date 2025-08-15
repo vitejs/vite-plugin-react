@@ -914,6 +914,10 @@ function scanBuildStripPlugin(): Plugin {
         .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)
         .filter(Boolean)
         .join('')
+
+      // TODO: keep also import.meta.glob for rolldown-vite
+      // https://github.com/vitejs/rolldown-vite/issues/373
+
       return { code: output, map: { mappings: '' } }
     },
   }
