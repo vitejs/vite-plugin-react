@@ -40,6 +40,7 @@ import {
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { evalValue, parseIdQuery } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
+import { scanBuildStrip } from './plugins/scan'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -908,16 +909,7 @@ function scanBuildStripPlugin(): Plugin {
     enforce: 'post',
     transform(code, _id, _options) {
       if (!isScanBuild) return
-      // During server scan, we strip all code but imports to only discover client/server references.
-      const [imports] = esModuleLexer.parse(code)
-      const output = imports
-        .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)
-        .filter(Boolean)
-        .join('')
-
-      // TODO: keep also import.meta.glob for rolldown-vite
-      // https://github.com/vitejs/rolldown-vite/issues/373
-
+      const output = scanBuildStrip(code)
       return { code: output, map: { mappings: '' } }
     },
   }
