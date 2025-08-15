@@ -40,7 +40,6 @@ import {
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { evalValue, parseIdQuery } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
-import { scanBuildStrip } from './plugins/scan'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -902,6 +901,11 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
   ]
 }
 
+// https://github.com/vitejs/vite/blob/86d2e8be50be535494734f9f5f5236c61626b308/packages/vite/src/node/plugins/importMetaGlob.ts#L113
+const importGlobRE = /\bimport\.meta\.glob(?:<\w+>)?\s*\(/g
+
+// During scan build, we strip all code but imports to
+// traverse module graph faster and just discover client/server references.
 function scanBuildStripPlugin(): Plugin {
   return {
     name: 'rsc:scan-strip',
@@ -909,7 +913,16 @@ function scanBuildStripPlugin(): Plugin {
     enforce: 'post',
     transform(code, _id, _options) {
       if (!isScanBuild) return
-      const output = scanBuildStrip(code)
+
+      // bail out if import.meta.glob
+      // https://github.com/vitejs/rolldown-vite/issues/373
+      if (importGlobRE.test(code)) return code
+
+      const [imports] = esModuleLexer.parse(code)
+      const output = imports
+        .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)
+        .filter(Boolean)
+        .join('')
       return { code: output, map: { mappings: '' } }
     },
   }
