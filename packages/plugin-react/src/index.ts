@@ -255,6 +255,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
         const isJSX = filepath.endsWith('x')
         const useFastRefresh =
+          !isRolldownVite &&
           !skipFastRefresh &&
           !ssr &&
           (isJSX ||
@@ -262,7 +263,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               ? importReactRE.test(code)
               : code.includes(jsxImportDevRuntime) ||
                 code.includes(jsxImportRuntime)))
-        if (useFastRefresh && !isRolldownVite) {
+        if (useFastRefresh) {
           plugins.push([
             await loadPlugin('react-refresh/babel'),
             { skipEnvCheck: true },
@@ -368,6 +369,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               avoidSourceMapOption,
               '@vitejs/plugin-react',
               id,
+              opts.reactRefreshHost,
             )
             return { code: newCode, map: null }
           },

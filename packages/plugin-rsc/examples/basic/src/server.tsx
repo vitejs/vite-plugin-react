@@ -26,7 +26,7 @@ export default async function handler(request: Request): Promise<Response> {
       `default-src 'self';`,
       // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
       `script-src 'self' 'nonce-${nonce}' ${import.meta.env.DEV ? `'unsafe-eval'` : ``};`,
-      `style-src 'self' 'nonce-${nonce}';`,
+      `style-src 'self' 'unsafe-inline';`,
       // allow blob: worker for Vite server ping shared worker
       import.meta.hot && `worker-src 'self' blob:;`,
     ]

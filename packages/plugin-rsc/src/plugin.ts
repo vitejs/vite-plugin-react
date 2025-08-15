@@ -165,6 +165,11 @@ export function vitePluginRscMinimal(
       },
       configResolved(config_) {
         config = config_
+        // ensure outDir is fully resolved to take custom root into account
+        // https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/node/build.ts#L574
+        for (const e of Object.values(config.environments)) {
+          e.build.outDir = path.resolve(config.root, e.build.outDir)
+        }
       },
       configureServer(server_) {
         server = server_
@@ -1659,6 +1664,10 @@ export async function findSourceMapURL(
 export function vitePluginRscCss(
   rscCssOptions?: Pick<RscPluginOptions, 'rscCssTransform'>,
 ): Plugin[] {
+  function hasSpecialCssQuery(id: string): boolean {
+    return /[?&](url|inline|raw)(\b|=|&|$)/.test(id)
+  }
+
   function collectCss(environment: DevEnvironment, entryId: string) {
     const visited = new Set<string>()
     const cssIds = new Set<string>()
@@ -1676,6 +1685,9 @@ export function vitePluginRscCss(
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
           if (isCSSRequest(next.id)) {
+            if (hasSpecialCssQuery(next.id)) {
+              continue
+            }
             cssIds.add(next.id)
           } else {
             recurse(next.id)
