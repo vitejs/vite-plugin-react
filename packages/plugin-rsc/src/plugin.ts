@@ -916,13 +916,14 @@ function scanBuildStripPlugin(): Plugin {
 
       // bail out if import.meta.glob
       // https://github.com/vitejs/rolldown-vite/issues/373
-      if (importGlobRE.test(code)) return code
+      if (importGlobRE.test(code)) return
 
       const [imports] = esModuleLexer.parse(code)
-      const output = imports
+      let output = imports
         .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)
         .filter(Boolean)
         .join('')
+      output += 'module.exports = {};\n'
       return { code: output, map: { mappings: '' } }
     },
   }

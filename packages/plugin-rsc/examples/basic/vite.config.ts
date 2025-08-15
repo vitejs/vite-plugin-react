@@ -182,7 +182,10 @@ function testScanPlugin(): Plugin[] {
 
           // but make sure it's not due to import.meta.glob
           // https://github.com/vitejs/rolldown-vite/issues/373
-          // TODO: assert
+          assert.equal(
+            diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
+            undefined,
+          )
         },
       },
     },
