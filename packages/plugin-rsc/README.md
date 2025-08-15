@@ -196,19 +196,19 @@ export async function handleSsr(rscStream: ReadableStream) {
 - [`entry.browser.tsx`](./examples/starter/src/framework/entry.browser.tsx)
 
 ```tsx
-import * as ReactClient from "@vitejs/plugin-rsc/browser"; // re-export of react-server-dom/client.browser
-import * as ReactDOMClient from "react-dom/client";
+import * as ReactClient from '@vitejs/plugin-rsc/browser' // re-export of react-server-dom/client.browser
+import * as ReactDOMClient from 'react-dom/client'
 
 async function main() {
   // fetch and deserialize RSC stream back to React VDOM
-  const rscResponse = await fetch(window.location.href + ".rsc);
-  const root = await ReactClient.createFromReadableStream(rscResponse.body);
+  const rscResponse = await fetch(window.location.href + '.rsc')
+  const root = await ReactClient.createFromReadableStream(rscResponse.body)
 
   // hydration (traditional CSR)
-  ReactDOMClient.hydrateRoot(document, root);
+  ReactDOMClient.hydrateRoot(document, root)
 }
 
-main();
+main()
 ```
 
 ## Environment helper API
