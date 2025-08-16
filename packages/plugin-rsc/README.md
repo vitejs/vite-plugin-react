@@ -477,7 +477,7 @@ export function Page() {
 
 ## Canary and Experimental channel releases
 
-See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for [React canary or experimental channel](https://react.dev/community/versioning-policy#all-release-channels) usages.
+See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
 
 ## Credits
 
