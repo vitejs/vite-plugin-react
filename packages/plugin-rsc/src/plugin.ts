@@ -40,6 +40,7 @@ import {
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { evalValue, parseIdQuery } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
+import { transformScanBuildStrip } from './plugins/scan'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
@@ -901,19 +902,16 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
   ]
 }
 
+// During scan build, we strip all code but imports to
+// traverse module graph faster and just discover client/server references.
 function scanBuildStripPlugin(): Plugin {
   return {
     name: 'rsc:scan-strip',
     apply: 'build',
     enforce: 'post',
-    transform(code, _id, _options) {
+    async transform(code, _id, _options) {
       if (!isScanBuild) return
-      // During server scan, we strip all code but imports to only discover client/server references.
-      const [imports] = esModuleLexer.parse(code)
-      const output = imports
-        .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)
-        .filter(Boolean)
-        .join('')
+      const output = await transformScanBuildStrip(code)
       return { code: output, map: { mappings: '' } }
     },
   }
