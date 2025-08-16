@@ -909,13 +909,10 @@ function scanBuildStripPlugin(): Plugin {
     name: 'rsc:scan-strip',
     apply: 'build',
     enforce: 'post',
-    transform(code, _id, _options) {
+    async transform(code, _id, _options) {
       if (!isScanBuild) return
-
-      const output = transformScanBuildStrip(code)
-      if (output) {
-        return { code: output, map: { mappings: '' } }
-      }
+      const output = await transformScanBuildStrip(code)
+      return { code: output, map: { mappings: '' } }
     },
   }
 }
