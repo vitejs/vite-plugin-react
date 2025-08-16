@@ -436,6 +436,14 @@ importers:
         specifier: ../../dist
         version: link:../../dist
 
+  packages/plugin-react/tests/fixtures/tsconfig:
+    devDependencies:
+      '@vitejs/test-lib':
+        specifier: link:./test-lib
+        version: link:test-lib
+
+  packages/plugin-react/tests/fixtures/tsconfig/test-lib: {}
+
   packages/plugin-rsc:
     dependencies:
       '@remix-run/node-fetch-server':
@@ -1036,6 +1044,28 @@ importers:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
     devDependencies:
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+
+  playground/tsconfig:
+    dependencies:
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.1.9)(react@19.1.1)
+      react:
+        specifier: ^19.1.1
+        version: 19.1.1
+      react-dom:
+        specifier: ^19.1.1
+        version: 19.1.1(react@19.1.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.9
+        version: 19.1.9
+      '@types/react-dom':
+        specifier: ^19.1.7
+        version: 19.1.7(@types/react@19.1.9)
       '@vitejs/plugin-react':
         specifier: workspace:*
         version: link:../../packages/plugin-react
