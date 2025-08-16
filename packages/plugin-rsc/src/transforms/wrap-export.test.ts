@@ -227,7 +227,6 @@ export const a = 0;
 export const b = function() {}
 export const c = () => {}
 export default function d() {}
-export default () => {}
 `
     const result = await testTransform(input, {
       filter: (_name, meta) => !!(meta.isFunction && meta.declName),
@@ -238,7 +237,6 @@ export default () => {}
       let b = function() {}
       let c = () => {}
       function d() {}
-      const $$default = () => {}
       export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
       export { b };
@@ -247,6 +245,21 @@ export default () => {}
       ;
       const $$wrap_d = /* #__PURE__ */ $$wrap(d, "<id>", "default");
       export { $$wrap_d as default };
+      "
+    `)
+  })
+
+  test('filter meta 2', async () => {
+    const input = `
+export default () => {}
+`
+    const result = await testTransform(input, {
+      filter: (_name, meta) => !!(meta.isFunction && meta.declName),
+    })
+    expect(result).toMatchInlineSnapshot(`
+      "
+      const $$default = () => {}
+      ;
       export { $$default as default };
       "
     `)
