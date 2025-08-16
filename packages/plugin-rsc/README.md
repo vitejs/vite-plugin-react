@@ -4,7 +4,7 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Features
 
-- **Framework-agnostic**: The plugin implements [RSC bundler features](https://react.dev/reference/rsc/server-components) and provides low level `react-server-dom` runtime API without framework-specific abstractions.
+- **Framework-agnostic**: The plugin implements [RSC bundler features](https://react.dev/reference/rsc/server-components) and provides low level RSC runtime (`react-server-dom`) API without framework-specific abstractions.
 - **Runtime-agnostic**: Built on [Vite environment API](https://vite.dev/guide/api-environment.html) and works with other runtimes (e.g., [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare)).
 - **HMR support**: Enables editing both client and server components without full page reloads.
 - **CSS support**: CSS is automatically code-split both at client and server components and they are injected upon rendering.
