@@ -152,7 +152,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           return {
             oxc: {
               jsx: {
-                runtime: 'automatic',
                 importSource: opts.jsxImportSource,
                 refresh: command === 'serve',
               },
