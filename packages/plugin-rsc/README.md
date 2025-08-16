@@ -302,7 +302,7 @@ export function Page(props) {
   return <div>...</div>
 }
 
-// my-route.css?vite-rsc-css-export=Page
+// my-route.tsx?vite-rsc-css-export=Page
 function Page(props) {
   return <div>...</div>
 }
@@ -326,7 +326,6 @@ export { __Page as Page }
 This provides a raw js code to execute a browser entry file specified by `environments.client.build.rollupOptions.input.index`. This is intended to be used with React DOM SSR API, such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream)
 
 ```js
-import bootstrapScriptContent from 'virtual:vite-rsc/bootstrap-script-content'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 const bootstrapScriptContent =
