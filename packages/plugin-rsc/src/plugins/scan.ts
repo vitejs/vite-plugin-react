@@ -29,7 +29,8 @@ export async function transformScanBuildStrip(code: string): Promise<string> {
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'glob'
         ) {
-          output += code.slice(node.start, node.end) + '\n'
+          const importMetaGlob = code.slice(node.start, node.end)
+          output += `console.log(${importMetaGlob});\n`
         }
       },
     })

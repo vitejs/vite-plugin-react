@@ -16,9 +16,9 @@ export default "foo";
     expect(await transformScanBuildStrip(input)).toMatchInlineSnapshot(`
       "import "a";
       import "b";
-      import.meta.glob("d", {
+      console.log(import.meta.glob("d", {
         query: "?e",
-      })
+      }));
       "
     `)
   })
