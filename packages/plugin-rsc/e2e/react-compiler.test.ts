@@ -3,6 +3,17 @@ import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
 
+// perEnvironmentPlugin("react-compiler", (e) => {
+//   if (e.name === 'client') {
+//     return babel({
+//       filter: /\.[jt]sx?$/,
+//       babelConfig: {
+//         plugins: ['babel-plugin-react-compiler']
+//       }
+//     })
+//   }
+// }),
+
 test.describe(() => {
   const root = 'examples/e2e/temp/react-compiler'
 
