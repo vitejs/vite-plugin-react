@@ -1,6 +1,9 @@
-import * as ReactClient from '@vitejs/plugin-rsc/browser'
+import {
+  createFromFetch,
+  createFromReadableStream,
+} from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import ReactDomClient from 'react-dom/client'
+import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import { RSC_POSTFIX, type RscPayload } from './shared'
 
@@ -8,12 +11,11 @@ async function hydrate(): Promise<void> {
   async function onNavigation() {
     const url = new URL(window.location.href)
     url.pathname = url.pathname + RSC_POSTFIX
-    const payload = await ReactClient.createFromFetch<RscPayload>(fetch(url))
+    const payload = await createFromFetch<RscPayload>(fetch(url))
     setPayload(payload)
   }
 
-  const initialPayload =
-    await ReactClient.createFromReadableStream<RscPayload>(rscStream)
+  const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
 
   let setPayload: (v: RscPayload) => void
 
@@ -37,7 +39,7 @@ async function hydrate(): Promise<void> {
     </React.StrictMode>
   )
 
-  ReactDomClient.hydrateRoot(document, browserRoot)
+  hydrateRoot(document, browserRoot)
 
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
