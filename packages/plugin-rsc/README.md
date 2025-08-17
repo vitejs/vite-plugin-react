@@ -131,7 +131,7 @@ export default defineConfig({
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
 
 ```tsx
-import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
@@ -173,7 +173,7 @@ export default async function handler(request: Request): Promise<Response> {
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
 
 ```tsx
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr' // re-export of react-server-dom/client.edge
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 export async function handleSsr(rscStream: ReadableStream) {
@@ -196,7 +196,7 @@ export async function handleSsr(rscStream: ReadableStream) {
 - [`entry.browser.tsx`](./examples/starter/src/framework/entry.browser.tsx)
 
 ```tsx
-import { createFromReadableStream } from '@vitejs/plugin-rsc/browser' // re-export of react-server-dom/client.browser
+import { createFromReadableStream } from '@vitejs/plugin-rsc/browser'
 import { hydrateRoot } from 'react-dom/client'
 
 async function main() {

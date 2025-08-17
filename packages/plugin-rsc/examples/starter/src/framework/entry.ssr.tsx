@@ -1,4 +1,4 @@
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr' // RSC API
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
