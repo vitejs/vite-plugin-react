@@ -131,7 +131,7 @@ export default defineConfig({
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
 
 ```tsx
-import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
@@ -143,7 +143,7 @@ export default async function handler(request: Request): Promise<Response> {
       </body>
     </html>
   )
-  const rscStream = ReactServer.renderToReadableStream(root)
+  const rscStream = renderToReadableStream(root)
 
   // respond direct RSC stream request based on framework's convention
   if (request.url.endsWith('.rsc')) {
@@ -173,19 +173,19 @@ export default async function handler(request: Request): Promise<Response> {
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
 
 ```tsx
-import * as ReactClient from '@vitejs/plugin-rsc/ssr' // re-export of react-server-dom/client.edge
-import * as ReactDOMServer from 'react-dom/server.edge'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr' // re-export of react-server-dom/client.edge
+import { renderToReadableStream } from 'react-dom/server.edge'
 
 export async function handleSsr(rscStream: ReadableStream) {
   // deserialize RSC stream back to React VDOM
-  const root = await ReactClient.createFromReadableStream(rscStream)
+  const root = await createFromReadableStream(rscStream)
 
   // helper API to allow referencing browser entry content from SSR environment
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
   // render html (traditional SSR)
-  const htmlStream = ReactDOMServer.renderToReadableStream(root, {
+  const htmlStream = renderToReadableStream(root, {
     bootstrapScriptContent,
   })
 
@@ -196,16 +196,16 @@ export async function handleSsr(rscStream: ReadableStream) {
 - [`entry.browser.tsx`](./examples/starter/src/framework/entry.browser.tsx)
 
 ```tsx
-import * as ReactClient from '@vitejs/plugin-rsc/browser' // re-export of react-server-dom/client.browser
-import * as ReactDOMClient from 'react-dom/client'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/browser' // re-export of react-server-dom/client.browser
+import { hydrateRoot } from 'react-dom/client'
 
 async function main() {
   // fetch and deserialize RSC stream back to React VDOM
   const rscResponse = await fetch(window.location.href + '.rsc')
-  const root = await ReactClient.createFromReadableStream(rscResponse.body)
+  const root = await createFromReadableStream(rscResponse.body)
 
   // hydration (traditional CSR)
-  ReactDOMClient.hydrateRoot(document, root)
+  hydrateRoot(document, root)
 }
 
 main()
@@ -342,13 +342,11 @@ const htmlStream = await renderToReadableStream(reactNode, {
 This event is fired when server modules are updated, which can be used to trigger re-fetching and re-rendering of RSC components on browser.
 
 ```js
-import * as ReactClient from '@vitejs/plugin-rsc/browser'
+import { createFromFetch } from '@vitejs/plugin-rsc/browser'
 
 import.meta.hot.on('rsc:update', async () => {
   // re-fetch RSC stream
-  const rscPayload = await ReactClient.createFromFetch(
-    fetch(window.location.href + '.rsc'),
-  )
+  const rscPayload = await createFromFetch(fetch(window.location.href + '.rsc'))
   // re-render ...
 })
 ```

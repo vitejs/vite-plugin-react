@@ -1,13 +1,19 @@
 import * as React from 'react'
-import * as ReactDOMClient from 'react-dom/client'
-import * as ReactClient from '@vitejs/plugin-rsc/react/browser'
+import { createRoot } from 'react-dom/client'
+import {
+  createFromFetch,
+  setRequireModule,
+  setServerCallback,
+  createTemporaryReferenceSet,
+  encodeReply,
+} from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './entry.rsc'
 
 let fetchServer: typeof import('./entry.rsc').fetchServer
 
 export function initialize(options: { fetchServer: typeof fetchServer }) {
   fetchServer = options.fetchServer
-  ReactClient.setRequireModule({
+  setRequireModule({
     load: (id) => import(/* @vite-ignore */ id),
   })
 }
@@ -15,7 +21,7 @@ export function initialize(options: { fetchServer: typeof fetchServer }) {
 export async function main() {
   let setPayload: (v: RscPayload) => void
 
-  const initialPayload = await ReactClient.createFromFetch<RscPayload>(
+  const initialPayload = await createFromFetch<RscPayload>(
     fetchServer(new Request(window.location.href)),
   )
 
@@ -29,14 +35,14 @@ export async function main() {
     return payload.root
   }
 
-  ReactClient.setServerCallback(async (id, args) => {
+  setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
-    const temporaryReferences = ReactClient.createTemporaryReferenceSet()
-    const payload = await ReactClient.createFromFetch<RscPayload>(
+    const temporaryReferences = createTemporaryReferenceSet()
+    const payload = await createFromFetch<RscPayload>(
       fetchServer(
         new Request(url, {
           method: 'POST',
-          body: await ReactClient.encodeReply(args, { temporaryReferences }),
+          body: await encodeReply(args, { temporaryReferences }),
           headers: {
             'x-rsc-action': id,
           },
@@ -53,5 +59,5 @@ export async function main() {
       <BrowserRoot />
     </React.StrictMode>
   )
-  ReactDOMClient.createRoot(document.body).render(browserRoot)
+  createRoot(document.body).render(browserRoot)
 }

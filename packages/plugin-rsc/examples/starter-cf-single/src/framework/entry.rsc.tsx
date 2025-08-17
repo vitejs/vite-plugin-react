@@ -1,4 +1,11 @@
-import * as ReactServer from '@vitejs/plugin-rsc/rsc'
+import {
+  renderToReadableStream,
+  createTemporaryReferenceSet,
+  decodeReply,
+  loadServerAction,
+  decodeAction,
+  decodeFormState,
+} from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 
@@ -22,18 +29,18 @@ async function handler(request: Request): Promise<Response> {
       const body = contentType?.startsWith('multipart/form-data')
         ? await request.formData()
         : await request.text()
-      temporaryReferences = ReactServer.createTemporaryReferenceSet()
-      const args = await ReactServer.decodeReply(body, { temporaryReferences })
-      const action = await ReactServer.loadServerAction(actionId)
+      temporaryReferences = createTemporaryReferenceSet()
+      const args = await decodeReply(body, { temporaryReferences })
+      const action = await loadServerAction(actionId)
       returnValue = await action.apply(null, args)
     } else {
       // otherwise server function is called via `<form action={...}>`
       // before hydration (e.g. when javascript is disabled).
       // aka progressive enhancement.
       const formData = await request.formData()
-      const decodedAction = await ReactServer.decodeAction(formData)
+      const decodedAction = await decodeAction(formData)
       const result = await decodedAction()
-      formState = await ReactServer.decodeFormState(result, formData)
+      formState = await decodeFormState(result, formData)
     }
   }
 
@@ -43,10 +50,7 @@ async function handler(request: Request): Promise<Response> {
   // to achieve single round trip to mutate and fetch from server.
   const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
   const rscOptions = { temporaryReferences }
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>(
-    rscPayload,
-    rscOptions,
-  )
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
   // respond RSC stream without HTML rendering based on framework's convention.
   // here we use request header `content-type`.
