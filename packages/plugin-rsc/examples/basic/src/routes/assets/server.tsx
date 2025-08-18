@@ -7,8 +7,11 @@ export function TestAssetsServer() {
     <>
       <div>
         <span>test-assets-server</span>
-        <img src={viteLogo} className="size-10" data-testid="js-import" />
-        <span className="test-css-url size-10" data-testid="css-url" />
+        <img src={viteLogo} data-testid="test-assets-server-js" />
+        <span
+          className="test-assets-server-css"
+          data-testid="test-assets-server-css"
+        />
       </div>
       {/* <TestAssetsClient /> */}
     </>
