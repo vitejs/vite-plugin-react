@@ -253,7 +253,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           reactCompilerPlugin = undefined
         }
 
-        // filter by "use memo" on annotation mode
+        // filter by "use memo" when react-compiler { compilationMode: "annotation" }
         // https://react.dev/learn/react-compiler/incremental-adoption#annotation-mode-configuration
         if (
           Array.isArray(reactCompilerPlugin) &&
