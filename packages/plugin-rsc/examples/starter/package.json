@@ -19,7 +19,6 @@
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "^7.1.1",
-    "vite-plugin-inspect": "^11.3.2"
+    "vite": "^7.1.1"
   }
 }
