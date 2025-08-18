@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix: Respect tsconfig `jsxImportSource` by default ([#726](https://github.com/vitejs/vite-plugin-react/pull/726))
+
+The plugin now respects the `jsxImportSource` option from tsconfig by default, instead of always overriding it. This allows users to configure custom JSX runtimes (like `@emotion/react`) in their tsconfig without needing to duplicate the configuration in the Vite plugin options.
+
 ### Fix `reactRefreshHost` option on rolldown-vite ([#716](https://github.com/vitejs/vite-plugin-react/pull/716))
 
 ### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
