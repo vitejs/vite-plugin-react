@@ -3,7 +3,7 @@ import rsc from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 import { reactRouter } from '../react-router-vite/plugin'
 
 export default defineConfig({
@@ -12,6 +12,7 @@ export default defineConfig({
     minify: false,
   },
   plugins: [
+    // inspect(),
     tailwindcss(),
     react(),
     reactRouter(),
@@ -21,7 +22,6 @@ export default defineConfig({
       },
       serverHandler: false,
     }),
-    inspect(),
     cloudflare({
       configPath: './cf/wrangler.ssr.jsonc',
       viteEnvironment: {
