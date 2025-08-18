@@ -1,4 +1,4 @@
-import * as ReactServer from '@vitejs/plugin-rsc/rsc'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 import { Root, getStaticPaths } from '../root'
 import { RSC_POSTFIX, type RscPayload } from './shared'
 
@@ -13,7 +13,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const rscPayload: RscPayload = { root: <Root url={url} /> }
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>(rscPayload)
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload)
 
   if (isRscRequest) {
     return new Response(rscStream, {
@@ -44,7 +44,7 @@ export async function handleSsg(request: Request): Promise<{
 }> {
   const url = new URL(request.url)
   const rscPayload: RscPayload = { root: <Root url={url} /> }
-  const rscStream = ReactServer.renderToReadableStream<RscPayload>(rscPayload)
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload)
   const [rscStream1, rscStream2] = rscStream.tee()
 
   const ssr = await import.meta.viteRsc.loadModule<

@@ -1,4 +1,11 @@
-import * as ReactRsc from '@vitejs/plugin-rsc/rsc'
+import {
+  createClientTemporaryReferenceSet,
+  encodeReply,
+  createTemporaryReferenceSet,
+  decodeReply,
+  renderToReadableStream,
+  createFromReadableStream,
+} from '@vitejs/plugin-rsc/rsc'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435
@@ -28,9 +35,8 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     // those arguments to be included as a cache key and it doesn't achieve
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
-    const clientTemporaryReferences =
-      ReactRsc.createClientTemporaryReferenceSet()
-    const encodedArguments = await ReactRsc.encodeReply(args, {
+    const clientTemporaryReferences = createClientTemporaryReferenceSet()
+    const encodedArguments = await encodeReply(args, {
       temporaryReferences: clientTemporaryReferences,
     })
     const serializedCacheKey = await replyToCacheKey(encodedArguments)
@@ -38,8 +44,8 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     // cache `fn` result as stream
     // (cache value is promise so that it dedupes concurrent async calls)
     const entryPromise = (cacheEntries[serializedCacheKey] ??= (async () => {
-      const temporaryReferences = ReactRsc.createTemporaryReferenceSet()
-      const decodedArgs = await ReactRsc.decodeReply(encodedArguments, {
+      const temporaryReferences = createTemporaryReferenceSet()
+      const decodedArgs = await decodeReply(encodedArguments, {
         temporaryReferences,
       })
 
@@ -47,7 +53,7 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
       const result = await fn(...decodedArgs)
 
       // serialize result to a ReadableStream
-      const stream = ReactRsc.renderToReadableStream(result, {
+      const stream = renderToReadableStream(result, {
         environmentName: 'Cache',
         temporaryReferences,
       })
@@ -56,7 +62,7 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
 
     // deserialized cached stream
     const stream = (await entryPromise).get()
-    const result = ReactRsc.createFromReadableStream(stream, {
+    const result = createFromReadableStream(stream, {
       environmentName: 'Cache',
       replayConsoleLogs: true,
       temporaryReferences: clientTemporaryReferences,
