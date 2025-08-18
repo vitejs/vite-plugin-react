@@ -9,7 +9,7 @@ export function TestAssetsServer() {
         <span>test-assets-server</span>
         <img
           src={svg}
-          data-testid="test-assets-server-js"
+          data-testid="test-assets-server-import"
           width="20"
           height="20"
         />

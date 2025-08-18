@@ -1183,13 +1183,24 @@ function defineTest(f: Fixture) {
   test('assets', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    // await expect(page.getByAltText('Vite logo')).not.toHaveJSProperty(
-    //   'naturalWidth',
-    //   0,
-    // )
-    // await expect(page.getByAltText('React logo')).not.toHaveJSProperty(
-    //   'naturalWidth',
-    //   0,
-    // )
+    await expect(
+      page.getByTestId('test-assets-server-import'),
+    ).not.toHaveJSProperty('naturalWidth', 0)
+    await expect(
+      page.getByTestId('test-assets-client-import'),
+    ).not.toHaveJSProperty('naturalWidth', 0)
+
+    async function testBackgroundImage(selector: string) {
+      const url = await page
+        .locator(selector)
+        .evaluate((el) => getComputedStyle(el).backgroundImage)
+      expect(url).toMatch(/^url\(.*\)$/)
+      const response = await page.request.get(url.slice(5, -2))
+      expect(response.ok()).toBeTruthy()
+      expect(response.headers()['content-type']).toBe('image/svg+xml')
+    }
+
+    await testBackgroundImage('.test-assets-server-css')
+    await testBackgroundImage('.test-assets-client-css')
   })
 }
