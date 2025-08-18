@@ -1179,4 +1179,17 @@ function defineTest(f: Fixture) {
       await expect(page.locator(selector)).toHaveCSS('color', color)
     }
   })
+
+  test('assets', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    // await expect(page.getByAltText('Vite logo')).not.toHaveJSProperty(
+    //   'naturalWidth',
+    //   0,
+    // )
+    // await expect(page.getByAltText('React logo')).not.toHaveJSProperty(
+    //   'naturalWidth',
+    //   0,
+    // )
+  })
 }
