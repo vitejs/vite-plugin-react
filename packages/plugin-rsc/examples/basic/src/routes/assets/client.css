@@ -1,0 +1,6 @@
+.test-assets-client-css {
+  background: url(./client-css.svg) no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+}
