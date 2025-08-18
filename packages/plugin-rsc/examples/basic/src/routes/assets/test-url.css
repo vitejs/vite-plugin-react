@@ -1,0 +1,4 @@
+.test-css-url {
+  background: url(./react.svg) no-repeat;
+  background-size: contain;
+}
