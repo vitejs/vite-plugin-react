@@ -159,7 +159,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               jsxRefreshInclude: include,
               jsxRefreshExclude: exclude,
             },
-            optimizeDeps: { rollupOptions: { jsx: { mode: 'automatic' } } },
+            optimizeDeps: {
+              rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+            },
           }
         }
       }
