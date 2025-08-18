@@ -1,6 +1,6 @@
 import { TestAssetsClient } from './client'
 import './server.css'
-import svg from './server.svg'
+import svg from './server.svg?no-inline'
 
 export function TestAssetsServer() {
   return (

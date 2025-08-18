@@ -1,7 +1,7 @@
 'use client'
 
 import './client.css'
-import svg from './client.svg'
+import svg from './client.svg?no-inline'
 
 export function TestAssetsClient() {
   return (
