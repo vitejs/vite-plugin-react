@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/test-react-tsconfig",
+  "name": "@vitejs/test-react-tsconfig-jsx-preserve",
   "private": true,
   "type": "module",
   "scripts": {
