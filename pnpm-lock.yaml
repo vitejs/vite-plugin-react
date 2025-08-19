@@ -1034,28 +1034,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
 
-  playground/tsconfig:
-    dependencies:
-      '@emotion/react':
-        specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.1.10)(react@19.1.1)
-      react:
-        specifier: ^19.1.1
-        version: 19.1.1
-      react-dom:
-        specifier: ^19.1.1
-        version: 19.1.1(react@19.1.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.1.9
-        version: 19.1.10
-      '@types/react-dom':
-        specifier: ^19.1.7
-        version: 19.1.7(@types/react@19.1.10)
-      '@vitejs/plugin-react':
-        specifier: workspace:*
-        version: link:../../packages/plugin-react
-
   playground/tsconfig-jsx-preserve:
     dependencies:
       react:
