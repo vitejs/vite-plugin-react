@@ -710,6 +710,7 @@ export default function vitePluginRsc(
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
+          const rscCssFiles: string[] = []
           for (const asset of Object.values(rscBundle)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
@@ -718,16 +719,39 @@ export default function vitePluginRsc(
                 fileName: asset.fileName,
                 source: asset.source,
               })
+              if (asset.fileName.endsWith('.css')) {
+                rscCssFiles.push(asset.fileName)
+              }
             }
           }
 
           const serverResources: Record<string, AssetDeps> = {}
           const rscAssetDeps = collectAssetDeps(rscBundle)
+          const usedRscCssFiles: string[] = []
           for (const [id, meta] of Object.entries(serverResourcesMetaMap)) {
+            const css = rscAssetDeps[id]?.deps.css ?? []
             serverResources[meta.key] = assetsURLOfDeps({
               js: [],
-              css: rscAssetDeps[id]?.deps.css ?? [],
+              css,
             })
+            usedRscCssFiles.push(...css)
+          }
+
+          // warn if css files are not associated with server components
+          // TODO: but this is technically fine when using explicit `?raw/inline/url` query import
+          // to render css manually.
+          const unusedRscCssFiles = rscCssFiles.filter(
+            (f) => !usedRscCssFiles.includes(f),
+          )
+          if (unusedRscCssFiles.length > 0) {
+            const files = [...new Set(unusedRscCssFiles)].join(', ')
+            this.warn(
+              `\
+The following CSS files in 'rsc' environment are not rendered by any server components:
+- ${files}
+See https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc#css-support
+`,
+            )
           }
 
           const assetDeps = collectAssetDeps(bundle)
