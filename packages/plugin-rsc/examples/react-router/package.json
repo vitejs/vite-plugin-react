@@ -18,17 +18,16 @@
     "react-router": "7.7.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.11.2",
+    "@cloudflare/vite-plugin": "^1.11.5",
     "@react-router/dev": "7.7.0",
     "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.1.11",
-    "@types/react": "^19.1.9",
+    "@tailwindcss/vite": "^4.1.12",
+    "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "tailwindcss": "^4.1.11",
-    "vite": "^7.1.1",
-    "vite-plugin-inspect": "^11.3.2",
-    "wrangler": "^4.28.1"
+    "tailwindcss": "^4.1.12",
+    "vite": "^7.1.2",
+    "wrangler": "^4.30.0"
   }
 }

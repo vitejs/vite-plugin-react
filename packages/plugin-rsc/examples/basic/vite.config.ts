@@ -3,12 +3,13 @@ import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
 export default defineConfig({
   clearScreen: false,
   plugins: [
+    // inspect(),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
@@ -23,8 +24,6 @@ export default defineConfig({
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
     }),
-    // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
-    !process.env.ECOSYSTEM_CI && inspect(),
     {
       name: 'test-client-reference-tree-shaking',
       enforce: 'post',
