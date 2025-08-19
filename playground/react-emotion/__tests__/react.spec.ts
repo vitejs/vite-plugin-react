@@ -14,12 +14,12 @@ test('should update', async () => {
 })
 
 test.runIf(isServe)('should hmr', async () => {
-  editFile('App.jsx', (code) =>
+  editFile('src/App.tsx', (code) =>
     code.replace('Vite + React + @emotion/react', 'Updated'),
   )
   await expect.poll(() => page.textContent('h1')).toMatch('Hello Updated')
 
-  editFile('Counter.jsx', (code) =>
+  editFile('src/Counter.tsx', (code) =>
     code.replace('color: #646cff;', 'color: #d26ac2;'),
   )
 
@@ -43,7 +43,7 @@ test('should update button style', async () => {
   expect(await getButtonBorderStyle()).toMatch('2px solid rgb(0, 0, 0)')
 
   if (isServe) {
-    editFile('Counter.jsx', (code) =>
+    editFile('src/Counter.tsx', (code) =>
       code.replace('border: 2px solid #000', 'border: 4px solid red'),
     )
 

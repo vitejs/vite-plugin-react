@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Perf: skip `babel-plugin-react-compiler` if code has no `"use memo"` when `{ compilationMode: "annotation" }` ([#734](https://github.com/vitejs/vite-plugin-react/pull/734))
+
+### Respect tsconfig `jsxImportSource` ([#726](https://github.com/vitejs/vite-plugin-react/pull/726))
+
 ### Fix `reactRefreshHost` option on rolldown-vite ([#716](https://github.com/vitejs/vite-plugin-react/pull/716))
 
 ### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
