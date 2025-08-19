@@ -153,7 +153,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             oxc: {
               jsx: {
                 runtime: 'automatic',
-                importSource: jsxImportSource,
+                importSource: opts.jsxImportSource,
                 refresh: command === 'serve',
               },
               jsxRefreshInclude: include,
@@ -174,7 +174,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         return {
           esbuild: {
             jsx: 'automatic',
-            jsxImportSource: jsxImportSource,
+            // keep undefined by default so that vite's esbuild transform can prioritize jsxImportSource from tsconfig
+            jsxImportSource: opts.jsxImportSource,
           },
           optimizeDeps: { esbuildOptions: { jsx: 'automatic' } },
         }

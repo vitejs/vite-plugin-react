@@ -38,7 +38,7 @@ export default defineConfig({
 
 ### jsxImportSource
 
-Control where the JSX factory is imported from. Default to `'react'`
+Control where the JSX factory is imported from. By default, this is inferred from `jsxImportSource` from corresponding a tsconfig file for a transformed file.
 
 ```js
 react({ jsxImportSource: '@emotion/react' })
