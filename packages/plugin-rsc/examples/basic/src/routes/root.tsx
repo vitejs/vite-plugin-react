@@ -37,6 +37,7 @@ import { TestHmrSharedClient } from './hmr-shared/client'
 import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
 import { TestCssQueries } from './css-queries/server'
 import { TestImportMetaGlob } from './import-meta-glob/server'
+import { TestAssetsServer } from './assets/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -87,6 +88,7 @@ export function Root(props: { url: URL }) {
         <TestReactCache url={props.url} />
         <TestCssQueries />
         <TestImportMetaGlob />
+        <TestAssetsServer />
       </body>
     </html>
   )
