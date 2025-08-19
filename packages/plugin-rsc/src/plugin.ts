@@ -976,6 +976,9 @@ function vitePluginUseClient(
 
   const debug = createDebug('vite-rsc:use-client')
 
+  const optimizerPluginEsbuild = {}
+  const optimizerPluginRolldown = {}
+
   return [
     {
       name: 'rsc:use-client',
