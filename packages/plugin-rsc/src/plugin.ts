@@ -979,6 +979,42 @@ function vitePluginUseClient(
   return [
     {
       name: 'rsc:use-client',
+      config() {
+        return {
+          environments: {
+            client: {
+              optimizeDeps: {
+                // TODO: rolldown
+                esbuildOptions: {
+                  plugins: [
+                    {
+                      name: 'custom-metafile',
+                      setup(build) {
+                        build.onEnd((result) => {
+                          // skip optimizer scan
+                          if (!result.metafile?.inputs) return
+
+                          const optimizedFiles = Object.keys(
+                            result.metafile.inputs,
+                          )
+                          const metadata = { optimizedFiles }
+                          fs.writeFileSync(
+                            path.join(
+                              build.initialOptions.outdir!,
+                              '_metadata-vite-rsc.json',
+                            ),
+                            JSON.stringify(metadata, null, 2),
+                          )
+                        })
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        }
+      },
       async transform(code, id) {
         if (this.environment.name !== serverEnvironmentName) return
         if (!code.includes('use client')) return
