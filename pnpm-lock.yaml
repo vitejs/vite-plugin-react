@@ -983,6 +983,12 @@ importers:
       '@emotion/babel-plugin':
         specifier: ^11.13.5
         version: 11.13.5
+      '@types/react':
+        specifier: ^19.1.10
+        version: 19.1.10
+      '@types/react-dom':
+        specifier: ^19.1.7
+        version: 19.1.7(@types/react@19.1.10)
       '@vitejs/plugin-react':
         specifier: workspace:*
         version: link:../../packages/plugin-react
@@ -6479,7 +6485,7 @@ snapshots:
   '@types/styled-components@5.1.34':
     dependencies:
       '@types/hoist-non-react-statics': 3.3.6
-      '@types/react': 18.3.20
+      '@types/react': 19.1.10
       csstype: 3.1.3
 
   '@types/stylis@4.2.5': {}
