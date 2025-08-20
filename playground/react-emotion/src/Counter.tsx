@@ -14,6 +14,7 @@ export function Counter() {
     <button
       css={css`
         border: 2px solid #000;
+        background: orange;
       `}
       onClick={() => setCount((count) => count + 1)}
     >

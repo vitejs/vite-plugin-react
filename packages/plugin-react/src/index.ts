@@ -102,6 +102,7 @@ export type ViteReactPluginApi = {
 const defaultIncludeRE = /\.[tj]sx?$/
 const defaultExcludeRE = /\/node_modules\//
 const tsRE = /\.tsx?$/
+const compilerAnnotationRE = /['"]use memo['"]/
 
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
@@ -153,13 +154,15 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             oxc: {
               jsx: {
                 runtime: 'automatic',
-                importSource: jsxImportSource,
+                importSource: opts.jsxImportSource,
                 refresh: command === 'serve',
               },
               jsxRefreshInclude: include,
               jsxRefreshExclude: exclude,
             },
-            optimizeDeps: { rollupOptions: { jsx: { mode: 'automatic' } } },
+            optimizeDeps: {
+              rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+            },
           }
         }
       }
@@ -174,7 +177,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         return {
           esbuild: {
             jsx: 'automatic',
-            jsxImportSource: jsxImportSource,
+            // keep undefined by default so that vite's esbuild transform can prioritize jsxImportSource from tsconfig
+            jsxImportSource: opts.jsxImportSource,
           },
           optimizeDeps: { esbuildOptions: { jsx: 'automatic' } },
         }
@@ -246,11 +250,21 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         const plugins = [...babelOptions.plugins]
 
         // remove react-compiler plugin on non client environment
-        if (ssr) {
-          const reactCompilerPlugin = getReactCompilerPlugin(plugins)
-          if (reactCompilerPlugin) {
-            plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
-          }
+        let reactCompilerPlugin = getReactCompilerPlugin(plugins)
+        if (reactCompilerPlugin && ssr) {
+          plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          reactCompilerPlugin = undefined
+        }
+
+        // filter by "use memo" when react-compiler { compilationMode: "annotation" }
+        // https://react.dev/learn/react-compiler/incremental-adoption#annotation-mode-configuration
+        if (
+          Array.isArray(reactCompilerPlugin) &&
+          reactCompilerPlugin[1]?.compilationMode === 'annotation' &&
+          !compilerAnnotationRE.test(code)
+        ) {
+          plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          reactCompilerPlugin = undefined
         }
 
         const isJSX = filepath.endsWith('x')
@@ -304,10 +318,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           // Required for esbuild.jsxDev to provide correct line numbers
           // This creates issues the react compiler because the re-order is too important
           // People should use @babel/plugin-transform-react-jsx-development to get back good line numbers
-          retainLines:
-            getReactCompilerPlugin(plugins) != null
-              ? false
-              : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
+          retainLines: reactCompilerPlugin
+            ? false
+            : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
           parserOpts: {
             ...babelOptions.parserOpts,
             sourceType: 'module',

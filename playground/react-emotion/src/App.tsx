@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import _Switch from 'react-switch'
-import { Counter, StyledCode } from './Counter'
-const Switch = _Switch.default || _Switch
+import { Counter, StyledCode } from './Counter.tsx'
+
+const Switch = (_Switch as any).default || _Switch
 
 function FragmentTest() {
   const [checked, setChecked] = useState(false)
