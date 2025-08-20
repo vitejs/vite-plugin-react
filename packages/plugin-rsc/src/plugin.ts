@@ -1006,8 +1006,22 @@ function vitePluginUseClient(
       },
     }
   }
-  // TODO: port to rolldown
-  // const optimizerPluginRolldown = {}
+  function optimizerPluginRolldown(): Rollup.Plugin {
+    return {
+      name: 'vite-rsc-metafile',
+      writeBundle(options) {
+        assert(options.dir)
+        const optimizedFiles = [...this.getModuleIds()].map((id) =>
+          path.relative(process.cwd(), id),
+        )
+        optimizerMetadata = { optimizedFiles }
+        fs.writeFileSync(
+          path.join(options.dir!, EXTRA_OPTIMIZER_METADATA_FILE),
+          JSON.stringify(optimizerMetadata, null, 2),
+        )
+      },
+    }
+  }
 
   return [
     {
@@ -1016,11 +1030,18 @@ function vitePluginUseClient(
         return {
           environments: {
             client: {
-              optimizeDeps: {
-                esbuildOptions: {
-                  plugins: [optimizerPluginEsbuild()],
-                },
-              },
+              optimizeDeps:
+                'rolldownVersion' in this.meta
+                  ? ({
+                      rolldownOptions: {
+                        plugins: [optimizerPluginRolldown()],
+                      },
+                    } as any)
+                  : {
+                      esbuildOptions: {
+                        plugins: [optimizerPluginEsbuild()],
+                      },
+                    },
             },
           },
         }
