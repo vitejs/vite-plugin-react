@@ -956,7 +956,7 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
-  let optimizerMetadata: ExtraOptimizerMetadata | undefined
+  let optimizerMetadata: CustomOptimizerMetadata | undefined
 
   // TODO: warning for late optimizer discovery
   function warnInoncistentClientOptimization(
@@ -966,7 +966,7 @@ function vitePluginUseClient(
     // path in metafile is relative to cwd
     // https://github.com/vitejs/vite/blob/dd96c2cd831ecba3874458b318ad4f0a7f173736/packages/vite/src/node/optimizer/index.ts#L644
     id = normalizePath(path.relative(process.cwd(), id))
-    if (optimizerMetadata?.optimizedFiles.includes(id)) {
+    if (optimizerMetadata?.ids.includes(id)) {
       ctx.warn(
         `client component dependency is inconsistently optimized. ` +
           `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
@@ -1160,7 +1160,7 @@ function vitePluginUseClient(
         }
       },
     },
-    ...extraOptimizerMetadataPlugin({
+    ...customOptimizerMetadataPlugin({
       setMetadata: (metadata) => {
         optimizerMetadata = metadata
       },
@@ -1168,16 +1168,16 @@ function vitePluginUseClient(
   ]
 }
 
-type ExtraOptimizerMetadata = {
-  optimizedFiles: string[]
+type CustomOptimizerMetadata = {
+  ids: string[]
 }
 
-function extraOptimizerMetadataPlugin({
+function customOptimizerMetadataPlugin({
   setMetadata,
 }: {
-  setMetadata: (metadata: ExtraOptimizerMetadata) => void
+  setMetadata: (metadata: CustomOptimizerMetadata) => void
 }): Plugin[] {
-  const EXTRA_OPTIMIZER_METADATA_FILE = '_metadata-rsc-extra.json'
+  const MEATADATA_FILE = '_metadata-rsc.json'
 
   type EsbuildPlugin = NonNullable<
     NonNullable<ResolvedConfig['optimizeDeps']['esbuildOptions']>['plugins']
@@ -1191,14 +1191,11 @@ function extraOptimizerMetadataPlugin({
           // skip scan
           if (!result.metafile?.inputs || !build.initialOptions.outdir) return
 
-          const optimizedFiles = Object.keys(result.metafile.inputs)
-          const optimizerMetadata = { optimizedFiles }
+          const ids = Object.keys(result.metafile.inputs)
+          const optimizerMetadata: CustomOptimizerMetadata = { ids }
           setMetadata(optimizerMetadata)
           fs.writeFileSync(
-            path.join(
-              build.initialOptions.outdir,
-              EXTRA_OPTIMIZER_METADATA_FILE,
-            ),
+            path.join(build.initialOptions.outdir, MEATADATA_FILE),
             JSON.stringify(optimizerMetadata, null, 2),
           )
         })
@@ -1211,13 +1208,13 @@ function extraOptimizerMetadataPlugin({
       name: 'vite-rsc-metafile',
       writeBundle(options) {
         assert(options.dir)
-        const optimizedFiles = [...this.getModuleIds()].map((id) =>
+        const ids = [...this.getModuleIds()].map((id) =>
           path.relative(process.cwd(), id),
         )
-        const optimizerMetadata = { optimizedFiles }
+        const optimizerMetadata: CustomOptimizerMetadata = { ids }
         setMetadata(optimizerMetadata)
         fs.writeFileSync(
-          path.join(options.dir!, EXTRA_OPTIMIZER_METADATA_FILE),
+          path.join(options.dir!, MEATADATA_FILE),
           JSON.stringify(optimizerMetadata, null, 2),
         )
       },
@@ -1250,19 +1247,13 @@ function extraOptimizerMetadataPlugin({
       },
       configResolved(config) {
         // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
-        const metadataFile = path.join(
-          config.cacheDir,
-          'deps',
-          EXTRA_OPTIMIZER_METADATA_FILE,
-        )
-        if (fs.existsSync(metadataFile)) {
+        const file = path.join(config.cacheDir, 'deps', MEATADATA_FILE)
+        if (fs.existsSync(file)) {
           try {
-            const optimizerMetadata = JSON.parse(
-              fs.readFileSync(metadataFile, 'utf-8'),
-            )
+            const optimizerMetadata = JSON.parse(fs.readFileSync(file, 'utf-8'))
             setMetadata(optimizerMetadata)
           } catch (e) {
-            this.warn(`failed to load '${metadataFile}'`)
+            this.warn(`failed to load '${file}'`)
           }
         }
       },
