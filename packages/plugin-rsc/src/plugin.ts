@@ -964,7 +964,7 @@ function vitePluginUseClient(
   ) {
     // metafile data is relative to cwd
     // https://github.com/vitejs/vite/blob/dd96c2cd831ecba3874458b318ad4f0a7f173736/packages/vite/src/node/optimizer/index.ts#L644
-    id = path.relative(process.cwd(), id)
+    id = normalizePath(path.relative(process.cwd(), id))
     if (optimizerMetadata?.optimizedFiles.includes(id)) {
       ctx.warn(
         `client component dependency is inconsistently optimized. ` +
