@@ -1821,9 +1821,12 @@ export function vitePluginRscCss(
               continue
             }
           }
+
+          // ensure other plugins treat it as a plain js file
+          // e.g. https://github.com/vitejs/rolldown-vite/issues/372#issuecomment-3193401601
           const importId = `virtual:vite-rsc/importer-resources?importer=${encodeURIComponent(
             importer,
-          )}`
+          )}&lang.js`
 
           // use dynamic import during dev to delay crawling and discover css correctly.
           let replacement: string
