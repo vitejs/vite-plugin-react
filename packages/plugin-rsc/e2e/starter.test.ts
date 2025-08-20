@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
-import { useFixture } from './fixture'
+import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { defineStarterTest } from './starter'
-import { waitForHydration } from './helper'
+import { expectNoPageError, waitForHydration } from './helper'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -52,4 +52,45 @@ test.describe('build-development', () => {
     await waitForHydration(page)
     expect(output).toContain('jsxDEV')
   })
+})
+
+test.describe('duplicate loadCss', () => {
+  const root = 'examples/e2e/temp/duplicate-load-css'
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'src/root.tsx': {
+          edit: (s) =>
+            s.replace(
+              '</head>',
+              () =>
+                `\
+{import.meta.viteRsc.loadCss()}
+{import.meta.viteRsc.loadCss()}
+</head>`,
+            ),
+        },
+      },
+    })
+  })
+
+  test.describe('dev', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineTest(f)
+  })
+
+  test.describe('build', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineTest(f)
+  })
+
+  function defineTest(f: Fixture) {
+    test('basic', async ({ page }) => {
+      using _ = expectNoPageError(page)
+      await page.goto(f.url())
+      await waitForHydration(page)
+    })
+  }
 })
