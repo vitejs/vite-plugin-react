@@ -11,6 +11,7 @@ import {
   type BuilderOptions,
   type DevEnvironment,
   type EnvironmentModuleNode,
+  type EnvironmentOptions,
   type Plugin,
   type ResolvedConfig,
   type Rollup,
@@ -976,8 +977,40 @@ function vitePluginUseClient(
 
   const debug = createDebug('vite-rsc:use-client')
 
-  const optimizerPluginEsbuild = {}
-  const optimizerPluginRolldown = {}
+  const EXTRA_OPTIMIZER_METADATA_FILE = '_metadata-rsc-extra.json'
+
+  type ExtraOptimizerMetadata = {
+    optimizedFiles: string[]
+  }
+
+  type EsbuildPlugin = NonNullable<
+    NonNullable<ResolvedConfig['optimizeDeps']['esbuildOptions']>['plugins']
+  >[number]
+
+  function optimizerPluginEsbuild(): EsbuildPlugin {
+    return {
+      name: 'vite-rsc-metafile',
+      setup(build) {
+        build.onEnd((result) => {
+          // skip scan
+          if (!result.metafile?.inputs || !build.initialOptions.outdir) return
+
+          const optimizedFiles = Object.keys(result.metafile.inputs)
+          const metadata: ExtraOptimizerMetadata = { optimizedFiles }
+          fs.writeFileSync(
+            path.join(
+              build.initialOptions.outdir,
+              EXTRA_OPTIMIZER_METADATA_FILE,
+            ),
+            JSON.stringify(metadata, null, 2),
+          )
+        })
+      },
+    }
+  }
+
+  // TODO: rolldown
+  // const optimizerPluginRolldown = {}
 
   return [
     {
@@ -987,31 +1020,8 @@ function vitePluginUseClient(
           environments: {
             client: {
               optimizeDeps: {
-                // TODO: rolldown
                 esbuildOptions: {
-                  plugins: [
-                    {
-                      name: 'custom-metafile',
-                      setup(build) {
-                        build.onEnd((result) => {
-                          // skip optimizer scan
-                          if (!result.metafile?.inputs) return
-
-                          const optimizedFiles = Object.keys(
-                            result.metafile.inputs,
-                          )
-                          const metadata = { optimizedFiles }
-                          fs.writeFileSync(
-                            path.join(
-                              build.initialOptions.outdir!,
-                              '_metadata-vite-rsc.json',
-                            ),
-                            JSON.stringify(metadata, null, 2),
-                          )
-                        })
-                      },
-                    },
-                  ],
+                  plugins: [optimizerPluginEsbuild()],
                 },
               },
             },
