@@ -958,6 +958,7 @@ function vitePluginUseClient(
 
   let optimizerMetadata: ExtraOptimizerMetadata | undefined
 
+  // TODO: warning for late optimizer discovery
   function warnInoncistentClientOptimization(
     ctx: Rollup.TransformPluginContext,
     id: string,
@@ -975,97 +976,9 @@ function vitePluginUseClient(
 
   const debug = createDebug('vite-rsc:use-client')
 
-  const EXTRA_OPTIMIZER_METADATA_FILE = '_metadata-rsc-extra.json'
-
-  type ExtraOptimizerMetadata = {
-    optimizedFiles: string[]
-  }
-
-  type EsbuildPlugin = NonNullable<
-    NonNullable<ResolvedConfig['optimizeDeps']['esbuildOptions']>['plugins']
-  >[number]
-
-  function optimizerPluginEsbuild(): EsbuildPlugin {
-    return {
-      name: 'vite-rsc-metafile',
-      setup(build) {
-        build.onEnd((result) => {
-          // skip scan
-          if (!result.metafile?.inputs || !build.initialOptions.outdir) return
-
-          const optimizedFiles = Object.keys(result.metafile.inputs)
-          optimizerMetadata = { optimizedFiles }
-          fs.writeFileSync(
-            path.join(
-              build.initialOptions.outdir,
-              EXTRA_OPTIMIZER_METADATA_FILE,
-            ),
-            JSON.stringify(optimizerMetadata, null, 2),
-          )
-        })
-      },
-    }
-  }
-  function optimizerPluginRolldown(): Rollup.Plugin {
-    return {
-      name: 'vite-rsc-metafile',
-      writeBundle(options) {
-        assert(options.dir)
-        const optimizedFiles = [...this.getModuleIds()].map((id) =>
-          path.relative(process.cwd(), id),
-        )
-        optimizerMetadata = { optimizedFiles }
-        fs.writeFileSync(
-          path.join(options.dir!, EXTRA_OPTIMIZER_METADATA_FILE),
-          JSON.stringify(optimizerMetadata, null, 2),
-        )
-      },
-    }
-  }
-
   return [
     {
       name: 'rsc:use-client',
-      config() {
-        return {
-          environments: {
-            client: {
-              optimizeDeps:
-                'rolldownVersion' in this.meta
-                  ? ({
-                      rolldownOptions: {
-                        plugins: [optimizerPluginRolldown()],
-                      },
-                    } as any)
-                  : {
-                      esbuildOptions: {
-                        plugins: [optimizerPluginEsbuild()],
-                      },
-                    },
-            },
-          },
-        }
-      },
-      configResolved(config) {
-        if (config.command === 'serve') {
-          // load metadata file
-          // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
-          const metadataFile = path.join(
-            config.cacheDir,
-            'deps',
-            EXTRA_OPTIMIZER_METADATA_FILE,
-          )
-          if (fs.existsSync(metadataFile)) {
-            try {
-              optimizerMetadata = JSON.parse(
-                fs.readFileSync(metadataFile, 'utf-8'),
-              )
-            } catch (e) {
-              this.warn(`failed to load '${metadataFile}'`)
-            }
-          }
-        }
-      },
       async transform(code, id) {
         if (this.environment.name !== serverEnvironmentName) return
         if (!code.includes('use client')) return
@@ -1242,6 +1155,114 @@ function vitePluginUseClient(
               if (meta) {
                 meta.renderedExports = mod.renderedExports
               }
+            }
+          }
+        }
+      },
+    },
+    ...extraOptimizerMetadataPlugin({
+      setMetadata: (metadata) => {
+        optimizerMetadata = metadata
+      },
+    }),
+  ]
+}
+
+type ExtraOptimizerMetadata = {
+  optimizedFiles: string[]
+}
+
+function extraOptimizerMetadataPlugin({
+  setMetadata,
+}: {
+  setMetadata: (metadata: ExtraOptimizerMetadata) => void
+}): Plugin[] {
+  const EXTRA_OPTIMIZER_METADATA_FILE = '_metadata-rsc-extra.json'
+
+  type EsbuildPlugin = NonNullable<
+    NonNullable<ResolvedConfig['optimizeDeps']['esbuildOptions']>['plugins']
+  >[number]
+
+  function optimizerPluginEsbuild(): EsbuildPlugin {
+    return {
+      name: 'vite-rsc-metafile',
+      setup(build) {
+        build.onEnd((result) => {
+          // skip scan
+          if (!result.metafile?.inputs || !build.initialOptions.outdir) return
+
+          const optimizedFiles = Object.keys(result.metafile.inputs)
+          const optimizerMetadata = { optimizedFiles }
+          setMetadata(optimizerMetadata)
+          fs.writeFileSync(
+            path.join(
+              build.initialOptions.outdir,
+              EXTRA_OPTIMIZER_METADATA_FILE,
+            ),
+            JSON.stringify(optimizerMetadata, null, 2),
+          )
+        })
+      },
+    }
+  }
+
+  function optimizerPluginRolldown(): Rollup.Plugin {
+    return {
+      name: 'vite-rsc-metafile',
+      writeBundle(options) {
+        assert(options.dir)
+        const optimizedFiles = [...this.getModuleIds()].map((id) =>
+          path.relative(process.cwd(), id),
+        )
+        const optimizerMetadata = { optimizedFiles }
+        setMetadata(optimizerMetadata)
+        fs.writeFileSync(
+          path.join(options.dir!, EXTRA_OPTIMIZER_METADATA_FILE),
+          JSON.stringify(optimizerMetadata, null, 2),
+        )
+      },
+    }
+  }
+
+  return [
+    {
+      name: 'rsc:use-client:optimizer-metadata',
+      config() {
+        return {
+          environments: {
+            client: {
+              optimizeDeps:
+                'rolldownVersion' in this.meta
+                  ? ({
+                      rolldownOptions: {
+                        plugins: [optimizerPluginRolldown()],
+                      },
+                    } as any)
+                  : {
+                      esbuildOptions: {
+                        plugins: [optimizerPluginEsbuild()],
+                      },
+                    },
+            },
+          },
+        }
+      },
+      configResolved(config) {
+        if (config.command === 'serve') {
+          // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
+          const metadataFile = path.join(
+            config.cacheDir,
+            'deps',
+            EXTRA_OPTIMIZER_METADATA_FILE,
+          )
+          if (fs.existsSync(metadataFile)) {
+            try {
+              const optimizerMetadata = JSON.parse(
+                fs.readFileSync(metadataFile, 'utf-8'),
+              )
+              setMetadata(optimizerMetadata)
+            } catch (e) {
+              this.warn(`failed to load '${metadataFile}'`)
             }
           }
         }
