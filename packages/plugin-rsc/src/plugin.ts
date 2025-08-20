@@ -11,7 +11,6 @@ import {
   type BuilderOptions,
   type DevEnvironment,
   type EnvironmentModuleNode,
-  type EnvironmentOptions,
   type Plugin,
   type ResolvedConfig,
   type Rollup,
@@ -957,21 +956,18 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
-  // TODO: warning for late optimizer discovery
+  let optimizerMetadata: ExtraOptimizerMetadata | undefined
+
   function warnInoncistentClientOptimization(
     ctx: Rollup.TransformPluginContext,
     id: string,
   ) {
-    const { depsOptimizer } = server.environments.client
-    if (depsOptimizer) {
-      for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
-        if (dep.src === id) {
-          ctx.warn(
-            `client component dependency is inconsistently optimized. ` +
-              `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
-          )
-        }
-      }
+    id = path.relative(process.cwd(), id)
+    if (optimizerMetadata?.optimizedFiles.includes(id)) {
+      ctx.warn(
+        `client component dependency is inconsistently optimized. ` +
+          `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
+      )
     }
   }
 
@@ -996,20 +992,19 @@ function vitePluginUseClient(
           if (!result.metafile?.inputs || !build.initialOptions.outdir) return
 
           const optimizedFiles = Object.keys(result.metafile.inputs)
-          const metadata: ExtraOptimizerMetadata = { optimizedFiles }
+          optimizerMetadata = { optimizedFiles }
           fs.writeFileSync(
             path.join(
               build.initialOptions.outdir,
               EXTRA_OPTIMIZER_METADATA_FILE,
             ),
-            JSON.stringify(metadata, null, 2),
+            JSON.stringify(optimizerMetadata, null, 2),
           )
         })
       },
     }
   }
-
-  // TODO: rolldown
+  // TODO: port to rolldown
   // const optimizerPluginRolldown = {}
 
   return [
@@ -1026,6 +1021,26 @@ function vitePluginUseClient(
               },
             },
           },
+        }
+      },
+      configResolved(config) {
+        if (config.command === 'serve') {
+          // load metadata file
+          // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
+          const metadataFile = path.join(
+            config.cacheDir,
+            'deps',
+            EXTRA_OPTIMIZER_METADATA_FILE,
+          )
+          if (fs.existsSync(metadataFile)) {
+            try {
+              optimizerMetadata = JSON.parse(
+                fs.readFileSync(metadataFile, 'utf-8'),
+              )
+            } catch (e) {
+              this.warn(`failed to load '${metadataFile}'`)
+            }
+          }
         }
       },
       async transform(code, id) {
