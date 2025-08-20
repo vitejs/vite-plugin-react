@@ -1192,11 +1192,11 @@ function customOptimizerMetadataPlugin({
           if (!result.metafile?.inputs || !build.initialOptions.outdir) return
 
           const ids = Object.keys(result.metafile.inputs)
-          const optimizerMetadata: CustomOptimizerMetadata = { ids }
-          setMetadata(optimizerMetadata)
+          const metadata: CustomOptimizerMetadata = { ids }
+          setMetadata(metadata)
           fs.writeFileSync(
             path.join(build.initialOptions.outdir, MEATADATA_FILE),
-            JSON.stringify(optimizerMetadata, null, 2),
+            JSON.stringify(metadata, null, 2),
           )
         })
       },
@@ -1211,11 +1211,11 @@ function customOptimizerMetadataPlugin({
         const ids = [...this.getModuleIds()].map((id) =>
           path.relative(process.cwd(), id),
         )
-        const optimizerMetadata: CustomOptimizerMetadata = { ids }
-        setMetadata(optimizerMetadata)
+        const metadata: CustomOptimizerMetadata = { ids }
+        setMetadata(metadata)
         fs.writeFileSync(
           path.join(options.dir!, MEATADATA_FILE),
-          JSON.stringify(optimizerMetadata, null, 2),
+          JSON.stringify(metadata, null, 2),
         )
       },
     }
@@ -1250,8 +1250,8 @@ function customOptimizerMetadataPlugin({
         const file = path.join(config.cacheDir, 'deps', MEATADATA_FILE)
         if (fs.existsSync(file)) {
           try {
-            const optimizerMetadata = JSON.parse(fs.readFileSync(file, 'utf-8'))
-            setMetadata(optimizerMetadata)
+            const metadata = JSON.parse(fs.readFileSync(file, 'utf-8'))
+            setMetadata(metadata)
           } catch (e) {
             this.warn(`failed to load '${file}'`)
           }
