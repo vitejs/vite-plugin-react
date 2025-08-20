@@ -1227,6 +1227,7 @@ function extraOptimizerMetadataPlugin({
   return [
     {
       name: 'rsc:use-client:optimizer-metadata',
+      apply: 'serve',
       config() {
         return {
           environments: {
@@ -1248,22 +1249,20 @@ function extraOptimizerMetadataPlugin({
         }
       },
       configResolved(config) {
-        if (config.command === 'serve') {
-          // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
-          const metadataFile = path.join(
-            config.cacheDir,
-            'deps',
-            EXTRA_OPTIMIZER_METADATA_FILE,
-          )
-          if (fs.existsSync(metadataFile)) {
-            try {
-              const optimizerMetadata = JSON.parse(
-                fs.readFileSync(metadataFile, 'utf-8'),
-              )
-              setMetadata(optimizerMetadata)
-            } catch (e) {
-              this.warn(`failed to load '${metadataFile}'`)
-            }
+        // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
+        const metadataFile = path.join(
+          config.cacheDir,
+          'deps',
+          EXTRA_OPTIMIZER_METADATA_FILE,
+        )
+        if (fs.existsSync(metadataFile)) {
+          try {
+            const optimizerMetadata = JSON.parse(
+              fs.readFileSync(metadataFile, 'utf-8'),
+            )
+            setMetadata(optimizerMetadata)
+          } catch (e) {
+            this.warn(`failed to load '${metadataFile}'`)
           }
         }
       },
