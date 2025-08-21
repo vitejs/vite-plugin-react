@@ -49,7 +49,7 @@ let serverReferences: Record<string, string> = {}
 let server: ViteDevServer
 let config: ResolvedConfig
 let rscBundle: Rollup.OutputBundle
-let buildAssetsManifest: AssetsManifest | undefined
+// let buildAssetsManifest: AssetsManifest | undefined
 // let isScanBuild = false
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
@@ -262,7 +262,7 @@ export default function vitePluginRsc(
     // output client manifest to non-client build directly.
     // this makes server build to be self-contained and deploy-able for cloudflare.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
-      buildAssetsManifest,
+      manager.buildAssetsManifest,
     )}`
     for (const name of environmentNames) {
       const manifestPath = path.join(
@@ -771,7 +771,7 @@ export default function vitePluginRsc(
               `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
             )
           }
-          buildAssetsManifest = {
+          manager.buildAssetsManifest = {
             bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
