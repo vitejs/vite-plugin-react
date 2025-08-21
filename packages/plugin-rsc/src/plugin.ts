@@ -45,7 +45,7 @@ import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 
 // state for build orchestration
-let serverReferences: Record<string, string> = {}
+// let serverReferences: Record<string, string> = {}
 // let server: ViteDevServer
 // let config: ResolvedConfig
 // let rscBundle: Rollup.OutputBundle
@@ -1426,7 +1426,7 @@ function vitePluginUseServer(
               : undefined,
           })
           if (!output.hasChanged()) return
-          serverReferences[getNormalizedId()] = id
+          manager.serverReferences[getNormalizedId()] = id
           const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
           if (enableEncryption) {
@@ -1463,7 +1463,7 @@ function vitePluginUseServer(
           })
           const output = result?.output
           if (!output?.hasChanged()) return
-          serverReferences[getNormalizedId()] = id
+          manager.serverReferences[getNormalizedId()] = id
           const name =
             this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
@@ -1479,7 +1479,7 @@ function vitePluginUseServer(
       if (this.environment.mode === 'dev') {
         return { code: `export {}`, map: null }
       }
-      const code = generateDynamicImportCode(serverReferences)
+      const code = generateDynamicImportCode(manager.serverReferences)
       return { code, map: null }
     }),
   ]
