@@ -1083,6 +1083,7 @@ function vitePluginUseClient(
         })
         if (!result) return
         const { output, exportNames } = result
+        // TODO
         manager.clientReferenceMetaMap[id] = {
           importId,
           referenceKey,
