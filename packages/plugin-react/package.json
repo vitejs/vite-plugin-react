@@ -22,7 +22,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "scripts": {
-    "dev": "tsdown --watch",
+    "dev": "tsdown --watch ./src --watch ../common",
     "build": "tsdown",
     "prepublishOnly": "npm run build",
     "test-unit": "vitest run"
