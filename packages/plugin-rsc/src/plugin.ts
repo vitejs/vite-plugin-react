@@ -1978,8 +1978,7 @@ export function vitePluginRscCss(
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const jsHrefs = [
-              '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
-                encodeURIComponent(importer),
+              `@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=${encodeURIComponent(importer)}&lang.js`,
             ]
             const deps = assetsURLOfDeps({ css: cssHrefs, js: jsHrefs })
             return generateResourcesCode(serializeValueWithRuntime(deps))
@@ -2025,11 +2024,11 @@ export function vitePluginRscCss(
               const importer = encodeURIComponent(mod.id)
               invalidteModuleById(
                 server.environments.rsc!,
-                `\0virtual:vite-rsc/importer-resources?importer=${importer}`,
+                `\0virtual:vite-rsc/importer-resources?importer=${importer}&lang.js`,
               )
               invalidteModuleById(
                 server.environments.client,
-                `\0virtual:vite-rsc/importer-resources-browser?importer=${importer}`,
+                `\0virtual:vite-rsc/importer-resources-browser?importer=${importer}&lang.js`,
               )
             }
           }
