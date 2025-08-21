@@ -12,6 +12,6 @@ export function TestTreeShakeServer() {
 }
 
 // this should not be exported as server functions
-export function __unused_server__() {
-  console.log('__unused_client_reference__')
+export function __unused_server_export_() {
+  console.log('__unused_server_export__')
 }
