@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createRequestListener } from '@remix-run/node-fetch-server'
@@ -37,7 +38,7 @@ import {
   prepareError,
 } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
-import { evalValue, parseIdQuery, resolvePackage } from './plugins/utils'
+import { evalValue, parseIdQuery } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
 import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
@@ -71,6 +72,12 @@ const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 // dev-only wrapper virtual module of rollupOptions.input.index
 const VIRTUAL_ENTRIES = {
   browser: 'virtual:vite-rsc/entry-browser',
+}
+
+const require = createRequire(import.meta.url)
+
+function resolvePackage(name: string) {
+  return pathToFileURL(require.resolve(name)).href
 }
 
 export type RscPluginOptions = {
