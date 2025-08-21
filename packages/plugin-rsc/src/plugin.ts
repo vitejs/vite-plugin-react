@@ -87,9 +87,9 @@ class RscPluginManager {
   config!: ResolvedConfig
   rscBundle!: Rollup.OutputBundle
   buildAssetsManifest: AssetsManifest | undefined
-  isScanBuild = false
+  isScanBuild: boolean = false
   serverReferences: Record<string, string> = {}
-  clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
+  clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 }
 
