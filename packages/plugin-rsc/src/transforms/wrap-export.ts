@@ -115,6 +115,7 @@ export function transformWrapExport(
            */
           validateNonAsyncFunction(
             node,
+            // TODO: relax
             node.declaration.declarations.every(
               (decl) =>
                 decl.init?.type === 'ArrowFunctionExpression' &&
@@ -201,6 +202,7 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
+      // TODO: relax
       validateNonAsyncFunction(
         node,
         // TODO: somehow identifier is allowed in next.js?
