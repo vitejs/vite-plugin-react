@@ -48,7 +48,7 @@ import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 let serverReferences: Record<string, string> = {}
 let server: ViteDevServer
 let config: ResolvedConfig
-let rscBundle: Rollup.OutputBundle
+// let rscBundle: Rollup.OutputBundle
 // let buildAssetsManifest: AssetsManifest | undefined
 // let isScanBuild = false
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
@@ -719,7 +719,7 @@ export default function vitePluginRsc(
       generateBundle(_options, bundle) {
         // copy assets from rsc build to client build
         if (this.environment.name === 'rsc') {
-          rscBundle = bundle
+          manager.rscBundle = bundle
         }
 
         if (this.environment.name === 'client') {
@@ -730,7 +730,7 @@ export default function vitePluginRsc(
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(rscBundle)) {
+          for (const asset of Object.values(manager.rscBundle)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
               this.emitFile({
@@ -742,7 +742,7 @@ export default function vitePluginRsc(
           }
 
           const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(rscBundle)
+          const rscAssetDeps = collectAssetDeps(manager.rscBundle)
           for (const [id, meta] of Object.entries(serverResourcesMetaMap)) {
             serverResources[meta.key] = assetsURLOfDeps({
               js: [],
