@@ -1501,11 +1501,9 @@ function vitePluginUseServer(
             directive: 'use server',
             rejectNonAsyncFunction: true,
           })
+          if (!result) return
           const output = result?.output
-          if (!result || !output?.hasChanged()) {
-            delete manager.serverReferenceMetaMap[id]
-            return
-          }
+          if (!output?.hasChanged()) return
           manager.serverReferenceMetaMap[id] = {
             importId: id,
             referenceKey: getNormalizedId(),
