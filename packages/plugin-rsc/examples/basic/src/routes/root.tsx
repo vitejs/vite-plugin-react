@@ -40,6 +40,7 @@ import { TestImportMetaGlob } from './import-meta-glob/server'
 import { TestAssetsServer } from './assets/server'
 import { TestHmrSwitchServer } from './hmr-switch/server'
 import { TestHmrSwitchClient } from './hmr-switch/client'
+import { TestTreeShakeServer } from './tree-shake/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -93,6 +94,7 @@ export function Root(props: { url: URL }) {
         <TestCssQueries />
         <TestImportMetaGlob />
         <TestAssetsServer />
+        <TestTreeShakeServer />
       </body>
     </html>
   )
