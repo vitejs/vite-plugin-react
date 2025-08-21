@@ -64,7 +64,7 @@ type ClientReferenceMeta = {
 }
 let clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
 
-let serverResourcesMetaMap: Record<string, { key: string }> = {}
+// let serverResourcesMetaMap: Record<string, { key: string }> = {}
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
@@ -232,7 +232,9 @@ export default function vitePluginRsc(
       await builder.build(builder.environments.rsc!)
       // sort for stable build
       clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
-      serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+      manager.serverResourcesMetaMap = sortObject(
+        manager.serverResourcesMetaMap,
+      )
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -250,7 +252,7 @@ export default function vitePluginRsc(
     await builder.build(builder.environments.rsc!)
     // sort for stable build
     clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
-    serverResourcesMetaMap = sortObject(serverResourcesMetaMap)
+    manager.serverResourcesMetaMap = sortObject(manager.serverResourcesMetaMap)
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
@@ -745,7 +747,9 @@ export default function vitePluginRsc(
 
           const serverResources: Record<string, AssetDeps> = {}
           const rscAssetDeps = collectAssetDeps(manager.rscBundle)
-          for (const [id, meta] of Object.entries(serverResourcesMetaMap)) {
+          for (const [id, meta] of Object.entries(
+            manager.serverResourcesMetaMap,
+          )) {
             serverResources[meta.key] = assetsURLOfDeps(
               {
                 js: [],
@@ -1931,7 +1935,7 @@ function vitePluginRscCss(
             const key = normalizePath(
               path.relative(manager.config.root, importer),
             )
-            serverResourcesMetaMap[importer] = { key }
+            manager.serverResourcesMetaMap[importer] = { key }
             return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
               ${generateResourcesCode(
