@@ -9,10 +9,13 @@ import {
 
 export function defineStarterTest(
   f: Fixture,
-  variant?: 'no-ssr' | 'dev-production',
+  variant?: 'no-ssr' | 'dev-production' | 'browser-mode',
 ) {
   const waitForHydration: typeof waitForHydration_ = (page) =>
-    waitForHydration_(page, variant === 'no-ssr' ? '#root' : 'body')
+    waitForHydration_(
+      page,
+      variant === 'no-ssr' || variant === 'browser-mode' ? '#root' : 'body',
+    )
 
   test('basic', async ({ page }) => {
     using _ = expectNoPageError(page)
@@ -40,7 +43,7 @@ export function defineStarterTest(
   })
 
   testNoJs('server action @nojs', async ({ page }) => {
-    test.skip(variant === 'no-ssr')
+    test.skip(variant === 'no-ssr' || variant === 'browser-mode')
 
     await page.goto(f.url())
     await page.getByRole('button', { name: 'Server Counter: 1' }).click()
@@ -50,7 +53,11 @@ export function defineStarterTest(
   })
 
   test('client hmr', async ({ page }) => {
-    test.skip(f.mode === 'build' || variant === 'dev-production')
+    test.skip(
+      f.mode === 'build' ||
+        variant === 'dev-production' ||
+        variant === 'browser-mode',
+    )
 
     await page.goto(f.url())
     await waitForHydration(page)
@@ -80,7 +87,7 @@ export function defineStarterTest(
   })
 
   test.describe(() => {
-    test.skip(f.mode === 'build')
+    test.skip(f.mode === 'build' || variant === 'browser-mode')
 
     test('server hmr', async ({ page }) => {
       await page.goto(f.url())
@@ -113,20 +120,17 @@ export function defineStarterTest(
   test('css @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.locator('.read-the-docs')).toHaveCSS(
-      'color',
-      'rgb(136, 136, 136)',
-    )
+    await expect(page.locator('.card').nth(0)).toHaveCSS('padding-left', '16px')
   })
 
   test.describe(() => {
-    test.skip(variant === 'no-ssr')
+    test.skip(variant === 'no-ssr' || variant === 'browser-mode')
 
     testNoJs('css @nojs', async ({ page }) => {
       await page.goto(f.url())
-      await expect(page.locator('.read-the-docs')).toHaveCSS(
-        'color',
-        'rgb(136, 136, 136)',
+      await expect(page.locator('.card').nth(0)).toHaveCSS(
+        'padding-left',
+        '16px',
       )
     })
   })

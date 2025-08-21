@@ -10,7 +10,7 @@ export function TestSerializationServer() {
   let serialized = renderToReadableStream(original)
   // debug serialization
   if (0) {
-    serialized = serialized
+    serialized = (serialized as ReadableStream<Uint8Array<ArrayBuffer>>)
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(
         new TransformStream({

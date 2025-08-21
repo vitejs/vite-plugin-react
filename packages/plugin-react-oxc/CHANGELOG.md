@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.4.1 (2025-08-19)
+
+### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
+
+`optimizeDeps.rollupOptions.jsx` is going to be deprecated in favor of `optimizeDeps.rollupOptions.transform.jsx`.
+
+## 0.4.0 (2025-08-07)
+
 ## 0.4.0-beta.0 (2025-07-28)
 
 ### Deprecate this plugin

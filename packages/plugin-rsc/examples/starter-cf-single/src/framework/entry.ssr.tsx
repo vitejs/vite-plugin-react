@@ -1,7 +1,7 @@
-import * as ReactClient from '@vitejs/plugin-rsc/ssr' // RSC API
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-import * as ReactDOMServer from 'react-dom/server.edge'
+import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
 
@@ -25,14 +25,14 @@ export async function renderHTML(
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
-    payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
+    payload ??= createFromReadableStream<RscPayload>(rscStream1)
     return React.use(payload).root
   }
 
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await ReactDOMServer.renderToReadableStream(<SsrRoot />, {
+  const htmlStream = await renderToReadableStream(<SsrRoot />, {
     bootstrapScriptContent: options?.debugNojs
       ? undefined
       : bootstrapScriptContent,

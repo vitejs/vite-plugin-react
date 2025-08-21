@@ -5,6 +5,7 @@ test('should render', async () => {
   expect(await page.textContent('button')).toMatch('count is 0')
   expect(await page.click('button'))
   expect(await page.textContent('button')).toMatch('count is 1')
+  expect(await page.textContent('.class-component')).toMatch('ClassComponent')
 })
 
 test.runIf(isServe)('should hmr', async () => {

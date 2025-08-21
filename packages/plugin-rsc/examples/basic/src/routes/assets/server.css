@@ -1,0 +1,6 @@
+.test-assets-server-css {
+  background: url(./server-css.svg) no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+}

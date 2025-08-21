@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.15",
+  "version": "0.4.21",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "vite",
@@ -38,7 +38,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@mjackson/node-fetch-server": "^0.7.0",
+    "@remix-run/node-fetch-server": "^0.8.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.17",
@@ -48,19 +48,19 @@
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.54.1",
+    "@playwright/test": "^1.54.2",
     "@tsconfig/strictest": "^2.0.5",
     "@types/estree": "^1.0.8",
-    "@types/node": "^22.16.5",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/node": "^22.17.2",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "workspace:*",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-server-dom-webpack": "^19.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-server-dom-webpack": "^19.1.1",
     "rsc-html-stream": "^0.0.7",
     "tinyexec": "^1.0.1",
-    "tsdown": "^0.13.0"
+    "tsdown": "^0.14.1"
   },
   "peerDependencies": {
     "react": "*",

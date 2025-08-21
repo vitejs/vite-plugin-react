@@ -60,6 +60,9 @@ function preloadDeps(deps: ResolvedAssetDeps) {
     })
   }
   for (const href of deps.css) {
-    ReactDOM.preinit(href, { as: 'style' })
+    ReactDOM.preinit(href, {
+      as: 'style',
+      precedence: 'vite-rsc/client-reference',
+    })
   }
 }

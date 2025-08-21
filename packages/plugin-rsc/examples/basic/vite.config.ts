@@ -3,12 +3,13 @@ import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 
 export default defineConfig({
   clearScreen: false,
   plugins: [
+    // inspect(),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
@@ -20,12 +21,9 @@ export default defineConfig({
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
-      ignoredPackageWarnings: [/@vitejs\/test-dep-/],
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
     }),
-    // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
-    !process.env.ECOSYSTEM_CI && inspect(),
     {
       name: 'test-client-reference-tree-shaking',
       enforce: 'post',
@@ -123,6 +121,8 @@ export default { fetch: handler };
             source: `\
 /favicon.ico
   Cache-Control: public, max-age=3600, s-maxage=3600
+/test.css
+  Cache-Control: public, max-age=3600, s-maxage=3600
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 `,
@@ -130,6 +130,7 @@ export default { fetch: handler };
         }
       },
     },
+    testScanPlugin(),
   ],
   build: {
     minify: false,
@@ -151,13 +152,43 @@ export default { fetch: handler };
     },
     ssr: {
       optimizeDeps: {
-        include: [
-          '@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',
-        ],
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
       },
     },
   },
 }) as any
+
+function testScanPlugin(): Plugin[] {
+  const moduleIds: { name: string; ids: string[] }[] = []
+  return [
+    {
+      name: 'test-scan',
+      apply: 'build',
+      buildEnd() {
+        moduleIds.push({
+          name: this.environment.name,
+          ids: [...this.getModuleIds()],
+        })
+      },
+      buildApp: {
+        order: 'post',
+        async handler() {
+          // client scan build discovers additional modules for server references.
+          const [m1, m2] = moduleIds.filter((m) => m.name === 'rsc')
+          const diff = m2.ids.filter((id) => !m1.ids.includes(id))
+          assert(diff.length > 0)
+
+          // but make sure it's not due to import.meta.glob
+          // https://github.com/vitejs/rolldown-vite/issues/373
+          assert.equal(
+            diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
+            undefined,
+          )
+        },
+      },
+    },
+  ]
+}
 
 function vitePluginUseCache(): Plugin[] {
   return [

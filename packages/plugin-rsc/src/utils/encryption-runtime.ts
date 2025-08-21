@@ -19,7 +19,10 @@ export async function encryptActionBoundArgs(
 ): Promise<string> {
   const serialized = renderToReadableStream(originalValue)
   const serializedBuffer = await concatArrayStream(serialized)
-  return encryptBuffer(serializedBuffer, await getEncryptionKey())
+  return encryptBuffer(
+    serializedBuffer as BufferSource,
+    await getEncryptionKey(),
+  )
 }
 
 export async function decryptActionBoundArgs(
@@ -37,7 +40,7 @@ const getEncryptionKey = /* #__PURE__ */ once(async () => {
   const resolved = await encryptionKeySource()
   const key = await crypto.subtle.importKey(
     'raw',
-    fromBase64(resolved),
+    fromBase64(resolved) as BufferSource,
     {
       name: 'AES-GCM',
     },
