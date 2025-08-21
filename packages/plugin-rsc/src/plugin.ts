@@ -50,7 +50,7 @@ let server: ViteDevServer
 let config: ResolvedConfig
 let rscBundle: Rollup.OutputBundle
 let buildAssetsManifest: AssetsManifest | undefined
-let isScanBuild = false
+// let isScanBuild = false
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
 type ClientReferenceMeta = {
@@ -170,8 +170,11 @@ export type RscPluginOptions = {
 
 /** @experimental */
 export function vitePluginRscMinimal(
-  rscPluginOptions: RscPluginOptions = {},
+  rscPluginOptions: RscPluginOptions & { manager?: RscPluginManager } = {},
 ): Plugin[] {
+  const manager = rscPluginOptions.manager ?? new RscPluginManager()
+  manager
+
   return [
     {
       name: 'rsc:minimal',
@@ -215,18 +218,17 @@ export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
   const manager = new RscPluginManager()
-  manager.clientReferenceMetaMap
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-      isScanBuild = true
+      manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
       builder.environments.client!.config.build.write = false
       await builder.build(builder.environments.rsc!)
       await builder.build(builder.environments.client!)
-      isScanBuild = false
+      manager.isScanBuild = false
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
       await builder.build(builder.environments.rsc!)
@@ -239,12 +241,12 @@ export default function vitePluginRsc(
     }
 
     // rsc -> ssr -> rsc -> client -> ssr
-    isScanBuild = true
+    manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
     await builder.build(builder.environments.rsc!)
     await builder.build(builder.environments.ssr!)
-    isScanBuild = false
+    manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
     await builder.build(builder.environments.rsc!)
@@ -909,26 +911,30 @@ globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
         return ''
       },
     },
-    ...vitePluginRscMinimal(rscPluginOptions),
+    ...vitePluginRscMinimal({ ...rscPluginOptions, manager }),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss({ rscCssTransform: rscPluginOptions.rscCssTransform }),
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
-    scanBuildStripPlugin(),
+    scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
   ]
 }
 
 // During scan build, we strip all code but imports to
 // traverse module graph faster and just discover client/server references.
-function scanBuildStripPlugin(): Plugin {
+function scanBuildStripPlugin({
+  manager,
+}: {
+  manager: RscPluginManager
+}): Plugin {
   return {
     name: 'rsc:scan-strip',
     apply: 'build',
     enforce: 'post',
     async transform(code, _id, _options) {
-      if (!isScanBuild) return
+      if (!manager.isScanBuild) return
       const output = await transformScanBuildStrip(code)
       return { code: output, map: { mappings: '' } }
     },
