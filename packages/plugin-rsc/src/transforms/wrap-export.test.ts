@@ -23,6 +23,16 @@ async function testTransform(
   return output.hasChanged() && output.toString()
 }
 
+async function testTransformNames(input: string) {
+  const ast = await parseAstAsync(input)
+  const result = transformWrapExport(input, ast, {
+    runtime: (value, name) =>
+      `$$wrap(${value}, "<id>", ${JSON.stringify(name)})`,
+    ignoreExportAllDeclaration: true,
+  })
+  return result.exportNames
+}
+
 describe(transformWrapExport, () => {
   test('basic', async () => {
     const input = `
@@ -51,6 +61,16 @@ export class Cls {};
       const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
+    `)
+
+    expect(await testTransformNames(input)).toMatchInlineSnapshot(`
+      [
+        "Arrow",
+        "default",
+        "Fn",
+        "AsyncFn",
+        "Cls",
+      ]
     `)
   })
 
