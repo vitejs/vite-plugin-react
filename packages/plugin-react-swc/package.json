@@ -15,7 +15,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsdown --watch",
+    "dev": "tsdown  --watch ./src --watch ../common",
     "build": "tsdown",
     "test": "playwright test"
   },
