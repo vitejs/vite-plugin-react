@@ -601,6 +601,7 @@ export default function vitePluginRsc(
       },
       renderChunk(code, chunk) {
         if (!code.includes('__vite_rsc_load_module')) return
+        const { config } = manager
         const s = new MagicString(code)
         for (const match of code.matchAll(
           /['"]__vite_rsc_load_module:(\w+):(\w+):(\w+)['"]/dg,
@@ -609,12 +610,12 @@ export default function vitePluginRsc(
           const importPath = normalizeRelativePath(
             path.relative(
               path.join(
-                manager.config.environments[fromEnv!]!.build.outDir,
+                config.environments[fromEnv!]!.build.outDir,
                 chunk.fileName,
                 '..',
               ),
               path.join(
-                manager.config.environments[toEnv!]!.build.outDir,
+                config.environments[toEnv!]!.build.outDir,
                 // TODO: this breaks when custom entyFileNames
                 `${entryName}.js`,
               ),
@@ -1561,12 +1562,13 @@ function serializeValueWithRuntime(value: any) {
 }
 
 function assetsURL(url: string, manager: RscPluginManager) {
+  const { config } = manager
   if (
-    manager.config.command === 'build' &&
-    typeof manager.config.experimental?.renderBuiltUrl === 'function'
+    config.command === 'build' &&
+    typeof config.experimental?.renderBuiltUrl === 'function'
   ) {
     // https://github.com/vitejs/vite/blob/bdde0f9e5077ca1a21a04eefc30abad055047226/packages/vite/src/node/build.ts#L1369
-    const result = manager.config.experimental.renderBuiltUrl(url, {
+    const result = config.experimental.renderBuiltUrl(url, {
       type: 'asset',
       hostType: 'js',
       ssr: true,
@@ -1587,7 +1589,7 @@ function assetsURL(url: string, manager: RscPluginManager) {
   }
 
   // https://github.com/vitejs/vite/blob/2a7473cfed96237711cda9f736465c84d442ddef/packages/vite/src/node/plugins/importAnalysisBuild.ts#L222-L230
-  return manager.config.base + url
+  return config.base + url
 }
 
 function assetsURLOfDeps(deps: AssetDeps, manager: RscPluginManager) {
