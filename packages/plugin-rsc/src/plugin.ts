@@ -59,7 +59,7 @@ type ClientReferenceMeta = {
 type ServerRerferenceMeta = {
   importId: string
   referenceKey: string
-  // TODO: tree shake unused exports
+  // TODO: tree shake unused server functions
   exportNames: string[]
 }
 
