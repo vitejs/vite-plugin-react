@@ -62,7 +62,7 @@ type ClientReferenceMeta = {
   exportNames: string[]
   renderedExports: string[]
 }
-let clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
+// let clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
 
 // let serverResourcesMetaMap: Record<string, { key: string }> = {}
 
@@ -231,7 +231,9 @@ export default function vitePluginRsc(
       builder.environments.client!.config.build.write = true
       await builder.build(builder.environments.rsc!)
       // sort for stable build
-      clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+      manager.clientReferenceMetaMap = sortObject(
+        manager.clientReferenceMetaMap,
+      )
       manager.serverResourcesMetaMap = sortObject(
         manager.serverResourcesMetaMap,
       )
@@ -251,7 +253,7 @@ export default function vitePluginRsc(
     builder.environments.ssr!.config.build.write = true
     await builder.build(builder.environments.rsc!)
     // sort for stable build
-    clientReferenceMetaMap = sortObject(clientReferenceMetaMap)
+    manager.clientReferenceMetaMap = sortObject(manager.clientReferenceMetaMap)
     manager.serverResourcesMetaMap = sortObject(manager.serverResourcesMetaMap)
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
@@ -470,7 +472,7 @@ export default function vitePluginRsc(
           const visited = new Set<string>()
           function recurse(mod: EnvironmentModuleNode): boolean {
             if (!mod.id) return false
-            if (clientReferenceMetaMap[mod.id]) return true
+            if (manager.clientReferenceMetaMap[mod.id]) return true
             if (visited.has(mod.id)) return false
             visited.add(mod.id)
             for (const importer of mod.importers) {
@@ -766,7 +768,9 @@ export default function vitePluginRsc(
           assert(entry)
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const [id, meta] of Object.entries(clientReferenceMetaMap)) {
+          for (const [id, meta] of Object.entries(
+            manager.clientReferenceMetaMap,
+          )) {
             const deps: AssetDeps = assetDeps[id]?.deps ?? { js: [], css: [] }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
               mergeAssetDeps(deps, entry.deps),
@@ -1090,7 +1094,7 @@ function vitePluginUseClient(
         })
         if (!result) return
         const { output, exportNames } = result
-        clientReferenceMetaMap[id] = {
+        manager.clientReferenceMetaMap[id] = {
           importId,
           referenceKey,
           packageSource,
@@ -1107,7 +1111,7 @@ function vitePluginUseClient(
         return { code: `export default {}`, map: null }
       }
       let code = ''
-      for (const meta of Object.values(clientReferenceMetaMap)) {
+      for (const meta of Object.values(manager.clientReferenceMetaMap)) {
         // vite/rollup can apply tree-shaking to dynamic import of this form
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
@@ -1169,7 +1173,7 @@ function vitePluginUseClient(
           const source = id.slice(
             '\0virtual:vite-rsc/client-package-proxy/'.length,
           )
-          const meta = Object.values(clientReferenceMetaMap).find(
+          const meta = Object.values(manager.clientReferenceMetaMap).find(
             (v) => v.packageSource === source,
           )!
           const exportNames = meta.exportNames
@@ -1186,7 +1190,7 @@ function vitePluginUseClient(
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
             for (const [id, mod] of Object.entries(chunk.modules)) {
-              const meta = clientReferenceMetaMap[id]
+              const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
                 meta.renderedExports = mod.renderedExports
               }
