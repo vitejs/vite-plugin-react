@@ -80,6 +80,14 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
+export type { RscPluginManager }
+
+class RscPluginManager {
+  serverReferences: Record<string, string> = {}
+  clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
+  serverResourcesMetaMap: Record<string, { key: string }> = {}
+}
+
 export type RscPluginOptions = {
   /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
@@ -201,6 +209,9 @@ export function vitePluginRscMinimal(
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
+  const manager = new RscPluginManager()
+  manager.clientReferenceMetaMap
+
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
     // no-ssr case
     // rsc -> client -> rsc -> client
