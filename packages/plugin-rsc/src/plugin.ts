@@ -46,7 +46,7 @@ import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 
 // state for build orchestration
 let serverReferences: Record<string, string> = {}
-let server: ViteDevServer
+// let server: ViteDevServer
 // let config: ResolvedConfig
 // let rscBundle: Rollup.OutputBundle
 // let buildAssetsManifest: AssetsManifest | undefined
@@ -189,7 +189,7 @@ export function vitePluginRscMinimal(
         }
       },
       configureServer(server_) {
-        server = server_
+        manager.server = server_
       },
     },
     {
@@ -382,7 +382,7 @@ export default function vitePluginRsc(
         }
       },
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
-      configureServer() {
+      configureServer(server) {
         ;(globalThis as any).__viteRscDevServer = server
 
         if (rscPluginOptions.disableServerHandler) return
@@ -501,7 +501,7 @@ export default function vitePluginRsc(
                 try {
                   await this.environment.transformRequest(mod.url)
                 } catch (e) {
-                  server.environments.client.hot.send({
+                  manager.server.environments.client.hot.send({
                     type: 'error',
                     err: prepareError(e as any),
                   })
@@ -559,6 +559,7 @@ export default function vitePluginRsc(
       name: 'rsc:load-environment-module',
       async transform(code) {
         if (!code.includes('import.meta.viteRsc.loadModule')) return
+        const { server } = manager
         const s = new MagicString(code)
         for (const match of code.matchAll(
           /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
@@ -1047,7 +1048,7 @@ function vitePluginUseClient(
         } else {
           if (this.environment.mode === 'dev') {
             importId = normalizeViteImportAnalysisUrl(
-              server.environments[browserEnvironmentName]!,
+              manager.server.environments[browserEnvironmentName]!,
               id,
             )
             referenceKey = importId
@@ -1394,7 +1395,7 @@ function vitePluginUseServer(
               normalizedId_ = hashString(path.relative(manager.config.root, id))
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
-                server.environments[serverEnvironmentName]!,
+                manager.server.environments[serverEnvironmentName]!,
                 id,
               )
             }
@@ -1812,6 +1813,7 @@ function vitePluginRscCss(
       async load(id) {
         if (id.startsWith('\0virtual:vite-rsc/css/dev-ssr/')) {
           id = id.slice('\0virtual:vite-rsc/css/dev-ssr/'.length)
+          const { server } = manager
           const mod =
             await server.environments.ssr.moduleGraph.getModuleByUrl(id)
           if (!mod?.id || !mod?.file) {
@@ -1905,6 +1907,7 @@ function vitePluginRscCss(
         }
       },
       load(id) {
+        const { server } = manager
         if (id.startsWith('\0virtual:vite-rsc/importer-resources?importer=')) {
           const importer = decodeURIComponent(
             parseIdQuery(id).query['importer']!,
@@ -1963,6 +1966,7 @@ function vitePluginRscCss(
       },
       hotUpdate(ctx) {
         if (this.environment.name === 'rsc') {
+          const { server } = manager
           const mods = collectModuleDependents(ctx.modules)
           for (const mod of mods) {
             if (mod.id) {
