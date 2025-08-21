@@ -83,6 +83,11 @@ function resolvePackage(name: string) {
 export type { RscPluginManager }
 
 class RscPluginManager {
+  server!: ViteDevServer
+  config!: ResolvedConfig
+  rscBundle!: Rollup.OutputBundle
+  buildAssetsManifest: AssetsManifest | undefined
+  isScanBuild = false
   serverReferences: Record<string, string> = {}
   clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
