@@ -56,6 +56,14 @@ type ClientReferenceMeta = {
   renderedExports: string[]
 }
 
+type ServerRerferenceMeta = {
+  importId: string
+  referenceKey: string
+  // TODO: expose only "use server" exports
+  // TODO: tree shake unused exports
+  // exportNames: string[]
+}
+
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
@@ -76,8 +84,8 @@ class RscPluginManager {
   rscBundle!: Rollup.OutputBundle
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
-  serverReferences: Record<string, string> = {}
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
+  serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 }
 
@@ -1429,7 +1437,7 @@ function vitePluginUseServer(
           )
           const enableEncryption =
             useServerPluginOptions.enableActionEncryption ?? true
-          const { output } = transformServerActionServer_(code, ast, {
+          const result = transformServerActionServer_(code, ast, {
             runtime: (value, name) =>
               `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
                 getNormalizedId(),
@@ -1444,8 +1452,13 @@ function vitePluginUseServer(
                   `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
               : undefined,
           })
+          if (!result) return
+          const output = result.output
           if (!output.hasChanged()) return
-          manager.serverReferences[getNormalizedId()] = id
+          manager.serverReferenceMetaMap[id] = {
+            importId: id,
+            referenceKey: getNormalizedId(),
+          }
           const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
           if (enableEncryption) {
@@ -1480,9 +1493,13 @@ function vitePluginUseServer(
             directive: 'use server',
             rejectNonAsyncFunction: true,
           })
+          if (!result) return
           const output = result?.output
           if (!output?.hasChanged()) return
-          manager.serverReferences[getNormalizedId()] = id
+          manager.serverReferenceMetaMap[id] = {
+            importId: id,
+            referenceKey: getNormalizedId(),
+          }
           const name =
             this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
           const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
@@ -1498,7 +1515,13 @@ function vitePluginUseServer(
       if (this.environment.mode === 'dev') {
         return { code: `export {}`, map: null }
       }
-      const code = generateDynamicImportCode(manager.serverReferences)
+      let code = ''
+      for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+        const key = JSON.stringify(meta.referenceKey)
+        const id = JSON.stringify(meta.importId)
+        code += `${key}: () => import(${id}),`
+      }
+      code = `export default {${code}};\n`
       return { code, map: null }
     }),
   ]
@@ -1541,16 +1564,6 @@ function createVirtualPlugin(name: string, load: Plugin['load']) {
       }
     },
   } satisfies Plugin
-}
-
-function generateDynamicImportCode(map: Record<string, string>) {
-  let code = Object.entries(map)
-    .map(
-      ([key, id]) =>
-        `${JSON.stringify(key)}: () => import(${JSON.stringify(id)}),`,
-    )
-    .join('\n')
-  return `export default {${code}};\n`
 }
 
 class RuntimeAsset {
