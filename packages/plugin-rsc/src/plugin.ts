@@ -453,7 +453,22 @@ export default function vitePluginRsc(
         const ids = ctx.modules.map((mod) => mod.id).filter((v) => v !== null)
         if (ids.length === 0) return
 
-        // TODO: handle server<->client switch
+        // handle client -> server switch (i.e. "use client" removal)
+        // by eagerly transforming new module on "rsc" environment.
+        if (this.environment.name === 'rsc') {
+          for (const mod of ctx.modules) {
+            if (
+              mod.type === 'js' &&
+              mod.id &&
+              mod.id in manager.clientReferenceMetaMap
+            ) {
+              try {
+                await this.environment.transformRequest(mod.url)
+              } catch {}
+            }
+          }
+        }
+
         // a shared component/module will have `isInsideClientBoundary = false` on `rsc` environment
         // and `isInsideClientBoundary = true` on `client` environment,
         // which means both server hmr and client hmr will be triggered.
