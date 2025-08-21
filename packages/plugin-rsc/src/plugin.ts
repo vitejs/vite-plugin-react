@@ -44,27 +44,7 @@ import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 
-// state for build orchestration
-// let serverReferences: Record<string, string> = {}
-// let server: ViteDevServer
-// let config: ResolvedConfig
-// let rscBundle: Rollup.OutputBundle
-// let buildAssetsManifest: AssetsManifest | undefined
-// let isScanBuild = false
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
-
-type ClientReferenceMeta = {
-  importId: string
-  // same as `importId` during dev. hashed id during build.
-  referenceKey: string
-  packageSource?: string
-  // build only for tree-shaking unused export
-  exportNames: string[]
-  renderedExports: string[]
-}
-// let clientReferenceMetaMap: Record</* id */ string, ClientReferenceMeta> = {}
-
-// let serverResourcesMetaMap: Record<string, { key: string }> = {}
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
@@ -80,8 +60,6 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
-export type { RscPluginManager }
-
 class RscPluginManager {
   server!: ViteDevServer
   config!: ResolvedConfig
@@ -91,6 +69,16 @@ class RscPluginManager {
   serverReferences: Record<string, string> = {}
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+}
+
+type ClientReferenceMeta = {
+  importId: string
+  // same as `importId` during dev. hashed id during build.
+  referenceKey: string
+  packageSource?: string
+  // build only for tree-shaking unused export
+  exportNames: string[]
+  renderedExports: string[]
 }
 
 export type RscPluginOptions = {
