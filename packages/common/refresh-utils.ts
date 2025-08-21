@@ -80,19 +80,18 @@ const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof 
 
   newCode = `${sharedHead}${newCode}
 
+import * as __vite_react_currentExports from ${JSON.stringify(id)};
 if (import.meta.hot && !inWebWorker) {
-  // NOTE: import(import.meta.url) does not work in full-bundle mode
-  import.meta.hot.getExports().then((currentExports) => {
-    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
+  const currentExports = __vite_react_currentExports
+  RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
+    id,
+  )}, currentExports);
+  import.meta.hot.accept((nextExports) => {
+    if (!nextExports) return;
+    const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
       id,
-    )}, currentExports);
-    import.meta.hot.accept((nextExports) => {
-      if (!nextExports) return;
-      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
-        id,
-      )}, currentExports, nextExports);
-      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
-    });
+    )}, currentExports, nextExports);
+    if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
   });
 }
 `
