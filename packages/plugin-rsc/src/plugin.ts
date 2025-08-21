@@ -56,6 +56,12 @@ type ClientReferenceMeta = {
   renderedExports: string[]
 }
 
+type ServerRerferenceMeta = {
+  importId: string
+  referenceKey: string
+  exportNames: string[]
+}
+
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
@@ -78,6 +84,7 @@ class RscPluginManager {
   isScanBuild: boolean = false
   serverReferences: Record<string, string> = {}
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
+  serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 }
 
