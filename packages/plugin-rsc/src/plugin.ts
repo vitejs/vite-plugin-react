@@ -2089,34 +2089,6 @@ function __vite_rsc_wrap_css__(value, name) {
   }
 }
 
-/**
- * temporary workaround for
- * - https://github.com/cloudflare/workers-sdk/issues/9538 (fixed in @cloudflare/vite-plugin@1.8.0)
- * - https://github.com/vitejs/vite/pull/20077 (fixed in vite@7.0.0)
- */
-export function __fix_cloudflare(): Plugin {
-  return {
-    name: 'rsc:workaround-cloudflare',
-    enforce: 'post',
-    config(config) {
-      // https://github.com/cloudflare/workers-sdk/issues/9538
-      const plugin = config
-        .plugins!.flat()
-        .find((p) => p && 'name' in p && p.name === 'vite-plugin-cloudflare')
-      const original = (plugin as any).configResolved
-      ;(plugin as any).configResolved = function (this: any, ...args: any[]) {
-        try {
-          return original.apply(this, args)
-        } catch (e) {}
-      }
-
-      // workaround (fixed in Vite 7) https://github.com/vitejs/vite/pull/20077
-      ;(config.environments as any).ssr.resolve.noExternal = true
-      ;(config.environments as any).rsc.resolve.noExternal = true
-    },
-  }
-}
-
 function sortObject<T extends object>(o: T) {
   return Object.fromEntries(
     Object.entries(o).sort(([a], [b]) => a.localeCompare(b)),
