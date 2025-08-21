@@ -435,9 +435,21 @@ function defineTest(f: Fixture) {
     test('hmr switch server to client', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
+      await using _ = await expectNoReload(page)
 
-      const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
+      const editor = f.createEditor('src/routes/hmr-switch/server.tsx')
       editor.edit((s) => `"use client";\n` + s)
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: true)',
+      )
+      // TODO
+      // editor.reset();
+      // await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+      //   '(useState: false)',
+      // )
     })
 
     test('hmr switch client to server', async ({ page }) => {

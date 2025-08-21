@@ -1,5 +1,5 @@
 'use client'
 
-export function TestHmrMixedClient() {
-  return <div>test-hmr-mixed-client</div>
+export function TestHmrSwitchClient() {
+  return <div>test-hmr-switch-client</div>
 }
