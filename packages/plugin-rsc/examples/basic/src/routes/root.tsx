@@ -38,6 +38,8 @@ import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
 import { TestCssQueries } from './css-queries/server'
 import { TestImportMetaGlob } from './import-meta-glob/server'
 import { TestAssetsServer } from './assets/server'
+import { TestHmrSwitchServer } from './hmr-switch/server'
+import { TestHmrSwitchClient } from './hmr-switch/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -65,6 +67,8 @@ export function Root(props: { url: URL }) {
         <TestHmrSharedServer />
         <TestHmrSharedClient />
         <TestHmrSharedAtomic />
+        <TestHmrSwitchServer />
+        <TestHmrSwitchClient />
         <TestTemporaryReference />
         <TestServerActionError />
         <TestReplayConsoleLogs url={props.url} />

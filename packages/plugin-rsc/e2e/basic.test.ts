@@ -431,6 +431,48 @@ function defineTest(f: Fixture) {
       await page.reload()
       await expect(page.getByText('ok (test-shared)')).toBeVisible()
     })
+
+    test('hmr switch server to client', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
+      const editor = f.createEditor('src/routes/hmr-switch/server.tsx')
+      editor.edit((s) => `"use client";\n` + s)
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: true)',
+      )
+
+      await page.waitForTimeout(100)
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
+    })
+
+    test('hmr switch client to server', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
+      const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
+      editor.edit((s) => s.replace(`'use client'`, ''))
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: false)',
+      )
+
+      await page.waitForTimeout(100)
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
+    })
   })
 
   test('css @js', async ({ page }) => {
