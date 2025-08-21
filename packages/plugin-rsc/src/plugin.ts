@@ -956,21 +956,21 @@ function vitePluginUseClient(
   const browserEnvironmentName =
     useClientPluginOptions.environment?.browser ?? 'client'
 
+  let optimizerMetadata: CustomOptimizerMetadata | undefined
+
   // TODO: warning for late optimizer discovery
   function warnInoncistentClientOptimization(
     ctx: Rollup.TransformPluginContext,
     id: string,
   ) {
-    const { depsOptimizer } = server.environments.client
-    if (depsOptimizer) {
-      for (const dep of Object.values(depsOptimizer.metadata.optimized)) {
-        if (dep.src === id) {
-          ctx.warn(
-            `client component dependency is inconsistently optimized. ` +
-              `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
-          )
-        }
-      }
+    // path in metafile is relative to cwd
+    // https://github.com/vitejs/vite/blob/dd96c2cd831ecba3874458b318ad4f0a7f173736/packages/vite/src/node/optimizer/index.ts#L644
+    id = normalizePath(path.relative(process.cwd(), id))
+    if (optimizerMetadata?.ids.includes(id)) {
+      ctx.warn(
+        `client component dependency is inconsistently optimized. ` +
+          `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
+      )
     }
   }
 
@@ -1156,6 +1156,104 @@ function vitePluginUseClient(
                 meta.renderedExports = mod.renderedExports
               }
             }
+          }
+        }
+      },
+    },
+    ...customOptimizerMetadataPlugin({
+      setMetadata: (metadata) => {
+        optimizerMetadata = metadata
+      },
+    }),
+  ]
+}
+
+type CustomOptimizerMetadata = {
+  ids: string[]
+}
+
+function customOptimizerMetadataPlugin({
+  setMetadata,
+}: {
+  setMetadata: (metadata: CustomOptimizerMetadata) => void
+}): Plugin[] {
+  const MEATADATA_FILE = '_metadata-rsc.json'
+
+  type EsbuildPlugin = NonNullable<
+    NonNullable<ResolvedConfig['optimizeDeps']['esbuildOptions']>['plugins']
+  >[number]
+
+  function optimizerPluginEsbuild(): EsbuildPlugin {
+    return {
+      name: 'vite-rsc-metafile',
+      setup(build) {
+        build.onEnd((result) => {
+          // skip scan
+          if (!result.metafile?.inputs || !build.initialOptions.outdir) return
+
+          const ids = Object.keys(result.metafile.inputs)
+          const metadata: CustomOptimizerMetadata = { ids }
+          setMetadata(metadata)
+          fs.writeFileSync(
+            path.join(build.initialOptions.outdir, MEATADATA_FILE),
+            JSON.stringify(metadata, null, 2),
+          )
+        })
+      },
+    }
+  }
+
+  function optimizerPluginRolldown(): Rollup.Plugin {
+    return {
+      name: 'vite-rsc-metafile',
+      writeBundle(options) {
+        assert(options.dir)
+        const ids = [...this.getModuleIds()].map((id) =>
+          path.relative(process.cwd(), id),
+        )
+        const metadata: CustomOptimizerMetadata = { ids }
+        setMetadata(metadata)
+        fs.writeFileSync(
+          path.join(options.dir!, MEATADATA_FILE),
+          JSON.stringify(metadata, null, 2),
+        )
+      },
+    }
+  }
+
+  return [
+    {
+      name: 'rsc:use-client:optimizer-metadata',
+      apply: 'serve',
+      config() {
+        return {
+          environments: {
+            client: {
+              optimizeDeps:
+                'rolldownVersion' in this.meta
+                  ? ({
+                      rolldownOptions: {
+                        plugins: [optimizerPluginRolldown()],
+                      },
+                    } as any)
+                  : {
+                      esbuildOptions: {
+                        plugins: [optimizerPluginEsbuild()],
+                      },
+                    },
+            },
+          },
+        }
+      },
+      configResolved(config) {
+        // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/optimizer/index.ts#L941
+        const file = path.join(config.cacheDir, 'deps', MEATADATA_FILE)
+        if (fs.existsSync(file)) {
+          try {
+            const metadata = JSON.parse(fs.readFileSync(file, 'utf-8'))
+            setMetadata(metadata)
+          } catch (e) {
+            this.warn(`failed to load '${file}'`)
           }
         }
       },
@@ -1800,6 +1898,7 @@ export function vitePluginRscCss(
 
         assert(this.environment.name === 'rsc')
         const output = new MagicString(code)
+        let importAdded = false
 
         for (const match of code.matchAll(
           /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
@@ -1833,7 +1932,11 @@ export function vitePluginRscCss(
             })`
           } else {
             const hash = hashString(importId)
-            if (!code.includes(`__vite_rsc_importer_resources_${hash}`)) {
+            if (
+              !importAdded &&
+              !code.includes(`__vite_rsc_importer_resources_${hash}`)
+            ) {
+              importAdded = true
               output.prepend(
                 `import * as __vite_rsc_importer_resources_${hash} from ${JSON.stringify(
                   importId,
