@@ -1,3 +1,6 @@
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
+
 // https://github.com/vitejs/vite/blob/ea9aed7ebcb7f4be542bd2a384cbcb5a1e7b31bd/packages/vite/src/node/utils.ts#L1469-L1475
 export function evalValue<T = any>(rawValue: string): T {
   const fn = new Function(`
@@ -24,4 +27,10 @@ export function parseIdQuery(id: string): {
 const postfixRE = /[?#].*$/
 export function cleanUrl(url: string): string {
   return url.replace(postfixRE, '')
+}
+
+const require = createRequire(import.meta.url)
+
+export function resolvePackage(name: string): string {
+  return pathToFileURL(require.resolve(name)).href
 }
