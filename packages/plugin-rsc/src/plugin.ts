@@ -59,9 +59,8 @@ type ClientReferenceMeta = {
 type ServerRerferenceMeta = {
   importId: string
   referenceKey: string
-  // TODO: expose only "use server" exports
   // TODO: tree shake unused exports
-  // exportNames: string[]
+  exportNames: string[]
 }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
@@ -1458,6 +1457,7 @@ function vitePluginUseServer(
           manager.serverReferenceMetaMap[id] = {
             importId: id,
             referenceKey: getNormalizedId(),
+            exportNames: 'names' in result ? result.names : result.exportNames,
           }
           const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
@@ -1499,6 +1499,7 @@ function vitePluginUseServer(
           manager.serverReferenceMetaMap[id] = {
             importId: id,
             referenceKey: getNormalizedId(),
+            exportNames: result.exportNames,
           }
           const name =
             this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
@@ -1519,7 +1520,15 @@ function vitePluginUseServer(
       for (const meta of Object.values(manager.serverReferenceMetaMap)) {
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
-        code += `${key}: () => import(${id}),`
+        const exports = meta.exportNames
+          .map((name) => (name === 'default' ? 'default: _default' : name))
+          .sort()
+        code += `
+  ${key}: async () => {
+    const {${exports}} = await import(${id});
+    return {${exports}};
+  },
+`
       }
       code = `export default {${code}};\n`
       return { code, map: null }
