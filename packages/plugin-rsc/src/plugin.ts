@@ -1399,7 +1399,10 @@ function vitePluginUseServer(
     {
       name: 'rsc:use-server',
       async transform(code, id) {
-        if (!code.includes('use server')) return
+        if (!code.includes('use server')) {
+          delete manager.serverReferenceMetaMap[id]
+          return
+        }
         const ast = await parseAstAsync(code)
 
         let normalizedId_: string | undefined
@@ -1451,9 +1454,11 @@ function vitePluginUseServer(
                   `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
               : undefined,
           })
-          if (!result) return
           const output = result.output
-          if (!output.hasChanged()) return
+          if (!result || !output.hasChanged()) {
+            delete manager.serverReferenceMetaMap[id]
+            return
+          }
           manager.serverReferenceMetaMap[id] = {
             importId: id,
             referenceKey: getNormalizedId(),
@@ -1474,7 +1479,10 @@ function vitePluginUseServer(
             map: output.generateMap({ hires: 'boundary' }),
           }
         } else {
-          if (!hasDirective(ast.body, 'use server')) return
+          if (!hasDirective(ast.body, 'use server')) {
+            delete manager.serverReferenceMetaMap[id]
+            return
+          }
           const transformDirectiveProxyExport_ = withRollupError(
             this,
             transformDirectiveProxyExport,
@@ -1493,9 +1501,11 @@ function vitePluginUseServer(
             directive: 'use server',
             rejectNonAsyncFunction: true,
           })
-          if (!result) return
           const output = result?.output
-          if (!output?.hasChanged()) return
+          if (!result || !output?.hasChanged()) {
+            delete manager.serverReferenceMetaMap[id]
+            return
+          }
           manager.serverReferenceMetaMap[id] = {
             importId: id,
             referenceKey: getNormalizedId(),
