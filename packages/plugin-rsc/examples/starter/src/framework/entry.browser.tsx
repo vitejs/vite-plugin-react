@@ -82,6 +82,72 @@ async function main() {
   }
 }
 
+type NavigationState = {
+  url: string
+  pushRef: {
+    pendingPush: boolean
+  }
+}
+
+type NavigationAction = {
+  type: 'push' | 'replace'
+  url: string
+}
+
+const initialNavigationState: NavigationState = {
+  url: window.location.href,
+  pushRef: {
+    pendingPush: false,
+  },
+}
+
+function useSetupNavigation() {
+  React.useInsertionEffect
+
+  type NavigationState = {
+    url: string
+    pushRef: {
+      pendingPush: boolean
+    }
+  }
+
+  type NavigationAction = {
+    type: 'push' | 'replace'
+    url: string
+  }
+
+  const initialState: NavigationState = {
+    url: window.location.href,
+    pushRef: {
+      pendingPush: false,
+    },
+  }
+
+  const [state, dispatch] = React.useReducer(
+    (state: NavigationState, action: NavigationAction) => {
+      switch (action.type) {
+        // case "push": {
+        //   window.history.pushState(null, '', action.url);
+        //   return { url: action.url };
+        // }
+        // case "replace": {
+        //   window.history.replaceState(null, '', action.url);
+        //   return { url: action.url };
+        // }
+        default:
+          return state
+      }
+    },
+    initialState,
+  )
+
+  // React.use(state);
+  state
+  dispatch
+}
+
+function HistoryUpdater() {}
+
 // a little helper to setup events interception for client side navigation
 function listenNavigation(onNavigation: () => void) {
   window.addEventListener('popstate', onNavigation)
