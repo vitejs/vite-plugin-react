@@ -95,7 +95,7 @@ class RscPluginManager {
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 
-  afterScan(): void {
+  stabilize(): void {
     // sort for stable build
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
@@ -239,7 +239,7 @@ export default function vitePluginRsc(
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
       await builder.build(builder.environments.rsc!)
-      manager.afterScan()
+      manager.stabilize()
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -255,7 +255,7 @@ export default function vitePluginRsc(
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
     await builder.build(builder.environments.rsc!)
-    manager.afterScan()
+    manager.stabilize()
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
