@@ -305,7 +305,10 @@ export default Page;
     `)
   })
 
-  test.skip('reject non async function', async () => {
+  test('reject non async function', async () => {
+    // next.js's validataion isn't entirely consisten.
+    // for now we aim to make it at least as forgiving as next.js.
+
     const accepted = [
       `export async function f() {}`,
       `export default async function f() {}`,
@@ -326,6 +329,7 @@ export default Page;
       `export const fn = function fn() {}`,
       `export const fn = () => {}`,
       `export const fn = x, fn2 = () => {}`,
+      `export class Cls {}`,
     ]
 
     async function toActual(input: string) {
@@ -339,14 +343,14 @@ export default Page;
       }
     }
 
-    const expected = [
-      ...accepted.map((e) => [e, true]),
-      ...rejected.map((e) => [e, 'unsupported non async function']),
-    ]
-
     const actual = [
       ...(await Promise.all(accepted.map((e) => toActual(e)))),
       ...(await Promise.all(rejected.map((e) => toActual(e)))),
+    ]
+
+    const expected = [
+      ...accepted.map((e) => [e, true]),
+      ...rejected.map((e) => [e, 'unsupported non async function']),
     ]
 
     expect(actual).toEqual(expected)
