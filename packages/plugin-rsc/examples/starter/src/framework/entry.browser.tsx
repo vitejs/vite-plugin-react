@@ -55,6 +55,8 @@ async function main() {
   // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
     const [state, setState_] = React.useState(initialNavigationState)
+
+    // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/use-action-queue.ts#L49
     dispatch = (v: NavigationAction) => {
       React.startTransition(() => setState_(reducer(state, v)))
     }
@@ -139,26 +141,22 @@ type NavigationAction =
       payload: RscPayload
     }
 
-const PUSH_HISTORY = 'PUSH_HISTORY'
-
+// https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/app-router.tsx#L96
 function HistoryUpdater({ state }: { state: NavigationState }) {
   React.useInsertionEffect(() => {
     if (state.push) {
       state.push = false
-      window.history.pushState({ [PUSH_HISTORY]: true }, '', state.url)
+      oldPushState.call(window.history, {}, '', state.url)
     }
   }, [state])
 
   return null
 }
 
+const oldPushState = window.history.pushState
+
 function listenNavigation() {
-  const oldPushState = window.history.pushState
   window.history.pushState = function (...args) {
-    if (args[0] && typeof args[0] === 'object' && PUSH_HISTORY in args[0]) {
-      oldPushState.apply(this, args)
-      return
-    }
     const href = window.location.href
     const url = new URL(args[2] || href, href)
     dispatch({ type: 'push', url: url.href })
