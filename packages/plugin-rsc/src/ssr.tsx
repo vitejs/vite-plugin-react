@@ -3,6 +3,7 @@ import * as clientReferences from 'virtual:vite-rsc/client-references'
 import * as ReactDOM from 'react-dom'
 import { setRequireModule } from './core/ssr'
 import type { ResolvedAssetDeps } from './plugin'
+import { toCssVirtual } from './plugins/shared'
 
 export { createServerConsumerManifest } from './core/ssr'
 
@@ -16,7 +17,7 @@ function initialize(): void {
       if (!import.meta.env.__vite_rsc_build__) {
         const mod = await import(/* @vite-ignore */ id)
         const modCss = await import(
-          /* @vite-ignore */ '/@id/__x00__virtual:vite-rsc/css/dev-ssr/' + id
+          /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })
         )
         return wrapResourceProxy(mod, { js: [], css: modCss.default })
       } else {
