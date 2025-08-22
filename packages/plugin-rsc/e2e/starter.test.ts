@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { defineStarterTest } from './starter'
 import { expectNoPageError, waitForHydration } from './helper'
+import { x } from 'tinyexec'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
@@ -93,4 +94,50 @@ test.describe('duplicate loadCss', () => {
       await waitForHydration(page)
     })
   }
+})
+
+test.describe('isolated build', () => {
+  const root = 'examples/e2e/temp/isolated-build'
+
+  test.beforeAll(async () => {
+    // build twice programmatically to verify two plugin states are independent
+    async function testFn() {
+      const vite = await import('vite')
+      const fs = await import('node:fs')
+
+      console.log('======== first build ========')
+      const builder1 = await vite.createBuilder()
+      await builder1.buildApp()
+
+      // edit files to remove client references
+      fs.rmSync(`src/client.tsx`)
+      fs.writeFileSync(
+        `src/root.tsx`,
+        fs
+          .readFileSync(`src/root.tsx`, 'utf-8')
+          .replace(`import { ClientCounter } from './client.tsx'`, '')
+          .replace(`<ClientCounter />`, ''),
+      )
+
+      console.log('======== second build ========')
+      const builder2 = await vite.createBuilder()
+      await builder2.buildApp()
+    }
+
+    await setupInlineFixture({
+      src: 'examples/starter',
+      dest: root,
+      files: {
+        'test.js': `await (${testFn.toString()})();\n`,
+      },
+    })
+  })
+
+  test('build', async () => {
+    const result = await x('node', ['./test.js'], {
+      nodeOptions: { cwd: root },
+    })
+    expect(result.stderr).not.toContain('Build failed')
+    expect(result.exitCode).toBe(0)
+  })
 })

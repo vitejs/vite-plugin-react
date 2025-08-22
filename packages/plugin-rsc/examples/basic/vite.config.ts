@@ -25,12 +25,13 @@ export default defineConfig({
         fileName !== '__server_secret.txt',
     }),
     {
-      name: 'test-client-reference-tree-shaking',
+      name: 'test-tree-shake',
       enforce: 'post',
       writeBundle(_options, bundle) {
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
+            assert(!chunk.code.includes('__unused_server_export__'))
           }
         }
       },
