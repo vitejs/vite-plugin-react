@@ -1,21 +1,15 @@
-export function toCssVirtual({
-  id,
-  type,
-}: {
+type CssVirtual = {
   id: string
   type: 'ssr' | 'rsc' | 'rsc-browser'
-}) {
+}
+
+export function toCssVirtual({ id, type }: CssVirtual) {
   // ensure other plugins treat it as a plain js file
   // e.g. https://github.com/vitejs/rolldown-vite/issues/372#issuecomment-3193401601
   return `virtual:vite-rsc/css?type=${type}&id=${encodeURIComponent(id)}&lang.js`
 }
 
-export function parseCssVirtual(id: string):
-  | {
-      id: string
-      type: 'ssr' | 'rsc' | 'rsc-browser'
-    }
-  | undefined {
+export function parseCssVirtual(id: string): CssVirtual | undefined {
   if (id.startsWith('\0virtual:vite-rsc/css?')) {
     return parseIdQuery(id).query as any
   }
