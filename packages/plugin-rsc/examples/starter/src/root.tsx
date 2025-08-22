@@ -4,7 +4,7 @@ import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 
-export function Root() {
+export function Root(props: { url: URL }) {
   return (
     <html lang="en">
       <head>
@@ -14,13 +14,13 @@ export function Root() {
         <title>Vite + RSC</title>
       </head>
       <body>
-        <App />
+        <App {...props} />
       </body>
     </html>
   )
 }
 
-function App() {
+function App(props: { url: URL }) {
   return (
     <div id="root">
       <div>
@@ -65,6 +65,31 @@ function App() {
           to test server action without js enabled.
         </li>
       </ul>
+      <div>
+        <div>url: {props.url.href}</div>
+        <div>
+          <a href="/">Home</a> | <a href="/fast">Fast</a> |{' '}
+          <a href="/slow">Slow</a>
+        </div>
+        <div>
+          <Sleep
+            ms={
+              props.url.pathname === '/slow'
+                ? 2000
+                : props.url.pathname === '/fast'
+                  ? 500
+                  : 0
+            }
+          />
+        </div>
+      </div>
     </div>
   )
+}
+
+async function Sleep(props: { ms: number }) {
+  console.log('sleep:start', props.ms, 'ms')
+  await new Promise((resolve) => setTimeout(resolve, props.ms))
+  console.log('sleep:end', props.ms, 'ms')
+  return <>Slept for {props.ms}ms</>
 }
