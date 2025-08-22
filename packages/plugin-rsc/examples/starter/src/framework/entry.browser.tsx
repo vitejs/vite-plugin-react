@@ -139,15 +139,13 @@ type NavigationAction =
       payload: RscPayload
     }
 
-const UPDATE_HISTORY = 'UPDATE_HISTORY'
+const PUSH_HISTORY = 'PUSH_HISTORY'
 
 function HistoryUpdater({ state }: { state: NavigationState }) {
   React.useInsertionEffect(() => {
     if (state.push) {
       state.push = false
-      window.history.pushState({ [UPDATE_HISTORY]: true }, '', state.url)
-    } else {
-      window.history.replaceState({ [UPDATE_HISTORY]: true }, '', state.url)
+      window.history.pushState({ [PUSH_HISTORY]: true }, '', state.url)
     }
   }, [state])
 
@@ -155,10 +153,10 @@ function HistoryUpdater({ state }: { state: NavigationState }) {
 }
 
 function listenNavigation() {
-  const originalPushState = window.history.pushState
+  const oldPushState = window.history.pushState
   window.history.pushState = function (...args) {
-    if (args[0] && typeof args[0] === 'object' && UPDATE_HISTORY in args[0]) {
-      originalPushState.apply(this, args)
+    if (args[0] && typeof args[0] === 'object' && PUSH_HISTORY in args[0]) {
+      oldPushState.apply(this, args)
       return
     }
     const href = window.location.href
@@ -167,12 +165,8 @@ function listenNavigation() {
     return
   }
 
-  const originalReplaceState = window.history.replaceState
+  const oldReplaceState = window.history.replaceState
   window.history.replaceState = function (...args) {
-    if (args[0] && typeof args[0] === 'object' && UPDATE_HISTORY in args[0]) {
-      originalReplaceState.apply(this, args)
-      return
-    }
     const href = window.location.href
     const url = new URL(args[2] || href, href)
     dispatch({ type: 'replace', url: url.href })
@@ -210,8 +204,8 @@ function listenNavigation() {
   return () => {
     document.removeEventListener('click', onClick)
     window.removeEventListener('popstate', onPopstate)
-    window.history.pushState = originalPushState
-    window.history.replaceState = originalReplaceState
+    window.history.pushState = oldPushState
+    window.history.replaceState = oldReplaceState
   }
 }
 
