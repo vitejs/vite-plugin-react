@@ -1,7 +1,6 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
-import * as vite from 'vite'
 import type { BuildOptions, Plugin } from 'vite'
 import {
   addRefreshWrapper,
@@ -35,8 +34,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
-
-  const isRolldownVite = 'rolldownVersion' in vite
 
   const viteConfig: Plugin = {
     name: 'vite:react-oxc:config',
@@ -73,7 +70,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       )
     },
     options() {
-      if (!isRolldownVite) {
+      if (!this.meta.rolldownVersion) {
         throw new Error(
           '@vitejs/plugin-react-oxc requires rolldown-vite to be used. ' +
             'See https://vitejs.dev/guide/rolldown for more details about rolldown-vite.',
