@@ -29,27 +29,18 @@ async function main() {
     push: false,
   }
 
-  function reducer(
-    state: NavigationState,
-    action: NavigationAction,
-  ): NavigationState {
-    if (action.type === 'push' || action.type === 'replace') {
+  function reducer(action: NavigationAction): NavigationState {
+    if (action.payload) {
       return {
-        ...state,
         url: action.url,
-        push: action.type === 'push',
-        payloadPromise: createFromFetch<RscPayload>(fetch(action.url)),
-      }
-    }
-    if (action.type === 'setPayload') {
-      return {
-        ...state,
-        push: false,
         payloadPromise: Promise.resolve(action.payload),
       }
     }
-    console.error(action)
-    throw new Error(`Unknown action type: ${action.type}`)
+    return {
+      url: action.url,
+      push: action.push,
+      payloadPromise: createFromFetch<RscPayload>(fetch(action.url)),
+    }
   }
 
   // browser root component to (re-)render RSC payload as state
@@ -57,8 +48,8 @@ async function main() {
     const [state, setState_] = React.useState(initialNavigationState)
 
     // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/use-action-queue.ts#L49
-    dispatch = (v: NavigationAction) => {
-      React.startTransition(() => setState_(reducer(state, v)))
+    dispatch = (action: NavigationAction) => {
+      React.startTransition(() => setState_(reducer(action)))
     }
 
     React.useEffect(() => {
@@ -101,7 +92,7 @@ async function main() {
       }),
       { temporaryReferences },
     )
-    dispatch({ type: 'setPayload', payload })
+    dispatch({ url: url.href, payload })
     return payload.returnValue
   })
 
@@ -118,7 +109,7 @@ async function main() {
   // implement server HMR by trigering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
-      dispatch({ type: 'replace', url: window.location.href })
+      dispatch({ url: window.location.href })
     })
   }
 }
@@ -127,19 +118,15 @@ async function main() {
 // https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router.tsx
 type NavigationState = {
   url: string
-  push: boolean
+  push?: boolean
   payloadPromise: Promise<RscPayload>
 }
 
-type NavigationAction =
-  | {
-      type: 'push' | 'replace'
-      url: string
-    }
-  | {
-      type: 'setPayload'
-      payload: RscPayload
-    }
+type NavigationAction = {
+  url: string
+  push?: boolean
+  payload?: RscPayload
+}
 
 // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/app-router.tsx#L96
 function HistoryUpdater({ state }: { state: NavigationState }) {
@@ -157,23 +144,21 @@ const oldPushState = window.history.pushState
 
 function listenNavigation() {
   window.history.pushState = function (...args) {
-    const href = window.location.href
-    const url = new URL(args[2] || href, href)
-    dispatch({ type: 'push', url: url.href })
+    const url = new URL(args[2] || window.location.href, window.location.href)
+    dispatch({ url: url.href, push: true })
     return
   }
 
   const oldReplaceState = window.history.replaceState
   window.history.replaceState = function (...args) {
-    const href = window.location.href
-    const url = new URL(args[2] || href, href)
-    dispatch({ type: 'replace', url: url.href })
+    const url = new URL(args[2] || window.location.href, window.location.href)
+    dispatch({ url: url.href })
     return
   }
 
   function onPopstate() {
     const href = window.location.href
-    dispatch({ type: 'replace', url: href })
+    dispatch({ url: href })
   }
   window.addEventListener('popstate', onPopstate)
 
@@ -194,7 +179,7 @@ function listenNavigation() {
       !e.defaultPrevented
     ) {
       e.preventDefault()
-      dispatch({ type: 'push', url: link.href })
+      window.history.pushState(null, '', link.href)
     }
   }
   document.addEventListener('click', onClick)
