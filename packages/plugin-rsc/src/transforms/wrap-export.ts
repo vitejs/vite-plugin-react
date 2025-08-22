@@ -14,15 +14,17 @@ export type TransformWrapExportFilter = (
   meta: ExportMeta,
 ) => boolean
 
+export type TransformWrapExportOptions = {
+  runtime: (value: string, name: string, meta: ExportMeta) => string
+  ignoreExportAllDeclaration?: boolean
+  rejectNonAsyncFunction?: boolean
+  filter?: TransformWrapExportFilter
+}
+
 export function transformWrapExport(
   input: string,
   ast: Program,
-  options: {
-    runtime: (value: string, name: string, meta: ExportMeta) => string
-    ignoreExportAllDeclaration?: boolean
-    rejectNonAsyncFunction?: boolean
-    filter?: TransformWrapExportFilter
-  },
+  options: TransformWrapExportOptions,
 ): {
   exportNames: string[]
   output: MagicString

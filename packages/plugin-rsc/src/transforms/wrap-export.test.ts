@@ -2,13 +2,13 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { debugSourceMap } from './test-utils'
 import {
-  type TransformWrapExportFilter,
+  type TransformWrapExportOptions,
   transformWrapExport,
 } from './wrap-export'
 
 async function testTransform(
   input: string,
-  options?: { filter?: TransformWrapExportFilter },
+  options?: Omit<TransformWrapExportOptions, 'runtime'>,
 ) {
   const ast = await parseAstAsync(input)
   const { output } = transformWrapExport(input, ast, {
@@ -303,5 +303,52 @@ export default Page;
       export { $$wrap_$$default as default };
       "
     `)
+  })
+
+  test.skip('reject non async function', async () => {
+    const accepted = [
+      `export async function f() {}`,
+      `export default async function f() {}`,
+      `export const fn = async function fn() {}`,
+      `export const fn = async () => {}`,
+      `export const fn = async () => {}, fn2 = x`,
+      `export const fn = x`,
+      `export const fn = x({ x: y })`,
+      `export const fn = x(async () => {})`,
+      `export default x`,
+      `const y = x; export { y }`,
+      `export const fn = x(() => {})`, // rejected by next.js
+    ]
+
+    const rejected = [
+      `export function f() {}`,
+      `export default function f() {}`,
+      `export const fn = function fn() {}`,
+      `export const fn = () => {}`,
+      `export const fn = x, fn2 = () => {}`,
+    ]
+
+    async function toActual(input: string) {
+      try {
+        await testTransform(input, {
+          rejectNonAsyncFunction: true,
+        })
+        return [input, true]
+      } catch (e) {
+        return [input, e instanceof Error ? e.message : e]
+      }
+    }
+
+    const expected = [
+      ...accepted.map((e) => [e, true]),
+      ...rejected.map((e) => [e, 'unsupported non async function']),
+    ]
+
+    const actual = [
+      ...(await Promise.all(accepted.map((e) => toActual(e)))),
+      ...(await Promise.all(rejected.map((e) => toActual(e)))),
+    ]
+
+    expect(actual).toEqual(expected)
   })
 })
