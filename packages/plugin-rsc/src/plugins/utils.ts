@@ -41,7 +41,7 @@ export function sortObject<T extends object>(o: T) {
   ) as T
 }
 
-// Rethrow transform error through `this.error` with `error.pos` which is injected by `@hiogawa/transforms`
+// Rethrow transform error through `this.error` with `error.pos`
 export function withRollupError<F extends (...args: any[]) => any>(
   ctx: Rollup.TransformPluginContext,
   f: F,
