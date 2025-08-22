@@ -175,7 +175,7 @@ function listenNavigation() {
       !e.defaultPrevented
     ) {
       e.preventDefault()
-      window.history.pushState(null, '', link.href)
+      history.pushState(null, '', link.href)
     }
   }
   document.addEventListener('click', onClick)
