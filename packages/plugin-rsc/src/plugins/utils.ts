@@ -16,19 +16,6 @@ export function evalValue<T = any>(rawValue: string): T {
   return fn()
 }
 
-// https://github.com/vitejs/vite-plugin-vue/blob/06931b1ea2b9299267374cb8eb4db27c0626774a/packages/plugin-vue/src/utils/query.ts#L13
-export function parseIdQuery(id: string): {
-  filename: string
-  query: {
-    [k: string]: string
-  }
-} {
-  if (!id.includes('?')) return { filename: id, query: {} }
-  const [filename, rawQuery] = id.split(`?`, 2) as [string, string]
-  const query = Object.fromEntries(new URLSearchParams(rawQuery))
-  return { filename, query }
-}
-
 // https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/shared/utils.ts#L31-L34
 const postfixRE = /[?#].*$/
 export function cleanUrl(url: string): string {

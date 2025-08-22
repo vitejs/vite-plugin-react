@@ -43,7 +43,6 @@ import {
   getEntrySource,
   hashString,
   normalizeRelativePath,
-  parseIdQuery,
   sortObject,
   withRollupError,
 } from './plugins/utils'
@@ -51,7 +50,7 @@ import { createDebug } from '@hiogawa/utils'
 import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { parseCssVirtual, toCssVirtual } from './plugins/shared'
+import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
 
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 

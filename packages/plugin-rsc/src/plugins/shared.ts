@@ -17,10 +17,7 @@ export function parseCssVirtual(id: string):
     }
   | undefined {
   if (id.startsWith('\0virtual:vite-rsc/css?')) {
-    return parseIdQuery(id).query as {
-      id: string
-      type: 'ssr' | 'rsc' | 'rsc-browser'
-    }
+    return parseIdQuery(id).query as any
   }
 }
 
