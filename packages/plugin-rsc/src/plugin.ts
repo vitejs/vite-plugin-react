@@ -51,6 +51,7 @@ import { createDebug } from '@hiogawa/utils'
 import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import { parseCssVirtual, toCssVirtual } from './plugins/shared'
 
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
@@ -1797,15 +1798,16 @@ function vitePluginRscCss(
       },
     },
     {
-      name: 'rsc:css/dev-ssr-virtual',
+      name: 'rsc:css-virtual',
       resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/css/dev-ssr/')) {
+        if (source.startsWith('virtual:vite-rsc/css?')) {
           return '\0' + source
         }
       },
       async load(id) {
-        if (id.startsWith('\0virtual:vite-rsc/css/dev-ssr/')) {
-          id = id.slice('\0virtual:vite-rsc/css/dev-ssr/'.length)
+        const parsed = parseCssVirtual(id)
+        if (parsed?.type === 'ssr') {
+          id = parsed.id
           const { server } = manager
           const mod =
             await server.environments.ssr.moduleGraph.getModuleByUrl(id)
@@ -1853,11 +1855,7 @@ function vitePluginRscCss(
             }
           }
 
-          // ensure other plugins treat it as a plain js file
-          // e.g. https://github.com/vitejs/rolldown-vite/issues/372#issuecomment-3193401601
-          const importId = `virtual:vite-rsc/importer-resources?importer=${encodeURIComponent(
-            importer,
-          )}&lang.js`
+          const importId = toCssVirtual({ id: importer, type: 'rsc' })
 
           // use dynamic import during dev to delay crawling and discover css correctly.
           let replacement: string
@@ -1894,25 +1892,17 @@ function vitePluginRscCss(
           }
         }
       },
-      resolveId(source) {
-        if (
-          source.startsWith('virtual:vite-rsc/importer-resources?importer=')
-        ) {
-          assert(this.environment.name === 'rsc')
-          return '\0' + source
-        }
-      },
       load(id) {
         const { server } = manager
-        if (id.startsWith('\0virtual:vite-rsc/importer-resources?importer=')) {
-          const importer = decodeURIComponent(
-            parseIdQuery(id).query['importer']!,
-          )
+        const parsed = parseCssVirtual(id)
+        if (parsed?.type === 'rsc') {
+          assert(this.environment.name === 'rsc')
+          const importer = parsed.id
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const jsHrefs = [
-              `@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=${encodeURIComponent(importer)}&lang.js`,
+              `@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
             ]
             const deps = assetsURLOfDeps(
               { css: cssHrefs, js: jsHrefs },
@@ -1938,16 +1928,10 @@ function vitePluginRscCss(
             `
           }
         }
-        if (
-          id.startsWith(
-            '\0virtual:vite-rsc/importer-resources-browser?importer=',
-          )
-        ) {
+        if (parsed?.type === 'rsc-browser') {
           assert(this.environment.name === 'client')
           assert(this.environment.mode === 'dev')
-          const importer = decodeURIComponent(
-            parseIdQuery(id).query['importer']!,
-          )
+          const importer = parsed.id
           const result = collectCss(server.environments.rsc!, importer)
           let code = result.ids
             .map((id) => id.replace(/^\0/, ''))
@@ -1965,14 +1949,13 @@ function vitePluginRscCss(
           const mods = collectModuleDependents(ctx.modules)
           for (const mod of mods) {
             if (mod.id) {
-              const importer = encodeURIComponent(mod.id)
               invalidteModuleById(
                 server.environments.rsc!,
-                `\0virtual:vite-rsc/importer-resources?importer=${importer}&lang.js`,
+                `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
               )
               invalidteModuleById(
                 server.environments.client,
-                `\0virtual:vite-rsc/importer-resources-browser?importer=${importer}&lang.js`,
+                `\0` + toCssVirtual({ id: mod.id, type: 'rsc-browser' }),
               )
             }
           }
