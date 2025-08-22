@@ -37,6 +37,7 @@ export function transformWrapExport(
     end: number,
     exports: { name: string; meta: ExportMeta }[],
   ) {
+    exportNames.push(...exports.map((e) => e.name))
     // update code and move to preserve `registerServerReference` position
     // e.g.
     // input
@@ -64,6 +65,7 @@ export function transformWrapExport(
   }
 
   function wrapExport(name: string, exportName: string, meta: ExportMeta = {}) {
+    exportNames.push(exportName)
     if (!filter(exportName, meta)) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
