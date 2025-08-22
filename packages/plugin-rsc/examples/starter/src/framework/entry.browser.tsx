@@ -29,28 +29,24 @@ async function main() {
     push: false,
   }
 
-  function reducer(action: NavigationAction): NavigationState {
-    if (action.payload) {
-      return {
-        url: action.url,
-        payloadPromise: Promise.resolve(action.payload),
-      }
-    }
-    return {
-      url: action.url,
-      push: action.push,
-      payloadPromise: createFromFetch<RscPayload>(fetch(action.url)),
-    }
-  }
-
   // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
     const [state, setState_] = React.useState(initialNavigationState)
 
     // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/use-action-queue.ts#L49
-    dispatch = (action: NavigationAction) => {
-      React.startTransition(() => setState_(reducer(action)))
-    }
+    React.useEffect(() => {
+      dispatch = (action: NavigationAction) => {
+        React.startTransition(() => {
+          setState_({
+            url: action.url,
+            push: action.push,
+            payloadPromise: action.payload
+              ? Promise.resolve(action.payload)
+              : createFromFetch<RscPayload>(fetch(action.url)),
+          })
+        })
+      }
+    }, [setState_])
 
     React.useEffect(() => {
       return listenNavigation()
