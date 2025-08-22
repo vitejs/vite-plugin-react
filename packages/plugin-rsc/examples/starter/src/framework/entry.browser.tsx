@@ -10,10 +10,12 @@ import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 
+let dispatch: (action: NavigationAction) => void
+
 async function main() {
   // stash `setPayload` function to trigger re-rendering
   // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
-  let setPayload: (v: RscPayload) => void
+  // let setPayload: (v: RscPayload) => void
 
   // deserialize RSC stream back to React VDOM for CSR
   const initialPayload = await createFromReadableStream<RscPayload>(
@@ -21,29 +23,66 @@ async function main() {
     rscStream,
   )
 
+  const initialNavigationState: NavigationState = {
+    payloadPromise: Promise.resolve(initialPayload),
+    url: window.location.href,
+    push: false,
+  }
+
+  function reducer(
+    state: NavigationState,
+    action: NavigationAction,
+  ): NavigationState {
+    if (action.type === 'push' || action.type === 'replace') {
+      return {
+        ...state,
+        url: action.url,
+        push: action.type === 'push',
+        payloadPromise: createFromFetch<RscPayload>(fetch(action.url)),
+      }
+    }
+    if (action.type === 'setPayload') {
+      return {
+        ...state,
+        push: false,
+        payloadPromise: Promise.resolve(action.payload),
+      }
+    }
+    console.error(action)
+    throw new Error(`Unknown action type: ${action.type}`)
+  }
+
   // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
-    const [payload, setPayload_] = React.useState(initialPayload)
+    const [state, setState_] = React.useState(initialNavigationState)
+    dispatch = (v: NavigationAction) => {
+      React.startTransition(() => setState_(reducer(state, v)))
+    }
 
     React.useEffect(() => {
-      setPayload = (v) => React.startTransition(() => setPayload_(v))
-    }, [setPayload_])
-
-    // re-fetch/render on client side navigation
-    React.useEffect(() => {
-      return listenNavigation(() => fetchRscPayload())
+      return listenNavigation()
     }, [])
 
+    return (
+      <>
+        <HistoryUpdater state={state} />
+        <RenderState state={state} />
+      </>
+    )
+  }
+
+  function RenderState({ state }: { state: NavigationState }) {
+    const payload = React.use(state.payloadPromise)
     return payload.root
   }
 
   // re-fetch RSC and trigger re-rendering
-  async function fetchRscPayload() {
-    const payload = await createFromFetch<RscPayload>(
-      fetch(window.location.href),
-    )
-    setPayload(payload)
-  }
+  // async function fetchRscPayload() {
+  //   const payload = await createFromFetch<RscPayload>(
+  //     fetch(window.location.href),
+  //   )
+  //   setPayload(payload)
+  // }
 
   // register a handler which will be internally called by React
   // on server function request after hydration.
@@ -60,7 +99,7 @@ async function main() {
       }),
       { temporaryReferences },
     )
-    setPayload(payload)
+    dispatch({ type: 'setPayload', payload })
     return payload.returnValue
   })
 
@@ -77,94 +116,74 @@ async function main() {
   // implement server HMR by trigering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
-      fetchRscPayload()
+      dispatch({ type: 'replace', url: window.location.href })
     })
   }
 }
 
+// https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router-instance.ts
+// https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router.tsx
 type NavigationState = {
   url: string
-  pushRef: {
-    pendingPush: boolean
-  }
+  push: boolean
+  payloadPromise: Promise<RscPayload>
 }
 
-type NavigationAction = {
-  type: 'push' | 'replace'
-  url: string
-}
-
-const initialNavigationState: NavigationState = {
-  url: window.location.href,
-  pushRef: {
-    pendingPush: false,
-  },
-}
-
-function useSetupNavigation() {
-  React.useInsertionEffect
-
-  type NavigationState = {
-    url: string
-    pushRef: {
-      pendingPush: boolean
+type NavigationAction =
+  | {
+      type: 'push' | 'replace'
+      url: string
     }
-  }
+  | {
+      type: 'setPayload'
+      payload: RscPayload
+    }
 
-  type NavigationAction = {
-    type: 'push' | 'replace'
-    url: string
-  }
+const UPDATE_HISTORY = 'UPDATE_HISTORY'
 
-  const initialState: NavigationState = {
-    url: window.location.href,
-    pushRef: {
-      pendingPush: false,
-    },
-  }
+function HistoryUpdater({ state }: { state: NavigationState }) {
+  React.useInsertionEffect(() => {
+    if (state.push) {
+      state.push = false
+      window.history.pushState({ [UPDATE_HISTORY]: true }, '', state.url)
+    } else {
+      window.history.replaceState({ [UPDATE_HISTORY]: true }, '', state.url)
+    }
+  }, [state])
 
-  const [state, dispatch] = React.useReducer(
-    (state: NavigationState, action: NavigationAction) => {
-      switch (action.type) {
-        // case "push": {
-        //   window.history.pushState(null, '', action.url);
-        //   return { url: action.url };
-        // }
-        // case "replace": {
-        //   window.history.replaceState(null, '', action.url);
-        //   return { url: action.url };
-        // }
-        default:
-          return state
-      }
-    },
-    initialState,
-  )
-
-  // React.use(state);
-  state
-  dispatch
+  return null
 }
 
-function HistoryUpdater() {}
-
-// a little helper to setup events interception for client side navigation
-function listenNavigation(onNavigation: () => void) {
-  window.addEventListener('popstate', onNavigation)
-
-  const oldPushState = window.history.pushState
+function listenNavigation() {
+  const originalPushState = window.history.pushState
   window.history.pushState = function (...args) {
-    const res = oldPushState.apply(this, args)
-    onNavigation()
-    return res
+    if (args[0] && typeof args[0] === 'object' && UPDATE_HISTORY in args[0]) {
+      originalPushState.apply(this, args)
+      return
+    }
+    const href = window.location.href
+    const url = new URL(args[2] || href, href)
+    dispatch({ type: 'push', url: url.href })
+    return
   }
 
-  const oldReplaceState = window.history.replaceState
+  const originalReplaceState = window.history.replaceState
   window.history.replaceState = function (...args) {
-    const res = oldReplaceState.apply(this, args)
-    onNavigation()
-    return res
+    if (args[0] && typeof args[0] === 'object' && UPDATE_HISTORY in args[0]) {
+      originalReplaceState.apply(this, args)
+      return
+    }
+    const href = window.location.href
+    const url = new URL(args[2] || href, href)
+    dispatch({ type: 'replace', url: url.href })
+    return
   }
+
+  function onPopstate() {
+    const href = window.location.href
+    dispatch({ type: 'replace', url: href })
+  }
+  window.addEventListener('popstate', onPopstate)
 
   function onClick(e: MouseEvent) {
     let link = (e.target as Element).closest('a')
@@ -183,16 +202,16 @@ function listenNavigation(onNavigation: () => void) {
       !e.defaultPrevented
     ) {
       e.preventDefault()
-      history.pushState(null, '', link.href)
+      dispatch({ type: 'push', url: link.href })
     }
   }
   document.addEventListener('click', onClick)
 
   return () => {
     document.removeEventListener('click', onClick)
-    window.removeEventListener('popstate', onNavigation)
-    window.history.pushState = oldPushState
-    window.history.replaceState = oldReplaceState
+    window.removeEventListener('popstate', onPopstate)
+    window.history.pushState = originalPushState
+    window.history.replaceState = originalReplaceState
   }
 }
 
