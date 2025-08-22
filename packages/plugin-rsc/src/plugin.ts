@@ -1,5 +1,4 @@
 import assert from 'node:assert'
-import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -38,7 +37,16 @@ import {
   prepareError,
 } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
-import { evalValue, parseIdQuery } from './plugins/utils'
+import {
+  createVirtualPlugin,
+  evalValue,
+  getEntrySource,
+  hashString,
+  normalizeRelativePath,
+  parseIdQuery,
+  sortObject,
+  withRollupError,
+} from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
 import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
@@ -86,6 +94,12 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+
+  afterScan(): void {
+    // sort for stable build
+    this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
+    this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
+  }
 }
 
 export type RscPluginOptions = {
@@ -225,13 +239,7 @@ export default function vitePluginRsc(
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
       await builder.build(builder.environments.rsc!)
-      // sort for stable build
-      manager.clientReferenceMetaMap = sortObject(
-        manager.clientReferenceMetaMap,
-      )
-      manager.serverResourcesMetaMap = sortObject(
-        manager.serverResourcesMetaMap,
-      )
+      manager.afterScan()
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -247,9 +255,7 @@ export default function vitePluginRsc(
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
     await builder.build(builder.environments.rsc!)
-    // sort for stable build
-    manager.clientReferenceMetaMap = sortObject(manager.clientReferenceMetaMap)
-    manager.serverResourcesMetaMap = sortObject(manager.serverResourcesMetaMap)
+    manager.afterScan()
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
@@ -967,30 +973,6 @@ function scanBuildStripPlugin({
   }
 }
 
-function normalizeRelativePath(s: string) {
-  s = normalizePath(s)
-  return s[0] === '.' ? s : './' + s
-}
-
-function getEntrySource(
-  config: Pick<ResolvedConfig, 'build'>,
-  name: string = 'index',
-) {
-  const input = config.build.rollupOptions.input
-  assert(
-    typeof input === 'object' &&
-      !Array.isArray(input) &&
-      name in input &&
-      typeof input[name] === 'string',
-    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
-  )
-  return input[name]
-}
-
-function hashString(v: string) {
-  return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
-}
-
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
@@ -1542,45 +1524,6 @@ function vitePluginUseServer(
       return { code, map: null }
     }),
   ]
-}
-
-// Rethrow transform error through `this.error` with `error.pos` which is injected by `@hiogawa/transforms`
-function withRollupError<F extends (...args: any[]) => any>(
-  ctx: Rollup.TransformPluginContext,
-  f: F,
-): F {
-  function processError(e: any): never {
-    if (e && typeof e === 'object' && typeof e.pos === 'number') {
-      return ctx.error(e, e.pos)
-    }
-    throw e
-  }
-  return function (this: any, ...args: any[]) {
-    try {
-      const result = f.apply(this, args)
-      if (result instanceof Promise) {
-        return result.catch((e: any) => processError(e))
-      }
-      return result
-    } catch (e: any) {
-      processError(e)
-    }
-  } as F
-}
-
-function createVirtualPlugin(name: string, load: Plugin['load']) {
-  name = 'virtual:' + name
-  return {
-    name: `rsc:virtual-${name}`,
-    resolveId(source, _importer, _options) {
-      return source === name ? '\0' + name : undefined
-    },
-    load(id, options) {
-      if (id === '\0' + name) {
-        return (load as Function).apply(this, [id, options])
-      }
-    },
-  } satisfies Plugin
 }
 
 class RuntimeAsset {
@@ -2182,10 +2125,4 @@ function __vite_rsc_wrap_css__(value, name) {
 `)
     return { output: result.output }
   }
-}
-
-function sortObject<T extends object>(o: T) {
-  return Object.fromEntries(
-    Object.entries(o).sort(([a], [b]) => a.localeCompare(b)),
-  ) as T
 }
