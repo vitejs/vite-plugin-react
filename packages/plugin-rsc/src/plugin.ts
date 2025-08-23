@@ -1119,12 +1119,30 @@ function vitePluginUseClient(
         const exports = meta.renderedExports
           .map((name) => (name === 'default' ? 'default: _default' : name))
           .sort()
-        code += `
-          ${key}: async () => {
-            const {${exports}} = await import(${id});
-            return {${exports}};
-          },
-        `
+        if (this.environment.name === 'client') {
+          // TODO:
+          // - re-export through virtual to fiter renderedExports
+          // - replace `import.meta.ROLLUP_FILE_URL_` on our own
+          // - handle "vite preload" on our own
+          const chunkId = this.emitFile({
+            type: 'chunk',
+            id: meta.importId,
+            preserveSignature: 'allow-extension',
+          })
+          code += `
+            ${key}: async () => {
+              const {${exports}} = await import(import.meta.ROLLUP_FILE_URL_${chunkId});
+              return {${exports}};
+            },
+          `
+        } else {
+          code += `
+            ${key}: async () => {
+              const {${exports}} = await import(${id});
+              return {${exports}};
+            },
+          `
+        }
       }
       code = `export default {${code}};\n`
       return { code, map: null }
