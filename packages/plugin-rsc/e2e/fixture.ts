@@ -125,7 +125,25 @@ export function useFixture(options: {
     await cleanup?.()
   })
 
+  const createEditor = useCreateEditor(cwd)
+
+  return {
+    mode: options.mode,
+    root: cwd,
+    url: (url: string = './') => new URL(url, baseURL).href,
+    createEditor,
+    proc: () => proc,
+  }
+}
+
+export function useCreateEditor(cwd: string) {
   const originalFiles: Record<string, string> = {}
+
+  test.afterAll(async () => {
+    for (const [filepath, content] of Object.entries(originalFiles)) {
+      fs.writeFileSync(filepath, content)
+    }
+  })
 
   function createEditor(filepath: string) {
     filepath = path.resolve(cwd, filepath)
@@ -133,6 +151,7 @@ export function useFixture(options: {
     originalFiles[filepath] ??= init
     let current = init
     return {
+      read: () => current,
       edit(editFn: (data: string) => string): void {
         const next = editFn(current)
         assert(next !== current, 'Edit function did not change the content')
@@ -148,19 +167,7 @@ export function useFixture(options: {
     }
   }
 
-  test.afterAll(async () => {
-    for (const [filepath, content] of Object.entries(originalFiles)) {
-      fs.writeFileSync(filepath, content)
-    }
-  })
-
-  return {
-    mode: options.mode,
-    root: cwd,
-    url: (url: string = './') => new URL(url, baseURL).href,
-    createEditor,
-    proc: () => proc,
-  }
+  return createEditor
 }
 
 export async function setupIsolatedFixture(options: {

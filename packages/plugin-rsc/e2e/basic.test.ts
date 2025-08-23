@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration,
 } from './helper'
+import { x } from 'tinyexec'
+import fs from 'node:fs'
+import path from 'node:path'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -95,6 +98,45 @@ test.describe('dev-inconsistent-client-optimization', () => {
     expect(f.proc().stderr()).toContain(
       'client component dependency is inconsistently optimized.',
     )
+  })
+})
+
+test.describe('build-stable-chunks', () => {
+  const root = 'examples/basic'
+  const createEditor = useCreateEditor(root)
+
+  test('basic', async () => {
+    // 1st build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest1 = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // edit src/routes/client.tsx
+    const editor = createEditor('src/routes/client.tsx')
+    editor.edit((s) => s.replace('client-counter', 'client-counter-v2'))
+
+    // 2nd build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest2 = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // compare two mainfest.json
+    console.log({
+      manifest1,
+      manifest2,
+    })
   })
 })
 
