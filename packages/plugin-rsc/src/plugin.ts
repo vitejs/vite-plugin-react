@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
+import * as vite from 'vite'
 import {
   type BuilderOptions,
   type DevEnvironment,
@@ -1269,7 +1270,7 @@ function customOptimizerMetadataPlugin({
           environments: {
             client: {
               optimizeDeps:
-                'rolldownVersion' in this.meta
+                'rolldownVersion' in vite
                   ? ({
                       rolldownOptions: {
                         plugins: [optimizerPluginRolldown()],
