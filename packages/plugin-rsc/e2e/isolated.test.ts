@@ -25,3 +25,31 @@ test.describe(() => {
     defineStarterTest(f)
   })
 })
+
+test.describe('vite 6', () => {
+  test.skip(!!process.env.ECOSYSTEM_CI)
+
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc-vite-6',
+  )
+  test.beforeAll(async () => {
+    await setupIsolatedFixture({
+      src: 'examples/starter',
+      dest: tmpRoot,
+      overrides: {
+        vite: '^6',
+      },
+    })
+  })
+
+  test.describe('dev', () => {
+    const f = useFixture({ root: tmpRoot, mode: 'dev' })
+    defineStarterTest(f)
+  })
+
+  test.describe('build', () => {
+    const f = useFixture({ root: tmpRoot, mode: 'build' })
+    defineStarterTest(f)
+  })
+})

@@ -166,6 +166,7 @@ export function useFixture(options: {
 export async function setupIsolatedFixture(options: {
   src: string
   dest: string
+  overrides?: Record<string, string>
 }) {
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
@@ -184,10 +185,16 @@ export async function setupIsolatedFixture(options: {
     /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
   )
   const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
+  const overrides = {
+    '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
+    '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
+    ...options.overrides,
+  }
   const tempWorkspaceYaml = `\
 ${overridesSection}
-  '@vitejs/plugin-rsc': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-rsc'))}
-  '@vitejs/plugin-react': ${JSON.stringify('file:' + path.join(rootDir, 'packages/plugin-react'))}
+${Object.entries(overrides)
+  .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
+  .join('\n')}
 `
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
