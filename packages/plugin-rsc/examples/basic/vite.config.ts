@@ -103,9 +103,12 @@ export default defineConfig({
           normalizePath(fileURLToPath(import.meta.resolve(source)))
 
         // TODO: this entrypoint shouldn't be a public API.
-        const pkgBrowserPath = resolvePackageSource(
-          '@vitejs/plugin-rsc/react/browser',
+        const reactServerDom = path.dirname(
+          resolvePackageSource(
+            '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+          ),
         )
+        const rsc = path.dirname(resolvePackageSource('@vitejs/plugin-rsc'))
 
         return {
           environments: {
@@ -119,9 +122,12 @@ export default defineConfig({
                       if (
                         id.includes('node_modules/react/') ||
                         id.includes('node_modules/react-dom/') ||
-                        id.includes(pkgBrowserPath)
+                        id.includes(reactServerDom)
                       ) {
                         return 'lib-react'
+                      }
+                      if (id.includes(rsc)) {
+                        return 'lib-rsc'
                       }
                       if (id === '\0vite/preload-helper.js') {
                         return 'lib-vite'
@@ -138,26 +144,27 @@ export default defineConfig({
       writeBundle(_options, bundle) {
         if (this.environment.name === 'client') {
           const entryChunks: Rollup.OutputChunk[] = []
-          const vendorChunks: Rollup.OutputChunk[] = []
+          const libChunks: Record<string, Rollup.OutputChunk[]> = {}
           for (const chunk of Object.values(bundle)) {
             if (chunk.type === 'chunk') {
-              if (chunk.facadeModuleId?.endsWith('/src/client.tsx')) {
+              if (chunk.isEntry) {
                 entryChunks.push(chunk)
-              } else if (chunk.name === 'lib-react') {
-                vendorChunks.push(chunk)
+              }
+              if (chunk.name.startsWith('lib-')) {
+                ;(libChunks[chunk.name] ??= []).push(chunk)
               }
             }
           }
 
           // react vendor chunk has no import
-          assert.equal(vendorChunks.length, 1)
+          assert.equal(libChunks['lib-react'].length, 1)
           assert.deepEqual(
-            vendorChunks[0].imports.filter(
+            libChunks['lib-react'][0].imports.filter(
               (f) => !f.includes('rolldown-runtime'),
             ),
             [],
           )
-          assert.deepEqual(vendorChunks[0].dynamicImports, [])
+          assert.deepEqual(libChunks['lib-react'][0].dynamicImports, [])
 
           // entry chunk has no export
           assert.equal(entryChunks.length, 1)
