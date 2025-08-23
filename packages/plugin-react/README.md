@@ -21,7 +21,7 @@ export default defineConfig({
 
 ### include/exclude
 
-Includes `.js`, `.jsx`, `.ts` & `.tsx` by default. This option can be used to add fast refresh to `.mdx` files:
+Includes `.js`, `.jsx`, `.ts` & `.tsx` and excludes `/node_modules/` by default. This option can be used to add fast refresh to `.mdx` files:
 
 ```js
 import { defineConfig } from 'vite'
@@ -36,11 +36,9 @@ export default defineConfig({
 })
 ```
 
-> `node_modules` are never processed by this plugin (but esbuild will)
-
 ### jsxImportSource
 
-Control where the JSX factory is imported from. Default to `'react'`
+Control where the JSX factory is imported from. By default, this is inferred from `jsxImportSource` from corresponding a tsconfig file for a transformed file.
 
 ```js
 react({ jsxImportSource: '@emotion/react' })

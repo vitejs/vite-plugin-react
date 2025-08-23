@@ -4,71 +4,41 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import {
   type Plugin,
-  Rollup,
+  type Rollup,
   defineConfig,
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// log unhandled rejection to debug e2e failures
-if (!(globalThis as any).__debugHandlerRegisterd) {
-  process.on('uncaughtException', (err) => {
-    console.error('⚠️⚠️⚠️ uncaughtException ⚠️⚠️⚠️', err)
-  })
-  process.on('unhandledRejection', (err) => {
-    console.error('⚠️⚠️⚠️ unhandledRejection ⚠️⚠️⚠️', err)
-  })
-  ;(globalThis as any).__debugHandlerRegisterd = true
-}
-
 export default defineConfig({
-  base: process.env.TEST_BASE ? '/custom-base/' : undefined,
   clearScreen: false,
   plugins: [
+    // inspect(),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
     rsc({
       entries: {
-        client: './src/client.tsx',
-        ssr: './src/server.ssr.tsx',
+        client: './src/framework/entry.browser.tsx',
+        ssr: './src/framework/entry.ssr.tsx',
         rsc: './src/server.tsx',
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
-      ignoredPackageWarnings: [/@vitejs\/test-dep-/],
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
     }),
-    // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
-    !process.env.ECOSYSTEM_CI && inspect(),
     {
-      // test server restart scenario on e2e
-      name: 'test-api',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = new URL(req.url!, 'http://localhost')
-          if (url.pathname === '/__test_restart') {
-            setTimeout(() => {
-              server.restart()
-            }, 10)
-            res.end('ok')
-            return
-          }
-          next()
-        })
-      },
-    },
-    {
-      name: 'test-client-reference-tree-shaking',
+      name: 'test-tree-shake',
       enforce: 'post',
       writeBundle(_options, bundle) {
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
+            assert(!chunk.code.includes('__unused_server_export__'))
           }
         }
       },
@@ -96,11 +66,15 @@ export default defineConfig({
         assert(typeof viteManifest.source === 'string')
         if (this.environment.name === 'rsc') {
           assert(viteManifest.source.includes('src/server.tsx'))
-          assert(!viteManifest.source.includes('src/client.tsx'))
+          assert(
+            !viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
         if (this.environment.name === 'client') {
           assert(!viteManifest.source.includes('src/server.tsx'))
-          assert(viteManifest.source.includes('src/client.tsx'))
+          assert(
+            viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
       },
     },
@@ -225,6 +199,8 @@ export default { fetch: handler };
             source: `\
 /favicon.ico
   Cache-Control: public, max-age=3600, s-maxage=3600
+/test.css
+  Cache-Control: public, max-age=3600, s-maxage=3600
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 `,
@@ -232,19 +208,65 @@ export default { fetch: handler };
         }
       },
     },
+    testScanPlugin(),
   ],
   build: {
     minify: false,
     manifest: true,
   },
-  optimizeDeps: {
-    exclude: [
-      '@vitejs/test-dep-client-in-server/client',
-      '@vitejs/test-dep-client-in-server2/client',
-      '@vitejs/test-dep-server-in-client/client',
-    ],
+  environments: {
+    client: {
+      optimizeDeps: {
+        entries: [
+          './src/routes/**/client.tsx',
+          './src/framework/entry.browser.tsx',
+        ],
+        exclude: [
+          '@vitejs/test-dep-client-in-server/client',
+          '@vitejs/test-dep-client-in-server2/client',
+          '@vitejs/test-dep-server-in-client/client',
+        ],
+      },
+    },
+    ssr: {
+      optimizeDeps: {
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
+      },
+    },
   },
 }) as any
+
+function testScanPlugin(): Plugin[] {
+  const moduleIds: { name: string; ids: string[] }[] = []
+  return [
+    {
+      name: 'test-scan',
+      apply: 'build',
+      buildEnd() {
+        moduleIds.push({
+          name: this.environment.name,
+          ids: [...this.getModuleIds()],
+        })
+      },
+      buildApp: {
+        order: 'post',
+        async handler() {
+          // client scan build discovers additional modules for server references.
+          const [m1, m2] = moduleIds.filter((m) => m.name === 'rsc')
+          const diff = m2.ids.filter((id) => !m1.ids.includes(id))
+          assert(diff.length > 0)
+
+          // but make sure it's not due to import.meta.glob
+          // https://github.com/vitejs/rolldown-vite/issues/373
+          assert.equal(
+            diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
+            undefined,
+          )
+        },
+      },
+    },
+  ]
+}
 
 function vitePluginUseCache(): Plugin[] {
   return [
@@ -253,6 +275,7 @@ function vitePluginUseCache(): Plugin[] {
       async transform(code) {
         if (!code.includes('use cache')) return
         const ast = await parseAstAsync(code)
+        // @ts-ignore for rolldown-vite ci estree/oxc mismatch
         const result = transformHoistInlineDirective(code, ast, {
           runtime: (value) => `__vite_rsc_cache(${value})`,
           directive: 'use cache',
@@ -261,7 +284,7 @@ function vitePluginUseCache(): Plugin[] {
         })
         if (!result.output.hasChanged()) return
         result.output.prepend(
-          `import __vite_rsc_cache from "/src/use-cache-runtime";`,
+          `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
         )
         return {
           code: result.output.toString(),

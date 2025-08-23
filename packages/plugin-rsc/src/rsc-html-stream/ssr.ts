@@ -1,5 +1,6 @@
 import * as rscHtmlStreamServer from 'rsc-html-stream/server'
 
+/** @deprecated use `rsc-html-stream/server` instead */
 export const injectRscStreamToHtml = (
   stream: ReadableStream<Uint8Array>,
   options?: { nonce?: string },

@@ -2,7 +2,8 @@ import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
 import * as ReactDOM from 'react-dom'
 import { setRequireModule } from './core/ssr'
-import type { AssetDeps } from './plugin'
+import type { ResolvedAssetDeps } from './plugin'
+import { toCssVirtual } from './plugins/shared'
 
 export { createServerConsumerManifest } from './core/ssr'
 
@@ -16,7 +17,7 @@ function initialize(): void {
       if (!import.meta.env.__vite_rsc_build__) {
         const mod = await import(/* @vite-ignore */ id)
         const modCss = await import(
-          /* @vite-ignore */ '/@id/__x00__virtual:vite-rsc/css/dev-ssr/' + id
+          /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })
         )
         return wrapResourceProxy(mod, { js: [], css: modCss.default })
       } else {
@@ -37,7 +38,7 @@ function initialize(): void {
 }
 
 // preload/preinit during getter access since `load` is cached on production
-function wrapResourceProxy(mod: any, deps?: AssetDeps) {
+function wrapResourceProxy(mod: any, deps?: ResolvedAssetDeps) {
   return new Proxy(mod, {
     get(target, p, receiver) {
       if (p in mod) {
@@ -50,7 +51,7 @@ function wrapResourceProxy(mod: any, deps?: AssetDeps) {
   })
 }
 
-function preloadDeps(deps: AssetDeps) {
+function preloadDeps(deps: ResolvedAssetDeps) {
   for (const href of deps.js) {
     ReactDOM.preloadModule(href, {
       as: 'script',
@@ -60,6 +61,9 @@ function preloadDeps(deps: AssetDeps) {
     })
   }
   for (const href of deps.css) {
-    ReactDOM.preinit(href, { as: 'style' })
+    ReactDOM.preinit(href, {
+      as: 'style',
+      precedence: 'vite-rsc/client-reference',
+    })
   }
 }

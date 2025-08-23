@@ -3,8 +3,7 @@ import rsc from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import inspect from 'vite-plugin-inspect'
-import { reactRouter } from '../react-router-vite/plugin'
+// import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   clearScreen: false,
@@ -12,16 +11,15 @@ export default defineConfig({
     minify: false,
   },
   plugins: [
+    // inspect(),
     tailwindcss(),
     react(),
-    reactRouter(),
     rsc({
       entries: {
         client: './react-router-vite/entry.browser.tsx',
       },
       serverHandler: false,
     }),
-    inspect(),
     cloudflare({
       configPath: './cf/wrangler.ssr.jsonc',
       viteEnvironment: {
@@ -36,19 +34,6 @@ export default defineConfig({
         },
       ],
     }),
-    {
-      name: 'react-router-fixup',
-      transform(code) {
-        if (code.includes(`import { AsyncLocalStorage } from 'async_hooks';`)) {
-          code = code.replaceAll('async_hooks', 'node:async_hooks')
-          code = code.replaceAll(
-            `global.___reactRouterServerStorage___`,
-            `globalThis.___reactRouterServerStorage___`,
-          )
-          return code
-        }
-      },
-    },
   ],
   environments: {
     client: {
@@ -58,13 +43,11 @@ export default defineConfig({
     },
     ssr: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
       },
     },
     rsc: {
       optimizeDeps: {
-        include: ['react-router > cookie', 'react-router > set-cookie-parser'],
         exclude: ['react-router'],
       },
     },

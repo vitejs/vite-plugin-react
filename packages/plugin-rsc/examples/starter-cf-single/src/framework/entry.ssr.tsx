@@ -1,8 +1,8 @@
-import { injectRscStreamToHtml } from '@vitejs/plugin-rsc/rsc-html-stream/ssr' // helper API
-import * as ReactClient from '@vitejs/plugin-rsc/ssr' // RSC API
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-import * as ReactDOMServer from 'react-dom/server.edge'
+import { renderToReadableStream } from 'react-dom/server.edge'
+import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
 
 export type RenderHTML = typeof renderHTML
@@ -25,14 +25,14 @@ export async function renderHTML(
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
-    payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
+    payload ??= createFromReadableStream<RscPayload>(rscStream1)
     return React.use(payload).root
   }
 
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await ReactDOMServer.renderToReadableStream(<SsrRoot />, {
+  const htmlStream = await renderToReadableStream(<SsrRoot />, {
     bootstrapScriptContent: options?.debugNojs
       ? undefined
       : bootstrapScriptContent,
@@ -45,7 +45,7 @@ export async function renderHTML(
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
     responseStream = responseStream.pipeThrough(
-      injectRscStreamToHtml(rscStream2, {
+      injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
       }),
     )

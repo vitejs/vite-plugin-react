@@ -3,9 +3,9 @@
   "name": "vite-rsc-basic",
   "main": "dist/rsc/cloudflare.js",
   "assets": {
-    "directory": "dist/client"
+    "directory": "dist/client",
   },
   "workers_dev": true,
   "compatibility_date": "2025-04-01",
-  "compatibility_flags": ["nodejs_als"]
+  "compatibility_flags": ["nodejs_als"],
 }

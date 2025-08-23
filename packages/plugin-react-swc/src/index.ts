@@ -11,7 +11,7 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { PluginOption } from 'vite'
+import type { Plugin } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -78,12 +78,12 @@ type Options = {
   useAtYourOwnRisk_mutateSwcOptions?: (options: SWCOptions) => void
 
   /**
-   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
+   * If set, disables the recommendation to use `@vitejs/plugin-react`
    */
   disableOxcRecommendation?: boolean
 }
 
-const react = (_options?: Options): PluginOption[] => {
+const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = false
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
@@ -132,7 +132,9 @@ const react = (_options?: Options): PluginOption[] => {
         optimizeDeps: {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
           ...('rolldownVersion' in vite
-            ? { rollupOptions: { jsx: { mode: 'automatic' } } }
+            ? {
+                rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+              }
             : { esbuildOptions: { jsx: 'automatic' } }),
         },
       }),
@@ -158,7 +160,7 @@ const react = (_options?: Options): PluginOption[] => {
           !options.disableOxcRecommendation
         ) {
           config.logger.warn(
-            '[vite:react-swc] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
+            '[vite:react-swc] We recommend switching to `@vitejs/plugin-react` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
           )
         }
       },
@@ -292,3 +294,12 @@ const transformWithOptions = async (
 }
 
 export default react
+
+// Compat for require
+function pluginForCjs(this: unknown, options: Options): Plugin[] {
+  return react.call(this, options)
+}
+Object.assign(pluginForCjs, {
+  default: pluginForCjs,
+})
+export { pluginForCjs as 'module.exports' }

@@ -1,8 +1,8 @@
-import { injectRscStreamToHtml } from '@vitejs/plugin-rsc/rsc-html-stream/ssr' // helper API
-import * as ReactClient from '@vitejs/plugin-rsc/ssr' // RSC API
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-import * as ReactDOMServer from 'react-dom/server.edge'
+import { renderToReadableStream } from 'react-dom/server.edge'
+import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
 
 export async function renderHTML(
@@ -19,18 +19,27 @@ export async function renderHTML(
   const [rscStream1, rscStream2] = rscStream.tee()
 
   // deserialize RSC stream back to React VDOM
-  let payload: Promise<RscPayload>
+  let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
-    payload ??= ReactClient.createFromReadableStream<RscPayload>(rscStream1)
-    return React.use(payload).root
+    payload ??= createFromReadableStream<RscPayload>(rscStream1)
+    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
+  }
+
+  // Add an empty component in between `SsrRoot` and user `root` to avoid React SSR bugs.
+  //   SsrRoot (use)
+  //     => FixSsrThenable
+  //       => root (which potentially has `lazy` + `use`)
+  // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
+  function FixSsrThenable(props: React.PropsWithChildren) {
+    return props.children
   }
 
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await ReactDOMServer.renderToReadableStream(<SsrRoot />, {
+  const htmlStream = await renderToReadableStream(<SsrRoot />, {
     bootstrapScriptContent: options?.debugNojs
       ? undefined
       : bootstrapScriptContent,
@@ -42,8 +51,9 @@ export async function renderHTML(
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
-      injectRscStreamToHtml(rscStream2, {
+      injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
       }),
     )

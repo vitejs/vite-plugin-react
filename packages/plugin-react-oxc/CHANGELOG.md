@@ -2,6 +2,51 @@
 
 ## Unreleased
 
+## 0.4.1 (2025-08-19)
+
+### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
+
+`optimizeDeps.rollupOptions.jsx` is going to be deprecated in favor of `optimizeDeps.rollupOptions.transform.jsx`.
+
+## 0.4.0 (2025-08-07)
+
+## 0.4.0-beta.0 (2025-07-28)
+
+### Deprecate this plugin
+
+The changes of this plugin is now included in `@vitejs/plugin-react`. Please use `@vitejs/plugin-react` instead.
+
+### Allow processing files in `node_modules`
+
+The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.
+
+### Require Node 20.19+, 22.12+
+
+This plugin now requires Node 20.19+ or 22.12+.
+
+## 0.3.0 (2025-07-18)
+
+### Add HMR support for compound components ([#518](https://github.com/vitejs/vite-plugin-react/pull/518))
+
+HMR now works for compound components like this:
+
+```tsx
+const Root = () => <div>Accordion Root</div>
+const Item = () => <div>Accordion Item</div>
+
+export const Accordion = { Root, Item }
+```
+
+### Return `Plugin[]` instead of `PluginOption[]` ([#537](https://github.com/vitejs/vite-plugin-react/pull/537))
+
+The return type has changed from `react(): PluginOption[]` to more specialized type `react(): Plugin[]`. This allows for type-safe manipulation of plugins, for example:
+
+```tsx
+// previously this causes type errors
+react()
+  .map(p => ({ ...p, applyToEnvironment: e => e.name === 'client' }))
+```
+
 ## 0.2.3 (2025-06-16)
 
 ### Disable refresh transform when `server.hmr: false` is set [#502](https://github.com/vitejs/vite-plugin-react/pull/502)

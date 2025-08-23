@@ -27,13 +27,26 @@ import { TestTailwindClient } from './tailwind/client'
 import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
+import { TestReactCache } from './react-cache/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestBrowserOnly } from './browser-only/client'
+import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
+import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
+import { TestHmrSharedServer } from './hmr-shared/server'
+import { TestHmrSharedClient } from './hmr-shared/client'
+import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
+import { TestCssQueries } from './css-queries/server'
+import { TestImportMetaGlob } from './import-meta-glob/server'
+import { TestAssetsServer } from './assets/server'
+import { TestHmrSwitchServer } from './hmr-switch/server'
+import { TestHmrSwitchClient } from './hmr-switch/client'
+import { TestTreeShakeServer } from './tree-shake/server'
 
 export function Root(props: { url: URL }) {
   return (
     <html>
       <head>
+        <meta charSet="utf-8" />
         <title>vite-rsc</title>
         {import.meta.viteRsc.loadCss('/src/routes/root.tsx')}
       </head>
@@ -49,8 +62,14 @@ export function Root(props: { url: URL }) {
         <TestCssClientNoSsr url={props.url} />
         <TestTailwindClient />
         <TestTailwindServer />
+        <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />
+        <TestHmrSharedServer />
+        <TestHmrSharedClient />
+        <TestHmrSharedAtomic />
+        <TestHmrSwitchServer />
+        <TestHmrSwitchClient />
         <TestTemporaryReference />
         <TestServerActionError />
         <TestReplayConsoleLogs url={props.url} />
@@ -66,10 +85,16 @@ export function Root(props: { url: URL }) {
         <TestClientInServer />
         <TestServerInServer />
         <TestServerInClient />
+        <TestTransitiveCjsClient />
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
         <TestUseCache />
+        <TestReactCache url={props.url} />
+        <TestCssQueries />
+        <TestImportMetaGlob />
+        <TestAssetsServer />
+        <TestTreeShakeServer />
       </body>
     </html>
   )

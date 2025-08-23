@@ -5,6 +5,9 @@ import { injectRSCPayload } from 'rsc-html-stream/server'
 import { createFromReadableStream } from '../ssr'
 import type { RscPayload } from './rsc'
 
+/**
+ * @deprecated Use `@vitejs/plugin-rsc/ssr` API instead.
+ */
 export async function renderHtml(
   rscStream: ReadableStream<Uint8Array>,
   options?: {

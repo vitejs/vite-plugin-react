@@ -1,7 +1,13 @@
-import * as ReactClient from '@vitejs/plugin-rsc/browser'
-import { getRscStreamFromHtml } from '@vitejs/plugin-rsc/rsc-html-stream/browser'
+import {
+  createFromReadableStream,
+  createFromFetch,
+  setServerCallback,
+  createTemporaryReferenceSet,
+  encodeReply,
+} from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import * as ReactDOMClient from 'react-dom/client'
+import { hydrateRoot } from 'react-dom/client'
+import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 
 async function main() {
@@ -10,9 +16,9 @@ async function main() {
   let setPayload: (v: RscPayload) => void
 
   // deserialize RSC stream back to React VDOM for CSR
-  const initialPayload = await ReactClient.createFromReadableStream<RscPayload>(
+  const initialPayload = await createFromReadableStream<RscPayload>(
     // initial RSC stream is injected in SSR stream as <script>...FLIGHT_DATA...</script>
-    getRscStreamFromHtml(),
+    rscStream,
   )
 
   // browser root component to (re-)render RSC payload as state
@@ -33,7 +39,7 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await ReactClient.createFromFetch<RscPayload>(
+    const payload = await createFromFetch<RscPayload>(
       fetch(window.location.href),
     )
     setPayload(payload)
@@ -41,13 +47,13 @@ async function main() {
 
   // register a handler which will be internally called by React
   // on server function request after hydration.
-  ReactClient.setServerCallback(async (id, args) => {
+  setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
-    const temporaryReferences = ReactClient.createTemporaryReferenceSet()
-    const payload = await ReactClient.createFromFetch<RscPayload>(
+    const temporaryReferences = createTemporaryReferenceSet()
+    const payload = await createFromFetch<RscPayload>(
       fetch(url, {
         method: 'POST',
-        body: await ReactClient.encodeReply(args, { temporaryReferences }),
+        body: await encodeReply(args, { temporaryReferences }),
         headers: {
           'x-rsc-action': id,
         },
@@ -64,7 +70,7 @@ async function main() {
       <BrowserRoot />
     </React.StrictMode>
   )
-  ReactDOMClient.hydrateRoot(document, browserRoot, {
+  hydrateRoot(document, browserRoot, {
     formState: initialPayload.formState,
   })
 

@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This package is deprecated. Please use [@vitejs/plugin-react](https://www.npmjs.com/package/@vitejs/plugin-react) instead, which automatically enables Oxc-based Fast Refresh transform on [`rolldown-vite`](https://vitejs.dev/guide/rolldown).
+
 # @vitejs/plugin-react-oxc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-oxc.svg)](https://npmjs.com/package/@vitejs/plugin-react-oxc)
 
 The future default Vite plugin for React projects.
@@ -25,7 +28,7 @@ export default defineConfig({
 
 ### include/exclude
 
-Includes `.js`, `.jsx`, `.ts` & `.tsx` by default. This option can be used to add fast refresh to `.mdx` files:
+Includes `.js`, `.jsx`, `.ts` & `.tsx` and excludes `/node_modules/` by default. This option can be used to add fast refresh to `.mdx` files:
 
 ```js
 import { defineConfig } from 'vite'
@@ -39,8 +42,6 @@ export default defineConfig({
   ],
 })
 ```
-
-> `node_modules` are never processed by this plugin (but Oxc will)
 
 ### jsxImportSource
 

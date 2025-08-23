@@ -5,28 +5,36 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --app",
+    "build": "vite build",
     "preview": "vite preview",
     "cf-build": "CF_BUILD=1 pnpm build",
     "cf-preview": "wrangler dev",
     "cf-release": "wrangler deploy"
   },
   "dependencies": {
-    "@vitejs/plugin-rsc": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
+    "@tailwindcss/vite": "^4.1.12",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "latest",
+    "@vitejs/plugin-rsc": "latest",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
+    "@vitejs/test-dep-css-in-server": "file:./test-dep/css-in-server",
     "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
-    "tailwindcss": "^4.1.4",
-    "vite": "^7.0.2",
-    "vite-plugin-inspect": "^11.2.0"
+    "@vitejs/test-dep-transitive-cjs": "file:./test-dep/transitive-cjs",
+    "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
+    "rsc-html-stream": "^0.0.7",
+    "tailwindcss": "^4.1.12",
+    "vite": "^7.1.2",
+    "wrangler": "^4.30.0"
+  },
+  "stackblitz": {
+    "installDependencies": false,
+    "startCommand": "pnpm i && pnpm dev"
   }
 }

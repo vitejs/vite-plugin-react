@@ -3,7 +3,7 @@ import rsc from '@vitejs/plugin-rsc'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-export default defineConfig((_env) => ({
+export default defineConfig({
   clearScreen: false,
   build: {
     minify: false,
@@ -33,6 +33,9 @@ export default defineConfig((_env) => ({
           preserveEntrySignatures: 'exports-only',
         },
       },
+      optimizeDeps: {
+        include: ['turbo-stream'],
+      },
     },
     ssr: {
       keepProcessEnv: false,
@@ -41,6 +44,9 @@ export default defineConfig((_env) => ({
         // wrangler can deploy self-contained `dist/rsc`
         outDir: './dist/rsc/ssr',
       },
+      resolve: {
+        noExternal: true,
+      },
     },
   },
-}))
+})
