@@ -30,6 +30,11 @@ export default defineConfig({
       rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
+      clientChunks(id) {
+        if (id.includes('/src/routes/deps/')) {
+          return 'group'
+        }
+      },
     }),
     {
       name: 'test-tree-shake',
