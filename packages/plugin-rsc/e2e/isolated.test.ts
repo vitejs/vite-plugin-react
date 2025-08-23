@@ -3,6 +3,7 @@ import { setupIsolatedFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 import path from 'node:path'
 import os from 'node:os'
+import * as vite from 'vite'
 
 test.describe(() => {
   // use RUNNER_TEMP on Github Actions
@@ -27,7 +28,7 @@ test.describe(() => {
 })
 
 test.describe('vite 6', () => {
-  test.skip(!!process.env.ECOSYSTEM_CI)
+  test.skip(!!process.env.ECOSYSTEM_CI || 'rolldownVersion' in vite)
 
   const tmpRoot = path.join(
     process.env['RUNNER_TEMP'] || os.tmpdir(),
