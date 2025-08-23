@@ -176,6 +176,11 @@ export type RscPluginOptions = {
     ssr?: string
     rsc?: string
   }
+
+  /**
+   * @experimental
+   */
+  clientChunks?: (id: string, meta: ClientReferenceMeta) => string | undefined
 }
 
 /** @experimental */
@@ -977,7 +982,7 @@ function scanBuildStripPlugin({
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'keepUseCientProxy' | 'environment'
+    'keepUseCientProxy' | 'environment' | 'clientChunks'
   >,
   manager: RscPluginManager,
 ): Plugin[] {
@@ -1160,8 +1165,9 @@ function vitePluginUseClient(
             return { code: `export default {}`, map: null }
           }
           let code = ''
+          // TODO: group client references
+          useClientPluginOptions.clientChunks
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            // TODO: group
             const groupVirtual = [
               `virtual:vite-rsc/client-references/group`,
               `${meta.referenceKey}`,
