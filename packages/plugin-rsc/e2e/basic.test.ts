@@ -105,7 +105,7 @@ test.describe('build-stable-chunks', () => {
   const root = 'examples/basic'
   const createEditor = useCreateEditor(root)
 
-  test('basic', async () => {
+  test.only('basic', async () => {
     // 1st build
     await x('pnpm', ['build'], {
       throwOnError: true,
@@ -113,7 +113,7 @@ test.describe('build-stable-chunks', () => {
         cwd: root,
       },
     })
-    const manifest1 = JSON.parse(
+    const manifest1: import('vite').Manifest = JSON.parse(
       createEditor('dist/client/.vite/manifest.json').read(),
     )
 
@@ -128,15 +128,26 @@ test.describe('build-stable-chunks', () => {
         cwd: root,
       },
     })
-    const manifest2 = JSON.parse(
+    const manifest2: import('vite').Manifest = JSON.parse(
       createEditor('dist/client/.vite/manifest.json').read(),
     )
 
     // compare two mainfest.json
-    console.log({
-      manifest1,
-      manifest2,
-    })
+    const files1 = new Set(Object.values(manifest1).map((v) => v.file))
+    const files2 = new Set(Object.values(manifest2).map((v) => v.file))
+    const oldChunks = Object.entries(manifest2)
+      .filter(([_k, v]) => !files1.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    const newChunks = Object.entries(manifest1)
+      .filter(([_k, v]) => !files2.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    expect(newChunks).toEqual([
+      'src/framework/entry.browser.tsx',
+      'src/routes/client.tsx',
+    ])
+    expect(oldChunks).toEqual(newChunks)
   })
 })
 
