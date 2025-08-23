@@ -37,9 +37,8 @@ export default defineConfig({
       writeBundle(_options, bundle) {
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
-            // TODO
-            // assert(!chunk.code.includes('__unused_client_reference__'))
-            // assert(!chunk.code.includes('__unused_server_export__'))
+            assert(!chunk.code.includes('__unused_client_reference__'))
+            assert(!chunk.code.includes('__unused_server_export__'))
           }
         }
       },

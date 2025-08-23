@@ -1148,8 +1148,8 @@ function vitePluginUseClient(
             for (const meta of metas) {
               code += `\
                 ${JSON.stringify(meta.referenceKey)}: async () => {
-                  const __group = await import(${JSON.stringify(groupVirtual)});
-                  return __group.export_${meta.referenceKey}();
+                  const m = await import(${JSON.stringify(groupVirtual)});
+                  return m.export_${meta.referenceKey};
                 },
               `
             }
@@ -1166,14 +1166,12 @@ function vitePluginUseClient(
           let code = ``
           for (const meta of metas) {
             const exports = meta.renderedExports
-              .map((name) => (name === 'default' ? 'default: _default' : name))
+              .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
+              .join('')
             code += `
               import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
-              export const export_${meta.referenceKey} = () => {
-                const {${exports}} = import_${meta.referenceKey};
-                return {${exports}};
-              };
+              export const export_${meta.referenceKey} = {${exports}};
             `
           }
           return { code, map: null }
