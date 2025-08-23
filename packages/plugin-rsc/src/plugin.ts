@@ -93,6 +93,7 @@ class RscPluginManager {
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
+  clientReferenceGroupMap: Record<string, ClientReferenceMeta[]> = {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 
@@ -1112,46 +1113,6 @@ function vitePluginUseClient(
         return { code: output.toString(), map: { mappings: '' } }
       },
     },
-    // createVirtualPlugin('vite-rsc/client-references', function () {
-    //   if (this.environment.mode === 'dev') {
-    //     return { code: `export default {}`, map: null }
-    //   }
-    //   let code = ''
-    //   for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-    //     // vite/rollup can apply tree-shaking to dynamic import of this form
-    //     const key = JSON.stringify(meta.referenceKey)
-    //     const id = JSON.stringify(meta.importId)
-    //     const exports = meta.renderedExports
-    //       .map((name) => (name === 'default' ? 'default: _default' : name))
-    //       .sort()
-    //     if (this.environment.name === 'client') {
-    //       // TODO:
-    //       // - re-export through virtual to fiter renderedExports
-    //       // - replace `import.meta.ROLLUP_FILE_URL_` on our own
-    //       // - handle "vite preload" on our own
-    //       const chunkId = this.emitFile({
-    //         type: 'chunk',
-    //         id: meta.importId,
-    //         preserveSignature: 'allow-extension',
-    //       })
-    //       code += `
-    //         ${key}: async () => {
-    //           const {${exports}} = await import(import.meta.ROLLUP_FILE_URL_${chunkId});
-    //           return {${exports}};
-    //         },
-    //       `
-    //     } else {
-    //       code += `
-    //         ${key}: async () => {
-    //           const {${exports}} = await import(${id});
-    //           return {${exports}};
-    //         },
-    //       `
-    //     }
-    //   }
-    //   code = `export default {${code}};\n`
-    //   return { code, map: null }
-    // }),
     {
       name: 'rsc:use-client/build-references',
       resolveId(source) {
@@ -1165,43 +1126,48 @@ function vitePluginUseClient(
             return { code: `export default {}`, map: null }
           }
           let code = ''
-          // TODO: group client references
-          useClientPluginOptions.clientChunks
+          manager.clientReferenceGroupMap = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const groupVirtual = [
-              `virtual:vite-rsc/client-references/group`,
-              `${meta.referenceKey}`,
-              // keep original id as postfix so it's easier identify virtual module
-              `${normalizePath(path.relative(manager.config.root, meta.importId))}`,
-            ].join('/')
-            code += `
-              ${JSON.stringify(meta.referenceKey)}: async () => {
-                const __m = await import(${JSON.stringify(groupVirtual)});
-                return __m.export_${meta.referenceKey}();
-              },
-            `
+            const name =
+              useClientPluginOptions.clientChunks?.(meta.importId, meta) ||
+              normalizePath(path.relative(manager.config.root, meta.importId))
+            const group = (manager.clientReferenceGroupMap[name] ??= [])
+            group.push(meta)
+          }
+          for (const [name, metas] of Object.entries(
+            manager.clientReferenceGroupMap,
+          )) {
+            const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
+            for (const meta of metas) {
+              code += `${JSON.stringify(meta.referenceKey)}: async () => {
+                const __group = await import(${JSON.stringify(groupVirtual)});
+                return __group.export_${meta.referenceKey}();
+              },`
+            }
           }
           code = `export default {${code}};\n`
           return { code, map: null }
         }
         if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
-          // TODO: group
-          const group = id
-            .slice('\0virtual:vite-rsc/client-references/group/'.length)
-            .split('/')[0]
-          const meta = Object.values(manager.clientReferenceMetaMap).find(
-            (v) => v.referenceKey === group,
-          )!
-          const exports = meta.renderedExports
-            .map((name) => (name === 'default' ? 'default: _default' : name))
-            .sort()
-          return `
-            import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
-            export const export_${meta.referenceKey} = () => {
-              const {${exports}} = import_${meta.referenceKey};
-              return {${exports}};
-            }
-          `
+          const name = id.slice(
+            '\0virtual:vite-rsc/client-references/group/'.length,
+          )
+          const metas = manager.clientReferenceGroupMap[name]
+          assert(metas, `unknown client reference group: ${name}`)
+          let code = ``
+          for (const meta of metas) {
+            const exports = meta.renderedExports
+              .map((name) => (name === 'default' ? 'default: _default' : name))
+              .sort()
+            code += `
+              import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+              export const export_${meta.referenceKey} = () => {
+                const {${exports}} = import_${meta.referenceKey};
+                return {${exports}};
+              }
+            `
+          }
+          return { code, map: null }
         }
       },
     },
