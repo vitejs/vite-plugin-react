@@ -1139,10 +1139,12 @@ function vitePluginUseClient(
           )) {
             const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
             for (const meta of metas) {
-              code += `${JSON.stringify(meta.referenceKey)}: async () => {
-                const __group = await import(${JSON.stringify(groupVirtual)});
-                return __group.export_${meta.referenceKey}();
-              },`
+              code += `\
+                ${JSON.stringify(meta.referenceKey)}: async () => {
+                  const __group = await import(${JSON.stringify(groupVirtual)});
+                  return __group.export_${meta.referenceKey}();
+                },
+              `
             }
           }
           code = `export default {${code}};\n`
@@ -1164,7 +1166,7 @@ function vitePluginUseClient(
               export const export_${meta.referenceKey} = () => {
                 const {${exports}} = import_${meta.referenceKey};
                 return {${exports}};
-              }
+              };
             `
           }
           return { code, map: null }
