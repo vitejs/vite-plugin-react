@@ -102,13 +102,10 @@ export default defineConfig({
         const resolvePackageSource = (source: string) =>
           normalizePath(fileURLToPath(import.meta.resolve(source)))
 
-        // TODO: this entrypoint shouldn't be a public API.
-        const reactServerDom = path.dirname(
-          resolvePackageSource(
-            '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
-          ),
+        // TODO: this package entry isn't a public API.
+        const reactServerDom = resolvePackageSource(
+          '@vitejs/plugin-rsc/react/browser',
         )
-        const rsc = path.dirname(resolvePackageSource('@vitejs/plugin-rsc'))
 
         return {
           environments: {
@@ -125,9 +122,6 @@ export default defineConfig({
                         id.includes(reactServerDom)
                       ) {
                         return 'lib-react'
-                      }
-                      if (id.includes(rsc)) {
-                        return 'lib-rsc'
                       }
                       if (id === '\0vite/preload-helper.js') {
                         return 'lib-vite'
