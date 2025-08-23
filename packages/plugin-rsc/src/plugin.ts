@@ -1107,46 +1107,98 @@ function vitePluginUseClient(
         return { code: output.toString(), map: { mappings: '' } }
       },
     },
-    createVirtualPlugin('vite-rsc/client-references', function () {
-      if (this.environment.mode === 'dev') {
-        return { code: `export default {}`, map: null }
-      }
-      let code = ''
-      for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-        // vite/rollup can apply tree-shaking to dynamic import of this form
-        const key = JSON.stringify(meta.referenceKey)
-        const id = JSON.stringify(meta.importId)
-        const exports = meta.renderedExports
-          .map((name) => (name === 'default' ? 'default: _default' : name))
-          .sort()
-        if (this.environment.name === 'client') {
-          // TODO:
-          // - re-export through virtual to fiter renderedExports
-          // - replace `import.meta.ROLLUP_FILE_URL_` on our own
-          // - handle "vite preload" on our own
-          const chunkId = this.emitFile({
-            type: 'chunk',
-            id: meta.importId,
-            preserveSignature: 'allow-extension',
-          })
-          code += `
-            ${key}: async () => {
-              const {${exports}} = await import(import.meta.ROLLUP_FILE_URL_${chunkId});
+    // createVirtualPlugin('vite-rsc/client-references', function () {
+    //   if (this.environment.mode === 'dev') {
+    //     return { code: `export default {}`, map: null }
+    //   }
+    //   let code = ''
+    //   for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+    //     // vite/rollup can apply tree-shaking to dynamic import of this form
+    //     const key = JSON.stringify(meta.referenceKey)
+    //     const id = JSON.stringify(meta.importId)
+    //     const exports = meta.renderedExports
+    //       .map((name) => (name === 'default' ? 'default: _default' : name))
+    //       .sort()
+    //     if (this.environment.name === 'client') {
+    //       // TODO:
+    //       // - re-export through virtual to fiter renderedExports
+    //       // - replace `import.meta.ROLLUP_FILE_URL_` on our own
+    //       // - handle "vite preload" on our own
+    //       const chunkId = this.emitFile({
+    //         type: 'chunk',
+    //         id: meta.importId,
+    //         preserveSignature: 'allow-extension',
+    //       })
+    //       code += `
+    //         ${key}: async () => {
+    //           const {${exports}} = await import(import.meta.ROLLUP_FILE_URL_${chunkId});
+    //           return {${exports}};
+    //         },
+    //       `
+    //     } else {
+    //       code += `
+    //         ${key}: async () => {
+    //           const {${exports}} = await import(${id});
+    //           return {${exports}};
+    //         },
+    //       `
+    //     }
+    //   }
+    //   code = `export default {${code}};\n`
+    //   return { code, map: null }
+    // }),
+    {
+      name: 'rsc:use-client/build-references',
+      resolveId(source) {
+        if (source.startsWith('virtual:vite-rsc/client-references')) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc/client-references') {
+          if (this.environment.mode === 'dev') {
+            return { code: `export default {}`, map: null }
+          }
+          let code = ''
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            // TODO: group
+            const groupVirtual = [
+              `virtual:vite-rsc/client-references/group`,
+              `${meta.referenceKey}`,
+              // keep original id as postfix so it's easier identify virtual module
+              `${normalizePath(path.relative(manager.config.root, meta.importId))}`,
+            ].join('/')
+            code += `
+              ${JSON.stringify(meta.referenceKey)}: async () => {
+                const __m = await import(${JSON.stringify(groupVirtual)});
+                return __m.export_${meta.referenceKey}();
+              },
+            `
+          }
+          code = `export default {${code}};\n`
+          return { code, map: null }
+        }
+        if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
+          // TODO: group
+          const group = id
+            .slice('\0virtual:vite-rsc/client-references/group/'.length)
+            .split('/')[0]
+          const meta = Object.values(manager.clientReferenceMetaMap).find(
+            (v) => v.referenceKey === group,
+          )!
+          const exports = meta.renderedExports
+            .map((name) => (name === 'default' ? 'default: _default' : name))
+            .sort()
+          return `
+            import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+            export const export_${meta.referenceKey} = () => {
+              const {${exports}} = import_${meta.referenceKey};
               return {${exports}};
-            },
-          `
-        } else {
-          code += `
-            ${key}: async () => {
-              const {${exports}} = await import(${id});
-              return {${exports}};
-            },
+            }
           `
         }
-      }
-      code = `export default {${code}};\n`
-      return { code, map: null }
-    }),
+      },
+    },
     {
       name: 'rsc:virtual-client-in-server-package',
       async load(id) {
