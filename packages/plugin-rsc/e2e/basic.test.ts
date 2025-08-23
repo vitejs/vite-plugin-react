@@ -9,8 +9,6 @@ import {
   waitForHydration,
 } from './helper'
 import { x } from 'tinyexec'
-import fs from 'node:fs'
-import path from 'node:path'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -105,7 +103,7 @@ test.describe('build-stable-chunks', () => {
   const root = 'examples/basic'
   const createEditor = useCreateEditor(root)
 
-  test.only('basic', async () => {
+  test('basic', async () => {
     // 1st build
     await x('pnpm', ['build'], {
       throwOnError: true,
