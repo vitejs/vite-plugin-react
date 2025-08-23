@@ -153,6 +153,7 @@ export default defineConfig({
           // react vendor chunk has no import
           assert.equal(libChunks['lib-react'].length, 1)
           assert.deepEqual(
+            // https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
             libChunks['lib-react'][0].imports.filter(
               (f) => !f.includes('rolldown-runtime'),
             ),
