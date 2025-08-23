@@ -1125,6 +1125,13 @@ function vitePluginUseClient(
           if (this.environment.mode === 'dev') {
             return { code: `export default {}`, map: null }
           }
+          if (manager.isScanBuild) {
+            let code = ``
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              code += `import ${JSON.stringify(meta.importId)};\n`
+            }
+            return { code, map: null }
+          }
           let code = ''
           manager.clientReferenceGroupMap = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
