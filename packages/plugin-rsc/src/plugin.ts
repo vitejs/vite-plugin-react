@@ -1,5 +1,4 @@
 import assert from 'node:assert'
-import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -38,11 +37,20 @@ import {
   prepareError,
 } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
-import { evalValue, parseIdQuery } from './plugins/utils'
+import {
+  createVirtualPlugin,
+  evalValue,
+  getEntrySource,
+  hashString,
+  normalizeRelativePath,
+  sortObject,
+  withRollupError,
+} from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
 import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
 
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
@@ -86,6 +94,12 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+
+  stabilize(): void {
+    // sort for stable build
+    this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
+    this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
+  }
 }
 
 export type RscPluginOptions = {
@@ -225,13 +239,7 @@ export default function vitePluginRsc(
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
       await builder.build(builder.environments.rsc!)
-      // sort for stable build
-      manager.clientReferenceMetaMap = sortObject(
-        manager.clientReferenceMetaMap,
-      )
-      manager.serverResourcesMetaMap = sortObject(
-        manager.serverResourcesMetaMap,
-      )
+      manager.stabilize()
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -247,9 +255,7 @@ export default function vitePluginRsc(
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
     await builder.build(builder.environments.rsc!)
-    // sort for stable build
-    manager.clientReferenceMetaMap = sortObject(manager.clientReferenceMetaMap)
-    manager.serverResourcesMetaMap = sortObject(manager.serverResourcesMetaMap)
+    manager.stabilize()
     await builder.build(builder.environments.client!)
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
@@ -967,30 +973,6 @@ function scanBuildStripPlugin({
   }
 }
 
-function normalizeRelativePath(s: string) {
-  s = normalizePath(s)
-  return s[0] === '.' ? s : './' + s
-}
-
-function getEntrySource(
-  config: Pick<ResolvedConfig, 'build'>,
-  name: string = 'index',
-) {
-  const input = config.build.rollupOptions.input
-  assert(
-    typeof input === 'object' &&
-      !Array.isArray(input) &&
-      name in input &&
-      typeof input[name] === 'string',
-    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
-  )
-  return input[name]
-}
-
-function hashString(v: string) {
-  return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
-}
-
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
@@ -1544,45 +1526,6 @@ function vitePluginUseServer(
   ]
 }
 
-// Rethrow transform error through `this.error` with `error.pos` which is injected by `@hiogawa/transforms`
-function withRollupError<F extends (...args: any[]) => any>(
-  ctx: Rollup.TransformPluginContext,
-  f: F,
-): F {
-  function processError(e: any): never {
-    if (e && typeof e === 'object' && typeof e.pos === 'number') {
-      return ctx.error(e, e.pos)
-    }
-    throw e
-  }
-  return function (this: any, ...args: any[]) {
-    try {
-      const result = f.apply(this, args)
-      if (result instanceof Promise) {
-        return result.catch((e: any) => processError(e))
-      }
-      return result
-    } catch (e: any) {
-      processError(e)
-    }
-  } as F
-}
-
-function createVirtualPlugin(name: string, load: Plugin['load']) {
-  name = 'virtual:' + name
-  return {
-    name: `rsc:virtual-${name}`,
-    resolveId(source, _importer, _options) {
-      return source === name ? '\0' + name : undefined
-    },
-    load(id, options) {
-      if (id === '\0' + name) {
-        return (load as Function).apply(this, [id, options])
-      }
-    },
-  } satisfies Plugin
-}
-
 class RuntimeAsset {
   runtime: string
   constructor(value: string) {
@@ -1854,15 +1797,16 @@ function vitePluginRscCss(
       },
     },
     {
-      name: 'rsc:css/dev-ssr-virtual',
+      name: 'rsc:css-virtual',
       resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/css/dev-ssr/')) {
+        if (source.startsWith('virtual:vite-rsc/css?')) {
           return '\0' + source
         }
       },
       async load(id) {
-        if (id.startsWith('\0virtual:vite-rsc/css/dev-ssr/')) {
-          id = id.slice('\0virtual:vite-rsc/css/dev-ssr/'.length)
+        const parsed = parseCssVirtual(id)
+        if (parsed?.type === 'ssr') {
+          id = parsed.id
           const { server } = manager
           const mod =
             await server.environments.ssr.moduleGraph.getModuleByUrl(id)
@@ -1909,9 +1853,8 @@ function vitePluginRscCss(
               continue
             }
           }
-          const importId = `virtual:vite-rsc/importer-resources?importer=${encodeURIComponent(
-            importer,
-          )}`
+
+          const importId = toCssVirtual({ id: importer, type: 'rsc' })
 
           // use dynamic import during dev to delay crawling and discover css correctly.
           let replacement: string
@@ -1948,26 +1891,17 @@ function vitePluginRscCss(
           }
         }
       },
-      resolveId(source) {
-        if (
-          source.startsWith('virtual:vite-rsc/importer-resources?importer=')
-        ) {
-          assert(this.environment.name === 'rsc')
-          return '\0' + source
-        }
-      },
       load(id) {
         const { server } = manager
-        if (id.startsWith('\0virtual:vite-rsc/importer-resources?importer=')) {
-          const importer = decodeURIComponent(
-            parseIdQuery(id).query['importer']!,
-          )
+        const parsed = parseCssVirtual(id)
+        if (parsed?.type === 'rsc') {
+          assert(this.environment.name === 'rsc')
+          const importer = parsed.id
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const jsHrefs = [
-              '@id/__x00__virtual:vite-rsc/importer-resources-browser?importer=' +
-                encodeURIComponent(importer),
+              `@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
             ]
             const deps = assetsURLOfDeps(
               { css: cssHrefs, js: jsHrefs },
@@ -1993,16 +1927,10 @@ function vitePluginRscCss(
             `
           }
         }
-        if (
-          id.startsWith(
-            '\0virtual:vite-rsc/importer-resources-browser?importer=',
-          )
-        ) {
+        if (parsed?.type === 'rsc-browser') {
           assert(this.environment.name === 'client')
           assert(this.environment.mode === 'dev')
-          const importer = decodeURIComponent(
-            parseIdQuery(id).query['importer']!,
-          )
+          const importer = parsed.id
           const result = collectCss(server.environments.rsc!, importer)
           let code = result.ids
             .map((id) => id.replace(/^\0/, ''))
@@ -2020,14 +1948,13 @@ function vitePluginRscCss(
           const mods = collectModuleDependents(ctx.modules)
           for (const mod of mods) {
             if (mod.id) {
-              const importer = encodeURIComponent(mod.id)
               invalidteModuleById(
                 server.environments.rsc!,
-                `\0virtual:vite-rsc/importer-resources?importer=${importer}`,
+                `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
               )
               invalidteModuleById(
                 server.environments.client,
-                `\0virtual:vite-rsc/importer-resources-browser?importer=${importer}`,
+                `\0` + toCssVirtual({ id: mod.id, type: 'rsc-browser' }),
               )
             }
           }
@@ -2182,10 +2109,4 @@ function __vite_rsc_wrap_css__(value, name) {
 `)
     return { output: result.output }
   }
-}
-
-function sortObject<T extends object>(o: T) {
-  return Object.fromEntries(
-    Object.entries(o).sort(([a], [b]) => a.localeCompare(b)),
-  ) as T
 }
