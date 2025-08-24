@@ -1,13 +1,14 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration,
 } from './helper'
+import { x } from 'tinyexec'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -95,6 +96,56 @@ test.describe('dev-inconsistent-client-optimization', () => {
     expect(f.proc().stderr()).toContain(
       'client component dependency is inconsistently optimized.',
     )
+  })
+})
+
+test.describe('build-stable-chunks', () => {
+  const root = 'examples/basic'
+  const createEditor = useCreateEditor(root)
+
+  test('basic', async () => {
+    // 1st build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest1: import('vite').Manifest = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // edit src/routes/client.tsx
+    const editor = createEditor('src/routes/client.tsx')
+    editor.edit((s) => s.replace('client-counter', 'client-counter-v2'))
+
+    // 2nd build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest2: import('vite').Manifest = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // compare two mainfest.json
+    const files1 = new Set(Object.values(manifest1).map((v) => v.file))
+    const files2 = new Set(Object.values(manifest2).map((v) => v.file))
+    const oldChunks = Object.entries(manifest2)
+      .filter(([_k, v]) => !files1.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    const newChunks = Object.entries(manifest1)
+      .filter(([_k, v]) => !files2.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    expect(newChunks).toEqual([
+      'src/framework/entry.browser.tsx',
+      'src/routes/client.tsx',
+    ])
+    expect(oldChunks).toEqual(newChunks)
   })
 })
 

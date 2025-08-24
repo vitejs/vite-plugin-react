@@ -1,3 +1,18 @@
+## <small>[0.4.23](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.22...plugin-rsc@0.4.23) (2025-08-23)</small>
+### Bug Fixes
+
+* **rsc:** replace `'rolldownVersion' in this.meta` with `'rolldownVersion' in vite` for Vite 6 compat ([#761](https://github.com/vitejs/vite-plugin-react/issues/761)) ([af4e16d](https://github.com/vitejs/vite-plugin-react/commit/af4e16da970f2808e0ab4484500f0a038c8b176a))
+
+### Miscellaneous Chores
+
+* **rsc:** remove custom `react-dom/server.edge` types ([#757](https://github.com/vitejs/vite-plugin-react/issues/757)) ([a7ca366](https://github.com/vitejs/vite-plugin-react/commit/a7ca366f57f97ea0ab540dce645095ed9efedce8))
+* **rsc:** simplify react-router example ([#763](https://github.com/vitejs/vite-plugin-react/issues/763)) ([22f6538](https://github.com/vitejs/vite-plugin-react/commit/22f6538ea1536700da8588f4d9960787f51f1bcd))
+* **rsc:** use `prerender` in ssg example ([#758](https://github.com/vitejs/vite-plugin-react/issues/758)) ([df8b800](https://github.com/vitejs/vite-plugin-react/commit/df8b80055c567b0248c506e2c57fb613d9da128f))
+
+### Tests
+
+* **rsc:** test vite 6 ([#762](https://github.com/vitejs/vite-plugin-react/issues/762)) ([a46bdf4](https://github.com/vitejs/vite-plugin-react/commit/a46bdf45712e144c07797844b31e98bec5154be4))
+
 ## <small>[0.4.22](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.21...plugin-rsc@0.4.22) (2025-08-22)</small>
 ### Bug Fixes
 

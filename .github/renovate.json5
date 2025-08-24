@@ -41,9 +41,5 @@
     "kill-port", // `kill-port:^2.0.0 has perf issues (#8392)
 
     "prettier", // waiting for stable choice on ternaries
-
-    // plugin-rsc
-    "react-router",
-    "@react-router/dev",
   ],
 }
