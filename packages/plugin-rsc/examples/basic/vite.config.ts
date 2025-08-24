@@ -31,8 +31,8 @@ export default defineConfig({
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
       clientChunks(id) {
-        if (id.includes('/src/routes/deps/')) {
-          return 'group'
+        if (id.includes('/src/routes/chunk/')) {
+          return 'custom-chunk'
         }
       },
     }),
