@@ -63,6 +63,7 @@ type ClientReferenceMeta = {
   // build only for tree-shaking unused export
   exportNames: string[]
   renderedExports: string[]
+  clientGroupId?: string
 }
 
 type ServerRerferenceMeta = {
@@ -800,10 +801,11 @@ export default function vitePluginRsc(
           assert(entry)
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const [id, meta] of Object.entries(
-            manager.clientReferenceMetaMap,
-          )) {
-            const deps: AssetDeps = assetDeps[id]?.deps ?? { js: [], css: [] }
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            const deps: AssetDeps = assetDeps[meta.clientGroupId!]?.deps ?? {
+              js: [],
+              css: [],
+            }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
               mergeAssetDeps(deps, entry.deps),
               manager,
@@ -1145,13 +1147,16 @@ function vitePluginUseClient(
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const name =
+            let name =
               useClientPluginOptions.clientChunks?.(meta.importId) ||
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
+            name = name.replaceAll('..', '__')
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
+            meta.clientGroupId = `\0virtual:vite-rsc/client-references/group/${name}`
           }
+          debug('client-reference-groups', manager.clientReferenceGroups)
           for (const [name, metas] of Object.entries(
             manager.clientReferenceGroups,
           )) {
