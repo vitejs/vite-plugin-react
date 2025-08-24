@@ -1154,10 +1154,11 @@ function vitePluginUseClient(
               }) ??
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
-            name = name.replace(/\b\.\.\b/, '__')
+            name = name.replaceAll('..', '__')
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
           }
+          debug('client-reference-groups', manager.clientReferenceGroups)
           for (const [name, metas] of Object.entries(
             manager.clientReferenceGroups,
           )) {
