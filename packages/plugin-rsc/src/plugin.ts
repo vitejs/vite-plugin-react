@@ -63,6 +63,7 @@ type ClientReferenceMeta = {
   // build only for tree-shaking unused export
   exportNames: string[]
   renderedExports: string[]
+  serverChunk?: string
   groupChunkId?: string
 }
 
@@ -185,11 +186,13 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
-   *
-   * @param id - The absolute path of the client module
-   * @returns The chunk name to group this module with, or undefined to use default behavior
    */
-  clientChunks?: (id: string) => string | undefined
+  clientChunks?: (meta: {
+    /** client reference module id */
+    id: string
+    /** server chunk which includes a corresponding client reference proxy module */
+    serverChunk: string
+  }) => string | undefined
 }
 
 /** @experimental */
@@ -1148,7 +1151,10 @@ function vitePluginUseClient(
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             let name =
-              useClientPluginOptions.clientChunks?.(meta.importId) ||
+              useClientPluginOptions.clientChunks?.({
+                id: meta.importId,
+                serverChunk: meta.serverChunk!,
+              }) ??
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
             name = name.replaceAll('..', '__')
@@ -1261,6 +1267,14 @@ function vitePluginUseClient(
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
                 meta.renderedExports = mod.renderedExports
+                meta.serverChunk =
+                  (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
+                  normalizePath(
+                    path.relative(
+                      manager.config.root,
+                      chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
+                    ),
+                  )
               }
             }
           }

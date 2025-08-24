@@ -60,6 +60,31 @@ test.describe('build-default', () => {
   })
 })
 
+test.describe('build-server-client-chunks', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'build',
+    cliOptions: {
+      env: {
+        TEST_SERVER_CLIENT_CHUNKS: 'true',
+      },
+    },
+  })
+
+  defineTest(f)
+
+  test('custom client chunk', async () => {
+    const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
+      f.createEditor('dist/client/.vite/test.json').read(),
+    )
+    const chunk = chunks.find((c) => c.name === 'root')
+    const expected = [1, 2, 3].map((i) =>
+      normalizePath(path.join(f.root, `src/routes/chunk/client${i}.tsx`)),
+    )
+    expect(chunk?.moduleIds).toEqual(expect.arrayContaining(expected))
+  })
+})
+
 test.describe('dev-non-optimized-cjs', () => {
   test.beforeAll(async () => {
     // remove explicitly added optimizeDeps.include
