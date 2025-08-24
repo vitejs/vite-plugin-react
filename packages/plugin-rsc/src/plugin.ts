@@ -1147,13 +1147,14 @@ function vitePluginUseClient(
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const name =
+            let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
                 serverChunk: meta.serverChunk!,
               }) ??
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
+            name = name.replace(/\b\.\.\b/, '__')
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
           }
