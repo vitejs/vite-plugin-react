@@ -6,8 +6,6 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [
     rsc({
-      clientChunks: 'server',
-
       // `entries` option is only a shorthand for specifying each `rollupOptions.input` below
       // > entries: { rsc, ssr, client },
       //

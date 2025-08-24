@@ -36,7 +36,9 @@ export default defineConfig({
       //     return 'custom-chunk'
       //   }
       // },
-      clientChunks: 'server',
+      clientChunks(_id, meta) {
+        return meta.serverChunk
+      },
     }),
     {
       name: 'test-tree-shake',
