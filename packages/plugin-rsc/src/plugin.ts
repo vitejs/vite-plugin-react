@@ -187,28 +187,6 @@ export type RscPluginOptions = {
    *
    * @param id - The absolute path of the client module
    * @returns The chunk name to group this module with, or undefined to use default behavior
-   *
-   * @example
-   * ```js
-   * clientChunks(id) {
-   *   // Group all client components in a specific route together
-   *   if (id.includes('/src/routes/dashboard/')) {
-   *     return 'dashboard-clients'
-   *   }
-   *   // Group third-party client components
-   *   if (id.includes('node_modules/@company/ui/')) {
-   *     return 'vendor-ui'
-   *   }
-   * }
-   * ```
-   *
-   * Benefits:
-   * - Reduces the number of HTTP requests by bundling related client components
-   * - Improves loading performance for route-based code splitting
-   * - Allows fine-grained control over client-side bundle optimization
-   *
-   * Note: Tree-shaking is still applied, so only the actually used exports
-   * from each module will be included in the final chunk.
    */
   clientChunks?: (id: string) => string | undefined
 }
