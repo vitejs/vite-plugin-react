@@ -185,10 +185,11 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
-   *
    */
   clientChunks?: (meta: {
+    /** client reference module id */
     id: string
+    /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
 }
