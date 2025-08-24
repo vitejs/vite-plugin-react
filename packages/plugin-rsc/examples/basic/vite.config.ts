@@ -31,13 +31,13 @@ export default defineConfig({
       rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
-      // clientChunks(id) {
-      //   if (id.includes('/src/routes/chunk/')) {
-      //     return 'custom-chunk'
-      //   }
-      // },
       clientChunks(meta) {
-        return meta.serverChunk
+        if (process.env.TEST_SERVER_CLIENT_CHUNKS) {
+          return meta.serverChunk
+        }
+        if (meta.id.includes('/src/routes/chunk/')) {
+          return 'custom-chunk'
+        }
       },
     }),
     {
