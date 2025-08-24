@@ -93,7 +93,8 @@ class RscPluginManager {
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
-  clientReferenceGroupMap: Record<string, ClientReferenceMeta[]> = {}
+  clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
+    {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 
@@ -1122,9 +1123,11 @@ function vitePluginUseClient(
       },
       load(id) {
         if (id === '\0virtual:vite-rsc/client-references') {
+          // not used during dev
           if (this.environment.mode === 'dev') {
             return { code: `export default {}`, map: null }
           }
+          // no custom chunking needed for scan
           if (manager.isScanBuild) {
             let code = ``
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
@@ -1133,16 +1136,18 @@ function vitePluginUseClient(
             return { code, map: null }
           }
           let code = ''
-          manager.clientReferenceGroupMap = {}
+          // group client reference modules by `clientChunks` option
+          manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             const name =
               useClientPluginOptions.clientChunks?.(meta.importId) ||
+              // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
-            const group = (manager.clientReferenceGroupMap[name] ??= [])
+            const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
           }
           for (const [name, metas] of Object.entries(
-            manager.clientReferenceGroupMap,
+            manager.clientReferenceGroups,
           )) {
             const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
             for (const meta of metas) {
@@ -1157,14 +1162,16 @@ function vitePluginUseClient(
           code = `export default {${code}};\n`
           return { code, map: null }
         }
+        // re-export client reference modules from each group
         if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
           const name = id.slice(
             '\0virtual:vite-rsc/client-references/group/'.length,
           )
-          const metas = manager.clientReferenceGroupMap[name]
+          const metas = manager.clientReferenceGroups[name]
           assert(metas, `unknown client reference group: ${name}`)
           let code = ``
           for (const meta of metas) {
+            // pick only rendredExports to tree-shake unused client references
             const exports = meta.renderedExports
               .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
