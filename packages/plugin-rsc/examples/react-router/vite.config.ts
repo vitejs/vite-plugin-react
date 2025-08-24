@@ -19,7 +19,6 @@ export default defineConfig({
         ssr: './react-router-vite/entry.ssr.tsx',
         rsc: './react-router-vite/entry.rsc.single.tsx',
       },
-      clientChunks: (meta) => meta.serverChunk,
     }),
   ],
   optimizeDeps: {
