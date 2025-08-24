@@ -63,7 +63,7 @@ type ClientReferenceMeta = {
   // build only for tree-shaking unused export
   exportNames: string[]
   renderedExports: string[]
-  clientGroupId?: string
+  groupChunkId?: string
 }
 
 type ServerRerferenceMeta = {
@@ -802,7 +802,7 @@ export default function vitePluginRsc(
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const deps: AssetDeps = assetDeps[meta.clientGroupId!]?.deps ?? {
+            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
               js: [],
               css: [],
             }
@@ -1154,7 +1154,7 @@ function vitePluginUseClient(
             name = name.replaceAll('..', '__')
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
-            meta.clientGroupId = `\0virtual:vite-rsc/client-references/group/${name}`
+            meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
           }
           debug('client-reference-groups', manager.clientReferenceGroups)
           for (const [name, metas] of Object.entries(
