@@ -63,6 +63,7 @@ type ClientReferenceMeta = {
   // build only for tree-shaking unused export
   exportNames: string[]
   renderedExports: string[]
+  serverChunk?: string
 }
 
 type ServerRerferenceMeta = {
@@ -185,13 +186,11 @@ export type RscPluginOptions = {
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
    *
-   * @param id - The absolute path of the client module
-   * @returns The chunk name to group this module with, or undefined to use default behavior
    */
-  clientChunks?: (
-    id: string,
-    meta: { serverChunk?: string },
-  ) => string | undefined
+  clientChunks?: (meta: {
+    id: string
+    serverChunk: string
+  }) => string | undefined
 }
 
 /** @experimental */
@@ -1145,26 +1144,13 @@ function vitePluginUseClient(
             return { code, map: null }
           }
           let code = ''
-          // collect chunk mapping of client reference (proxy modules) on rsc build
-          const serverChunks: Record<string, string> = {}
-          for (const chunk of Object.values(manager.rscBundle)) {
-            if (chunk.type === 'chunk') {
-              for (const id of chunk.moduleIds) {
-                serverChunks[id] = normalizePath(
-                  path.relative(
-                    manager.config.root,
-                    chunk.facadeModuleId || chunk.moduleIds[0]!,
-                  ),
-                )
-              }
-            }
-          }
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             const name =
-              useClientPluginOptions.clientChunks?.(meta.importId, {
-                serverChunk: serverChunks[meta.importId],
+              useClientPluginOptions.clientChunks?.({
+                id: meta.importId,
+                serverChunk: meta.serverChunk!,
               }) ||
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
@@ -1275,6 +1261,12 @@ function vitePluginUseClient(
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
                 meta.renderedExports = mod.renderedExports
+                meta.serverChunk = normalizePath(
+                  path.relative(
+                    manager.config.root,
+                    chunk.facadeModuleId || chunk.moduleIds[0]!,
+                  ),
+                )
               }
             }
           }

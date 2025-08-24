@@ -36,7 +36,7 @@ export default defineConfig({
       //     return 'custom-chunk'
       //   }
       // },
-      clientChunks(_id, meta) {
+      clientChunks(meta) {
         return meta.serverChunk
       },
     }),
