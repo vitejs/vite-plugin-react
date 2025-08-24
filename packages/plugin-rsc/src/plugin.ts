@@ -1145,11 +1145,12 @@ function vitePluginUseClient(
             return { code, map: null }
           }
           let code = ''
-          const serverChunkMap: Record<string, string> = {}
+          // collect chunk mapping of client reference (proxy modules) on rsc build
+          const serverChunks: Record<string, string> = {}
           for (const chunk of Object.values(manager.rscBundle)) {
             if (chunk.type === 'chunk') {
               for (const id of chunk.moduleIds) {
-                serverChunkMap[id] = normalizePath(
+                serverChunks[id] = normalizePath(
                   path.relative(
                     manager.config.root,
                     chunk.facadeModuleId || chunk.moduleIds[0]!,
@@ -1163,7 +1164,7 @@ function vitePluginUseClient(
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             const name =
               useClientPluginOptions.clientChunks?.(meta.importId, {
-                serverChunk: serverChunkMap[meta.importId],
+                serverChunk: serverChunks[meta.importId],
               }) ||
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
