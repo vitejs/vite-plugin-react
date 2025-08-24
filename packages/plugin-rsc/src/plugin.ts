@@ -181,7 +181,7 @@ export type RscPluginOptions = {
   /**
    * @experimental
    */
-  clientChunks?: (id: string, meta: ClientReferenceMeta) => string | undefined
+  clientChunks?: (id: string) => string | undefined
 }
 
 /** @experimental */
@@ -1136,7 +1136,7 @@ function vitePluginUseClient(
           manager.clientReferenceGroupMap = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             const name =
-              useClientPluginOptions.clientChunks?.(meta.importId, meta) ||
+              useClientPluginOptions.clientChunks?.(meta.importId) ||
               normalizePath(path.relative(manager.config.root, meta.importId))
             const group = (manager.clientReferenceGroupMap[name] ??= [])
             group.push(meta)
