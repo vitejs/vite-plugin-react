@@ -1142,6 +1142,12 @@ function vitePluginUseClient(
             return { code, map: null }
           }
           let code = ''
+          for (const chunk of Object.values(manager.rscBundle)) {
+            if (chunk.type === 'chunk') {
+              chunk.name
+              chunk.moduleIds
+            }
+          }
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
