@@ -1267,14 +1267,16 @@ function vitePluginUseClient(
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
                 meta.renderedExports = mod.renderedExports
+                const normalized = normalizePath(
+                  path.relative(
+                    manager.config.root,
+                    chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
+                  ),
+                )
                 meta.serverChunk =
                   (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-                  normalizePath(
-                    path.relative(
-                      manager.config.root,
-                      chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-                    ),
-                  )
+                  // clean url to avoid special query (e.g. `?commonjs-exports`)
+                  cleanUrl(normalized)
               }
             }
           }
