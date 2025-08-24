@@ -1151,7 +1151,7 @@ function vitePluginUseClient(
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
                 serverChunk: meta.serverChunk!,
-              }) ||
+              }) ??
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
             const group = (manager.clientReferenceGroups[name] ??= [])
@@ -1264,7 +1264,7 @@ function vitePluginUseClient(
                 meta.serverChunk = normalizePath(
                   path.relative(
                     manager.config.root,
-                    chunk.facadeModuleId || chunk.moduleIds[0]!,
+                    chunk.facadeModuleId ?? chunk.fileName,
                   ),
                 )
               }
