@@ -1266,7 +1266,7 @@ function vitePluginUseClient(
                 meta.serverChunk = normalizePath(
                   path.relative(
                     manager.config.root,
-                    chunk.facadeModuleId ?? chunk.fileName,
+                    chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
                   ),
                 )
               }
