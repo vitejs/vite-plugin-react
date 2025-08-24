@@ -1177,7 +1177,7 @@ function vitePluginUseClient(
           assert(metas, `unknown client reference group: ${name}`)
           let code = ``
           for (const meta of metas) {
-            // pick only rendredExports to tree-shake unused client references
+            // pick only renderedExports to tree-shake unused client references
             const exports = meta.renderedExports
               .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
