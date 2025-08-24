@@ -188,7 +188,7 @@ export type RscPluginOptions = {
    * @param id - The absolute path of the client module
    * @returns The chunk name to group this module with, or undefined to use default behavior
    */
-  clientChunks?: (id: string) => string | undefined
+  clientChunks?: 'server' | ((id: string) => string | undefined)
 }
 
 /** @experimental */
@@ -1142,19 +1142,41 @@ function vitePluginUseClient(
             return { code, map: null }
           }
           let code = ''
+          const serverIdsToGroup: Record<string, string> = {}
           for (const chunk of Object.values(manager.rscBundle)) {
             if (chunk.type === 'chunk') {
-              chunk.name
-              chunk.moduleIds
+              for (const id of chunk.moduleIds) {
+                serverIdsToGroup[id] = normalizePath(
+                  path.relative(
+                    manager.config.root,
+                    chunk.facadeModuleId || chunk.moduleIds[0]!,
+                  ),
+                )
+              }
             }
           }
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
+          // let clinentChunksFn: (id: string) => string;
+          // if (useClientPluginOptions.clientChunks === 'server') {
+          //   clinentChunksFn = (id) => serverIdsToGroup[id]!
+          // } else {
+          // }
+          //  = useClientPluginOptions.clientChunks;
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const name =
-              useClientPluginOptions.clientChunks?.(meta.importId) ||
-              // use original module id as name by default
-              normalizePath(path.relative(manager.config.root, meta.importId))
+            let name = normalizePath(
+              path.relative(manager.config.root, meta.importId),
+            )
+            if (useClientPluginOptions.clientChunks === 'server') {
+              name = serverIdsToGroup[meta.importId] || name
+            } else if (useClientPluginOptions.clientChunks) {
+              name = useClientPluginOptions.clientChunks(meta.importId) || name
+            }
+            // clientChunks === 'server' ? serverIdsToGroup[meta.importId]
+            // const name =
+            //   clientChunks?.(meta.importId) ||
+            //   // use original module id as name by default
+            //   normalizePath(path.relative(manager.config.root, meta.importId))
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
           }

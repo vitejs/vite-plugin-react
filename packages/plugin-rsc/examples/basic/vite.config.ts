@@ -31,11 +31,12 @@ export default defineConfig({
       rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
-      clientChunks(id) {
-        if (id.includes('/src/routes/chunk/')) {
-          return 'custom-chunk'
-        }
-      },
+      // clientChunks(id) {
+      //   if (id.includes('/src/routes/chunk/')) {
+      //     return 'custom-chunk'
+      //   }
+      // },
+      clientChunks: 'server',
     }),
     {
       name: 'test-tree-shake',
