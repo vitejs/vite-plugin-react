@@ -3,6 +3,7 @@
 import './client.css'
 import { TestClientDep } from './client-dep'
 import styles from './client.module.css'
+import styleUrl from './client-url.css?url'
 
 export function TestStyleClient() {
   return (
@@ -11,6 +12,12 @@ export function TestStyleClient() {
       <div data-testid="css-module-client" className={styles.client}>
         test-css-module-client
       </div>
+      <link
+        rel="stylesheet"
+        href={styleUrl}
+        precedence="test-style-url-client"
+      />
+      <div className="test-style-url-client">test-style-url-client</div>
       <TestClientDep />
     </>
   )
