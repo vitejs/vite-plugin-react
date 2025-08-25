@@ -8,7 +8,6 @@ export default defineConfig({
     'src/browser.ts',
     'src/ssr.tsx',
     'src/rsc.tsx',
-    'src/vite-utils.ts',
     'src/core/browser.ts',
     'src/core/ssr.ts',
     'src/core/rsc.ts',

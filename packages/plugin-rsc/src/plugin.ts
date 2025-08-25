@@ -34,13 +34,13 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import {
   cleanUrl,
+  evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
-} from './vite-utils'
+} from './plugins/vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import {
   createVirtualPlugin,
-  evalValue,
   getEntrySource,
   hashString,
   normalizeRelativePath,

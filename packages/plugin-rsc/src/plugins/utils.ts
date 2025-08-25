@@ -7,21 +7,6 @@ import {
   type Rollup,
 } from 'vite'
 
-// https://github.com/vitejs/vite/blob/ea9aed7ebcb7f4be542bd2a384cbcb5a1e7b31bd/packages/vite/src/node/utils.ts#L1469-L1475
-export function evalValue<T = any>(rawValue: string): T {
-  const fn = new Function(`
-    var console, exports, global, module, process, require
-    return (\n${rawValue}\n)
-  `)
-  return fn()
-}
-
-// https://github.com/vitejs/vite/blob/946831f986cb797009b8178659d2b31f570c44ff/packages/vite/src/shared/utils.ts#L31-L34
-const postfixRE = /[?#].*$/
-export function cleanUrl(url: string): string {
-  return url.replace(postfixRE, '')
-}
-
 export function sortObject<T extends object>(o: T) {
   return Object.fromEntries(
     Object.entries(o).sort(([a], [b]) => a.localeCompare(b)),
