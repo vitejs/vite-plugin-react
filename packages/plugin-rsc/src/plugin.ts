@@ -481,7 +481,9 @@ export default function vitePluginRsc(
           if (this.environment.name === 'client') {
             // filter out `.css?direct` (injected by SSR) to avoid browser full reload
             // when changing non-self accepting css such as `module.css`.
-            return ctx.modules.filter((m) => !m.id?.includes('?direct'))
+            return ctx.modules.filter(
+              (m) => !(m.id?.includes('?direct') && !m.isSelfAccepting),
+            )
           }
         }
 
