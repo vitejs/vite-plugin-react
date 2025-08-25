@@ -854,6 +854,56 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('css url client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+
+    if (f.mode !== 'dev') return
+
+    // test client css url HMR
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/routes/style-client/client-url.css')
+    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(0, 165, 255)',
+    )
+    editor.reset()
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  test('css url server @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+
+    if (f.mode !== 'dev') return
+
+    // test server css url HMR
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/routes/style-server/server-url.css')
+    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(0, 165, 255)',
+    )
+    editor.reset()
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
   test('tailwind @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
