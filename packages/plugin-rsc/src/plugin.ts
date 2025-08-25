@@ -1159,7 +1159,8 @@ function vitePluginUseClient(
               }) ??
               // use original module id as name by default
               manager.toRelativeId(meta.importId)
-            name = name.replaceAll('..', '__')
+            // ensure clean virtual id to avoid interfering with other plugins
+            name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
             meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
@@ -1261,19 +1262,36 @@ function vitePluginUseClient(
       generateBundle(_options, bundle) {
         if (this.environment.name !== serverEnvironmentName) return
 
-        // track used exports of client references in rsc build
-        // to tree shake unused exports in browser and ssr build
+        // analyze rsc build to inform later client reference building.
+        // - track used client reference exports to tree-shake unused ones
+        // - generate associated server chunk name by grouping client references
+
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
-            for (const [id, mod] of Object.entries(chunk.modules)) {
+            const metas: [string, ClientReferenceMeta][] = []
+            for (const id of chunk.moduleIds) {
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
+                metas.push([id, meta])
+              }
+            }
+            if (metas.length > 0) {
+              // this name is used for client reference group virtual chunk name,
+              // which should have a stable and understandle name.
+              let serverChunk: string
+              if (chunk.facadeModuleId) {
+                serverChunk =
+                  'facade:' + manager.toRelativeId(chunk.facadeModuleId)
+              } else {
+                serverChunk =
+                  'shared:' +
+                  manager.toRelativeId(metas.map(([id]) => id).sort()[0]!)
+              }
+              for (const [id, meta] of metas) {
+                const mod = chunk.modules[id]
+                assert(mod)
                 meta.renderedExports = mod.renderedExports
-                meta.serverChunk =
-                  (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-                  manager.toRelativeId(
-                    chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-                  )
+                meta.serverChunk = serverChunk
               }
             }
           }
