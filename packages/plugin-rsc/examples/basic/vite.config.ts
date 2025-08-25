@@ -11,6 +11,7 @@ import {
 } from 'vite'
 // import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
@@ -30,6 +31,14 @@ export default defineConfig({
       rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
+      clientChunks(meta) {
+        if (process.env.TEST_SERVER_CLIENT_CHUNKS) {
+          return meta.serverChunk
+        }
+        if (meta.id.includes('/src/routes/chunk/')) {
+          return 'custom-chunk'
+        }
+      },
     }),
     {
       name: 'test-tree-shake',
@@ -41,6 +50,23 @@ export default defineConfig({
             assert(!chunk.code.includes('__unused_server_export__'))
           }
         }
+      },
+    },
+    {
+      // dump entire bundle to analyze build output for e2e
+      name: 'test-metadata',
+      enforce: 'post',
+      writeBundle(options, bundle) {
+        const chunks: Rollup.OutputChunk[] = []
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            chunks.push(chunk)
+          }
+        }
+        fs.writeFileSync(
+          path.join(options.dir!, '.vite/test.json'),
+          JSON.stringify({ chunks }, null, 2),
+        )
       },
     },
     {

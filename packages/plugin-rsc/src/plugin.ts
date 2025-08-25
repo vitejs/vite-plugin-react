@@ -63,6 +63,8 @@ type ClientReferenceMeta = {
   // build only for tree-shaking unused export
   exportNames: string[]
   renderedExports: string[]
+  serverChunk?: string
+  groupChunkId?: string
 }
 
 type ServerRerferenceMeta = {
@@ -93,6 +95,8 @@ class RscPluginManager {
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
+  clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
+    {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
 
@@ -176,6 +180,19 @@ export type RscPluginOptions = {
     ssr?: string
     rsc?: string
   }
+
+  /**
+   * Custom chunking strategy for client reference modules.
+   *
+   * This function allows you to group multiple client components into
+   * custom chunks instead of having each module in its own chunk.
+   */
+  clientChunks?: (meta: {
+    /** client reference module id */
+    id: string
+    /** server chunk which includes a corresponding client reference proxy module */
+    serverChunk: string
+  }) => string | undefined
 }
 
 /** @experimental */
@@ -787,10 +804,11 @@ export default function vitePluginRsc(
           assert(entry)
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
           const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const [id, meta] of Object.entries(
-            manager.clientReferenceMetaMap,
-          )) {
-            const deps: AssetDeps = assetDeps[id]?.deps ?? { js: [], css: [] }
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+              js: [],
+              css: [],
+            }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
               mergeAssetDeps(deps, entry.deps),
               manager,
@@ -977,7 +995,7 @@ function scanBuildStripPlugin({
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'keepUseCientProxy' | 'environment'
+    'keepUseCientProxy' | 'environment' | 'clientChunks'
   >,
   manager: RscPluginManager,
 ): Plugin[] {
@@ -1107,28 +1125,83 @@ function vitePluginUseClient(
         return { code: output.toString(), map: { mappings: '' } }
       },
     },
-    createVirtualPlugin('vite-rsc/client-references', function () {
-      if (this.environment.mode === 'dev') {
-        return { code: `export default {}`, map: null }
-      }
-      let code = ''
-      for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-        // vite/rollup can apply tree-shaking to dynamic import of this form
-        const key = JSON.stringify(meta.referenceKey)
-        const id = JSON.stringify(meta.importId)
-        const exports = meta.renderedExports
-          .map((name) => (name === 'default' ? 'default: _default' : name))
-          .sort()
-        code += `
-          ${key}: async () => {
-            const {${exports}} = await import(${id});
-            return {${exports}};
-          },
-        `
-      }
-      code = `export default {${code}};\n`
-      return { code, map: null }
-    }),
+    {
+      name: 'rsc:use-client/build-references',
+      resolveId(source) {
+        if (source.startsWith('virtual:vite-rsc/client-references')) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc/client-references') {
+          // not used during dev
+          if (this.environment.mode === 'dev') {
+            return { code: `export default {}`, map: null }
+          }
+          // no custom chunking needed for scan
+          if (manager.isScanBuild) {
+            let code = ``
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              code += `import ${JSON.stringify(meta.importId)};\n`
+            }
+            return { code, map: null }
+          }
+          let code = ''
+          // group client reference modules by `clientChunks` option
+          manager.clientReferenceGroups = {}
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            let name =
+              useClientPluginOptions.clientChunks?.({
+                id: meta.importId,
+                serverChunk: meta.serverChunk!,
+              }) ??
+              // use original module id as name by default
+              normalizePath(path.relative(manager.config.root, meta.importId))
+            name = name.replaceAll('..', '__')
+            const group = (manager.clientReferenceGroups[name] ??= [])
+            group.push(meta)
+            meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
+          }
+          debug('client-reference-groups', manager.clientReferenceGroups)
+          for (const [name, metas] of Object.entries(
+            manager.clientReferenceGroups,
+          )) {
+            const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
+            for (const meta of metas) {
+              code += `\
+                ${JSON.stringify(meta.referenceKey)}: async () => {
+                  const m = await import(${JSON.stringify(groupVirtual)});
+                  return m.export_${meta.referenceKey};
+                },
+              `
+            }
+          }
+          code = `export default {${code}};\n`
+          return { code, map: null }
+        }
+        // re-export client reference modules from each group
+        if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
+          const name = id.slice(
+            '\0virtual:vite-rsc/client-references/group/'.length,
+          )
+          const metas = manager.clientReferenceGroups[name]
+          assert(metas, `unknown client reference group: ${name}`)
+          let code = ``
+          for (const meta of metas) {
+            // pick only renderedExports to tree-shake unused client references
+            const exports = meta.renderedExports
+              .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
+              .sort()
+              .join('')
+            code += `
+              import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+              export const export_${meta.referenceKey} = {${exports}};
+            `
+          }
+          return { code, map: null }
+        }
+      },
+    },
     {
       name: 'rsc:virtual-client-in-server-package',
       async load(id) {
@@ -1194,6 +1267,14 @@ function vitePluginUseClient(
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
                 meta.renderedExports = mod.renderedExports
+                meta.serverChunk =
+                  (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
+                  normalizePath(
+                    path.relative(
+                      manager.config.root,
+                      chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
+                    ),
+                  )
               }
             }
           }
