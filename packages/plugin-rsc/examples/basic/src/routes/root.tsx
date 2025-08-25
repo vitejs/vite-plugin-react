@@ -23,8 +23,6 @@ import { TestSerializationServer } from './serialization/server'
 import { TestCssClientNoSsr } from './style-client-no-ssr/server'
 import { TestStyleClient } from './style-client/client'
 import { TestStyleServer } from './style-server/server'
-import { TestTailwindClient } from './tailwind/client'
-import { TestTailwindServer } from './tailwind/server'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestUseCache } from './use-cache/server'
 import { TestReactCache } from './react-cache/server'
@@ -42,6 +40,7 @@ import { TestHmrSwitchServer } from './hmr-switch/server'
 import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestTreeShakeServer } from './tree-shake/server'
 import { TestClientChunkServer } from './chunk/server'
+import { TestTailwind } from './tailwind'
 
 export function Root(props: { url: URL }) {
   return (
@@ -61,8 +60,7 @@ export function Root(props: { url: URL }) {
         <TestStyleClient />
         <TestStyleServer />
         <TestCssClientNoSsr url={props.url} />
-        <TestTailwindClient />
-        <TestTailwindServer />
+        <TestTailwind />
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />

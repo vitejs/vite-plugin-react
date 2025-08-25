@@ -17,6 +17,7 @@ export default defineConfig({
       },
       serverHandler: false,
       loadModuleDevProxy: true,
+      useBuildAppHook: true,
     }),
     cloudflare({
       configPath: './wrangler.jsonc',
@@ -48,5 +49,10 @@ export default defineConfig({
         noExternal: true,
       },
     },
+  },
+  builder: {
+    // empty buildApp to disable cloudflare's buildApp
+    // https://github.com/cloudflare/workers-sdk/blob/19e2aab1d68594c7289d0aa16474544919fd5b9b/packages/vite-plugin-cloudflare/src/index.ts#L183-L186
+    buildApp: async () => {},
   },
 })
