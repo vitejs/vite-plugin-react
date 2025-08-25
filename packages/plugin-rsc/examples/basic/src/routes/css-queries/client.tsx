@@ -17,16 +17,12 @@ export function TestCssQueriesClient(props: {
       <button onClick={() => setEnabled(!enabled)}>test-css-queries</button>
       {enabled && (
         <>
-          <link rel="stylesheet" href={cssUrl} precedence="test/css-queries" />
-          <style precedence="test/css-queries">{cssInline}</style>
-          <style precedence="test/css-queries">{cssRaw}</style>
-          <link
-            rel="stylesheet"
-            href={props.serverUrl}
-            precedence="test/css-queries"
-          />
-          <style precedence="test/css-queries">{props.serverInline}</style>
-          <style precedence="test/css-queries">{props.serverRaw}</style>
+          <link rel="stylesheet" href={cssUrl} />
+          <style>{cssInline}</style>
+          <style>{cssRaw}</style>
+          <link rel="stylesheet" href={props.serverUrl} />
+          <style>{props.serverInline}</style>
+          <style>{props.serverRaw}</style>
         </>
       )}
       <div className="test-css-url-client">test-css-url-client</div>
