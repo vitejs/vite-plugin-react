@@ -12,22 +12,15 @@ export function TestCssQueriesClient(props: {
 }) {
   const [enabled, setEnabled] = React.useState(false)
 
-  function urlWithHmr(href: string) {
-    if (import.meta.hot) {
-      href += '?t=' + Date.now()
-    }
-    return href
-  }
-
   return (
     <div>
       <button onClick={() => setEnabled(!enabled)}>test-css-queries</button>
       {enabled && (
         <>
-          <link rel="stylesheet" href={urlWithHmr(cssUrl)} />
+          <link rel="stylesheet" href={cssUrl} />
           <style>{cssInline}</style>
           <style>{cssRaw}</style>
-          <link rel="stylesheet" href={urlWithHmr(props.serverUrl)} />
+          <link rel="stylesheet" href={props.serverUrl} />
           <style>{props.serverInline}</style>
           <style>{props.serverRaw}</style>
         </>

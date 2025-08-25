@@ -632,11 +632,15 @@ function defineTest(f: Fixture) {
 
     async function expectNoDuplicateServerCss(page: Page) {
       // check only manually inserted stylesheet link exists
-      // (toHaveAttribute passes only when locator matches single element)
-      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
-        'href',
-        '/test-style-server-manual.css',
-      )
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(3)
+      for (const locator of await page
+        .locator('link[rel="stylesheet"]')
+        .all()) {
+        await expect(locator).toHaveAttribute(
+          'data-precedence',
+          'test-style-manual-link',
+        )
+      }
     }
 
     test('no duplicate server css', async ({ page }) => {
@@ -849,6 +853,56 @@ function defineTest(f: Fixture) {
       'rgb(255, 165, 0)',
     )
     await expect(page.getByTestId('css-module-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  test('css url client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+
+    if (f.mode !== 'dev') return
+
+    // test client css url HMR
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/routes/style-client/client-url.css')
+    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(0, 165, 255)',
+    )
+    editor.reset()
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  test('css url server @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+
+    if (f.mode !== 'dev') return
+
+    // test server css url HMR
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/routes/style-server/server-url.css')
+    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(0, 165, 255)',
+    )
+    editor.reset()
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
     )
