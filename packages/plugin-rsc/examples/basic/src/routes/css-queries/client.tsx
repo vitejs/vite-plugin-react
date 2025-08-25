@@ -15,6 +15,7 @@ export function TestCssQueriesClient(props: {
   return (
     <div>
       <button onClick={() => setEnabled(!enabled)}>test-css-queries</button>
+      <br />
       {enabled && (
         <>
           <link rel="stylesheet" href={cssUrl} />
@@ -25,9 +26,11 @@ export function TestCssQueriesClient(props: {
           <style>{props.serverRaw}</style>
         </>
       )}
-      <div className="test-css-url-client">test-css-url-client</div>
-      <div className="test-css-inline-client">test-css-inline-client</div>
-      <div className="test-css-raw-client">test-css-raw-client</div>
+      <span className="test-css-url-client">test-css-url-client</span>
+      <span>|</span>
+      <span className="test-css-inline-client">test-css-inline-client</span>
+      <span>|</span>
+      <span className="test-css-raw-client">test-css-raw-client</span>
     </div>
   )
 }
