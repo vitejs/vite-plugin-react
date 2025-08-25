@@ -36,7 +36,7 @@ import {
   cleanUrl,
   normalizeViteImportAnalysisUrl,
   prepareError,
-} from './vite-utils'
+} from './plugins/vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import {
   createVirtualPlugin,
