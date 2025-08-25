@@ -45,8 +45,10 @@ createFromReadableStream<RSCServerPayload>(getRSCStream()).then((payload) => {
   })
 })
 
+declare let __reactRouterDataRouter: DataRouter
+
 if (import.meta.hot) {
   import.meta.hot.on('rsc:update', () => {
-    ;(window as unknown as { __router: DataRouter }).__router.revalidate()
+    __reactRouterDataRouter.revalidate()
   })
 }
