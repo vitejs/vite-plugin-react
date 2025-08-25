@@ -152,3 +152,5 @@ function cleanStack(stack: string) {
     .filter((l) => /^\s*at/.test(l))
     .join('\n')
 }
+
+export const urlRE: RegExp = /(\?|&)url(?:&|$)/

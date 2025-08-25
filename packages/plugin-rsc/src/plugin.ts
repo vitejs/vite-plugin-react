@@ -36,6 +36,7 @@ import {
   cleanUrl,
   normalizeViteImportAnalysisUrl,
   prepareError,
+  urlRE,
 } from './vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import {
@@ -474,6 +475,10 @@ export default function vitePluginRsc(
       },
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
+          // keep default behavior for css with `?url` query, which uses `?direct` for HMR
+          if (ctx.modules.find((m) => m.id && urlRE.test(m.id))) {
+            return
+          }
           if (this.environment.name === 'client') {
             // filter out `.css?direct` (injected by SSR) to avoid browser full reload
             // when changing non-self accepting css such as `module.css`.
