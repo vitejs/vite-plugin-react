@@ -1160,7 +1160,7 @@ function vitePluginUseClient(
               // use original module id as name by default
               manager.toRelativeId(meta.importId)
             // ensure clean virtual id to avoid interfering with other plugins
-            name = cleanUrl(name.replaceAll('..', '__')) + '?lang.js'
+            name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
             meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
