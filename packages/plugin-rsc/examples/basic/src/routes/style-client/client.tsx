@@ -15,7 +15,7 @@ export function TestStyleClient() {
       <link
         rel="stylesheet"
         href={styleUrl}
-        precedence="test-style-url-client"
+        precedence="test-style-manual-link"
       />
       <div className="test-style-url-client">test-style-url-client</div>
       <TestClientDep />

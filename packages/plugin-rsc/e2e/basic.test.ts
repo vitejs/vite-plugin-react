@@ -632,11 +632,15 @@ function defineTest(f: Fixture) {
 
     async function expectNoDuplicateServerCss(page: Page) {
       // check only manually inserted stylesheet link exists
-      // (toHaveAttribute passes only when locator matches single element)
-      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
-        'href',
-        '/test-style-server-manual.css',
-      )
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(3)
+      for (const locator of await page
+        .locator('link[rel="stylesheet"]')
+        .all()) {
+        await expect(locator).toHaveAttribute(
+          'data-precedence',
+          'test-style-manual-link',
+        )
+      }
     }
 
     test('no duplicate server css', async ({ page }) => {

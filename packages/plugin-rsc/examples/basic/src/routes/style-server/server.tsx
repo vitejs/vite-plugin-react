@@ -12,13 +12,13 @@ export function TestStyleServer() {
       <link
         rel="stylesheet"
         href={styleUrl}
-        precedence="test-style-url-server"
+        precedence="test-style-manual-link"
       />
       <div className="test-style-url-server">test-style-url-server</div>
       <link
         rel="stylesheet"
         href="/test-style-server-manual.css"
-        precedence="test-style-server-manual"
+        precedence="test-style-manual-link"
       />
       <div className="test-style-server-manual">test-style-server-manual</div>
     </>
