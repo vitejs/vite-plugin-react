@@ -11,11 +11,11 @@ export function TestCssQueries() {
         serverInline={cssInline}
         serverRaw={cssRaw}
       />
-      <div>
-        <div className="test-css-url-server">test-css-url-server</div>
-        <div className="test-css-inline-server">test-css-inline-server</div>
-        <div className="test-css-raw-server">test-css-raw-server</div>
-      </div>
+      <span className="test-css-url-server">test-css-url-server</span>
+      <span>|</span>
+      <span className="test-css-inline-server">test-css-inline-server</span>
+      <span>|</span>
+      <span className="test-css-raw-server">test-css-raw-server</span>
     </div>
   )
 }
