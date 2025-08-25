@@ -7,7 +7,7 @@ import styleUrl from './client-url.css?url'
 
 export function TestStyleClient() {
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <div style={{ display: 'flex' }}>
       <div className="test-style-client">test-style-client</div>
       <span>|</span>
       <div data-testid="css-module-client" className={styles.client}>

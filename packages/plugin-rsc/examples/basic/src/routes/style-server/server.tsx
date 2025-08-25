@@ -4,7 +4,7 @@ import styleUrl from './server-url.css?url'
 
 export function TestStyleServer() {
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <div style={{ display: 'flex' }}>
       <div className="test-style-server">test-style-server</div>
       <span>|</span>
       <div data-testid="css-module-server" className={styles.server}>

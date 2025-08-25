@@ -3,7 +3,7 @@ import { TestTailwindServer } from './server'
 
 export function TestTailwind() {
   return (
-    <div style={{ display: 'flex', gap: 2 }}>
+    <div style={{ display: 'flex' }}>
       <TestTailwindClient />
       <span>|</span>
       <TestTailwindServer />
