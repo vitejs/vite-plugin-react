@@ -1158,7 +1158,7 @@ function vitePluginUseClient(
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
             // ensure clean virtual id to avoid interfering with other plugins
-            name = cleanUrl(name.replaceAll('..', '__')) + '&lang.js'
+            name = cleanUrl(name.replaceAll('..', '__')) + '?lang.js'
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
             meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
@@ -1300,32 +1300,6 @@ function vitePluginUseClient(
                 meta.serverChunk = serverChunk
               }
             }
-            // // const metas: [string, ]
-            // // const metas = chunk.moduleIds.map(id => manager.clientReferenceMetaMap[id]).filter(typedBoolean)
-            // // if (metas.length > 0) {
-            // //   for (const meta of metas) {
-            // //     const mod = chunk.modules[meta.importId]
-            // //     if (mod) {
-            // //       meta.renderedExports.push(...mod.renderedExports)
-            // //     }
-            // //   }
-            // // }
-            // for (const [id, mod] of Object.entries(chunk.modules)) {
-            //   const meta = manager.clientReferenceMetaMap[id]
-            //   if (meta) {
-            //     meta.renderedExports = mod.renderedExports
-            //     const normalized = normalizePath(
-            //       path.relative(
-            //         manager.config.root,
-            //         chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-            //       ),
-            //     )
-            //     meta.serverChunk =
-            //       (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-            //       // clean url to avoid special query (e.g. `?commonjs-exports`)
-            //       cleanUrl(normalized)
-            //   }
-            // }
           }
         }
       },
