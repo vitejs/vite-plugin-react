@@ -1157,7 +1157,8 @@ function vitePluginUseClient(
               }) ??
               // use original module id as name by default
               normalizePath(path.relative(manager.config.root, meta.importId))
-            name = name.replaceAll('..', '__')
+            // ensure clean virtual id to avoid interfering with other plugins
+            name = cleanUrl(name.replaceAll('..', '__')) + '&lang.js'
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
             meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
@@ -1259,26 +1260,72 @@ function vitePluginUseClient(
       generateBundle(_options, bundle) {
         if (this.environment.name !== serverEnvironmentName) return
 
-        // track used exports of client references in rsc build
-        // to tree shake unused exports in browser and ssr build
+        // analyze rsc build to inform later client reference building.
+        // - track used client reference exports to tree-shake unused ones
+        // - generate associated server chunk name by grouping client references
+
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
-            for (const [id, mod] of Object.entries(chunk.modules)) {
+            const metas: [string, ClientReferenceMeta][] = []
+            for (const id of chunk.moduleIds) {
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
-                meta.renderedExports = mod.renderedExports
-                const normalized = normalizePath(
-                  path.relative(
-                    manager.config.root,
-                    chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-                  ),
-                )
-                meta.serverChunk =
-                  (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-                  // clean url to avoid special query (e.g. `?commonjs-exports`)
-                  cleanUrl(normalized)
+                metas.push([id, meta])
               }
             }
+            if (metas.length > 0) {
+              // this name is used for client reference group virtual chunk name,
+              // which should have a stable and understandle name.
+              let serverChunk: string
+              if (chunk.facadeModuleId) {
+                serverChunk =
+                  'facade:' +
+                  normalizePath(
+                    path.relative(manager.config.root, chunk.facadeModuleId),
+                  )
+              } else {
+                serverChunk =
+                  'shared:' +
+                  normalizePath(
+                    path.relative(
+                      manager.config.root,
+                      metas.map(([id]) => id).sort()[0]!,
+                    ),
+                  )
+              }
+              for (const [id, meta] of metas) {
+                const mod = chunk.modules[id]
+                assert(mod)
+                meta.renderedExports = mod.renderedExports
+                meta.serverChunk = serverChunk
+              }
+            }
+            // // const metas: [string, ]
+            // // const metas = chunk.moduleIds.map(id => manager.clientReferenceMetaMap[id]).filter(typedBoolean)
+            // // if (metas.length > 0) {
+            // //   for (const meta of metas) {
+            // //     const mod = chunk.modules[meta.importId]
+            // //     if (mod) {
+            // //       meta.renderedExports.push(...mod.renderedExports)
+            // //     }
+            // //   }
+            // // }
+            // for (const [id, mod] of Object.entries(chunk.modules)) {
+            //   const meta = manager.clientReferenceMetaMap[id]
+            //   if (meta) {
+            //     meta.renderedExports = mod.renderedExports
+            //     const normalized = normalizePath(
+            //       path.relative(
+            //         manager.config.root,
+            //         chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
+            //       ),
+            //     )
+            //     meta.serverChunk =
+            //       (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
+            //       // clean url to avoid special query (e.g. `?commonjs-exports`)
+            //       cleanUrl(normalized)
+            //   }
+            // }
           }
         }
       },
