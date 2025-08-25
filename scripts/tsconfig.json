@@ -4,7 +4,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "nodenext",
-    "rewriteRelativeImportExtensions": true,
+    "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
