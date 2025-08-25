@@ -105,6 +105,10 @@ class RscPluginManager {
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
   }
+
+  toRelativeId(id: string): string {
+    return normalizePath(path.relative(this.config.root, id))
+  }
 }
 
 export type RscPluginOptions = {
@@ -1081,9 +1085,7 @@ function vitePluginUseClient(
             referenceKey = importId
           } else {
             importId = id
-            referenceKey = hashString(
-              normalizePath(path.relative(manager.config.root, id)),
-            )
+            referenceKey = hashString(manager.toRelativeId(id))
           }
         }
 
@@ -1156,7 +1158,7 @@ function vitePluginUseClient(
                 serverChunk: meta.serverChunk!,
               }) ??
               // use original module id as name by default
-              normalizePath(path.relative(manager.config.root, meta.importId))
+              manager.toRelativeId(meta.importId)
             name = name.replaceAll('..', '__')
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
@@ -1269,11 +1271,8 @@ function vitePluginUseClient(
                 meta.renderedExports = mod.renderedExports
                 meta.serverChunk =
                   (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-                  normalizePath(
-                    path.relative(
-                      manager.config.root,
-                      chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-                    ),
+                  manager.toRelativeId(
+                    chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
                   )
               }
             }
@@ -1485,7 +1484,7 @@ function vitePluginUseServer(
               id = cleanUrl(id)
             }
             if (manager.config.command === 'build') {
-              normalizedId_ = hashString(path.relative(manager.config.root, id))
+              normalizedId_ = hashString(manager.toRelativeId(id))
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
                 manager.server.environments[serverEnvironmentName]!,
@@ -1994,9 +1993,7 @@ function vitePluginRscCss(
               manager,
             )
           } else {
-            const key = normalizePath(
-              path.relative(manager.config.root, importer),
-            )
+            const key = manager.toRelativeId(importer)
             manager.serverResourcesMetaMap[importer] = { key }
             return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
