@@ -1484,7 +1484,7 @@ function vitePluginUseServer(
               id = cleanUrl(id)
             }
             if (manager.config.command === 'build') {
-              normalizedId_ = hashString(path.relative(manager.config.root, id))
+              normalizedId_ = hashString(manager.toStableId(id))
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
                 manager.server.environments[serverEnvironmentName]!,
