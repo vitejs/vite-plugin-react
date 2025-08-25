@@ -29,8 +29,8 @@
     "debug-build": "VITE_TEST_BUILD=1 VITE_PRESERVE_BUILD_ARTIFACTS=1 vitest run -c playground/vitest.config.e2e.ts",
     "build": "pnpm -r --filter='./packages/*' run build",
     "dev": "pnpm -r --parallel --filter='./packages/*' run dev",
-    "release": "tsx scripts/release.ts",
-    "ci-publish": "tsx scripts/publishCI.ts"
+    "release": "node scripts/release.ts",
+    "ci-publish": "node scripts/publishCI.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
@@ -48,7 +48,6 @@
     "playwright-chromium": "^1.54.2",
     "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.1",
-    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
