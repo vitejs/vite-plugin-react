@@ -208,8 +208,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         staticBabelOptions = createBabelOptions(opts.babel)
 
         if (
+          (isRolldownVite || skipFastRefresh) &&
           canSkipBabel(staticBabelOptions.plugins, staticBabelOptions) &&
-          skipFastRefresh &&
           (opts.jsxRuntime === 'classic' ? isProduction : true)
         ) {
           delete viteBabel.transform
@@ -269,8 +269,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
         const isJSX = filepath.endsWith('x')
         const useFastRefresh =
-          !isRolldownVite &&
-          !skipFastRefresh &&
+          !(isRolldownVite || skipFastRefresh) &&
           !ssr &&
           (isJSX ||
             (opts.jsxRuntime === 'classic'
