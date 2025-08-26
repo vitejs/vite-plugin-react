@@ -238,7 +238,10 @@ function defineTest(f: Fixture) {
     await testUseActionState(page)
   })
 
-  test('useActionState nojs to js', async ({ page }) => {
+  test('useActionState nojs to js', async ({ page, browserName }) => {
+    // firefox seems to cache html and route interception doesn't work
+    test.skip(browserName === 'firefox')
+
     // this test fails without `formState` passed to `hydrateRoot(..., { formState })`
 
     // intercept request to disable js
