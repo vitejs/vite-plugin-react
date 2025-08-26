@@ -1,4 +1,4 @@
-// import analysis logic copied from vite
+// misc utilities copied from vite
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -151,4 +151,13 @@ function cleanStack(stack: string) {
     .split(/\n/)
     .filter((l) => /^\s*at/.test(l))
     .join('\n')
+}
+
+// https://github.com/vitejs/vite/blob/ea9aed7ebcb7f4be542bd2a384cbcb5a1e7b31bd/packages/vite/src/node/utils.ts#L1469-L1475
+export function evalValue<T = any>(rawValue: string): T {
+  const fn = new Function(`
+    var console, exports, global, module, process, require
+    return (\n${rawValue}\n)
+  `)
+  return fn()
 }

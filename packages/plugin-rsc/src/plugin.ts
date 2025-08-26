@@ -34,13 +34,13 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import {
   cleanUrl,
+  evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
-} from './vite-utils'
+} from './plugins/vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import {
   createVirtualPlugin,
-  evalValue,
   getEntrySource,
   hashString,
   normalizeRelativePath,
@@ -104,6 +104,10 @@ class RscPluginManager {
     // sort for stable build
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
+  }
+
+  toRelativeId(id: string): string {
+    return normalizePath(path.relative(this.config.root, id))
   }
 }
 
@@ -477,7 +481,9 @@ export default function vitePluginRsc(
           if (this.environment.name === 'client') {
             // filter out `.css?direct` (injected by SSR) to avoid browser full reload
             // when changing non-self accepting css such as `module.css`.
-            return ctx.modules.filter((m) => !m.id?.includes('?direct'))
+            return ctx.modules.filter(
+              (m) => !(m.id?.includes('?direct') && !m.isSelfAccepting),
+            )
           }
         }
 
@@ -1081,9 +1087,7 @@ function vitePluginUseClient(
             referenceKey = importId
           } else {
             importId = id
-            referenceKey = hashString(
-              normalizePath(path.relative(manager.config.root, id)),
-            )
+            referenceKey = hashString(manager.toRelativeId(id))
           }
         }
 
@@ -1156,8 +1160,9 @@ function vitePluginUseClient(
                 serverChunk: meta.serverChunk!,
               }) ??
               // use original module id as name by default
-              normalizePath(path.relative(manager.config.root, meta.importId))
-            name = name.replaceAll('..', '__')
+              manager.toRelativeId(meta.importId)
+            // ensure clean virtual id to avoid interfering with other plugins
+            name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
             group.push(meta)
             meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
@@ -1259,22 +1264,36 @@ function vitePluginUseClient(
       generateBundle(_options, bundle) {
         if (this.environment.name !== serverEnvironmentName) return
 
-        // track used exports of client references in rsc build
-        // to tree shake unused exports in browser and ssr build
+        // analyze rsc build to inform later client reference building.
+        // - track used client reference exports to tree-shake unused ones
+        // - generate associated server chunk name by grouping client references
+
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
-            for (const [id, mod] of Object.entries(chunk.modules)) {
+            const metas: [string, ClientReferenceMeta][] = []
+            for (const id of chunk.moduleIds) {
               const meta = manager.clientReferenceMetaMap[id]
               if (meta) {
+                metas.push([id, meta])
+              }
+            }
+            if (metas.length > 0) {
+              // this name is used for client reference group virtual chunk name,
+              // which should have a stable and understandle name.
+              let serverChunk: string
+              if (chunk.facadeModuleId) {
+                serverChunk =
+                  'facade:' + manager.toRelativeId(chunk.facadeModuleId)
+              } else {
+                serverChunk =
+                  'shared:' +
+                  manager.toRelativeId(metas.map(([id]) => id).sort()[0]!)
+              }
+              for (const [id, meta] of metas) {
+                const mod = chunk.modules[id]
+                assert(mod)
                 meta.renderedExports = mod.renderedExports
-                meta.serverChunk =
-                  (chunk.facadeModuleId ? 'facade:' : 'non-facade:') +
-                  normalizePath(
-                    path.relative(
-                      manager.config.root,
-                      chunk.facadeModuleId ?? [...chunk.moduleIds].sort()[0]!,
-                    ),
-                  )
+                meta.serverChunk = serverChunk
               }
             }
           }
@@ -1485,7 +1504,7 @@ function vitePluginUseServer(
               id = cleanUrl(id)
             }
             if (manager.config.command === 'build') {
-              normalizedId_ = hashString(path.relative(manager.config.root, id))
+              normalizedId_ = hashString(manager.toRelativeId(id))
             } else {
               normalizedId_ = normalizeViteImportAnalysisUrl(
                 manager.server.environments[serverEnvironmentName]!,
@@ -1994,9 +2013,7 @@ function vitePluginRscCss(
               manager,
             )
           } else {
-            const key = normalizePath(
-              path.relative(manager.config.root, importer),
-            )
+            const key = manager.toRelativeId(importer)
             manager.serverResourcesMetaMap[importer] = { key }
             return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
