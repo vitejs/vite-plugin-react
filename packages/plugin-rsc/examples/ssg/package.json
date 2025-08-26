@@ -16,7 +16,7 @@
   "devDependencies": {
     "@mdx-js/rollup": "^3.1.0",
     "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
+    "@types/react-dom": "^19.1.8",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest"
   }
