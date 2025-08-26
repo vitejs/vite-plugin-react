@@ -2,9 +2,17 @@ import assert from 'node:assert'
 import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
+import {
+  type Plugin,
+  type Rollup,
+  defineConfig,
+  normalizePath,
+  parseAstAsync,
+} from 'vite'
 // import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   clearScreen: false,
@@ -23,16 +31,42 @@ export default defineConfig({
       rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
+      clientChunks(meta) {
+        if (process.env.TEST_SERVER_CLIENT_CHUNKS) {
+          return meta.serverChunk
+        }
+        if (meta.id.includes('/src/routes/chunk/')) {
+          return 'custom-chunk'
+        }
+      },
     }),
     {
-      name: 'test-client-reference-tree-shaking',
+      name: 'test-tree-shake',
       enforce: 'post',
       writeBundle(_options, bundle) {
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
+            assert(!chunk.code.includes('__unused_server_export__'))
           }
         }
+      },
+    },
+    {
+      // dump entire bundle to analyze build output for e2e
+      name: 'test-metadata',
+      enforce: 'post',
+      writeBundle(options, bundle) {
+        const chunks: Rollup.OutputChunk[] = []
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            chunks.push(chunk)
+          }
+        }
+        fs.writeFileSync(
+          path.join(options.dir!, '.vite/test.json'),
+          JSON.stringify({ chunks }, null, 2),
+        )
       },
     },
     {
@@ -84,6 +118,78 @@ export default defineConfig({
         }
         if (this.environment.name === 'ssr') {
           assert(!moduleIds.includes(browserId))
+        }
+      },
+    },
+    {
+      name: 'optimize-chunks',
+      apply: 'build',
+      config() {
+        const resolvePackageSource = (source: string) =>
+          normalizePath(fileURLToPath(import.meta.resolve(source)))
+
+        // TODO: this package entry isn't a public API.
+        const reactServerDom = resolvePackageSource(
+          '@vitejs/plugin-rsc/react/browser',
+        )
+
+        return {
+          environments: {
+            client: {
+              build: {
+                rollupOptions: {
+                  output: {
+                    manualChunks: (id) => {
+                      // need to use functional form to handle commonjs plugin proxy module
+                      // e.g. `(id)?commonjs-es-import`
+                      if (
+                        id.includes('node_modules/react/') ||
+                        id.includes('node_modules/react-dom/') ||
+                        id.includes(reactServerDom)
+                      ) {
+                        return 'lib-react'
+                      }
+                      if (id === '\0vite/preload-helper.js') {
+                        return 'lib-vite'
+                      }
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+      },
+      // verify chunks are "stable"
+      writeBundle(_options, bundle) {
+        if (this.environment.name === 'client') {
+          const entryChunks: Rollup.OutputChunk[] = []
+          const libChunks: Record<string, Rollup.OutputChunk[]> = {}
+          for (const chunk of Object.values(bundle)) {
+            if (chunk.type === 'chunk') {
+              if (chunk.isEntry) {
+                entryChunks.push(chunk)
+              }
+              if (chunk.name.startsWith('lib-')) {
+                ;(libChunks[chunk.name] ??= []).push(chunk)
+              }
+            }
+          }
+
+          // react vendor chunk has no import
+          assert.equal(libChunks['lib-react'].length, 1)
+          assert.deepEqual(
+            // https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
+            libChunks['lib-react'][0].imports.filter(
+              (f) => !f.includes('rolldown-runtime'),
+            ),
+            [],
+          )
+          assert.deepEqual(libChunks['lib-react'][0].dynamicImports, [])
+
+          // entry chunk has no export
+          assert.equal(entryChunks.length, 1)
+          assert.deepEqual(entryChunks[0].exports, [])
         }
       },
     },

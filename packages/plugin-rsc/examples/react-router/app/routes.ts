@@ -1,6 +1,21 @@
-import { type RouteConfig, index, route } from '@react-router/dev/routes'
+import type { unstable_RSCRouteConfigEntry } from 'react-router'
 
-export default [
-  index('routes/home.tsx'),
-  route('about', 'routes/about.tsx'),
-] satisfies RouteConfig
+export const routes: unstable_RSCRouteConfigEntry[] = [
+  {
+    id: 'root',
+    path: '',
+    lazy: () => import('./root'),
+    children: [
+      {
+        id: 'home',
+        index: true,
+        lazy: () => import('./routes/home'),
+      },
+      {
+        id: 'about',
+        path: 'about',
+        lazy: () => import('./routes/about'),
+      },
+    ],
+  },
+]

@@ -22,7 +22,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "scripts": {
-    "dev": "tsdown --watch",
+    "dev": "tsdown --watch ./src --watch ../common",
     "build": "tsdown",
     "prepublishOnly": "npm run build"
   },
@@ -43,10 +43,10 @@
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
-    "tsdown": "^0.14.1",
+    "tsdown": "^0.14.2",
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.32"
+    "@rolldown/pluginutils": "1.0.0-beta.34"
   }
 }

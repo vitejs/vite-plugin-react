@@ -10,6 +10,7 @@ import {
   unstable_createCallServer as createCallServer,
   unstable_getRSCStream as getRSCStream,
   unstable_RSCHydratedRouter as RSCHydratedRouter,
+  type DataRouter,
   type unstable_RSCPayload as RSCServerPayload,
 } from 'react-router'
 
@@ -43,3 +44,11 @@ createFromReadableStream<RSCServerPayload>(getRSCStream()).then((payload) => {
     )
   })
 })
+
+declare let __reactRouterDataRouter: DataRouter
+
+if (import.meta.hot) {
+  import.meta.hot.on('rsc:update', () => {
+    __reactRouterDataRouter.revalidate()
+  })
+}

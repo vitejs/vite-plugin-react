@@ -14,15 +14,17 @@ export type TransformWrapExportFilter = (
   meta: ExportMeta,
 ) => boolean
 
+export type TransformWrapExportOptions = {
+  runtime: (value: string, name: string, meta: ExportMeta) => string
+  ignoreExportAllDeclaration?: boolean
+  rejectNonAsyncFunction?: boolean
+  filter?: TransformWrapExportFilter
+}
+
 export function transformWrapExport(
   input: string,
   ast: Program,
-  options: {
-    runtime: (value: string, name: string, meta: ExportMeta) => string
-    ignoreExportAllDeclaration?: boolean
-    rejectNonAsyncFunction?: boolean
-    filter?: TransformWrapExportFilter
-  },
+  options: TransformWrapExportOptions,
 ): {
   exportNames: string[]
   output: MagicString
@@ -37,6 +39,7 @@ export function transformWrapExport(
     end: number,
     exports: { name: string; meta: ExportMeta }[],
   ) {
+    exportNames.push(...exports.map((e) => e.name))
     // update code and move to preserve `registerServerReference` position
     // e.g.
     // input
@@ -64,6 +67,7 @@ export function transformWrapExport(
   }
 
   function wrapExport(name: string, exportName: string, meta: ExportMeta = {}) {
+    exportNames.push(exportName)
     if (!filter(exportName, meta)) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
@@ -79,8 +83,15 @@ export function transformWrapExport(
     )
   }
 
-  function validateNonAsyncFunction(node: Node, ok?: boolean) {
-    if (options.rejectNonAsyncFunction && !ok) {
+  function validateNonAsyncFunction(node: Node) {
+    if (!options.rejectNonAsyncFunction) return
+    if (
+      node.type === 'ClassDeclaration' ||
+      ((node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression') &&
+        !node.async)
+    ) {
       throw Object.assign(new Error(`unsupported non async function`), {
         pos: node.start,
       })
@@ -98,11 +109,7 @@ export function transformWrapExport(
           /**
            * export function foo() {}
            */
-          validateNonAsyncFunction(
-            node,
-            node.declaration.type === 'FunctionDeclaration' &&
-              node.declaration.async,
-          )
+          validateNonAsyncFunction(node.declaration)
           const name = node.declaration.id.name
           wrapSimple(node.start, node.declaration.start, [
             { name, meta: { isFunction: true, declName: name } },
@@ -111,14 +118,11 @@ export function transformWrapExport(
           /**
            * export const foo = 1, bar = 2
            */
-          validateNonAsyncFunction(
-            node,
-            node.declaration.declarations.every(
-              (decl) =>
-                decl.init?.type === 'ArrowFunctionExpression' &&
-                decl.init.async,
-            ),
-          )
+          for (const decl of node.declaration.declarations) {
+            if (decl.init) {
+              validateNonAsyncFunction(decl.init)
+            }
+          }
           if (node.declaration.kind === 'const') {
             output.update(
               node.declaration.start,
@@ -199,14 +203,7 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(
-        node,
-        // TODO: somehow identifier is allowed in next.js?
-        // (see packages/react-server/examples/next/app/actions/server/actions.ts)
-        node.declaration.type === 'Identifier' ||
-          (node.declaration.type === 'FunctionDeclaration' &&
-            node.declaration.async),
-      )
+      validateNonAsyncFunction(node.declaration as Node)
       let localName: string
       let isFunction = false
       let declName: string | undefined

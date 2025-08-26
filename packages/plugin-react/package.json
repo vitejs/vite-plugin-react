@@ -22,7 +22,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "scripts": {
-    "dev": "tsdown --watch",
+    "dev": "tsdown --watch ./src --watch ../common",
     "build": "tsdown",
     "prepublishOnly": "npm run build",
     "test-unit": "vitest run"
@@ -43,7 +43,7 @@
     "@babel/core": "^7.28.3",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.32",
+    "@rolldown/pluginutils": "1.0.0-beta.34",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.17.0"
   },
@@ -55,8 +55,8 @@
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "rolldown": "1.0.0-beta.32",
-    "tsdown": "^0.14.1",
+    "rolldown": "1.0.0-beta.34",
+    "tsdown": "^0.14.2",
     "vitest": "^3.2.4"
   }
 }

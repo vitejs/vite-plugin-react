@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { type Page, expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
   testNoJs,
   waitForHydration,
 } from './helper'
+import { x } from 'tinyexec'
+import { normalizePath, type Rollup } from 'vite'
+import path from 'node:path'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -44,6 +47,42 @@ test.describe('dev-initial', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
+
+  test('custom client chunk', async () => {
+    const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
+      f.createEditor('dist/client/.vite/test.json').read(),
+    )
+    const chunk = chunks.find((c) => c.name === 'custom-chunk')
+    const expected = [1, 2, 3].map((i) =>
+      normalizePath(path.join(f.root, `src/routes/chunk/client${i}.tsx`)),
+    )
+    expect(chunk?.moduleIds).toEqual(expect.arrayContaining(expected))
+  })
+})
+
+test.describe('build-server-client-chunks', () => {
+  const f = useFixture({
+    root: 'examples/basic',
+    mode: 'build',
+    cliOptions: {
+      env: {
+        TEST_SERVER_CLIENT_CHUNKS: 'true',
+      },
+    },
+  })
+
+  defineTest(f)
+
+  test('custom client chunk', async () => {
+    const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
+      f.createEditor('dist/client/.vite/test.json').read(),
+    )
+    const chunk = chunks.find((c) => c.name === 'root')
+    const expected = [1, 2, 3].map((i) =>
+      normalizePath(path.join(f.root, `src/routes/chunk/client${i}.tsx`)),
+    )
+    expect(chunk?.moduleIds).toEqual(expect.arrayContaining(expected))
+  })
 })
 
 test.describe('dev-non-optimized-cjs', () => {
@@ -98,6 +137,56 @@ test.describe('dev-inconsistent-client-optimization', () => {
   })
 })
 
+test.describe('build-stable-chunks', () => {
+  const root = 'examples/basic'
+  const createEditor = useCreateEditor(root)
+
+  test('basic', async () => {
+    // 1st build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest1: import('vite').Manifest = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // edit src/routes/client.tsx
+    const editor = createEditor('src/routes/client.tsx')
+    editor.edit((s) => s.replace('client-counter', 'client-counter-v2'))
+
+    // 2nd build
+    await x('pnpm', ['build'], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: root,
+      },
+    })
+    const manifest2: import('vite').Manifest = JSON.parse(
+      createEditor('dist/client/.vite/manifest.json').read(),
+    )
+
+    // compare two mainfest.json
+    const files1 = new Set(Object.values(manifest1).map((v) => v.file))
+    const files2 = new Set(Object.values(manifest2).map((v) => v.file))
+    const oldChunks = Object.entries(manifest2)
+      .filter(([_k, v]) => !files1.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    const newChunks = Object.entries(manifest1)
+      .filter(([_k, v]) => !files2.has(v.file))
+      .map(([k]) => k)
+      .sort()
+    expect(newChunks).toEqual([
+      'src/framework/entry.browser.tsx',
+      'virtual:vite-rsc/client-references/group/src/routes/client.tsx',
+    ])
+    expect(oldChunks).toEqual(newChunks)
+  })
+})
+
 function defineTest(f: Fixture) {
   test('basic', async ({ page }) => {
     using _ = expectNoPageError(page)
@@ -147,6 +236,42 @@ function defineTest(f: Fixture) {
   testNoJs('useActionState @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testUseActionState(page)
+  })
+
+  test('useActionState nojs to js', async ({ page, browserName }) => {
+    // firefox seems to cache html and route interception doesn't work
+    test.skip(browserName === 'firefox')
+
+    // this test fails without `formState` passed to `hydrateRoot(..., { formState })`
+
+    // intercept request to disable js
+    let js: boolean
+    await page.route(f.url(), async (route) => {
+      if (!js) {
+        await route.continue({ url: route.request().url() + '?__nojs' })
+        return
+      }
+      await route.continue()
+    })
+
+    // no js
+    js = false
+    await page.goto(f.url())
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 0',
+    )
+    await page.getByTestId('use-action-state').click()
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 1',
+    )
+
+    // with js (hydration)
+    js = true
+    await page.getByTestId('use-action-state').click()
+    await waitForHydration(page)
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 2', // this becomes "0" without formState
+    )
   })
 
   async function testUseActionState(page: Page) {
@@ -431,25 +556,63 @@ function defineTest(f: Fixture) {
       await page.reload()
       await expect(page.getByText('ok (test-shared)')).toBeVisible()
     })
+
+    test('hmr switch server to client', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
+      const editor = f.createEditor('src/routes/hmr-switch/server.tsx')
+      editor.edit((s) => `"use client";\n` + s)
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: true)',
+      )
+
+      await page.waitForTimeout(100)
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
+    })
+
+    test('hmr switch client to server', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
+      const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
+      editor.edit((s) => s.replace(`'use client'`, ''))
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: false)',
+      )
+
+      await page.waitForTimeout(100)
+      editor.reset()
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
+    })
   })
 
   test('css @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await testCss(page)
-    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
+    await testCssBasic(page)
   })
 
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
+  })
+
+  async function testCssBasic(page: Page) {
+    await testCss(page)
     await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
@@ -458,7 +621,23 @@ function defineTest(f: Fixture) {
       'color',
       'rgb(255, 165, 0)',
     )
-  })
+    await expect(page.getByTestId('css-module-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.getByTestId('css-module-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  }
 
   async function testCss(page: Page, color = 'rgb(255, 165, 0)') {
     await expect(page.locator('.test-style-client')).toHaveCSS('color', color)
@@ -501,11 +680,15 @@ function defineTest(f: Fixture) {
 
     async function expectNoDuplicateServerCss(page: Page) {
       // check only manually inserted stylesheet link exists
-      // (toHaveAttribute passes only when locator matches single element)
-      await expect(page.locator('link[rel="stylesheet"]')).toHaveAttribute(
-        'href',
-        '/test-style-server-manual.css',
-      )
+      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(3)
+      for (const locator of await page
+        .locator('link[rel="stylesheet"]')
+        .all()) {
+        await expect(locator).toHaveAttribute(
+          'data-precedence',
+          'test-style-manual-link',
+        )
+      }
     }
 
     test('no duplicate server css', async ({ page }) => {
@@ -648,6 +831,74 @@ function defineTest(f: Fixture) {
         )
       }).toPass()
     }
+
+    test('css module client hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const editor = f.createEditor('src/routes/style-client/client.module.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.reset()
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+    })
+
+    test('css module server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const editor = f.createEditor('src/routes/style-server/server.module.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.reset()
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+    })
+
+    test('css url client hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const editor = f.createEditor('src/routes/style-client/client-url.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(page.locator('.test-style-url-client')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.reset()
+      await expect(page.locator('.test-style-url-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+    })
+
+    test('css url server hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const editor = f.createEditor('src/routes/style-server/server-url.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(page.locator('.test-style-url-server')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.reset()
+      await expect(page.locator('.test-style-url-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+    })
   })
 
   test('css client no ssr', async ({ page }) => {
@@ -658,68 +909,6 @@ function defineTest(f: Fixture) {
     await expect(page.locator('.test-style-client-no-ssr')).toHaveCSS(
       'color',
       'rgb(0, 200, 100)',
-    )
-  })
-
-  test('css module client @js', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    await expect(page.getByTestId('css-module-client')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-
-    if (f.mode !== 'dev') return
-
-    // test client css module HMR
-    await using _ = await expectNoReload(page)
-    const editor = f.createEditor('src/routes/style-client/client.module.css')
-    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-    await expect(page.getByTestId('css-module-client')).toHaveCSS(
-      'color',
-      'rgb(0, 165, 255)',
-    )
-    editor.reset()
-    await expect(page.getByTestId('css-module-client')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-  })
-
-  test('css module server @js', async ({ page }) => {
-    await page.goto(f.url())
-    await waitForHydration(page)
-    await expect(page.getByTestId('css-module-server')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-
-    if (f.mode !== 'dev') return
-
-    // test server css module HMR
-    await using _ = await expectNoReload(page)
-    const editor = f.createEditor('src/routes/style-server/server.module.css')
-    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-    await expect(page.getByTestId('css-module-server')).toHaveCSS(
-      'color',
-      'rgb(0, 165, 255)',
-    )
-    editor.reset()
-    await expect(page.getByTestId('css-module-server')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-  })
-
-  testNoJs('css module @nojs', async ({ page }) => {
-    await page.goto(f.url())
-    await expect(page.getByTestId('css-module-client')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
-    )
-    await expect(page.getByTestId('css-module-server')).toHaveCSS(
-      'color',
-      'rgb(255, 165, 0)',
     )
   })
 

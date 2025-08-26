@@ -35,6 +35,16 @@ describe(transformHoistInlineDirective, () => {
     return output.toString()
   }
 
+  async function testTransformNames(input: string) {
+    const ast = await parseAstAsync(input)
+    const result = transformHoistInlineDirective(input, ast, {
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      directive: 'use server',
+    })
+    return result.names
+  }
+
   it('none', async () => {
     const input = `
 const x = "x";
@@ -104,6 +114,14 @@ export default function w() {
     expect(await testTransform(input, { encode: true })).toBe(
       await testTransform(input),
     )
+
+    expect(await testTransformNames(input)).toMatchInlineSnapshot(`
+      [
+        "$$hoist_0_f",
+        "$$hoist_1_h",
+        "$$hoist_2_w",
+      ]
+    `)
   })
 
   it('closure', async () => {
