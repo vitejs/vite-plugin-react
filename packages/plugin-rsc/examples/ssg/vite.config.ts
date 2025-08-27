@@ -25,14 +25,6 @@ export default defineConfig((env) => ({
     }),
     rscSsgPlugin(),
   ],
-  environments: {
-    ssr: {
-      optimizeDeps: {
-        // TODO: move to plugin
-        include: ['react-dom/static.edge'],
-      },
-    },
-  },
 }))
 
 function rscSsgPlugin(): Plugin[] {
