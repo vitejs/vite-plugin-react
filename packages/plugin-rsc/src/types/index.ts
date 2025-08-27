@@ -25,3 +25,9 @@ export interface ServerConsumerManifest {
 }
 
 export type CallServerCallback = (id: string, args: unknown[]) => unknown
+
+export type PluginModuleMeta = {
+  rsc: {
+    type: 'client' | 'server'
+  }
+}
