@@ -952,13 +952,14 @@ import.meta.hot.on("rsc:update", () => {
       name: 'rsc:inject-async-local-storage',
       transform: {
         handler(code) {
-          // for build, we cannot use `import` as it seems to confuse rollup commonjs plugin.
           if (
             (this.environment.name === 'ssr' ||
               this.environment.name === 'rsc') &&
+            code.includes('typeof AsyncLocalStorage') &&
             code.includes('new AsyncLocalStorage()') &&
             !code.includes('__viteRscAyncHooks')
           ) {
+            // for build, we cannot use `import` as it confuses rollup commonjs plugin.
             return (
               (this.environment.mode === 'build' && !isRolldownVite
                 ? `const __viteRscAyncHooks = require("node:async_hooks");`
