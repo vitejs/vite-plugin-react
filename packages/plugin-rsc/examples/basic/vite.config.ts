@@ -17,24 +17,6 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   clearScreen: false,
   plugins: [
-    // TODO: generalize
-    // {
-    //   name: 'poc',
-    //   async hotUpdate(ctx) {
-    //     // when client only dependencies is changed,
-    //     // need to invalidate the corresponding route's original server module.
-    //     if (ctx.file.includes('/hmr-client-dep2/client-dep.ts')) {
-    //       if (this.environment.name === 'rsc') {
-    //         const routeFile = path.join(ctx.file, '../client.tsx')
-    //         const mods =
-    //           this.environment.moduleGraph.getModulesByFile(routeFile)
-    //         for (const mod of mods ?? []) {
-    //           this.environment.moduleGraph.invalidateModule(mod)
-    //         }
-    //       }
-    //     }
-    //   },
-    // },
     // inspect(),
     tailwindcss(),
     react(),
