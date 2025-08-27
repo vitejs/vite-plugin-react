@@ -428,13 +428,23 @@ function defineTest(f: Fixture) {
       editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
 
+      // check next rsc payload includes current client reference and preserves state
+      await page.locator("a[href='?test-hmr-client-dep-re-render']").click()
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep-re-render']"),
+      ).toHaveText('re-render [ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
+
       // check next ssr is also updated
-      const res = await page.reload()
+      const res = await page.request.get(f.url(), {
+        headers: {
+          accept: 'text/html',
+        },
+      })
       expect(await res?.text()).toContain('[ok-edit]')
 
-      await waitForHydration(page)
       editor.reset()
-      await expect(locator).toHaveText('test-hmr-client-dep: 0[ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep: 1[ok]')
     })
 
     test('non-self-accepting client hmr', async ({ page }) => {
@@ -457,7 +467,7 @@ function defineTest(f: Fixture) {
       ).toHaveText('re-render [ok]')
       await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
 
-      // check next ssr is updated
+      // check next ssr is also updated
       const res = await page.request.get(f.url(), {
         headers: {
           accept: 'text/html',

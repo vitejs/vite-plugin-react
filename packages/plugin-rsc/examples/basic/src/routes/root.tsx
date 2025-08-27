@@ -64,7 +64,7 @@ export function Root(props: { url: URL }) {
         <TestTailwind />
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
-        <TestHmrClientDep />
+        <TestHmrClientDep url={{ search: props.url.search }} />
         <TestHmrClientDep2 url={{ search: props.url.search }} />
         <TestHmrSharedServer />
         <TestHmrSharedClient />
