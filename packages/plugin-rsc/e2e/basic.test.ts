@@ -238,6 +238,42 @@ function defineTest(f: Fixture) {
     await testUseActionState(page)
   })
 
+  test('useActionState nojs to js', async ({ page, browserName }) => {
+    // firefox seems to cache html and route interception doesn't work
+    test.skip(browserName === 'firefox')
+
+    // this test fails without `formState` passed to `hydrateRoot(..., { formState })`
+
+    // intercept request to disable js
+    let js: boolean
+    await page.route(f.url(), async (route) => {
+      if (!js) {
+        await route.continue({ url: route.request().url() + '?__nojs' })
+        return
+      }
+      await route.continue()
+    })
+
+    // no js
+    js = false
+    await page.goto(f.url())
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 0',
+    )
+    await page.getByTestId('use-action-state').click()
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 1',
+    )
+
+    // with js (hydration)
+    js = true
+    await page.getByTestId('use-action-state').click()
+    await waitForHydration(page)
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 2', // this becomes "0" without formState
+    )
+  })
+
   async function testUseActionState(page: Page) {
     await expect(page.getByTestId('use-action-state')).toContainText(
       'test-useActionState: 0',
