@@ -26,7 +26,7 @@ export interface ServerConsumerManifest {
 
 export type CallServerCallback = (id: string, args: unknown[]) => unknown
 
-export type PluginModuleMeta = {
+export type RscModuleInfoMeta = {
   rsc: {
     type: 'client' | 'client-group'
   }

@@ -52,7 +52,7 @@ import { transformScanBuildStrip } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
-import type { PluginModuleMeta } from './types'
+import type { RscModuleInfoMeta } from './types'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -1138,7 +1138,7 @@ function vitePluginUseClient(
             rsc: {
               type: 'client',
             },
-          } satisfies PluginModuleMeta,
+          } satisfies RscModuleInfoMeta,
         }
       },
     },
@@ -1223,7 +1223,7 @@ function vitePluginUseClient(
               rsc: {
                 type: 'client-group',
               },
-            } satisfies PluginModuleMeta,
+            } satisfies RscModuleInfoMeta,
           }
         }
       },
