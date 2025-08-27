@@ -53,6 +53,8 @@ import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
 
+const isRolldownVite = 'rolldownVersion' in vite
+
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
 type ClientReferenceMeta = {
@@ -946,27 +948,28 @@ import.meta.hot.on("rsc:update", () => {
       },
     ),
     {
-      // make `AsyncLocalStorage` available globally for React request context on edge build (e.g. React.cache, ssr preload)
+      // make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
       // https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
       name: 'rsc:inject-async-local-storage',
-      async configureServer() {
-        const __viteRscAyncHooks = await import('node:async_hooks')
-        ;(globalThis as any).AsyncLocalStorage =
-          __viteRscAyncHooks.AsyncLocalStorage
-      },
-      banner(chunk) {
-        if (
-          (this.environment.name === 'ssr' ||
-            this.environment.name === 'rsc') &&
-          this.environment.mode === 'build' &&
-          chunk.isEntry
-        ) {
-          return `\
-import * as __viteRscAyncHooks from "node:async_hooks";
-globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
-`
-        }
-        return ''
+      transform: {
+        handler(code) {
+          if (
+            (this.environment.name === 'ssr' ||
+              this.environment.name === 'rsc') &&
+            code.includes('typeof AsyncLocalStorage') &&
+            code.includes('new AsyncLocalStorage()') &&
+            !code.includes('__viteRscAyncHooks')
+          ) {
+            // for build, we cannot use `import` as it confuses rollup commonjs plugin.
+            return (
+              (this.environment.mode === 'build' && !isRolldownVite
+                ? `const __viteRscAyncHooks = require("node:async_hooks");`
+                : `import * as __viteRscAyncHooks from "node:async_hooks";`) +
+              `globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;` +
+              code
+            )
+          }
+        },
       },
     },
     ...vitePluginRscMinimal(rscPluginOptions, manager),
