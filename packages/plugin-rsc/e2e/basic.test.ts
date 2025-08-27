@@ -415,7 +415,7 @@ function defineTest(f: Fixture) {
       await page.getByRole('button', { name: 'client-counter: 0' }).click()
     })
 
-    test('non-boundary client hmr', async ({ page }) => {
+    test('non-client-reference client hmr', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
 
@@ -435,6 +435,38 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       editor.reset()
       await expect(locator).toHaveText('test-hmr-client-dep: 0[ok]')
+    })
+
+    test('non-self-accepting client hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+
+      const locator = page.getByTestId('test-hmr-client-dep2')
+      await expect(locator).toHaveText('test-hmr-client-dep2: 0[ok]')
+      await locator.locator('button').click()
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
+
+      const editor = f.createEditor('src/routes/hmr-client-dep2/client-dep.ts')
+      editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
+
+      // check next rsc payload includes an updated client reference and preserves state
+      await page.locator("a[href='?test-hmr-client-dep2-re-render']").click()
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep2-re-render']"),
+      ).toHaveText('re-render [ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
+
+      // check next ssr is updated
+      const res = await page.request.get(f.url(), {
+        headers: {
+          accept: 'text/html',
+        },
+      })
+      expect(await res?.text()).toContain('[ok-edit]')
+
+      editor.reset()
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
     })
 
     test('server hmr', async ({ page }) => {
