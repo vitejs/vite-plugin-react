@@ -947,7 +947,7 @@ import.meta.hot.on("rsc:update", () => {
       },
     ),
     {
-      // make `AsyncLocalStorage` available globally for React request context on edge build (e.g. React.cache, ssr preload)
+      // make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
       // https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
       name: 'rsc:inject-async-local-storage',
       transform: {
@@ -970,20 +970,6 @@ import.meta.hot.on("rsc:update", () => {
           }
         },
       },
-      //       banner(chunk) {
-      //         if (
-      //           (this.environment.name === 'ssr' ||
-      //             this.environment.name === 'rsc') &&
-      //           this.environment.mode === 'build' &&
-      //           chunk.isEntry
-      //         ) {
-      //           return `\
-      // import * as __viteRscAyncHooks from "node:async_hooks";
-      // globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
-      // `
-      //         }
-      //         return ''
-      //       },
     },
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
