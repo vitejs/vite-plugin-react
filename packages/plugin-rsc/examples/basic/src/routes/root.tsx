@@ -41,6 +41,7 @@ import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestTreeShakeServer } from './tree-shake/server'
 import { TestClientChunkServer } from './chunk/server'
 import { TestTailwind } from './tailwind'
+import { TestHmrClientDep2 } from './hmr-client-dep2/client'
 
 export function Root(props: { url: URL }) {
   return (
@@ -64,6 +65,7 @@ export function Root(props: { url: URL }) {
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestHmrClientDep />
+        <TestHmrClientDep2 />
         <TestHmrSharedServer />
         <TestHmrSharedClient />
         <TestHmrSharedAtomic />
