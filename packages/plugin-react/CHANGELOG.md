@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Skip transform hook completely in rolldown-vite in dev if possible ([#783](https://github.com/vitejs/vite-plugin-react/pull/783))
+
+## 5.0.1 (2025-08-19)
+
+### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` for rolldown-vite ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
+
+`optimizeDeps.rollupOptions.jsx` is going to be deprecated in favor of `optimizeDeps.rollupOptions.transform.jsx`.
+
+### Perf: skip `babel-plugin-react-compiler` if code has no `"use memo"` when `{ compilationMode: "annotation" }` ([#734](https://github.com/vitejs/vite-plugin-react/pull/734))
+
+### Respect tsconfig `jsxImportSource` ([#726](https://github.com/vitejs/vite-plugin-react/pull/726))
+
+### Fix `reactRefreshHost` option on rolldown-vite ([#716](https://github.com/vitejs/vite-plugin-react/pull/716))
+
+### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
+
+### Skip `babel-plugin-react-compiler` on non client environment ([689](https://github.com/vitejs/vite-plugin-react/pull/689))
+
 ## 5.0.0 (2025-08-07)
 
 ## 5.0.0-beta.0 (2025-07-28)

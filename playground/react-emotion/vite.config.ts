@@ -5,7 +5,6 @@ export default defineConfig({
   server: { port: 8904 /* Should be unique */ },
   plugins: [
     react({
-      jsxImportSource: '@emotion/react',
       babel: {
         plugins: ['@emotion/babel-plugin'],
       },
@@ -15,5 +14,8 @@ export default defineConfig({
   build: {
     // to make tests faster
     minify: false,
+  },
+  optimizeDeps: {
+    include: ['@emotion/styled/base'],
   },
 })

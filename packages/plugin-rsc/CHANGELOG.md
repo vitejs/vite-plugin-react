@@ -1,3 +1,106 @@
+## <small>[0.4.24](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.23...plugin-rsc@0.4.24) (2025-08-25)</small>
+### Features
+
+* **rsc:** ability to merge client reference chunks ([#766](https://github.com/vitejs/vite-plugin-react/issues/766)) ([c40234e](https://github.com/vitejs/vite-plugin-react/commit/c40234ef079e5e27e86acf88c8c987db8bb1b16c))
+* **rsc:** ability to merge client reference chunks based on server chunk usage ([#767](https://github.com/vitejs/vite-plugin-react/issues/767)) ([c69f0f6](https://github.com/vitejs/vite-plugin-react/commit/c69f0f6b834ac518f183b0a76851d17ddb7a81d0))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#773](https://github.com/vitejs/vite-plugin-react/issues/773)) ([9989897](https://github.com/vitejs/vite-plugin-react/commit/9989897fd102ba2d46bee0961e43aacb1e4f9436))
+* **rsc:** fix client reference preload when group chunk re-exports client components from entry chunk ([#768](https://github.com/vitejs/vite-plugin-react/issues/768)) ([41e4bf5](https://github.com/vitejs/vite-plugin-react/commit/41e4bf586c7ebd81fba9e25e72c90386b5e88a4d))
+* **rsc:** fix CSS HMR with `?url` ([#776](https://github.com/vitejs/vite-plugin-react/issues/776)) ([4c4879b](https://github.com/vitejs/vite-plugin-react/commit/4c4879b0c1080b536ac6521a7030691a06469b3a))
+* **rsc:** normalize group chunk virtual id properly ([#770](https://github.com/vitejs/vite-plugin-react/issues/770)) ([9869e2c](https://github.com/vitejs/vite-plugin-react/commit/9869e2c7c51b3f001389255dbc40beafb76cac7b))
+
+### Miscellaneous Chores
+
+* **rsc:** custom client chunks example ([#765](https://github.com/vitejs/vite-plugin-react/issues/765)) ([6924db4](https://github.com/vitejs/vite-plugin-react/commit/6924db40f5cbfb9e02f4e4c5beacc2671f4df0ee))
+* **rsc:** fix `useBuildAppHook: true` with cloudflare plugin ([#780](https://github.com/vitejs/vite-plugin-react/issues/780)) ([8fec8e3](https://github.com/vitejs/vite-plugin-react/commit/8fec8e3b79cce570fb369b6bddd35938ad2ec37a))
+
+### Code Refactoring
+
+* **rsc:** add `toRelativeId` util ([#771](https://github.com/vitejs/vite-plugin-react/issues/771)) ([d9da80f](https://github.com/vitejs/vite-plugin-react/commit/d9da80ffa804ea839a99e331b2dd33b9478a7d76))
+* **rsc:** organize plugin utils ([#779](https://github.com/vitejs/vite-plugin-react/issues/779)) ([789e359](https://github.com/vitejs/vite-plugin-react/commit/789e3592d756227739b2285bda95a5d5dc9e5e93))
+
+### Tests
+
+* **rsc:** organize css tests ([#778](https://github.com/vitejs/vite-plugin-react/issues/778)) ([e71da84](https://github.com/vitejs/vite-plugin-react/commit/e71da842f89fdb0c549e874205e65601109f41b9))
+
+## <small>[0.4.23](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.22...plugin-rsc@0.4.23) (2025-08-23)</small>
+### Bug Fixes
+
+* **rsc:** replace `'rolldownVersion' in this.meta` with `'rolldownVersion' in vite` for Vite 6 compat ([#761](https://github.com/vitejs/vite-plugin-react/issues/761)) ([af4e16d](https://github.com/vitejs/vite-plugin-react/commit/af4e16da970f2808e0ab4484500f0a038c8b176a))
+
+### Miscellaneous Chores
+
+* **rsc:** remove custom `react-dom/server.edge` types ([#757](https://github.com/vitejs/vite-plugin-react/issues/757)) ([a7ca366](https://github.com/vitejs/vite-plugin-react/commit/a7ca366f57f97ea0ab540dce645095ed9efedce8))
+* **rsc:** simplify react-router example ([#763](https://github.com/vitejs/vite-plugin-react/issues/763)) ([22f6538](https://github.com/vitejs/vite-plugin-react/commit/22f6538ea1536700da8588f4d9960787f51f1bcd))
+* **rsc:** use `prerender` in ssg example ([#758](https://github.com/vitejs/vite-plugin-react/issues/758)) ([df8b800](https://github.com/vitejs/vite-plugin-react/commit/df8b80055c567b0248c506e2c57fb613d9da128f))
+
+### Tests
+
+* **rsc:** test vite 6 ([#762](https://github.com/vitejs/vite-plugin-react/issues/762)) ([a46bdf4](https://github.com/vitejs/vite-plugin-react/commit/a46bdf45712e144c07797844b31e98bec5154be4))
+
+## <small>[0.4.22](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.21...plugin-rsc@0.4.22) (2025-08-22)</small>
+### Bug Fixes
+
+* **rsc:** ensure `.js` suffix for internal virtual modules ([#744](https://github.com/vitejs/vite-plugin-react/issues/744)) ([bffc82e](https://github.com/vitejs/vite-plugin-react/commit/bffc82e12c3e8f369442eb4616db934d4bb10916))
+* **rsc:** expose only `"use server"` as server functions ([#752](https://github.com/vitejs/vite-plugin-react/issues/752)) ([d2f2e71](https://github.com/vitejs/vite-plugin-react/commit/d2f2e716773a0c95c32f5e65f0a0d7b016fc3250))
+* **rsc:** handle added/removed `"use client"` during dev ([#750](https://github.com/vitejs/vite-plugin-react/issues/750)) ([232be7b](https://github.com/vitejs/vite-plugin-react/commit/232be7bd65c7b0db8f6ecd41db6a97f47a9a9c26))
+* **rsc:** include non-entry optimized modules for `optimizeDeps.exclude` suggestion ([#740](https://github.com/vitejs/vite-plugin-react/issues/740)) ([2640add](https://github.com/vitejs/vite-plugin-react/commit/2640add3bfc9d0709de590b76599da59a131e506))
+* **rsc:** inject `__vite_rsc_importer_resources` import only once ([#742](https://github.com/vitejs/vite-plugin-react/issues/742)) ([5b28ba5](https://github.com/vitejs/vite-plugin-react/commit/5b28ba540cdeba511d7699df7331dec844893fc1))
+* **rsc:** isolate plugin state per plugin instance ([#747](https://github.com/vitejs/vite-plugin-react/issues/747)) ([596c76b](https://github.com/vitejs/vite-plugin-react/commit/596c76bfb919b668694c3768cb1126f9dbf7f878))
+* **rsc:** relax async function requirement for `"use server"` module directive ([#754](https://github.com/vitejs/vite-plugin-react/issues/754)) ([08986dd](https://github.com/vitejs/vite-plugin-react/commit/08986dd4d23d8881ed9852837508d64d38ff2129))
+
+### Code Refactoring
+
+* **rsc:** handle added/removed `"use server"` during dev ([#753](https://github.com/vitejs/vite-plugin-react/issues/753)) ([7542e6f](https://github.com/vitejs/vite-plugin-react/commit/7542e6f3b99054d065a8dc213a6ed62e3edde531))
+* **rsc:** organize internal plugins ([#745](https://github.com/vitejs/vite-plugin-react/issues/745)) ([0a6cfdf](https://github.com/vitejs/vite-plugin-react/commit/0a6cfdf874b47cee511cf308b9dae08b123eac70))
+* **rsc:** organize plugin utils ([#755](https://github.com/vitejs/vite-plugin-react/issues/755)) ([53b3f48](https://github.com/vitejs/vite-plugin-react/commit/53b3f485f6e06a34ddd70f3b1ffe35f4bebab3b3))
+* **rsc:** remove `__fix_cloudflare` plugin ([#746](https://github.com/vitejs/vite-plugin-react/issues/746)) ([bec6c82](https://github.com/vitejs/vite-plugin-react/commit/bec6c829e84d9ed36330ce9a16b602c0d6b73cf1))
+* **rsc:** simplify plugin state for server reference ([#751](https://github.com/vitejs/vite-plugin-react/issues/751)) ([9988f54](https://github.com/vitejs/vite-plugin-react/commit/9988f5494dd49e18a51fab9017a487da4843e4b0))
+
+## <small>[0.4.21](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.20...plugin-rsc@0.4.21) (2025-08-19)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#729](https://github.com/vitejs/vite-plugin-react/issues/729)) ([ba0323c](https://github.com/vitejs/vite-plugin-react/commit/ba0323cfcd7343362e64f782c5aae02ed9ee3273))
+* **rsc:** exclude CSS imports with special queries from automatic injection ([#580](https://github.com/vitejs/vite-plugin-react/issues/580)) ([71bb49c](https://github.com/vitejs/vite-plugin-react/commit/71bb49c7fe5c8362426d59ee8a99ea660b631b66))
+* **rsc:** fix custom `root` ([#717](https://github.com/vitejs/vite-plugin-react/issues/717)) ([c7bc716](https://github.com/vitejs/vite-plugin-react/commit/c7bc716e54070a35263dad1a978635c48f6c1720))
+* **rsc:** keep `import.meta.glob` during scan build for rolldown-vite ([#721](https://github.com/vitejs/vite-plugin-react/issues/721)) ([74ec0e0](https://github.com/vitejs/vite-plugin-react/commit/74ec0e0e0e21355884b0aff26ca0919404cef3f2))
+
+### Documentation
+
+* **rsc:** improve plugin-rsc README organization and clarity ([#723](https://github.com/vitejs/vite-plugin-react/issues/723)) ([e6d7392](https://github.com/vitejs/vite-plugin-react/commit/e6d7392f4c2b052db6ba719217641099cfa8f817))
+
+### Miscellaneous Chores
+
+* remove vite-plugin-inspect dependency from examples ([#730](https://github.com/vitejs/vite-plugin-react/issues/730)) ([feb5553](https://github.com/vitejs/vite-plugin-react/commit/feb55537d036dcd6f9008cb13a9748ca5ef57925))
+* **rsc:** fix `examples/basic` on stackblitz ([#724](https://github.com/vitejs/vite-plugin-react/issues/724)) ([1abe044](https://github.com/vitejs/vite-plugin-react/commit/1abe044668a13d55ea5549c558f666baa6196f15))
+* **rsc:** rework ssg example ([#713](https://github.com/vitejs/vite-plugin-react/issues/713)) ([28e723b](https://github.com/vitejs/vite-plugin-react/commit/28e723b6ad38c3aa15d6defb83c0b8acb6748f66))
+* **rsc:** tweak React.cache example ([#725](https://github.com/vitejs/vite-plugin-react/issues/725)) ([cc1bcdf](https://github.com/vitejs/vite-plugin-react/commit/cc1bcdfce4323119d0d918f72226168abbfadb4f))
+* **rsc:** use named imports ([#727](https://github.com/vitejs/vite-plugin-react/issues/727)) ([ba25233](https://github.com/vitejs/vite-plugin-react/commit/ba25233b3afafa20916ad35e4c7f1d3ecda0d0da))
+
+### Tests
+
+* **rsc:** fix invalid code ([#722](https://github.com/vitejs/vite-plugin-react/issues/722)) ([a39d837](https://github.com/vitejs/vite-plugin-react/commit/a39d8375cd0da1bd1e608894124bc7bfbffe6fa9))
+* **rsc:** test assets ([#733](https://github.com/vitejs/vite-plugin-react/issues/733)) ([fd96308](https://github.com/vitejs/vite-plugin-react/commit/fd96308a6cde57a132b3d9e434e711aac15c6486))
+
+## <small>[0.4.20](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.19...plugin-rsc@0.4.20) (2025-08-13)</small>
+### Bug Fixes
+
+* **rsc:** deprecate opt-out `ignoredPackageWarnings` option in favor of ont-in `DEBUG` env ([#697](https://github.com/vitejs/vite-plugin-react/issues/697)) ([5d5edd4](https://github.com/vitejs/vite-plugin-react/commit/5d5edd4d896fe6d064dddd5a3cf76594b0b0171c))
+* **rsc:** keep hoisted require order ([#706](https://github.com/vitejs/vite-plugin-react/issues/706)) ([ad7584a](https://github.com/vitejs/vite-plugin-react/commit/ad7584a29b02238d685504ff356515e6f78275dc))
+* **rsc:** remove duplicate server css on initial render ([#702](https://github.com/vitejs/vite-plugin-react/issues/702)) ([3114e88](https://github.com/vitejs/vite-plugin-react/commit/3114e88bcd8303d7c42da29eb7215c54ed43ce0d))
+* **rsc:** warn dual module of optimized and non-optimized client reference ([#705](https://github.com/vitejs/vite-plugin-react/issues/705)) ([e5c3517](https://github.com/vitejs/vite-plugin-react/commit/e5c351776e9a6269a37a171c830a902381af8011))
+
+### Miscellaneous Chores
+
+* **rsc:** fix csp example for Vite server ping SharedWorker ([#704](https://github.com/vitejs/vite-plugin-react/issues/704)) ([5b73cbe](https://github.com/vitejs/vite-plugin-react/commit/5b73cbe134466650a7aabc02dc794e7d6e35b135))
+* **rsc:** update package.json for starter-cf-single ([#707](https://github.com/vitejs/vite-plugin-react/issues/707)) ([2d93ee4](https://github.com/vitejs/vite-plugin-react/commit/2d93ee42cf8b4b544fd09400f1c6ed1dfdb6652d))
+
+### Code Refactoring
+
+* move @vitejs/plugin-rsc to devDependencies in examples ([#699](https://github.com/vitejs/vite-plugin-react/issues/699)) ([a1f4311](https://github.com/vitejs/vite-plugin-react/commit/a1f4311f87d0f983b8332ab393514e0d71263374))
+
 ## <small>[0.4.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.18...plugin-rsc@0.4.19) (2025-08-11)</small>
 ### Bug Fixes
 

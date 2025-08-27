@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
@@ -7,11 +6,12 @@ import rsc from '@vitejs/plugin-rsc'
 import mdx from '@mdx-js/rollup'
 import react from '@vitejs/plugin-react'
 import { type Plugin, type ResolvedConfig, defineConfig } from 'vite'
-import inspect from 'vite-plugin-inspect'
+// import inspect from 'vite-plugin-inspect'
 import { RSC_POSTFIX } from './src/framework/shared'
 
 export default defineConfig((env) => ({
   plugins: [
+    // inspect(),
     mdx(),
     react(),
     rsc({
@@ -24,7 +24,6 @@ export default defineConfig((env) => ({
       useBuildAppHook: true,
     }),
     rscSsgPlugin(),
-    inspect(),
   ],
 }))
 
@@ -60,27 +59,22 @@ async function renderStatic(config: ResolvedConfig) {
 
   // render rsc and html
   const baseDir = config.environments.client.build.outDir
-  for (const htmlPath of staticPaths) {
-    config.logger.info('[vite-rsc:ssg] -> ' + htmlPath)
-    const rscPath = htmlPath + RSC_POSTFIX
-    const htmlResponse = await entry.default(
-      new Request(new URL(htmlPath, 'http://ssg.local')),
+  for (const staticPatch of staticPaths) {
+    config.logger.info('[vite-rsc:ssg] -> ' + staticPatch)
+    const { html, rsc } = await entry.handleSsg(
+      new Request(new URL(staticPatch, 'http://ssg.local')),
     )
-    assert.equal(htmlResponse.status, 200)
-    await fs.promises.writeFile(
-      path.join(baseDir, normalizeHtmlFilePath(htmlPath)),
-      Readable.fromWeb(htmlResponse.body as any),
+    await writeFileStream(
+      path.join(baseDir, normalizeHtmlFilePath(staticPatch)),
+      html,
     )
-
-    const rscResponse = await entry.default(
-      new Request(new URL(rscPath, 'http://ssg.local')),
-    )
-    assert.equal(rscResponse.status, 200)
-    await fs.promises.writeFile(
-      path.join(baseDir, rscPath),
-      Readable.fromWeb(rscResponse.body as any),
-    )
+    await writeFileStream(path.join(baseDir, staticPatch + RSC_POSTFIX), rsc)
   }
+}
+
+async function writeFileStream(filePath: string, stream: ReadableStream) {
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.promises.writeFile(filePath, Readable.fromWeb(stream as any))
 }
 
 function normalizeHtmlFilePath(p: string) {

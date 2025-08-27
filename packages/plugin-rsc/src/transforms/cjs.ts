@@ -10,7 +10,8 @@ export function transformCjsToEsm(
   const output = new MagicString(code)
   const analyzed = analyze(ast)
 
-  let parentNodes: Node[] = []
+  const parentNodes: Node[] = []
+  const hoistedCodes: string[] = []
   let hoistIndex = 0
   walk(ast, {
     enter(node) {
@@ -49,7 +50,7 @@ export function transformCjsToEsm(
             node.arguments[0]!.start,
             node.arguments[0]!.end,
           )
-          output.prepend(`const ${hoisted} = await import(${importee});\n`)
+          hoistedCodes.push(`const ${hoisted} = await import(${importee});\n`)
           output.update(node.start, node.end, hoisted)
           hoistIndex++
         }
@@ -59,6 +60,9 @@ export function transformCjsToEsm(
       parentNodes.pop()!
     },
   })
+  for (const hoisted of hoistedCodes.reverse()) {
+    output.prepend(hoisted)
+  }
   output.prepend(`const exports = {}; const module = { exports };\n`)
   return { output }
 }

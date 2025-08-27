@@ -6,14 +6,12 @@ import React from 'react'
 
 export async function TestReactCache(props: { url: URL }) {
   if (props.url.searchParams.has('test-react-cache')) {
-    await Promise.all([
-      testCacheFn('test1'),
-      testCacheFn('test2'),
-      testCacheFn('test1'),
-      testNonCacheFn('test1'),
-      testNonCacheFn('test2'),
-      testNonCacheFn('test1'),
-    ])
+    await testCacheFn('test1')
+    await testCacheFn('test2')
+    await testCacheFn('test1')
+    await testNonCacheFn('test1')
+    await testNonCacheFn('test2')
+    await testNonCacheFn('test1')
   } else {
     cacheFnCount = 0
     nonCacheFnCount = 0
