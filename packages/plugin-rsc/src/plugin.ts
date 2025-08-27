@@ -1216,7 +1216,15 @@ function vitePluginUseClient(
               export const export_${meta.referenceKey} = {${exports}};
             `
           }
-          return { code, map: null }
+          return {
+            code,
+            map: null,
+            meta: {
+              rsc: {
+                type: 'client-group',
+              },
+            } satisfies PluginModuleMeta,
+          }
         }
       },
     },
