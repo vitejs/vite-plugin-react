@@ -1,3 +1,18 @@
+## <small>[0.4.25](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.24...plugin-rsc@0.4.25) (2025-08-28)</small>
+### Bug Fixes
+
+* **rsc:** inject `AsyncLocalStorage` global via transform ([#785](https://github.com/vitejs/vite-plugin-react/issues/785)) ([2f255ad](https://github.com/vitejs/vite-plugin-react/commit/2f255ad694b976ff0b6f826f5fe8c27da5852df1))
+* **rsc:** optimize `react-dom/static.edge` ([#786](https://github.com/vitejs/vite-plugin-react/issues/786)) ([e3bf733](https://github.com/vitejs/vite-plugin-react/commit/e3bf73356bf307d68e5e62c06987815afb1a1f44))
+* **rsc:** propagate client reference invalidation to server ([#788](https://github.com/vitejs/vite-plugin-react/issues/788)) ([a8dc3fe](https://github.com/vitejs/vite-plugin-react/commit/a8dc3feade6fc64b1cfd851d90b39d4d7ba98b02))
+
+### Miscellaneous Chores
+
+* **deps:** update `@types/react-dom` to fix `formState` ([#782](https://github.com/vitejs/vite-plugin-react/issues/782)) ([af9139f](https://github.com/vitejs/vite-plugin-react/commit/af9139f0bf1e30d4ffbd23b065001b0284cfda05))
+
+### Tests
+
+* **rsc:** test `hydrateRoot(..., { formState })` ([#781](https://github.com/vitejs/vite-plugin-react/issues/781)) ([e622a6a](https://github.com/vitejs/vite-plugin-react/commit/e622a6a06b4d021430a42defe893353940931915))
+
 ## <small>[0.4.24](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.23...plugin-rsc@0.4.24) (2025-08-25)</small>
 ### Features
 
