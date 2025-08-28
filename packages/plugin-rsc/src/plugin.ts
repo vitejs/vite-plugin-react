@@ -976,9 +976,23 @@ import.meta.hot.on("rsc:update", () => {
         return code
       },
     ),
+    ...globalAsyncLocalStoragePlugin(),
+    ...vitePluginRscMinimal(rscPluginOptions, manager),
+    ...vitePluginFindSourceMapURL(),
+    ...vitePluginRscCss(rscPluginOptions, manager),
+    ...(rscPluginOptions.validateImports !== false
+      ? [validateImportPlugin()]
+      : []),
+    scanBuildStripPlugin({ manager }),
+    ...cjsModuleRunnerPlugin(),
+  ]
+}
+
+// make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
+// https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
+function globalAsyncLocalStoragePlugin(): Plugin[] {
+  return [
     {
-      // make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
-      // https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
       name: 'rsc:inject-async-local-storage',
       transform: {
         handler(code) {
@@ -1001,14 +1015,6 @@ import.meta.hot.on("rsc:update", () => {
         },
       },
     },
-    ...vitePluginRscMinimal(rscPluginOptions, manager),
-    ...vitePluginFindSourceMapURL(),
-    ...vitePluginRscCss(rscPluginOptions, manager),
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
-    scanBuildStripPlugin({ manager }),
-    ...cjsModuleRunnerPlugin(),
   ]
 }
 
