@@ -21,9 +21,11 @@ test.runIf(isServe)('should hmr', async () => {
 test.runIf(isServe)(
   'should have annotated jsx with file location metadata',
   async () => {
-    const scriptSrc = await (await page.$('script')).getAttribute('src')
-    const scriptUrl = new URL(scriptSrc, viteTestUrl)
-    const res = await page.request.get(scriptUrl.href)
+    let pathname = '/App.jsx'
+    if (process.env.VITE_TEST_FULL_BUNDLE_MODE) {
+      pathname = await (await page.$('script')).getAttribute('src')
+    }
+    const res = await page.request.get(new URL(pathname, viteTestUrl).href)
     const code = await res.text()
     expect(code).toMatch(/lineNumber:\s*\d+/)
     expect(code).toMatch(/columnNumber:\s*\d+/)
