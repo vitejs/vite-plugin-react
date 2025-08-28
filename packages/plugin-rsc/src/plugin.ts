@@ -53,6 +53,8 @@ import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
 
+const isRolldownVite = 'rolldownVersion' in vite
+
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
 type ClientReferenceMeta = {
