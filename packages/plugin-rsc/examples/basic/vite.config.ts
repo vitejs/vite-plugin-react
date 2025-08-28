@@ -32,11 +32,10 @@ export default defineConfig({
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
       clientChunks(meta) {
-        if (process.env.TEST_SERVER_CLIENT_CHUNKS) {
-          return meta.serverChunk
-        }
-        if (meta.id.includes('/src/routes/chunk/')) {
-          return 'custom-chunk'
+        if (process.env.TEST_CUSTOM_CLIENT_CHUNKS) {
+          if (meta.id.includes('/src/routes/chunk/')) {
+            return 'custom-chunk'
+          }
         }
       },
     }),
