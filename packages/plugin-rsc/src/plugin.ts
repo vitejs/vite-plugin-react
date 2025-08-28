@@ -192,6 +192,7 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
+   * By default, client chunks are grouped by `meta.serverChunk`.
    */
   clientChunks?: (meta: {
     /** client reference module id */
