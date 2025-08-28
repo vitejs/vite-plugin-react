@@ -396,6 +396,35 @@ export default function vitePluginRsc(
       configureServer(server) {
         ;(globalThis as any).__viteRscDevServer = server
 
+        // intercept client hmr to propagate client boundary invalidation to server environment
+        const oldSend = server.environments.client.hot.send
+        server.environments.client.hot.send = async function (
+          this,
+          ...args: any[]
+        ) {
+          const e = args[0] as vite.UpdatePayload
+          if (e && typeof e === 'object' && e.type === 'update') {
+            for (const update of e.updates) {
+              if (update.type === 'js-update') {
+                const mod =
+                  server.environments.client.moduleGraph.urlToModuleMap.get(
+                    update.path,
+                  )
+                if (mod && mod.id && manager.clientReferenceMetaMap[mod.id]) {
+                  const serverMod =
+                    server.environments.rsc!.moduleGraph.getModuleById(mod.id)
+                  if (serverMod) {
+                    server.environments.rsc!.moduleGraph.invalidateModule(
+                      serverMod,
+                    )
+                  }
+                }
+              }
+            }
+          }
+          return oldSend.apply(this, args as any)
+        }
+
         if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {

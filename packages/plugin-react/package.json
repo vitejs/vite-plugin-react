@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "license": "MIT",
   "author": "Evan You",
   "description": "The default Vite plugin for React projects",
