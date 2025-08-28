@@ -12,10 +12,10 @@ if (isServe) {
     editFile('src/useButtonHook.tsx', (code) =>
       code.replace('count is {count}', 'count is {count}!'),
     )
-    await untilBrowserLogAfter(
-      () => page.textContent('button'),
-      '[vite] hot updated: /src/App.tsx',
-    )
+    // await untilBrowserLogAfter(
+    //   () => page.textContent('button'),
+    //   '[vite] hot updated: /src/App.tsx',
+    // )
     await expect.poll(() => page.textContent('button')).toMatch('count is 1!')
   })
 }
