@@ -47,6 +47,31 @@ test.describe('dev-initial', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
+
+  test('server-chunk-based client chunks', async () => {
+    const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
+      f.createEditor('dist/client/.vite/test.json').read(),
+    )
+    const expectedGroups = {
+      'facade:src/routes/chunk2/client1.tsx': ['src/routes/chunk2/client1.tsx'],
+      'facade:src/routes/chunk2/server2.tsx': [
+        'src/routes/chunk2/client2.tsx',
+        'src/routes/chunk2/client2b.tsx',
+      ],
+      'shared:src/routes/chunk2/client3.tsx': ['src/routes/chunk2/client3.tsx'],
+    }
+    const actualGroups: Record<string, string[]> = {}
+    for (const key in expectedGroups) {
+      const groupId = `\0virtual:vite-rsc/client-references/group/${key}`
+      const groupChunk = chunks.find((c) => c.facadeModuleId === groupId)
+      if (groupChunk) {
+        actualGroups[key] = groupChunk.moduleIds
+          .filter((id) => id !== groupId)
+          .map((id) => normalizePath(path.relative(f.root, id)))
+      }
+    }
+    expect(actualGroups).toEqual(expectedGroups)
+  })
 })
 
 test.describe('custom-client-chunks', () => {
@@ -1420,5 +1445,13 @@ function defineTest(f: Fixture) {
 
     await testBackgroundImage('.test-assets-server-css')
     await testBackgroundImage('.test-assets-client-css')
+  })
+
+  test('lazy', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('test-chunk2')).toHaveText(
+      'test-chunk1|test-chunk2|test-chunk2b|test-chunk3|test-chunk3',
+    )
   })
 }
