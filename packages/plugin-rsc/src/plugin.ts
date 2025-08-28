@@ -198,7 +198,7 @@ export type RscPluginOptions = {
     /** client reference module id */
     id: string
     /** normalized client reference module id */
-    relativeId: string
+    normalizedId: string
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
@@ -1193,7 +1193,7 @@ function vitePluginUseClient(
             let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
-                relativeId: manager.toRelativeId(meta.importId),
+                normalizedId: manager.toRelativeId(meta.importId),
                 serverChunk: meta.serverChunk!,
               }) ?? meta.serverChunk!
             // ensure clean virtual id to avoid interfering with other plugins
