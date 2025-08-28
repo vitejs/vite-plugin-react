@@ -970,13 +970,12 @@ import.meta.hot.on("rsc:update", () => {
             code.includes('new AsyncLocalStorage()') &&
             !code.includes('__viteRscAyncHooks')
           ) {
-            // react code can be turned into esm when optimized
-            const [, , , hasModuleSyntax] = esModuleLexer.parse(code)
+            // for build, we cannot use `import` as it confuses rollup commonjs plugin.
             return (
-              (hasModuleSyntax
-                ? `import * as __viteRscAsyncHooks from "node:async_hooks";`
-                : `const __viteRscAsyncHooks = require("node:async_hooks");`) +
-              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
+              (this.environment.mode === 'build' && !isRolldownVite
+                ? `const __viteRscAyncHooks = require("node:async_hooks");`
+                : `import * as __viteRscAyncHooks from "node:async_hooks";`) +
+              `globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;` +
               code
             )
           }
