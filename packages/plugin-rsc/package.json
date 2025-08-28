@@ -53,7 +53,7 @@
     "@types/estree": "^1.0.8",
     "@types/node": "^22.18.0",
     "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
+    "@types/react-dom": "^19.1.8",
     "@vitejs/plugin-react": "workspace:*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
