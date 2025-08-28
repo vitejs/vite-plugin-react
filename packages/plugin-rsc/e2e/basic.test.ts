@@ -181,7 +181,7 @@ test.describe('build-stable-chunks', () => {
       .sort()
     expect(newChunks).toEqual([
       'src/framework/entry.browser.tsx',
-      'virtual:vite-rsc/client-references/group/src/routes/client.tsx',
+      'virtual:vite-rsc/client-references/group/facade:src/routes/root.tsx',
     ])
     expect(oldChunks).toEqual(newChunks)
   })
