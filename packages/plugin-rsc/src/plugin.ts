@@ -993,8 +993,8 @@ import.meta.hot.on("rsc:update", () => {
             return (
               (this.environment.mode === 'build' && !isRolldownVite
                 ? `const __viteRscAyncHooks = require("node:async_hooks");`
-                : `import * as __viteRscAyncHooks from "node:async_hooks";`) +
-              `globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;` +
+                : `import * as __viteRscAsyncHooks from "node:async_hooks";`) +
+              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
               code
             )
           }
