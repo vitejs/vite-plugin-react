@@ -48,7 +48,7 @@ import {
   withRollupError,
 } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
-import { transformScanBuildStrip } from './plugins/scan'
+import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
@@ -89,6 +89,8 @@ const require = createRequire(import.meta.url)
 function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
+
+export type { RscPluginManager }
 
 class RscPluginManager {
   server!: ViteDevServer
@@ -979,9 +981,23 @@ import.meta.hot.on("rsc:update", () => {
         return code
       },
     ),
+    ...vitePluginRscMinimal(rscPluginOptions, manager),
+    ...vitePluginFindSourceMapURL(),
+    ...vitePluginRscCss(rscPluginOptions, manager),
+    ...(rscPluginOptions.validateImports !== false
+      ? [validateImportPlugin()]
+      : []),
+    scanBuildStripPlugin({ manager }),
+    ...cjsModuleRunnerPlugin(),
+    ...globalAsyncLocalStoragePlugin(),
+  ]
+}
+
+// make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
+// https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
+function globalAsyncLocalStoragePlugin(): Plugin[] {
+  return [
     {
-      // make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
-      // https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
       name: 'rsc:inject-async-local-storage',
       transform: {
         handler(code) {
@@ -1004,34 +1020,7 @@ import.meta.hot.on("rsc:update", () => {
         },
       },
     },
-    ...vitePluginRscMinimal(rscPluginOptions, manager),
-    ...vitePluginFindSourceMapURL(),
-    ...vitePluginRscCss(rscPluginOptions, manager),
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
-    scanBuildStripPlugin({ manager }),
-    ...cjsModuleRunnerPlugin(),
   ]
-}
-
-// During scan build, we strip all code but imports to
-// traverse module graph faster and just discover client/server references.
-function scanBuildStripPlugin({
-  manager,
-}: {
-  manager: RscPluginManager
-}): Plugin {
-  return {
-    name: 'rsc:scan-strip',
-    apply: 'build',
-    enforce: 'post',
-    async transform(code, _id, _options) {
-      if (!manager.isScanBuild) return
-      const output = await transformScanBuildStrip(code)
-      return { code: output, map: { mappings: '' } }
-    },
-  }
 }
 
 function vitePluginUseClient(
