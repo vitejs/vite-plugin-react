@@ -471,6 +471,10 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
+              // prserve original request url for SSR framework.
+              // for example, Vite automatically strips `base` from url.
+              // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
+              req.url = req.originalUrl
               // ensure catching rejected promise
               // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
               await createRequestListener(mod.default)(req, res)
@@ -506,6 +510,7 @@ export default function vitePluginRsc(
         return () => {
           server.middlewares.use(async (req, res, next) => {
             try {
+              req.url = req.originalUrl
               await handler(req, res)
             } catch (e) {
               next(e)
