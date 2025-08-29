@@ -192,10 +192,13 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
+   * By default, client chunks are grouped by `meta.serverChunk`.
    */
   clientChunks?: (meta: {
     /** client reference module id */
     id: string
+    /** normalized client reference module id */
+    normalizedId: string
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
@@ -1190,10 +1193,9 @@ function vitePluginUseClient(
             let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
+                normalizedId: manager.toRelativeId(meta.importId),
                 serverChunk: meta.serverChunk!,
-              }) ??
-              // use original module id as name by default
-              manager.toRelativeId(meta.importId)
+              }) ?? meta.serverChunk!
             // ensure clean virtual id to avoid interfering with other plugins
             name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
