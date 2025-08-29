@@ -19,7 +19,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       async transform(code, id) {
         if (
-          id.includes('/node_modules/') &&
+          (id.includes('/node_modules/') || isDevCjs(id)) &&
           !id.startsWith(this.environment.config.cacheDir) &&
           /\b(require|exports)\b/.test(code)
         ) {
@@ -72,6 +72,10 @@ export default module.exports;
 }
 
 function extractPackageKey(id: string): string {
+  if (isDevCjs(id)) {
+    return '@vitejs/plugin-rsc'
+  }
+
   // .../.yarn/cache/abc/... => abc
   const yarnMatch = id.match(/\/.yarn\/cache\/([^/]+)/)
   if (yarnMatch) {
@@ -88,4 +92,12 @@ function extractPackageKey(id: string): string {
     return x!
   }
   return id
+}
+
+// this is needed only when developing package itself within pnpm workspace
+function isDevCjs(id: string): boolean {
+  return (
+    !import.meta.url.includes('/node_modules/') &&
+    id.includes('/vendor/react-server-dom/')
+  )
 }

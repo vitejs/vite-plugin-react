@@ -36,6 +36,7 @@ export default defineConfig({
       },
       optimizeDeps: {
         include: ['turbo-stream'],
+        exclude: ['react', 'react-dom'],
       },
     },
     ssr: {

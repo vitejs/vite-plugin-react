@@ -43,12 +43,12 @@ export default defineConfig({
     },
     ssr: {
       optimizeDeps: {
-        exclude: ['react-router'],
+        exclude: ['react-router', 'react', 'react-dom'],
       },
     },
     rsc: {
       optimizeDeps: {
-        exclude: ['react-router'],
+        exclude: ['react-router', 'react', 'react-dom'],
       },
     },
   },
