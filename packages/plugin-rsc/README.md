@@ -479,13 +479,13 @@ See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the 
 
 ## Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
-By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependency` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (such as `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
+By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependency` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
 
 ```sh
 Failed to resolve dependency: @vitejs/plugin-rsc/vendor/react-server-dom/client.browser, present in client 'optimizeDeps.include'
 ```
 
-This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugin-rsc` through your framework package. For example, you can add a following plugin:
+This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugin-rsc` through your framework package. For example, you can add the following plugin:
 
 ```js
 // package name is "my-rsc-framework"
@@ -494,13 +494,14 @@ export default function myRscFrameworkPlugin() {
     name: 'my-rsc-framework:config',
     configureEnvironment(name, config) {
       if (config.optimizeDeps?.include) {
-        environmentConfig.optimizeDeps.include =
-          environmentConfig.optimizeDeps.include.map((name) => {
+        config.optimizeDeps.include = config.optimizeDeps.include.map(
+          (name) => {
             if (name.startsWith('@vitejs/plugin-rsc')) {
               name = `my-rsc-framework > ${name}`
             }
             return name
-          })
+          },
+        )
       }
     },
   }
