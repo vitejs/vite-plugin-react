@@ -1,3 +1,24 @@
+## <small>[0.4.26](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.25...plugin-rsc@0.4.26) (2025-08-29)</small>
+### Features
+
+* **rsc:** enable server-chunk-based client chunks ([#794](https://github.com/vitejs/vite-plugin-react/issues/794)) ([377a273](https://github.com/vitejs/vite-plugin-react/commit/377a273b27d0996ae9d2be50a74dc372d91cdc9c))
+
+### Bug Fixes
+
+* **rsc:** use `req.originalUrl` for server handler ([#797](https://github.com/vitejs/vite-plugin-react/issues/797)) ([3250231](https://github.com/vitejs/vite-plugin-react/commit/3250231b7537daf6946a27ec8bd8dc47a646d034))
+
+### Documentation
+
+* **rsc:** how to use `@vitejs/plugin-rsc` as framework's `dependencies` ([#796](https://github.com/vitejs/vite-plugin-react/issues/796)) ([907b9d8](https://github.com/vitejs/vite-plugin-react/commit/907b9d8323e7a21160a58d328d6ac444e5fa31da))
+
+### Miscellaneous Chores
+
+* **rsc:** typo in viteRscAsyncHooks naming ([#793](https://github.com/vitejs/vite-plugin-react/issues/793)) ([95e4091](https://github.com/vitejs/vite-plugin-react/commit/95e4091dcb973506136bd1564000916e8a38c440))
+
+### Code Refactoring
+
+* **rsc:** organize internal plugins ([#791](https://github.com/vitejs/vite-plugin-react/issues/791)) ([d8cfdfa](https://github.com/vitejs/vite-plugin-react/commit/d8cfdfa1b8aca65fae2e555b0ae8a66eb9276ed6))
+
 ## <small>[0.4.25](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.24...plugin-rsc@0.4.25) (2025-08-28)</small>
 ### Bug Fixes
 
