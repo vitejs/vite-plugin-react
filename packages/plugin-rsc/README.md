@@ -492,14 +492,14 @@ This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugi
 export default function myRscFrameworkPlugin() {
   return {
     name: 'my-rsc-framework:config',
-    configureEnvironment(name, config) {
+    configureEnvironment(_name, config) {
       if (config.optimizeDeps?.include) {
         config.optimizeDeps.include = config.optimizeDeps.include.map(
-          (name) => {
-            if (name.startsWith('@vitejs/plugin-rsc')) {
-              name = `my-rsc-framework > ${name}`
+          (entry) => {
+            if (entry.startsWith('@vitejs/plugin-rsc')) {
+              entry = `my-rsc-framework > ${entry}`
             }
-            return name
+            return entry
           },
         )
       }
