@@ -48,36 +48,48 @@ test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'build' })
   defineTest(f)
 
-  test('custom client chunk', async () => {
+  test('server-chunk-based client chunks', async () => {
     const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
       f.createEditor('dist/client/.vite/test.json').read(),
     )
-    const chunk = chunks.find((c) => c.name === 'custom-chunk')
-    const expected = [1, 2, 3].map((i) =>
-      normalizePath(path.join(f.root, `src/routes/chunk/client${i}.tsx`)),
-    )
-    expect(chunk?.moduleIds).toEqual(expect.arrayContaining(expected))
+    const expectedGroups = {
+      'facade:src/routes/chunk2/client1.tsx': ['src/routes/chunk2/client1.tsx'],
+      'facade:src/routes/chunk2/server2.tsx': [
+        'src/routes/chunk2/client2.tsx',
+        'src/routes/chunk2/client2b.tsx',
+      ],
+      'shared:src/routes/chunk2/client3.tsx': ['src/routes/chunk2/client3.tsx'],
+    }
+    const actualGroups: Record<string, string[]> = {}
+    for (const key in expectedGroups) {
+      const groupId = `\0virtual:vite-rsc/client-references/group/${key}`
+      const groupChunk = chunks.find((c) => c.facadeModuleId === groupId)
+      if (groupChunk) {
+        actualGroups[key] = groupChunk.moduleIds
+          .filter((id) => id !== groupId)
+          .map((id) => normalizePath(path.relative(f.root, id)))
+      }
+    }
+    expect(actualGroups).toEqual(expectedGroups)
   })
 })
 
-test.describe('build-server-client-chunks', () => {
+test.describe('custom-client-chunks', () => {
   const f = useFixture({
     root: 'examples/basic',
     mode: 'build',
     cliOptions: {
       env: {
-        TEST_SERVER_CLIENT_CHUNKS: 'true',
+        TEST_CUSTOM_CLIENT_CHUNKS: 'true',
       },
     },
   })
 
-  defineTest(f)
-
-  test('custom client chunk', async () => {
+  test('basic', async () => {
     const { chunks }: { chunks: Rollup.OutputChunk[] } = JSON.parse(
       f.createEditor('dist/client/.vite/test.json').read(),
     )
-    const chunk = chunks.find((c) => c.name === 'root')
+    const chunk = chunks.find((c) => c.name === 'custom-chunk')
     const expected = [1, 2, 3].map((i) =>
       normalizePath(path.join(f.root, `src/routes/chunk/client${i}.tsx`)),
     )
@@ -181,7 +193,7 @@ test.describe('build-stable-chunks', () => {
       .sort()
     expect(newChunks).toEqual([
       'src/framework/entry.browser.tsx',
-      'virtual:vite-rsc/client-references/group/src/routes/client.tsx',
+      'virtual:vite-rsc/client-references/group/facade:src/routes/root.tsx',
     ])
     expect(oldChunks).toEqual(newChunks)
   })
@@ -415,7 +427,7 @@ function defineTest(f: Fixture) {
       await page.getByRole('button', { name: 'client-counter: 0' }).click()
     })
 
-    test('non-boundary client hmr', async ({ page }) => {
+    test('non-client-reference client hmr', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
 
@@ -428,13 +440,55 @@ function defineTest(f: Fixture) {
       editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
 
+      // check next rsc payload includes current client reference and preserves state
+      await page.locator("a[href='?test-hmr-client-dep-re-render']").click()
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep-re-render']"),
+      ).toHaveText('re-render [ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
+
       // check next ssr is also updated
-      const res = await page.reload()
+      const res = await page.request.get(f.url(), {
+        headers: {
+          accept: 'text/html',
+        },
+      })
       expect(await res?.text()).toContain('[ok-edit]')
 
-      await waitForHydration(page)
       editor.reset()
-      await expect(locator).toHaveText('test-hmr-client-dep: 0[ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep: 1[ok]')
+    })
+
+    test('non-self-accepting client hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+
+      const locator = page.getByTestId('test-hmr-client-dep2')
+      await expect(locator).toHaveText('test-hmr-client-dep2: 0[ok]')
+      await locator.locator('button').click()
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
+
+      const editor = f.createEditor('src/routes/hmr-client-dep2/client-dep.ts')
+      editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
+
+      // check next rsc payload includes an updated client reference and preserves state
+      await page.locator("a[href='?test-hmr-client-dep2-re-render']").click()
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep2-re-render']"),
+      ).toHaveText('re-render [ok]')
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
+
+      // check next ssr is also updated
+      const res = await page.request.get(f.url(), {
+        headers: {
+          accept: 'text/html',
+        },
+      })
+      expect(await res?.text()).toContain('[ok-edit]')
+
+      editor.reset()
+      await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
     })
 
     test('server hmr', async ({ page }) => {
@@ -1391,5 +1445,13 @@ function defineTest(f: Fixture) {
 
     await testBackgroundImage('.test-assets-server-css')
     await testBackgroundImage('.test-assets-client-css')
+  })
+
+  test('lazy', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('test-chunk2')).toHaveText(
+      'test-chunk1|test-chunk2|test-chunk2b|test-chunk3|test-chunk3',
+    )
   })
 }

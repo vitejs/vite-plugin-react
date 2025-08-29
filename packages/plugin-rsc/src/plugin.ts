@@ -192,10 +192,13 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
+   * By default, client chunks are grouped by `meta.serverChunk`.
    */
   clientChunks?: (meta: {
     /** client reference module id */
     id: string
+    /** normalized client reference module id */
+    normalizedId: string
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
@@ -414,6 +417,35 @@ export default function vitePluginRsc(
       buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
       configureServer(server) {
         ;(globalThis as any).__viteRscDevServer = server
+
+        // intercept client hmr to propagate client boundary invalidation to server environment
+        const oldSend = server.environments.client.hot.send
+        server.environments.client.hot.send = async function (
+          this,
+          ...args: any[]
+        ) {
+          const e = args[0] as vite.UpdatePayload
+          if (e && typeof e === 'object' && e.type === 'update') {
+            for (const update of e.updates) {
+              if (update.type === 'js-update') {
+                const mod =
+                  server.environments.client.moduleGraph.urlToModuleMap.get(
+                    update.path,
+                  )
+                if (mod && mod.id && manager.clientReferenceMetaMap[mod.id]) {
+                  const serverMod =
+                    server.environments.rsc!.moduleGraph.getModuleById(mod.id)
+                  if (serverMod) {
+                    server.environments.rsc!.moduleGraph.invalidateModule(
+                      serverMod,
+                    )
+                  }
+                }
+              }
+            }
+          }
+          return oldSend.apply(this, args as any)
+        }
 
         if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
@@ -958,14 +990,14 @@ import.meta.hot.on("rsc:update", () => {
               this.environment.name === 'rsc') &&
             code.includes('typeof AsyncLocalStorage') &&
             code.includes('new AsyncLocalStorage()') &&
-            !code.includes('__viteRscAyncHooks')
+            !code.includes('__viteRscAsyncHooks')
           ) {
             // for build, we cannot use `import` as it confuses rollup commonjs plugin.
             return (
               (this.environment.mode === 'build' && !isRolldownVite
-                ? `const __viteRscAyncHooks = require("node:async_hooks");`
-                : `import * as __viteRscAyncHooks from "node:async_hooks";`) +
-              `globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;` +
+                ? `const __viteRscAsyncHooks = require("node:async_hooks");`
+                : `import * as __viteRscAsyncHooks from "node:async_hooks";`) +
+              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
               code
             )
           }
@@ -1161,10 +1193,9 @@ function vitePluginUseClient(
             let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
+                normalizedId: manager.toRelativeId(meta.importId),
                 serverChunk: meta.serverChunk!,
-              }) ??
-              // use original module id as name by default
-              manager.toRelativeId(meta.importId)
+              }) ?? meta.serverChunk!
             // ensure clean virtual id to avoid interfering with other plugins
             name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
