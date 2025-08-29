@@ -2,9 +2,9 @@ import { expect, test } from 'vitest'
 import { editFile, getColor, isServe, page } from '~utils'
 
 test('should render', async () => {
-  expect(await page.textContent('h1')).toMatch(
-    'Hello Vite + React + @emotion/react',
-  )
+  await expect
+    .poll(() => page.textContent('h1'))
+    .toMatch('Hello Vite + React + @emotion/react')
 })
 
 test('should update', async () => {

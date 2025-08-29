@@ -85,6 +85,7 @@ type Options = {
 
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = false
+  let base: string
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
@@ -139,7 +140,9 @@ const react = (_options?: Options): Plugin[] => {
         },
       }),
       configResolved(config) {
+        base = config.base
         if (config.server.hmr === false) hmrDisabled = true
+
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
         )
@@ -164,16 +167,21 @@ const react = (_options?: Options): Plugin[] => {
           )
         }
       },
-      transformIndexHtml: (_, config) => {
-        if (!hmrDisabled) {
-          return [
-            {
-              tag: 'script',
-              attrs: { type: 'module' },
-              children: getPreambleCode(config.server!.config.base),
-            },
-          ]
-        }
+      transformIndexHtml: {
+        // TODO: maybe we can inject this to entrypoints instead of index.html?
+        handler() {
+          if (!hmrDisabled)
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module' },
+                children: getPreambleCode(base),
+              },
+            ]
+        },
+        // In unbundled mode, Vite transforms any requests.
+        // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+        order: 'pre',
       },
       async transform(code, _id, transformOptions) {
         const id = _id.split('?')[0]

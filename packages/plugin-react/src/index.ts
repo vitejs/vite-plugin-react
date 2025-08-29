@@ -118,11 +118,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = true
+  let base: string
   let runPluginOverrides:
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
   let staticBabelOptions: ReactBabelOptions | undefined
-
   // Support patterns like:
   // - import * as React from 'react';
   // - import React from 'react';
@@ -185,6 +185,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       }
     },
     configResolved(config) {
+      base = config.base
       runningInVite = true
       projectRoot = config.root
       isProduction = config.isProduction
@@ -449,15 +450,21 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
-        return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
-          },
-        ]
+    transformIndexHtml: {
+      // TODO: maybe we can inject this to entrypoints instead of index.html?
+      handler() {
+        if (!skipFastRefresh)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(base),
+            },
+          ]
+      },
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+      order: 'pre',
     },
   }
 
