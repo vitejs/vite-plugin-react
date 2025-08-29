@@ -477,6 +477,10 @@ export function Page() {
 
 See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
 
+## Using `@vitejs/plugin-rsc` as framework package's `dependencies`
+
+TODO
+
 ## Credits
 
 This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.
