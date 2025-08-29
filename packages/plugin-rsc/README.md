@@ -479,7 +479,7 @@ See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the 
 
 ## Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
-By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependency` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
+By default, `@vitejs/plugin-rsc` is expected to be used as a `peerDependencies` entry similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
 
 ```sh
 Failed to resolve dependency: @vitejs/plugin-rsc/vendor/react-server-dom/client.browser, present in client 'optimizeDeps.include'
