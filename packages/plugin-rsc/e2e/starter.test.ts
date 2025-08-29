@@ -45,7 +45,7 @@ test.describe('build-development', () => {
   test('verify development', async ({ page }) => {
     let output!: string
     page.on('response', async (response) => {
-      if (response.url().match(/\/assets\/client-[\w-]+\.js$/)) {
+      if (response.url().match(/\/assets\/entry.rsc-[\w-]+\.js$/)) {
         output = await response.text()
       }
     })
