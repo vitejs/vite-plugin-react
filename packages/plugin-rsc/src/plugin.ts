@@ -472,7 +472,7 @@ export default function vitePluginRsc(
               )
               const mod = await environment.runner.import(resolved.id)
               // expose original request url to server handler.
-              // for example, Vite automatically strips `base` from url.
+              // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
               // ensure catching rejected promise
