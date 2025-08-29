@@ -477,6 +477,37 @@ export function Page() {
 
 See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
 
+## Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
+
+By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
+
+```sh
+Failed to resolve dependency: @vitejs/plugin-rsc/vendor/react-server-dom/client.browser, present in client 'optimizeDeps.include'
+```
+
+This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugin-rsc` through your framework package. For example, you can add the following plugin:
+
+```js
+// package name is "my-rsc-framework"
+export default function myRscFrameworkPlugin() {
+  return {
+    name: 'my-rsc-framework:config',
+    configEnvironment(_name, config) {
+      if (config.optimizeDeps?.include) {
+        config.optimizeDeps.include = config.optimizeDeps.include.map(
+          (entry) => {
+            if (entry.startsWith('@vitejs/plugin-rsc')) {
+              entry = `my-rsc-framework > ${entry}`
+            }
+            return entry
+          },
+        )
+      }
+    },
+  }
+}
+```
+
 ## Credits
 
 This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.
