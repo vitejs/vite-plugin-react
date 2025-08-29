@@ -492,7 +492,7 @@ This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugi
 export default function myRscFrameworkPlugin() {
   return {
     name: 'my-rsc-framework:config',
-    configureEnvironment(_name, config) {
+    configEnvironment(_name, config) {
       if (config.optimizeDeps?.include) {
         config.optimizeDeps.include = config.optimizeDeps.include.map(
           (entry) => {
