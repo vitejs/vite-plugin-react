@@ -48,7 +48,7 @@ import {
   withRollupError,
 } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
-import { transformScanBuildStrip } from './plugins/scan'
+import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
@@ -89,6 +89,8 @@ const require = createRequire(import.meta.url)
 function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
+
+export type { RscPluginManager }
 
 class RscPluginManager {
   server!: ViteDevServer
@@ -979,7 +981,6 @@ import.meta.hot.on("rsc:update", () => {
         return code
       },
     ),
-    ...globalAsyncLocalStoragePlugin(),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
@@ -988,6 +989,7 @@ import.meta.hot.on("rsc:update", () => {
       : []),
     scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
+    ...globalAsyncLocalStoragePlugin(),
   ]
 }
 
@@ -1019,25 +1021,6 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
       },
     },
   ]
-}
-
-// During scan build, we strip all code but imports to
-// traverse module graph faster and just discover client/server references.
-function scanBuildStripPlugin({
-  manager,
-}: {
-  manager: RscPluginManager
-}): Plugin {
-  return {
-    name: 'rsc:scan-strip',
-    apply: 'build',
-    enforce: 'post',
-    async transform(code, _id, _options) {
-      if (!manager.isScanBuild) return
-      const output = await transformScanBuildStrip(code)
-      return { code: output, map: { mappings: '' } }
-    },
-  }
 }
 
 function vitePluginUseClient(

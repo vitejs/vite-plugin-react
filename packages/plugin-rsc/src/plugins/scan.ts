@@ -1,6 +1,26 @@
 import * as esModuleLexer from 'es-module-lexer'
-import { parseAstAsync } from 'vite'
+import { parseAstAsync, type Plugin } from 'vite'
 import { walk } from 'estree-walker'
+import type { RscPluginManager } from '../plugin'
+
+// During scan build, we strip all code but imports to
+// traverse module graph faster and just discover client/server references.
+export function scanBuildStripPlugin({
+  manager,
+}: {
+  manager: RscPluginManager
+}): Plugin {
+  return {
+    name: 'rsc:scan-strip',
+    apply: 'build',
+    enforce: 'post',
+    async transform(code, _id, _options) {
+      if (!manager.isScanBuild) return
+      const output = await transformScanBuildStrip(code)
+      return { code: output, map: { mappings: '' } }
+    },
+  }
+}
 
 // https://github.com/vitejs/vite/blob/86d2e8be50be535494734f9f5f5236c61626b308/packages/vite/src/node/plugins/importMetaGlob.ts#L113
 const importGlobRE = /\bimport\.meta\.glob(?:<\w+>)?\s*\(/g
