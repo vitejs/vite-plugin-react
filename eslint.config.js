@@ -14,6 +14,7 @@ export default tseslint.config(
       '**/playground-temp/**',
       '**/temp/**',
       'packages/plugin-rsc/**',
+      'packages/plugin-react/examples/**',
     ],
   },
   eslint.configs.recommended,
