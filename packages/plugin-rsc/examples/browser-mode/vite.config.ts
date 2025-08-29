@@ -1,5 +1,9 @@
-import { defaultClientConditions, defineConfig } from 'vite'
-import { vitePluginRscMinimal } from '@vitejs/plugin-rsc/plugin'
+import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
+import {
+  vitePluginRscMinimal,
+  getPluginApi,
+  type PluginApi,
+} from '@vitejs/plugin-rsc/plugin'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
@@ -100,5 +104,43 @@ export default defineConfig({
         }
       },
     },
+    rscBrowserModePlugin(),
   ],
 })
+
+function rscBrowserModePlugin(): Plugin[] {
+  let api: PluginApi
+
+  return [
+    {
+      name: 'rsc-browser-mode',
+      config() {
+        return {
+          builder: {
+            sharedPlugins: true,
+            sharedConfigBuild: true,
+          },
+        }
+      },
+      configResolved(config) {
+        api = getPluginApi(config)!
+      },
+      async buildApp(builder) {
+        const manager = api.manager
+        const reactServer = builder.environments.client!
+        const reactClient = builder.environments['react_client']!
+        manager.isScanBuild = true
+        reactServer.config.build.write = false
+        reactClient.config.build.write = false
+        await builder.build(reactServer)
+        // await builder.build(reactClient)
+        // manager.isScanBuild = false
+        // reactServer.config.build.write = true
+        // reactClient.config.build.write = true
+        // await builder.build(reactServer)
+        // manager.stabilize()
+        // await builder.build(reactClient)
+      },
+    },
+  ]
+}
