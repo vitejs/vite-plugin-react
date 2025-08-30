@@ -152,6 +152,7 @@ function rscBrowserModePlugin(): Plugin[] {
           ) {
             return '\0virtual:empty'
           }
+          // swap react-client loader during build
           if (source === 'virtual:vite-rsc-browser-mode:load_client_build') {
             if (this.environment.mode === 'dev' || api.manager.isScanBuild) {
               return '\0virtual:empty'
