@@ -125,6 +125,14 @@ If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is 
 react({ disableOxcRecommendation: true })
 ```
 
+### swcCacheDir
+
+Specify the location where SWC stores its intermediate cache files.
+
+```js
+react({ swcCacheDir: 'node_modules/.vite/swc' })
+```
+
 ## Consistent components exports
 
 For React refresh to work correctly, your file should only export React components. The best explanation I've read is the one from the [Gatsby docs](https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works).
