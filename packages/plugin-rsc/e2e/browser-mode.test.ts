@@ -10,13 +10,13 @@ test.describe('dev-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'dev' })
   defineStarterTest(f, 'browser-mode')
   defineBrowserModeTest(f)
-});
+})
 
 test.describe('build-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'build' })
   defineStarterTest(f, 'browser-mode')
   defineBrowserModeTest(f)
-});
+})
 
 function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
   // action-bind tests copied from basic.test.ts
