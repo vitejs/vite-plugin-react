@@ -206,6 +206,16 @@ export type RscPluginOptions = {
   }) => string | undefined
 }
 
+export type PluginApi = {
+  manager: RscPluginManager
+}
+
+/** @experimental */
+export function getPluginApi(config: ResolvedConfig): PluginApi | undefined {
+  const plugin = config.plugins.find((p) => p.name === 'rsc:minimal')
+  return plugin?.api as PluginApi | undefined
+}
+
 /** @experimental */
 export function vitePluginRscMinimal(
   rscPluginOptions: RscPluginOptions = {},
@@ -215,6 +225,9 @@ export function vitePluginRscMinimal(
     {
       name: 'rsc:minimal',
       enforce: 'pre',
+      api: {
+        manager,
+      } satisfies PluginApi,
       async config() {
         await esModuleLexer.init
       },
@@ -247,6 +260,7 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    scanBuildStripPlugin({ manager }),
   ]
 }
 
@@ -992,7 +1006,6 @@ import.meta.hot.on("rsc:update", () => {
     ...(rscPluginOptions.validateImports !== false
       ? [validateImportPlugin()]
       : []),
-    scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
     ...globalAsyncLocalStoragePlugin(),
   ]
@@ -1470,7 +1483,7 @@ function vitePluginDefineEncryptionKey(
       },
       renderChunk(code, chunk) {
         if (code.includes(KEY_PLACEHOLDER)) {
-          assert.equal(this.environment.name, 'rsc')
+          assert.equal(this.environment.name, serverEnvironmentName)
           emitEncryptionKey = true
           const normalizedPath = normalizeRelativePath(
             path.relative(path.join(chunk.fileName, '..'), KEY_FILE),
@@ -1483,7 +1496,10 @@ function vitePluginDefineEncryptionKey(
         }
       },
       writeBundle() {
-        if (this.environment.name === 'rsc' && emitEncryptionKey) {
+        if (
+          this.environment.name === serverEnvironmentName &&
+          emitEncryptionKey
+        ) {
           fs.writeFileSync(
             path.join(this.environment.config.build.outDir, KEY_FILE),
             `export default ${defineEncryptionKey};\n`,
