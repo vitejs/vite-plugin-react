@@ -11,6 +11,13 @@ export default defineConfig({
     // inspect(),
     rscBrowserModePlugin(),
   ],
+  environments: {
+    client: {
+      build: {
+        minify: false,
+      },
+    },
+  },
 })
 
 function rscBrowserModePlugin(): Plugin[] {
@@ -25,8 +32,13 @@ function rscBrowserModePlugin(): Plugin[] {
     }),
     {
       name: 'rsc-browser-mode',
-      config() {
+      config(_config, env) {
         return {
+          define: {
+            'import.meta.env.__vite_rsc_build__': JSON.stringify(
+              env.command === 'build',
+            ),
+          },
           environments: {
             client: {
               keepProcessEnv: false,
@@ -42,9 +54,6 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
-                  // TODO: browser build breaks `src/actin-bind` examples
-                  // '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-                  // '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
                 exclude: ['vite', '@vitejs/plugin-rsc'],
               },
@@ -83,14 +92,6 @@ function rscBrowserModePlugin(): Plugin[] {
                 },
               },
             },
-          },
-          resolve: {
-            // alias: {
-            //   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge':
-            //     '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-            //   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
-            //     '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
-            // },
           },
           builder: {
             sharedPlugins: true,
@@ -164,6 +165,25 @@ function rscBrowserModePlugin(): Plugin[] {
       load(id) {
         if (id === '\0virtual:empty') {
           return `module.exports = {}`
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode:build-client-references',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc-minimal/client-references') {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-minimal/client-references') {
+          let code = ''
+          for (const meta of Object.values(
+            api.manager.clientReferenceMetaMap,
+          )) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
         }
       },
     },

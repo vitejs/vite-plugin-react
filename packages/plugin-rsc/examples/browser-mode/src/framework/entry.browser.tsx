@@ -8,13 +8,25 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './entry.rsc'
+// @ts-ignore
+import clientReferences from 'virtual:vite-rsc-minimal/client-references'
 
 let fetchServer: typeof import('./entry.rsc').fetchServer
 
 export function initialize(options: { fetchServer: typeof fetchServer }) {
   fetchServer = options.fetchServer
   setRequireModule({
-    load: (id) => import(/* @vite-ignore */ id),
+    load: (id) => {
+      if (import.meta.env.__vite_rsc_build__) {
+        const import_ = clientReferences[id]
+        if (!import_) {
+          throw new Error(`Cannot find client reference: ${id}`)
+        }
+        return import_()
+      } else {
+        return import(/* @vite-ignore */ id)
+      }
+    },
   })
 }
 

@@ -1,7 +1,7 @@
 import * as server from './entry.rsc'
 
 async function main() {
-  const client = await (import.meta.env.DEV
+  const client = await (!import.meta.env.__vite_rsc_build__
     ? loadClientDev()
     : loadClientBuild())
   server.initialize()
