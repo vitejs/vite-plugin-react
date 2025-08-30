@@ -21,7 +21,7 @@ export default defineConfig({
 })
 
 function rscBrowserModePlugin(): Plugin[] {
-  let api: PluginApi
+  let manager: PluginApi['manager']
 
   return [
     ...vitePluginRscMinimal({
@@ -100,7 +100,7 @@ function rscBrowserModePlugin(): Plugin[] {
         }
       },
       configResolved(config) {
-        api = getPluginApi(config)!
+        manager = getPluginApi(config)!.manager
       },
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
@@ -129,7 +129,6 @@ function rscBrowserModePlugin(): Plugin[] {
         }
       },
       async buildApp(builder) {
-        const manager = api.manager
         const reactServer = builder.environments.client!
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
@@ -155,7 +154,7 @@ function rscBrowserModePlugin(): Plugin[] {
           }
           // swap react-client loader during build
           if (source === 'virtual:vite-rsc-browser-mode:load_client_build') {
-            if (this.environment.mode === 'dev' || api.manager.isScanBuild) {
+            if (this.environment.mode === 'dev' || manager.isScanBuild) {
               return '\0virtual:empty'
             }
             return this.resolve('/dist/react_client/index.js')
@@ -178,9 +177,7 @@ function rscBrowserModePlugin(): Plugin[] {
       load(id) {
         if (id === '\0virtual:vite-rsc-minimal/client-references') {
           let code = ''
-          for (const meta of Object.values(
-            api.manager.clientReferenceMetaMap,
-          )) {
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
           }
           return `export default {${code}}`
@@ -197,9 +194,7 @@ function rscBrowserModePlugin(): Plugin[] {
       load(id) {
         if (id === '\0virtual:vite-rsc-minimal/server-references') {
           let code = ''
-          for (const meta of Object.values(
-            api.manager.serverReferenceMetaMap,
-          )) {
+          for (const meta of Object.values(manager.serverReferenceMetaMap)) {
             code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
           }
           return `export default {${code}}`
