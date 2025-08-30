@@ -2,14 +2,23 @@ import { expect, test, type Page } from '@playwright/test'
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 
-test.describe('dev-browser-mode', () => {
-  // Webkit fails by
-  // > TypeError: ReadableByteStreamController is not implemented
-  test.skip(({ browserName }) => browserName === 'webkit')
+// Webkit fails by
+// > TypeError: ReadableByteStreamController is not implemented
+test.skip(({ browserName }) => browserName === 'webkit')
 
+test.describe('dev-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'dev' })
   defineStarterTest(f, 'browser-mode')
+  defineBrowserModeTest(f)
+});
 
+test.describe('build-browser-mode', () => {
+  const f = useFixture({ root: 'examples/browser-mode', mode: 'build' })
+  defineStarterTest(f, 'browser-mode')
+  defineBrowserModeTest(f)
+});
+
+function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
   // action-bind tests copied from basic.test.ts
 
   test('action bind simple', async ({ page }) => {
@@ -71,4 +80,4 @@ test.describe('dev-browser-mode', () => {
       .getByRole('button', { name: 'test-server-action-bind-reset' })
       .click()
   }
-})
+}
