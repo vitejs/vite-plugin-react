@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Set SWC cacheRoot options
+
+This is set to `{viteCacheDir}/swc` and override the default of `.swc`.
+
 ## 4.0.1 (2025-08-19)
 
 ### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` for rolldown-vite ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
