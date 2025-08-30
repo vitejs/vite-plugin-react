@@ -169,28 +169,21 @@ function rscBrowserModePlugin(): Plugin[] {
     },
     {
       name: 'rsc-browser-mode:load-client',
-      resolveId: {
-        order: 'pre',
-        handler(source) {
-          // strip `vite/module-runner` during build
-          if (
-            source === 'vite/module-runner' &&
-            this.environment.mode === 'build'
-          ) {
-            return '\0virtual:empty'
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc-browser-mode/load-client') {
+          if (this.environment.mode === 'dev') {
+            return this.resolve('/src/framework/load-client-dev')
           }
-          // swap react-client loader during build
-          if (source === 'virtual:vite-rsc-browser-mode:load_client_build') {
-            if (this.environment.mode === 'dev' || manager.isScanBuild) {
-              return '\0virtual:empty'
-            }
-            return this.resolve('/dist/react_client/index.js')
-          }
-        },
+          return '\0' + source
+        }
       },
       load(id) {
-        if (id === '\0virtual:empty') {
-          return `module.exports = {}`
+        if (id === '\0virtual:vite-rsc-browser-mode/load-client') {
+          if (manager.isScanBuild) {
+            return `export default async () => {}`
+          } else {
+            return `export default async () => import("/dist/react_client/index.js")`
+          }
         }
       },
     },
