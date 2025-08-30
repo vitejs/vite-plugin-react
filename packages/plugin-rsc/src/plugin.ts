@@ -1483,7 +1483,7 @@ function vitePluginDefineEncryptionKey(
       },
       renderChunk(code, chunk) {
         if (code.includes(KEY_PLACEHOLDER)) {
-          assert.equal(this.environment.name, 'rsc')
+          assert.equal(this.environment.name, serverEnvironmentName)
           emitEncryptionKey = true
           const normalizedPath = normalizeRelativePath(
             path.relative(path.join(chunk.fileName, '..'), KEY_FILE),
@@ -1496,7 +1496,10 @@ function vitePluginDefineEncryptionKey(
         }
       },
       writeBundle() {
-        if (this.environment.name === 'rsc' && emitEncryptionKey) {
+        if (
+          this.environment.name === serverEnvironmentName &&
+          emitEncryptionKey
+        ) {
           fs.writeFileSync(
             path.join(this.environment.config.build.outDir, KEY_FILE),
             `export default ${defineEncryptionKey};\n`,

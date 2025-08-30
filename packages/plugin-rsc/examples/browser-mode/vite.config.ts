@@ -187,5 +187,24 @@ function rscBrowserModePlugin(): Plugin[] {
         }
       },
     },
+    {
+      name: 'rsc-browser-mode:build-server-references',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc-minimal/server-references') {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-minimal/server-references') {
+          let code = ''
+          for (const meta of Object.values(
+            api.manager.serverReferenceMetaMap,
+          )) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
+        }
+      },
+    },
   ]
 }

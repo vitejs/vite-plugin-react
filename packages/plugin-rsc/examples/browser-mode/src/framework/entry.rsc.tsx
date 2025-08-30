@@ -10,6 +10,7 @@ import {
 import type React from 'react'
 import { Root } from '../root'
 import type { ReactFormState } from 'react-dom/client'
+import serverReferences from 'virtual:vite-rsc-minimal/server-references'
 
 export type RscPayload = {
   root: React.ReactNode
@@ -20,7 +21,19 @@ export type RscPayload = {
 declare let __vite_rsc_raw_import__: (id: string) => Promise<unknown>
 
 export function initialize() {
-  setRequireModule({ load: (id) => __vite_rsc_raw_import__(id) })
+  setRequireModule({
+    load: (id) => {
+      if (import.meta.env.__vite_rsc_build__) {
+        const import_ = serverReferences[id]
+        if (!import_) {
+          throw new Error(`invalid server reference: ${id}`)
+        }
+        return import_()
+      } else {
+        return __vite_rsc_raw_import__(/* @vite-ignore */ id)
+      }
+    },
+  })
 }
 
 export async function fetchServer(request: Request): Promise<Response> {
