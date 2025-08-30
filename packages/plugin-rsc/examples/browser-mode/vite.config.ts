@@ -4,7 +4,6 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
-import assert from 'node:assert'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
@@ -49,6 +48,9 @@ function rscBrowserModePlugin(): Plugin[] {
                 ],
                 exclude: ['vite', '@vitejs/plugin-rsc'],
               },
+              build: {
+                outDir: 'dist/client',
+              },
             },
             react_client: {
               keepProcessEnv: false,
@@ -72,6 +74,8 @@ function rscBrowserModePlugin(): Plugin[] {
               },
               build: {
                 outDir: 'dist/react_client',
+                copyPublicDir: false,
+                emitAssets: true,
                 rollupOptions: {
                   input: {
                     index: './src/framework/entry.browser.tsx',
@@ -129,14 +133,11 @@ function rscBrowserModePlugin(): Plugin[] {
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
         reactServer.config.build.write = false
-        reactClient.config.build.write = false
         await builder.build(reactServer)
-        await builder.build(reactClient)
         manager.isScanBuild = false
-        // reactServer.config.build.write = true
-        // reactClient.config.build.write = true
-        // await builder.build(reactServer)
-        // await builder.build(reactClient)
+        reactServer.config.build.write = true
+        await builder.build(reactClient)
+        await builder.build(reactServer)
       },
     },
     {
@@ -151,17 +152,17 @@ function rscBrowserModePlugin(): Plugin[] {
           ) {
             return '\0virtual:empty'
           }
+          if (source === 'virtual:vite-rsc-browser-mode:load_client_build') {
+            if (this.environment.mode === 'dev' || api.manager.isScanBuild) {
+              return '\0virtual:empty'
+            }
+            return this.resolve('/dist/react_client/index.js')
+          }
         },
       },
       load(id) {
         if (id === '\0virtual:empty') {
           return `module.exports = {}`
-        }
-      },
-      renderChunk(code) {
-        if (code.includes('__load_client_build_placeholder__')) {
-          assert(this.environment.name === 'client')
-          console.log(code)
         }
       },
     },

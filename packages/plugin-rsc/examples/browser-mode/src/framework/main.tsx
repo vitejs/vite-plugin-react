@@ -37,7 +37,7 @@ async function loadClientDev() {
 }
 
 async function loadClientBuild(): Promise<typeof import('./entry.browser')> {
-  return '__load_client_build_placeholder__' as any
+  return import('virtual:vite-rsc-browser-mode:load_client_build' as any)
 }
 
 main()
