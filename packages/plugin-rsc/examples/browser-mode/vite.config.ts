@@ -4,49 +4,28 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
+import assert from 'node:assert'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
     // inspect(),
-    vitePluginRscMinimal({
+    rscBrowserModePlugin(),
+  ],
+})
+
+function rscBrowserModePlugin(): Plugin[] {
+  let api: PluginApi
+
+  return [
+    ...vitePluginRscMinimal({
       environment: {
         rsc: 'client',
         browser: 'react_client',
       },
     }),
     {
-      name: 'rsc:browser-mode',
-      configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-react-client') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['react_client']!.hot.handleInvoke(
-                payload,
-              )
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
-          next()
-        })
-      },
-      // for "react_client" hmr, it requires:
-      // - enable fast-refresh transform on `react_client` environment
-      //   - currently `@vitejs/plugin-react` doesn't support it
-      // - implement and enable module runner hmr
-      hotUpdate(ctx) {
-        if (this.environment.name === 'react_client') {
-          if (ctx.modules.length > 0) {
-            ctx.server.environments.client.hot.send({
-              type: 'full-reload',
-              path: ctx.file,
-            })
-          }
-        }
-      },
+      name: 'rsc-browser-mode',
       config() {
         return {
           environments: {
@@ -115,32 +94,33 @@ export default defineConfig({
           },
         }
       },
-    },
-    rscBrowserModePlugin(),
-  ],
-})
-
-function rscBrowserModePlugin(): Plugin[] {
-  let api: PluginApi
-
-  return [
-    {
-      name: 'rsc-browser-mode',
       configResolved(config) {
         api = getPluginApi(config)!
       },
-      // strip `node:module` used by `vite/module-runner`
-      resolveId: {
-        order: 'pre',
-        handler(source) {
-          if (source === 'node:module') {
-            return '\0polyfill:' + source
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          const url = new URL(req.url ?? '/', 'https://any.local')
+          if (url.pathname === '/@vite/invoke-react-client') {
+            const payload = JSON.parse(url.searchParams.get('data')!)
+            const result =
+              await server.environments['react_client']!.hot.handleInvoke(
+                payload,
+              )
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result))
+            return
           }
-        },
+          next()
+        })
       },
-      load(id) {
-        if (id === '\0polyfill:node:module') {
-          return `module.exports = {}`
+      hotUpdate(ctx) {
+        if (this.environment.name === 'react_client') {
+          if (ctx.modules.length > 0) {
+            ctx.server.environments.client.hot.send({
+              type: 'full-reload',
+              path: ctx.file,
+            })
+          }
         }
       },
       async buildApp(builder) {
@@ -148,16 +128,41 @@ function rscBrowserModePlugin(): Plugin[] {
         const reactServer = builder.environments.client!
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
-        // reactServer.config.build.write = false
-        // reactClient.config.build.write = false
+        reactServer.config.build.write = false
+        reactClient.config.build.write = false
         await builder.build(reactServer)
         await builder.build(reactClient)
-        // manager.isScanBuild = false
+        manager.isScanBuild = false
         // reactServer.config.build.write = true
         // reactClient.config.build.write = true
         // await builder.build(reactServer)
-        // manager.stabilize()
         // await builder.build(reactClient)
+      },
+    },
+    {
+      name: 'rsc-browser-mode:load-client',
+      resolveId: {
+        order: 'pre',
+        handler(source) {
+          // strip `vite/module-runner` during build
+          if (
+            source === 'vite/module-runner' &&
+            this.environment.mode === 'build'
+          ) {
+            return '\0virtual:empty'
+          }
+        },
+      },
+      load(id) {
+        if (id === '\0virtual:empty') {
+          return `module.exports = {}`
+        }
+      },
+      renderChunk(code) {
+        if (code.includes('__load_client_build_placeholder__')) {
+          assert(this.environment.name === 'client')
+          console.log(code)
+        }
       },
     },
   ]

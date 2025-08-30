@@ -1,14 +1,18 @@
-import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
 import * as server from './entry.rsc'
 
 async function main() {
-  const client = await importClient()
+  const client = await (import.meta.env.DEV
+    ? loadClientDev()
+    : loadClientBuild())
   server.initialize()
   client.initialize({ fetchServer: server.fetchServer })
   await client.main()
 }
 
-async function importClient() {
+async function loadClientDev() {
+  const { ESModulesEvaluator, ModuleRunner } = await import(
+    'vite/module-runner'
+  )
   const runner = new ModuleRunner(
     {
       sourcemapInterceptor: false,
@@ -30,6 +34,10 @@ async function importClient() {
   return await runner.import<typeof import('./entry.browser')>(
     '/src/framework/entry.browser.tsx',
   )
+}
+
+async function loadClientBuild(): Promise<typeof import('./entry.browser')> {
+  return '__load_client_build_placeholder__' as any
 }
 
 main()
