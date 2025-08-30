@@ -203,6 +203,9 @@ function rscBrowserModePlugin(): Plugin[] {
       },
       load(id) {
         if (id === '\0virtual:vite-rsc-minimal/client-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
           let code = ''
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
@@ -220,6 +223,9 @@ function rscBrowserModePlugin(): Plugin[] {
       },
       load(id) {
         if (id === '\0virtual:vite-rsc-minimal/server-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
           let code = ''
           for (const meta of Object.values(manager.serverReferenceMetaMap)) {
             code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
