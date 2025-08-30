@@ -10,7 +10,7 @@ import {
 import type React from 'react'
 import { Root } from '../root'
 import type { ReactFormState } from 'react-dom/client'
-import serverReferences from 'virtual:vite-rsc-minimal/server-references'
+import buildServerReferences from 'virtual:vite-rsc-browser-mode/build-server-references'
 
 export type RscPayload = {
   root: React.ReactNode
@@ -24,7 +24,7 @@ export function initialize() {
   setRequireModule({
     load: (id) => {
       if (import.meta.env.__vite_rsc_build__) {
-        const import_ = serverReferences[id]
+        const import_ = buildServerReferences[id]
         if (!import_) {
           throw new Error(`invalid server reference: ${id}`)
         }

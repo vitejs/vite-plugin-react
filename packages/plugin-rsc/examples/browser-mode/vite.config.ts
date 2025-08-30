@@ -190,12 +190,14 @@ function rscBrowserModePlugin(): Plugin[] {
     {
       name: 'rsc-browser-mode:build-client-references',
       resolveId(source) {
-        if (source === 'virtual:vite-rsc-minimal/client-references') {
+        if (
+          source === 'virtual:vite-rsc-browser-mode/build-client-references'
+        ) {
           return '\0' + source
         }
       },
       load(id) {
-        if (id === '\0virtual:vite-rsc-minimal/client-references') {
+        if (id === '\0virtual:vite-rsc-browser-mode/build-client-references') {
           if (this.environment.mode === 'dev') {
             return `export default {}` // no-op during dev
           }
@@ -210,12 +212,14 @@ function rscBrowserModePlugin(): Plugin[] {
     {
       name: 'rsc-browser-mode:build-server-references',
       resolveId(source) {
-        if (source === 'virtual:vite-rsc-minimal/server-references') {
+        if (
+          source === 'virtual:vite-rsc-browser-mode/build-server-references'
+        ) {
           return '\0' + source
         }
       },
       load(id) {
-        if (id === '\0virtual:vite-rsc-minimal/server-references') {
+        if (id === '\0virtual:vite-rsc-browser-mode/build-server-references') {
           if (this.environment.mode === 'dev') {
             return `export default {}` // no-op during dev
           }

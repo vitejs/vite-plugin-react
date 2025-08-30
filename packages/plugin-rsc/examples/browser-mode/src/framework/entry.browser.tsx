@@ -8,7 +8,7 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './entry.rsc'
-import clientReferences from 'virtual:vite-rsc-minimal/client-references'
+import buildClientReferences from 'virtual:vite-rsc-browser-mode/build-client-references'
 
 let fetchServer: typeof import('./entry.rsc').fetchServer
 
@@ -17,7 +17,7 @@ export function initialize(options: { fetchServer: typeof fetchServer }) {
   setRequireModule({
     load: (id) => {
       if (import.meta.env.__vite_rsc_build__) {
-        const import_ = clientReferences[id]
+        const import_ = buildClientReferences[id]
         if (!import_) {
           throw new Error(`invalid client reference: ${id}`)
         }

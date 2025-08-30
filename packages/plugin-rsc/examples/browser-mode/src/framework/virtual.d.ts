@@ -1,9 +1,9 @@
-declare module 'virtual:vite-rsc-minimal/client-references' {
+declare module 'virtual:vite-rsc-browser-mode/build-client-references' {
   const default_: Record<string, () => Promise<any>>
   export default default_
 }
 
-declare module 'virtual:vite-rsc-minimal/server-references' {
+declare module 'virtual:vite-rsc-browser-mode/build-server-references' {
   const default_: Record<string, () => Promise<any>>
   export default default_
 }
