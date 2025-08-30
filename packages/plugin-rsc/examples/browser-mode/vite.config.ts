@@ -91,6 +91,14 @@ export default defineConfig({
                   platform: 'browser',
                 },
               },
+              build: {
+                outDir: 'dist/react_client',
+                rollupOptions: {
+                  input: {
+                    index: './src/framework/entry.browser.tsx',
+                  },
+                },
+              },
             },
           },
           resolve: {
@@ -100,6 +108,10 @@ export default defineConfig({
             //   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
             //     '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
             // },
+          },
+          builder: {
+            sharedPlugins: true,
+            sharedConfigBuild: true,
           },
         }
       },
@@ -114,26 +126,32 @@ function rscBrowserModePlugin(): Plugin[] {
   return [
     {
       name: 'rsc-browser-mode',
-      config() {
-        return {
-          builder: {
-            sharedPlugins: true,
-            sharedConfigBuild: true,
-          },
-        }
-      },
       configResolved(config) {
         api = getPluginApi(config)!
+      },
+      // strip `node:module` used by `vite/module-runner`
+      resolveId: {
+        order: 'pre',
+        handler(source) {
+          if (source === 'node:module') {
+            return '\0polyfill:' + source
+          }
+        },
+      },
+      load(id) {
+        if (id === '\0polyfill:node:module') {
+          return `module.exports = {}`
+        }
       },
       async buildApp(builder) {
         const manager = api.manager
         const reactServer = builder.environments.client!
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
-        reactServer.config.build.write = false
-        reactClient.config.build.write = false
+        // reactServer.config.build.write = false
+        // reactClient.config.build.write = false
         await builder.build(reactServer)
-        // await builder.build(reactClient)
+        await builder.build(reactClient)
         // manager.isScanBuild = false
         // reactServer.config.build.write = true
         // reactClient.config.build.write = true

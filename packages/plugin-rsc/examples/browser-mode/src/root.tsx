@@ -1,10 +1,10 @@
 import './index.css'
 import viteLogo from '/vite.svg'
-import { getServerCounter, updateServerCounter } from './action.tsx'
+// import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
-import { TestUseActionState } from './action-from-client/client.tsx'
-import { TestActionBind } from './action-bind/server.tsx'
+// import { TestUseActionState } from './action-from-client/client.tsx'
+// import { TestActionBind } from './action-bind/server.tsx'
 
 export function Root() {
   return <App />
@@ -28,7 +28,7 @@ function App() {
       <div className="card">
         <ClientCounter />
       </div>
-      <div className="card">
+      {/* <div className="card">
         <form action={updateServerCounter.bind(null, 1)}>
           <button>Server Counter: {getServerCounter()}</button>
         </form>
@@ -38,7 +38,7 @@ function App() {
       </div>
       <div className="card">
         <TestActionBind />
-      </div>
+      </div> */}
     </div>
   )
 }
