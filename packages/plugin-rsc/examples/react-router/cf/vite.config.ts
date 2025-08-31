@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 // import inspect from 'vite-plugin-inspect'
 
-export default defineConfig({
+export default defineConfig((env) => ({
   clearScreen: false,
   build: {
     minify: false,
@@ -17,22 +17,16 @@ export default defineConfig({
     rsc({
       entries: {
         client: './react-router-vite/entry.browser.tsx',
+        ssr: './react-router-vite/entry.ssr.tsx',
       },
       serverHandler: false,
+      loadModuleDevProxy: true,
     }),
     cloudflare({
-      configPath: './cf/wrangler.ssr.jsonc',
+      configPath: './cf/wrangler.jsonc',
       viteEnvironment: {
-        name: 'ssr',
+        name: 'rsc',
       },
-      auxiliaryWorkers: [
-        {
-          configPath: './cf/wrangler.rsc.jsonc',
-          viteEnvironment: {
-            name: 'rsc',
-          },
-        },
-      ],
     }),
   ],
   environments: {
@@ -42,9 +36,19 @@ export default defineConfig({
       },
     },
     ssr: {
-      optimizeDeps: {
-        exclude: ['react-router'],
+      keepProcessEnv: false,
+      build: {
+        outDir: './dist/rsc/ssr',
       },
+      resolve:
+        env.command === 'build'
+          ? {
+              noExternal: true,
+            }
+          : undefined,
+      // optimizeDeps: {
+      //   exclude: ['react-router'],
+      // },
     },
     rsc: {
       optimizeDeps: {
@@ -52,4 +56,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

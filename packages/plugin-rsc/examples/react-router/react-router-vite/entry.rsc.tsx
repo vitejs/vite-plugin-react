@@ -9,7 +9,21 @@ import {
 import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-router'
 import { routes } from '../app/routes'
 
-export function fetchServer(request: Request) {
+export default async function handler(request: Request) {
+  // Import the generateHTML function from the client environment
+  const ssr = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr')
+  >('ssr', 'index')
+  const rscResponse = await fetchServer(request)
+  const ssrResponse = await ssr.generateHTML(
+    request.url,
+    request.headers,
+    rscResponse,
+  )
+  return ssrResponse
+}
+
+function fetchServer(request: Request) {
   return matchRSCServerRequest({
     // Provide the React Server touchpoints.
     createTemporaryReferenceSet,
