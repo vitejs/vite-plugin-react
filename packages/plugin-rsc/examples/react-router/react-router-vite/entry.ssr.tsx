@@ -5,6 +5,8 @@ import {
   unstable_RSCStaticRouter as RSCStaticRouter,
 } from 'react-router'
 
+// pass serializable values (via turbo-stream) to ssr environment.
+// passing entire `request` and `fetchServer` are not necessary since `routeRSCServerRequest` works like this
 // https://github.com/remix-run/react-router/blob/20d8307d4a51c219f6e13e0b66461e7162d944e4/packages/react-router/lib/rsc/server.ssr.tsx#L95-L102
 
 export async function generateHTML(
