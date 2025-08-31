@@ -88,37 +88,29 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
 
 const encodePlugin: EncodePlugin = (value) => {
   if (value instanceof Response) {
-    return [
-      'vite-rsc/response',
-      value.status,
-      value.statusText,
-      [...value.headers],
+    const data: ConstructorParameters<typeof Response> = [
       value.body,
+      {
+        status: value.status,
+        statusText: value.statusText,
+        headers: value.headers,
+      },
     ]
+    return ['vite-rsc/response', ...data]
   }
   if (value instanceof Headers) {
-    return ['vite-rsc/headers', [...value]]
+    const data: ConstructorParameters<typeof Headers> = [[...value]]
+    return ['vite-rsc/headers', ...data]
   }
 }
 
 const decodePlugin: DecodePlugin = (type, ...data) => {
   if (type === 'vite-rsc/response') {
-    const [status, statusText, headers, body] = data as [
-      number,
-      string,
-      [string, string][],
-      ReadableStream<Uint8Array> | null,
-    ]
-    const value = new Response(body, {
-      status,
-      statusText,
-      headers,
-    })
+    const value = new Response(...(data as any))
     return { value }
   }
   if (type === 'vite-rsc/headers') {
-    const [headers] = data as [[string, string][]]
-    const value = new Headers(headers)
+    const value = new Headers(...(data as any))
     return { value }
   }
 }
