@@ -25,7 +25,7 @@ test.describe('dev-cloudflare', () => {
     mode: 'dev',
     command: 'pnpm cf-dev',
   })
-  defineTest(f)
+  defineTest(f, 'cloudflare')
 })
 
 test.describe('build-cloudflare', () => {
@@ -35,7 +35,7 @@ test.describe('build-cloudflare', () => {
     buildCommand: 'pnpm cf-build',
     command: 'pnpm cf-preview',
   })
-  defineTest(f)
+  defineTest(f, 'cloudflare')
 })
 
 function defineTest(f: Fixture, variant?: 'cloudflare') {
