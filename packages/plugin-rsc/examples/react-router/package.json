@@ -10,7 +10,7 @@
     "cf-dev": "vite -c ./cf/vite.config.ts",
     "cf-build": "vite -c ./cf/vite.config.ts build",
     "cf-preview": "vite -c ./cf/vite.config.ts preview",
-    "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
+    "cf-release": "wrangler deploy"
   },
   "dependencies": {
     "react": "^19.1.1",
