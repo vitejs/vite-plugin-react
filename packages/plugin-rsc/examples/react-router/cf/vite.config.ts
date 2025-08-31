@@ -46,9 +46,6 @@ export default defineConfig((env) => ({
               noExternal: true,
             }
           : undefined,
-      // optimizeDeps: {
-      //   exclude: ['react-router'],
-      // },
     },
     rsc: {
       optimizeDeps: {

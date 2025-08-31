@@ -10,7 +10,6 @@ import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-r
 import { routes } from '../app/routes'
 
 export default async function handler(request: Request) {
-  // Import the generateHTML function from the client environment
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
