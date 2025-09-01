@@ -169,7 +169,7 @@ export default async function handler(request: Request): Promise<Response> {
   })
 }
 
-// recommented to have `import.meta.hot` for server entry
+// add `import.meta.hot.accept` to handle server module change efficiently
 if (import.meta.hot) {
   import.meta.hot.accept()
 }
