@@ -536,7 +536,7 @@ Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you
 
 ```ts
 import.meta.viteRsc.loadModule
-// ^^^^^^^^^^
+//                  ^^^^^^^^^^
 // <T>(environmentName: string, entryName: string) => Promise<T>
 ```
 
