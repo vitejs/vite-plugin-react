@@ -397,6 +397,7 @@ export default defineConfig({
     }),
   ],
   // the same options can be also specified via top-level `rsc` property.
+  // this allows other plugin to set options via `config` hook.
   rsc: {
     // ...
   },
