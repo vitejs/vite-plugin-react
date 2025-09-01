@@ -1007,10 +1007,9 @@ import.meta.hot.on("rsc:update", () => {
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
-    // TODO: delay validateImports option check after config
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
+    validateImportPlugin({
+      apply: () => rscPluginOptions.validateImports !== false,
+    }),
     scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
     ...globalAsyncLocalStoragePlugin(),
