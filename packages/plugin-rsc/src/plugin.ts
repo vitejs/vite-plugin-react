@@ -310,8 +310,10 @@ export default function vitePluginRsc(
       name: 'rsc',
       async config(config, env) {
         if (config.rsc) {
+          // mutate `rscPluginOptions` since internally this object is passed around
           Object.assign(
             rscPluginOptions,
+            // not sure which should win. for now plugin constructor wins.
             vite.mergeConfig(config.rsc, rscPluginOptions),
           )
         }
