@@ -355,6 +355,8 @@ import.meta.hot.on('rsc:update', async () => {
 
 ### `@vitejs/plugin-rsc`
 
+- Type: `rsc: (options?: RscPluginOptions) => Plugin[]`;
+
 ```js
 import rsc from '@vitejs/plugin-rsc'
 import { defineConfig } from 'vite'
@@ -390,8 +392,15 @@ export default defineConfig({
       // for example, to obtain a key through environment variable during runtime.
       // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
       defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+
+      // see `RscPluginOptions` for full options ...
     }),
   ],
+  // the same options can be also specified via top-level `rsc` property.
+  // this allows other plugin to set options via `config` hook.
+  rsc: {
+    // ...
+  },
 })
 ```
 
