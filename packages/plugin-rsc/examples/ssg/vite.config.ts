@@ -9,7 +9,7 @@ import { type Plugin, type ResolvedConfig, defineConfig } from 'vite'
 // import inspect from 'vite-plugin-inspect'
 import { RSC_POSTFIX } from './src/framework/shared'
 
-export default defineConfig((env) => ({
+export default defineConfig({
   plugins: [
     // inspect(),
     mdx(),
@@ -20,23 +20,26 @@ export default defineConfig((env) => ({
         rsc: './src/framework/entry.rsc.tsx',
         ssr: './src/framework/entry.ssr.tsx',
       },
-      serverHandler: env.isPreview ? false : undefined,
-      useBuildAppHook: true,
     }),
     rscSsgPlugin(),
   ],
-}))
+})
 
 function rscSsgPlugin(): Plugin[] {
   return [
     {
       name: 'rsc-ssg',
-      config(_config, env) {
-        if (env.isPreview) {
+      config: {
+        order: 'pre',
+        handler(_config, env) {
           return {
-            appType: 'mpa',
+            appType: env.isPreview ? 'mpa' : undefined,
+            rsc: {
+              useBuildAppHook: true,
+              serverHandler: env.isPreview ? false : undefined,
+            },
           }
-        }
+        },
       },
       buildApp: {
         async handler(builder) {
