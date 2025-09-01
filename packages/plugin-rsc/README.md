@@ -168,6 +168,11 @@ export default async function handler(request: Request): Promise<Response> {
     },
   })
 }
+
+// add `import.meta.hot.accept` to handle server module change efficiently
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}
 ```
 
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
@@ -516,6 +521,26 @@ export default function myRscFrameworkPlugin() {
   }
 }
 ```
+
+## Typescript
+
+Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you can add it to `tsconfig.json` to have types for `import.meta.viteRsc` APIs:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vitejs/plugin-rsc/types"]
+  }
+}
+```
+
+```ts
+import.meta.viteRsc.loadModule
+//                  ^^^^^^^^^^
+// <T>(environmentName: string, entryName: string) => Promise<T>
+```
+
+See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
 
 ## Credits
 
