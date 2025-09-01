@@ -6,7 +6,12 @@ import mdx from '@mdx-js/rollup'
 export default defineConfig({
   server: { port: 8901 /* Should be unique */ },
   plugins: [
-    { enforce: 'pre', ...mdx() },
+    {
+      enforce: 'pre',
+      ...mdx({
+        format: 'mdx',
+      }),
+    },
     react({ include: /\.(mdx|md|ts|tsx)$/ }),
   ],
 })

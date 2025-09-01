@@ -326,6 +326,14 @@ export default function vitePluginRsc(
     {
       name: 'rsc',
       async config(config, env) {
+        if (config.rsc) {
+          // mutate `rscPluginOptions` since internally this object is passed around
+          Object.assign(
+            rscPluginOptions,
+            // not sure which should win. for now plugin constructor wins.
+            vite.mergeConfig(config.rsc, rscPluginOptions),
+          )
+        }
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
@@ -349,7 +357,7 @@ export default function vitePluginRsc(
         ]
 
         return {
-          appType: 'custom',
+          appType: config.appType ?? 'custom',
           define: {
             'import.meta.env.__vite_rsc_build__': JSON.stringify(
               env.command === 'build',
@@ -429,11 +437,21 @@ export default function vitePluginRsc(
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
-            buildApp: rscPluginOptions.useBuildAppHook ? undefined : buildApp,
+            async buildApp(builder) {
+              if (!rscPluginOptions.useBuildAppHook) {
+                await buildApp(builder)
+              }
+            },
           },
         }
       },
-      buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
+      buildApp: {
+        async handler(builder) {
+          if (rscPluginOptions.useBuildAppHook) {
+            await buildApp(builder)
+          }
+        },
+      },
       configureServer(server) {
         ;(globalThis as any).__viteRscDevServer = server
 
@@ -1006,9 +1024,9 @@ import.meta.hot.on("rsc:update", () => {
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
+    validateImportPlugin({
+      apply: () => rscPluginOptions.validateImports !== false,
+    }),
     ...cjsModuleRunnerPlugin(),
     ...globalAsyncLocalStoragePlugin(),
   ]
