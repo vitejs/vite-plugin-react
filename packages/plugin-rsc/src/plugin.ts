@@ -309,6 +309,12 @@ export default function vitePluginRsc(
     {
       name: 'rsc',
       async config(config, env) {
+        if (config.rsc) {
+          Object.assign(
+            rscPluginOptions,
+            vite.mergeConfig(config.rsc, rscPluginOptions),
+          )
+        }
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
