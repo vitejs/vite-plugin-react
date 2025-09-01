@@ -211,7 +211,9 @@ export type PluginApi = {
 }
 
 /** @experimental */
-export function getPluginApi(config: ResolvedConfig): PluginApi | undefined {
+export function getPluginApi(
+  config: Pick<ResolvedConfig, 'plugins'>,
+): PluginApi | undefined {
   const plugin = config.plugins.find((p) => p.name === 'rsc:minimal')
   return plugin?.api as PluginApi | undefined
 }
@@ -225,6 +227,7 @@ export function vitePluginRscMinimal(
     {
       name: 'rsc:minimal',
       enforce: 'pre',
+      // https://rollupjs.org/plugin-development/#direct-plugin-communication
       api: {
         manager,
       } satisfies PluginApi,
