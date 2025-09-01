@@ -1012,9 +1012,10 @@ import.meta.hot.on("rsc:update", () => {
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
-    validateImportPlugin({
+    {
+      ...validateImportPlugin(),
       apply: () => rscPluginOptions.validateImports !== false,
-    }),
+    },
     scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
     ...globalAsyncLocalStoragePlugin(),
