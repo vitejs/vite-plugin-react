@@ -5,6 +5,6 @@
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "babel-plugin-react-compiler": "19.1.0-rc.2"
+    "babel-plugin-react-compiler": "19.1.0-rc.3"
   }
 }
