@@ -174,7 +174,7 @@ export type RscPluginOptions = {
   /**
    * use `Plugin.buildApp` hook (introduced on Vite 7) instead of `builder.buildApp` configuration
    * for better composability with other plugins.
-   * @default false
+   * @default true since Vite 7
    */
   useBuildAppHook?: boolean
 
@@ -426,6 +426,11 @@ export default function vitePluginRsc(
               }
             },
           },
+        }
+      },
+      configResolved() {
+        if (Number(vite.version.split('.')[0]) >= 7) {
+          rscPluginOptions.useBuildAppHook ??= true
         }
       },
       buildApp: {
