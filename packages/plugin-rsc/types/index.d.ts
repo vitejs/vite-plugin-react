@@ -16,4 +16,11 @@ declare global {
   }
 }
 
+declare module 'vite' {
+  interface UserConfig {
+    /** Options for `@vitejs/plugin-rsc` */
+    rsc?: import('@vitejs/plugin-rsc').RscPluginOptions
+  }
+}
+
 export {}

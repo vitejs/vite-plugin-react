@@ -1,3 +1,26 @@
+## <small>[0.4.27](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.26...plugin-rsc@0.4.27) (2025-09-01)</small>
+### Features
+
+* **rsc:** enable `buildApp` plugin hook by default for Vite 7 ([#815](https://github.com/vitejs/vite-plugin-react/issues/815)) ([0a02b83](https://github.com/vitejs/vite-plugin-react/commit/0a02b835efb8de7ff2f95008a5321738b9b6a0b0))
+* **rsc:** support `UserConfig.rsc: RscPluginOptions` ([#810](https://github.com/vitejs/vite-plugin-react/issues/810)) ([07a64c2](https://github.com/vitejs/vite-plugin-react/commit/07a64c25ab056689c99ce348810aa721a7f1926b))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#809](https://github.com/vitejs/vite-plugin-react/issues/809)) ([437bab2](https://github.com/vitejs/vite-plugin-react/commit/437bab254d1f1fa3542dd335c6763ee36c8826be))
+* **rsc:** delay `validateImportPlugin` setup ([#813](https://github.com/vitejs/vite-plugin-react/issues/813)) ([4da5810](https://github.com/vitejs/vite-plugin-react/commit/4da58106e9c2ba1258ff3f97e853324af24f4ed8))
+
+### Documentation
+
+* **rsc:** mention `@vitejs/plugin-rsc/types` ([#816](https://github.com/vitejs/vite-plugin-react/issues/816)) ([3568e89](https://github.com/vitejs/vite-plugin-react/commit/3568e890d21c8cc80ef901222f1f04ca0dbdc1c5))
+
+### Miscellaneous Chores
+
+* fix type in `README.md` ([#804](https://github.com/vitejs/vite-plugin-react/issues/804)) ([f9d7cd9](https://github.com/vitejs/vite-plugin-react/commit/f9d7cd96bdd86b63dc028daf6731860e13a5d3bf))
+
+### Code Refactoring
+
+* **rsc:** simplify `validateImportPlugin` ([#814](https://github.com/vitejs/vite-plugin-react/issues/814)) ([3969f86](https://github.com/vitejs/vite-plugin-react/commit/3969f8602cf43de95d6ae086a0612188d56a239d))
+
 ## <small>[0.4.26](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.25...plugin-rsc@0.4.26) (2025-08-29)</small>
 ### Features
 
