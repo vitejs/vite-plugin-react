@@ -35,7 +35,6 @@ function rscSsgPlugin(): Plugin[] {
           return {
             appType: env.isPreview ? 'mpa' : undefined,
             rsc: {
-              useBuildAppHook: true,
               serverHandler: env.isPreview ? false : undefined,
             },
           }

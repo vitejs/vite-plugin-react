@@ -17,7 +17,6 @@ export default defineConfig({
       },
       serverHandler: false,
       loadModuleDevProxy: true,
-      useBuildAppHook: true,
     }),
     cloudflare({
       configPath: './wrangler.jsonc',
