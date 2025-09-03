@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev-custom": "node ./src/framework/dev.ts",
+    "custom-dev": "node ./src/framework/main-dev.ts",
+    "custom-start": "NODE_ENV=production node ./src/framework/main-build.ts",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -21,6 +22,7 @@
     "@vitejs/plugin-rsc": "latest",
     "connect": "^3.7.0",
     "rsc-html-stream": "^0.0.7",
+    "sirv": "^3.0.1",
     "vite": "^7.1.3"
   }
 }

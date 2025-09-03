@@ -7,7 +7,6 @@ import { createRequestListener } from '@remix-run/node-fetch-server'
 async function main() {
   const viteServer = await createServer({
     server: { middlewareMode: true },
-    // TODO: disable `serverHandler` on `middlewareMode` automatically?
     rsc: { serverHandler: false },
   })
 
