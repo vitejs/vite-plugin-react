@@ -6,6 +6,7 @@ export default defineConfig({
   entry: 'src/index.ts',
   dts: true,
   tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
+  ignoreWatch: ['playground', 'playground-temp', 'test-results'],
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
