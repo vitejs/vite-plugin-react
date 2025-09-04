@@ -12,6 +12,7 @@ export default defineConfig({
       // by default, the plugin setup request handler based on `default export` of `rsc` environment `rollupOptions.input.index`.
       // This can be disabled when setting up own server handler e.g. `@cloudflare/vite-plugin`.
       // > serverHandler: false
+      serverHandler: false,
     }),
 
     // use any of react plugins https://github.com/vitejs/vite-plugin-react
@@ -21,6 +22,43 @@ export default defineConfig({
     // use https://github.com/antfu-collective/vite-plugin-inspect
     // to understand internal transforms required for RSC.
     // inspect(),
+
+    {
+      name: 'middleware-mode-helper',
+      configureServer(server) {
+        ;(globalThis as any).__viteDevServer = server
+      },
+      resolveId(source) {
+        if (source.startsWith('virtual:middleware-mode/')) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:middleware-mode/handler') {
+          this.environment.mode === 'dev'
+          return `\
+import connect from 'connect'
+import { createRequestListener } from '@remix-run/node-fetch-server'
+import handler from "/src/framework/entry.rsc";
+
+const app = connect();
+
+const listener = createRequestListener(handler);
+
+app.use
+app.use(async (req, res, next) => {
+  try {
+    await listner(req, res);
+  } catch (e) {
+    next(e);
+  }
+});
+
+export default app;
+`
+        }
+      },
+    },
   ],
 
   // specify entry point for each environment.
@@ -35,6 +73,7 @@ export default defineConfig({
         rollupOptions: {
           input: {
             index: './src/framework/entry.rsc.tsx',
+            main: './src/framework/main.ts',
           },
         },
       },
