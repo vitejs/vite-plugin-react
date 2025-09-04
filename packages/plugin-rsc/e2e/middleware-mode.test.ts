@@ -9,9 +9,6 @@ test.describe(() => {
     await setupInlineFixture({
       src: 'examples/starter',
       dest: root,
-      files: {
-        'middleware-mode.ts': { cp: '../../middleware-mode.ts' },
-      },
     })
   })
 
@@ -19,7 +16,7 @@ test.describe(() => {
     const f = useFixture({
       root,
       mode: 'dev',
-      command: 'node ./middleware-mode.ts dev',
+      command: 'node ../../middleware-mode.ts dev',
     })
     defineStarterTest(f)
   })
@@ -28,7 +25,7 @@ test.describe(() => {
     const f = useFixture({
       root,
       mode: 'build',
-      command: 'node ./middleware-mode.ts start',
+      command: 'node ../../middleware-mode.ts start',
       cliOptions: {
         env: {
           NODE_ENV: 'production',
