@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "custom-dev": "node ./src/framework/cli.ts dev",
-    "custom-start": "NODE_ENV=production node ./src/framework/cli.ts start",
+    "custom-dev": "node ./src/framework/custom.ts dev",
+    "custom-start": "NODE_ENV=production node ./src/framework/custom.ts start",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

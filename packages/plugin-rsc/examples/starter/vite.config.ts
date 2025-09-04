@@ -35,7 +35,6 @@ export default defineConfig({
         rollupOptions: {
           input: {
             index: './src/framework/entry.rsc.tsx',
-            main: './src/framework/main.ts',
           },
         },
       },
