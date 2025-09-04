@@ -597,6 +597,12 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.3
         version: 19.1.0-rc.3
+      connect:
+        specifier: ^3.7.0
+        version: 3.7.0
+      sirv:
+        specifier: ^3.0.1
+        version: 3.0.1
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
