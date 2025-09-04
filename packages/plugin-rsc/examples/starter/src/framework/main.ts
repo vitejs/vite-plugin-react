@@ -5,7 +5,7 @@ import sirv from 'sirv'
 import handler from './entry.rsc.tsx'
 import { createRequestListener } from '@remix-run/node-fetch-server'
 
-export default async function start(viteDevServer?: ViteDevServer) {
+export async function createApp(viteDevServer?: ViteDevServer) {
   const app = connect() as Connect.Server
 
   if (viteDevServer) {
@@ -30,15 +30,10 @@ export default async function start(viteDevServer?: ViteDevServer) {
       next(e)
     }
   })
-  app.listen(3000, () => {
-    console.log('listening on http://localhost:3000')
-  })
-  app.on('error', (err) => {
-    console.error(err)
-  })
+
+  return app
 }
 
-// TODO: hold off `rsc:update` util next server listen
-// if (import.meta.hot) {
-//   import.meta.hot.accept()
-// }
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}
