@@ -52,6 +52,7 @@ import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import type { RscModuleInfoMeta } from './types'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -1197,7 +1198,15 @@ function vitePluginUseClient(
         }
         const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
         output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
-        return { code: output.toString(), map: { mappings: '' } }
+        return {
+          code: output.toString(),
+          map: { mappings: '' },
+          meta: {
+            rsc: {
+              type: 'client',
+            },
+          } satisfies RscModuleInfoMeta,
+        }
       },
     },
     {
@@ -1273,7 +1282,15 @@ function vitePluginUseClient(
               export const export_${meta.referenceKey} = {${exports}};
             `
           }
-          return { code, map: null }
+          return {
+            code,
+            map: null,
+            meta: {
+              rsc: {
+                type: 'client-group',
+              },
+            } satisfies RscModuleInfoMeta,
+          }
         }
       },
     },
