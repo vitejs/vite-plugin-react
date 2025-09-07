@@ -1,131 +1,56 @@
 # AI Agent Development Guide
 
-This document provides guidance for AI agents working with the vite-plugin-react monorepo.
+This document provides AI-agent-specific guidance for working with the vite-plugin-react monorepo. For comprehensive documentation, see:
 
-## Repository Structure
+- **[README.md](README.md)** - Repository overview and package links
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Setup, testing, debugging, and contribution guidelines
 
-This is a monorepo containing multiple Vite React plugins:
+## Quick Reference for AI Agents
 
-```
-packages/
-├── plugin-react/        # Main React plugin with Babel transformation
-├── plugin-react-swc/    # React plugin with SWC transformation
-├── plugin-react-oxc/    # Deprecated React plugin (merged with plugin-react)
-├── plugin-rsc/          # React Server Components plugin
-└── common/              # Shared utilities
-```
+### Repository Navigation
 
-## Development Workflow
+This monorepo contains multiple packages (see [README.md](README.md#packages) for details):
 
-### Prerequisites
+- `packages/plugin-react/` - Main React plugin with Babel
+- `packages/plugin-react-swc/` - SWC-based React plugin
+- `packages/plugin-rsc/` - React Server Components ([AI guidance](packages/plugin-rsc/AGENTS.md))
+- `packages/plugin-react-oxc/` - Deprecated (merged with plugin-react)
 
-- Node.js ^20.19.0 || >=22.12.0
-- pnpm (package manager) - version 10.15.0
-
-### Setup
+### Essential Setup Commands
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Start development mode (watch builds)
-pnpm dev
+pnpm install && pnpm build   # Initial setup (see CONTRIBUTING.md for details)
+pnpm dev                     # Watch mode development
+pnpm test                    # Run all tests
 ```
 
-### Key Commands
+### AI-Specific Workflow Tips
 
-```bash
-# Linting
-pnpm lint                # ESLint across all packages
-pnpm format              # Prettier formatting
+1. **Start with existing documentation** - Always read package-specific READMEs before making changes
+2. **Use playground tests** - Each package has `playground/` examples for testing changes
+3. **Focus on minimal changes** - Prefer surgical edits over large refactors
+4. **Test early and often** - Run `pnpm test` after each logical change
+5. **Follow existing patterns** - Study similar implementations in the codebase first
 
-# Type checking
-pnpm typecheck           # TypeScript checking
+### Common Development Tasks
 
-# Testing
-pnpm test                # Run all tests
-pnpm test-unit           # Unit tests only
-pnpm test-serve          # Development server tests
-pnpm test-build          # Build tests
-```
+#### Making Changes to Plugin Logic
 
-## Important Files
+1. Read the package README and existing code patterns
+2. Use `pnpm dev` for watch mode during development
+3. Test changes with relevant playground examples
+4. Run tests: `pnpm test-serve` and `pnpm test-build`
 
-- `package.json` - Monorepo configuration and scripts
-- `pnpm-workspace.yaml` - Workspace configuration
-- `eslint.config.js` - ESLint configuration
-- `playground/` - Test applications for each plugin
+#### Debugging Build Issues
 
-## Plugin-Specific Notes
+1. Check individual package builds with `pnpm --filter ./packages/<name> build`
+2. Use playground tests to isolate problems
+3. See [CONTRIBUTING.md debugging section](CONTRIBUTING.md#debugging) for detailed guidance
 
-### @vitejs/plugin-react
+#### Adding Tests
 
-- Located in `packages/plugin-react/`
-- Uses Babel for transformation
-- Primary React plugin for Vite
+1. Follow patterns in existing `__tests__` directories
+2. Use playground integration tests for feature verification
+3. See [CONTRIBUTING.md testing section](CONTRIBUTING.md#running-tests) for comprehensive testing guide
 
-### @vitejs/plugin-react-swc
-
-- Located in `packages/plugin-react-swc/`
-- Uses SWC for faster transformation
-- Alternative to Babel-based plugin
-
-### @vitejs/plugin-rsc
-
-- Located in `packages/plugin-rsc/`
-- Experimental React Server Components support
-- See [packages/plugin-rsc/AGENTS.md](packages/plugin-rsc/AGENTS.md) for detailed guidance
-
-## Testing Guidelines
-
-Each package has its own test suite. The playground directory contains integration tests that verify plugin functionality in realistic scenarios.
-
-### Running Package-Specific Tests
-
-```bash
-# Test specific package
-pnpm --filter ./packages/plugin-react test
-pnpm --filter ./packages/plugin-rsc test-e2e
-```
-
-## Code Quality
-
-- Code is automatically formatted with Prettier on commit
-- ESLint enforces code quality and consistency
-- TypeScript provides type safety
-- All packages require tests for new features
-
-## Contributing
-
-1. Follow the existing code style and patterns
-2. Add tests for new functionality
-3. Update documentation as needed
-4. Ensure all linting and tests pass
-5. Keep changes focused and atomic
-
-## Common Tasks for AI Agents
-
-### Adding a New Feature
-
-1. Identify the appropriate package
-2. Read existing code patterns
-3. Add implementation with proper TypeScript types
-4. Add comprehensive tests
-5. Update relevant documentation
-
-### Debugging Issues
-
-1. Check playground tests for reproduction cases
-2. Use `pnpm dev` for live development
-3. Run specific test suites to isolate problems
-4. Review build outputs and error messages
-
-### Performance Optimization
-
-1. Profile with `vite-plugin-inspect`
-2. Analyze bundle sizes in playground builds
-3. Test with various React application patterns
-4. Ensure backward compatibility
+For detailed development setup, testing procedures, and contribution guidelines, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
