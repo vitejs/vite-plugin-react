@@ -44,6 +44,7 @@ import { TestTailwind } from './tailwind'
 import { TestHmrClientDep2 } from './hmr-client-dep2/client'
 import { TestHmrClientDep3 } from './hmr-client-dep3/server'
 import { TestChunk2 } from './chunk2/server'
+import { TestUseId } from './use-id/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -101,6 +102,7 @@ export function Root(props: { url: URL }) {
         <TestTreeShakeServer />
         <TestClientChunkServer />
         <TestChunk2 />
+        <TestUseId />
       </body>
     </html>
   )
