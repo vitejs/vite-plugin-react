@@ -39,16 +39,13 @@ import { TestAssetsServer } from './assets/server'
 import { TestHmrSwitchServer } from './hmr-switch/server'
 import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestTreeShakeServer } from './tree-shake/server'
+import { TestTreeShake2 } from './tree-shake2/server'
 import { TestClientChunkServer } from './chunk/server'
 import { TestTailwind } from './tailwind'
 import { TestHmrClientDep2 } from './hmr-client-dep2/client'
 import { TestHmrClientDep3 } from './hmr-client-dep3/server'
 import { TestChunk2 } from './chunk2/server'
 import { TestUseId } from './use-id/server'
-
-// repro
-import { Tweet } from 'react-tweet'
-console.log(Tweet)
 
 export function Root(props: { url: URL }) {
   return (
@@ -104,6 +101,7 @@ export function Root(props: { url: URL }) {
         <TestImportMetaGlob />
         <TestAssetsServer />
         <TestTreeShakeServer />
+        <TestTreeShake2 />
         <TestClientChunkServer />
         <TestChunk2 />
         <TestUseId />
