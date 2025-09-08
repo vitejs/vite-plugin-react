@@ -1454,4 +1454,12 @@ function defineTest(f: Fixture) {
       'test-chunk1|test-chunk2|test-chunk2b|test-chunk3|test-chunk3',
     )
   })
+
+  test('tree-shake2', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('test-tree-shake2')).toHaveText(
+      'test-tree-shake2:lib-client1|lib-server1',
+    )
+  })
 }
