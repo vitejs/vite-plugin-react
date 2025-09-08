@@ -770,8 +770,9 @@ export default function vitePluginRsc(
     },
     {
       name: 'vite-rsc-load-module-dev-proxy',
-      apply: () => !!rscPluginOptions.loadModuleDevProxy,
       configureServer(server) {
+        if (!rscPluginOptions.loadModuleDevProxy) return
+
         async function createHandler(url: URL) {
           const { environmentName, entryName } = Object.fromEntries(
             url.searchParams,
