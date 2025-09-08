@@ -47,6 +47,7 @@ export default defineConfig({
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
             assert(!chunk.code.includes('__unused_server_export__'))
+            assert(!chunk.code.includes('__unused_tree_shake2__'))
           }
         }
       },
