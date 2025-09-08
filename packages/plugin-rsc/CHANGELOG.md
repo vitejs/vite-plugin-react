@@ -1,3 +1,21 @@
+## <small>[0.4.28](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.27...plugin-rsc@0.4.28) (2025-09-08)</small>
+### Features
+
+* **rsc:** support browser mode build ([#801](https://github.com/vitejs/vite-plugin-react/issues/801)) ([b81bf6a](https://github.com/vitejs/vite-plugin-react/commit/b81bf6ac8a273855c5e9f39d71a32d76fd31b61c))
+
+### Bug Fixes
+
+* **rsc:** support `rsc.loadModuleDevProxy` top-level config ([#825](https://github.com/vitejs/vite-plugin-react/issues/825)) ([d673dd0](https://github.com/vitejs/vite-plugin-react/commit/d673dd0a525a9baf6644a89f28cd1537847741bb))
+
+### Miscellaneous Chores
+
+* add AGENTS.md documentation for AI agent development guidance ([#820](https://github.com/vitejs/vite-plugin-react/issues/820)) ([d1627cb](https://github.com/vitejs/vite-plugin-react/commit/d1627cbdd20ac2ce1f91185ef0ba1be882a0186b))
+
+### Tests
+
+* **rsc:** test `useId` ([#818](https://github.com/vitejs/vite-plugin-react/issues/818)) ([768cfd3](https://github.com/vitejs/vite-plugin-react/commit/768cfd3c7fd956497ec5e39734c0c1a62a2a441c))
+* **rsc:** test middleware mode ([#817](https://github.com/vitejs/vite-plugin-react/issues/817)) ([4672651](https://github.com/vitejs/vite-plugin-react/commit/467265104995f9b07058269f2905a78a9cc0c2ce))
+
 ## <small>[0.4.27](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.26...plugin-rsc@0.4.27) (2025-09-01)</small>
 ### Features
 
