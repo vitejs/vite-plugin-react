@@ -4,13 +4,6 @@ import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 
-// repro
-import { Tweet } from 'react-tweet'
-console.log(Tweet)
-// import { useTweet } from 'react-tweet';
-// console.log(useTweet)
-// repro
-
 export function Root(props: { url: URL }) {
   return (
     <html lang="en">

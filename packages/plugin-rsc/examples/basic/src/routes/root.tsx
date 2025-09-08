@@ -46,6 +46,10 @@ import { TestHmrClientDep3 } from './hmr-client-dep3/server'
 import { TestChunk2 } from './chunk2/server'
 import { TestUseId } from './use-id/server'
 
+// repro
+import { Tweet } from 'react-tweet'
+console.log(Tweet)
+
 export function Root(props: { url: URL }) {
   return (
     <html>

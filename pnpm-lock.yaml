@@ -548,6 +548,9 @@ importers:
       '@vitejs/test-dep-transitive-use-sync-external-store':
         specifier: file:./test-dep/transitive-use-sync-external-store
         version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.1.1)
+      react-tweet:
+        specifier: ^3.2.2
+        version: 3.2.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
