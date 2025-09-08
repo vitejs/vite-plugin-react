@@ -7,6 +7,6 @@
     "@vitejs/plugin-rsc": "latest",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "connect": "^3.7.0",
-    "sirv": "^3.0.1"
+    "sirv": "^3.0.2"
   }
 }
