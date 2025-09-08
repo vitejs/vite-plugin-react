@@ -1226,12 +1226,14 @@ function vitePluginUseClient(
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            // no server chunk associated when the module is tree-shaken
+            if (!meta.serverChunk) continue
             let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
                 normalizedId: manager.toRelativeId(meta.importId),
-                serverChunk: meta.serverChunk!,
-              }) ?? meta.serverChunk!
+                serverChunk: meta.serverChunk,
+              }) ?? meta.serverChunk
             // ensure clean virtual id to avoid interfering with other plugins
             name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
@@ -1333,6 +1335,7 @@ function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
+        if (manager.isScanBuild) return
         if (this.environment.name !== serverEnvironmentName) return
 
         // analyze rsc build to inform later client reference building.
