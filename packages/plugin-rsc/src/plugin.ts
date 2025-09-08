@@ -1226,7 +1226,7 @@ function vitePluginUseClient(
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            // no server chunk associated when the module is tree-shaken
+            // no server chunk is associated when the entire "use client" module is tree-shaken
             if (!meta.serverChunk) continue
             let name =
               useClientPluginOptions.clientChunks?.({
