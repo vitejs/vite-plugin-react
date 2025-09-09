@@ -19,7 +19,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 
 ## Examples
 
-**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the plugin
+**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
 
 - Provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 
