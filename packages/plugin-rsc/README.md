@@ -19,7 +19,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 
 ## Examples
 
-**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the plugin
+**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
 
 - Provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 
@@ -295,35 +295,6 @@ export function UserApp() {
 }
 ```
 
-#### `<id>?vite-rsc-css-export=<name>`
-
-This special query convention provides automatic injection of `import.meta.viteRsc.loadCss`.
-
-For example,
-
-```tsx
-// my-route.tsx
-export function Page(props) {
-  return <div>...</div>
-}
-
-// my-route.tsx?vite-rsc-css-export=Page
-function Page(props) {
-  return <div>...</div>
-}
-
-function __Page(props) {
-  return (
-    <>
-      {import.meta.viteRsc.loadCss()}
-      <Page {...props} />
-    </>
-  )
-}
-
-export { __Page as Page }
-```
-
 ### Available on `ssr` environment
 
 #### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
@@ -433,25 +404,6 @@ This module re-exports RSC runtime API provided by `react-server-dom/client.brow
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
 - `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
 - `encodeReply/setServerCallback`: server function related...
-
-## High level API
-
-> [!NOTE]
-> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
-
-This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
-
-### `@vitejs/plugin-rsc/extra/rsc`
-
-- `renderRequest`
-
-### `@vitejs/plugin-rsc/extra/ssr`
-
-- `renderHtml`
-
-### `@vitejs/plugin-rsc/extra/browser`
-
-- `hydrate`
 
 ## CSS Support
 
