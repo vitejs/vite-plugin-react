@@ -85,6 +85,7 @@ type Options = {
 
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = false
+  let viteCacheRoot: string | undefined
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
@@ -139,6 +140,7 @@ const react = (_options?: Options): Plugin[] => {
         },
       }),
       configResolved(config) {
+        viteCacheRoot = config.cacheDir
         if (config.server.hmr === false) hmrDisabled = true
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
@@ -184,6 +186,7 @@ const react = (_options?: Options): Plugin[] => {
           code,
           options.devTarget,
           options,
+          viteCacheRoot,
           {
             refresh,
             development: true,
@@ -211,11 +214,21 @@ const react = (_options?: Options): Plugin[] => {
           config: (userConfig) => ({
             build: silenceUseClientWarning(userConfig),
           }),
+          configResolved(config) {
+            viteCacheRoot = config.cacheDir
+          },
           transform: (code, _id) =>
-            transformWithOptions(_id.split('?')[0], code, 'esnext', options, {
-              runtime: 'automatic',
-              importSource: options.jsxImportSource,
-            }),
+            transformWithOptions(
+              _id.split('?')[0],
+              code,
+              'esnext',
+              options,
+              viteCacheRoot,
+              {
+                runtime: 'automatic',
+                importSource: options.jsxImportSource,
+              },
+            ),
         }
       : {
           name: 'vite:react-swc',
@@ -230,6 +243,9 @@ const react = (_options?: Options): Plugin[] => {
               },
             },
           }),
+          configResolved(config) {
+            viteCacheRoot = config.cacheDir
+          },
         },
   ]
 }
@@ -239,6 +255,7 @@ const transformWithOptions = async (
   code: string,
   target: JscTarget,
   options: Options,
+  viteCacheRoot: string | undefined,
   reactConfig: ReactConfig,
 ) => {
   const decorators = options?.tsDecorators ?? false
@@ -266,7 +283,10 @@ const transformWithOptions = async (
       jsc: {
         target,
         parser,
-        experimental: { plugins: options.plugins },
+        experimental: {
+          plugins: options.plugins,
+          cacheRoot: join(viteCacheRoot ?? 'node_modules/.vite', '.swc'),
+        },
         transform: {
           useDefineForClassFields: true,
           react: reactConfig,
