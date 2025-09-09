@@ -40,10 +40,10 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "dependencies": {
-    "@babel/core": "^7.28.3",
+    "@babel/core": "^7.28.4",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.34",
+    "@rolldown/pluginutils": "1.0.0-beta.35",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.17.0"
   },
@@ -55,7 +55,7 @@
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "rolldown": "1.0.0-beta.34",
+    "rolldown": "1.0.0-beta.35",
     "tsdown": "^0.14.2",
     "vitest": "^3.2.4"
   }
