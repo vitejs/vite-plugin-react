@@ -237,7 +237,7 @@ export default { fetch: handler };
         }
       },
     },
-    testScanPlugin(),
+    testBuildPlugin(),
   ],
   build: {
     minify: false,
@@ -265,7 +265,7 @@ export default { fetch: handler };
   },
 }) as any
 
-function testScanPlugin(): Plugin[] {
+function testBuildPlugin(): Plugin[] {
   const moduleIds: { name: string; ids: string[] }[] = []
   return [
     {
@@ -291,6 +291,18 @@ function testScanPlugin(): Plugin[] {
             diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
             undefined,
           )
+        },
+      },
+    },
+    {
+      name: 'test-copyPublicDir',
+      apply: 'build',
+      buildApp: {
+        order: 'post',
+        async handler() {
+          assert(fs.existsSync('dist/client/favicon.ico'))
+          assert(!fs.existsSync('dist/rsc/favicon.ico'))
+          assert(!fs.existsSync('dist/ssr/favicon.ico'))
         },
       },
     },
