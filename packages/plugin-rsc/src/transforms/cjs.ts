@@ -63,6 +63,7 @@ export function transformCjsToEsm(
   for (const hoisted of hoistedCodes.reverse()) {
     output.prepend(hoisted)
   }
-  output.prepend(`const exports = {}; const module = { exports };\n`)
+  // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
+  output.prepend(`let exports = {}; const module = { exports };\n`)
   return { output }
 }

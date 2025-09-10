@@ -22,7 +22,7 @@ describe(transformCjsToEsm, () => {
 exports.ok = true;
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "const exports = {}; const module = { exports };
+      "let exports = {}; const module = { exports };
       exports.ok = true;
       "
     `)
@@ -37,7 +37,7 @@ if (true) {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "const exports = {}; const module = { exports };
+      "let exports = {}; const module = { exports };
       if (true) {
         module.exports = (await import('./cjs/use-sync-external-store.production.js'));
       } else {
@@ -56,7 +56,7 @@ if (true) {
 })()
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "const exports = {}; const module = { exports };
+      "let exports = {}; const module = { exports };
       const __cjs_to_esm_hoist_0 = await import("react");
       const __cjs_to_esm_hoist_1 = await import("react-dom");
       "production" !== process.env.NODE_ENV && (function() { 
@@ -81,7 +81,7 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "const exports = {}; const module = { exports };
+      "let exports = {}; const module = { exports };
       const __cjs_to_esm_hoist_0 = await import("te" + "st");
       const __cjs_to_esm_hoist_1 = await import("test");
       const __cjs_to_esm_hoist_2 = await import("test");
@@ -106,7 +106,7 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "const exports = {}; const module = { exports };
+      "let exports = {}; const module = { exports };
       {
         const require = () => {};
         require("test");
@@ -150,6 +150,8 @@ export default module.exports;
           "a": "a",
           "b": "b",
         },
+        "depExports": {},
+        "depFn": [Function],
         "depNamespace": {
           "a": "a",
           "b": "b",
@@ -158,6 +160,7 @@ export default module.exports;
             "b": "b",
           },
         },
+        "depPrimitive": "[ok]",
       }
     `)
   })
