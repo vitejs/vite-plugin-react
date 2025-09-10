@@ -1,3 +1,17 @@
+## <small>[0.4.29](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.28...plugin-rsc@0.4.29) (2025-09-09)</small>
+### Features
+
+* **rsc:** expose `transforms` utils ([#828](https://github.com/vitejs/vite-plugin-react/issues/828)) ([0a8e4dc](https://github.com/vitejs/vite-plugin-react/commit/0a8e4dcb664d728dbb41bd3ec12b3d258176dd7b))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#823](https://github.com/vitejs/vite-plugin-react/issues/823)) ([afa28f1](https://github.com/vitejs/vite-plugin-react/commit/afa28f1675e8169f6494413b2bb69577b9cbf6f5))
+* **rsc:** fix build error when entire client reference module is tree-shaken ([#827](https://github.com/vitejs/vite-plugin-react/issues/827)) ([f515bd8](https://github.com/vitejs/vite-plugin-react/commit/f515bd8d82122ba4a2a80886978270182fd7bcbb))
+
+### Code Refactoring
+
+* **rsc:** remove top-level `transformHoistInlineDirective` export in favor of `@vitejs/plugin-rsc/transforms` ([#829](https://github.com/vitejs/vite-plugin-react/issues/829)) ([3122b0d](https://github.com/vitejs/vite-plugin-react/commit/3122b0d25e01206fb52e8c9eb30cc894126f02cf))
+
 ## <small>[0.4.28](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.27...plugin-rsc@0.4.28) (2025-09-08)</small>
 ### Features
 

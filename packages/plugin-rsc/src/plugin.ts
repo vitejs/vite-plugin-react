@@ -385,6 +385,7 @@ export default function vitePluginRsc(
             ssr: {
               build: {
                 outDir: config.environments?.ssr?.build?.outDir ?? 'dist/ssr',
+                copyPublicDir: false,
                 rollupOptions: {
                   input: rscPluginOptions.entries?.ssr && {
                     index: rscPluginOptions.entries.ssr,
@@ -410,6 +411,7 @@ export default function vitePluginRsc(
             rsc: {
               build: {
                 outDir: config.environments?.rsc?.build?.outDir ?? 'dist/rsc',
+                copyPublicDir: false,
                 emitAssets: true,
                 rollupOptions: {
                   input: rscPluginOptions.entries?.rsc && {

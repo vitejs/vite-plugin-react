@@ -18,6 +18,7 @@ export default defineConfig({
     'src/extra/browser.tsx',
     'src/extra/ssr.tsx',
     'src/extra/rsc.tsx',
+    'src/transforms/index.ts',
     'src/rsc-html-stream/ssr.ts',
     'src/rsc-html-stream/browser.ts',
     'src/utils/rpc.ts',
