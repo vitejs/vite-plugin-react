@@ -39,9 +39,9 @@ if (true) {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let exports = {}; const module = { exports };
       if (true) {
-        module.exports = (await import('./cjs/use-sync-external-store.production.js'));
+        module.exports = ((await import('./cjs/use-sync-external-store.production.js')).default);
       } else {
-        module.exports = (await import('./cjs/use-sync-external-store.development.js'));
+        module.exports = ((await import('./cjs/use-sync-external-store.development.js')).default);
       }
       "
     `)
@@ -57,8 +57,8 @@ if (true) {
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_0 = await import("react");
-      const __cjs_to_esm_hoist_1 = await import("react-dom");
+      const __cjs_to_esm_hoist_0 = (await import("react")).default;
+      const __cjs_to_esm_hoist_1 = (await import("react-dom")).default;
       "production" !== process.env.NODE_ENV && (function() { 
         var React = __cjs_to_esm_hoist_0;
         var ReactDOM = __cjs_to_esm_hoist_1;
@@ -82,12 +82,12 @@ function test() {
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_0 = await import("te" + "st");
-      const __cjs_to_esm_hoist_1 = await import("test");
-      const __cjs_to_esm_hoist_2 = await import("test");
-      const x1 = (await import("te" + "st"));
-      const x2 = (await import("test"))().test;
-      console.log((await import("test")))
+      const __cjs_to_esm_hoist_0 = (await import("te" + "st")).default;
+      const __cjs_to_esm_hoist_1 = (await import("test")).default;
+      const __cjs_to_esm_hoist_2 = (await import("test")).default;
+      const x1 = ((await import("te" + "st")).default);
+      const x2 = ((await import("test")).default)().test;
+      console.log(((await import("test")).default))
 
       function test() {
         const y1 = __cjs_to_esm_hoist_0;
@@ -152,6 +152,9 @@ export default module.exports;
         },
         "depExports": {},
         "depFn": [Function],
+        "depFnRequire": {
+          "value": 3,
+        },
         "depNamespace": {
           "a": "a",
           "b": "b",
