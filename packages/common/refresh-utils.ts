@@ -38,8 +38,8 @@ export function addRefreshWrapper<M extends { mappings: string }>(
   let newCode = code
   if (hasRefresh) {
     const refreshHead = removeLineBreaksIfNeeded(
-      `let prevRefreshReg;
-let prevRefreshSig;
+      `let $RefreshReg$;
+let $RefreshSig$;
 
 if (import.meta.hot && !inWebWorker) {
   if (!window.$RefreshReg$) {
@@ -48,23 +48,15 @@ if (import.meta.hot && !inWebWorker) {
     );
   }
 
-  prevRefreshReg = window.$RefreshReg$;
-  prevRefreshSig = window.$RefreshSig$;
-  window.$RefreshReg$ = RefreshRuntime.getRefreshReg(${JSON.stringify(id)});
-  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+  $RefreshReg$ = RefreshRuntime.getRefreshReg(${JSON.stringify(id)});
+  $RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
 }
 
 `,
       avoidSourceMap,
     )
 
-    newCode = `${refreshHead}${newCode}
-
-if (import.meta.hot && !inWebWorker) {
-  window.$RefreshReg$ = prevRefreshReg;
-  window.$RefreshSig$ = prevRefreshSig;
-}
-`
+    newCode = `${refreshHead}${newCode}`
     if (newMap) {
       newMap.mappings = ';'.repeat(16) + newMap.mappings
     }
