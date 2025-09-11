@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
+
 ## 0.4.1 (2025-08-19)
 
 ### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
