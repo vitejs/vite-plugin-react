@@ -1,50 +1,44 @@
-import { defaultClientConditions, defineConfig } from 'vite'
-import { vitePluginRscMinimal } from '@vitejs/plugin-rsc/plugin'
+import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
+import {
+  vitePluginRscMinimal,
+  getPluginApi,
+  type PluginApi,
+} from '@vitejs/plugin-rsc/plugin'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
     // inspect(),
-    vitePluginRscMinimal({
+    rscBrowserModePlugin(),
+  ],
+  environments: {
+    client: {
+      build: {
+        minify: false,
+      },
+    },
+  },
+})
+
+function rscBrowserModePlugin(): Plugin[] {
+  let manager: PluginApi['manager']
+
+  return [
+    ...vitePluginRscMinimal({
       environment: {
         rsc: 'client',
         browser: 'react_client',
       },
     }),
     {
-      name: 'rsc:browser-mode',
-      configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-react-client') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['react_client']!.hot.handleInvoke(
-                payload,
-              )
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
-          next()
-        })
-      },
-      // for "react_client" hmr, it requires:
-      // - enable fast-refresh transform on `react_client` environment
-      //   - currently `@vitejs/plugin-react` doesn't support it
-      // - implement and enable module runner hmr
-      hotUpdate(ctx) {
-        if (this.environment.name === 'react_client') {
-          if (ctx.modules.length > 0) {
-            ctx.server.environments.client.hot.send({
-              type: 'full-reload',
-              path: ctx.file,
-            })
-          }
-        }
-      },
-      config() {
+      name: 'rsc-browser-mode',
+      config(userConfig, env) {
         return {
+          define: {
+            'import.meta.env.__vite_rsc_build__': JSON.stringify(
+              env.command === 'build',
+            ),
+          },
           environments: {
             client: {
               keepProcessEnv: false,
@@ -60,11 +54,11 @@ export default defineConfig({
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
-                  // TODO: browser build breaks `src/actin-bind` examples
-                  // '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-                  // '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                 ],
                 exclude: ['vite', '@vitejs/plugin-rsc'],
+              },
+              build: {
+                outDir: 'dist/client',
               },
             },
             react_client: {
@@ -87,18 +81,155 @@ export default defineConfig({
                   platform: 'browser',
                 },
               },
+              build: {
+                outDir: 'dist/react_client',
+                copyPublicDir: false,
+                emitAssets: true,
+                rollupOptions: {
+                  input: {
+                    index: './src/framework/entry.browser.tsx',
+                  },
+                },
+              },
             },
           },
-          resolve: {
-            // alias: {
-            //   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge':
-            //     '@vitejs/plugin-rsc/vendor/react-server-dom/server.browser',
-            //   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge':
-            //     '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
-            // },
+          builder: {
+            sharedPlugins: true,
+            sharedConfigBuild: true,
+          },
+          build: {
+            // packages/common/warning.ts
+            rollupOptions: {
+              onwarn(warning, defaultHandler) {
+                if (
+                  warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+                  (warning.message.includes('use client') ||
+                    warning.message.includes('use server'))
+                ) {
+                  return
+                }
+                // https://github.com/vitejs/vite/issues/15012
+                if (
+                  warning.code === 'SOURCEMAP_ERROR' &&
+                  warning.message.includes('resolve original location') &&
+                  warning.pos === 0
+                ) {
+                  return
+                }
+                if (userConfig.build?.rollupOptions?.onwarn) {
+                  userConfig.build.rollupOptions.onwarn(warning, defaultHandler)
+                } else {
+                  defaultHandler(warning)
+                }
+              },
+            },
           },
         }
       },
+      configResolved(config) {
+        manager = getPluginApi(config)!.manager
+      },
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          const url = new URL(req.url ?? '/', 'https://any.local')
+          if (url.pathname === '/@vite/invoke-react-client') {
+            const payload = JSON.parse(url.searchParams.get('data')!)
+            const result =
+              await server.environments['react_client']!.hot.handleInvoke(
+                payload,
+              )
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result))
+            return
+          }
+          next()
+        })
+      },
+      hotUpdate(ctx) {
+        if (this.environment.name === 'react_client') {
+          if (ctx.modules.length > 0) {
+            ctx.server.environments.client.hot.send({
+              type: 'full-reload',
+              path: ctx.file,
+            })
+          }
+        }
+      },
+      async buildApp(builder) {
+        const reactServer = builder.environments.client!
+        const reactClient = builder.environments['react_client']!
+        manager.isScanBuild = true
+        reactServer.config.build.write = false
+        await builder.build(reactServer)
+        manager.isScanBuild = false
+        reactServer.config.build.write = true
+        await builder.build(reactClient)
+        await builder.build(reactServer)
+      },
     },
-  ],
-})
+    {
+      name: 'rsc-browser-mode:load-client',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc-browser-mode/load-client') {
+          if (this.environment.mode === 'dev') {
+            return this.resolve('/src/framework/load-client-dev')
+          }
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode/load-client') {
+          if (manager.isScanBuild) {
+            return `export default async () => {}`
+          } else {
+            return `export default async () => import("/dist/react_client/index.js")`
+          }
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode:build-client-references',
+      resolveId(source) {
+        if (
+          source === 'virtual:vite-rsc-browser-mode/build-client-references'
+        ) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode/build-client-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
+          let code = ''
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode:build-server-references',
+      resolveId(source) {
+        if (
+          source === 'virtual:vite-rsc-browser-mode/build-server-references'
+        ) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode/build-server-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
+          let code = ''
+          for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
+        }
+      },
+    },
+  ]
+}

@@ -37,8 +37,7 @@ export async function renderHTML(
       ? undefined
       : bootstrapScriptContent,
     nonce: options?.nonce,
-    // no types
-    ...{ formState: options?.formState },
+    formState: options?.formState,
   })
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream

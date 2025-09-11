@@ -1,5 +1,6 @@
 import assert from 'node:assert'
-import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
+import rsc from '@vitejs/plugin-rsc'
+import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import {
@@ -32,11 +33,10 @@ export default defineConfig({
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
       clientChunks(meta) {
-        if (process.env.TEST_SERVER_CLIENT_CHUNKS) {
-          return meta.serverChunk
-        }
-        if (meta.id.includes('/src/routes/chunk/')) {
-          return 'custom-chunk'
+        if (process.env.TEST_CUSTOM_CLIENT_CHUNKS) {
+          if (meta.id.includes('/src/routes/chunk/')) {
+            return 'custom-chunk'
+          }
         }
       },
     }),
@@ -48,6 +48,7 @@ export default defineConfig({
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
             assert(!chunk.code.includes('__unused_server_export__'))
+            assert(!chunk.code.includes('__unused_tree_shake2__'))
           }
         }
       },
@@ -236,7 +237,7 @@ export default { fetch: handler };
         }
       },
     },
-    testScanPlugin(),
+    testBuildPlugin(),
   ],
   build: {
     minify: false,
@@ -264,7 +265,7 @@ export default { fetch: handler };
   },
 }) as any
 
-function testScanPlugin(): Plugin[] {
+function testBuildPlugin(): Plugin[] {
   const moduleIds: { name: string; ids: string[] }[] = []
   return [
     {
@@ -290,6 +291,18 @@ function testScanPlugin(): Plugin[] {
             diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
             undefined,
           )
+        },
+      },
+    },
+    {
+      name: 'test-copyPublicDir',
+      apply: 'build',
+      buildApp: {
+        order: 'post',
+        async handler() {
+          assert(fs.existsSync('dist/client/favicon.ico'))
+          assert(!fs.existsSync('dist/rsc/favicon.ico'))
+          assert(!fs.existsSync('dist/ssr/favicon.ico'))
         },
       },
     },

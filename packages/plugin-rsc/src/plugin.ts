@@ -48,10 +48,12 @@ import {
   withRollupError,
 } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
-import { transformScanBuildStrip } from './plugins/scan'
+import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+
+const isRolldownVite = 'rolldownVersion' in vite
 
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
 
@@ -87,6 +89,8 @@ const require = createRequire(import.meta.url)
 function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
+
+export type { RscPluginManager }
 
 class RscPluginManager {
   server!: ViteDevServer
@@ -170,7 +174,7 @@ export type RscPluginOptions = {
   /**
    * use `Plugin.buildApp` hook (introduced on Vite 7) instead of `builder.buildApp` configuration
    * for better composability with other plugins.
-   * @default false
+   * @default true since Vite 7
    */
   useBuildAppHook?: boolean
 
@@ -190,13 +194,28 @@ export type RscPluginOptions = {
    *
    * This function allows you to group multiple client components into
    * custom chunks instead of having each module in its own chunk.
+   * By default, client chunks are grouped by `meta.serverChunk`.
    */
   clientChunks?: (meta: {
     /** client reference module id */
     id: string
+    /** normalized client reference module id */
+    normalizedId: string
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
+}
+
+export type PluginApi = {
+  manager: RscPluginManager
+}
+
+/** @experimental */
+export function getPluginApi(
+  config: Pick<ResolvedConfig, 'plugins'>,
+): PluginApi | undefined {
+  const plugin = config.plugins.find((p) => p.name === 'rsc:minimal')
+  return plugin?.api as PluginApi | undefined
 }
 
 /** @experimental */
@@ -208,6 +227,10 @@ export function vitePluginRscMinimal(
     {
       name: 'rsc:minimal',
       enforce: 'pre',
+      // https://rollupjs.org/plugin-development/#direct-plugin-communication
+      api: {
+        manager,
+      } satisfies PluginApi,
       async config() {
         await esModuleLexer.init
       },
@@ -240,6 +263,7 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    scanBuildStripPlugin({ manager }),
   ]
 }
 
@@ -302,6 +326,14 @@ export default function vitePluginRsc(
     {
       name: 'rsc',
       async config(config, env) {
+        if (config.rsc) {
+          // mutate `rscPluginOptions` since internally this object is passed around
+          Object.assign(
+            rscPluginOptions,
+            // not sure which should win. for now plugin constructor wins.
+            vite.mergeConfig(config.rsc, rscPluginOptions),
+          )
+        }
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
         const result = await crawlFrameworkPkgs({
@@ -325,7 +357,7 @@ export default function vitePluginRsc(
         ]
 
         return {
-          appType: 'custom',
+          appType: config.appType ?? 'custom',
           define: {
             'import.meta.env.__vite_rsc_build__': JSON.stringify(
               env.command === 'build',
@@ -353,6 +385,7 @@ export default function vitePluginRsc(
             ssr: {
               build: {
                 outDir: config.environments?.ssr?.build?.outDir ?? 'dist/ssr',
+                copyPublicDir: false,
                 rollupOptions: {
                   input: rscPluginOptions.entries?.ssr && {
                     index: rscPluginOptions.entries.ssr,
@@ -369,6 +402,7 @@ export default function vitePluginRsc(
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
+                  'react-dom/static.edge',
                   `${REACT_SERVER_DOM_NAME}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
@@ -377,6 +411,7 @@ export default function vitePluginRsc(
             rsc: {
               build: {
                 outDir: config.environments?.rsc?.build?.outDir ?? 'dist/rsc',
+                copyPublicDir: false,
                 emitAssets: true,
                 rollupOptions: {
                   input: rscPluginOptions.entries?.rsc && {
@@ -404,13 +439,57 @@ export default function vitePluginRsc(
           builder: {
             sharedPlugins: true,
             sharedConfigBuild: true,
-            buildApp: rscPluginOptions.useBuildAppHook ? undefined : buildApp,
+            async buildApp(builder) {
+              if (!rscPluginOptions.useBuildAppHook) {
+                await buildApp(builder)
+              }
+            },
           },
         }
       },
-      buildApp: rscPluginOptions.useBuildAppHook ? buildApp : undefined,
+      configResolved() {
+        if (Number(vite.version.split('.')[0]) >= 7) {
+          rscPluginOptions.useBuildAppHook ??= true
+        }
+      },
+      buildApp: {
+        async handler(builder) {
+          if (rscPluginOptions.useBuildAppHook) {
+            await buildApp(builder)
+          }
+        },
+      },
       configureServer(server) {
         ;(globalThis as any).__viteRscDevServer = server
+
+        // intercept client hmr to propagate client boundary invalidation to server environment
+        const oldSend = server.environments.client.hot.send
+        server.environments.client.hot.send = async function (
+          this,
+          ...args: any[]
+        ) {
+          const e = args[0] as vite.UpdatePayload
+          if (e && typeof e === 'object' && e.type === 'update') {
+            for (const update of e.updates) {
+              if (update.type === 'js-update') {
+                const mod =
+                  server.environments.client.moduleGraph.urlToModuleMap.get(
+                    update.path,
+                  )
+                if (mod && mod.id && manager.clientReferenceMetaMap[mod.id]) {
+                  const serverMod =
+                    server.environments.rsc!.moduleGraph.getModuleById(mod.id)
+                  if (serverMod) {
+                    server.environments.rsc!.moduleGraph.invalidateModule(
+                      serverMod,
+                    )
+                  }
+                }
+              }
+            }
+          }
+          return oldSend.apply(this, args as any)
+        }
 
         if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
@@ -434,6 +513,10 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
+              // expose original request url to server handler.
+              // for example, this restores `base` which is automatically stripped by Vite.
+              // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
+              req.url = req.originalUrl ?? req.url
               // ensure catching rejected promise
               // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
               await createRequestListener(mod.default)(req, res)
@@ -469,6 +552,7 @@ export default function vitePluginRsc(
         return () => {
           server.middlewares.use(async (req, res, next) => {
             try {
+              req.url = req.originalUrl ?? req.url
               await handler(req, res)
             } catch (e) {
               next(e)
@@ -688,8 +772,9 @@ export default function vitePluginRsc(
     },
     {
       name: 'vite-rsc-load-module-dev-proxy',
-      apply: () => !!rscPluginOptions.loadModuleDevProxy,
       configureServer(server) {
+        if (!rscPluginOptions.loadModuleDevProxy) return
+
         async function createHandler(url: URL) {
           const { environmentName, entryName } = Object.fromEntries(
             url.searchParams,
@@ -944,58 +1029,47 @@ import.meta.hot.on("rsc:update", () => {
         return code
       },
     ),
-    {
-      // make `AsyncLocalStorage` available globally for React request context on edge build (e.g. React.cache, ssr preload)
-      // https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
-      name: 'rsc:inject-async-local-storage',
-      async configureServer() {
-        const __viteRscAyncHooks = await import('node:async_hooks')
-        ;(globalThis as any).AsyncLocalStorage =
-          __viteRscAyncHooks.AsyncLocalStorage
-      },
-      banner(chunk) {
-        if (
-          (this.environment.name === 'ssr' ||
-            this.environment.name === 'rsc') &&
-          this.environment.mode === 'build' &&
-          chunk.isEntry
-        ) {
-          return `\
-import * as __viteRscAyncHooks from "node:async_hooks";
-globalThis.AsyncLocalStorage = __viteRscAyncHooks.AsyncLocalStorage;
-`
-        }
-        return ''
-      },
-    },
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
-    ...(rscPluginOptions.validateImports !== false
-      ? [validateImportPlugin()]
-      : []),
+    {
+      ...validateImportPlugin(),
+      apply: () => rscPluginOptions.validateImports !== false,
+    },
     scanBuildStripPlugin({ manager }),
     ...cjsModuleRunnerPlugin(),
+    ...globalAsyncLocalStoragePlugin(),
   ]
 }
 
-// During scan build, we strip all code but imports to
-// traverse module graph faster and just discover client/server references.
-function scanBuildStripPlugin({
-  manager,
-}: {
-  manager: RscPluginManager
-}): Plugin {
-  return {
-    name: 'rsc:scan-strip',
-    apply: 'build',
-    enforce: 'post',
-    async transform(code, _id, _options) {
-      if (!manager.isScanBuild) return
-      const output = await transformScanBuildStrip(code)
-      return { code: output, map: { mappings: '' } }
+// make `AsyncLocalStorage` available globally for React edge build (required for React.cache, ssr preload, etc.)
+// https://github.com/facebook/react/blob/f14d7f0d2597ea25da12bcf97772e8803f2a394c/packages/react-server/src/forks/ReactFlightServerConfig.dom-edge.js#L16-L19
+function globalAsyncLocalStoragePlugin(): Plugin[] {
+  return [
+    {
+      name: 'rsc:inject-async-local-storage',
+      transform: {
+        handler(code) {
+          if (
+            (this.environment.name === 'ssr' ||
+              this.environment.name === 'rsc') &&
+            code.includes('typeof AsyncLocalStorage') &&
+            code.includes('new AsyncLocalStorage()') &&
+            !code.includes('__viteRscAsyncHooks')
+          ) {
+            // for build, we cannot use `import` as it confuses rollup commonjs plugin.
+            return (
+              (this.environment.mode === 'build' && !isRolldownVite
+                ? `const __viteRscAsyncHooks = require("node:async_hooks");`
+                : `import * as __viteRscAsyncHooks from "node:async_hooks";`) +
+              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
+              code
+            )
+          }
+        },
+      },
     },
-  }
+  ]
 }
 
 function vitePluginUseClient(
@@ -1154,13 +1228,14 @@ function vitePluginUseClient(
           // group client reference modules by `clientChunks` option
           manager.clientReferenceGroups = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            // no server chunk is associated when the entire "use client" module is tree-shaken
+            if (!meta.serverChunk) continue
             let name =
               useClientPluginOptions.clientChunks?.({
                 id: meta.importId,
-                serverChunk: meta.serverChunk!,
-              }) ??
-              // use original module id as name by default
-              manager.toRelativeId(meta.importId)
+                normalizedId: manager.toRelativeId(meta.importId),
+                serverChunk: meta.serverChunk,
+              }) ?? meta.serverChunk
             // ensure clean virtual id to avoid interfering with other plugins
             name = cleanUrl(name.replaceAll('..', '__'))
             const group = (manager.clientReferenceGroups[name] ??= [])
@@ -1262,6 +1337,7 @@ function vitePluginUseClient(
         }
       },
       generateBundle(_options, bundle) {
+        if (manager.isScanBuild) return
         if (this.environment.name !== serverEnvironmentName) return
 
         // analyze rsc build to inform later client reference building.
@@ -1441,7 +1517,7 @@ function vitePluginDefineEncryptionKey(
       },
       renderChunk(code, chunk) {
         if (code.includes(KEY_PLACEHOLDER)) {
-          assert.equal(this.environment.name, 'rsc')
+          assert.equal(this.environment.name, serverEnvironmentName)
           emitEncryptionKey = true
           const normalizedPath = normalizeRelativePath(
             path.relative(path.join(chunk.fileName, '..'), KEY_FILE),
@@ -1454,7 +1530,10 @@ function vitePluginDefineEncryptionKey(
         }
       },
       writeBundle() {
-        if (this.environment.name === 'rsc' && emitEncryptionKey) {
+        if (
+          this.environment.name === serverEnvironmentName &&
+          emitEncryptionKey
+        ) {
           fs.writeFileSync(
             path.join(this.environment.config.build.outDir, KEY_FILE),
             `export default ${defineEncryptionKey};\n`,

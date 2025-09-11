@@ -19,7 +19,7 @@ npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
 
 ## Examples
 
-**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the plugin
+**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
 
 - Provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
 
@@ -168,6 +168,11 @@ export default async function handler(request: Request): Promise<Response> {
     },
   })
 }
+
+// add `import.meta.hot.accept` to handle server module change efficiently
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}
 ```
 
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
@@ -290,35 +295,6 @@ export function UserApp() {
 }
 ```
 
-#### `<id>?vite-rsc-css-export=<name>`
-
-This special query convention provides automatic injection of `import.meta.viteRsc.loadCss`.
-
-For example,
-
-```tsx
-// my-route.tsx
-export function Page(props) {
-  return <div>...</div>
-}
-
-// my-route.tsx?vite-rsc-css-export=Page
-function Page(props) {
-  return <div>...</div>
-}
-
-function __Page(props) {
-  return (
-    <>
-      {import.meta.viteRsc.loadCss()}
-      <Page {...props} />
-    </>
-  )
-}
-
-export { __Page as Page }
-```
-
 ### Available on `ssr` environment
 
 #### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
@@ -355,6 +331,8 @@ import.meta.hot.on('rsc:update', async () => {
 
 ### `@vitejs/plugin-rsc`
 
+- Type: `rsc: (options?: RscPluginOptions) => Plugin[]`;
+
 ```js
 import rsc from '@vitejs/plugin-rsc'
 import { defineConfig } from 'vite'
@@ -390,8 +368,15 @@ export default defineConfig({
       // for example, to obtain a key through environment variable during runtime.
       // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
       defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+
+      // see `RscPluginOptions` for full options ...
     }),
   ],
+  // the same options can be also specified via top-level `rsc` property.
+  // this allows other plugin to set options via `config` hook.
+  rsc: {
+    // ...
+  },
 })
 ```
 
@@ -419,25 +404,6 @@ This module re-exports RSC runtime API provided by `react-server-dom/client.brow
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
 - `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
 - `encodeReply/setServerCallback`: server function related...
-
-## High level API
-
-> [!NOTE]
-> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
-
-This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
-
-### `@vitejs/plugin-rsc/extra/rsc`
-
-- `renderRequest`
-
-### `@vitejs/plugin-rsc/extra/ssr`
-
-- `renderHtml`
-
-### `@vitejs/plugin-rsc/extra/browser`
-
-- `hydrate`
 
 ## CSS Support
 
@@ -476,6 +442,57 @@ export function Page() {
 ## Canary and Experimental channel releases
 
 See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
+
+## Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
+
+By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
+
+```sh
+Failed to resolve dependency: @vitejs/plugin-rsc/vendor/react-server-dom/client.browser, present in client 'optimizeDeps.include'
+```
+
+This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugin-rsc` through your framework package. For example, you can add the following plugin:
+
+```js
+// package name is "my-rsc-framework"
+export default function myRscFrameworkPlugin() {
+  return {
+    name: 'my-rsc-framework:config',
+    configEnvironment(_name, config) {
+      if (config.optimizeDeps?.include) {
+        config.optimizeDeps.include = config.optimizeDeps.include.map(
+          (entry) => {
+            if (entry.startsWith('@vitejs/plugin-rsc')) {
+              entry = `my-rsc-framework > ${entry}`
+            }
+            return entry
+          },
+        )
+      }
+    },
+  }
+}
+```
+
+## Typescript
+
+Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you can add it to `tsconfig.json` to have types for `import.meta.viteRsc` APIs:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vitejs/plugin-rsc/types"]
+  }
+}
+```
+
+```ts
+import.meta.viteRsc.loadModule
+//                  ^^^^^^^^^^
+// <T>(environmentName: string, entryName: string) => Promise<T>
+```
+
+See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
 
 ## Credits
 

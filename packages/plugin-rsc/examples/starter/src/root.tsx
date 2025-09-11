@@ -4,7 +4,7 @@ import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 
-export function Root() {
+export function Root(props: { url: URL }) {
   return (
     <html lang="en">
       <head>
@@ -14,13 +14,13 @@ export function Root() {
         <title>Vite + RSC</title>
       </head>
       <body>
-        <App />
+        <App {...props} />
       </body>
     </html>
   )
 }
 
-function App() {
+function App(props: { url: URL }) {
   return (
     <div id="root">
       <div>
@@ -43,6 +43,7 @@ function App() {
           <button>Server Counter: {getServerCounter()}</button>
         </form>
       </div>
+      <div className="card">Request URL: {props.url?.href}</div>
       <ul className="read-the-docs">
         <li>
           Edit <code>src/client.tsx</code> to test client HMR.
@@ -52,15 +53,15 @@ function App() {
         </li>
         <li>
           Visit{' '}
-          <a href="/?__rsc" target="_blank">
-            <code>/?__rsc</code>
+          <a href="?__rsc" target="_blank">
+            <code>?__rsc</code>
           </a>{' '}
           to view RSC stream payload.
         </li>
         <li>
           Visit{' '}
-          <a href="/?__nojs" target="_blank">
-            <code>/?__nojs</code>
+          <a href="?__nojs" target="_blank">
+            <code>?__nojs</code>
           </a>{' '}
           to test server action without js enabled.
         </li>
