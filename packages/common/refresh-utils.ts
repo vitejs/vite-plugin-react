@@ -41,6 +41,12 @@ export function addRefreshWrapper<M extends { mappings: string }>(
 import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
 if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "${pluginName} can't detect preamble. Something is wrong."
+    );
+  }
+
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
       id,
@@ -60,14 +66,6 @@ if (import.meta.hot && !inWebWorker) {
     const refreshCode = `
 function $RefreshReg$(type, id) { return RefreshRuntime.getRefreshReg(${JSON.stringify(id)})(type, id) }
 function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
-
-if (import.meta.hot && !inWebWorker) {
-  if (!window.$RefreshReg$) {
-    throw new Error(
-      "${pluginName} can't detect preamble. Something is wrong."
-    );
-  }
-}
 `
     newCode += refreshCode
   }
