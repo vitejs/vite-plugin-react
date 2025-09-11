@@ -14,28 +14,18 @@ window.$RefreshSig$ = () => (type) => type;`
 export const getPreambleCode = (base: string): string =>
   preambleCode.replace('__BASE__', base)
 
-export const avoidSourceMapOption = Symbol()
-
-export function addRefreshWrapper<M extends { mappings: string }>(
+export function addRefreshWrapper(
   code: string,
-  map: M | string | typeof avoidSourceMapOption,
   pluginName: string,
   id: string,
   reactRefreshHost = '',
-): { code: string; map: M | null | string } {
+): string | undefined {
   const hasRefresh = refreshContentRE.test(code)
   const onlyReactComp = !hasRefresh && reactCompRE.test(code)
-  const normalizedMap = map === avoidSourceMapOption ? null : map
 
-  if (!hasRefresh && !onlyReactComp) return { code, map: normalizedMap }
-
-  const newMap =
-    typeof normalizedMap === 'string'
-      ? (JSON.parse(normalizedMap) as M)
-      : normalizedMap
+  if (!hasRefresh && !onlyReactComp) return undefined
 
   let newCode = code
-
   newCode += `
 
 import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
@@ -63,12 +53,10 @@ if (import.meta.hot && !inWebWorker) {
 `
 
   if (hasRefresh) {
-    const refreshCode = `
-function $RefreshReg$(type, id) { return RefreshRuntime.register(type, ${JSON.stringify(id)} + ' ' + id) }
+    newCode += `function $RefreshReg$(type, id) { return RefreshRuntime.register(type, ${JSON.stringify(id)} + ' ' + id) }
 function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
 `
-    newCode += refreshCode
   }
 
-  return { code: newCode, map: newMap }
+  return newCode
 }
