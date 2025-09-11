@@ -41,7 +41,7 @@ if (import.meta.hot && !inWebWorker) {
   const currentExports = __vite_react_currentExports;
   RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
     id,
-  )}, currentExports, nextExports);
+  )}, currentExports);
   import.meta.hot.accept((nextExports) => {
     if (!nextExports) return;
     const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
