@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { SourceMapPayload } from 'node:module'
 import { createRequire } from 'node:module'
 import {
   type JscTarget,
@@ -205,13 +204,13 @@ const react = (_options?: Options): Plugin[] => {
         if (!result) return
         if (!refresh) return result
 
-        return addRefreshWrapper<SourceMapPayload>(
+        const newCode = addRefreshWrapper(
           result.code,
-          result.map!,
           '@vitejs/plugin-react-swc',
           id,
           options.reactRefreshHost,
         )
+        return { code: newCode ?? result.code, map: result.map }
       },
     },
     options.plugins

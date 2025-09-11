@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
+
 ## 5.0.2 (2025-08-28)
 
 ### Skip transform hook completely in rolldown-vite in dev if possible ([#783](https://github.com/vitejs/vite-plugin-react/pull/783))

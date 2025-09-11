@@ -8,7 +8,6 @@ import * as vite from 'vite'
 import type { Plugin, ResolvedConfig } from 'vite'
 import {
   addRefreshWrapper,
-  avoidSourceMapOption,
   getPreambleCode,
   preambleCode,
   runtimePublicPath,
@@ -341,13 +340,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           if (!useFastRefresh) {
             return { code: result.code!, map: result.map }
           }
-          return addRefreshWrapper(
+          const code = addRefreshWrapper(
             result.code!,
-            result.map!,
             '@vitejs/plugin-react',
             id,
             opts.reactRefreshHost,
           )
+          return { code: code ?? result.code!, map: result.map }
         }
       },
     },
@@ -377,14 +376,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             code.includes(jsxImportRuntime))
         if (!useFastRefresh) return
 
-        const { code: newCode } = addRefreshWrapper(
+        const newCode = addRefreshWrapper(
           code,
-          avoidSourceMapOption,
           '@vitejs/plugin-react',
           id,
           opts.reactRefreshHost,
         )
-        return { code: newCode, map: null }
+        return newCode ? { code: newCode, map: null } : undefined
       },
     },
   }
