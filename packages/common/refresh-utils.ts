@@ -36,31 +36,6 @@ export function addRefreshWrapper<M extends { mappings: string }>(
       : normalizedMap
 
   let newCode = code
-  if (hasRefresh) {
-    const refreshHead = removeLineBreaksIfNeeded(
-      `let $RefreshReg$;
-let $RefreshSig$;
-
-if (import.meta.hot && !inWebWorker) {
-  if (!window.$RefreshReg$) {
-    throw new Error(
-      "${pluginName} can't detect preamble. Something is wrong."
-    );
-  }
-
-  $RefreshReg$ = RefreshRuntime.getRefreshReg(${JSON.stringify(id)});
-  $RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
-}
-
-`,
-      avoidSourceMap,
-    )
-
-    newCode = `${refreshHead}${newCode}`
-    if (newMap) {
-      newMap.mappings = ';'.repeat(16) + newMap.mappings
-    }
-  }
 
   const sharedHead = removeLineBreaksIfNeeded(
     `import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
@@ -89,6 +64,22 @@ if (import.meta.hot && !inWebWorker) {
 `
   if (newMap) {
     newMap.mappings = ';;;' + newMap.mappings
+  }
+
+  if (hasRefresh) {
+    const refreshCode = `
+function $RefreshReg$(type, id) { return RefreshRuntime.getRefreshReg(${JSON.stringify(id)})(type, id) }
+function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
+
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "${pluginName} can't detect preamble. Something is wrong."
+    );
+  }
+}
+`
+    newCode += refreshCode
   }
 
   return { code: newCode, map: newMap }
