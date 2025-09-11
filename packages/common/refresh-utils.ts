@@ -64,7 +64,7 @@ if (import.meta.hot && !inWebWorker) {
 
   if (hasRefresh) {
     const refreshCode = `
-function $RefreshReg$(type, id) { return RefreshRuntime.getRefreshReg(${JSON.stringify(id)})(type, id) }
+function $RefreshReg$(type, id) { return RefreshRuntime.register(type, ${JSON.stringify(id)} + ' ' + id) }
 function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
 `
     newCode += refreshCode
