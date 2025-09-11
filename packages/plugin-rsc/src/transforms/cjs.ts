@@ -41,8 +41,8 @@ export function transformCjsToEsm(
         if (isTopLevel) {
           // top-level scope `require` to dynamic import
           // (this allows handling react development/production re-export within top-level if branch)
-          output.update(node.start, node.callee.end, '(await import')
-          output.appendRight(node.end, ')')
+          output.update(node.start, node.callee.end, '((await import')
+          output.appendRight(node.end, ').default)')
         } else {
           // hoist non top-level `require` to top-level
           const hoisted = `__cjs_to_esm_hoist_${hoistIndex}`
@@ -50,7 +50,9 @@ export function transformCjsToEsm(
             node.arguments[0]!.start,
             node.arguments[0]!.end,
           )
-          hoistedCodes.push(`const ${hoisted} = await import(${importee});\n`)
+          hoistedCodes.push(
+            `const ${hoisted} = (await import(${importee})).default;\n`,
+          )
           output.update(node.start, node.end, hoisted)
           hoistIndex++
         }
@@ -63,6 +65,7 @@ export function transformCjsToEsm(
   for (const hoisted of hoistedCodes.reverse()) {
     output.prepend(hoisted)
   }
-  output.prepend(`const exports = {}; const module = { exports };\n`)
+  // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
+  output.prepend(`let exports = {}; const module = { exports };\n`)
   return { output }
 }
