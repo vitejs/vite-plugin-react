@@ -352,8 +352,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
+  const nativeRefreshWrapper: Plugin | undefined =
+    // TODO: apply: 'serve'
+    'reactRefreshWrapperPlugin' in vite
+      ? vite.reactRefreshWrapperPlugin()
+      : undefined
+
   // for rolldown-vite
-  const viteRefreshWrapper: Plugin = {
+  const viteRefreshWrapper: Plugin = nativeRefreshWrapper ?? {
     name: 'vite:react:refresh-wrapper',
     apply: 'serve',
     transform: {
@@ -429,14 +435,19 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         include: dependencies,
       },
     }),
-    resolveId: {
-      filter: { id: exactRegex(runtimePublicPath) },
-      handler(id) {
-        if (id === runtimePublicPath) {
-          return id
-        }
-      },
-    },
+    // native refresh wrapper plugin handles runtime resolution
+    ...(nativeRefreshWrapper
+      ? {}
+      : {
+          resolveId: {
+            filter: { id: exactRegex(runtimePublicPath) },
+            handler(id) {
+              if (id === runtimePublicPath) {
+                return id
+              }
+            },
+          },
+        }),
     load: {
       filter: { id: exactRegex(runtimePublicPath) },
       handler(id) {
