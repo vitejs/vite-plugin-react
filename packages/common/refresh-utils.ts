@@ -29,7 +29,6 @@ export function addRefreshWrapper<M extends { mappings: string }>(
 
   if (!hasRefresh && !onlyReactComp) return { code, map: normalizedMap }
 
-  const avoidSourceMap = map === avoidSourceMapOption
   const newMap =
     typeof normalizedMap === 'string'
       ? (JSON.parse(normalizedMap) as M)
@@ -37,16 +36,10 @@ export function addRefreshWrapper<M extends { mappings: string }>(
 
   let newCode = code
 
-  const sharedHead = removeLineBreaksIfNeeded(
-    `import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
+  newCode += `
+
+import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
-
-`,
-    avoidSourceMap,
-  )
-
-  newCode = `${sharedHead}${newCode}
-
 if (import.meta.hot && !inWebWorker) {
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
     RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
@@ -62,9 +55,6 @@ if (import.meta.hot && !inWebWorker) {
   });
 }
 `
-  if (newMap) {
-    newMap.mappings = ';;;' + newMap.mappings
-  }
 
   if (hasRefresh) {
     const refreshCode = `
@@ -83,8 +73,4 @@ if (import.meta.hot && !inWebWorker) {
   }
 
   return { code: newCode, map: newMap }
-}
-
-function removeLineBreaksIfNeeded(code: string, enabled: boolean): string {
-  return enabled ? code.replace(/\n/g, '') : code
 }
