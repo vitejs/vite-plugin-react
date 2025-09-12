@@ -1010,7 +1010,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
   ssrCss.forEach(node => {
-    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+    if (node.dataset.precedence?.startsWith("vite-rsc/client-references")) {
       node.remove();
     }
   });
@@ -2171,7 +2171,7 @@ function vitePluginRscCss(
             .forEach((node) => {
               if (
                 node instanceof HTMLElement &&
-                node.dataset.precedence?.startsWith('vite-rsc/')
+                node.dataset.precedence?.startsWith('vite-rsc/client-reference')
               ) {
                 node.remove()
               }
@@ -2227,19 +2227,10 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
-            precedence: 'x-vite-rsc/importer-resources',
+            precedence: 'vite-rsc/importer-resources',
             href: href,
           }),
         ),
-        // js is only for dev to forward css import on browser to have hmr
-        // ...deps.js.map((href: string) =>
-        //   React.createElement('script', {
-        //     key: 'js:' + href,
-        //     type: 'module',
-        //     async: true,
-        //     src: href,
-        //   }),
-        // ),
         RemoveDuplicateServerCss &&
           React.createElement(RemoveDuplicateServerCss, {
             key: 'remove-duplicate-css',
