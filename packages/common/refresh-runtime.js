@@ -243,7 +243,7 @@ function performReactRefresh() {
   }
 }
 
-function register(type, id) {
+export function register(type, id) {
   if (type === null) {
     return
   }
@@ -563,10 +563,6 @@ function isPlainObject(obj) {
 /**
  * Plugin utils
  */
-
-export function getRefreshReg(filename) {
-  return (type, id) => register(type, filename + ' ' + id)
-}
 
 // Taken from https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/main/lib/runtime/RefreshUtils.js#L141
 // This allows to resister components not detected by SWC like styled component
