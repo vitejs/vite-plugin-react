@@ -48,6 +48,7 @@
     "vitefu": "^1.1.1"
   },
   "devDependencies": {
+    "@fontsource-variable/orbitron": "^5.2.7",
     "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.55.0",
     "@tsconfig/strictest": "^2.0.5",
