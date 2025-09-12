@@ -84,7 +84,7 @@ export function hashString(v: string): string {
 // https://srvx.h3.dev/guide
 // https://vercel.com/docs/functions/functions-api-reference?framework=other#fetch-web-standard
 // https://github.com/jacob-ebey/rsbuild-rsc-playground/blob/eb1a54afa49cbc5ff93c315744d7754d5ed63498/plugin/fetch-server.ts#L59-L79
-export function normalizeServerHandler(exports: object): any {
+export function getFetchHandlerExport(exports: object): any {
   if ('default' in exports) {
     const default_ = exports.default
     if (
