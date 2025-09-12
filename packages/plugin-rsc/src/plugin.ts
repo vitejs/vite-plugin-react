@@ -2100,13 +2100,7 @@ function vitePluginRscCss(
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const jsHrefs = [
-              `@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
-            ]
-            const deps = assetsURLOfDeps(
-              { css: cssHrefs, js: jsHrefs },
-              manager,
-            )
+            const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
               manager,
@@ -2125,20 +2119,6 @@ function vitePluginRscCss(
             `
           }
         }
-        if (parsed?.type === 'rsc-browser') {
-          assert(this.environment.name === 'client')
-          assert(this.environment.mode === 'dev')
-          const importer = parsed.id
-          const result = collectCss(server.environments.rsc!, importer)
-          let code = result.ids
-            .map((id) => id.replace(/^\0/, ''))
-            .map((id) => `import ${JSON.stringify(id)};\n`)
-            .join('')
-          // ensure hmr boundary at this virtual since otherwise non-self accepting css
-          // (e.g. css module) causes full reload
-          code += `if (import.meta.hot) { import.meta.hot.accept() }\n`
-          return code
-        }
       },
       hotUpdate(ctx) {
         if (this.environment.name === 'rsc') {
@@ -2149,10 +2129,6 @@ function vitePluginRscCss(
               invalidteModuleById(
                 server.environments.rsc!,
                 `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
-              )
-              invalidteModuleById(
-                server.environments.client,
-                `\0` + toCssVirtual({ id: mod.id, type: 'rsc-browser' }),
               )
             }
           }
