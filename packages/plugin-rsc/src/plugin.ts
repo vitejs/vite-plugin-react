@@ -34,6 +34,7 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import {
   cleanUrl,
+  directRequestRE,
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
@@ -563,11 +564,7 @@ export default function vitePluginRsc(
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
-            // filter out `.css?direct` (injected by SSR) to avoid browser full reload
-            // when changing non-self accepting css such as `module.css`.
-            return ctx.modules.filter(
-              (m) => !(m.id?.includes('?direct') && !m.isSelfAccepting),
-            )
+            return
           }
         }
 
@@ -1977,7 +1974,8 @@ function vitePluginRscCss(
       },
     },
     {
-      // self accept css module used in server component to avoid full reload
+      // force self accepting "?direct" css (injected via SSR `<link />`) to avoid full reload.
+      // this should only apply to css modules
       // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/plugins/css.ts#L1096
       name: 'rsc:rsc-css-self-accept',
       apply: 'serve',
@@ -1987,23 +1985,12 @@ function vitePluginRscCss(
           if (
             this.environment.name === 'client' &&
             this.environment.mode === 'dev' &&
-            isCSSRequest(id)
+            isCSSRequest(id) &&
+            directRequestRE.test(id)
           ) {
             const mod = this.environment.moduleGraph.getModuleById(id)
-            const { filename, query } = parseIdQuery(id)
-            if (mod && !mod.isSelfAccepting && 'direct' in query) {
-              const serverMods =
-                manager.server.environments.rsc!.moduleGraph.getModulesByFile(
-                  filename,
-                )
-              // filter out module nodes created by tailwind dependenncy.
-              // for Vite 7.1, we can use `m.type !== "asset"`.
-              const isServerCss = [...(serverMods ?? [])].some((m) =>
-                [...m.importers].some((m) => m.id && !isCSSRequest(m.id)),
-              )
-              if (isServerCss) {
-                mod.isSelfAccepting = true
-              }
+            if (mod && !mod.isSelfAccepting) {
+              mod.isSelfAccepting = true
             }
           }
         },
