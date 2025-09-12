@@ -78,3 +78,26 @@ export function getEntrySource(
 export function hashString(v: string): string {
   return createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
 }
+
+// normalize server entry exports to align with server runtimes
+// https://developers.cloudflare.com/workers/runtime-apis/handlers/fetch/
+// https://srvx.h3.dev/guide
+// https://vercel.com/docs/functions/functions-api-reference?framework=other#fetch-web-standard
+// https://github.com/jacob-ebey/rsbuild-rsc-playground/blob/eb1a54afa49cbc5ff93c315744d7754d5ed63498/plugin/fetch-server.ts#L59-L79
+export function normalizeServerHandler(exports: object): any {
+  if ('default' in exports) {
+    const default_ = exports.default
+    if (
+      default_ &&
+      typeof default_ === 'object' &&
+      'fetch' in default_ &&
+      typeof default_.fetch === 'function'
+    ) {
+      return default_.fetch
+    }
+    if (typeof default_ === 'function') {
+      return default_
+    }
+  }
+  throw new Error('Invalid server handler entry')
+}
