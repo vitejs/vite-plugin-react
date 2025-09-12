@@ -34,6 +34,7 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import {
   cleanUrl,
+  directRequestRE,
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
@@ -563,11 +564,7 @@ export default function vitePluginRsc(
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
-            // filter out `.css?direct` (injected by SSR) to avoid browser full reload
-            // when changing non-self accepting css such as `module.css`.
-            return ctx.modules.filter(
-              (m) => !(m.id?.includes('?direct') && !m.isSelfAccepting),
-            )
+            return
           }
         }
 
@@ -1974,6 +1971,29 @@ function vitePluginRscCss(
             map: result.output.generateMap({ hires: 'boundary' }),
           }
         }
+      },
+    },
+    {
+      // force self accepting "?direct" css (injected via SSR `<link />`) to avoid full reload.
+      // this should only apply to css modules
+      // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/plugins/css.ts#L1096
+      name: 'rsc:rsc-css-self-accept',
+      apply: 'serve',
+      transform: {
+        order: 'post',
+        handler(_code, id, _options) {
+          if (
+            this.environment.name === 'client' &&
+            this.environment.mode === 'dev' &&
+            isCSSRequest(id) &&
+            directRequestRE.test(id)
+          ) {
+            const mod = this.environment.moduleGraph.getModuleById(id)
+            if (mod && !mod.isSelfAccepting) {
+              mod.isSelfAccepting = true
+            }
+          }
+        },
       },
     },
     {
