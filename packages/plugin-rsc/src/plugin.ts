@@ -1973,7 +1973,7 @@ function vitePluginRscCss(
       },
     },
     {
-      // self accept css module used in server component to avoid full reload
+      // self accept css module imported in rsc environment to avoid full reload
       // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/plugins/css.ts#L1096
       name: 'rsc:rsc-css-self-accept',
       apply: 'serve',
