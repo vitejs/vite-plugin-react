@@ -1977,6 +1977,39 @@ function vitePluginRscCss(
       },
     },
     {
+      // self accept css module used in server component to avoid full reload
+      // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/plugins/css.ts#L1096
+      name: 'rsc:rsc-css-self-accept',
+      apply: 'serve',
+      transform: {
+        order: 'post',
+        handler(_code, id, _options) {
+          if (
+            this.environment.name === 'client' &&
+            this.environment.mode === 'dev' &&
+            isCSSRequest(id)
+          ) {
+            const mod = this.environment.moduleGraph.getModuleById(id)
+            const { filename, query } = parseIdQuery(id)
+            if (mod && !mod.isSelfAccepting && 'direct' in query) {
+              const serverMods =
+                manager.server.environments.rsc!.moduleGraph.getModulesByFile(
+                  filename,
+                )
+              // filter out module nodes created by tailwind dependenncy.
+              // for Vite 7.1, we can use `m.type !== "asset"`.
+              const isServerCss = [...(serverMods ?? [])].some((m) =>
+                [...m.importers].some((m) => m.id && !isCSSRequest(m.id)),
+              )
+              if (isServerCss) {
+                mod.isSelfAccepting = true
+              }
+            }
+          }
+        },
+      },
+    },
+    {
       name: 'rsc:css-virtual',
       resolveId(source) {
         if (source.startsWith('virtual:vite-rsc/css?')) {
