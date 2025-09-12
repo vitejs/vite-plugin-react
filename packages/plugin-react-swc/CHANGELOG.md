@@ -6,6 +6,8 @@
 
 This is set to `{viteCacheDir}/swc` and override the default of `.swc`.
 
+### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
+
 ## 4.0.1 (2025-08-19)
 
 ### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` for rolldown-vite ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
