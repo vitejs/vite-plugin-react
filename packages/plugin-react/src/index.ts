@@ -353,9 +353,23 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   }
 
   const nativeRefreshWrapper: Plugin | undefined =
-    // TODO: apply: 'serve'
     'reactRefreshWrapperPlugin' in vite
-      ? vite.reactRefreshWrapperPlugin()
+      ? {
+          name: 'vite:react:refresh-wrapper',
+          apply: 'serve',
+          applyToEnvironment(env) {
+            return env.config.consumer === 'client' && !skipFastRefresh
+              ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore only available in rolldown-vite
+                vite.reactRefreshWrapperPlugin({
+                  include,
+                  exclude,
+                  jsxImportSource,
+                  reactRefreshHost: opts.reactRefreshHost ?? '',
+                })
+              : undefined
+          },
+        }
       : undefined
 
   // for rolldown-vite
