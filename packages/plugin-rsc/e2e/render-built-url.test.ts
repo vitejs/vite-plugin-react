@@ -3,12 +3,16 @@ import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 import { expectNoPageError, waitForHydration } from './helper'
 import fs from 'node:fs'
+import type { RenderBuiltAssetUrl } from 'vite'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/renderBuiltUrl-runtime'
 
   test.beforeAll(async () => {
-    const renderBuiltUrl = (filename: string) => {
+    const renderBuiltUrl: RenderBuiltAssetUrl = (filename, meta) => {
+      if (meta.hostType === 'css') {
+        return { relative: true }
+      }
       return {
         runtime: `__dynamicBase + ${JSON.stringify(filename)}`,
       }
