@@ -2207,19 +2207,19 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
-            precedence: 'vite-rsc/importer-resources',
+            precedence: 'x-vite-rsc/importer-resources',
             href: href,
           }),
         ),
         // js is only for dev to forward css import on browser to have hmr
-        ...deps.js.map((href: string) =>
-          React.createElement('script', {
-            key: 'js:' + href,
-            type: 'module',
-            async: true,
-            src: href,
-          }),
-        ),
+        // ...deps.js.map((href: string) =>
+        //   React.createElement('script', {
+        //     key: 'js:' + href,
+        //     type: 'module',
+        //     async: true,
+        //     src: href,
+        //   }),
+        // ),
         RemoveDuplicateServerCss &&
           React.createElement(RemoveDuplicateServerCss, {
             key: 'remove-duplicate-css',
