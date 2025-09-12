@@ -34,6 +34,7 @@ import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
 import {
   cleanUrl,
+  directRequestRE,
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
@@ -1984,11 +1985,11 @@ function vitePluginRscCss(
           if (
             this.environment.name === 'client' &&
             this.environment.mode === 'dev' &&
-            isCSSRequest(id)
+            isCSSRequest(id) &&
+            directRequestRE.test(id)
           ) {
             const mod = this.environment.moduleGraph.getModuleById(id)
-            const parsed = parseIdQuery(id)
-            if (mod && !mod.isSelfAccepting && 'direct' in parsed.query) {
+            if (mod && !mod.isSelfAccepting) {
               mod.isSelfAccepting = true
             }
           }

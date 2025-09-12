@@ -161,3 +161,6 @@ export function evalValue<T = any>(rawValue: string): T {
   `)
   return fn()
 }
+
+// https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/utils.ts#L321
+export const directRequestRE: RegExp = /(\?|&)direct=?(?:&|$)/
