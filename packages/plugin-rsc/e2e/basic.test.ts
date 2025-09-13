@@ -866,11 +866,9 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
 
       editor.reset()
-      await page.waitForTimeout(100)
       await expect(page.locator('.test-style-server')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
-        { timeout: 10 },
       )
     })
 
