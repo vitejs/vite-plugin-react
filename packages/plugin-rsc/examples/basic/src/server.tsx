@@ -1,7 +1,7 @@
 import { handleRequest } from './framework/entry.rsc.tsx'
 import './styles.css'
 
-export default async function handler(request: Request): Promise<Response> {
+async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const { Root } = await import('./routes/root.tsx')
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
@@ -36,6 +36,10 @@ export default async function handler(request: Request): Promise<Response> {
     response.headers.set('content-security-policy', cspValue)
   }
   return response
+}
+
+export default {
+  fetch: handler,
 }
 
 if (import.meta.hot) {
