@@ -733,16 +733,26 @@ function defineTest(f: Fixture) {
     })
 
     async function expectNoDuplicateServerCss(page: Page) {
-      // check only manually inserted stylesheet link exists
-      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(3)
-      for (const locator of await page
-        .locator('link[rel="stylesheet"]')
-        .all()) {
-        await expect(locator).toHaveAttribute(
-          'data-precedence',
-          'test-style-manual-link',
-        )
-      }
+      // verify duplicate client-reference style link are removed
+      await expect(
+        page.locator(
+          'link[rel="stylesheet"][data-precedence="vite-rsc/client-reference"]',
+        ),
+      ).toHaveCount(0)
+      await expect(
+        page
+          .locator(
+            'link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]',
+          )
+          .nth(0),
+      ).toBeAttached()
+      await expect(
+        page
+          .locator(
+            'link[rel="stylesheet"][data-precedence="test-style-manual-link"]',
+          )
+          .nth(0),
+      ).toBeAttached()
     }
 
     test('no duplicate server css', async ({ page }) => {

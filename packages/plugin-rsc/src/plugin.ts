@@ -1013,7 +1013,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
   ssrCss.forEach(node => {
-    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+    if (node.dataset.precedence?.startsWith("vite-rsc/client-references")) {
       node.remove();
     }
   });
@@ -2103,13 +2103,7 @@ function vitePluginRscCss(
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const jsHrefs = [
-              `@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
-            ]
-            const deps = assetsURLOfDeps(
-              { css: cssHrefs, js: jsHrefs },
-              manager,
-            )
+            const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
               manager,
@@ -2128,20 +2122,6 @@ function vitePluginRscCss(
             `
           }
         }
-        if (parsed?.type === 'rsc-browser') {
-          assert(this.environment.name === 'client')
-          assert(this.environment.mode === 'dev')
-          const importer = parsed.id
-          const result = collectCss(server.environments.rsc!, importer)
-          let code = result.ids
-            .map((id) => id.replace(/^\0/, ''))
-            .map((id) => `import ${JSON.stringify(id)};\n`)
-            .join('')
-          // ensure hmr boundary at this virtual since otherwise non-self accepting css
-          // (e.g. css module) causes full reload
-          code += `if (import.meta.hot) { import.meta.hot.accept() }\n`
-          return code
-        }
       },
       hotUpdate(ctx) {
         if (this.environment.name === 'rsc') {
@@ -2152,10 +2132,6 @@ function vitePluginRscCss(
               invalidteModuleById(
                 server.environments.rsc!,
                 `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
-              )
-              invalidteModuleById(
-                server.environments.client,
-                `\0` + toCssVirtual({ id: mod.id, type: 'rsc-browser' }),
               )
             }
           }
@@ -2174,7 +2150,7 @@ function vitePluginRscCss(
             .forEach((node) => {
               if (
                 node instanceof HTMLElement &&
-                node.dataset.precedence?.startsWith('vite-rsc/')
+                node.dataset.precedence?.startsWith('vite-rsc/client-reference')
               ) {
                 node.remove()
               }
@@ -2232,15 +2208,6 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
             rel: 'stylesheet',
             precedence: 'vite-rsc/importer-resources',
             href: href,
-          }),
-        ),
-        // js is only for dev to forward css import on browser to have hmr
-        ...deps.js.map((href: string) =>
-          React.createElement('script', {
-            key: 'js:' + href,
-            type: 'module',
-            async: true,
-            src: href,
           }),
         ),
         RemoveDuplicateServerCss &&
