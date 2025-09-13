@@ -2100,6 +2100,7 @@ function vitePluginRscCss(
         if (parsed?.type === 'rsc') {
           assert(this.environment.name === 'rsc')
           const importer = parsed.id
+          this.addWatchFile(importer)
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
@@ -2124,6 +2125,7 @@ function vitePluginRscCss(
         }
       },
       hotUpdate(ctx) {
+        if (1) return
         if (this.environment.name === 'rsc') {
           const { server } = manager
           const mods = collectModuleDependents(ctx.modules)
