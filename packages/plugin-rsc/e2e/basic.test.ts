@@ -836,12 +836,42 @@ function defineTest(f: Fixture) {
       await expectNoDuplicateServerCss(page)
     })
 
-    // TODO: need a way to add/remove links on server hmr. for now, it requires a manually reload.
-    test.skip('adding/removing css server @js', async ({ page }) => {
+    // TODO: need a way to remove css links on server hmr. for now, it requires a manually reload.
+    test('adding/removing css server @js', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+
+      // remove css import
+      const editor = f.createEditor('src/routes/style-server/server.tsx')
+      editor.edit((s) =>
+        s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
+      )
+      await page.waitForTimeout(100)
+      await expect(async () => {
+        // TODO: shouldn't require reload
+        await page.reload()
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 0, 0)',
+          { timeout: 10 },
+        )
+      }).toPass()
+
+      // adding css works without reload
+      await waitForHydration(page)
       await using _ = await expectNoReload(page)
-      await testAddRemoveCssServer(page, { js: true })
+
+      editor.reset()
+      await page.waitForTimeout(100)
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+        { timeout: 10 },
+      )
     })
 
     testNoJs('adding/removing css server @nojs', async ({ page }) => {
