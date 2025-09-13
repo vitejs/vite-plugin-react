@@ -45,6 +45,7 @@ import {
   getEntrySource,
   hashString,
   normalizeRelativePath,
+  getFetchHandlerExport,
   sortObject,
   withRollupError,
 } from './plugins/utils'
@@ -514,13 +515,14 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
+              const fetchHandler = getFetchHandlerExport(mod)
               // expose original request url to server handler.
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
               // ensure catching rejected promise
               // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
-              await createRequestListener(mod.default)(req, res)
+              await createRequestListener(fetchHandler)(req, res)
             } catch (e) {
               next(e)
             }
@@ -541,7 +543,8 @@ export default function vitePluginRsc(
         )
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
-        const handler = createRequestListener(mod.default)
+        const fetchHandler = getFetchHandlerExport(mod)
+        const handler = createRequestListener(fetchHandler)
 
         // disable compressions since it breaks html streaming
         // https://github.com/vitejs/vite/blob/9f5c59f07aefb1756a37bcb1c0aff24d54288950/packages/vite/src/node/preview.ts#L178
