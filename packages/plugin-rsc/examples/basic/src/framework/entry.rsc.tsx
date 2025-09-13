@@ -106,7 +106,3 @@ export async function handleRequest({
     },
   })
 }
-
-if (import.meta.hot) {
-  import.meta.hot.accept()
-}
