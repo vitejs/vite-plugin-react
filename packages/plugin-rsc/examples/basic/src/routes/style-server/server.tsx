@@ -27,3 +27,7 @@ export function TestStyleServer() {
     </div>
   )
 }
+
+// add no-op `import.meta.hot` to trigger `prune` event
+// https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/plugins/importAnalysis.ts#L829-L840
+import.meta.hot

@@ -2030,6 +2030,17 @@ function vitePluginRscCss(
     },
     {
       name: 'rsc:importer-resources',
+      configureServer(server) {
+        const hot = server.environments.rsc!.hot
+        const original = hot.send
+        hot.send = function (this, ...args: any[]) {
+          const e = args[0] as vite.PrunePayload
+          if (e && typeof e === 'object' && e.type === 'prune') {
+            console.log('[rsc:prune]', e)
+          }
+          return original.apply(this, args as any)
+        }
+      },
       async transform(code, id) {
         if (!code.includes('import.meta.viteRsc.loadCss')) return
 
