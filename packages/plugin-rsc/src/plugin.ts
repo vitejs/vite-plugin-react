@@ -2102,9 +2102,10 @@ function vitePluginRscCss(
           const importer = parsed.id
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
-            for (const file of [importer, ...result.visitedFiles]) {
-              this.addWatchFile(file)
-            }
+            // for (const file of [importer, ...result.visitedFiles]) {
+            //   this.addWatchFile(file)
+            // }
+            this.addWatchFile(importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
@@ -2124,6 +2125,18 @@ function vitePluginRscCss(
               )}
             `
           }
+        }
+      },
+      configureServer(server) {
+        // opt-out of soft invalidation of virtual modules to ensure re-executing `load`
+        const moduleGraph = server.environments.rsc!.moduleGraph
+        const original = moduleGraph.invalidateModule
+        moduleGraph.invalidateModule = function (...args) {
+          if (args[0].id && parseCssVirtual(args[0].id)) {
+            // @ts-ignore
+            args[4] = false
+          }
+          return original.apply(this, args)
         }
       },
     },
