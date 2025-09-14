@@ -45,6 +45,7 @@ import {
   getEntrySource,
   hashString,
   normalizeRelativePath,
+  getFetchHandlerExport,
   sortObject,
   withRollupError,
 } from './plugins/utils'
@@ -514,13 +515,14 @@ export default function vitePluginRsc(
                 `[vite-rsc] failed to resolve server handler '${source}'`,
               )
               const mod = await environment.runner.import(resolved.id)
+              const fetchHandler = getFetchHandlerExport(mod)
               // expose original request url to server handler.
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
               // ensure catching rejected promise
               // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
-              await createRequestListener(mod.default)(req, res)
+              await createRequestListener(fetchHandler)(req, res)
             } catch (e) {
               next(e)
             }
@@ -541,7 +543,8 @@ export default function vitePluginRsc(
         )
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
-        const handler = createRequestListener(mod.default)
+        const fetchHandler = getFetchHandlerExport(mod)
+        const handler = createRequestListener(fetchHandler)
 
         // disable compressions since it breaks html streaming
         // https://github.com/vitejs/vite/blob/9f5c59f07aefb1756a37bcb1c0aff24d54288950/packages/vite/src/node/preview.ts#L178
@@ -1010,7 +1013,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
 const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
 import.meta.hot.on("vite:beforeUpdate", () => {
   ssrCss.forEach(node => {
-    if (node.dataset.precedence?.startsWith("vite-rsc/")) {
+    if (node.dataset.precedence?.startsWith("vite-rsc/client-references")) {
       node.remove();
     }
   });
@@ -2100,13 +2103,7 @@ function vitePluginRscCss(
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const jsHrefs = [
-              `@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
-            ]
-            const deps = assetsURLOfDeps(
-              { css: cssHrefs, js: jsHrefs },
-              manager,
-            )
+            const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
               manager,
@@ -2125,20 +2122,6 @@ function vitePluginRscCss(
             `
           }
         }
-        if (parsed?.type === 'rsc-browser') {
-          assert(this.environment.name === 'client')
-          assert(this.environment.mode === 'dev')
-          const importer = parsed.id
-          const result = collectCss(server.environments.rsc!, importer)
-          let code = result.ids
-            .map((id) => id.replace(/^\0/, ''))
-            .map((id) => `import ${JSON.stringify(id)};\n`)
-            .join('')
-          // ensure hmr boundary at this virtual since otherwise non-self accepting css
-          // (e.g. css module) causes full reload
-          code += `if (import.meta.hot) { import.meta.hot.accept() }\n`
-          return code
-        }
       },
       hotUpdate(ctx) {
         if (this.environment.name === 'rsc') {
@@ -2149,10 +2132,6 @@ function vitePluginRscCss(
               invalidteModuleById(
                 server.environments.rsc!,
                 `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
-              )
-              invalidteModuleById(
-                server.environments.client,
-                `\0` + toCssVirtual({ id: mod.id, type: 'rsc-browser' }),
               )
             }
           }
@@ -2171,7 +2150,7 @@ function vitePluginRscCss(
             .forEach((node) => {
               if (
                 node instanceof HTMLElement &&
-                node.dataset.precedence?.startsWith('vite-rsc/')
+                node.dataset.precedence?.startsWith('vite-rsc/client-reference')
               ) {
                 node.remove()
               }
@@ -2229,15 +2208,6 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
             rel: 'stylesheet',
             precedence: 'vite-rsc/importer-resources',
             href: href,
-          }),
-        ),
-        // js is only for dev to forward css import on browser to have hmr
-        ...deps.js.map((href: string) =>
-          React.createElement('script', {
-            key: 'js:' + href,
-            type: 'module',
-            async: true,
-            src: href,
           }),
         ),
         RemoveDuplicateServerCss &&

@@ -733,16 +733,26 @@ function defineTest(f: Fixture) {
     })
 
     async function expectNoDuplicateServerCss(page: Page) {
-      // check only manually inserted stylesheet link exists
-      await expect(page.locator('link[rel="stylesheet"]')).toHaveCount(3)
-      for (const locator of await page
-        .locator('link[rel="stylesheet"]')
-        .all()) {
-        await expect(locator).toHaveAttribute(
-          'data-precedence',
-          'test-style-manual-link',
-        )
-      }
+      // verify duplicate client-reference style link are removed
+      await expect(
+        page.locator(
+          'link[rel="stylesheet"][data-precedence="vite-rsc/client-reference"]',
+        ),
+      ).toHaveCount(0)
+      await expect(
+        page
+          .locator(
+            'link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]',
+          )
+          .nth(0),
+      ).toBeAttached()
+      await expect(
+        page
+          .locator(
+            'link[rel="stylesheet"][data-precedence="test-style-manual-link"]',
+          )
+          .nth(0),
+      ).toBeAttached()
     }
 
     test('no duplicate server css', async ({ page }) => {
@@ -836,12 +846,40 @@ function defineTest(f: Fixture) {
       await expectNoDuplicateServerCss(page)
     })
 
-    // TODO: need a way to add/remove links on server hmr. for now, it requires a manually reload.
-    test.skip('adding/removing css server @js', async ({ page }) => {
+    // TODO: need a way to remove css links on server hmr. for now, it requires a manually reload.
+    test('adding/removing css server @js', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+
+      // remove css import
+      const editor = f.createEditor('src/routes/style-server/server.tsx')
+      editor.edit((s) =>
+        s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
+      )
+      await page.waitForTimeout(100)
+      await expect(async () => {
+        // TODO: shouldn't require reload
+        await page.reload()
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 0, 0)',
+          { timeout: 10 },
+        )
+      }).toPass()
+
+      // adding css works without reload
+      await waitForHydration(page)
       await using _ = await expectNoReload(page)
-      await testAddRemoveCssServer(page, { js: true })
+
+      editor.reset()
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
     })
 
     testNoJs('adding/removing css server @nojs', async ({ page }) => {
