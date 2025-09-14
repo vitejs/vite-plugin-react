@@ -2042,6 +2042,7 @@ function vitePluginRscCss(
     {
       name: 'rsc:importer-resources',
       configureServer(server) {
+        // delegate 'prune' event from rsc environment to browser
         const hot = server.environments.rsc!.hot
         const original = hot.send
         hot.send = function (this, ...args: any[]) {
