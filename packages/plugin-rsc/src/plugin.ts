@@ -1026,6 +1026,11 @@ import.meta.hot.on("rsc:update", () => {
   document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
 });
 `
+        // remove stylesheet links when css import is removed on rsc envrionment
+        const onRscPrune = (e: vite.PrunePayload) => {
+          console.log('[rsc:prune]', e)
+        }
+        code += `import.meta.hot.on("rsc:prune", ${onRscPrune});`
         return code
       },
     ),
@@ -2036,7 +2041,11 @@ function vitePluginRscCss(
         hot.send = function (this, ...args: any[]) {
           const e = args[0] as vite.PrunePayload
           if (e && typeof e === 'object' && e.type === 'prune') {
-            console.log('[rsc:prune]', e)
+            server.environments.client.hot.send({
+              type: 'custom',
+              event: 'rsc:prune',
+              data: e,
+            })
           }
           return original.apply(this, args as any)
         }
