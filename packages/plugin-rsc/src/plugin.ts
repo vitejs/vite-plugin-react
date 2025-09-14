@@ -1027,10 +1027,16 @@ import.meta.hot.on("rsc:update", () => {
 });
 `
         // remove stylesheet links when css import is removed on rsc envrionment
-        const onRscPrune = (e: vite.PrunePayload) => {
-          console.log('[rsc:prune]', e)
-        }
-        code += `import.meta.hot.on("rsc:prune", ${onRscPrune});`
+        code += `import.meta.hot.on("rsc:prune", ${(e: vite.PrunePayload) => {
+          const nodes = document.querySelectorAll<HTMLLinkElement>(
+            "link[rel='stylesheet']",
+          )
+          nodes.forEach((node) => {
+            if (e.paths.includes(node.dataset.rscCssHref!)) {
+              node.remove()
+            }
+          })
+        }});`
         return code
       },
     ),
@@ -2228,6 +2234,7 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
             rel: 'stylesheet',
             precedence: 'vite-rsc/importer-resources',
             href: href,
+            'data-rsc-css-href': href,
           }),
         ),
         RemoveDuplicateServerCss &&
