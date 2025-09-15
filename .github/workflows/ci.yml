@@ -50,7 +50,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node_version }}
-          cache: "pnpm"
 
       - name: Install deps
         run: pnpm install
@@ -121,7 +120,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: "pnpm"
 
       - name: Install deps
         run: pnpm install
