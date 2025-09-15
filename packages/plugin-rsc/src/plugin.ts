@@ -2129,6 +2129,9 @@ function vitePluginRscCss(
           const importer = parsed.id
           if (this.environment.mode === 'dev') {
             const result = collectCss(server.environments.rsc!, importer)
+            for (const file of [importer, ...result.visitedFiles]) {
+              this.addWatchFile(file)
+            }
             const cssHrefs = result.hrefs.map((href) => href.slice(1))
             const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
@@ -2147,20 +2150,6 @@ function vitePluginRscCss(
                 manager,
               )}
             `
-          }
-        }
-      },
-      hotUpdate(ctx) {
-        if (this.environment.name === 'rsc') {
-          const { server } = manager
-          const mods = collectModuleDependents(ctx.modules)
-          for (const mod of mods) {
-            if (mod.id) {
-              invalidteModuleById(
-                server.environments.rsc!,
-                `\0` + toCssVirtual({ id: mod.id, type: 'rsc' }),
-              )
-            }
           }
         }
       },
@@ -2196,29 +2185,6 @@ export default function RemoveDuplicateServerCss() {
       },
     ),
   ]
-}
-
-function invalidteModuleById(environment: DevEnvironment, id: string) {
-  const mod = environment.moduleGraph.getModuleById(id)
-  if (mod) {
-    environment.moduleGraph.invalidateModule(mod)
-  }
-  return mod
-}
-
-function collectModuleDependents(mods: EnvironmentModuleNode[]) {
-  const visited = new Set<EnvironmentModuleNode>()
-  function recurse(mod: EnvironmentModuleNode) {
-    if (visited.has(mod)) return
-    visited.add(mod)
-    for (const importer of mod.importers) {
-      recurse(importer)
-    }
-  }
-  for (const mod of mods) {
-    recurse(mod)
-  }
-  return [...visited]
 }
 
 function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
