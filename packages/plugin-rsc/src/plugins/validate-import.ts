@@ -51,7 +51,7 @@ export function validateImportPlugin(): Plugin {
         if (this.environment.mode === 'dev') {
           if (id.startsWith(`\0virtual:vite-rsc/validate-imports/invalid/`)) {
             const chain = getImportChainDev(this.environment, id)
-            const error = formatError(chain, this.environment.name)
+            const error = formatError(chain)
             if (error) {
               this.error({
                 id: chain[1],
@@ -68,7 +68,7 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/server-only',
         )
-        const serverOnlyError = formatError(serverOnly, this.environment.name)
+        const serverOnlyError = formatError(serverOnly)
         if (serverOnlyError) {
           throw new Error(serverOnlyError)
         }
@@ -76,7 +76,7 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/client-only',
         )
-        const clientOnlyError = formatError(clientOnly, this.environment.name)
+        const clientOnlyError = formatError(clientOnly)
         if (clientOnlyError) {
           throw new Error(clientOnlyError)
         }
@@ -117,14 +117,12 @@ function getImportChainBuild(ctx: Rollup.PluginContext, id: string): string[] {
   return chain
 }
 
-function formatError(
-  chain: string[],
-  environmentName: string,
-): string | undefined {
+function formatError(chain: string[]): string | undefined {
   if (chain.length === 0) return
   const id = chain[0]!
   const source = id.slice(id.lastIndexOf('/') + 1)
-  let result = `'${source}' cannot be imported in '${environmentName}' environment:\n`
+  const buildName = source === 'server-only' ? 'client' : 'server'
+  let result = `'${source}' cannot be imported in ${buildName} build:\n`
   result += chain
     .slice(1, 6)
     .map(
