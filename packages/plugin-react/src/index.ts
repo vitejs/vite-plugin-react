@@ -355,7 +355,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const nativeRefreshWrapper: Plugin | undefined =
     'reactRefreshWrapperPlugin' in vite
       ? {
-          name: 'vite:react:refresh-wrapper',
+          name: 'vite:react:native-refresh-wrapper',
           apply: 'serve',
           applyToEnvironment(env) {
             return env.config.consumer === 'client' && !skipFastRefresh
@@ -373,9 +373,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       : undefined
 
   // for rolldown-vite
-  const viteRefreshWrapper: Plugin = nativeRefreshWrapper ?? {
+  const viteRefreshWrapper: Plugin = {
     name: 'vite:react:refresh-wrapper',
     apply: 'serve',
+    configResolved(config) {
+      if (nativeRefreshWrapper && config.experimental.fullBundleMode) {
+        delete viteRefreshWrapper.transform
+      }
+    },
     transform: {
       filter: {
         id: {
@@ -493,7 +498,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
   return [
     viteBabel,
-    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost] : []),
+    ...(isRolldownVite
+      ? [nativeRefreshWrapper, viteRefreshWrapper, viteConfigPost]
+      : []),
     viteReactRefresh,
   ]
 }
