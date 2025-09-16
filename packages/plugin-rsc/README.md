@@ -500,11 +500,7 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 
 ## `server-only` and `client-only` import
 
-The plugin provides build-time validation for `server-only` and `client-only` imports to prevent accidentally exposing server code to client bundles or importing browser-specific code in server environments.
-
-### Using `server-only`
-
-The `server-only` import prevents sensitive server code from being included in client bundles:
+You can use `server-only` import to prevent accidentally importing server-only code on client, which can expose sensitive server code to public static assets.
 
 - server-utils.js
 
@@ -512,7 +508,7 @@ The `server-only` import prevents sensitive server code from being included in c
 import 'server-only'
 
 export async function getData() {
-  const res = await fetch('https://service-internal-service.com/data', {
+  const res = await fetch('https://internal-service.com/data', {
     headers: {
       authorization: process.env.API_KEY,
     },
@@ -526,14 +522,10 @@ export async function getData() {
 ```tsx
 'use client'
 import { getData } from './server-utils.js' // ❌ This will fail at build time
-
-export function ClientComponent() {
-  const data = await getData()
-  return <div>{data.message}</div>
-}
+...
 ```
 
-The plugin will show a build-time error when attempting to import server-only modules in client code:
+When attempting to import server-only modules in client code, the plugin will show an error:
 
 ```sh
 ✘ [ERROR] "server-only" cannot be imported from a Client Component module. It should only be used from a Server Component.
@@ -543,40 +535,31 @@ The plugin will show a build-time error when attempting to import server-only mo
       ╵                         ~~~~~~~~~~~~~~~~~~~
 ```
 
-### Using `client-only`
-
-The `client-only` import ensures browser-specific code isn't accidentally imported in server components:
+Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment:
 
 - client-utils.js
 
 ```tsx
 import 'client-only'
 
-export function useLocalStorage(key: string) {
+export function getStorage(key) {
   // This uses browser-only APIs
   return window.localStorage.getItem(key)
-}
-
-export function trackEvent(eventName: string) {
-  // This might use browser-specific analytics
-  if (window.gtag) {
-    window.gtag('event', eventName)
-  }
 }
 ```
 
 - server.js
 
 ```tsx
-import { trackEvent } from './client-utils.js' // ❌ This will fail at build time
+import { getStorage } from './client-utils.js' // ❌ This will fail at build time
 
 export function ServerComponent() {
-  trackEvent('page_view') // This would crash on server
-  return <div>Server Component</div>
+  const data = getStorage("settings")
+  ...
 }
 ```
 
-The plugin will show a build-time error:
+This will similarly fail at build time:
 
 ```sh
 ✘ [ERROR] "client-only" cannot be imported from a Server Component module. It should only be used from a Client Component.
@@ -586,18 +569,9 @@ The plugin will show a build-time error:
       ╵                            ~~~~~~~~~~~~~~~~~~~
 ```
 
-### Implementation Notes
+Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally handles these imports and provides build-time validation instead of runtime errors.
 
-Note that there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team,
-but they don't need to be installed. `@vitejs/plugin-rsc` internally overrides them to provide a better error message during build time instead of the runtime error provided by the actual packages.
-
-This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options:
-
-```js
-rsc({
-  validateImports: false, // Disable build-time validation
-})
-```
+This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
 <!-- Learn more in -->
 <!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
