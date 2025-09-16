@@ -405,7 +405,9 @@ This module re-exports RSC runtime API provided by `react-server-dom/client.brow
 - `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
 - `encodeReply/setServerCallback`: server function related...
 
-## CSS Support
+## Tips
+
+### CSS Support
 
 The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
 
@@ -439,11 +441,11 @@ export function Page() {
 }
 ```
 
-## Canary and Experimental channel releases
+### Canary and Experimental channel releases
 
 See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
 
-## Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
+### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
 By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
 
@@ -474,7 +476,7 @@ export default function myRscFrameworkPlugin() {
 }
 ```
 
-## Typescript
+### Typescript
 
 Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you can add it to `tsconfig.json` to have types for `import.meta.viteRsc` APIs:
 
