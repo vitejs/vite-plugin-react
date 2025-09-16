@@ -353,6 +353,17 @@ export default defineConfig({
       // this behavior can be customized by `serverHandler` option.
       serverHandler: false,
 
+      // the plugin provides build-time validation of 'server-only' and 'client-only' imports.
+      // this is enabled by default. See the "server-only and client-only import" section below for details.
+      validateImports: true,
+
+      // by default, the plugin uses a build-time generated encryption key for
+      // "use server" closure argument binding.
+      // This can be overwritten by configuring `defineEncryptionKey` option,
+      // for example, to obtain a key through environment variable during runtime.
+      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
+      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+
       // when `loadModuleDevProxy: true`, `import.meta.viteRsc.loadModule` is implemented
       // through `fetch` based RPC, which allows, for example, rsc environment inside
       // cloudflare workers to communicate with node ssr environment on main Vite process.
@@ -361,13 +372,6 @@ export default defineConfig({
       // by default, `loadCss()` helper is injected based on certain heuristics.
       // if it breaks, it can be opt-out or selectively applied based on files.
       rscCssTransform: { filter: (id) => id.includes('/my-app/') },
-
-      // by default, the plugin uses a build-time generated encryption key for
-      // "use server" closure argument binding.
-      // This can be overwritten by configuring `defineEncryptionKey` option,
-      // for example, to obtain a key through environment variable during runtime.
-      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
-      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
 
       // see `RscPluginOptions` for full options ...
     }),
@@ -495,6 +499,67 @@ import.meta.viteRsc.loadModule
 ```
 
 See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
+
+### `server-only` and `client-only` import
+
+<!-- references? -->
+<!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
+<!-- https://overreacted.io/how-imports-work-in-rsc/ -->
+
+You can use the `server-only` import to prevent accidentally importing server-only code into client bundles, which can expose sensitive server code in public static assets.
+For example, the plugin will show an error `'server-only' cannot be imported in client build` for the following code:
+
+- server-utils.js
+
+```tsx
+import 'server-only'
+
+export async function getData() {
+  const res = await fetch('https://internal-service.com/data', {
+    headers: {
+      authorization: process.env.API_KEY,
+    },
+  })
+  return res.json()
+}
+```
+
+- client.js
+
+```tsx
+'use client'
+import { getData } from './server-utils.js' // ❌ 'server-only' cannot be imported in client build
+...
+```
+
+Similarly, the `client-only` import ensures browser-specific code isn't accidentally imported into server environments.
+For example, the plugin will show an error `'client-only' cannot be imported in server build` for the following code:
+
+- client-utils.js
+
+```tsx
+import 'client-only'
+
+export function getStorage(key) {
+  // This uses browser-only APIs
+  return window.localStorage.getItem(key)
+}
+```
+
+- server.js
+
+```tsx
+import { getStorage } from './client-utils.js' // ❌ 'client-only' cannot be imported in server build
+
+export function ServerComponent() {
+  const data = getStorage("settings")
+  ...
+}
+```
+
+Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
+
+This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
 ## Credits
 
