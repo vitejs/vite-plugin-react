@@ -498,6 +498,72 @@ import.meta.viteRsc.loadModule
 
 See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
 
+## `server-only` and `client-only` import
+
+You can use `server-only` import to avoid accidentally leaking certain modules on client build, which becomes public static assets.
+
+For example, ...todo
+
+- server-utils.js
+
+```tsx
+import 'server-only'
+
+export async function getData() {
+  const res = await fetch('https://service-internal-service.com/data', {
+    headers: {
+      authorization: process.env.API_KEY,
+    },
+  })
+  return res.json()
+}
+```
+
+- client.js
+
+```tsx
+'use client'
+import { getData } from './api-utils.js'
+
+export function ClientComponent() {
+  const data = await getData()
+  return <div>{data.message}</div>
+}
+```
+
+The plugin will show a following error ....todo
+
+```sh
+`server-only` cannot be imported in client build
+```
+
+On the other way around, `client-only` import ...todo
+
+- server.js
+
+```tsx
+export function ServerComponent() {
+  todo
+}
+```
+
+- client-utils.js
+
+```tsx
+import 'client-only'
+
+todo
+```
+
+Note that there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team,
+but they don't need to be installed. `@vitejs/plugin-rsc` internally overrides them to provide a better error message during time instead of runtime error provided by the actual packages.
+
+This build time valdiation is enabled by default and it can be disabled by `RscPluginOptions.validateImports: false`.
+
+<!-- Learn more in -->
+<!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
+<!-- https://overreacted.io/how-imports-work-in-rsc/ -->
+
 ## Credits
 
 This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.
