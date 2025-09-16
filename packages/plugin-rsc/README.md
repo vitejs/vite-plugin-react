@@ -354,7 +354,7 @@ export default defineConfig({
       serverHandler: false,
 
       // the plugin provides build-time validation of 'server-only' and 'client-only' imports.
-      // this is enabled by default. See the "server-only and client-only import" section for details.
+      // this is enabled by default. See the "server-only and client-only import" section below for details.
       validateImports: true,
 
       // by default, the plugin uses a build-time generated encryption key for
