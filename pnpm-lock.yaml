@@ -696,6 +696,9 @@ importers:
       '@vitejs/plugin-rsc':
         specifier: latest
         version: link:../..
+      rsc-html-stream:
+        specifier: ^0.0.7
+        version: 0.0.7
 
   packages/plugin-rsc/examples/starter:
     dependencies:
