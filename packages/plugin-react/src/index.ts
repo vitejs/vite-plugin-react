@@ -352,34 +352,34 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
-  const nativeRefreshWrapper: Plugin | undefined =
-    'reactRefreshWrapperPlugin' in vite
-      ? {
-          name: 'vite:react:native-refresh-wrapper',
-          apply: 'serve',
-          applyToEnvironment(env) {
-            return env.config.consumer === 'client' && !skipFastRefresh
-              ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore only available in rolldown-vite
-                vite.reactRefreshWrapperPlugin({
-                  include,
-                  exclude,
-                  jsxImportSource,
-                  reactRefreshHost: opts.reactRefreshHost ?? '',
-                })
-              : undefined
-          },
-        }
-      : undefined
-
   // for rolldown-vite
   const viteRefreshWrapper: Plugin = {
     name: 'vite:react:refresh-wrapper',
     apply: 'serve',
-    configResolved(config) {
-      if (nativeRefreshWrapper && config.experimental.fullBundleMode) {
-        delete viteRefreshWrapper.transform
+    async applyToEnvironment(env) {
+      if (env.config.consumer !== 'client' || skipFastRefresh) {
+        return false
       }
+      if (!env.config.experimental.fullBundleMode) {
+        return true
+      }
+
+      let nativePlugin: ((options: any) => Plugin) | undefined
+      try {
+        nativePlugin = (await import('vite/internal')).reactRefreshWrapperPlugin
+      } catch {}
+      if (!nativePlugin) {
+        return true
+      }
+
+      delete viteRefreshWrapper.transform
+
+      return nativePlugin({
+        include,
+        exclude,
+        jsxImportSource,
+        reactRefreshHost: opts.reactRefreshHost ?? '',
+      }) as unknown as boolean
     },
     transform: {
       filter: {
@@ -454,19 +454,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         include: dependencies,
       },
     }),
-    // native refresh wrapper plugin handles runtime resolution
-    ...(nativeRefreshWrapper
-      ? {}
-      : {
-          resolveId: {
-            filter: { id: exactRegex(runtimePublicPath) },
-            handler(id) {
-              if (id === runtimePublicPath) {
-                return id
-              }
-            },
-          },
-        }),
+    resolveId: {
+      filter: { id: exactRegex(runtimePublicPath) },
+      handler(id) {
+        if (id === runtimePublicPath) {
+          return id
+        }
+      },
+    },
     load: {
       filter: { id: exactRegex(runtimePublicPath) },
       handler(id) {
@@ -498,9 +493,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
   return [
     viteBabel,
-    ...(isRolldownVite
-      ? [nativeRefreshWrapper, viteRefreshWrapper, viteConfigPost]
-      : []),
+    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost] : []),
     viteReactRefresh,
   ]
 }
