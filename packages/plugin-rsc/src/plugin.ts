@@ -1311,7 +1311,8 @@ function vitePluginUseClient(
         async handler(source, importer, options) {
           if (
             this.environment.name === serverEnvironmentName &&
-            bareImportRE.test(source)
+            bareImportRE.test(source) &&
+            !(source === 'client-only' || source === 'server-only')
           ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
