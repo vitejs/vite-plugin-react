@@ -102,8 +102,10 @@ test.describe('validate imports', () => {
         throwOnError: false,
         nodeOptions: { cwd: root },
       })
+      // assertion is adjusted for rolldown-vite
+      expect(result.stderr).toContain(`rsc:validate-imports`)
       expect(result.stderr).toContain(
-        `[rsc:validate-imports] 'server-only' cannot be imported in client build`,
+        `'server-only' cannot be imported in client build`,
       )
       expect(result.exitCode).not.toBe(0)
     })
@@ -151,8 +153,9 @@ test.describe('validate imports', () => {
         throwOnError: false,
         nodeOptions: { cwd: root },
       })
+      expect(result.stderr).toContain(`rsc:validate-imports`)
       expect(result.stderr).toContain(
-        `[rsc:validate-imports] 'client-only' cannot be imported in server build`,
+        `'client-only' cannot be imported in server build`,
       )
       expect(result.exitCode).not.toBe(0)
     })
