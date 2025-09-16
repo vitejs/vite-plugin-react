@@ -504,7 +504,7 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 <!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
 <!-- https://overreacted.io/how-imports-work-in-rsc/ -->
 
-You can use `server-only` import to prevent accidentally importing server-only code on client, which can expose sensitive server code to public static assets.
+You can use the `server-only` import to prevent accidentally importing server-only code into client bundles, which can expose sensitive server code in public static assets.
 For example, the plugin will show an error `'server-only' cannot be imported in client build` for the following code:
 
 - server-utils.js
@@ -530,7 +530,7 @@ import { getData } from './server-utils.js' // ❌ 'server-only' cannot be impor
 ...
 ```
 
-Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment.
+Similarly, the `client-only` import ensures browser-specific code isn't accidentally imported into server environments.
 For example, the plugin will show an error `'client-only' cannot be imported in server build` for the following code:
 
 - client-utils.js
