@@ -44,7 +44,7 @@ export function validateImportPlugin(): Plugin {
         return `export {}`
       }
     },
-    // need a different way to probe module graph for dev and build
+    // for dev, use DevEnvironment.moduleGraph during post transform
     transform: {
       order: 'post',
       async handler(_code, id) {
@@ -62,6 +62,7 @@ export function validateImportPlugin(): Plugin {
         }
       },
     },
+    // for build, use PluginContext.getModuleInfo during generateBundle
     generateBundle() {
       if (this.environment.mode === 'build') {
         const serverOnly = getImportChainBuild(
