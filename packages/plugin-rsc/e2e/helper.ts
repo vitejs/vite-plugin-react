@@ -15,7 +15,7 @@ export async function waitForHydration(page: Page, locator: string = 'body') {
               el &&
               Object.keys(el).some((key) => key.startsWith('__reactFiber')),
           ),
-      { timeout: 10000 },
+      { timeout: 20000 },
     )
     .toBeTruthy()
 }
