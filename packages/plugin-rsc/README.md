@@ -354,7 +354,7 @@ export default defineConfig({
       serverHandler: false,
 
       // this controls build-time validation of 'server-only' and 'client-only' imports.
-      // this is enabled by default.
+      // this is enabled by default. See the "server-only and client-only import" section for details.
       validateImports: true,
 
       // by default, the plugin uses a build-time generated encryption key for
@@ -500,9 +500,11 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 
 ## `server-only` and `client-only` import
 
-You can use `server-only` import to avoid accidentally leaking certain modules to client build static assets.
+The plugin provides build-time validation for `server-only` and `client-only` imports to prevent accidentally exposing server code to client bundles or importing browser-specific code in server environments.
 
-For example, ...todo
+### Using `server-only`
+
+The `server-only` import prevents sensitive server code from being included in client bundles:
 
 - server-utils.js
 
@@ -523,7 +525,7 @@ export async function getData() {
 
 ```tsx
 'use client'
-import { getData } from './api-utils.js'
+import { getData } from './server-utils.js' // ❌ This will fail at build time
 
 export function ClientComponent() {
   const data = await getData()
@@ -531,34 +533,71 @@ export function ClientComponent() {
 }
 ```
 
-The plugin will show a following error ....todo
+The plugin will show a build-time error when attempting to import server-only modules in client code:
 
 ```sh
-`server-only` cannot be imported in client build
+✘ [ERROR] "server-only" cannot be imported from a Client Component module. It should only be used from a Server Component.
+
+  client.js:2:25:
+    2 │ import { getData } from './server-utils.js'
+      ╵                         ~~~~~~~~~~~~~~~~~~~
 ```
 
-On the other way around, `client-only` import ...todo
+### Using `client-only`
 
-- server.js
-
-```tsx
-export function ServerComponent() {
-  todo
-}
-```
+The `client-only` import ensures browser-specific code isn't accidentally imported in server components:
 
 - client-utils.js
 
 ```tsx
 import 'client-only'
 
-todo
+export function useLocalStorage(key: string) {
+  // This uses browser-only APIs
+  return window.localStorage.getItem(key)
+}
+
+export function trackEvent(eventName: string) {
+  // This might use browser-specific analytics
+  if (window.gtag) {
+    window.gtag('event', eventName)
+  }
+}
 ```
 
-Note that there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team,
-but they don't need to be installed. `@vitejs/plugin-rsc` internally overrides them to provide a better error message during time instead of runtime error provided by the actual packages.
+- server.js
 
-This build time valdiation is enabled by default and it can be disabled by `RscPluginOptions.validateImports: false`.
+```tsx
+import { trackEvent } from './client-utils.js' // ❌ This will fail at build time
+
+export function ServerComponent() {
+  trackEvent('page_view') // This would crash on server
+  return <div>Server Component</div>
+}
+```
+
+The plugin will show a build-time error:
+
+```sh
+✘ [ERROR] "client-only" cannot be imported from a Server Component module. It should only be used from a Client Component.
+
+  server.js:1:27:
+    1 │ import { trackEvent } from './client-utils.js'
+      ╵                            ~~~~~~~~~~~~~~~~~~~
+```
+
+### Implementation Notes
+
+Note that there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team,
+but they don't need to be installed. `@vitejs/plugin-rsc` internally overrides them to provide a better error message during build time instead of the runtime error provided by the actual packages.
+
+This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options:
+
+```js
+rsc({
+  validateImports: false, // Disable build-time validation
+})
+```
 
 <!-- Learn more in -->
 <!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
