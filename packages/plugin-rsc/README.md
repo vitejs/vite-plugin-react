@@ -500,7 +500,7 @@ import.meta.viteRsc.loadModule
 
 See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
 
-## `server-only` and `client-only` import
+### `server-only` and `client-only` import
 
 <!-- references? -->
 <!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
