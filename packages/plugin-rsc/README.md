@@ -353,7 +353,7 @@ export default defineConfig({
       // this behavior can be customized by `serverHandler` option.
       serverHandler: false,
 
-      // this controls build-time validation of 'server-only' and 'client-only' imports.
+      // the plugin provides build-time validation of 'server-only' and 'client-only' imports.
       // this is enabled by default. See the "server-only and client-only import" section for details.
       validateImports: true,
 
@@ -534,7 +534,7 @@ import { getData } from './server-utils.js' // ❌ This will fail at build time
 the plugin will show an error:
 
 ```sh
-[rsc:validate-imports] 'server-only' cannot be imported in client build (importer: '/.../client.js', ...)
+'server-only' cannot be imported in client build (importer: '/xxx/client.js', ...)
 ```
 
 Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment. For example,
@@ -564,10 +564,10 @@ export function ServerComponent() {
 the plugin will show an error:
 
 ```sh
-[rsc:virtual-client-package] 'client-only' cannot be imported in server build (importer: '/.../server.js', ...)
+'client-only' cannot be imported in server build (importer: 'xxx/server.js', ...)
 ```
 
-Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and provides build-time validation instead of runtime errors.
+Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
