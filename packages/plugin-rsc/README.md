@@ -353,6 +353,17 @@ export default defineConfig({
       // this behavior can be customized by `serverHandler` option.
       serverHandler: false,
 
+      // by default, the plugin uses a build-time generated encryption key for
+      // "use server" closure argument binding.
+      // This can be overwritten by configuring `defineEncryptionKey` option,
+      // for example, to obtain a key through environment variable during runtime.
+      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
+      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+
+      // this controls build-time validation of 'client-only' and 'server-only' imports.
+      // this is enabled by default.
+      validateImports: true,
+
       // when `loadModuleDevProxy: true`, `import.meta.viteRsc.loadModule` is implemented
       // through `fetch` based RPC, which allows, for example, rsc environment inside
       // cloudflare workers to communicate with node ssr environment on main Vite process.
@@ -361,13 +372,6 @@ export default defineConfig({
       // by default, `loadCss()` helper is injected based on certain heuristics.
       // if it breaks, it can be opt-out or selectively applied based on files.
       rscCssTransform: { filter: (id) => id.includes('/my-app/') },
-
-      // by default, the plugin uses a build-time generated encryption key for
-      // "use server" closure argument binding.
-      // This can be overwritten by configuring `defineEncryptionKey` option,
-      // for example, to obtain a key through environment variable during runtime.
-      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
-      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
 
       // see `RscPluginOptions` for full options ...
     }),
