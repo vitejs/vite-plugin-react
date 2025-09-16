@@ -500,7 +500,13 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 
 ## `server-only` and `client-only` import
 
+<!-- references? -->
+<!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
+<!-- https://overreacted.io/how-imports-work-in-rsc/ -->
+
 You can use `server-only` import to prevent accidentally importing server-only code on client, which can expose sensitive server code to public static assets.
+
+For example, with the following codes:
 
 - server-utils.js
 
@@ -525,17 +531,13 @@ import { getData } from './server-utils.js' // ❌ This will fail at build time
 ...
 ```
 
-When attempting to import server-only modules in client code, the plugin will show an error:
+the plugin will show an error:
 
 ```sh
-✘ [ERROR] "server-only" cannot be imported from a Client Component module. It should only be used from a Server Component.
-
-  client.js:2:25:
-    2 │ import { getData } from './server-utils.js'
-      ╵                         ~~~~~~~~~~~~~~~~~~~
+[rsc:validate-imports] 'server-only' cannot be imported in client build (importer: '/.../client.js', ...)
 ```
 
-Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment:
+Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment. For example,
 
 - client-utils.js
 
@@ -559,23 +561,15 @@ export function ServerComponent() {
 }
 ```
 
-This will similarly fail at build time:
+the plugin will show an error:
 
 ```sh
-✘ [ERROR] "client-only" cannot be imported from a Server Component module. It should only be used from a Client Component.
-
-  server.js:1:27:
-    1 │ import { trackEvent } from './client-utils.js'
-      ╵                            ~~~~~~~~~~~~~~~~~~~
+[rsc:virtual-client-package] 'client-only' cannot be imported in server build (importer: '/.../server.js', ...)
 ```
 
-Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally handles these imports and provides build-time validation instead of runtime errors.
+Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and provides build-time validation instead of runtime errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
-
-<!-- Learn more in -->
-<!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
-<!-- https://overreacted.io/how-imports-work-in-rsc/ -->
 
 ## Credits
 
