@@ -506,7 +506,7 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 
 You can use `server-only` import to prevent accidentally importing server-only code on client, which can expose sensitive server code to public static assets.
 
-For example, with the following codes:
+For example, the plugin will show an error `'server-only' cannot be imported in client build` for the following codes:
 
 - server-utils.js
 
@@ -527,17 +527,11 @@ export async function getData() {
 
 ```tsx
 'use client'
-import { getData } from './server-utils.js' // ❌ This will fail at build time
+import { getData } from './server-utils.js' // ❌ 'server-only' cannot be imported in client build
 ...
 ```
 
-the plugin will show an error:
-
-```sh
-'server-only' cannot be imported in client build (importer: '/xxx/client.js', ...)
-```
-
-Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment. For example,
+Similarly, `client-only` import can ensure browser-specific code isn't accidentally imported in server environment. For example, the plugin will show an error `'client-only' cannot be imported in server build` for the following codes:
 
 - client-utils.js
 
@@ -553,18 +547,12 @@ export function getStorage(key) {
 - server.js
 
 ```tsx
-import { getStorage } from './client-utils.js' // ❌ This will fail at build time
+import { getStorage } from './client-utils.js' // ❌ 'client-only' cannot be imported in server build
 
 export function ServerComponent() {
   const data = getStorage("settings")
   ...
 }
-```
-
-the plugin will show an error:
-
-```sh
-'client-only' cannot be imported in server build (importer: 'xxx/server.js', ...)
 ```
 
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
