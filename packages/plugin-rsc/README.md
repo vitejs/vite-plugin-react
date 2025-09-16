@@ -500,7 +500,7 @@ See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-f
 
 ## `server-only` and `client-only` import
 
-You can use `server-only` import to avoid accidentally leaking certain modules on client build, which becomes public static assets.
+You can use `server-only` import to avoid accidentally leaking certain modules to client build static assets.
 
 For example, ...todo
 
