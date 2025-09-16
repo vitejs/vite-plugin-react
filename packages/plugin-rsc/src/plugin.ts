@@ -1009,23 +1009,31 @@ window.__vite_plugin_react_preamble_installed__ = true;
         code += `await import(${JSON.stringify(resolvedEntry.id)});`
         // server css is normally removed via `RemoveDuplicateServerCss` on useEffect.
         // this also makes sure they are removed on hmr in case initial rendering failed.
-        code += /* js */ `
-const ssrCss = document.querySelectorAll("link[rel='stylesheet']");
-import.meta.hot.on("vite:beforeUpdate", () => {
-  ssrCss.forEach(node => {
-    if (node.dataset.precedence?.startsWith("vite-rsc/client-references")) {
-      node.remove();
-    }
-  });
-});
-`
+        code += `
+          import.meta.hot.on("vite:beforeUpdate", ${() => {
+            const nodes = document.querySelectorAll<HTMLElement>(
+              "link[rel='stylesheet']",
+            )
+            nodes.forEach((node) => {
+              if (
+                node.dataset.precedence?.startsWith(
+                  'vite-rsc/client-references',
+                )
+              ) {
+                node.remove()
+              }
+            })
+          }});
+        `
         // close error overlay after syntax error is fixed and hmr is triggered.
         // https://github.com/vitejs/vite/blob/8033e5bf8d3ff43995d0620490ed8739c59171dd/packages/vite/src/client/client.ts#L318-L320
         code += `
-import.meta.hot.on("rsc:update", () => {
-  document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
-});
-`
+          import.meta.hot.on("rsc:update", ${() => {
+            document
+              .querySelectorAll<HTMLDialogElement>('vite-error-overlay')
+              .forEach((n) => n.close())
+          }});
+        `
         return code
       },
     ),
