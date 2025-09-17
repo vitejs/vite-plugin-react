@@ -50,7 +50,7 @@ jobs:
         run: pnpm build
 
       - name: Publish package
-        run: npm i -g npm@latest && pnpm run ci-publish ${{ github.ref_name }}
+        run: npm i -g npm@^11.5.2 && pnpm run ci-publish ${{ github.ref_name }}
 
       - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName != 'plugin-rsc'
         uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
