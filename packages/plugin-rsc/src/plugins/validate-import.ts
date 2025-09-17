@@ -67,8 +67,9 @@ export function validateImportPlugin(): Plugin {
         }
       },
     },
-    // for build, use PluginContext.getModuleInfo during generateBundle
-    generateBundle() {
+    // for build, use PluginContext.getModuleInfo during buildEnd.
+    // rollup shows multiple errors if there are other build error from `buildEnd(error)`.
+    buildEnd() {
       if (this.environment.mode === 'build') {
         const serverOnly = getImportChainBuild(
           this,
