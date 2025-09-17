@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.2 (2025-09-17)
+
 ### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
 
 ## 0.4.1 (2025-08-19)
