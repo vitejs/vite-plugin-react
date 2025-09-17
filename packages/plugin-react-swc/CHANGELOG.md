@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.1.0 (2025-09-17)
+
 ### Set SWC cacheRoot options
 
 This is set to `{viteCacheDir}/swc` and override the default of `.swc`.

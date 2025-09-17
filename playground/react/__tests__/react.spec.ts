@@ -35,6 +35,28 @@ test.runIf(isServe)('should hmr', async () => {
   await expect.poll(() => page.textContent('h1')).toMatch('Hello Vite + React')
 })
 
+test.runIf(isServe)('should hmr files with queries', async () => {
+  expect(await page.textContent('#WithQuery')).toBe('With Query')
+
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 0')
+  await page.click('#WithQuery-button')
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
+
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query', 'With Query Updated'),
+  )
+  await expect
+    .poll(() => page.textContent('#WithQuery'))
+    .toBe('With Query Updated')
+  // preserve state
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
+
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query Updated', 'With Query'),
+  )
+  await expect.poll(() => page.textContent('#WithQuery')).toBe('With Query')
+})
+
 test.runIf(isServe)('should not invalidate when code is invalid', async () => {
   editFile('App.jsx', (code) =>
     code.replace('<div className="App">', '<div className="App"}>'),
