@@ -1026,6 +1026,17 @@ import.meta.hot.on("rsc:update", () => {
   document.querySelectorAll("vite-error-overlay").forEach((n) => n.close())
 });
 `
+        // remove stylesheet links when css import is removed on rsc envrionment
+        code += `import.meta.hot.on("rsc:prune", ${(e: vite.PrunePayload) => {
+          const nodes = document.querySelectorAll<HTMLLinkElement>(
+            "link[rel='stylesheet']",
+          )
+          nodes.forEach((node) => {
+            if (e.paths.includes(node.dataset.rscCssHref!)) {
+              node.remove()
+            }
+          })
+        }});`
         return code
       },
     ),
@@ -2031,6 +2042,22 @@ function vitePluginRscCss(
     },
     {
       name: 'rsc:importer-resources',
+      configureServer(server) {
+        // delegate 'prune' event from rsc environment to browser
+        const hot = server.environments.rsc!.hot
+        const original = hot.send
+        hot.send = function (this, ...args: any[]) {
+          const e = args[0] as vite.PrunePayload
+          if (e && typeof e === 'object' && e.type === 'prune') {
+            server.environments.client.hot.send({
+              type: 'custom',
+              event: 'rsc:prune',
+              data: e,
+            })
+          }
+          return original.apply(this, args as any)
+        }
+      },
       async transform(code, id) {
         if (!code.includes('import.meta.viteRsc.loadCss')) return
 
@@ -2175,6 +2202,7 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
             rel: 'stylesheet',
             precedence: 'vite-rsc/importer-resources',
             href: href,
+            'data-rsc-css-href': href,
           }),
         ),
         RemoveDuplicateServerCss &&
