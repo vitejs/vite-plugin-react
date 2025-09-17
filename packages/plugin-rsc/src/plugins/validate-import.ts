@@ -1,3 +1,4 @@
+import path from 'node:path'
 import type { DevEnvironment, Plugin, Rollup } from 'vite'
 
 // https://github.com/vercel/next.js/blob/90f564d376153fe0b5808eab7b83665ee5e08aaf/packages/next/src/build/webpack-config.ts#L1249-L1280
@@ -51,7 +52,11 @@ export function validateImportPlugin(): Plugin {
         if (this.environment.mode === 'dev') {
           if (id.startsWith(`\0virtual:vite-rsc/validate-imports/invalid/`)) {
             const chain = getImportChainDev(this.environment, id)
-            const error = formatError(chain, this.environment.name)
+            const error = formatError(
+              chain,
+              this.environment.name,
+              this.environment.config.root,
+            )
             if (error) {
               this.error({
                 id: chain[1],
@@ -69,7 +74,11 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/server-only',
         )
-        const serverOnlyError = formatError(serverOnly, this.environment.name)
+        const serverOnlyError = formatError(
+          serverOnly,
+          this.environment.name,
+          this.environment.config.root,
+        )
         if (serverOnlyError) {
           throw new Error(serverOnlyError)
         }
@@ -77,7 +86,11 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/client-only',
         )
-        const clientOnlyError = formatError(clientOnly, this.environment.name)
+        const clientOnlyError = formatError(
+          clientOnly,
+          this.environment.name,
+          this.environment.config.root,
+        )
         if (clientOnlyError) {
           throw new Error(clientOnlyError)
         }
@@ -121,6 +134,7 @@ function getImportChainBuild(ctx: Rollup.PluginContext, id: string): string[] {
 function formatError(
   chain: string[],
   environmentName: string,
+  root: string,
 ): string | undefined {
   if (chain.length === 0) return
   const id = chain[0]!
@@ -130,7 +144,9 @@ function formatError(
   result += chain
     .slice(1, 6)
     .map(
-      (id, i) => ' '.repeat(i + 1) + `imported by ${id.replaceAll('\0', '')}\n`,
+      (id, i) =>
+        ' '.repeat(i + 1) +
+        `imported by ${path.relative(root, id).replaceAll('\0', '')}\n`,
     )
     .join('')
   if (chain.length > 6) {
