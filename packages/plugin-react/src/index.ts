@@ -144,8 +144,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
                 // if development is enabled and those properties are already present
                 development: false,
               },
-              jsxRefreshInclude: include,
-              jsxRefreshExclude: exclude,
+              jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
+              jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
             },
           }
         } else {
@@ -156,8 +156,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
                 importSource: opts.jsxImportSource,
                 refresh: command === 'serve',
               },
-              jsxRefreshInclude: include,
-              jsxRefreshExclude: exclude,
+              jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
+              jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
             },
             optimizeDeps: {
               rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
