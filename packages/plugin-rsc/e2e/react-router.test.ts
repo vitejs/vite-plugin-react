@@ -25,7 +25,7 @@ test.describe('dev-cloudflare', () => {
     mode: 'dev',
     command: 'pnpm cf-dev',
   })
-  defineTest(f)
+  defineTest(f, 'cloudflare')
 })
 
 test.describe('build-cloudflare', () => {
@@ -35,10 +35,10 @@ test.describe('build-cloudflare', () => {
     buildCommand: 'pnpm cf-build',
     command: 'pnpm cf-preview',
   })
-  defineTest(f)
+  defineTest(f, 'cloudflare')
 })
 
-function defineTest(f: Fixture) {
+function defineTest(f: Fixture, variant?: 'cloudflare') {
   test('loader', async ({ page }) => {
     await page.goto(f.url())
     await expect(page.getByText(`loaderData: {"name":"Unknown"}`)).toBeVisible()
@@ -81,7 +81,7 @@ function defineTest(f: Fixture) {
         )
       const manifest = JSON.parse(
         readFileSync(
-          f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
+          `${f.root}/${variant === 'cloudflare' ? 'dist/rsc/ssr' : 'dist/ssr'}/__vite_rsc_assets_manifest.js`,
           'utf-8',
         ).slice('export default '.length),
       )

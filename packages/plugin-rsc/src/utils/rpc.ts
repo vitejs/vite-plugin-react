@@ -1,4 +1,11 @@
-import { decode, encode } from 'turbo-stream'
+import {
+  decode,
+  encode,
+  type DecodeOptions,
+  type DecodePlugin,
+  type EncodeOptions,
+  type EncodePlugin,
+} from 'turbo-stream'
 
 type RequestPayload = {
   method: string
@@ -17,6 +24,7 @@ export function createRpcServer<T extends object>(handlers: T) {
     }
     const reqPayload = await decode<RequestPayload>(
       request.body.pipeThrough(new TextDecoderStream()),
+      decodeOptions,
     )
     const handler = (handlers as any)[reqPayload.method]
     if (!handler) {
@@ -31,7 +39,7 @@ export function createRpcServer<T extends object>(handlers: T) {
       resPayload.ok = false
       resPayload.data = e
     }
-    return new Response(encode(resPayload))
+    return new Response(encode(resPayload, encodeOptions))
   }
 }
 
@@ -41,7 +49,9 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
       method,
       args,
     }
-    const body = encode(reqPayload).pipeThrough(new TextEncoderStream())
+    const body = encode(reqPayload, encodeOptions).pipeThrough(
+      new TextEncoderStream(),
+    )
     const res = await fetch(options.endpoint, {
       method: 'POST',
       body,
@@ -55,6 +65,7 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
     }
     const resPayload = await decode<ResponsePayload>(
       res.body.pipeThrough(new TextDecoderStream()),
+      decodeOptions,
     )
     if (!resPayload.ok) {
       throw resPayload.data
@@ -73,4 +84,41 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
       },
     },
   ) as any
+}
+
+const encodePlugin: EncodePlugin = (value) => {
+  if (value instanceof Response) {
+    const data: ConstructorParameters<typeof Response> = [
+      value.body,
+      {
+        status: value.status,
+        statusText: value.statusText,
+        headers: value.headers,
+      },
+    ]
+    return ['vite-rsc/response', ...data]
+  }
+  if (value instanceof Headers) {
+    const data: ConstructorParameters<typeof Headers> = [[...value]]
+    return ['vite-rsc/headers', ...data]
+  }
+}
+
+const decodePlugin: DecodePlugin = (type, ...data) => {
+  if (type === 'vite-rsc/response') {
+    const value = new Response(...(data as any))
+    return { value }
+  }
+  if (type === 'vite-rsc/headers') {
+    const value = new Headers(...(data as any))
+    return { value }
+  }
+}
+
+const encodeOptions: EncodeOptions = {
+  plugins: [encodePlugin],
+}
+
+const decodeOptions: DecodeOptions = {
+  plugins: [decodePlugin],
 }
