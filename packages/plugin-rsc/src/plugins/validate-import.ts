@@ -52,17 +52,11 @@ export function validateImportPlugin(): Plugin {
         if (this.environment.mode === 'dev') {
           if (id.startsWith(`\0virtual:vite-rsc/validate-imports/invalid/`)) {
             const chain = getImportChainDev(this.environment, id)
-            const error = formatError(
+            validateImportChain(
               chain,
               this.environment.name,
               this.environment.config.root,
             )
-            if (error) {
-              this.error({
-                id: chain[1],
-                message: error,
-              })
-            }
           }
         }
       },
@@ -75,26 +69,20 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/server-only',
         )
-        const serverOnlyError = formatError(
+        validateImportChain(
           serverOnly,
           this.environment.name,
           this.environment.config.root,
         )
-        if (serverOnlyError) {
-          throw new Error(serverOnlyError)
-        }
         const clientOnly = getImportChainBuild(
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/client-only',
         )
-        const clientOnlyError = formatError(
+        validateImportChain(
           clientOnly,
           this.environment.name,
           this.environment.config.root,
         )
-        if (clientOnlyError) {
-          throw new Error(clientOnlyError)
-        }
       }
     },
   }
@@ -132,11 +120,11 @@ function getImportChainBuild(ctx: Rollup.PluginContext, id: string): string[] {
   return chain
 }
 
-function formatError(
+function validateImportChain(
   chain: string[],
   environmentName: string,
   root: string,
-): string | undefined {
+) {
   if (chain.length === 0) return
   const id = chain[0]!
   const source = id.slice(id.lastIndexOf('/') + 1)
@@ -153,5 +141,9 @@ function formatError(
   if (chain.length > 6) {
     result += ' '.repeat(7) + '...\n'
   }
-  return result
+  const error = new Error(result)
+  if (chain[1]) {
+    Object.assign(error, { id: chain[1] })
+  }
+  throw error
 }
