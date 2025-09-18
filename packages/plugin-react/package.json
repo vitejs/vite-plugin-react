@@ -43,7 +43,7 @@
     "@babel/core": "^7.28.4",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.35",
+    "@rolldown/pluginutils": "1.0.0-beta.38",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.17.0"
   },
@@ -55,8 +55,8 @@
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "rolldown": "1.0.0-beta.35",
-    "tsdown": "^0.14.2",
+    "rolldown": "1.0.0-beta.38",
+    "tsdown": "^0.15.2",
     "vitest": "^3.2.4"
   }
 }
