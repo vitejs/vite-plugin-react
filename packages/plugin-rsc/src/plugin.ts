@@ -36,6 +36,7 @@ import {
   cleanUrl,
   directRequestRE,
   evalValue,
+  injectQuery,
   normalizeViteImportAnalysisUrl,
   prepareError,
 } from './plugins/vite-utils'
@@ -1923,6 +1924,55 @@ function vitePluginRscCss(
     return { ids: [...cssIds], hrefs, visitedFiles: [...visitedFiles] }
   }
 
+  async function collectCss2(
+    environment: DevEnvironment,
+    clientEnvironment: DevEnvironment,
+    entryId: string,
+  ) {
+    const visited = new Set<string>()
+    const cssIds = new Set<string>()
+    const visitedFiles = new Set<string>()
+
+    function recurse(id: string) {
+      if (visited.has(id)) {
+        return
+      }
+      visited.add(id)
+      const mod = environment.moduleGraph.getModuleById(id)
+      if (mod?.file) {
+        visitedFiles.add(mod.file)
+      }
+      for (const next of mod?.importedModules ?? []) {
+        if (next.id) {
+          if (isCSSRequest(next.id)) {
+            if (hasSpecialCssQuery(next.id)) {
+              continue
+            }
+            cssIds.add(next.id)
+          } else {
+            recurse(next.id)
+          }
+        }
+      }
+    }
+
+    recurse(entryId)
+
+    const styles: Record<string, string> = {}
+    for (const id of cssIds) {
+      try {
+        const result = await clientEnvironment.transformRequest(
+          injectQuery(id, 'direct'),
+        )
+        styles[id] = result?.code ?? ''
+      } catch (e) {
+        console.error(`[collectCss failed '${id}']`, e)
+      }
+    }
+
+    return { ids: [...cssIds], styles, visitedFiles: [...visitedFiles] }
+  }
+
   function getRscCssTransformFilter({
     id,
     code,
@@ -2122,23 +2172,33 @@ function vitePluginRscCss(
           }
         }
       },
-      load(id) {
+      async load(id) {
         const { server } = manager
         const parsed = parseCssVirtual(id)
         if (parsed?.type === 'rsc') {
           assert(this.environment.name === 'rsc')
           const importer = parsed.id
           if (this.environment.mode === 'dev') {
-            const result = collectCss(server.environments.rsc!, importer)
+            const result = await collectCss2(
+              server.environments.rsc!,
+              server.environments.client,
+              importer,
+            )
             for (const file of [importer, ...result.visitedFiles]) {
               this.addWatchFile(file)
             }
-            const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
-            return generateResourcesCode(
-              serializeValueWithRuntime(deps),
-              manager,
-            )
+            return generateResourcesCode2(result.styles, manager)
+
+            // const result = collectCss(server.environments.rsc!, importer)
+            // for (const file of [importer, ...result.visitedFiles]) {
+            //   this.addWatchFile(file)
+            // }
+            // const cssHrefs = result.hrefs.map((href) => href.slice(1))
+            // const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
+            // return generateResourcesCode(
+            //   serializeValueWithRuntime(deps),
+            //   manager,
+            // )
           } else {
             const key = manager.toRelativeId(importer)
             manager.serverResourcesMetaMap[importer] = { key }
@@ -2186,6 +2246,55 @@ export default function RemoveDuplicateServerCss() {
       },
     ),
   ]
+}
+
+function generateResourcesCode2(
+  styles: Record<string, string>,
+  manager: RscPluginManager,
+) {
+  const ResourcesFn = (
+    React: typeof import('react'),
+    styles: Record<string, string>,
+    RemoveDuplicateServerCss?: React.FC,
+  ) => {
+    return function Resources() {
+      return React.createElement(React.Fragment, null, [
+        ...Object.entries(styles).map(([id, content]) =>
+          React.createElement(
+            'style',
+            {
+              key: 'css:' + id,
+              rel: 'stylesheet',
+              precedence: 'vite-rsc/importer-resources',
+              // href: href,
+              // 'data-rsc-css-href': href,
+            },
+            content,
+          ),
+        ),
+        RemoveDuplicateServerCss &&
+          React.createElement(RemoveDuplicateServerCss, {
+            key: 'remove-duplicate-css',
+          }),
+      ])
+    }
+  }
+
+  return `
+import __vite_rsc_react__ from "react";
+
+${
+  manager.config.command === 'serve'
+    ? `import RemoveDuplicateServerCss from "virtual:vite-rsc/remove-duplicate-server-css";`
+    : `const RemoveDuplicateServerCss = undefined;`
+}
+
+export const Resources = (${ResourcesFn.toString()})(
+  __vite_rsc_react__,
+  ${JSON.stringify(styles)},
+  RemoveDuplicateServerCss,
+);
+`
 }
 
 function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
