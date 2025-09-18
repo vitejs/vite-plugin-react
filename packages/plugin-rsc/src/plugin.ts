@@ -2264,10 +2264,11 @@ function generateResourcesCode2(
             'style',
             {
               key: 'css:' + id,
-              rel: 'stylesheet',
+              // https://react.dev/reference/react-dom/components/style#rendering-an-inline-css-stylesheet
+              href: 'vite-rsc/importer-resources/' + id,
               precedence: 'vite-rsc/importer-resources',
-              // href: href,
-              // 'data-rsc-css-href': href,
+              // https://github.com/vitejs/vite/blob/dfd8d8aebec412f56346d078bb00170807f0883e/packages/vite/src/client/client.ts#L504
+              'data-vite-dev-id': id,
             },
             content,
           ),
