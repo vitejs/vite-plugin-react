@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Button from 'jsx-entry'
-import Dummy from './components/Dummy?qs-should-not-break-plugin-react'
+import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 import { Accordion } from './components/Accordion'
 import Parent from './hmr/parent'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
@@ -39,7 +39,7 @@ function App() {
         </a>
       </header>
 
-      <Dummy />
+      <WithQuery />
       <Accordion.Root>
         <Accordion.Item>First Item</Accordion.Item>
         <Accordion.Item>Second Item</Accordion.Item>

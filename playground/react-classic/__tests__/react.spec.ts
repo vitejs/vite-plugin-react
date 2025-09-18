@@ -18,6 +18,28 @@ test.runIf(isServe)('should hmr', async () => {
   expect(await page.textContent('button')).toMatch('count is: 1')
 })
 
+test.runIf(isServe)('should hmr files with queries', async () => {
+  expect(await page.textContent('#WithQuery')).toBe('With Query')
+
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 0')
+  await page.click('#WithQuery-button')
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
+
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query', 'With Query Updated'),
+  )
+  await expect
+    .poll(() => page.textContent('#WithQuery'))
+    .toBe('With Query Updated')
+  // preserve state
+  expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
+
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query Updated', 'With Query'),
+  )
+  await expect.poll(() => page.textContent('#WithQuery')).toBe('With Query')
+})
+
 test.runIf(isServe)(
   'should have annotated jsx with file location metadata',
   async () => {

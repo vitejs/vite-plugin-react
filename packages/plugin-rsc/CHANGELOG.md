@@ -1,3 +1,23 @@
+## <small>[0.4.31](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.30...plugin-rsc@0.4.31) (2025-09-17)</small>
+### Bug Fixes
+
+* **rsc:** fix plugin name in `client-only` error message ([#862](https://github.com/vitejs/vite-plugin-react/issues/862)) ([0f2fbc7](https://github.com/vitejs/vite-plugin-react/commit/0f2fbc7c1fe2b6228864c5b424cea2309323fb67))
+* **rsc:** remove server style when css import is removed ([#849](https://github.com/vitejs/vite-plugin-react/issues/849)) ([4ae3f18](https://github.com/vitejs/vite-plugin-react/commit/4ae3f184eaa3e7fe559ccaf67c35e17a6e7fefa0))
+* **rsc:** show import chain for server-only and client-only import error ([#867](https://github.com/vitejs/vite-plugin-react/issues/867)) ([ba16c34](https://github.com/vitejs/vite-plugin-react/commit/ba16c34f6b70e68f29bff110c6906829ec3b2e8d))
+
+### Documentation
+
+* **rsc:** mention `validateImports` option for build time `server-only` and `client-only` validation ([#858](https://github.com/vitejs/vite-plugin-react/issues/858)) ([a96a6b2](https://github.com/vitejs/vite-plugin-react/commit/a96a6b2ef0afc1cc914885d4514865711d978fbf))
+* **rsc:** separate "Tips" section ([#864](https://github.com/vitejs/vite-plugin-react/issues/864)) ([32cfa5f](https://github.com/vitejs/vite-plugin-react/commit/32cfa5fe1e9c255e59a29c14d1b8585772f7b61e))
+
+### Miscellaneous Chores
+
+* **rsc:** add missing rsc-html-stream dep (fix [#857](https://github.com/vitejs/vite-plugin-react/issues/857)) ([#868](https://github.com/vitejs/vite-plugin-react/issues/868)) ([c30cf1a](https://github.com/vitejs/vite-plugin-react/commit/c30cf1a7db312a2643de426c7ac13479ce90289a))
+
+### Tests
+
+* **rsc:** tweak assertions for rolldown-vite ([#869](https://github.com/vitejs/vite-plugin-react/issues/869)) ([a2a287a](https://github.com/vitejs/vite-plugin-react/commit/a2a287aef6be302a771b8f7c512f190578412685))
+
 ## <small>[0.4.30](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.29...plugin-rsc@0.4.30) (2025-09-15)</small>
 ### Features
 

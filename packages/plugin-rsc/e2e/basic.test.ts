@@ -855,31 +855,42 @@ function defineTest(f: Fixture) {
         'rgb(255, 165, 0)',
       )
 
-      // remove css import
       const editor = f.createEditor('src/routes/style-server/server.tsx')
-      editor.edit((s) =>
-        s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
-      )
-      await page.waitForTimeout(100)
-      await expect(async () => {
-        // TODO: shouldn't require reload
-        await page.reload()
+
+      // removing and adding new css works via hmr
+      {
+        await using _ = await expectNoReload(page)
+
+        // remove css import
+        editor.edit((s) =>
+          s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
+        )
         await expect(page.locator('.test-style-server')).toHaveCSS(
           'color',
           'rgb(0, 0, 0)',
+        )
+
+        // add new css
+        editor.edit((s) =>
+          s.replaceAll(`/* import './server.css' */`, `import './server2.css'`),
+        )
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 255, 165)',
+        )
+      }
+
+      // TODO: React doesn't re-inert same css link. so manual reload is required.
+      editor.reset()
+      await page.waitForTimeout(100)
+      await expect(async () => {
+        await page.reload()
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(255, 165, 0)',
           { timeout: 10 },
         )
       }).toPass()
-
-      // adding css works without reload
-      await waitForHydration(page)
-      await using _ = await expectNoReload(page)
-
-      editor.reset()
-      await expect(page.locator('.test-style-server')).toHaveCSS(
-        'color',
-        'rgb(255, 165, 0)',
-      )
     })
 
     testNoJs('adding/removing css server @nojs', async ({ page }) => {
