@@ -360,15 +360,17 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       if (env.config.consumer !== 'client' || skipFastRefresh) {
         return false
       }
-      if (!env.config.experimental.fullBundleMode) {
-        return true
-      }
 
       let nativePlugin: ((options: any) => Plugin) | undefined
       try {
         nativePlugin = (await import('vite/internal')).reactRefreshWrapperPlugin
       } catch {}
-      if (!nativePlugin) {
+      if (
+        !nativePlugin ||
+        vite.version === '7.1.10' ||
+        vite.version === '7.1.11'
+      ) {
+        // the native plugin in 7.1.10 and 7.1.11 does not support dev
         return true
       }
 
@@ -381,6 +383,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         reactRefreshHost: opts.reactRefreshHost ?? '',
       }) as unknown as boolean
     },
+    // we can remove this transform hook when we drop support for rolldown-vite 7.1.11 and below
     transform: {
       filter: {
         id: {
