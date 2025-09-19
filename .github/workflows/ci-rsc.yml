@@ -78,9 +78,11 @@ jobs:
           sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
+        shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
       - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME"
+        shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
       - uses: actions/upload-artifact@v4
