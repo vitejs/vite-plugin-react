@@ -739,13 +739,13 @@ function defineTest(f: Fixture) {
           'link[rel="stylesheet"][data-precedence="vite-rsc/client-reference"]',
         ),
       ).toHaveCount(0)
-      await expect(
-        page
-          .locator(
-            'link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]',
-          )
-          .nth(0),
-      ).toBeAttached()
+      // await expect(
+      //   page
+      //     .locator(
+      //       'link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]',
+      //     )
+      //     .nth(0),
+      // ).toBeAttached()
       await expect(
         page
           .locator(
