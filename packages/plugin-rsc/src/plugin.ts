@@ -993,6 +993,21 @@ export default assetsManifest.bootstrapScriptContent;
       async function () {
         assert(this.environment.mode === 'dev')
         let code = ''
+        code += `;(${() => {
+          const nodes = document.querySelectorAll<HTMLStyleElement>('style')
+          nodes.forEach((node) => {
+            if (
+              node.dataset.precedence?.startsWith(
+                'vite-rsc/importer-resources/',
+              )
+            ) {
+              const id = node.dataset.precedence.slice(
+                'vite-rsc/importer-resources/'.length,
+              )
+              node.dataset.viteDevId = id
+            }
+          })
+        }})();`
         // enable hmr only when react plugin is available
         const resolved = await this.resolve('/@react-refresh')
         if (resolved) {
@@ -2187,8 +2202,13 @@ function vitePluginRscCss(
             for (const file of [importer, ...result.visitedFiles]) {
               this.addWatchFile(file)
             }
-            return generateResourcesCode2(result.styles, manager)
-
+            const jsHrefs = [
+              `/@id/__x00__${toCssVirtual({ id: importer, type: 'rsc-browser' })}`,
+            ]
+            return generateResourcesCode2(
+              { styles: result.styles, js: jsHrefs },
+              manager,
+            )
             // const result = collectCss(server.environments.rsc!, importer)
             // for (const file of [importer, ...result.visitedFiles]) {
             //   this.addWatchFile(file)
@@ -2212,6 +2232,23 @@ function vitePluginRscCss(
               )}
             `
           }
+        }
+        if (parsed?.type === 'rsc-browser') {
+          assert(this.environment.name === 'client')
+          assert(this.environment.mode === 'dev')
+          const importer = parsed.id
+          const result = collectCss(server.environments.rsc!, importer)
+          for (const file of [importer, ...result.visitedFiles]) {
+            this.addWatchFile(file)
+          }
+          let code = result.ids
+            .map((id) => id.replace(/^\0/, ''))
+            .map((id) => `import ${JSON.stringify(id)};\n`)
+            .join('')
+          // ensure hmr boundary at this virtual since otherwise non-self accepting css
+          // (e.g. css module) causes full reload
+          code += `if (import.meta.hot) { import.meta.hot.accept() }\n`
+          return code
         }
       },
     },
@@ -2249,29 +2286,38 @@ export default function RemoveDuplicateServerCss() {
 }
 
 function generateResourcesCode2(
-  styles: Record<string, string>,
+  deps: { styles: Record<string, string>; js: string[] },
   manager: RscPluginManager,
 ) {
   const ResourcesFn = (
     React: typeof import('react'),
-    styles: Record<string, string>,
+    deps: { styles: Record<string, string>; js: string[] },
     RemoveDuplicateServerCss?: React.FC,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
-        ...Object.entries(styles).map(([id, content]) =>
+        ...Object.entries(deps.styles).map(([id, content]) =>
           React.createElement(
             'style',
             {
               key: 'css:' + id,
               // https://react.dev/reference/react-dom/components/style#rendering-an-inline-css-stylesheet
               href: 'vite-rsc/importer-resources/' + id,
-              precedence: 'vite-rsc/importer-resources',
+              precedence: 'vite-rsc/importer-resources/' + id,
+              // TODO: hoisted style doesn't support arbitrary attributes so they are injected in browser entry
               // https://github.com/vitejs/vite/blob/dfd8d8aebec412f56346d078bb00170807f0883e/packages/vite/src/client/client.ts#L504
-              'data-vite-dev-id': id,
+              // 'data-vite-dev-id': id,
             },
             content,
           ),
+        ),
+        ...deps.js.map((href: string) =>
+          React.createElement('script', {
+            key: 'js:' + href,
+            type: 'module',
+            async: true,
+            src: href,
+          }),
         ),
         RemoveDuplicateServerCss &&
           React.createElement(RemoveDuplicateServerCss, {
@@ -2292,7 +2338,7 @@ ${
 
 export const Resources = (${ResourcesFn.toString()})(
   __vite_rsc_react__,
-  ${JSON.stringify(styles)},
+  ${JSON.stringify(deps)},
   RemoveDuplicateServerCss,
 );
 `
