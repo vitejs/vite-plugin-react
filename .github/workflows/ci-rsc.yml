@@ -65,18 +65,26 @@ jobs:
       - name: install react
         if: ${{ matrix.react_version }}
         run: |
-          sed -i "/^overrides:/a\  react: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-dom: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-server-dom-webpack: \"${{ matrix.react_version }}\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-server-dom-webpack: \"$REACT_VERSION\"" pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
+        env:
+          REACT_VERSION: ${{ matrix.react_version }}
       - run: pnpm build
       - name: install rolldown
         if: ${{ matrix.rolldown }}
         run: |
           sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
-      - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
-      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
+      - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
+        shell: bash
+        env:
+          BROWSER_NAME: ${{ matrix.browser }}
+      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME"
+        shell: bash
+        env:
+          BROWSER_NAME: ${{ matrix.browser }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

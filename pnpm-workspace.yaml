@@ -6,12 +6,22 @@ packages:
 
 catalogs:
   rolldown-vite:
-    vite: npm:rolldown-vite@^7.1.6
+    vite: npm:rolldown-vite@^7.1.11
+
+dedupeInjectedDeps: false
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - playwright-chromium
+  - sharp
+  - simple-git-hooks
+  - unrs-resolver
+  - workerd
 
 overrides:
   '@types/estree': ^1.0.8
-
-dedupeInjectedDeps: false
 
 peerDependencyRules:
   ignoreMissing:
