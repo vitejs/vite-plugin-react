@@ -61,7 +61,7 @@
     "react-server-dom-webpack": "^19.1.1",
     "rsc-html-stream": "^0.0.7",
     "tinyexec": "^1.0.1",
-    "tsdown": "^0.15.2"
+    "tsdown": "^0.15.4"
   },
   "peerDependencies": {
     "react": "*",

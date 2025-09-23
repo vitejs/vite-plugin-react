@@ -33,11 +33,11 @@
     "ci-publish": "node scripts/publishCI.ts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "^9.36.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.18.6",
     "@vitejs/release-scripts": "^1.6.0",
-    "eslint": "^9.35.0",
+    "eslint": "^9.36.0",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-regexp": "^2.10.0",
