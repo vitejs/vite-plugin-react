@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Perf: use native refresh wrapper plugin in rolldown-vite ([#881](https://github.com/vitejs/vite-plugin-react/pull/881))
+
 ## 5.0.3 (2025-09-17)
 
 ### HMR did not work for components imported with queries with rolldown-vite ([#872](https://github.com/vitejs/vite-plugin-react/pull/872))
