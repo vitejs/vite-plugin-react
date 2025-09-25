@@ -441,6 +441,27 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
+  // for rolldown-vite + full bundle mode
+  const viteReactRefreshFullBundleMode: Plugin = {
+    name: 'vite:react-refresh-fbm',
+    enforce: 'pre',
+    transformIndexHtml: {
+      handler() {
+        if (!skipFastRefresh && isFullBundle)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(base),
+            },
+          ]
+      },
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+      order: 'pre',
+    },
+  }
+
   const dependencies = [
     'react',
     'react-dom',
@@ -484,26 +505,23 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         }
       },
     },
-    transformIndexHtml: {
-      handler() {
-        if (!skipFastRefresh)
-          return [
-            {
-              tag: 'script',
-              attrs: { type: 'module' },
-              children: getPreambleCode(base),
-            },
-          ]
-      },
-      // In unbundled mode, Vite transforms any requests.
-      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
-      order: isFullBundle ? 'pre' : undefined,
+    transformIndexHtml() {
+      if (!skipFastRefresh && !isFullBundle)
+        return [
+          {
+            tag: 'script',
+            attrs: { type: 'module' },
+            children: getPreambleCode(base),
+          },
+        ]
     },
   }
 
   return [
     viteBabel,
-    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost] : []),
+    ...(isRolldownVite
+      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
+      : []),
     viteReactRefresh,
   ]
 }
