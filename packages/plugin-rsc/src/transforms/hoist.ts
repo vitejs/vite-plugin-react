@@ -157,15 +157,15 @@ function matchDirective(
   body: Program['body'],
   directive: RegExp,
 ): { match: RegExpMatchArray; node: Literal } | undefined {
-  for (const stable of body) {
+  for (const stmt of body) {
     if (
-      stable.type === 'ExpressionStatement' &&
-      stable.expression.type === 'Literal' &&
-      typeof stable.expression.value === 'string'
+      stmt.type === 'ExpressionStatement' &&
+      stmt.expression.type === 'Literal' &&
+      typeof stmt.expression.value === 'string'
     ) {
-      const match = stable.expression.value.match(directive)
+      const match = stmt.expression.value.match(directive)
       if (match) {
-        return { match, node: stable.expression }
+        return { match, node: stmt.expression }
       }
     }
   }
