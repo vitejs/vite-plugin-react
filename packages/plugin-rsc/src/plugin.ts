@@ -1140,7 +1140,7 @@ function vitePluginUseClient(
           const directives = findDirectives(ast, 'use server')
           if (directives.length > 0) {
             this.error(
-              `'use server' directive is not allowed within 'use client'`,
+              `'use server' directive is not allowed inside 'use client'`,
               directives[0]?.start,
             )
           }
