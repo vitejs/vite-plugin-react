@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 5.0.4 (2025-09-27)
+
 ### Perf: use native refresh wrapper plugin in rolldown-vite ([#881](https://github.com/vitejs/vite-plugin-react/pull/881))
 
 ## 5.0.3 (2025-09-17)
