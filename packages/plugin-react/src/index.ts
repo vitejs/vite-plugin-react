@@ -117,6 +117,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = true
+  let base: string
+  let isFullBundle = false
   let runPluginOverrides:
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
@@ -185,6 +187,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
     configResolved(config) {
       runningInVite = true
+      base = config.base
+      // @ts-expect-error only available in newer rolldown-vite
+      if (config.experimental.fullBundleMode) {
+        isFullBundle = true
+      }
       projectRoot = config.root
       isProduction = config.isProduction
       skipFastRefresh =
@@ -434,6 +441,27 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
+  // for rolldown-vite + full bundle mode
+  const viteReactRefreshFullBundleMode: Plugin = {
+    name: 'vite:react-refresh-fbm',
+    enforce: 'pre',
+    transformIndexHtml: {
+      handler() {
+        if (!skipFastRefresh && isFullBundle)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(base),
+            },
+          ]
+      },
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+      order: 'pre',
+    },
+  }
+
   const dependencies = [
     'react',
     'react-dom',
@@ -477,13 +505,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
+    transformIndexHtml() {
+      if (!skipFastRefresh && !isFullBundle)
         return [
           {
             tag: 'script',
             attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
+            children: getPreambleCode(base),
           },
         ]
     },
@@ -491,7 +519,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
   return [
     viteBabel,
-    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost] : []),
+    ...(isRolldownVite
+      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
+      : []),
     viteReactRefresh,
   ]
 }
