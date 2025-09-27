@@ -1,5 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
+import type { Program, Literal } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
@@ -56,7 +56,7 @@ export function transformHoistInlineDirective(
           node.type === 'ArrowFunctionExpression') &&
         node.body.type === 'BlockStatement'
       ) {
-        const match = matchDirective(node.body.body, directive)
+        const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
@@ -156,17 +156,33 @@ const exactRegex = (s: string): RegExp =>
 function matchDirective(
   body: Program['body'],
   directive: RegExp,
-): RegExpMatchArray | undefined {
-  for (const stable of body) {
+): { match: RegExpMatchArray; node: Literal } | undefined {
+  for (const stmt of body) {
     if (
-      stable.type === 'ExpressionStatement' &&
-      stable.expression.type === 'Literal' &&
-      typeof stable.expression.value === 'string'
+      stmt.type === 'ExpressionStatement' &&
+      stmt.expression.type === 'Literal' &&
+      typeof stmt.expression.value === 'string'
     ) {
-      const match = stable.expression.value.match(directive)
+      const match = stmt.expression.value.match(directive)
       if (match) {
-        return match
+        return { match, node: stmt.expression }
       }
     }
   }
+}
+
+export function findDirectives(ast: Program, directive: string): Literal[] {
+  const directiveRE = exactRegex(directive)
+  const nodes: Literal[] = []
+  walk(ast, {
+    enter(node) {
+      if (node.type === 'Program' || node.type === 'BlockStatement') {
+        const match = matchDirective(node.body, directiveRE)
+        if (match) {
+          nodes.push(match.node)
+        }
+      }
+    },
+  })
+  return nodes
 }

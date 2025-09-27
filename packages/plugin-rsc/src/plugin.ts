@@ -29,6 +29,7 @@ import {
   transformDirectiveProxyExport,
   transformServerActionServer,
   transformWrapExport,
+  findDirectives,
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
@@ -1133,6 +1134,16 @@ function vitePluginUseClient(
         if (!hasDirective(ast.body, 'use client')) {
           delete manager.clientReferenceMetaMap[id]
           return
+        }
+
+        if (code.includes('use server')) {
+          const directives = findDirectives(ast, 'use server')
+          if (directives.length > 0) {
+            this.error(
+              `'use server' directive is not allowed inside 'use client'`,
+              directives[0]?.start,
+            )
+          }
         }
 
         let importId: string

@@ -1,3 +1,14 @@
+## <small>[0.4.32](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.31...plugin-rsc@0.4.32) (2025-09-26)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#851](https://github.com/vitejs/vite-plugin-react/issues/851)) ([3c2ebf8](https://github.com/vitejs/vite-plugin-react/commit/3c2ebf89de7f5e40ed0ef932993f7d0b7695719b))
+* **rsc:** reject inline "use server" inside "use client" module ([#884](https://github.com/vitejs/vite-plugin-react/issues/884)) ([5bc3f79](https://github.com/vitejs/vite-plugin-react/commit/5bc3f79fb4356ebf574b6ba28e4c7a315f4336de))
+
+### Miscellaneous Chores
+
+* **deps:** update all non-major dependencies ([#879](https://github.com/vitejs/vite-plugin-react/issues/879)) ([608f266](https://github.com/vitejs/vite-plugin-react/commit/608f266c8d53f41a6b1541de35b218fe2640ec05))
+* **rsc:** fix typo ([#885](https://github.com/vitejs/vite-plugin-react/issues/885)) ([b81470c](https://github.com/vitejs/vite-plugin-react/commit/b81470c3076e079be517b7bf92325760ba89fd3d))
+
 ## <small>[0.4.31](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.30...plugin-rsc@0.4.31) (2025-09-17)</small>
 ### Bug Fixes
 
