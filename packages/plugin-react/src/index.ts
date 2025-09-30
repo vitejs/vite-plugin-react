@@ -370,7 +370,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       let nativePlugin: ((options: any) => Plugin) | undefined
       try {
         // NOTE: `+` is to bypass lint & typecheck. vite/internal exists for newer rolldown-vite
-        nativePlugin = (await import('vite' + '/internal'))
+        const vite = 'vite'
+        nativePlugin = (await import(vite + '/internal'))
           .reactRefreshWrapperPlugin
       } catch {}
       if (
