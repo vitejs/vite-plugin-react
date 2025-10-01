@@ -96,8 +96,9 @@ export function virtualPreamblePlugin({
     },
     transform: {
       filter: { code: /__REACT_DEVTOOLS_GLOBAL_HOOK__/ },
-      handler(code, _id, options) {
+      handler(code, id, options) {
         if (options?.ssr) return
+        if (id === runtimePublicPath) return
 
         // this is expected to match `react`, `react-dom`, and `react-dom/client`.
         // they are all optimized to be esm during dev.
