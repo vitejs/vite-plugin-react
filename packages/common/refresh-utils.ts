@@ -10,13 +10,9 @@ const refreshContentRE = /\$RefreshReg\$\(/
 export const preambleCode = `import { injectIntoGlobalHook } from "__BASE__${runtimePublicPath.slice(
   1,
 )}";
-if (!window.__vite_plugin_react_preamble_installed__) {
 injectIntoGlobalHook(window);
 window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;
-}
-window.__vite_plugin_react_preamble_installed__ = true;
-`
+window.$RefreshSig$ = () => (type) => type;`
 
 export const getPreambleCode = (base: string): string =>
   preambleCode.replace('__BASE__', base)
