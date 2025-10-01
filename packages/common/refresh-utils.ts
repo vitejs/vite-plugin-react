@@ -98,6 +98,7 @@ export function virtualPreamblePlugin({
     transform: {
       filter: { code: /__REACT_DEVTOOLS_GLOBAL_HOOK__/ },
       handler(code) {
+        // this is expected to be either `react` or `react-dom/client`
         if (isEnabled() && code.includes('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
           return `import ${JSON.stringify(name)};` + code
         }

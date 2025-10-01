@@ -21,8 +21,7 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./preamble": "./preamble.d.ts"
+    ".": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsdown --watch ./src --watch ../common",
