@@ -13,9 +13,9 @@ import {
 import type { Plugin } from 'vite'
 import {
   addRefreshWrapper,
-  getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
@@ -165,17 +165,6 @@ const react = (_options?: Options): Plugin[] => {
           )
         }
       },
-      transformIndexHtml: (_, config) => {
-        if (!hmrDisabled) {
-          return [
-            {
-              tag: 'script',
-              attrs: { type: 'module' },
-              children: getPreambleCode(config.server!.config.base),
-            },
-          ]
-        }
-      },
       async transform(code, _id, transformOptions) {
         const id = _id.split('?')[0]
         const refresh = !transformOptions?.ssr && !hmrDisabled
@@ -205,6 +194,10 @@ const react = (_options?: Options): Plugin[] => {
         return { code: newCode ?? result.code, map: result.map }
       },
     },
+    virtualPreamblePlugin({
+      isEnabled: () => !hmrDisabled,
+      reactRefreshHost: options.reactRefreshHost,
+    }),
     options.plugins
       ? {
           name: 'vite:react-swc',

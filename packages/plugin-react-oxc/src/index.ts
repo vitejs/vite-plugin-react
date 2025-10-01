@@ -4,9 +4,9 @@ import { readFileSync } from 'node:fs'
 import type { BuildOptions, Plugin } from 'vite'
 import {
   addRefreshWrapper,
-  getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import { exactRegex } from '@rolldown/pluginutils'
 
@@ -143,17 +143,15 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         return newCode ? { code: newCode, map: null } : undefined
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
-        return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
-          },
-        ]
-    },
   }
 
-  return [viteConfig, viteConfigPost, viteRefreshRuntime, viteRefreshWrapper]
+  return [
+    viteConfig,
+    viteConfigPost,
+    viteRefreshRuntime,
+    viteRefreshWrapper,
+    virtualPreamblePlugin({
+      isEnabled: () => !skipFastRefresh,
+    }) as any, // rolldown-vite type mismatch
+  ]
 }
