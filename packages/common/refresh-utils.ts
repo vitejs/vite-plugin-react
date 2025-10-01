@@ -99,8 +99,8 @@ export function virtualPreamblePlugin({
       handler(code, _id, options) {
         if (options?.ssr) return
 
-        // this is expected to be either `react` or `react-dom/client`.
-        // both are optimized to be esm during dev.
+        // this is expected to match `react`, `react-dom`, and `react-dom/client`.
+        // they are all optimized to be esm during dev.
         if (isEnabled() && code.includes('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
           return `import ${JSON.stringify(VIRTUAL_NAME)};` + code
         }
