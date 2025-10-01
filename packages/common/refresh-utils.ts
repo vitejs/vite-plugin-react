@@ -12,7 +12,8 @@ export const preambleCode = `import { injectIntoGlobalHook } from "__BASE__${run
 )}";
 injectIntoGlobalHook(window);
 window.$RefreshReg$ = () => {};
-window.$RefreshSig$ = () => (type) => type;`
+window.$RefreshSig$ = () => (type) => type;
+`
 
 export const getPreambleCode = (base: string): string =>
   preambleCode.replace('__BASE__', base)
@@ -91,6 +92,14 @@ export function virtualPreamblePlugin({
             return preambleCode.replace('__BASE__', '/')
           }
           return ''
+        }
+      },
+    },
+    transform: {
+      filter: { code: /__REACT_DEVTOOLS_GLOBAL_HOOK__/ },
+      handler(code) {
+        if (isEnabled() && code.includes('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
+          return `import ${JSON.stringify(name)};` + code
         }
       },
     },

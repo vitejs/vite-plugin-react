@@ -510,11 +510,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     transformIndexHtml() {
       if (!skipFastRefresh && !isFullBundle)
         return [
-          {
-            tag: 'script',
-            attrs: { type: 'module' },
-            children: getPreambleCode(base),
-          },
+          // {
+          //   tag: 'script',
+          //   attrs: { type: 'module' },
+          //   children: getPreambleCode(base),
+          // },
         ]
     },
   }
