@@ -314,6 +314,9 @@ function collectCustomHooksForSignature(type) {
 }
 
 export function injectIntoGlobalHook(globalObject) {
+  if (globalObject.__vite_plugin_react_injectIntoGlobalHook) return
+  globalObject.__vite_plugin_react_injectIntoGlobalHook = true
+
   // For React Native, the global hook will be set up by require('react-devtools-core').
   // That code will run before us. So we need to monkeypatch functions on existing hook.
 
