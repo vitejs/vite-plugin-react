@@ -527,6 +527,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     viteReactRefresh,
     virtualPreamblePlugin({
       isEnabled: () => !skipFastRefresh && !isFullBundle,
+      reactRefreshHost: opts.reactRefreshHost,
     }),
   ]
 }
