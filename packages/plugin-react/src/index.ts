@@ -526,7 +526,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       : []),
     viteReactRefresh,
     virtualPreamblePlugin({
-      name: '@vitejs/plugin-react/preamble',
       isEnabled: () => !skipFastRefresh && !isFullBundle,
     }),
   ]

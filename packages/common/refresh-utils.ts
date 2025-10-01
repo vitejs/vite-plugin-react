@@ -69,27 +69,27 @@ function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransf
 }
 
 export function virtualPreamblePlugin({
-  name,
   isEnabled,
 }: {
-  name: string
   isEnabled: () => boolean
 }): Plugin {
+  const VIRTUAL_NAME = 'virtual:@vitejs/plugin-react/preamble'
   return {
     name: 'vite:react-virtual-preamble',
+    apply: 'serve',
     resolveId: {
       order: 'pre',
-      filter: { id: exactRegex(name) },
+      filter: { id: exactRegex(VIRTUAL_NAME) },
       handler(source) {
-        if (source === name) {
+        if (source === VIRTUAL_NAME) {
           return '\0' + source
         }
       },
     },
     load: {
-      filter: { id: exactRegex('\0' + name) },
+      filter: { id: exactRegex('\0' + VIRTUAL_NAME) },
       handler(id) {
-        if (id === '\0' + name) {
+        if (id === '\0' + VIRTUAL_NAME) {
           if (isEnabled()) {
             // vite dev import analysis can rewrite base
             return preambleCode.replace('__BASE__', '/')
@@ -102,9 +102,10 @@ export function virtualPreamblePlugin({
       filter: { code: /__REACT_DEVTOOLS_GLOBAL_HOOK__/ },
       handler(code, _id, options) {
         if (options?.ssr) return
+
         // this is expected to be either `react` or `react-dom/client`
         if (isEnabled() && code.includes('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
-          return `import ${JSON.stringify(name)};` + code
+          return `import ${JSON.stringify(VIRTUAL_NAME)};` + code
         }
       },
     },
