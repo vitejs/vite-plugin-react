@@ -20,9 +20,7 @@
     "dist"
   ],
   "type": "module",
-  "exports": {
-    ".": "./dist/index.js"
-  },
+  "exports": "./dist/index.js",
   "scripts": {
     "dev": "tsdown --watch ./src --watch ../common",
     "build": "tsdown",
