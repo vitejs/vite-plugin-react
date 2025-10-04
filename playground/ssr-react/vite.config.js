@@ -41,10 +41,14 @@ export default defineConfig({
                 '/src/entry-server.jsx',
               )
               const appHtml = render(url)
-              const template = await server.transformIndexHtml(
-                url,
-                fs.readFileSync(path.resolve(_dirname, 'index.html'), 'utf-8'),
+              const template = fs.readFileSync(
+                path.resolve(_dirname, 'index.html'),
+                'utf-8',
               )
+              // const template = await server.transformIndexHtml(
+              //   url,
+              //   fs.readFileSync(path.resolve(_dirname, 'index.html'), 'utf-8'),
+              // )
               const html = template.replace(`<!--app-html-->`, appHtml)
               res.setHeader('content-type', 'text/html').end(html)
             } catch (e) {

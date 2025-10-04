@@ -12,6 +12,7 @@ import {
   preambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import {
   exactRegex,
@@ -524,6 +525,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
       : []),
     viteReactRefresh,
+    virtualPreamblePlugin({
+      name: '@vitejs/plugin-react/preamble',
+      isEnabled: () => !skipFastRefresh && !isFullBundle,
+    }),
   ]
 }
 
