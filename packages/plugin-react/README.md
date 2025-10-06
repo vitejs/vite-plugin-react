@@ -104,14 +104,14 @@ Under the hood, this simply updates the React Fash Refresh runtime URL from `/@r
 
 ## `@vitejs/plugin-react/preamble`
 
-For SSR application, which doesn't make use of [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver), the package provides `@vitejs/plugin-react/preamble` to intiialize HMR runtime from client entrypoint, for example:
+The package provides `@vitejs/plugin-react/preamble` to initialize HMR runtime from client entrypoint for SSR applications which don't use [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver). For example:
 
 ```js
 // [entry.client.js]
 import '@vitejs/plugin-react/preamble'
 ```
 
-Alternatively, you can manually call `transformIndexHtml` during SSR, which sets up equivalent intiialization code. Here's an example for an Express server:
+Alternatively, you can manually call `transformIndexHtml` during SSR, which sets up equivalent initialization code. Here's an example for an Express server:
 
 ```js
 app.get('/', async (req, res, next) => {
@@ -128,7 +128,7 @@ app.get('/', async (req, res, next) => {
 })
 ```
 
-Otherwise, you'll get a following error:
+Otherwise, you'll get the following error:
 
 ```
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
