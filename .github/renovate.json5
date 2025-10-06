@@ -32,7 +32,7 @@
       "matchPackageNames": ["!actions/{/,}**", "!github/{/,}**"],
     },
     {
-      "groupName": "react",
+      "groupName": "react-related dependencies",
       "matchPackageNames": [
         "react",
         "react-dom",
