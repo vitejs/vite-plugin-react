@@ -32,6 +32,7 @@
       "matchPackageNames": ["!actions/{/,}**", "!github/{/,}**"],
     },
     {
+      "groupName": "react",
       "matchPackageNames": [
         "react",
         "react-dom",
@@ -42,7 +43,6 @@
         "react-server-dom-webpack",
         "use-sync-external-store",
       ],
-      "groupName": "react",
     },
   ],
   "ignoreDeps": [
