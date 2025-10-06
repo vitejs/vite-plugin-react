@@ -102,9 +102,16 @@ react({ reactRefreshHost: 'http://localhost:3000' })
 
 Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
 
-## Middleware mode
+## `@vitejs/plugin-react/preamble`
 
-In [middleware mode](https://vite.dev/config/server-options.html#server-middlewaremode), you should make sure your entry `index.html` file is transformed by Vite. Here's an example for an Express server:
+For SSR application, which doesn't make use of [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver), the package provides `@vitejs/plugin-react/preamble` to intiialize HMR runtime from client entrypoint, for example:
+
+```js
+// [entry.client.js]
+import '@vitejs/plugin-react/preamble'
+```
+
+Alternatively, you can manually call `transformIndexHtml` during SSR, which sets up equivalent intiialization code. Here's an example for an Express server:
 
 ```js
 app.get('/', async (req, res, next) => {
@@ -121,7 +128,7 @@ app.get('/', async (req, res, next) => {
 })
 ```
 
-Otherwise, you'll probably get this error:
+Otherwise, you'll get a following error:
 
 ```
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
