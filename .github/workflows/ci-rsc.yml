@@ -35,7 +35,6 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    if: github.event_name != 'schedule'
     name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -93,40 +92,6 @@ jobs:
         if: always()
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
-          path: |
-            packages/plugin-rsc/test-results
-          if-no-files-found: ignore
-
-  test-e2e-scheduled:
-    if: github.event_name == 'schedule'
-    name: test-rsc (scheduled / react-${{ matrix.react_version }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        react_version: [canary, experimental]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-      - run: pnpm i
-      - name: install react
-        run: |
-          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-server-dom-webpack: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          pnpm i --no-frozen-lockfile
-        env:
-          REACT_VERSION: ${{ matrix.react_version }}
-      - run: pnpm build
-      - run: pnpm -C packages/plugin-rsc exec playwright install chromium
-      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=chromium
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results-scheduled-react-${{ matrix.react_version }}
           path: |
             packages/plugin-rsc/test-results
           if-no-files-found: ignore
