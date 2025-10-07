@@ -5,14 +5,20 @@ import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 import { TestUseActionState } from './action-from-client/client.tsx'
 import { TestActionBind } from './action-bind/server.tsx'
+import { ContextProvider } from './ContextProvider.tsx'
 
 export function Root() {
-  return <App />
+  return (
+    <ContextProvider>
+      <App />
+    </ContextProvider>
+  )
 }
 
 function App() {
   return (
     <div id="root">
+      {/*<SearchField />*/}
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />

@@ -4,6 +4,7 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
+import * as path from 'node:path'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
@@ -38,6 +39,18 @@ function rscBrowserModePlugin(): Plugin[] {
             'import.meta.env.__vite_rsc_build__': JSON.stringify(
               env.command === 'build',
             ),
+          },
+          resolve: {
+            alias: {
+              '@vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts':
+                'next/dist/client/dev/noop-turbopack-hmr',
+              'react-server-dom-webpack/client': path.resolve(
+                '../../dist/vendor/react-server-dom/client.edge.js',
+              ),
+              'react-server-dom-webpack/client.edge': path.resolve(
+                '../../dist/vendor/react-server-dom/client.edge.js',
+              ),
+            },
           },
           environments: {
             client: {
@@ -75,6 +88,10 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+
+                  // those 2 optimize deps are needed even though the commonjs plugin is used
+                  'next/dist/shared/lib/app-router-context.shared-runtime',
+                  'next/dist/client/components/app-router-instance',
                 ],
                 exclude: ['@vitejs/plugin-rsc'],
                 esbuildOptions: {
