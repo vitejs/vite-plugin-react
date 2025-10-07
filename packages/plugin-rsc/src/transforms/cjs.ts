@@ -4,11 +4,9 @@ import { analyze } from 'periscopic'
 import { walk } from 'estree-walker'
 
 // Runtime helper to handle CJS/ESM interop when transforming require() to import()
-// This is needed because when CJS code does require("pkg"), it expects:
-// - For CJS modules: the module.exports value directly
-// - For ESM modules: Node.js actually returns the namespace object
-// Since we're transforming to dynamic import(), we need to handle both cases
-const CJS_INTEROP_HELPER = `function __cjs_interop__(m) { return m && m.__esModule ? m.default : (m.default !== undefined ? m.default : m); }`
+// Only unwrap .default for modules that were transformed by this plugin (marked with __cjs_module_runner_transform)
+// This ensures we don't incorrectly unwrap .default on genuine ESM modules
+const CJS_INTEROP_HELPER = `function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }`
 
 export function transformCjsToEsm(
   code: string,

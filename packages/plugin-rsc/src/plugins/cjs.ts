@@ -60,6 +60,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           output.append(`
 ;__vite_ssr_exportAll__(module.exports);
 export default module.exports;
+export const __cjs_module_runner_transform = true;
 `)
           return {
             code: output.toString(),
