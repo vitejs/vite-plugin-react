@@ -3,6 +3,13 @@ import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
 import { walk } from 'estree-walker'
 
+// Runtime helper to handle CJS/ESM interop when transforming require() to import()
+// This is needed because when CJS code does require("pkg"), it expects:
+// - For CJS modules: the module.exports value directly
+// - For ESM modules: Node.js actually returns the namespace object
+// Since we're transforming to dynamic import(), we need to handle both cases
+const CJS_INTEROP_HELPER = `function __cjs_interop__(m) { return m && m.__esModule ? m.default : (m.default !== undefined ? m.default : m); }`
+
 export function transformCjsToEsm(
   code: string,
   ast: Program,
@@ -13,6 +20,8 @@ export function transformCjsToEsm(
   const parentNodes: Node[] = []
   const hoistedCodes: string[] = []
   let hoistIndex = 0
+  let needsInteropHelper = false
+
   walk(ast, {
     enter(node) {
       parentNodes.push(node)
@@ -38,11 +47,17 @@ export function transformCjsToEsm(
           }
         }
 
+        needsInteropHelper = true
+
         if (isTopLevel) {
-          // top-level scope `require` to dynamic import
+          // top-level scope `require` to dynamic import with interop
           // (this allows handling react development/production re-export within top-level if branch)
-          output.update(node.start, node.callee.end, '((await import')
-          output.appendRight(node.end, ').default)')
+          output.update(
+            node.start,
+            node.callee.end,
+            '(__cjs_interop__(await import',
+          )
+          output.appendRight(node.end, '))')
         } else {
           // hoist non top-level `require` to top-level
           const hoisted = `__cjs_to_esm_hoist_${hoistIndex}`
@@ -51,7 +66,7 @@ export function transformCjsToEsm(
             node.arguments[0]!.end,
           )
           hoistedCodes.push(
-            `const ${hoisted} = (await import(${importee})).default;\n`,
+            `const ${hoisted} = __cjs_interop__(await import(${importee}));\n`,
           )
           output.update(node.start, node.end, hoisted)
           hoistIndex++
@@ -64,6 +79,10 @@ export function transformCjsToEsm(
   })
   for (const hoisted of hoistedCodes.reverse()) {
     output.prepend(hoisted)
+  }
+  // Prepend interop helper if needed
+  if (needsInteropHelper) {
+    output.prepend(`${CJS_INTEROP_HELPER}\n`)
   }
   // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
   output.prepend(`let exports = {}; const module = { exports };\n`)
