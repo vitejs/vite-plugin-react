@@ -6,8 +6,26 @@ import { ClientCounter } from './client.tsx'
 import { TestUseActionState } from './action-from-client/client.tsx'
 import { TestActionBind } from './action-bind/server.tsx'
 
+// Using a server component that uses NextRouter does not work
+import { ServerComponent } from '@storybook/nextjs-vite-rsc/repro'
+
+// using the client component directly works
+import { NextRouter } from '@storybook/nextjs-vite-rsc/rsc/client'
+
 export function Root() {
-  return <App />
+  return (
+    <ServerComponent>
+      <App />
+    </ServerComponent>
+  )
+}
+
+export function WorkingRoot() {
+  return (
+    <NextRouter url="/some-path-name">
+      <App />
+    </NextRouter>
+  )
 }
 
 function App() {
