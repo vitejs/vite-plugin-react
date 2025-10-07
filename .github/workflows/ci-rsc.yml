@@ -12,6 +12,9 @@ on:
       - "packages/plugin-rsc/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/ci-rsc.yml"
+  schedule:
+    # Run daily at 00:00 UTC to test canary/experimental React versions
+    - cron: "0 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
