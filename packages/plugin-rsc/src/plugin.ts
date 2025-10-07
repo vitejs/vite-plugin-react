@@ -267,6 +267,7 @@ export function vitePluginRscMinimal(
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
     scanBuildStripPlugin({ manager }),
+    ...cjsModuleRunnerPlugin(),
   ]
 }
 
