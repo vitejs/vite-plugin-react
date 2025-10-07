@@ -4,6 +4,7 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
+import * as path from 'node:path'
 // import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
@@ -35,9 +36,25 @@ function rscBrowserModePlugin(): Plugin[] {
       config(userConfig, env) {
         return {
           define: {
+            'process.env': JSON.stringify({}),
+            __dirname: JSON.stringify(null),
             'import.meta.env.__vite_rsc_build__': JSON.stringify(
               env.command === 'build',
             ),
+          },
+          resolve: {
+            alias: {
+              // when using the app router, this is the location of next/link
+              'next/link': 'next/dist/client/app-dir/link',
+              '@vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts':
+                'next/dist/client/dev/noop-turbopack-hmr',
+              'react-server-dom-webpack/client': path.resolve(
+                '../../dist/vendor/react-server-dom/client.edge.js',
+              ),
+              'react-server-dom-webpack/client.edge': path.resolve(
+                '../../dist/vendor/react-server-dom/client.edge.js',
+              ),
+            },
           },
           environments: {
             client: {
@@ -52,8 +69,10 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react-dom/client',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
+                  'next/link',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
+                  '@storybook/nextjs-vite-rsc/rsc/client',
                 ],
                 exclude: ['vite', '@vitejs/plugin-rsc'],
               },
@@ -74,7 +93,10 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react-dom/client',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
+                  'next/link',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+                  '@storybook/nextjs-vite-rsc/rsc/client',
+                  'next/navigation',
                 ],
                 exclude: ['@vitejs/plugin-rsc'],
                 esbuildOptions: {
@@ -160,6 +182,9 @@ function rscBrowserModePlugin(): Plugin[] {
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
         reactServer.config.build.write = false
+        await builder.build(reactServer)
+        // For some reason I sometimes need to build the reactServer twice before I can build the reactClient.
+        // Will also make a more dedicated reproduction for that.
         await builder.build(reactServer)
         manager.isScanBuild = false
         reactServer.config.build.write = true

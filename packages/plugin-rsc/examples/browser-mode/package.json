@@ -5,13 +5,16 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "rm -rf ./node_modules/.vite && vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@storybook/nextjs-vite-rsc": "0.0.0-pr-32412-sha-b8362176",
+    "storybook": "0.0.0-pr-32412-sha-b8362176",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "next": "^15.5.4"
   },
   "devDependencies": {
     "@types/react": "^19.1.16",
