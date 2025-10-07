@@ -183,6 +183,8 @@ function rscBrowserModePlugin(): Plugin[] {
         manager.isScanBuild = true
         reactServer.config.build.write = false
         await builder.build(reactServer)
+        // For some reason I sometimes need to build the reactServer twice before I can build the reactClient.
+        // Will also make a more dedicated reproduction for that.
         await builder.build(reactServer)
         manager.isScanBuild = false
         reactServer.config.build.write = true
