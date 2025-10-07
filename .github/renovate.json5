@@ -31,6 +31,19 @@
       "pinDigests": true,
       "matchPackageNames": ["!actions/{/,}**", "!github/{/,}**"],
     },
+    {
+      "groupName": "react-related dependencies",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom",
+        "react-is",
+        "react-refresh",
+        "react-server-dom-webpack",
+        "use-sync-external-store",
+      ],
+    },
   ],
   "ignoreDeps": [
     // manually bumping

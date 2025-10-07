@@ -90,8 +90,8 @@ function rscBrowserModePlugin(): Plugin[] {
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
 
                   // those 2 optimize deps are needed even though the commonjs plugin is used
-                  'next/dist/shared/lib/app-router-context.shared-runtime',
-                  'next/dist/client/components/app-router-instance',
+                  // 'next/dist/shared/lib/app-router-context.shared-runtime',
+                  // 'next/dist/client/components/app-router-instance',
                 ],
                 exclude: ['@vitejs/plugin-rsc'],
                 esbuildOptions: {
