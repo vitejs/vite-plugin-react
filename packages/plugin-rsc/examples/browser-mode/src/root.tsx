@@ -6,17 +6,15 @@ import { ClientCounter } from './client.tsx'
 import { TestUseActionState } from './action-from-client/client.tsx'
 import { TestActionBind } from './action-bind/server.tsx'
 
-// Using a server component that uses NextRouter does not work
-import { ServerComponent } from '@storybook/nextjs-vite-rsc/repro'
-
 // using the client component directly works
 import { NextRouter } from '@storybook/nextjs-vite-rsc/rsc/client'
+import Link from 'next/link'
 
 export function Root() {
   return (
-    <ServerComponent>
+    <NextRouter url="/some-path-name">
       <App />
-    </ServerComponent>
+    </NextRouter>
   )
 }
 
@@ -32,9 +30,9 @@ function App() {
   return (
     <div id="root">
       <div>
-        <a href="https://vite.dev" target="_blank">
+        <Link href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
+        </Link>
         <a
           href="https://react.dev/reference/rsc/server-components"
           target="_blank"

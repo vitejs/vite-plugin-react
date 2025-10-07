@@ -44,6 +44,8 @@ function rscBrowserModePlugin(): Plugin[] {
           },
           resolve: {
             alias: {
+              // when using the app router, this is the location of next/link
+              'next/link': 'next/dist/client/app-dir/link',
               '@vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts':
                 'next/dist/client/dev/noop-turbopack-hmr',
               'react-server-dom-webpack/client': path.resolve(
@@ -67,6 +69,7 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react-dom/client',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
+                  'next/link',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
                   '@storybook/nextjs-vite-rsc/rsc/client',
@@ -90,6 +93,7 @@ function rscBrowserModePlugin(): Plugin[] {
                   'react-dom/client',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
+                  'next/link',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
                   '@storybook/nextjs-vite-rsc/rsc/client',
                   'next/navigation',
@@ -178,6 +182,7 @@ function rscBrowserModePlugin(): Plugin[] {
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
         reactServer.config.build.write = false
+        await builder.build(reactServer)
         await builder.build(reactServer)
         manager.isScanBuild = false
         reactServer.config.build.write = true
