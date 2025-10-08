@@ -24,6 +24,10 @@ exports.ok = true;
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let exports = {}; const module = { exports };
       exports.ok = true;
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -44,6 +48,10 @@ if (true) {
       } else {
         module.exports = (__cjs_interop__(await import('./cjs/use-sync-external-store.development.js')));
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -66,6 +74,10 @@ if (true) {
         var ReactDOM = __cjs_to_esm_hoist_1;
         exports.useSyncExternalStoreWithSelector = function () {}
       })()
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -97,6 +109,10 @@ function test() {
         const y2 = __cjs_to_esm_hoist_1().test;
         consoe.log(__cjs_to_esm_hoist_2)
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -114,6 +130,10 @@ function test() {
         const require = () => {};
         require("test");
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -130,11 +150,6 @@ function test() {
             if (id.endsWith('.cjs')) {
               const ast = await parseAstAsync(code)
               const { output } = transformCjsToEsm(code, ast)
-              output.append(`
-;__vite_ssr_exportAll__(module.exports);
-export default module.exports;
-export const __cjs_module_runner_transform = true;
-`)
               return {
                 code: output.toString(),
                 map: output.generateMap({ hires: 'boundary' }),

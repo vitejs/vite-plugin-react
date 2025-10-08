@@ -75,6 +75,7 @@ export function transformCjsToEsm(
       parentNodes.pop()!
     },
   })
+  // TODO: prepend after shebang
   for (const hoisted of hoistedCodes.reverse()) {
     output.prepend(hoisted)
   }
@@ -83,5 +84,15 @@ export function transformCjsToEsm(
   }
   // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
   output.prepend(`let exports = {}; const module = { exports };\n`)
+
+  // TODO: can we use cjs-module-lexer to properly define named exports?
+  // for re-exports, we need to eagerly transform dependencies though.
+  // https://github.com/nodejs/node/blob/f3adc11e37b8bfaaa026ea85c1cf22e3a0e29ae9/lib/internal/modules/esm/translators.js#L382-L409
+  output.append(`
+;__vite_ssr_exportAll__(module.exports);
+export default module.exports;
+export const __cjs_module_runner_transform = true;
+`)
+
   return { output }
 }
