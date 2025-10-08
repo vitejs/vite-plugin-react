@@ -6,6 +6,7 @@ import * as esModuleLexer from 'es-module-lexer'
 import { transformCjsToEsm } from '../transforms/cjs'
 import { createDebug } from '@hiogawa/utils'
 import { parseIdQuery } from './shared'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const debug = createDebug('vite-rsc:cjs')
 
@@ -52,7 +53,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           }
 
           const ast = await parseAstAsync(code)
-          const result = transformCjsToEsm(code, ast)
+          const result = transformCjsToEsm(code, ast, { id })
           const output = result.output
           return {
             code: output.toString(),
