@@ -107,6 +107,11 @@ test.describe('react-server-dom-webpack', () => {
       throwOnError: true,
       nodeOptions: {
         cwd: tmpRoot,
+        stdio: [
+          'ignore',
+          process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+          'inherit',
+        ],
       },
     })
   })
