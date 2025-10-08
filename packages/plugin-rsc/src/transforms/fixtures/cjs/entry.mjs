@@ -4,6 +4,7 @@ import depFn from './function.cjs'
 import depPrimitive from './primitive.cjs'
 import depExports from './exports.cjs'
 import depFnRequire from './function-require.cjs'
+import dualLib from './dual-lib.cjs'
 export {
   depDefault,
   depNamespace,
@@ -11,4 +12,5 @@ export {
   depPrimitive,
   depExports,
   depFnRequire,
+  dualLib,
 }

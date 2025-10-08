@@ -1,0 +1,11 @@
+{
+  "name": "@vitejs/test-dep-cjs-and-esm",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./index.cjs",
+      "default": "./index.mjs"
+    }
+  }
+}
