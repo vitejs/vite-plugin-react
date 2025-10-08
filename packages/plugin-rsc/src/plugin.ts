@@ -93,6 +93,23 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
+/**
+ * Try to resolve react-server-dom-webpack from user's project.
+ * Returns the package name to use: either 'react-server-dom-webpack' if found in user's project,
+ * or the vendored version otherwise.
+ */
+function getReactServerDomPackageName(root: string): string {
+  try {
+    const userRequire = createRequire(path.join(root, 'package.json'))
+    // Try to resolve the package from user's project
+    userRequire.resolve('react-server-dom-webpack/package.json')
+    return 'react-server-dom-webpack'
+  } catch {
+    // Fall back to vendored version if not found
+    return REACT_SERVER_DOM_NAME
+  }
+}
+
 export type { RscPluginManager }
 
 class RscPluginManager {
@@ -359,6 +376,11 @@ export default function vitePluginRsc(
           ...result.ssr.noExternal.sort(),
         ]
 
+        // Detect if user has react-server-dom-webpack installed
+        const reactServerDomPackageName = getReactServerDomPackageName(
+          config.root ?? process.cwd(),
+        )
+
         return {
           appType: config.appType ?? 'custom',
           define: {
@@ -380,7 +402,7 @@ export default function vitePluginRsc(
               optimizeDeps: {
                 include: [
                   'react-dom/client',
-                  `${REACT_SERVER_DOM_NAME}/client.browser`,
+                  `${reactServerDomPackageName}/client.browser`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -406,7 +428,7 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   'react-dom/static.edge',
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -432,8 +454,8 @@ export default function vitePluginRsc(
                   'react-dom',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
-                  `${REACT_SERVER_DOM_NAME}/server.edge`,
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/server.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -668,6 +690,40 @@ export default function vitePluginRsc(
             }
           }
         }
+      },
+    },
+    {
+      // Alias plugin to redirect vendored react-server-dom imports to user's package when available
+      name: 'rsc:react-server-dom-alias',
+      enforce: 'pre',
+      async resolveId(source, importer, options) {
+        // Only handle imports from the vendored path
+        if (!source.startsWith(`${PKG_NAME}/vendor/react-server-dom/`)) {
+          return null
+        }
+
+        // Extract the subpath (e.g., "client.browser", "server.edge", etc.)
+        const subpath = source.slice(
+          `${PKG_NAME}/vendor/react-server-dom/`.length,
+        )
+
+        // Get the root directory
+        const root = this.environment?.config?.root ?? process.cwd()
+
+        // Check if user has react-server-dom-webpack installed
+        const reactServerDomPackageName = getReactServerDomPackageName(root)
+
+        // If user has their own package, resolve to it instead
+        if (reactServerDomPackageName === 'react-server-dom-webpack') {
+          const newSource = `react-server-dom-webpack/${subpath}`
+          return this.resolve(newSource, importer, {
+            ...options,
+            skipSelf: true,
+          })
+        }
+
+        // Otherwise, let the default resolution handle the vendored path
+        return null
       },
     },
     {
