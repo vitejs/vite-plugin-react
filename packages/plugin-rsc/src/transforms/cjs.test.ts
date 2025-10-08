@@ -169,6 +169,7 @@ export const __cjs_module_runner_transform = true;
           },
         },
         "depPrimitive": "[ok]",
+        "dualLib": "ok",
       }
     `)
   })

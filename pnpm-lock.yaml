@@ -481,6 +481,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: workspace:*
         version: link:../plugin-react
+      '@vitejs/test-dep-cjs-and-esm':
+        specifier: ./test-dep/cjs-and-esm
+        version: link:test-dep/cjs-and-esm
       react:
         specifier: ^19.1.1
         version: 19.1.1
