@@ -3,6 +3,9 @@ import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
 import { walk } from 'estree-walker'
 
+// TODO:
+// replacing require("xxx") into import("xxx") affects Vite's resolution.
+
 // Runtime helper to handle CJS/ESM interop when transforming require() to import()
 // Only unwrap .default for modules that were transformed by this plugin (marked with __cjs_module_runner_transform)
 // This ensures we don't incorrectly unwrap .default on genuine ESM modules
