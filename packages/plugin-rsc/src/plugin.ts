@@ -106,7 +106,7 @@ function getReactServerDomPackageName(root: string): string {
     return 'react-server-dom-webpack'
   } catch {
     // Fall back to vendored version if not found
-    return REACT_SERVER_DOM_NAME
+    return `${PKG_NAME}/vendor/react-server-dom`
   }
 }
 
@@ -342,6 +342,8 @@ export default function vitePluginRsc(
     }
   }
 
+  let reactServerDomPackageName = REACT_SERVER_DOM_NAME
+
   return [
     {
       name: 'rsc',
@@ -377,9 +379,13 @@ export default function vitePluginRsc(
         ]
 
         // Detect if user has react-server-dom-webpack installed
-        const reactServerDomPackageName = getReactServerDomPackageName(
-          config.root ?? process.cwd(),
-        )
+        try {
+          const require = createRequire(
+            path.join(config.root ?? process.cwd(), '*'),
+          )
+          require.resolve('react-server-dom-webpack/package.json')
+          reactServerDomPackageName = 'react-server-dom-webpack'
+        } catch {}
 
         return {
           appType: config.appType ?? 'custom',
@@ -706,12 +712,6 @@ export default function vitePluginRsc(
         const subpath = source.slice(
           `${PKG_NAME}/vendor/react-server-dom/`.length,
         )
-
-        // Get the root directory
-        const root = this.environment?.config?.root ?? process.cwd()
-
-        // Check if user has react-server-dom-webpack installed
-        const reactServerDomPackageName = getReactServerDomPackageName(root)
 
         // If user has their own package, resolve to it instead
         if (reactServerDomPackageName === 'react-server-dom-webpack') {
