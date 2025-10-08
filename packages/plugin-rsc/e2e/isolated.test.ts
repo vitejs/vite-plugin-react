@@ -101,9 +101,6 @@ test.describe('react-server-dom-webpack', () => {
     await setupIsolatedFixture({
       src: 'examples/starter',
       dest: tmpRoot,
-      overrides: {
-        vite: '^6',
-      },
     })
     const version = (await import('react')).version
     await x('pnpm', ['i', `react-server-dom-webpack@${version}`], {
