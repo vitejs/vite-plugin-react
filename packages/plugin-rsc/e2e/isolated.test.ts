@@ -102,22 +102,17 @@ test.describe('react-server-dom-webpack', () => {
       src: 'examples/starter',
       dest: tmpRoot,
     })
-    const version = (await import('react')).version
-    await x(
-      'pnpm',
-      ['i', '--no-frozen-lockfile', `react-server-dom-webpack@${version}`],
-      {
-        throwOnError: true,
-        nodeOptions: {
-          cwd: tmpRoot,
-          stdio: [
-            'ignore',
-            process.env.TEST_DEBUG ? 'inherit' : 'ignore',
-            'inherit',
-          ],
-        },
+    const {
+      default: { version },
+    } = await import('react-server-dom-webpack/package.json', {
+      with: { type: 'json' },
+    })
+    await x('pnpm', ['i', `react-server-dom-webpack@${version}`], {
+      throwOnError: true,
+      nodeOptions: {
+        cwd: tmpRoot,
       },
-    )
+    })
   })
 
   test.describe('dev', () => {
