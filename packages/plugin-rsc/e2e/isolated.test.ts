@@ -103,17 +103,21 @@ test.describe('react-server-dom-webpack', () => {
       dest: tmpRoot,
     })
     const version = (await import('react')).version
-    await x('pnpm', ['i', `react-server-dom-webpack@${version}`], {
-      throwOnError: true,
-      nodeOptions: {
-        cwd: tmpRoot,
-        stdio: [
-          'ignore',
-          process.env.TEST_DEBUG ? 'inherit' : 'ignore',
-          'inherit',
-        ],
+    await x(
+      'pnpm',
+      ['i', '--no-frozen-lockfile', `react-server-dom-webpack@${version}`],
+      {
+        throwOnError: true,
+        nodeOptions: {
+          cwd: tmpRoot,
+          stdio: [
+            'ignore',
+            process.env.TEST_DEBUG ? 'inherit' : 'ignore',
+            'inherit',
+          ],
+        },
       },
-    })
+    )
   })
 
   test.describe('dev', () => {
