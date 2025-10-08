@@ -170,6 +170,12 @@ function test() {
     const mod = await runner.import('/entry.mjs')
     expect(mod).toMatchInlineSnapshot(`
       {
+        "cjsGlobals": {
+          "test": [
+            "string",
+            "string",
+          ],
+        },
         "depDefault": {
           "a": "a",
           "b": "b",
