@@ -1,7 +1,7 @@
 // @ts-ignore
-import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+import * as ReactClient from 'react-server-dom-webpack/client.edge'
 // @ts-ignore
-import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
+import * as ReactServer from 'react-server-dom-webpack/server.edge'
 import type { ReactFormState } from 'react-dom/client'
 import {
   createClientManifest,

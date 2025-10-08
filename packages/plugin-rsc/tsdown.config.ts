@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
@@ -26,26 +25,8 @@ export default defineConfig({
     'src/utils/encryption-runtime.ts',
   ],
   format: ['esm'],
-  external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
+  external: [/^virtual:/, /^react-server-dom-webpack\//],
   dts: {
     sourcemap: process.argv.slice(2).includes('--sourcemap'),
   },
-  plugins: [
-    {
-      name: 'vendor-react-server-dom',
-      buildStart() {
-        fs.rmSync('./dist/vendor/', { recursive: true, force: true })
-        fs.mkdirSync('./dist/vendor', { recursive: true })
-        fs.cpSync(
-          './node_modules/react-server-dom-webpack',
-          './dist/vendor/react-server-dom',
-          { recursive: true, dereference: true },
-        )
-        fs.rmSync('./dist/vendor/react-server-dom/node_modules', {
-          recursive: true,
-          force: true,
-        })
-      },
-    },
-  ],
 }) as any

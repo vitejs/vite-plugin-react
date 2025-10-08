@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+import * as ReactClient from 'react-server-dom-webpack/client.edge'
 import { createServerConsumerManifest } from '../core/ssr'
 
 export { setRequireModule } from '../core/ssr'

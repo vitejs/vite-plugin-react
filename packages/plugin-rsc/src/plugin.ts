@@ -80,7 +80,7 @@ type ServerRerferenceMeta = {
 }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
-const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
+const REACT_SERVER_DOM_NAME = 'react-server-dom-webpack'
 
 // dev-only wrapper virtual module of rollupOptions.input.index
 const VIRTUAL_ENTRIES = {

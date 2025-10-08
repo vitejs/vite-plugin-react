@@ -67,6 +67,12 @@
   "peerDependencies": {
     "react": "*",
     "react-dom": "*",
+    "react-server-dom-webpack": "*",
     "vite": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-server-dom-webpack": {
+      "optional": false
+    }
   }
 }
