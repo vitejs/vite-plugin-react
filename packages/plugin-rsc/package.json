@@ -68,5 +68,10 @@
     "react": "*",
     "react-dom": "*",
     "vite": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-server-dom-webpack": {
+      "optional": true
+    }
   }
 }
