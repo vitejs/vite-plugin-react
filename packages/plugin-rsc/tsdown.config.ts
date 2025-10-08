@@ -24,6 +24,7 @@ export default defineConfig({
     'src/rsc-html-stream/browser.ts',
     'src/utils/rpc.ts',
     'src/utils/encryption-runtime.ts',
+    'src/utils/resolve-react-server-dom.ts',
   ],
   format: ['esm'],
   external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],

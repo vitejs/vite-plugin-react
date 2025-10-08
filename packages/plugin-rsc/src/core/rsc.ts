@@ -1,4 +1,5 @@
 import { memoize, tinyassert } from '@hiogawa/utils'
+import { resolveReactServerDom } from '../utils/resolve-react-server-dom'
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
 import {
   SERVER_DECODE_CLIENT_PREFIX,
@@ -9,7 +10,9 @@ import {
 } from './shared'
 
 // @ts-ignore
-import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
+const ReactServer = await import(
+  /* @vite-ignore */ resolveReactServerDom('server.edge.js')
+)
 
 let init = false
 let requireModule!: (id: string) => unknown

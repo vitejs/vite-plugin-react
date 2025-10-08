@@ -22,6 +22,7 @@ import {
   parseAstAsync,
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
+import { hasUserReactServerDom } from './utils/resolve-react-server-dom'
 import vitePluginRscCore from './core/plugin'
 import {
   type TransformWrapExportFilter,
@@ -81,6 +82,13 @@ type ServerRerferenceMeta = {
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
+
+// Get the react-server-dom package name to use for dependencies
+function getReactServerDomDep(subpath: string): string {
+  return hasUserReactServerDom()
+    ? `react-server-dom-webpack/${subpath}`
+    : `${REACT_SERVER_DOM_NAME}/${subpath}`
+}
 
 // dev-only wrapper virtual module of rollupOptions.input.index
 const VIRTUAL_ENTRIES = {
@@ -380,7 +388,7 @@ export default function vitePluginRsc(
               optimizeDeps: {
                 include: [
                   'react-dom/client',
-                  `${REACT_SERVER_DOM_NAME}/client.browser`,
+                  getReactServerDomDep('client.browser'),
                 ],
                 exclude: [PKG_NAME],
               },
@@ -406,7 +414,7 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   'react-dom/static.edge',
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  getReactServerDomDep('client.edge'),
                 ],
                 exclude: [PKG_NAME],
               },
@@ -432,8 +440,8 @@ export default function vitePluginRsc(
                   'react-dom',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
-                  `${REACT_SERVER_DOM_NAME}/server.edge`,
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  getReactServerDomDep('server.edge'),
+                  getReactServerDomDep('client.edge'),
                 ],
                 exclude: [PKG_NAME],
               },

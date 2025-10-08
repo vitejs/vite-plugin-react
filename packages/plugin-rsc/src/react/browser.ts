@@ -1,6 +1,10 @@
-// @ts-ignore
-import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser'
+import { resolveReactServerDom } from '../utils/resolve-react-server-dom'
 import type { CallServerCallback } from '../types'
+
+// @ts-ignore
+const ReactClient = await import(
+  /* @vite-ignore */ resolveReactServerDom('client.browser.js')
+)
 
 export { setRequireModule } from '../core/browser'
 
