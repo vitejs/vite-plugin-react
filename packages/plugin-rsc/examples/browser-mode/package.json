@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "marked": "^1.2.9",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "next": "^15.5.4"
   },
   "devDependencies": {
+    "@types/marked": "^1.2.2",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "latest",
