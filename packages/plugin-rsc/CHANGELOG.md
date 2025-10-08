@@ -1,3 +1,15 @@
+## <small>[0.4.33](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.32...plugin-rsc@0.4.33) (2025-10-08)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#887](https://github.com/vitejs/vite-plugin-react/issues/887)) ([407795d](https://github.com/vitejs/vite-plugin-react/commit/407795dbd0129b069cf3ac842846687485a5ef00))
+* **deps:** update all non-major dependencies ([#896](https://github.com/vitejs/vite-plugin-react/issues/896)) ([2d239fc](https://github.com/vitejs/vite-plugin-react/commit/2d239fc8dec2ab499282eaea45b2bffb8d182f26))
+* **rsc/cjs:** add `__filename` and `__dirname` ([#908](https://github.com/vitejs/vite-plugin-react/issues/908)) ([0ba0d71](https://github.com/vitejs/vite-plugin-react/commit/0ba0d71bc92822946f327760691db3d6f7d87106))
+* **rsc/cjs:** unwrap `default` based on `__cjs_module_runner_transform` marker ([#905](https://github.com/vitejs/vite-plugin-react/issues/905)) ([1216caf](https://github.com/vitejs/vite-plugin-react/commit/1216caf70621b8760c4226624939b77e7ece4f42))
+
+### Code Refactoring
+
+* **rsc:** move common code for `transformCjsToEsm` ([#909](https://github.com/vitejs/vite-plugin-react/issues/909)) ([ac61c62](https://github.com/vitejs/vite-plugin-react/commit/ac61c624d8a7f860af735ad288491b5c50c656bb))
+
 ## <small>[0.4.32](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.31...plugin-rsc@0.4.32) (2025-09-26)</small>
 ### Bug Fixes
 

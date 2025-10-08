@@ -52,15 +52,8 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           }
 
           const ast = await parseAstAsync(code)
-          const result = transformCjsToEsm(code, ast)
+          const result = transformCjsToEsm(code, ast, { id })
           const output = result.output
-          // TODO: can we use cjs-module-lexer to properly define named exports?
-          // for re-exports, we need to eagerly transform dependencies though.
-          // https://github.com/nodejs/node/blob/f3adc11e37b8bfaaa026ea85c1cf22e3a0e29ae9/lib/internal/modules/esm/translators.js#L382-L409
-          output.append(`
-;__vite_ssr_exportAll__(module.exports);
-export default module.exports;
-`)
           return {
             code: output.toString(),
             map: output.generateMap({ hires: 'boundary' }),
