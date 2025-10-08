@@ -18,7 +18,6 @@ export function transformCjsToEsm(
   const parentNodes: Node[] = []
   const hoistedCodes: string[] = []
   let hoistIndex = 0
-  let needsInteropHelper = false
 
   walk(ast, {
     enter(node) {
@@ -44,8 +43,6 @@ export function transformCjsToEsm(
             return
           }
         }
-
-        needsInteropHelper = true
 
         if (isTopLevel) {
           // top-level scope `require` to dynamic import with interop
@@ -78,8 +75,7 @@ export function transformCjsToEsm(
   for (const hoisted of hoistedCodes.reverse()) {
     output.prepend(hoisted)
   }
-  // Prepend interop helper if needed
-  if (needsInteropHelper) {
+  if (output.hasChanged()) {
     output.prepend(`${CJS_INTEROP_HELPER}\n`)
   }
   // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
