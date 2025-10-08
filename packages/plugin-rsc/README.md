@@ -386,16 +386,6 @@ export default defineConfig({
 
 ## RSC runtime (react-server-dom) API
 
-> **Note**: By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, if you have `react-server-dom-webpack` installed in your project's dependencies, the plugin will automatically use your version instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
->
-> To use your own version, simply install it:
->
-> ```bash
-> npm install react-server-dom-webpack
-> # or
-> pnpm add react-server-dom-webpack
-> ```
-
 ### `@vitejs/plugin-rsc/rsc`
 
 This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
@@ -570,6 +560,10 @@ export function ServerComponent() {
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
+
+### `react-server-dom-webpack`
+
+Currently `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in user project's dependencies, the plugin will automatically use it instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
 
 ## Credits
 
