@@ -1,19 +1,13 @@
-import { resolveReactServerDom } from '../utils/resolve-react-server-dom'
+// @ts-ignore
+import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+// @ts-ignore
+import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 import type { ReactFormState } from 'react-dom/client'
 import {
   createClientManifest,
   createServerDecodeClientManifest,
   createServerManifest,
 } from '../core/rsc'
-
-// @ts-ignore
-const ReactClient = await import(
-  /* @vite-ignore */ resolveReactServerDom('client.edge.js')
-)
-// @ts-ignore
-const ReactServer = await import(
-  /* @vite-ignore */ resolveReactServerDom('server.edge.js')
-)
 
 export { loadServerAction, setRequireModule } from '../core/rsc'
 

@@ -1,7 +1,29 @@
 import type { Plugin } from 'vite'
+import { getReactServerDomImportPath } from '../utils/resolve-react-server-dom'
 
 export default function vitePluginRscCore(): Plugin[] {
   return [
+    {
+      name: 'rsc:resolve-react-server-dom',
+      resolveId(source, importer, options) {
+        // Dynamically resolve vendor imports to user's package if available
+        if (source.startsWith('@vitejs/plugin-rsc/vendor/react-server-dom/')) {
+          const subpath = source.replace(
+            '@vitejs/plugin-rsc/vendor/react-server-dom/',
+            '',
+          )
+          const resolvedPath = getReactServerDomImportPath(subpath)
+
+          // If we resolved to user's package, delegate to normal resolution
+          if (!resolvedPath.startsWith('@vitejs/plugin-rsc/vendor/')) {
+            return this.resolve(resolvedPath, importer, {
+              ...options,
+              skipSelf: true,
+            })
+          }
+        }
+      },
+    },
     {
       name: 'rsc:patch-react-server-dom-webpack',
       transform(originalCode, _id, _options) {

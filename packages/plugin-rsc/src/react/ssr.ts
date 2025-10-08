@@ -1,10 +1,6 @@
-import { resolveReactServerDom } from '../utils/resolve-react-server-dom'
-import { createServerConsumerManifest } from '../core/ssr'
-
 // @ts-ignore
-const ReactClient = await import(
-  /* @vite-ignore */ resolveReactServerDom('client.edge.js')
-)
+import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+import { createServerConsumerManifest } from '../core/ssr'
 
 export { setRequireModule } from '../core/ssr'
 

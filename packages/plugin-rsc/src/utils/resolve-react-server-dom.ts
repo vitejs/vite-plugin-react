@@ -6,7 +6,8 @@ const require = createRequire(import.meta.url)
 let userReactServerDomPath: string | null | undefined
 
 /**
- * Checks if user has react-server-dom-webpack installed in their project
+ * Checks if user has react-server-dom-webpack installed in their project.
+ * This should only be called in Node.js environments (build or server).
  */
 export function hasUserReactServerDom(): boolean {
   if (userReactServerDomPath === undefined) {
@@ -31,17 +32,16 @@ export function hasUserReactServerDom(): boolean {
 }
 
 /**
- * Resolves the path to react-server-dom-webpack.
- * Checks if user has it installed in their project, otherwise falls back to vendored version.
+ * Resolves the import specifier for react-server-dom-webpack.
+ * Returns the user's package name if installed, otherwise the vendored path.
+ * This should only be called in Node.js environments (build or server).
  */
-export function resolveReactServerDom(subpath: string): string {
+export function getReactServerDomImportPath(subpath: string): string {
   if (hasUserReactServerDom()) {
     // Use user's installed version
-    return pathToFileURL(userReactServerDomPath + '/' + subpath).href
+    return `react-server-dom-webpack/${subpath}`
   }
 
   // Fallback to vendored version
-  return pathToFileURL(
-    require.resolve('@vitejs/plugin-rsc/vendor/react-server-dom/' + subpath),
-  ).href
+  return `@vitejs/plugin-rsc/vendor/react-server-dom/${subpath}`
 }
