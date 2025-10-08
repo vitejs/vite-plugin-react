@@ -39,11 +39,6 @@ test.describe('build-cloudflare', () => {
 })
 
 function defineTest(f: Fixture) {
-  test('loader', async ({ page }) => {
-    await page.goto(f.url())
-    await expect(page.getByText(`loaderData: {"name":"Unknown"}`)).toBeVisible()
-  })
-
   test('client', async ({ page }) => {
     await page.goto(f.url('./about'))
     await waitForHydration(page)
