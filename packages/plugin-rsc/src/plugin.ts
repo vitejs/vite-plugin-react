@@ -94,23 +94,6 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
-/**
- * Try to resolve react-server-dom-webpack from user's project.
- * Returns the package name to use: either 'react-server-dom-webpack' if found in user's project,
- * or the vendored version otherwise.
- */
-function getReactServerDomPackageName(root: string): string {
-  try {
-    const userRequire = createRequire(path.join(root, 'package.json'))
-    // Try to resolve the package from user's project
-    userRequire.resolve('react-server-dom-webpack/package.json')
-    return 'react-server-dom-webpack'
-  } catch {
-    // Fall back to vendored version if not found
-    return `${PKG_NAME}/vendor/react-server-dom`
-  }
-}
-
 export type { RscPluginManager }
 
 class RscPluginManager {
