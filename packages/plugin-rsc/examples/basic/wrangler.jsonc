@@ -6,6 +6,6 @@
     "directory": "dist/client",
   },
   "workers_dev": true,
-  "compatibility_date": "2025-04-01",
+  "compatibility_date": "2025-10-01",
   "compatibility_flags": ["nodejs_als"],
 }
