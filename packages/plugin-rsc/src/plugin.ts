@@ -55,6 +55,7 @@ import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import { hasUncaughtExceptionCaptureCallback } from 'node:process'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -342,7 +343,7 @@ export default function vitePluginRsc(
     }
   }
 
-  let reactServerDomPackageName = REACT_SERVER_DOM_NAME
+  let hasReactServerDomWebpack = false
 
   return [
     {
@@ -377,15 +378,12 @@ export default function vitePluginRsc(
           PKG_NAME,
           ...result.ssr.noExternal.sort(),
         ]
-
-        // Detect if user has react-server-dom-webpack installed
-        try {
-          const require = createRequire(
-            path.join(config.root ?? process.cwd(), '*'),
-          )
-          require.resolve('react-server-dom-webpack/package.json')
-          reactServerDomPackageName = 'react-server-dom-webpack'
-        } catch {}
+        hasReactServerDomWebpack = result.ssr.noExternal.includes(
+          'react-server-dom-webpack',
+        )
+        const reactServerDomPackageName = hasReactServerDomWebpack
+          ? 'react-server-dom-webpack'
+          : REACT_SERVER_DOM_NAME
 
         return {
           appType: config.appType ?? 'custom',
@@ -700,30 +698,25 @@ export default function vitePluginRsc(
     },
     {
       // Alias plugin to redirect vendored react-server-dom imports to user's package when available
-      name: 'rsc:react-server-dom-alias',
-      enforce: 'pre',
-      async resolveId(source, importer, options) {
-        // Only handle imports from the vendored path
-        if (!source.startsWith(`${PKG_NAME}/vendor/react-server-dom/`)) {
-          return null
-        }
-
-        // Extract the subpath (e.g., "client.browser", "server.edge", etc.)
-        const subpath = source.slice(
-          `${PKG_NAME}/vendor/react-server-dom/`.length,
-        )
-
-        // If user has their own package, resolve to it instead
-        if (reactServerDomPackageName === 'react-server-dom-webpack') {
-          const newSource = `react-server-dom-webpack/${subpath}`
-          return this.resolve(newSource, importer, {
-            ...options,
-            skipSelf: true,
-          })
-        }
-
-        // Otherwise, let the default resolution handle the vendored path
-        return null
+      name: 'rsc:react-server-dom-webpack-alias',
+      resolveId: {
+        order: 'pre',
+        async handler(source, importer, options) {
+          if (
+            hasReactServerDomWebpack &&
+            source.startsWith(`${PKG_NAME}/vendor/react-server-dom/`)
+          ) {
+            const newSource = source.replace(
+              `${PKG_NAME}/vendor/react-server-dom`,
+              'react-server-dom-webpack',
+            )
+            const resolved = await this.resolve(newSource, importer, {
+              ...options,
+              skipSelf: true,
+            })
+            return resolved
+          }
+        },
       },
     },
     {
