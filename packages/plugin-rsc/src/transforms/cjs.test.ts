@@ -7,7 +7,7 @@ import path from 'node:path'
 describe(transformCjsToEsm, () => {
   async function testTransform(input: string) {
     const ast = await parseAstAsync(input)
-    const { output } = transformCjsToEsm(input, ast)
+    const { output } = transformCjsToEsm(input, ast, { id: '/test.js' })
     if (!output.hasChanged()) {
       return
     }
@@ -22,7 +22,8 @@ describe(transformCjsToEsm, () => {
 exports.ok = true;
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       exports.ok = true;
 
       ;__vite_ssr_exportAll__(module.exports);
@@ -41,7 +42,8 @@ if (true) {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
       if (true) {
         module.exports = (__cjs_interop__(await import('./cjs/use-sync-external-store.production.js')));
@@ -65,7 +67,8 @@ if (true) {
 })()
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
       const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("react"));
       const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("react-dom"));
@@ -95,7 +98,8 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
       const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("te" + "st"));
       const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("test"));
@@ -125,7 +129,8 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       {
         const require = () => {};
         require("test");
@@ -149,7 +154,7 @@ function test() {
           async transform(code, id) {
             if (id.endsWith('.cjs')) {
               const ast = await parseAstAsync(code)
-              const { output } = transformCjsToEsm(code, ast)
+              const { output } = transformCjsToEsm(code, ast, { id })
               return {
                 code: output.toString(),
                 map: output.generateMap({ hires: 'boundary' }),
@@ -165,6 +170,12 @@ function test() {
     const mod = await runner.import('/entry.mjs')
     expect(mod).toMatchInlineSnapshot(`
       {
+        "cjsGlobals": {
+          "test": [
+            "string",
+            "string",
+          ],
+        },
         "depDefault": {
           "a": "a",
           "b": "b",

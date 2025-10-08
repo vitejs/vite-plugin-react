@@ -2,6 +2,8 @@ import type { Program, Node } from 'estree'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
 import { walk } from 'estree-walker'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import path from 'node:path'
 
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.
@@ -14,6 +16,7 @@ const CJS_INTEROP_HELPER = `function __cjs_interop__(m) { return m.__cjs_module_
 export function transformCjsToEsm(
   code: string,
   ast: Program,
+  options: { id: string },
 ): { output: MagicString } {
   const output = new MagicString(code)
   const analyzed = analyze(ast)
@@ -84,6 +87,14 @@ export function transformCjsToEsm(
   }
   // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
   output.prepend(`let exports = {}; const module = { exports };\n`)
+
+  // https://nodejs.org/docs/v22.19.0/api/modules.html#the-module-scope
+  // https://github.com/vitest-dev/vitest/blob/965cefc19722a6c899cd1d3decb3cc33e72af696/packages/vite-node/src/client.ts#L548-L554
+  const __filename = fileURLToPath(pathToFileURL(options.id).href)
+  const __dirname = path.dirname(__filename)
+  output.prepend(
+    `let __filename = ${JSON.stringify(__filename)}; let __dirname = ${JSON.stringify(__dirname)};\n`,
+  )
 
   // TODO: can we use cjs-module-lexer to properly define named exports?
   // for re-exports, we need to eagerly transform dependencies though.

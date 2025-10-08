@@ -52,7 +52,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           }
 
           const ast = await parseAstAsync(code)
-          const result = transformCjsToEsm(code, ast)
+          const result = transformCjsToEsm(code, ast, { id })
           const output = result.output
           return {
             code: output.toString(),
