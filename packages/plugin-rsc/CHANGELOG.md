@@ -1,3 +1,16 @@
+## [0.5.0](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.34...plugin-rsc@0.5.0) (2025-10-09)
+### ⚠ BREAKING CHANGES
+
+* **rsc:** remove deprecated features (#917)
+
+### Bug Fixes
+
+* **deps:** update react-related dependencies ([#901](https://github.com/vitejs/vite-plugin-react/issues/901)) ([b79592a](https://github.com/vitejs/vite-plugin-react/commit/b79592a72add1806162afe553d79a5eae23252bd))
+
+### Code Refactoring
+
+* **rsc:** remove deprecated features ([#917](https://github.com/vitejs/vite-plugin-react/issues/917)) ([3d568c7](https://github.com/vitejs/vite-plugin-react/commit/3d568c73ac2d5cd4aaf9f0e8c5b62ec7a1e51d3c))
+
 ## <small>[0.4.34](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.33...plugin-rsc@0.4.34) (2025-10-09)</small>
 ### Features
 
