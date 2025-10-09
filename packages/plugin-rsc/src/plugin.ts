@@ -124,9 +124,6 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @deprecated use `serverHandler: false` */
-  disableServerHandler?: boolean
-
   /** @default { enviornmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
@@ -139,9 +136,6 @@ export type RscPluginOptions = {
   loadModuleDevProxy?: boolean
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
-
-  /** @deprecated use "DEBUG=vite-env:*" to see warnings. */
-  ignoredPackageWarnings?: (string | RegExp)[]
 
   /**
    * This option allows customizing how client build copies assets from server build.
@@ -502,7 +496,6 @@ export default function vitePluginRsc(
           return oldSend.apply(this, args as any)
         }
 
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
@@ -539,7 +532,6 @@ export default function vitePluginRsc(
         }
       },
       async configurePreviewServer(server) {
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
@@ -699,18 +691,6 @@ export default function vitePluginRsc(
             return resolved
           }
         },
-      },
-    },
-    {
-      // backward compat: `loadSsrModule(name)` implemented as `loadModule("ssr", name)`
-      name: 'rsc:load-ssr-module',
-      transform(code) {
-        if (code.includes('import.meta.viteRsc.loadSsrModule(')) {
-          return code.replaceAll(
-            `import.meta.viteRsc.loadSsrModule(`,
-            `import.meta.viteRsc.loadModule("ssr", `,
-          )
-        }
       },
     },
     {
