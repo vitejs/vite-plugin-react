@@ -594,6 +594,9 @@ importers:
       connect:
         specifier: ^3.7.0
         version: 3.7.0
+      rsc-html-stream:
+        specifier: ^0.0.7
+        version: 0.0.7
       sirv:
         specifier: ^3.0.2
         version: 3.0.2
