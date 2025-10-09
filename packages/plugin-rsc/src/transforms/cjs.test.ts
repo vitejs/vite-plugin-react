@@ -7,7 +7,7 @@ import path from 'node:path'
 describe(transformCjsToEsm, () => {
   async function testTransform(input: string) {
     const ast = await parseAstAsync(input)
-    const { output } = transformCjsToEsm(input, ast)
+    const { output } = transformCjsToEsm(input, ast, { id: '/test.js' })
     if (!output.hasChanged()) {
       return
     }
@@ -22,8 +22,13 @@ describe(transformCjsToEsm, () => {
 exports.ok = true;
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       exports.ok = true;
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -37,12 +42,18 @@ if (true) {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
+      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
       if (true) {
-        module.exports = ((await import('./cjs/use-sync-external-store.production.js')).default);
+        module.exports = (__cjs_interop__(await import('./cjs/use-sync-external-store.production.js')));
       } else {
-        module.exports = ((await import('./cjs/use-sync-external-store.development.js')).default);
+        module.exports = (__cjs_interop__(await import('./cjs/use-sync-external-store.development.js')));
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -56,14 +67,20 @@ if (true) {
 })()
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_0 = (await import("react")).default;
-      const __cjs_to_esm_hoist_1 = (await import("react-dom")).default;
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
+      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
+      const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("react"));
+      const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("react-dom"));
       "production" !== process.env.NODE_ENV && (function() { 
         var React = __cjs_to_esm_hoist_0;
         var ReactDOM = __cjs_to_esm_hoist_1;
         exports.useSyncExternalStoreWithSelector = function () {}
       })()
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -81,19 +98,25 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
-      const __cjs_to_esm_hoist_0 = (await import("te" + "st")).default;
-      const __cjs_to_esm_hoist_1 = (await import("test")).default;
-      const __cjs_to_esm_hoist_2 = (await import("test")).default;
-      const x1 = ((await import("te" + "st")).default);
-      const x2 = ((await import("test")).default)().test;
-      console.log(((await import("test")).default))
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
+      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
+      const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("te" + "st"));
+      const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("test"));
+      const __cjs_to_esm_hoist_2 = __cjs_interop__(await import("test"));
+      const x1 = (__cjs_interop__(await import("te" + "st")));
+      const x2 = (__cjs_interop__(await import("test")))().test;
+      console.log((__cjs_interop__(await import("test"))))
 
       function test() {
         const y1 = __cjs_to_esm_hoist_0;
         const y2 = __cjs_to_esm_hoist_1().test;
         consoe.log(__cjs_to_esm_hoist_2)
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -106,11 +129,16 @@ function test() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`
-      "let exports = {}; const module = { exports };
+      "let __filename = "/test.js"; let __dirname = "/";
+      let exports = {}; const module = { exports };
       {
         const require = () => {};
         require("test");
       }
+
+      ;__vite_ssr_exportAll__(module.exports);
+      export default module.exports;
+      export const __cjs_module_runner_transform = true;
       "
     `)
   })
@@ -126,11 +154,7 @@ function test() {
           async transform(code, id) {
             if (id.endsWith('.cjs')) {
               const ast = await parseAstAsync(code)
-              const { output } = transformCjsToEsm(code, ast)
-              output.append(`
-;__vite_ssr_exportAll__(module.exports);
-export default module.exports;
-`)
+              const { output } = transformCjsToEsm(code, ast, { id })
               return {
                 code: output.toString(),
                 map: output.generateMap({ hires: 'boundary' }),
@@ -146,6 +170,12 @@ export default module.exports;
     const mod = await runner.import('/entry.mjs')
     expect(mod).toMatchInlineSnapshot(`
       {
+        "cjsGlobals": {
+          "test": [
+            "string",
+            "string",
+          ],
+        },
         "depDefault": {
           "a": "a",
           "b": "b",
@@ -156,6 +186,7 @@ export default module.exports;
           "value": 3,
         },
         "depNamespace": {
+          "__cjs_module_runner_transform": true,
           "a": "a",
           "b": "b",
           "default": {
@@ -164,6 +195,7 @@ export default module.exports;
           },
         },
         "depPrimitive": "[ok]",
+        "dualLib": "ok",
       }
     `)
   })

@@ -4,7 +4,7 @@ import { TestClientState, TestHydrated } from './routes/client'
 import { DumpError, GlobalNavigationLoadingBar } from './routes/root.client'
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  console.log('Layout')
+  console.log('[debug] root - Layout')
   return (
     <html lang="en">
       <head>
@@ -41,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function Component() {
-  console.log('Root')
+  console.log('[debug] root - Component')
   return (
     <>
       <Outlet />
