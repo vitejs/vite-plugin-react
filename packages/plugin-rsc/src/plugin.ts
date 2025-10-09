@@ -124,9 +124,6 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @deprecated use `serverHandler: false` */
-  disableServerHandler?: boolean
-
   /** @default { enviornmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
@@ -502,7 +499,6 @@ export default function vitePluginRsc(
           return oldSend.apply(this, args as any)
         }
 
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
@@ -539,7 +535,6 @@ export default function vitePluginRsc(
         }
       },
       async configurePreviewServer(server) {
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
