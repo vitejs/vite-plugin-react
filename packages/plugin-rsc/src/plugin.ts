@@ -124,9 +124,6 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @deprecated use `serverHandler: false` */
-  disableServerHandler?: boolean
-
   /** @default { enviornmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
@@ -139,9 +136,6 @@ export type RscPluginOptions = {
   loadModuleDevProxy?: boolean
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
-
-  /** @deprecated use "DEBUG=vite-env:*" to see warnings. */
-  ignoredPackageWarnings?: (string | RegExp)[]
 
   /**
    * This option allows customizing how client build copies assets from server build.
@@ -325,6 +319,8 @@ export default function vitePluginRsc(
     }
   }
 
+  let hasReactServerDomWebpack = false
+
   return [
     {
       name: 'rsc',
@@ -358,6 +354,12 @@ export default function vitePluginRsc(
           PKG_NAME,
           ...result.ssr.noExternal.sort(),
         ]
+        hasReactServerDomWebpack = result.ssr.noExternal.includes(
+          'react-server-dom-webpack',
+        )
+        const reactServerDomPackageName = hasReactServerDomWebpack
+          ? 'react-server-dom-webpack'
+          : REACT_SERVER_DOM_NAME
 
         return {
           appType: config.appType ?? 'custom',
@@ -380,7 +382,7 @@ export default function vitePluginRsc(
               optimizeDeps: {
                 include: [
                   'react-dom/client',
-                  `${REACT_SERVER_DOM_NAME}/client.browser`,
+                  `${reactServerDomPackageName}/client.browser`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -406,7 +408,7 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   'react-dom/static.edge',
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -432,8 +434,8 @@ export default function vitePluginRsc(
                   'react-dom',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
-                  `${REACT_SERVER_DOM_NAME}/server.edge`,
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/server.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -494,7 +496,6 @@ export default function vitePluginRsc(
           return oldSend.apply(this, args as any)
         }
 
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
@@ -531,7 +532,6 @@ export default function vitePluginRsc(
         }
       },
       async configurePreviewServer(server) {
-        if (rscPluginOptions.disableServerHandler) return
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
@@ -671,15 +671,26 @@ export default function vitePluginRsc(
       },
     },
     {
-      // backward compat: `loadSsrModule(name)` implemented as `loadModule("ssr", name)`
-      name: 'rsc:load-ssr-module',
-      transform(code) {
-        if (code.includes('import.meta.viteRsc.loadSsrModule(')) {
-          return code.replaceAll(
-            `import.meta.viteRsc.loadSsrModule(`,
-            `import.meta.viteRsc.loadModule("ssr", `,
-          )
-        }
+      // Alias plugin to redirect vendored react-server-dom imports to user's package when available
+      name: 'rsc:react-server-dom-webpack-alias',
+      resolveId: {
+        order: 'pre',
+        async handler(source, importer, options) {
+          if (
+            hasReactServerDomWebpack &&
+            source.startsWith(`${PKG_NAME}/vendor/react-server-dom/`)
+          ) {
+            const newSource = source.replace(
+              `${PKG_NAME}/vendor/react-server-dom`,
+              'react-server-dom-webpack',
+            )
+            const resolved = await this.resolve(newSource, importer, {
+              ...options,
+              skipSelf: true,
+            })
+            return resolved
+          }
+        },
       },
     },
     {
