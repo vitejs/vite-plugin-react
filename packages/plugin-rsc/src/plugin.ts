@@ -325,6 +325,8 @@ export default function vitePluginRsc(
     }
   }
 
+  let hasReactServerDomWebpack = false
+
   return [
     {
       name: 'rsc',
@@ -358,6 +360,12 @@ export default function vitePluginRsc(
           PKG_NAME,
           ...result.ssr.noExternal.sort(),
         ]
+        hasReactServerDomWebpack = result.ssr.noExternal.includes(
+          'react-server-dom-webpack',
+        )
+        const reactServerDomPackageName = hasReactServerDomWebpack
+          ? 'react-server-dom-webpack'
+          : REACT_SERVER_DOM_NAME
 
         return {
           appType: config.appType ?? 'custom',
@@ -380,7 +388,7 @@ export default function vitePluginRsc(
               optimizeDeps: {
                 include: [
                   'react-dom/client',
-                  `${REACT_SERVER_DOM_NAME}/client.browser`,
+                  `${reactServerDomPackageName}/client.browser`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -406,7 +414,7 @@ export default function vitePluginRsc(
                   'react/jsx-dev-runtime',
                   'react-dom/server.edge',
                   'react-dom/static.edge',
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -432,8 +440,8 @@ export default function vitePluginRsc(
                   'react-dom',
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
-                  `${REACT_SERVER_DOM_NAME}/server.edge`,
-                  `${REACT_SERVER_DOM_NAME}/client.edge`,
+                  `${reactServerDomPackageName}/server.edge`,
+                  `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME],
               },
@@ -668,6 +676,29 @@ export default function vitePluginRsc(
             }
           }
         }
+      },
+    },
+    {
+      // Alias plugin to redirect vendored react-server-dom imports to user's package when available
+      name: 'rsc:react-server-dom-webpack-alias',
+      resolveId: {
+        order: 'pre',
+        async handler(source, importer, options) {
+          if (
+            hasReactServerDomWebpack &&
+            source.startsWith(`${PKG_NAME}/vendor/react-server-dom/`)
+          ) {
+            const newSource = source.replace(
+              `${PKG_NAME}/vendor/react-server-dom`,
+              'react-server-dom-webpack',
+            )
+            const resolved = await this.resolve(newSource, importer, {
+              ...options,
+              skipSelf: true,
+            })
+            return resolved
+          }
+        },
       },
     },
     {
