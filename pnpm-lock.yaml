@@ -490,9 +490,6 @@ importers:
       react-server-dom-webpack:
         specifier: ^19.1.1
         version: 19.1.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      rsc-html-stream:
-        specifier: ^0.0.7
-        version: 0.0.7
       tinyexec:
         specifier: ^1.0.1
         version: 1.0.1

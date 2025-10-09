@@ -137,9 +137,6 @@ export type RscPluginOptions = {
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
-  /** @deprecated use "DEBUG=vite-env:*" to see warnings. */
-  ignoredPackageWarnings?: (string | RegExp)[]
-
   /**
    * This option allows customizing how client build copies assets from server build.
    * By default, all assets are copied, but frameworks can establish server asset convention
@@ -694,18 +691,6 @@ export default function vitePluginRsc(
             return resolved
           }
         },
-      },
-    },
-    {
-      // backward compat: `loadSsrModule(name)` implemented as `loadModule("ssr", name)`
-      name: 'rsc:load-ssr-module',
-      transform(code) {
-        if (code.includes('import.meta.viteRsc.loadSsrModule(')) {
-          return code.replaceAll(
-            `import.meta.viteRsc.loadSsrModule(`,
-            `import.meta.viteRsc.loadModule("ssr", `,
-          )
-        }
       },
     },
     {
