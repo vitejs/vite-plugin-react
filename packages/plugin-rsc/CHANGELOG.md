@@ -1,3 +1,26 @@
+## [0.5.0](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.34...plugin-rsc@0.5.0) (2025-10-09)
+### ⚠ BREAKING CHANGES
+
+* **rsc:** remove deprecated features (#917)
+
+### Bug Fixes
+
+* **deps:** update react-related dependencies ([#901](https://github.com/vitejs/vite-plugin-react/issues/901)) ([b79592a](https://github.com/vitejs/vite-plugin-react/commit/b79592a72add1806162afe553d79a5eae23252bd))
+
+### Code Refactoring
+
+* **rsc:** remove deprecated features ([#917](https://github.com/vitejs/vite-plugin-react/issues/917)) ([3d568c7](https://github.com/vitejs/vite-plugin-react/commit/3d568c73ac2d5cd4aaf9f0e8c5b62ec7a1e51d3c))
+
+## <small>[0.4.34](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.33...plugin-rsc@0.4.34) (2025-10-09)</small>
+### Features
+
+* **rsc:** use locally installed `react-server-dom-webpack` when available ([#915](https://github.com/vitejs/vite-plugin-react/issues/915)) ([3506cfa](https://github.com/vitejs/vite-plugin-react/commit/3506cfa5ab086b90b8c96878f385d77762bd277c))
+
+### Miscellaneous Chores
+
+* **rsc:** remove loader from react-router example for react 19.2 ([#910](https://github.com/vitejs/vite-plugin-react/issues/910)) ([4cafd9a](https://github.com/vitejs/vite-plugin-react/commit/4cafd9a29234071732f0f3ea8a82d94a01851a45))
+* **rsc:** update `compatibility_date` for `WeakRef` ([#912](https://github.com/vitejs/vite-plugin-react/issues/912)) ([91bcc08](https://github.com/vitejs/vite-plugin-react/commit/91bcc0882b615bc2b47147d4c0236bce9e46b78f))
+
 ## <small>[0.4.33](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.32...plugin-rsc@0.4.33) (2025-10-08)</small>
 ### Bug Fixes
 

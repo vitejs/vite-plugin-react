@@ -561,6 +561,10 @@ Note that while there are official npm packages [`server-only`](https://www.npmj
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
+### `react-server-dom-webpack`
+
+Currently `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in user project's dependencies, the plugin will automatically use it instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
+
 ## Credits
 
 This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.

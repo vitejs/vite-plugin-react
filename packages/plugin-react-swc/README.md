@@ -125,6 +125,38 @@ If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is 
 react({ disableOxcRecommendation: true })
 ```
 
+## `@vitejs/plugin-react-swc/preamble`
+
+The package provides `@vitejs/plugin-react-swc/preamble` to initialize HMR runtime from client entrypoint for SSR applications which don't use [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver). For example:
+
+```js
+// [entry.client.js]
+import '@vitejs/plugin-react-swc/preamble'
+```
+
+Alternatively, you can manually call `transformIndexHtml` during SSR, which sets up equivalent initialization code. Here's an example for an Express server:
+
+```js
+app.get('/', async (req, res, next) => {
+  try {
+    let html = fs.readFileSync(path.resolve(root, 'index.html'), 'utf-8')
+
+    // Transform HTML using Vite plugins.
+    html = await viteServer.transformIndexHtml(req.url, html)
+
+    res.send(html)
+  } catch (e) {
+    return next(e)
+  }
+})
+```
+
+Otherwise, you'll get the following error:
+
+```
+Uncaught Error: @vitejs/plugin-react-swc can't detect preamble. Something is wrong.
+```
+
 ## Consistent components exports
 
 For React refresh to work correctly, your file should only export React components. The best explanation I've read is the one from the [Gatsby docs](https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works).

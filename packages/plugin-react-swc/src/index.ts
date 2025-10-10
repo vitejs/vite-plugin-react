@@ -16,6 +16,7 @@ import {
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
@@ -246,6 +247,10 @@ const react = (_options?: Options): Plugin[] => {
             viteCacheRoot = config.cacheDir
           },
         },
+    virtualPreamblePlugin({
+      name: '@vitejs/plugin-react-swc/preamble',
+      isEnabled: () => !hmrDisabled,
+    }),
   ]
 }
 
