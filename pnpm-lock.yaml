@@ -7,8 +7,8 @@ settings:
 catalogs:
   rolldown-vite:
     vite:
-      specifier: npm:rolldown-vite@^7.1.15
-      version: 7.1.15
+      specifier: npm:rolldown-vite@^7.1.16
+      version: 7.1.16
 
 overrides:
   '@types/estree': ^1.0.8
@@ -138,7 +138,7 @@ importers:
         version: 0.15.6(publint@0.3.12)(typescript@5.9.3)
       vite:
         specifier: catalog:rolldown-vite
-        version: rolldown-vite@7.1.15(@types/node@22.18.8)(esbuild@0.25.4)(jiti@2.6.1)(yaml@2.8.1)
+        version: rolldown-vite@7.1.16(@types/node@22.18.8)(esbuild@0.25.4)(jiti@2.6.1)(yaml@2.8.1)
 
   packages/plugin-react-swc:
     dependencies:
@@ -4122,8 +4122,8 @@ packages:
       vue-tsc:
         optional: true
 
-  rolldown-vite@7.1.15:
-    resolution: {integrity: sha512-3Vc9x/pnTBjTD2e5sQiVFOvZlouQBSvuxYhlQPUyNoNPSShs6LN/65eKnJsTj9vZDZju/YjMZ5ZPrbOW/n4FDA==}
+  rolldown-vite@7.1.16:
+    resolution: {integrity: sha512-cK6tCmZyEC0KRAcXTjQ+ara+wkqmaE7WUoI0ZfZzDuvaRaZ3mtvbhTJc4cH+PjKRok++++Z1bZZaNlf3+SnnGA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -7817,14 +7817,14 @@ snapshots:
       - oxc-resolver
       - supports-color
 
-  rolldown-vite@7.1.15(@types/node@22.18.8)(esbuild@0.25.4)(jiti@2.6.1)(yaml@2.8.1):
+  rolldown-vite@7.1.16(@types/node@22.18.8)(esbuild@0.25.4)(jiti@2.6.1)(yaml@2.8.1):
     dependencies:
       '@oxc-project/runtime': 0.92.0
       fdir: 6.5.0(picomatch@4.0.3)
       lightningcss: 1.30.2
       picomatch: 4.0.3
       postcss: 8.5.6
-      rolldown: 1.0.0-beta.41
+      rolldown: 1.0.0-beta.42
       tinyglobby: 0.2.15
     optionalDependencies:
       '@types/node': 22.18.8
