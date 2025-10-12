@@ -20,6 +20,10 @@ export default defineConfig({
       from: 'README.md',
       to: 'dist/README.md',
     },
+    {
+      from: 'types',
+      to: 'dist/types',
+    },
   ],
   onSuccess() {
     writeFileSync(
@@ -34,7 +38,10 @@ export default defineConfig({
                 key !== 'private',
             ),
           ),
-          exports: './index.js',
+          exports: {
+            '.': './index.js',
+            './preamble': './types/preamble.d.ts',
+          },
         },
         null,
         2,

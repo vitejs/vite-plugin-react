@@ -1,3 +1,38 @@
+## [0.5.0](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.34...plugin-rsc@0.5.0) (2025-10-09)
+### ⚠ BREAKING CHANGES
+
+* **rsc:** remove deprecated features (#917)
+
+### Bug Fixes
+
+* **deps:** update react-related dependencies ([#901](https://github.com/vitejs/vite-plugin-react/issues/901)) ([b79592a](https://github.com/vitejs/vite-plugin-react/commit/b79592a72add1806162afe553d79a5eae23252bd))
+
+### Code Refactoring
+
+* **rsc:** remove deprecated features ([#917](https://github.com/vitejs/vite-plugin-react/issues/917)) ([3d568c7](https://github.com/vitejs/vite-plugin-react/commit/3d568c73ac2d5cd4aaf9f0e8c5b62ec7a1e51d3c))
+
+## <small>[0.4.34](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.33...plugin-rsc@0.4.34) (2025-10-09)</small>
+### Features
+
+* **rsc:** use locally installed `react-server-dom-webpack` when available ([#915](https://github.com/vitejs/vite-plugin-react/issues/915)) ([3506cfa](https://github.com/vitejs/vite-plugin-react/commit/3506cfa5ab086b90b8c96878f385d77762bd277c))
+
+### Miscellaneous Chores
+
+* **rsc:** remove loader from react-router example for react 19.2 ([#910](https://github.com/vitejs/vite-plugin-react/issues/910)) ([4cafd9a](https://github.com/vitejs/vite-plugin-react/commit/4cafd9a29234071732f0f3ea8a82d94a01851a45))
+* **rsc:** update `compatibility_date` for `WeakRef` ([#912](https://github.com/vitejs/vite-plugin-react/issues/912)) ([91bcc08](https://github.com/vitejs/vite-plugin-react/commit/91bcc0882b615bc2b47147d4c0236bce9e46b78f))
+
+## <small>[0.4.33](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.32...plugin-rsc@0.4.33) (2025-10-08)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#887](https://github.com/vitejs/vite-plugin-react/issues/887)) ([407795d](https://github.com/vitejs/vite-plugin-react/commit/407795dbd0129b069cf3ac842846687485a5ef00))
+* **deps:** update all non-major dependencies ([#896](https://github.com/vitejs/vite-plugin-react/issues/896)) ([2d239fc](https://github.com/vitejs/vite-plugin-react/commit/2d239fc8dec2ab499282eaea45b2bffb8d182f26))
+* **rsc/cjs:** add `__filename` and `__dirname` ([#908](https://github.com/vitejs/vite-plugin-react/issues/908)) ([0ba0d71](https://github.com/vitejs/vite-plugin-react/commit/0ba0d71bc92822946f327760691db3d6f7d87106))
+* **rsc/cjs:** unwrap `default` based on `__cjs_module_runner_transform` marker ([#905](https://github.com/vitejs/vite-plugin-react/issues/905)) ([1216caf](https://github.com/vitejs/vite-plugin-react/commit/1216caf70621b8760c4226624939b77e7ece4f42))
+
+### Code Refactoring
+
+* **rsc:** move common code for `transformCjsToEsm` ([#909](https://github.com/vitejs/vite-plugin-react/issues/909)) ([ac61c62](https://github.com/vitejs/vite-plugin-react/commit/ac61c624d8a7f860af735ad288491b5c50c656bb))
+
 ## <small>[0.4.32](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.31...plugin-rsc@0.4.32) (2025-09-26)</small>
 ### Bug Fixes
 

@@ -1,3 +1,6 @@
+import type { Plugin } from 'vite'
+import { exactRegex } from '@rolldown/pluginutils'
+
 export const runtimePublicPath = '/@react-refresh'
 
 const reactCompRE = /extends\s+(?:React\.)?(?:Pure)?Component/
@@ -59,4 +62,37 @@ function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransf
   }
 
   return newCode
+}
+
+export function virtualPreamblePlugin({
+  name,
+  isEnabled,
+}: {
+  name: string
+  isEnabled: () => boolean
+}): Plugin {
+  return {
+    name: 'vite:react-virtual-preamble',
+    resolveId: {
+      order: 'pre',
+      filter: { id: exactRegex(name) },
+      handler(source) {
+        if (source === name) {
+          return '\0' + source
+        }
+      },
+    },
+    load: {
+      filter: { id: exactRegex('\0' + name) },
+      handler(id) {
+        if (id === '\0' + name) {
+          if (isEnabled()) {
+            // vite dev import analysis can rewrite base
+            return preambleCode.replace('__BASE__', '/')
+          }
+          return ''
+        }
+      },
+    },
+  }
 }
