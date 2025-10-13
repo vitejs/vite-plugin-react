@@ -3,6 +3,7 @@ import Button from 'jsx-entry'
 import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 import { Accordion } from './components/Accordion'
 import Parent from './hmr/parent'
+import InjectExportsLater from './hmr/inject-exports-later'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
@@ -45,6 +46,7 @@ function App() {
         <Accordion.Item>Second Item</Accordion.Item>
       </Accordion.Root>
       <Parent />
+      <InjectExportsLater />
       <JsxImportRuntime />
       <Button>button</Button>
       <TestImportAttributes />
