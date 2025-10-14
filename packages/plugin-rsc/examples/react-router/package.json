@@ -15,10 +15,10 @@
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router": "7.9.3"
+    "react-router": "7.9.4"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.13.10",
+    "@cloudflare/vite-plugin": "^1.13.12",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.14",
     "@types/react": "^19.2.2",
@@ -27,6 +27,6 @@
     "@vitejs/plugin-rsc": "latest",
     "tailwindcss": "^4.1.14",
     "vite": "^7.1.9",
-    "wrangler": "^4.42.0"
+    "wrangler": "^4.42.2"
   }
 }
