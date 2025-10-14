@@ -31,7 +31,7 @@
     "rsc-html-stream": "^0.0.7",
     "tailwindcss": "^4.1.14",
     "vite": "^7.1.9",
-    "wrangler": "^4.42.0"
+    "wrangler": "^4.42.2"
   },
   "stackblitz": {
     "installDependencies": false,

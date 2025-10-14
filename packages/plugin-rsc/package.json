@@ -49,10 +49,10 @@
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.55.1",
+    "@playwright/test": "^1.56.0",
     "@tsconfig/strictest": "^2.0.6",
     "@types/estree": "^1.0.8",
-    "@types/node": "^22.18.8",
+    "@types/node": "^22.18.10",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
     "@vitejs/plugin-react": "workspace:*",
@@ -61,7 +61,7 @@
     "react-dom": "^19.2.0",
     "react-server-dom-webpack": "^19.2.0",
     "tinyexec": "^1.0.1",
-    "tsdown": "^0.15.6"
+    "tsdown": "^0.15.7"
   },
   "peerDependencies": {
     "react": "*",
