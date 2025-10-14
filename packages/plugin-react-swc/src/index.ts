@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import {
   type JscTarget,
@@ -21,15 +20,7 @@ import {
 import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
 
-/* eslint-disable no-restricted-globals */
-const _dirname =
-  typeof __dirname !== 'undefined'
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url))
-const resolve = createRequire(
-  typeof __filename !== 'undefined' ? __filename : import.meta.url,
-).resolve
-/* eslint-enable no-restricted-globals */
+const resolve = createRequire(import.meta.url).resolve
 
 type Options = {
   /**
@@ -114,7 +105,8 @@ const react = (_options?: Options): Plugin[] => {
         handler: (id) =>
           id === runtimePublicPath
             ? readFileSync(
-                join(_dirname, 'refresh-runtime.js'),
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- import.meta.dirname is stable in the newer versions and the API has not changed
+                join(import.meta.dirname, 'refresh-runtime.js'),
                 'utf-8',
               ).replace(
                 /__README_URL__/g,
