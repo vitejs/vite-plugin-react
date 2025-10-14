@@ -105,7 +105,7 @@ const react = (_options?: Options): Plugin[] => {
         handler: (id) =>
           id === runtimePublicPath
             ? readFileSync(
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- import.meta.dirname is supported in Node.js 20.11.0+
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- import.meta.dirname is stable in the newer versions and the API has not changed
                 join(import.meta.dirname, 'refresh-runtime.js'),
                 'utf-8',
               ).replace(
