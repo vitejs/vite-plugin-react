@@ -21,15 +21,8 @@ import {
 import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
 
-/* eslint-disable no-restricted-globals */
-const _dirname =
-  typeof __dirname !== 'undefined'
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url))
-const resolve = createRequire(
-  typeof __filename !== 'undefined' ? __filename : import.meta.url,
-).resolve
-/* eslint-enable no-restricted-globals */
+const _dirname = dirname(fileURLToPath(import.meta.url))
+const resolve = createRequire(import.meta.url).resolve
 
 type Options = {
   /**
