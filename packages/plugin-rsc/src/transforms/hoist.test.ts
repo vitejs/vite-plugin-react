@@ -447,4 +447,12 @@ export async function kv() {
       "
     `)
   })
+
+  it('no ending new line', async () => {
+    const input = `\
+export async function test() {
+  "use server";
+}`
+    expect(await testTransform(input)).toMatchInlineSnapshot()
+  })
 })
