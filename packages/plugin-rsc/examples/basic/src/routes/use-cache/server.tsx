@@ -1,4 +1,5 @@
-import { revalidateCache } from '../../framework/use-cache-runtime'
+// import { revalidateCache } from '../../framework/use-cache-runtime'
+import { cacheTag, revalidateTag } from 'vite-plugin-react-use-cache/runtime'
 
 export function TestUseCache() {
   return (
@@ -20,7 +21,8 @@ function TestUseCacheFn() {
         const argument = formData.get('argument')
         await testFn(argument)
         if (argument === 'revalidate') {
-          revalidateCache(testFn)
+          // revalidateCache(testFn)
+          revalidateTag('testFn')
         }
       }}
     >
@@ -38,6 +40,7 @@ let cacheFnCount = 0
 
 async function testFn(..._args: unknown[]) {
   'use cache'
+  cacheTag('testFn')
   cacheFnCount++
 }
 
