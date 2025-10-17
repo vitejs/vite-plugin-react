@@ -27,6 +27,9 @@ export function transformHoistInlineDirective(
   output: MagicString
   names: string[]
 } {
+  if (!input.endsWith('\n')) {
+    input += '\n'
+  }
   const output = new MagicString(input)
   const directive =
     typeof options.directive === 'string'
