@@ -27,6 +27,7 @@ export function transformHoistInlineDirective(
   output: MagicString
   names: string[]
 } {
+  // ensure ending space so we can move node at the end without breaking magic-string
   if (!input.endsWith('\n')) {
     input += '\n'
   }
