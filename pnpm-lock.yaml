@@ -451,6 +451,9 @@ importers:
       periscopic:
         specifier: ^4.0.2
         version: 4.0.2
+      strip-literal:
+        specifier: ^3.1.0
+        version: 3.1.0
       turbo-stream:
         specifier: ^3.1.0
         version: 3.1.0

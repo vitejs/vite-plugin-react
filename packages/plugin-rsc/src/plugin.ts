@@ -55,6 +55,7 @@ import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -702,7 +703,7 @@ export default function vitePluginRsc(
         if (!code.includes('import.meta.viteRsc.loadModule')) return
         const { server } = manager
         const s = new MagicString(code)
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
         )) {
           const argCode = match[1]!.trim()
@@ -973,7 +974,7 @@ export default assetsManifest.bootstrapScriptContent;
         assert(this.environment.name !== 'client')
         const output = new MagicString(code)
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent\(([\s\S]*?)\)/dg,
         )) {
           const argCode = match[1]!.trim()
@@ -2087,7 +2088,7 @@ function vitePluginRscCss(
         const output = new MagicString(code)
         let importAdded = false
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
         )) {
           const [start, end] = match.indices![0]!
