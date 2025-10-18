@@ -14,6 +14,7 @@ import {
 import path from 'node:path'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { useCachePlugin } from 'vite-plugin-react-use-cache'
 
 export default defineConfig({
   clearScreen: false,
@@ -21,7 +22,8 @@ export default defineConfig({
     // inspect(),
     tailwindcss(),
     react(),
-    vitePluginUseCache(),
+    useCachePlugin(),
+    // vitePluginUseCache(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',

@@ -1,5 +1,13 @@
 import { handleRequest } from './framework/entry.rsc.tsx'
 import './styles.css'
+import { createStorage } from 'unstorage'
+import fsDriver from 'unstorage/drivers/fs'
+import { provideCache } from 'vite-plugin-react-use-cache/runtime'
+import { createUnstorageCache } from 'vite-plugin-react-use-cache/unstorage'
+
+const storage = createStorage({
+  driver: fsDriver({ base: './node_modules/.use-cache' }),
+})
 
 async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
@@ -16,11 +24,18 @@ async function handler(request: Request): Promise<Response> {
       <Root url={url} />
     </>
   )
-  const response = await handleRequest({
-    request,
-    getRoot: () => root,
-    nonce,
+  const response = await provideCache(createUnstorageCache(storage), () => {
+    return handleRequest({
+      request,
+      getRoot: () => root,
+      nonce,
+    })
   })
+  // const response = await handleRequest({
+  //   request,
+  //   getRoot: () => root,
+  //   nonce,
+  // })
   if (nonce && response.headers.get('content-type')?.includes('text/html')) {
     const cspValue = [
       `default-src 'self';`,
