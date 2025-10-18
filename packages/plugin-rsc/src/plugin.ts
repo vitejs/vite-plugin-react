@@ -135,6 +135,9 @@ export type RscPluginOptions = {
   /** @default false */
   loadModuleDevProxy?: boolean
 
+  /** @default false */
+  loadModuleDevRunner?: string
+
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
   /**
@@ -729,10 +732,10 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            replacement =
-              `globalThis.__viteRscDevServer.environments[${JSON.stringify(
-                environmentName,
-              )}]` + `.runner.import(${JSON.stringify(resolved.id)})`
+            let runnerCode =
+              rscPluginOptions.loadModuleDevRunner ??
+              `globalThis.__viteRscDevServer.environments.${environmentName}.runner`
+            replacement = runnerCode + `.import(${JSON.stringify(resolved.id)})`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
