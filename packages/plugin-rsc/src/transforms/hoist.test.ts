@@ -447,4 +447,20 @@ export async function kv() {
       "
     `)
   })
+
+  it('no ending new line', async () => {
+    const input = `\
+export async function test() {
+  "use server";
+}`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "export const test = /* #__PURE__ */ $$register($$hoist_0_test, "<id>", "$$hoist_0_test");
+
+      ;export async function $$hoist_0_test() {
+        "use server";
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
+      "
+    `)
+  })
 })
