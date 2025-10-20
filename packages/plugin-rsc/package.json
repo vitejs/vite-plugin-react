@@ -54,7 +54,7 @@
     "@types/estree": "^1.0.8",
     "@types/node": "^22.18.10",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "workspace:*",
     "@vitejs/test-dep-cjs-and-esm": "./test-dep/cjs-and-esm",
     "react": "^19.2.0",
