@@ -39,13 +39,13 @@
     "vite": "^4 || ^5 || ^6 || ^7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.0",
+    "@playwright/test": "^1.56.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.18.10",
+    "@types/node": "^22.18.11",
     "@vitejs/react-common": "workspace:*",
     "fs-extra": "^11.3.2",
     "prettier": "^3.0.3",
-    "tsdown": "^0.15.7",
+    "tsdown": "^0.15.8",
     "typescript": "^5.9.3"
   }
 }
