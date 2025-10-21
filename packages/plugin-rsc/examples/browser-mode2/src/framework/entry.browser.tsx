@@ -17,20 +17,7 @@ export function initialize(options: { fetchServer: typeof fetchServer }) {
 export async function main() {
   let setPayload: (v: RscPayload) => void
 
-  const initialPayload = await createFromFetch<RscPayload>(
-    fetchServer(new Request(window.location.href)),
-  )
-
-  function BrowserRoot() {
-    const [payload, setPayload_] = React.useState(initialPayload)
-
-    React.useEffect(() => {
-      setPayload = (v) => React.startTransition(() => setPayload_(v))
-    }, [setPayload_])
-
-    return payload.root
-  }
-
+  // Set server callback BEFORE processing the initial payload
   setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
     const temporaryReferences = createTemporaryReferenceSet()
@@ -49,6 +36,20 @@ export async function main() {
     setPayload(payload)
     return payload.returnValue
   })
+
+  const initialPayload = await createFromFetch<RscPayload>(
+    fetchServer(new Request(window.location.href)),
+  )
+
+  function BrowserRoot() {
+    const [payload, setPayload_] = React.useState(initialPayload)
+
+    React.useEffect(() => {
+      setPayload = (v) => React.startTransition(() => setPayload_(v))
+    }, [setPayload_])
+
+    return payload.root
+  }
 
   const browserRoot = (
     <React.StrictMode>
