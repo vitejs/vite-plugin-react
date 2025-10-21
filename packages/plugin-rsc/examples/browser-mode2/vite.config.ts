@@ -70,6 +70,7 @@ function rscBrowserMode2Plugin(): Plugin[] {
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
                 ],
                 exclude: ['@vitejs/plugin-rsc'],
                 esbuildOptions: {
@@ -178,6 +179,50 @@ function rscBrowserMode2Plugin(): Plugin[] {
               return await import("/dist/rsc/entry.rsc.js")
             }`
           }
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode2:build-client-references',
+      resolveId(source) {
+        if (
+          source === 'virtual:vite-rsc-browser-mode2/build-client-references'
+        ) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode2/build-client-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
+          let code = ''
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode2:build-server-references',
+      resolveId(source) {
+        if (
+          source === 'virtual:vite-rsc-browser-mode2/build-server-references'
+        ) {
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode2/build-server-references') {
+          if (this.environment.mode === 'dev') {
+            return `export default {}` // no-op during dev
+          }
+          let code = ''
+          for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+            code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
+          }
+          return `export default {${code}}`
         }
       },
     },

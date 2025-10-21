@@ -1,18 +1,38 @@
 import {
+  setRequireModule,
   renderToReadableStream,
   createTemporaryReferenceSet,
   decodeReply,
   loadServerAction,
   decodeAction,
   decodeFormState,
-} from '@vitejs/plugin-rsc/rsc'
+} from '@vitejs/plugin-rsc/react/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
+import buildServerReferences from 'virtual:vite-rsc-browser-mode2/build-server-references'
 
 export type RscPayload = {
   root: React.ReactNode
   returnValue?: unknown
   formState?: ReactFormState
+}
+
+declare let __vite_rsc_raw_import__: (id: string) => Promise<unknown>
+
+export function initialize() {
+  setRequireModule({
+    load: (id) => {
+      if (import.meta.env.__vite_rsc_build__) {
+        const import_ = buildServerReferences[id]
+        if (!import_) {
+          throw new Error(`invalid server reference: ${id}`)
+        }
+        return import_()
+      } else {
+        return __vite_rsc_raw_import__(/* @vite-ignore */ id)
+      }
+    },
+  })
 }
 
 export default async function handler(request: Request): Promise<Response> {
