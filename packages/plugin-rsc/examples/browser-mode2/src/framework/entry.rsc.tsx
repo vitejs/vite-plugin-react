@@ -1,12 +1,11 @@
 import {
-  setRequireModule,
   renderToReadableStream,
   createTemporaryReferenceSet,
   decodeReply,
   loadServerAction,
   decodeAction,
   decodeFormState,
-} from '@vitejs/plugin-rsc/react/rsc'
+} from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 
@@ -14,16 +13,6 @@ export type RscPayload = {
   root: React.ReactNode
   returnValue?: unknown
   formState?: ReactFormState
-}
-
-declare let __vite_rsc_raw_import__: (id: string) => Promise<unknown>
-
-export function initialize() {
-  setRequireModule({
-    load: (id) => {
-      return __vite_rsc_raw_import__(/* @vite-ignore */ id)
-    },
-  })
 }
 
 export default async function handler(request: Request): Promise<Response> {

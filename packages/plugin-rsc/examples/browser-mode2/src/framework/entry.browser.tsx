@@ -3,10 +3,9 @@ import { createRoot } from 'react-dom/client'
 import {
   createFromFetch,
   setServerCallback,
-  setRequireModule,
   createTemporaryReferenceSet,
   encodeReply,
-} from '@vitejs/plugin-rsc/react/browser'
+} from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
 
 let fetchRsc: (request: Request) => Promise<Response>
@@ -15,13 +14,6 @@ export function initialize(options: {
   fetchRsc: (request: Request) => Promise<Response>
 }) {
   fetchRsc = options.fetchRsc
-
-  // Setup client reference loading for dev mode
-  setRequireModule({
-    load: async (id) => {
-      return import(/* @vite-ignore */ id)
-    },
-  })
 }
 
 export async function main() {
