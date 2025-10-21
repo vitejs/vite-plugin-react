@@ -8,7 +8,6 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './entry.rsc'
-import buildClientReferences from 'virtual:vite-rsc-browser-mode2/build-client-references'
 
 let fetchRsc: (request: Request) => Promise<Response>
 
@@ -17,18 +16,10 @@ export function initialize(options: {
 }) {
   fetchRsc = options.fetchRsc
 
-  // Setup client reference loading
+  // Setup client reference loading for dev mode
   setRequireModule({
     load: async (id) => {
-      if (import.meta.env.__vite_rsc_build__) {
-        const import_ = buildClientReferences[id]
-        if (!import_) {
-          throw new Error(`invalid client reference: ${id}`)
-        }
-        return import_()
-      } else {
-        return import(/* @vite-ignore */ id)
-      }
+      return import(/* @vite-ignore */ id)
     },
   })
 }
