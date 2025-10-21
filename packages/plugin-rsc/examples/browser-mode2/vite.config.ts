@@ -37,7 +37,18 @@ function rscBrowserMode2Plugin(): Plugin[] {
       name: 'rsc-browser-mode2:load-rsc',
       resolveId(source) {
         if (source === 'virtual:vite-rsc-browser-mode2/load-rsc') {
-          return this.resolve('/src/framework/load-rsc-dev')
+          if (this.environment.mode === 'dev') {
+            return this.resolve('/src/framework/load-rsc-dev')
+          }
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode2/load-rsc') {
+          // In build mode, return a function that dynamically imports the built RSC module
+          return `export default async () => {
+            return await import("/dist/rsc/index.js")
+          }`
         }
       },
     },
