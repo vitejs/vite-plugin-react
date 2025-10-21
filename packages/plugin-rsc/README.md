@@ -412,6 +412,69 @@ This module re-exports RSC runtime API provided by `react-server-dom/client.brow
 
 ## Tips
 
+### Error Handling
+
+The plugin supports robust error handling using React's error handling APIs. See the [`./examples/starter`](./examples/starter) for a complete implementation.
+
+#### `onError` Callback
+
+Both RSC serialization and SSR rendering support an `onError` callback that allows you to:
+
+- Log errors with contextual information
+- Preserve error identity across environments using digests
+- Return custom error digests for tracking
+
+**RSC Environment** (`renderToReadableStream` from `@vitejs/plugin-rsc/rsc`):
+
+```tsx
+const rscStream = renderToReadableStream(payload, {
+  onError: (error: unknown) => {
+    // Preserve existing digest if present
+    if (
+      error &&
+      typeof error === 'object' &&
+      'digest' in error &&
+      typeof error.digest === 'string'
+    ) {
+      return error.digest
+    }
+    console.error('[RSC Error]', error)
+    return undefined // Let React generate a default digest
+  },
+})
+```
+
+**SSR Environment** (`renderToReadableStream` from `react-dom/server.edge`):
+
+```tsx
+import { captureOwnerStack } from 'react'
+
+const htmlStream = await renderToReadableStream(root, {
+  onError: (error: unknown) => {
+    // Preserve digest from RSC errors
+    if (
+      error &&
+      typeof error === 'object' &&
+      'digest' in error &&
+      typeof error.digest === 'string'
+    ) {
+      return error.digest
+    }
+    // captureOwnerStack() provides React component stack traces
+    console.error('[SSR Error]', captureOwnerStack?.() || '', '\n', error)
+    return undefined
+  },
+})
+```
+
+#### Key Concepts
+
+- **`digest`**: A unique identifier for errors that persists across RSC, SSR, and browser environments. When an error has a digest, returning it from `onError` preserves error identity across the rendering pipeline.
+
+- **`captureOwnerStack`**: A React API that captures the component stack where the error occurred. This is invaluable for debugging as it shows which components were rendering when the error happened. Note: Use optional chaining (`captureOwnerStack?.()`) as this API may not be available in all React versions.
+
+- **Error Flow**: Errors can originate in RSC rendering and flow through to SSR. By checking for and preserving the digest, you maintain error identity throughout the entire rendering process.
+
 ### CSS Support
 
 The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
