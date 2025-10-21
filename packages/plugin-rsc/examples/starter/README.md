@@ -22,10 +22,12 @@ See [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main
 - [`./src/framework/entry.rsc.tsx`](./src/framework/entry.rsc.tsx)
   - `@vitejs/plugin-rsc/rsc`
   - `import.meta.viteRsc.loadModule`
+  - Error handling with `onError` and `digest`
 - [`./src/framework/entry.ssr.tsx`](./src/framework/entry.ssr.tsx)
   - `@vitejs/plugin-rsc/ssr`
   - `import.meta.viteRsc.loadBootstrapScriptContent`
   - `rsc-html-stream/server`
+  - Error handling with `onError`, `digest`, and `captureOwnerStack`
 - [`./src/framework/entry.browser.tsx`](./src/framework/entry.browser.tsx)
   - `@vitejs/plugin-rsc/browser`
   - `rsc-html-stream/client`

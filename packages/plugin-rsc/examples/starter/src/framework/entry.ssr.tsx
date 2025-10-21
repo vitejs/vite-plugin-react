@@ -1,5 +1,5 @@
 import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
-import React from 'react'
+import React, { captureOwnerStack } from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
@@ -45,6 +45,25 @@ export async function renderHTML(
       : bootstrapScriptContent,
     nonce: options?.nonce,
     formState: options?.formState,
+    // Error handling for SSR rendering
+    // This `onError` callback is invoked when an error occurs during SSR.
+    // It allows you to log errors with component stack traces and return a custom digest.
+    onError: (error: unknown) => {
+      // If the error has a digest (e.g., from RSC), return it to preserve error identity
+      if (
+        error &&
+        typeof error === 'object' &&
+        'digest' in error &&
+        typeof error.digest === 'string'
+      ) {
+        return error.digest
+      }
+      // captureOwnerStack() captures the React component stack at the error site,
+      // which is useful for debugging where the error originated in the component tree
+      console.error('[SSR Error]', captureOwnerStack?.() || '', '\n', error)
+      // Returning undefined means React will generate a default digest
+      return undefined
+    },
   })
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream

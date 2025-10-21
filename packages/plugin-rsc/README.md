@@ -22,6 +22,7 @@ npm create vite@latest -- --template rsc
 **Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
 
 - Provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
+- Includes error handling examples demonstrating `onError`, `digest`, and `captureOwnerStack` APIs for robust error handling in RSC and SSR environments.
 
 **Integration examples:**
 

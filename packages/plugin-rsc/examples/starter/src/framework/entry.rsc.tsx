@@ -64,7 +64,28 @@ export default async function handler(request: Request): Promise<Response> {
     formState,
     returnValue,
   }
-  const rscOptions = { temporaryReferences }
+
+  // Error handling for RSC rendering
+  // The `onError` callback handles errors during RSC serialization
+  const onError = (error: unknown) => {
+    // If the error already has a digest, return it to preserve error identity
+    // The digest is a unique identifier for the error that can be used to
+    // track the same error across different environments (RSC, SSR, browser)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'digest' in error &&
+      typeof error.digest === 'string'
+    ) {
+      return error.digest
+    }
+    // For new errors, log them on the server
+    console.error('[RSC Error]', error)
+    // Returning undefined lets React generate a default digest
+    return undefined
+  }
+
+  const rscOptions = { temporaryReferences, onError }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
   // respond RSC stream without HTML rendering based on framework's convention.
