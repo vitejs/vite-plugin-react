@@ -5,7 +5,8 @@ import {
   loadServerAction,
   decodeAction,
   decodeFormState,
-} from '@vitejs/plugin-rsc/rsc'
+  setRequireModule,
+} from '@vitejs/plugin-rsc/react/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 
@@ -15,7 +16,14 @@ export type RscPayload = {
   formState?: ReactFormState
 }
 
-export async function fetchServer(request: Request): Promise<Response> {
+// Initialize module loading for RSC
+setRequireModule({
+  load: async (id) => {
+    return import(/* @vite-ignore */ id)
+  },
+})
+
+async function handler(request: Request): Promise<Response> {
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
   let formState: ReactFormState | undefined
@@ -50,6 +58,11 @@ export async function fetchServer(request: Request): Promise<Response> {
     },
   })
 }
+
+export default handler
+
+// Export named function for browser mode usage
+export const fetchServer = handler
 
 if (import.meta.hot) {
   import.meta.hot.accept()

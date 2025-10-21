@@ -1,10 +1,8 @@
-import './index.css'
+import './index.css' // css import is automatically injected in exported server components
 import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
-import { TestUseActionState } from './action-from-client/client.tsx'
-import { TestActionBind } from './action-bind/server.tsx'
 
 export function Root() {
   return <App />
@@ -33,12 +31,14 @@ function App() {
           <button>Server Counter: {getServerCounter()}</button>
         </form>
       </div>
-      <div className="card">
-        <TestUseActionState />
-      </div>
-      <div className="card">
-        <TestActionBind />
-      </div>
+      <ul className="read-the-docs">
+        <li>
+          Edit <code>src/client.tsx</code> to test client HMR.
+        </li>
+        <li>
+          Edit <code>src/root.tsx</code> to test server HMR.
+        </li>
+      </ul>
     </div>
   )
 }
