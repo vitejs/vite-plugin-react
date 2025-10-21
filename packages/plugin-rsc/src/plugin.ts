@@ -270,20 +270,64 @@ export default function vitePluginRsc(
   const manager = new RscPluginManager()
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    const wrapLogger = (environment: any, phase: string) => {
+      const originalLogger = environment.logger
+      const wrappedLogger = {
+        ...originalLogger,
+        info: (msg: string, options?: any) => {
+          // Replace generic build messages with phase-specific ones
+          if (
+            msg.includes('building for production') ||
+            msg.includes('building SSR bundle for production')
+          ) {
+            msg = msg.replace(
+              /building (for production|SSR bundle for production)/,
+              `building ${phase}`,
+            )
+          }
+          originalLogger.info(msg, options)
+        },
+      }
+      environment.logger = wrappedLogger
+      return () => {
+        environment.logger = originalLogger
+      }
+    }
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
       manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
       builder.environments.client!.config.build.write = false
+      let restore = wrapLogger(
+        builder.environments.rsc!,
+        'RSC bundle (analyze client references)',
+      )
       await builder.build(builder.environments.rsc!)
+      restore()
+      restore = wrapLogger(
+        builder.environments.client!,
+        'client bundle (analyze dependencies)',
+      )
       await builder.build(builder.environments.client!)
+      restore()
       manager.isScanBuild = false
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
+      restore = wrapLogger(
+        builder.environments.rsc!,
+        'RSC bundle for production',
+      )
       await builder.build(builder.environments.rsc!)
+      restore()
       manager.stabilize()
+      restore = wrapLogger(
+        builder.environments.client!,
+        'client bundle for production',
+      )
       await builder.build(builder.environments.client!)
+      restore()
       writeAssetsManifest(['rsc'])
       return
     }
@@ -292,15 +336,34 @@ export default function vitePluginRsc(
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
+    let restore = wrapLogger(
+      builder.environments.rsc!,
+      'RSC bundle (analyze client references)',
+    )
     await builder.build(builder.environments.rsc!)
+    restore()
+    restore = wrapLogger(
+      builder.environments.ssr!,
+      'SSR bundle (analyze dependencies)',
+    )
     await builder.build(builder.environments.ssr!)
+    restore()
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
+    restore = wrapLogger(builder.environments.rsc!, 'RSC bundle for production')
     await builder.build(builder.environments.rsc!)
+    restore()
     manager.stabilize()
+    restore = wrapLogger(
+      builder.environments.client!,
+      'client bundle for production',
+    )
     await builder.build(builder.environments.client!)
+    restore()
+    restore = wrapLogger(builder.environments.ssr!, 'SSR bundle for production')
     await builder.build(builder.environments.ssr!)
+    restore()
     writeAssetsManifest(['ssr', 'rsc'])
   }
 
