@@ -23,7 +23,12 @@ export async function renderHTML(
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
-    payload ??= createFromReadableStream<RscPayload>(rscStream1)
+    payload ??= createFromReadableStream<RscPayload>(rscStream1, {
+      // Error handling for RSC deserialization during SSR
+      onError(error: unknown) {
+        console.error('[rsc:ssr] Failed to deserialize RSC stream:', error)
+      },
+    })
     return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
   }
 
@@ -45,6 +50,19 @@ export async function renderHTML(
       : bootstrapScriptContent,
     nonce: options?.nonce,
     formState: options?.formState,
+    // Error handling for SSR rendering
+    onError(
+      error: unknown,
+      errorInfo: { digest?: string; componentStack?: string },
+    ) {
+      console.error('[ssr] Rendering error:', error)
+      if (errorInfo.digest) {
+        console.error('[ssr] Error digest:', errorInfo.digest)
+      }
+      if (errorInfo.componentStack) {
+        console.error('[ssr] Component stack:', errorInfo.componentStack)
+      }
+    },
   })
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
