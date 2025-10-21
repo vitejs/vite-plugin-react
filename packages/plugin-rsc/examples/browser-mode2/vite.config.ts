@@ -1,0 +1,139 @@
+import rsc from '@vitejs/plugin-rsc'
+import react from '@vitejs/plugin-react'
+import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    rsc({
+      entries: {
+        rsc: './src/framework/entry.rsc.tsx',
+      },
+    }),
+    rscBrowserMode2Plugin(),
+  ],
+  environments: {
+    client: {
+      build: {
+        minify: false,
+      },
+    },
+  },
+})
+
+function rscBrowserMode2Plugin(): Plugin[] {
+  return [
+    {
+      name: 'rsc-browser-mode2',
+      config(userConfig, env) {
+        return {
+          define: {
+            'import.meta.env.__vite_rsc_build__': JSON.stringify(
+              env.command === 'build',
+            ),
+          },
+          environments: {
+            client: {
+              keepProcessEnv: false,
+              resolve: {
+                conditions: ['react-server', ...defaultClientConditions],
+              },
+              optimizeDeps: {
+                include: [
+                  'react',
+                  'react-dom',
+                  'react-dom/client',
+                  'react/jsx-runtime',
+                  'react/jsx-dev-runtime',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
+                ],
+                exclude: ['vite', '@vitejs/plugin-rsc'],
+              },
+              build: {
+                outDir: 'dist/client',
+              },
+            },
+            react_client: {
+              keepProcessEnv: false,
+              resolve: {
+                conditions: [...defaultClientConditions],
+                noExternal: true,
+              },
+              optimizeDeps: {
+                include: [
+                  'react',
+                  'react-dom',
+                  'react-dom/client',
+                  'react/jsx-runtime',
+                  'react/jsx-dev-runtime',
+                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
+                ],
+                exclude: ['@vitejs/plugin-rsc'],
+                esbuildOptions: {
+                  platform: 'browser',
+                },
+              },
+              build: {
+                outDir: 'dist/react_client',
+                copyPublicDir: false,
+                emitAssets: true,
+                rollupOptions: {
+                  input: {
+                    index: './src/framework/entry.browser.tsx',
+                  },
+                },
+              },
+            },
+          },
+          builder: {
+            sharedPlugins: true,
+            sharedConfigBuild: true,
+          },
+        }
+      },
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          const url = new URL(req.url ?? '/', 'https://any.local')
+          if (url.pathname === '/@vite/invoke-react-client') {
+            const payload = JSON.parse(url.searchParams.get('data')!)
+            const result =
+              await server.environments['react_client']!.hot.handleInvoke(
+                payload,
+              )
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result))
+            return
+          }
+          next()
+        })
+      },
+      hotUpdate(ctx) {
+        if (this.environment.name === 'react_client') {
+          if (ctx.modules.length > 0) {
+            ctx.server.environments.client.hot.send({
+              type: 'full-reload',
+              path: ctx.file,
+            })
+          }
+        }
+      },
+    },
+    {
+      name: 'rsc-browser-mode2:load-client',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc-browser-mode2/load-client') {
+          if (this.environment.mode === 'dev') {
+            return this.resolve('/src/framework/load-client-dev')
+          }
+          return '\0' + source
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc-browser-mode2/load-client') {
+          return `export default async () => import("/dist/react_client/index.js")`
+        }
+      },
+    },
+  ]
+}
