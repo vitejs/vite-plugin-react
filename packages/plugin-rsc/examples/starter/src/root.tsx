@@ -21,6 +21,8 @@ export function Root(props: { url: URL }) {
 }
 
 function App(props: { url: URL }) {
+  const pathname = props.url.pathname
+
   return (
     <div id="root">
       <div>
@@ -35,6 +37,36 @@ function App(props: { url: URL }) {
         </a>
       </div>
       <h1>Vite + RSC</h1>
+
+      {/* Navigation demo for testing improved client-side navigation */}
+      <div
+        className="card"
+        style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}
+      >
+        <a
+          href="/"
+          style={{ fontWeight: pathname === '/' ? 'bold' : 'normal' }}
+        >
+          Home
+        </a>
+        <a
+          href="/page1"
+          style={{ fontWeight: pathname === '/page1' ? 'bold' : 'normal' }}
+        >
+          Page 1
+        </a>
+        <a
+          href="/page2"
+          style={{ fontWeight: pathname === '/page2' ? 'bold' : 'normal' }}
+        >
+          Page 2
+        </a>
+      </div>
+
+      <div className="card">
+        <h2>Current Page: {pathname === '/' ? 'Home' : pathname}</h2>
+      </div>
+
       <div className="card">
         <ClientCounter />
       </div>
@@ -64,6 +96,10 @@ function App(props: { url: URL }) {
             <code>?__nojs</code>
           </a>{' '}
           to test server action without js enabled.
+        </li>
+        <li>
+          Test improved client-side navigation with back/forward buttons after
+          clicking the page links above.
         </li>
       </ul>
     </div>
