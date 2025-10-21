@@ -56,54 +56,12 @@ function rscBrowserMode2Plugin(): Plugin[] {
   return [
     {
       name: 'rsc-browser-mode2',
-      config(userConfig, env) {
+      config() {
         return {
-          define: {
-            'import.meta.env.__vite_rsc_build__': JSON.stringify(
-              env.command === 'build',
-            ),
-          },
           environments: {
-            client: {
-              keepProcessEnv: false,
-              resolve: {
-                conditions: ['react-server', ...defaultClientConditions],
-              },
-              optimizeDeps: {
-                include: [
-                  'react',
-                  'react-dom',
-                  'react-dom/client',
-                  'react/jsx-runtime',
-                  'react/jsx-dev-runtime',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge',
-                ],
-                exclude: ['vite', '@vitejs/plugin-rsc'],
-              },
-              build: {
-                outDir: 'dist/client',
-              },
-            },
             react_client: {
-              keepProcessEnv: false,
               resolve: {
-                conditions: [...defaultClientConditions],
                 noExternal: true,
-              },
-              optimizeDeps: {
-                include: [
-                  'react',
-                  'react-dom',
-                  'react-dom/client',
-                  'react/jsx-runtime',
-                  'react/jsx-dev-runtime',
-                  '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser',
-                ],
-                exclude: ['@vitejs/plugin-rsc'],
-                esbuildOptions: {
-                  platform: 'browser',
-                },
               },
               build: {
                 outDir: 'dist/react_client',
@@ -116,10 +74,6 @@ function rscBrowserMode2Plugin(): Plugin[] {
                 },
               },
             },
-          },
-          builder: {
-            sharedPlugins: true,
-            sharedConfigBuild: true,
           },
         }
       },
