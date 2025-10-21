@@ -136,14 +136,6 @@ function rscBrowserMode2Plugin(): Plugin[] {
             res.end(JSON.stringify(result))
             return
           }
-          if (url.pathname === '/@vite/invoke-rsc') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['rsc']!.hot.handleInvoke(payload)
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
           next()
         })
       },
@@ -171,22 +163,6 @@ function rscBrowserMode2Plugin(): Plugin[] {
       load(id) {
         if (id === '\0virtual:vite-rsc-browser-mode2/load-client') {
           return `export default async () => import("/dist/react_client/index.js")`
-        }
-      },
-    },
-    {
-      name: 'rsc-browser-mode2:load-server',
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc-browser-mode2/load-server') {
-          if (this.environment.mode === 'dev') {
-            return this.resolve('/src/framework/load-server-dev')
-          }
-          return '\0' + source
-        }
-      },
-      load(id) {
-        if (id === '\0virtual:vite-rsc-browser-mode2/load-server') {
-          return `export default async () => import("/dist/rsc/entry.js")`
         }
       },
     },

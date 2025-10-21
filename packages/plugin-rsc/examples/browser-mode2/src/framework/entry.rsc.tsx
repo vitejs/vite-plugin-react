@@ -16,14 +16,15 @@ export type RscPayload = {
   formState?: ReactFormState
 }
 
-// Initialize module loading for RSC
-setRequireModule({
-  load: async (id) => {
-    return import(/* @vite-ignore */ id)
-  },
-})
+export function initialize() {
+  setRequireModule({
+    load: async (id) => {
+      return import(/* @vite-ignore */ id)
+    },
+  })
+}
 
-async function handler(request: Request): Promise<Response> {
+export async function fetchServer(request: Request): Promise<Response> {
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
   let formState: ReactFormState | undefined
@@ -59,10 +60,8 @@ async function handler(request: Request): Promise<Response> {
   })
 }
 
-export default handler
-
-// Export named function for browser mode usage
-export const fetchServer = handler
+// Default export for no-ssr mode compatibility
+export default fetchServer
 
 if (import.meta.hot) {
   import.meta.hot.accept()
