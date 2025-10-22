@@ -46,28 +46,32 @@ No configuration needed - feature detection happens automatically!
 The core implementation is in `src/framework/navigation.ts`:
 
 ```typescript
-// Back/Forward cache keyed by history state
-class BackForwardCache<T> {
-  private cache: Record<string, T> = {}
+// Feature detection
+const supportsNavigationAPI = 'navigation' in window
 
-  run(fn: () => T): T {
-    const key = (window.history.state as HistoryState)?.key
-    if (typeof key === 'string') {
-      return (this.cache[key] ??= fn()) // Cache hit returns immediately!
-    }
-    return fn()
-  }
+// Navigation API: Clean, modern
+private listenNavigationAPI(): () => void {
+  const onNavigate = (e: NavigateEvent) => {
+    if (!e.canIntercept) return
 
-  set(value: T | undefined) {
-    const key = (window.history.state as HistoryState)?.key
-    if (typeof key === 'string') {
-      if (value === undefined) {
-        delete this.cache[key]
-      } else {
-        this.cache[key] = value
-      }
-    }
+    e.intercept({
+      handler: async () => {
+        this.navigate(url.href)
+      },
+    })
   }
+  window.navigation.addEventListener('navigate', onNavigate)
+  return () => window.navigation.removeEventListener('navigate', onNavigate)
+}
+
+// History API fallback: Works everywhere
+private listenHistoryAPI(): () => void {
+  window.history.pushState = (...args) => {
+    args[0] = this.addStateKey(args[0])
+    this.oldPushState.apply(window.history, args)
+    this.navigate(url.href)
+  }
+  // ... popstate, replaceState, link clicks
 }
 
 // Dispatch coordinates navigation with transitions and cache
