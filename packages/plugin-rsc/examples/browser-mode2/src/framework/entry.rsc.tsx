@@ -15,7 +15,7 @@ export type RscPayload = {
   formState?: ReactFormState
 }
 
-export default async function handler(request: Request): Promise<Response> {
+async function handler(request: Request): Promise<Response> {
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
   let formState: ReactFormState | undefined
@@ -49,6 +49,10 @@ export default async function handler(request: Request): Promise<Response> {
       vary: 'accept',
     },
   })
+}
+
+export default {
+  fetch: handler,
 }
 
 if (import.meta.hot) {

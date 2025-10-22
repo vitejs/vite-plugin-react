@@ -8,12 +8,9 @@ import {
 } from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
 
-let fetchRsc: (request: Request) => Promise<Response>
-
-export function initialize(options: {
-  fetchRsc: (request: Request) => Promise<Response>
-}) {
-  fetchRsc = options.fetchRsc
+async function fetchRsc(request: Request): Promise<Response> {
+  const module = await import('virtual:vite-rsc-browser-mode2/load-rsc')
+  return module.default.fetch(request)
 }
 
 export async function main() {

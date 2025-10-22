@@ -1,10 +1,2 @@
-import * as client from './entry.browser'
-import loadRsc from 'virtual:vite-rsc-browser-mode2/load-rsc'
-
-async function main() {
-  const rsc = await loadRsc()
-  client.initialize({ fetchRsc: rsc.default })
-  await client.main()
-}
-
+import { main } from './entry.browser'
 main()

@@ -1,4 +1,4 @@
 declare module 'virtual:vite-rsc-browser-mode2/load-rsc' {
-  const loadRsc: () => Promise<typeof import('./entry.rsc')>
-  export default loadRsc
+  const default_: typeof import('./entry.rsc.tsx').default
+  export default default_
 }
