@@ -107,8 +107,6 @@ function rscBrowserModePlugin(): Plugin[] {
           )
           return { code }
         }
-
-        code
       },
     },
   ]
