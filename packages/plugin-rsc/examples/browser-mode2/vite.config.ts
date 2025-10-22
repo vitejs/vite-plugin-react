@@ -29,6 +29,7 @@ function rscBrowserModePlugin(): Plugin[] {
                 emptyOutDir: false,
               },
             },
+            // TODO: server build is not hashed
             rsc: {
               build: {
                 outDir: 'dist/client/__server',
