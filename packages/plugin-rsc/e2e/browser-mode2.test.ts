@@ -10,12 +10,12 @@ test.skip(({ browserName }) => browserName === 'webkit')
 
 test.describe('dev-browser-mode2', () => {
   const f = useFixture({ root: 'examples/browser-mode2', mode: 'dev' })
-  defineStarterTest(f, 'browser-mode')
+  defineStarterTest(f, 'no-ssr')
 })
 
 test.describe('build-browser-mode2', () => {
   const f = useFixture({ root: 'examples/browser-mode2', mode: 'build' })
-  defineStarterTest(f, 'browser-mode')
+  defineStarterTest(f, 'no-ssr')
 
   test('no ssr build', () => {
     expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)
