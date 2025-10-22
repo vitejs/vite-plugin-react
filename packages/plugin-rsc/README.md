@@ -445,9 +445,39 @@ export function Page() {
 }
 ```
 
-### Canary and Experimental channel releases
+### Using React Canary and Experimental versions
 
-See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
+To use React's [canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#all-release-channels) versions with `@vitejs/plugin-rsc`, you have two options:
+
+**Option 1: Install `react-server-dom-webpack` directly (Recommended)**
+
+The plugin will automatically use a locally installed `react-server-dom-webpack` instead of the vendored version. Simply install the version you need:
+
+```json
+{
+  "dependencies": {
+    "react": "canary",
+    "react-dom": "canary",
+    "react-server-dom-webpack": "canary"
+  }
+}
+```
+
+Or for experimental:
+
+```json
+{
+  "dependencies": {
+    "react": "experimental",
+    "react-dom": "experimental",
+    "react-server-dom-webpack": "experimental"
+  }
+}
+```
+
+**Option 2: Use preview releases from pkg.pr.new**
+
+Alternatively, you can use preview releases that bundle specific React versions. See [PR #524](https://github.com/vitejs/vite-plugin-react/pull/524) for instructions on installing these preview packages.
 
 ### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
@@ -561,9 +591,12 @@ Note that while there are official npm packages [`server-only`](https://www.npmj
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
-### `react-server-dom-webpack`
+### Customizing `react-server-dom-webpack`
 
-Currently `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in user project's dependencies, the plugin will automatically use it instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
+By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead. This allows you to:
+
+- Stay up-to-date with the latest React Server Components runtime without waiting for plugin updates
+- Use specific React versions (stable, canary, or experimental) - see [Using React Canary and Experimental versions](#using-react-canary-and-experimental-versions) above
 
 ## Credits
 
