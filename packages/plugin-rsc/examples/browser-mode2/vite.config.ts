@@ -1,47 +1,68 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, normalizePath, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import rsc from '@vitejs/plugin-rsc'
+import path from 'node:path'
+import { rmSync } from 'node:fs'
 
 export default defineConfig({
-  appType: 'spa',
   plugins: [
     react(),
+    rscBrowserModePlugin(),
     rsc({
-      serverHandler: false,
       entries: {
         rsc: './src/framework/entry.rsc.tsx',
       },
     }),
-    rscBrowserMode2Plugin(),
+  ],
+})
+
+function rscBrowserModePlugin(): Plugin[] {
+  return [
     {
-      name: 'patch-rsc',
+      name: 'rsc-browser-mode2',
+      config() {
+        return {
+          appType: 'spa',
+          environments: {
+            client: {
+              build: {
+                emptyOutDir: false,
+              },
+            },
+            rsc: {
+              build: {
+                outDir: 'dist/client/__server',
+              },
+              keepProcessEnv: false,
+              resolve: {
+                noExternal: true,
+              },
+              optimizeDeps: {
+                esbuildOptions: {
+                  platform: 'neutral',
+                },
+              },
+            },
+          },
+          rsc: {
+            serverHandler: false,
+          },
+        }
+      },
       configResolved(config) {
+        // avoid globalThis.AsyncLocalStorage injection in browser mode
         const plugin = config.plugins.find(
           (p) => p.name === 'rsc:inject-async-local-storage',
         )
         delete plugin!.transform
       },
-    },
-  ],
-  environments: {
-    rsc: {
-      keepProcessEnv: false,
-      resolve: {
-        noExternal: true,
-      },
-      optimizeDeps: {
-        esbuildOptions: {
-          platform: 'neutral',
+      buildApp: {
+        order: 'pre',
+        async handler() {
+          // clean up nested outDir
+          rmSync('./dist', { recursive: true, force: true })
         },
       },
-    },
-  },
-})
-
-function rscBrowserMode2Plugin(): Plugin[] {
-  return [
-    {
-      name: 'rsc-browser-mode2',
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
           const url = new URL(req.url ?? '/', 'https://any.local')
@@ -64,17 +85,36 @@ function rscBrowserMode2Plugin(): Plugin[] {
           if (this.environment.mode === 'dev') {
             return this.resolve('/src/framework/load-rsc-dev')
           }
-          return '\0' + source
+          return { id: source, external: true }
         }
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc-browser-mode2/load-rsc') {
-          // In build mode, return a function that dynamically imports the built RSC module
-          return `export default async () => {
-            return await import("/dist/rsc/index.js")
-          }`
+      renderChunk(code, chunk) {
+        if (code.includes('virtual:vite-rsc-browser-mode2/load-rsc')) {
+          const config = this.environment.getTopLevelConfig()
+          const replacement = normalizeRelativePath(
+            path.relative(
+              path.join(
+                config.environments.client.build.outDir,
+                chunk.fileName,
+                '..',
+              ),
+              path.join(config.environments.rsc.build.outDir, 'index.js'),
+            ),
+          )
+          code = code.replaceAll(
+            'virtual:vite-rsc-browser-mode2/load-rsc',
+            () => replacement,
+          )
+          return { code }
         }
+
+        code
       },
     },
   ]
+}
+
+function normalizeRelativePath(s: string): string {
+  s = normalizePath(s)
+  return s[0] === '.' ? s : './' + s
 }
