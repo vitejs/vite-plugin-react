@@ -4,7 +4,10 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
+import { createRequire } from 'node:module'
 // import inspect from 'vite-plugin-inspect'
+
+const require = createRequire(import.meta.url)
 
 export default defineConfig({
   plugins: [
@@ -130,19 +133,53 @@ function rscBrowserModePlugin(): Plugin[] {
         manager = getPluginApi(config)!.manager
       },
       configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-react-client') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['react_client']!.hot.handleInvoke(
-                payload,
+        // Import WebSocket from ws package (Vite's dependency)
+        const { WebSocket } = require('ws')
+
+        // Create a WebSocket server for the react_client environment
+        const wss = new WebSocket.Server({ noServer: true })
+
+        wss.on('connection', (ws: any) => {
+          ws.on('message', async (data: any) => {
+            try {
+              const payload = JSON.parse(data.toString())
+
+              // Handle ping messages
+              if (payload.type === 'ping') {
+                return
+              }
+
+              // Handle invoke requests via the environment's hot channel
+              const result =
+                await server.environments['react_client']!.hot.handleInvoke(
+                  payload,
+                )
+              ws.send(JSON.stringify(result))
+            } catch (error) {
+              console.error('Error handling WebSocket message:', error)
+              ws.send(
+                JSON.stringify({
+                  error: {
+                    message:
+                      error instanceof Error ? error.message : String(error),
+                  },
+                }),
               )
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
+            }
+          })
+
+          ws.on('error', (error: any) => {
+            console.error('WebSocket error:', error)
+          })
+        })
+
+        // Handle upgrade requests for our WebSocket path
+        server.httpServer?.on('upgrade', (req, socket, head) => {
+          if (req.url === '/@vite-react-client') {
+            wss.handleUpgrade(req, socket, head, (ws: any) => {
+              wss.emit('connection', ws, req)
+            })
           }
-          next()
         })
       },
       hotUpdate(ctx) {

@@ -1,20 +1,20 @@
-import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
+import {
+  ESModulesEvaluator,
+  ModuleRunner,
+  createWebSocketModuleRunnerTransport,
+} from 'vite/module-runner'
 
 export default async function loadClient() {
   const runner = new ModuleRunner(
     {
       sourcemapInterceptor: false,
-      transport: {
-        invoke: async (payload) => {
-          const response = await fetch(
-            '/@vite/invoke-react-client?' +
-              new URLSearchParams({
-                data: JSON.stringify(payload),
-              }),
-          )
-          return response.json()
+      transport: createWebSocketModuleRunnerTransport({
+        createConnection: () => {
+          const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+          const url = `${protocol}://${location.host}/@vite-react-client`
+          return new WebSocket(url)
         },
-      },
+      }),
       hmr: false,
     },
     new ESModulesEvaluator(),
