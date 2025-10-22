@@ -18,10 +18,10 @@ type HistoryState = null | {
 }
 
 /**
- * Consolidated navigation router
+ * Navigation manager
  * Encapsulates all navigation logic: history interception, caching, transitions
  */
-export class Router {
+export class NavigationManager {
   private state: NavigationState
   private cache = new BackForwardCache<Promise<RscPayload>>()
   private setState?: (state: NavigationState) => void

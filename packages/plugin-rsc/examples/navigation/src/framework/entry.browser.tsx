@@ -9,7 +9,7 @@ import React from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
-import { Router, type NavigationState } from './router'
+import { NavigationManager, type NavigationState } from './navigation'
 
 /**
  * This example demonstrates coordinating history navigation with React transitions
@@ -29,8 +29,8 @@ async function main() {
   // Deserialize initial RSC stream from SSR
   const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
 
-  // Create router instance
-  const router = new Router(initialPayload)
+  // Create navigation manager instance
+  const router = new NavigationManager(initialPayload)
 
   // Browser root component
   function BrowserRoot() {
