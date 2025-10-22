@@ -1,4 +1,10 @@
-import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
+import {
+  defaultClientConditions,
+  defineConfig,
+  type Plugin,
+  type ViteDevServer,
+  type NormalizedHotChannel,
+} from 'vite'
 import {
   vitePluginRscMinimal,
   getPluginApi,
@@ -8,6 +14,61 @@ import { createRequire } from 'node:module'
 // import inspect from 'vite-plugin-inspect'
 
 const require = createRequire(import.meta.url)
+
+/**
+ * Create a WebSocket server transport for module runner communication
+ * Similar to the client-side createWebSocketModuleRunnerTransport
+ */
+function createWebSocketModuleRunnerServer(options: {
+  server: ViteDevServer
+  hot: NormalizedHotChannel
+  path: string
+}) {
+  const { server, hot, path } = options
+  const { WebSocket } = require('ws')
+
+  // Create a WebSocket server for the module runner
+  const wss = new WebSocket.Server({ noServer: true })
+
+  wss.on('connection', (ws: any) => {
+    ws.on('message', async (data: any) => {
+      try {
+        const payload = JSON.parse(data.toString())
+
+        // Handle ping messages
+        if (payload.type === 'ping') {
+          return
+        }
+
+        // Handle invoke requests via the environment's hot channel
+        const result = await hot.handleInvoke(payload)
+        ws.send(JSON.stringify(result))
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error)
+        ws.send(
+          JSON.stringify({
+            error: {
+              message: error instanceof Error ? error.message : String(error),
+            },
+          }),
+        )
+      }
+    })
+
+    ws.on('error', (error: any) => {
+      console.error('WebSocket error:', error)
+    })
+  })
+
+  // Handle upgrade requests for the WebSocket path
+  server.httpServer?.on('upgrade', (req, socket, head) => {
+    if (req.url === path) {
+      wss.handleUpgrade(req, socket, head, (ws: any) => {
+        wss.emit('connection', ws, req)
+      })
+    }
+  })
+}
 
 export default defineConfig({
   plugins: [
@@ -133,53 +194,10 @@ function rscBrowserModePlugin(): Plugin[] {
         manager = getPluginApi(config)!.manager
       },
       configureServer(server) {
-        // Import WebSocket from ws package (Vite's dependency)
-        const { WebSocket } = require('ws')
-
-        // Create a WebSocket server for the react_client environment
-        const wss = new WebSocket.Server({ noServer: true })
-
-        wss.on('connection', (ws: any) => {
-          ws.on('message', async (data: any) => {
-            try {
-              const payload = JSON.parse(data.toString())
-
-              // Handle ping messages
-              if (payload.type === 'ping') {
-                return
-              }
-
-              // Handle invoke requests via the environment's hot channel
-              const result =
-                await server.environments['react_client']!.hot.handleInvoke(
-                  payload,
-                )
-              ws.send(JSON.stringify(result))
-            } catch (error) {
-              console.error('Error handling WebSocket message:', error)
-              ws.send(
-                JSON.stringify({
-                  error: {
-                    message:
-                      error instanceof Error ? error.message : String(error),
-                  },
-                }),
-              )
-            }
-          })
-
-          ws.on('error', (error: any) => {
-            console.error('WebSocket error:', error)
-          })
-        })
-
-        // Handle upgrade requests for our WebSocket path
-        server.httpServer?.on('upgrade', (req, socket, head) => {
-          if (req.url === '/@vite-react-client') {
-            wss.handleUpgrade(req, socket, head, (ws: any) => {
-              wss.emit('connection', ws, req)
-            })
-          }
+        createWebSocketModuleRunnerServer({
+          server,
+          hot: server.environments['react_client']!.hot,
+          path: '/@vite-react-client',
         })
       },
       hotUpdate(ctx) {
