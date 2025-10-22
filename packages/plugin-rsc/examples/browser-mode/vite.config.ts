@@ -3,7 +3,10 @@ import {
   defineConfig,
   type Plugin,
   type ViteDevServer,
-  type NormalizedHotChannel,
+  type HotChannel,
+  type HotChannelClient,
+  DevEnvironment,
+  type ResolvedConfig,
 } from 'vite'
 import {
   vitePluginRscMinimal,
@@ -16,25 +19,35 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 /**
- * Create a WebSocket server transport for module runner communication.
+ * Create a WebSocket HotChannel for module runner communication.
  *
- * This implements the server-side WebSocket pattern for module runner transport,
+ * This implements the server-side transport pattern for DevEnvironment,
  * as documented in Vite's Environment API:
  * https://github.com/vitejs/vite/blob/main/docs/guide/api-environment-runtimes.md#modulerunnertransport
  *
- * The client uses `createWebSocketModuleRunnerTransport` with `connect/send`,
- * and this server handles WebSocket messages using the environment's `handleInvoke` method.
+ * The pattern creates a HotChannel that:
+ * - Handles WebSocket connections and messages
+ * - Implements send/on/off methods for the HotChannel interface
+ * - Communicates with the client's createWebSocketModuleRunnerTransport
  */
-function createWebSocketModuleRunnerServer(options: {
+function createWebSocketHotChannel(options: {
   server: ViteDevServer
-  hot: NormalizedHotChannel
   path: string
-}) {
-  const { server, hot, path } = options
+}): HotChannel {
+  const { server, path } = options
   const { WebSocket } = require('ws')
 
-  // Create a WebSocket server for the module runner
   const wss = new WebSocket.Server({ noServer: true })
+  const listeners = new Map<string, Set<Function>>()
+
+  // Handle HTTP upgrade for WebSocket connections
+  server.httpServer?.on('upgrade', (req, socket, head) => {
+    if (req.url === path) {
+      wss.handleUpgrade(req, socket, head, (ws: any) => {
+        wss.emit('connection', ws, req)
+      })
+    }
+  })
 
   wss.on('connection', (ws: any) => {
     ws.on('message', async (data: any) => {
@@ -46,34 +59,63 @@ function createWebSocketModuleRunnerServer(options: {
           return
         }
 
-        // Handle invoke requests via the environment's hot channel
-        const result = await hot.handleInvoke(payload)
-        ws.send(JSON.stringify(result))
+        // Emit custom events to registered listeners
+        if (payload.type === 'custom') {
+          const eventListeners = listeners.get(payload.event)
+          if (eventListeners) {
+            const client: HotChannelClient = {
+              send: (data) => ws.send(JSON.stringify(data)),
+            }
+            eventListeners.forEach((listener) => {
+              listener(payload.data, client)
+            })
+          }
+        }
       } catch (error) {
-        console.error('Error handling WebSocket message:', error)
-        ws.send(
-          JSON.stringify({
-            error: {
-              message: error instanceof Error ? error.message : String(error),
-            },
-          }),
-        )
+        console.error('WebSocket error:', error)
       }
     })
 
     ws.on('error', (error: any) => {
       console.error('WebSocket error:', error)
     })
-  })
 
-  // Handle upgrade requests for the WebSocket path
-  server.httpServer?.on('upgrade', (req, socket, head) => {
-    if (req.url === path) {
-      wss.handleUpgrade(req, socket, head, (ws: any) => {
-        wss.emit('connection', ws, req)
-      })
+    // Trigger connection event
+    const connectionListeners = listeners.get('connection')
+    if (connectionListeners) {
+      connectionListeners.forEach((listener) => listener())
     }
   })
+
+  return {
+    send(payload) {
+      wss.clients.forEach((client: any) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(payload))
+        }
+      })
+    },
+    on(event, handler) {
+      if (!listeners.has(event)) {
+        listeners.set(event, new Set())
+      }
+      listeners.get(event)!.add(handler)
+    },
+    off(event, handler) {
+      const eventListeners = listeners.get(event)
+      if (eventListeners) {
+        eventListeners.delete(handler)
+      }
+    },
+    listen() {
+      // WebSocket server is already listening via httpServer upgrade event
+    },
+    close() {
+      return new Promise<void>((resolve) => {
+        wss.close(() => resolve())
+      })
+    },
+  }
 }
 
 export default defineConfig({
@@ -92,6 +134,7 @@ export default defineConfig({
 
 function rscBrowserModePlugin(): Plugin[] {
   let manager: PluginApi['manager']
+  let devServer: ViteDevServer | undefined
 
   return [
     ...vitePluginRscMinimal({
@@ -151,6 +194,22 @@ function rscBrowserModePlugin(): Plugin[] {
                   platform: 'browser',
                 },
               },
+              dev: {
+                createEnvironment(name, config, context) {
+                  // Create transport using the server reference stored in closure
+                  const transport = devServer
+                    ? createWebSocketHotChannel({
+                        server: devServer,
+                        path: '/@vite-react-client',
+                      })
+                    : undefined
+                  return new DevEnvironment(name, config, {
+                    ...context,
+                    hot: true,
+                    transport,
+                  })
+                },
+              },
               build: {
                 outDir: 'dist/react_client',
                 copyPublicDir: false,
@@ -200,11 +259,7 @@ function rscBrowserModePlugin(): Plugin[] {
         manager = getPluginApi(config)!.manager
       },
       configureServer(server) {
-        createWebSocketModuleRunnerServer({
-          server,
-          hot: server.environments['react_client']!.hot,
-          path: '/@vite-react-client',
-        })
+        devServer = server
       },
       hotUpdate(ctx) {
         if (this.environment.name === 'react_client') {
