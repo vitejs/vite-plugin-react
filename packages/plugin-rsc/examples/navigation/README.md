@@ -25,16 +25,25 @@ This example implements a caching pattern that addresses these issues:
 
 ### Key Concepts
 
-1. **Back/Forward Cache by History Entry**: Each history entry gets a unique key, cache maps `key → Promise<RscPayload>`
-2. **Instant Navigation**: Cache hits render synchronously (no loading state), cache misses show transitions
-3. **Dispatch Pattern**: Uses a dispatch function that coordinates navigation actions with React transitions
-4. **Promise-based State**: Navigation state includes a `payloadPromise` that's unwrapped with `React.use()`
-5. **useInsertionEffect**: History updates happen via `useInsertionEffect` to ensure they occur after state updates but before paint
+1. **Modern Navigation API**: Uses [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API) when available, falls back to History API
+2. **Back/Forward Cache by Entry**: Each navigation entry gets a unique key, cache maps `key → Promise<RscPayload>`
+3. **Instant Navigation**: Cache hits render synchronously (no loading state), cache misses show transitions
+4. **Dispatch Pattern**: Uses a dispatch function that coordinates navigation actions with React transitions
+5. **Promise-based State**: Navigation state includes a `payloadPromise` that's unwrapped with `React.use()`
 6. **Cache Invalidation**: Server actions update cache for current entry
+
+### Browser Compatibility
+
+The implementation automatically detects and uses:
+
+- **Navigation API** (Chrome 102+, Edge 102+): Modern, cleaner API with built-in entry keys
+- **History API** (all browsers): Fallback for older browsers, requires manual key management
+
+No configuration needed - feature detection happens automatically!
 
 ### Implementation
 
-The core implementation is in `src/framework/entry.browser.tsx`:
+The core implementation is in `src/framework/navigation.ts`:
 
 ```typescript
 // Back/Forward cache keyed by history state
@@ -121,6 +130,7 @@ Then navigate to http://localhost:5173
 
 This pattern is inspired by:
 
+- [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API) - Modern navigation standard
 - [hi-ogawa/vite-environment-examples](https://github.com/hi-ogawa/vite-environment-examples/blob/main/examples/react-server/src/features/router/browser.ts) - Back/forward cache implementation
 - [TanStack Router](https://github.com/TanStack/router/blob/main/packages/history/src/index.ts) - History state key pattern
 - [React useTransition](https://react.dev/reference/react/useTransition)
