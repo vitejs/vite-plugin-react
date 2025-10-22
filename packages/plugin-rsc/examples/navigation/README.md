@@ -1,6 +1,6 @@
-# Navigation Example - Coordinating History and Transitions
+# Navigation Example - Coordinating History, Transitions, and Caching
 
-This example demonstrates how to properly coordinate browser history navigation with React transitions in a React Server Components application.
+This example demonstrates how to properly coordinate browser history navigation with React transitions and implement instant back/forward navigation via caching in a React Server Components application.
 
 ## Problem
 
@@ -10,39 +10,58 @@ In a typical RSC application with client-side navigation, there's a challenge in
 2. React transitions for smooth updates
 3. Asynchronous data fetching
 4. Loading state indicators
+5. Back/forward navigation performance
 
 Without proper coordination, you can encounter:
 
 - URL bar being out of sync with rendered content
-- Race conditions with rapid navigation
-- Issues with back/forward navigation
+- Slow back/forward navigation (refetching from server)
+- Issues with cache invalidation after mutations
 - Missing or inconsistent loading indicators
 
 ## Solution
 
-This example implements a pattern inspired by Next.js App Router that addresses these issues:
+This example implements a caching pattern that addresses these issues:
 
 ### Key Concepts
 
-1. **Dispatch Pattern**: Uses a dispatch function that coordinates navigation actions with React transitions
-2. **Promise-based State**: Navigation state includes a `payloadPromise` that's unwrapped with `React.use()`
-3. **useInsertionEffect**: History updates happen via `useInsertionEffect` to ensure they occur after state updates but before paint
-4. **Transition Tracking**: Uses `useTransition` to track pending navigation state
-5. **Visual Feedback**: Provides a pending indicator during navigation
+1. **Back/Forward Cache by History Entry**: Each history entry gets a unique key, cache maps `key → Promise<RscPayload>`
+2. **Instant Navigation**: Cache hits render synchronously (no loading state), cache misses show transitions
+3. **Dispatch Pattern**: Uses a dispatch function that coordinates navigation actions with React transitions
+4. **Promise-based State**: Navigation state includes a `payloadPromise` that's unwrapped with `React.use()`
+5. **useInsertionEffect**: History updates happen via `useInsertionEffect` to ensure they occur after state updates but before paint
+6. **Cache Invalidation**: Server actions update cache for current entry
 
 ### Implementation
 
 The core implementation is in `src/framework/entry.browser.tsx`:
 
 ```typescript
-// Navigation state includes URL, push flag, and payload promise
-type NavigationState = {
-  url: string
-  push?: boolean
-  payloadPromise: Promise<RscPayload>
+// Back/Forward cache keyed by history state
+class BackForwardCache<T> {
+  private cache: Record<string, T> = {}
+
+  run(fn: () => T): T {
+    const key = (window.history.state as HistoryState)?.key
+    if (typeof key === 'string') {
+      return (this.cache[key] ??= fn()) // Cache hit returns immediately!
+    }
+    return fn()
+  }
+
+  set(value: T | undefined) {
+    const key = (window.history.state as HistoryState)?.key
+    if (typeof key === 'string') {
+      if (value === undefined) {
+        delete this.cache[key]
+      } else {
+        this.cache[key] = value
+      }
+    }
+  }
 }
 
-// Dispatch coordinates navigation with transitions
+// Dispatch coordinates navigation with transitions and cache
 dispatch = (action: NavigationAction) => {
   startTransition(() => {
     setState_({
@@ -50,22 +69,24 @@ dispatch = (action: NavigationAction) => {
       push: action.push,
       payloadPromise: action.payload
         ? Promise.resolve(action.payload)
-        : createFromFetch<RscPayload>(fetch(action.url)),
+        : bfCache.run(() => createFromFetch<RscPayload>(fetch(action.url))),
     })
   })
 }
 
-// History updates happen via useInsertionEffect
-function HistoryUpdater({ state }: { state: NavigationState }) {
-  React.useInsertionEffect(() => {
-    if (state.push) {
-      state.push = false
-      oldPushState.call(window.history, {}, '', state.url)
-    }
-  }, [state])
-  return null
+// Each history entry gets a unique key
+function addStateKey(state: any): HistoryState {
+  const key = Math.random().toString(36).slice(2)
+  return { ...state, key }
 }
 ```
+
+**Why this works:**
+
+- `React.use()` can unwrap both promises AND resolved values
+- Cache hit → returns existing promise → `React.use()` unwraps synchronously → instant render, no transition!
+- Cache miss → creates new fetch promise → `React.use()` suspends → shows loading, transition active
+- Browser automatically handles scroll restoration via proper history state
 
 ## Running the Example
 
@@ -78,18 +99,30 @@ Then navigate to http://localhost:5173
 
 ## What to Try
 
-1. **Basic Navigation**: Click between pages and notice the smooth transitions
-2. **Slow Page**: Visit the "Slow Page" to see how loading states work with delays
-3. **Rapid Navigation**: Click links rapidly to see that race conditions are prevented
-4. **Back/Forward**: Use browser back/forward buttons to see proper coordination
-5. **Counter Page**: See how client and server state interact with navigation
+1. **Cache Behavior**:
+   - Visit "Slow Page" (notice the loading indicator)
+   - Navigate to another page
+   - Click browser back button
+   - Notice: No loading indicator! Instant render from cache
+
+2. **Cache Miss vs Hit**:
+   - First visit to any page shows "loading..." (cache miss)
+   - Back/forward to visited pages is instant (cache hit)
+   - Even slow pages are instant on second visit
+
+3. **Server Actions**:
+   - Go to "Counter Page" and increment server counter
+   - Notice the cache updates for current entry
+   - Navigate away and back to see updated state
+
+4. **Scroll Restoration**: Browser handles this automatically via proper history state
 
 ## References
 
-This pattern is based on:
+This pattern is inspired by:
 
-- [Next.js App Router](https://github.com/vercel/next.js/blob/main/packages/next/src/client/components/app-router.tsx)
-- [Next.js Action Queue](https://github.com/vercel/next.js/blob/main/packages/next/src/client/components/use-action-queue.ts)
+- [hi-ogawa/vite-environment-examples](https://github.com/hi-ogawa/vite-environment-examples/blob/main/examples/react-server/src/features/router/browser.ts) - Back/forward cache implementation
+- [TanStack Router](https://github.com/TanStack/router/blob/main/packages/history/src/index.ts) - History state key pattern
 - [React useTransition](https://react.dev/reference/react/useTransition)
 - [React.use](https://react.dev/reference/react/use)
 
