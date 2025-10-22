@@ -16,8 +16,14 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 /**
- * Create a WebSocket server transport for module runner communication
- * Similar to the client-side createWebSocketModuleRunnerTransport
+ * Create a WebSocket server transport for module runner communication.
+ *
+ * This implements the server-side WebSocket pattern for module runner transport,
+ * as documented in Vite's Environment API:
+ * https://github.com/vitejs/vite/blob/main/docs/guide/api-environment-runtimes.md#modulerunnertransport
+ *
+ * The client uses `createWebSocketModuleRunnerTransport` with `connect/send`,
+ * and this server handles WebSocket messages using the environment's `handleInvoke` method.
  */
 function createWebSocketModuleRunnerServer(options: {
   server: ViteDevServer
