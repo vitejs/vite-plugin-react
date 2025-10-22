@@ -2,7 +2,6 @@ import rsc from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-// import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   clearScreen: false,
@@ -10,7 +9,7 @@ export default defineConfig({
     minify: false,
   },
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     tailwindcss(),
     react(),
     rsc({
