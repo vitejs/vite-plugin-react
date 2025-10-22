@@ -6,6 +6,10 @@
 
 SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.
 
+### Fix raw Rolldown support for Rolldown 1.0.0-beta.44+ ([#930](https://github.com/vitejs/vite-plugin-react/pull/930))
+
+Rolldown 1.0.0-beta.44+ removed the top-level `jsx` option in favor of `transform.jsx`. This plugin now uses the `transform.jsx` option to support Rolldown 1.0.0-beta.44+.
+
 ## 5.0.4 (2025-09-27)
 
 ### Perf: use native refresh wrapper plugin in rolldown-vite ([#881](https://github.com/vitejs/vite-plugin-react/pull/881))
