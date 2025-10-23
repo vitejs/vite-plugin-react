@@ -5,7 +5,7 @@ import { normalizePath, type Plugin } from 'vite'
 export default function vitePluginRscBrowser(): Plugin[] {
   return [
     {
-      name: 'rsc-browser-mode2',
+      name: 'rsc-browser',
       config() {
         return {
           appType: 'spa',
@@ -66,9 +66,9 @@ export default function vitePluginRscBrowser(): Plugin[] {
       },
     },
     {
-      name: 'rsc-browser-mode2:load-rsc',
+      name: 'rsc-browser:load-rsc',
       resolveId(source) {
-        if (source === 'virtual:vite-rsc-browser-mode2/load-rsc') {
+        if (source === 'virtual:vite-rsc-browser/load-rsc') {
           if (this.environment.mode === 'dev') {
             return this.resolve('/lib/dev-proxy')
           }
@@ -76,7 +76,7 @@ export default function vitePluginRscBrowser(): Plugin[] {
         }
       },
       renderChunk(code, chunk) {
-        if (code.includes('virtual:vite-rsc-browser-mode2/load-rsc')) {
+        if (code.includes('virtual:vite-rsc-browser/load-rsc')) {
           const config = this.environment.getTopLevelConfig()
           const replacement = normalizeRelativePath(
             path.relative(
@@ -89,7 +89,7 @@ export default function vitePluginRscBrowser(): Plugin[] {
             ),
           )
           code = code.replaceAll(
-            'virtual:vite-rsc-browser-mode2/load-rsc',
+            'virtual:vite-rsc-browser/load-rsc',
             () => replacement,
           )
           return { code }
