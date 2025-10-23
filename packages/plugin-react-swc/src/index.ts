@@ -1,7 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import type { SourceMapPayload } from 'node:module'
+import { join } from 'node:path'
 import { createRequire } from 'node:module'
 import {
   type JscTarget,
@@ -17,19 +15,12 @@ import {
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import * as vite from 'vite'
 import { exactRegex } from '@rolldown/pluginutils'
 
-/* eslint-disable no-restricted-globals */
-const _dirname =
-  typeof __dirname !== 'undefined'
-    ? __dirname
-    : dirname(fileURLToPath(import.meta.url))
-const resolve = createRequire(
-  typeof __filename !== 'undefined' ? __filename : import.meta.url,
-).resolve
-/* eslint-enable no-restricted-globals */
+const resolve = createRequire(import.meta.url).resolve
 
 type Options = {
   /**
@@ -78,13 +69,14 @@ type Options = {
   useAtYourOwnRisk_mutateSwcOptions?: (options: SWCOptions) => void
 
   /**
-   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
+   * If set, disables the recommendation to use `@vitejs/plugin-react`
    */
   disableOxcRecommendation?: boolean
 }
 
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = false
+  let viteCacheRoot: string | undefined
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
@@ -113,7 +105,8 @@ const react = (_options?: Options): Plugin[] => {
         handler: (id) =>
           id === runtimePublicPath
             ? readFileSync(
-                join(_dirname, 'refresh-runtime.js'),
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- import.meta.dirname is stable in the newer versions and the API has not changed
+                join(import.meta.dirname, 'refresh-runtime.js'),
                 'utf-8',
               ).replace(
                 /__README_URL__/g,
@@ -132,11 +125,14 @@ const react = (_options?: Options): Plugin[] => {
         optimizeDeps: {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
           ...('rolldownVersion' in vite
-            ? { rollupOptions: { jsx: { mode: 'automatic' } } }
+            ? {
+                rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+              }
             : { esbuildOptions: { jsx: 'automatic' } }),
         },
       }),
       configResolved(config) {
+        viteCacheRoot = config.cacheDir
         if (config.server.hmr === false) hmrDisabled = true
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
@@ -158,7 +154,7 @@ const react = (_options?: Options): Plugin[] => {
           !options.disableOxcRecommendation
         ) {
           config.logger.warn(
-            '[vite:react-swc] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
+            '[vite:react-swc] We recommend switching to `@vitejs/plugin-react` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown',
           )
         }
       },
@@ -182,6 +178,7 @@ const react = (_options?: Options): Plugin[] => {
           code,
           options.devTarget,
           options,
+          viteCacheRoot,
           {
             refresh,
             development: true,
@@ -192,13 +189,13 @@ const react = (_options?: Options): Plugin[] => {
         if (!result) return
         if (!refresh) return result
 
-        return addRefreshWrapper<SourceMapPayload>(
+        const newCode = addRefreshWrapper(
           result.code,
-          result.map!,
           '@vitejs/plugin-react-swc',
           id,
           options.reactRefreshHost,
         )
+        return { code: newCode ?? result.code, map: result.map }
       },
     },
     options.plugins
@@ -209,11 +206,21 @@ const react = (_options?: Options): Plugin[] => {
           config: (userConfig) => ({
             build: silenceUseClientWarning(userConfig),
           }),
+          configResolved(config) {
+            viteCacheRoot = config.cacheDir
+          },
           transform: (code, _id) =>
-            transformWithOptions(_id.split('?')[0], code, 'esnext', options, {
-              runtime: 'automatic',
-              importSource: options.jsxImportSource,
-            }),
+            transformWithOptions(
+              _id.split('?')[0],
+              code,
+              'esnext',
+              options,
+              viteCacheRoot,
+              {
+                runtime: 'automatic',
+                importSource: options.jsxImportSource,
+              },
+            ),
         }
       : {
           name: 'vite:react-swc',
@@ -228,7 +235,14 @@ const react = (_options?: Options): Plugin[] => {
               },
             },
           }),
+          configResolved(config) {
+            viteCacheRoot = config.cacheDir
+          },
         },
+    virtualPreamblePlugin({
+      name: '@vitejs/plugin-react-swc/preamble',
+      isEnabled: () => !hmrDisabled,
+    }),
   ]
 }
 
@@ -237,6 +251,7 @@ const transformWithOptions = async (
   code: string,
   target: JscTarget,
   options: Options,
+  viteCacheRoot: string | undefined,
   reactConfig: ReactConfig,
 ) => {
   const decorators = options?.tsDecorators ?? false
@@ -264,7 +279,10 @@ const transformWithOptions = async (
       jsc: {
         target,
         parser,
-        experimental: { plugins: options.plugins },
+        experimental: {
+          plugins: options.plugins,
+          cacheRoot: join(viteCacheRoot ?? 'node_modules/.vite', '.swc'),
+        },
         transform: {
           useDefineForClassFields: true,
           react: reactConfig,

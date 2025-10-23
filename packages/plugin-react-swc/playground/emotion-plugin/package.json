@@ -10,13 +10,13 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react-swc": "../../dist",
-    "@swc/plugin-emotion": "^10.0.3"
+    "@swc/plugin-emotion": "^11.1.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react-swc": "../../dist"
   }
 }

@@ -1,11 +1,10 @@
 import './styles.css'
 import { Link, Outlet } from 'react-router'
-import { ServerHmr } from '../react-router-vite/server-hmr'
 import { TestClientState, TestHydrated } from './routes/client'
 import { DumpError, GlobalNavigationLoadingBar } from './routes/root.client'
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  console.log('Layout')
+  console.log('[debug] root - Layout')
   return (
     <html lang="en">
       <head>
@@ -35,7 +34,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </header>
         <GlobalNavigationLoadingBar />
-        <ServerHmr />
         {children}
       </body>
     </html>
@@ -43,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function Component() {
-  console.log('Root')
+  console.log('[debug] root - Component')
   return (
     <>
       <Outlet />

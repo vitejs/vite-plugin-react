@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.4.13",
+  "version": "0.5.1",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "vite",
@@ -21,6 +21,7 @@
     "./package.json": "./package.json",
     "./types": "./types/index.d.ts",
     ".": "./dist/index.js",
+    "./transforms": "./dist/transforms/index.js",
     "./*": "./dist/*.js"
   },
   "files": [
@@ -38,33 +39,41 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@mjackson/node-fetch-server": "^0.7.0",
+    "@remix-run/node-fetch-server": "^0.10.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
-    "magic-string": "^0.30.17",
+    "magic-string": "^0.30.19",
     "periscopic": "^4.0.2",
+    "strip-literal": "^3.1.0",
     "turbo-stream": "^3.1.0",
     "vitefu": "^1.1.1"
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.54.1",
-    "@tsconfig/strictest": "^2.0.5",
+    "@playwright/test": "^1.56.1",
+    "@tsconfig/strictest": "^2.0.6",
     "@types/estree": "^1.0.8",
-    "@types/node": "^22.16.5",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/node": "^22.18.11",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "workspace:*",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-server-dom-webpack": "^19.1.0",
-    "rsc-html-stream": "^0.0.7",
+    "@vitejs/test-dep-cjs-and-esm": "./test-dep/cjs-and-esm",
+    "picocolors": "^1.1.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-server-dom-webpack": "^19.2.0",
     "tinyexec": "^1.0.1",
-    "tsdown": "^0.13.0"
+    "tsdown": "^0.15.8"
   },
   "peerDependencies": {
     "react": "*",
     "react-dom": "*",
+    "react-server-dom-webpack": "*",
     "vite": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-server-dom-webpack": {
+      "optional": true
+    }
   }
 }

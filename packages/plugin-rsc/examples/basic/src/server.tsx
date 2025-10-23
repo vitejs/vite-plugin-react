@@ -1,7 +1,7 @@
 import { handleRequest } from './framework/entry.rsc.tsx'
 import './styles.css'
 
-export default async function handler(request: Request): Promise<Response> {
+async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const { Root } = await import('./routes/root.tsx')
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
@@ -22,17 +22,24 @@ export default async function handler(request: Request): Promise<Response> {
     nonce,
   })
   if (nonce && response.headers.get('content-type')?.includes('text/html')) {
-    response.headers.set(
-      'content-security-policy',
-      `default-src 'self'; ` +
-        // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
-        `script-src 'self' 'nonce-${nonce}' ${
-          import.meta.env.DEV ? `'unsafe-eval'` : ``
-        } ; ` +
-        `style-src 'self' 'nonce-${nonce}'; `,
-    )
+    const cspValue = [
+      `default-src 'self';`,
+      // `unsafe-eval` is required during dev since React uses eval for findSourceMapURL feature
+      `script-src 'self' 'nonce-${nonce}' ${import.meta.env.DEV ? `'unsafe-eval'` : ``};`,
+      `style-src 'self' 'unsafe-inline';`,
+      `img-src 'self' data:;`,
+      // allow blob: worker for Vite server ping shared worker
+      import.meta.hot && `worker-src 'self' blob:;`,
+    ]
+      .filter(Boolean)
+      .join('')
+    response.headers.set('content-security-policy', cspValue)
   }
   return response
+}
+
+export default {
+  fetch: handler,
 }
 
 if (import.meta.hot) {

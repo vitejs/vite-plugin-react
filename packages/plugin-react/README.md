@@ -38,7 +38,7 @@ export default defineConfig({
 
 ### jsxImportSource
 
-Control where the JSX factory is imported from. Default to `'react'`
+Control where the JSX factory is imported from. By default, this is inferred from `jsxImportSource` from corresponding a tsconfig file for a transformed file.
 
 ```js
 react({ jsxImportSource: '@emotion/react' })
@@ -102,9 +102,16 @@ react({ reactRefreshHost: 'http://localhost:3000' })
 
 Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
 
-## Middleware mode
+## `@vitejs/plugin-react/preamble`
 
-In [middleware mode](https://vite.dev/config/server-options.html#server-middlewaremode), you should make sure your entry `index.html` file is transformed by Vite. Here's an example for an Express server:
+The package provides `@vitejs/plugin-react/preamble` to initialize HMR runtime from client entrypoint for SSR applications which don't use [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver). For example:
+
+```js
+// [entry.client.js]
+import '@vitejs/plugin-react/preamble'
+```
+
+Alternatively, you can manually call `transformIndexHtml` during SSR, which sets up equivalent initialization code. Here's an example for an Express server:
 
 ```js
 app.get('/', async (req, res, next) => {
@@ -121,15 +128,11 @@ app.get('/', async (req, res, next) => {
 })
 ```
 
-Otherwise, you'll probably get this error:
+Otherwise, you'll get the following error:
 
 ```
 Uncaught Error: @vitejs/plugin-react can't detect preamble. Something is wrong.
 ```
-
-### disableOxcRecommendation
-
-If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and `babel` is not configured).
 
 ## Consistent components exports
 

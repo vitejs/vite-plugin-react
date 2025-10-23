@@ -12,6 +12,7 @@ import {
   preambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
+  virtualPreamblePlugin,
 } from '@vitejs/react-common'
 import {
   exactRegex,
@@ -58,11 +59,6 @@ export interface Options {
    * reactRefreshHost: 'http://localhost:3000'
    */
   reactRefreshHost?: string
-
-  /**
-   * If set, disables the recommendation to use `@vitejs/plugin-react-oxc`
-   */
-  disableOxcRecommendation?: boolean
 }
 
 export type BabelOptions = Omit<
@@ -106,6 +102,7 @@ export type ViteReactPluginApi = {
 const defaultIncludeRE = /\.[tj]sx?$/
 const defaultExcludeRE = /\/node_modules\//
 const tsRE = /\.tsx?$/
+const compilerAnnotationRE = /['"]use memo['"]/
 
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
@@ -115,10 +112,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
+
+  const isRolldownVite = 'rolldownVersion' in vite
   let runningInVite = false
   let isProduction = true
   let projectRoot = process.cwd()
   let skipFastRefresh = true
+  let base: string
+  let isFullBundle = false
   let runPluginOverrides:
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
@@ -133,42 +134,65 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const viteBabel: Plugin = {
     name: 'vite:react-babel',
     enforce: 'pre',
-    config() {
-      if (opts.jsxRuntime === 'classic') {
-        if ('rolldownVersion' in vite) {
+    config(_userConfig, { command }) {
+      if ('rolldownVersion' in vite) {
+        if (opts.jsxRuntime === 'classic') {
           return {
             oxc: {
               jsx: {
                 runtime: 'classic',
+                refresh: command === 'serve',
                 // disable __self and __source injection even in dev
                 // as this plugin injects them by babel and oxc will throw
                 // if development is enabled and those properties are already present
                 development: false,
               },
+              jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
+              jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
             },
           }
         } else {
           return {
-            esbuild: {
-              jsx: 'transform',
+            oxc: {
+              jsx: {
+                runtime: 'automatic',
+                importSource: opts.jsxImportSource,
+                refresh: command === 'serve',
+              },
+              jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
+              jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
+            },
+            optimizeDeps: {
+              rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
             },
           }
+        }
+      }
+
+      if (opts.jsxRuntime === 'classic') {
+        return {
+          esbuild: {
+            jsx: 'transform',
+          },
         }
       } else {
         return {
           esbuild: {
             jsx: 'automatic',
+            // keep undefined by default so that vite's esbuild transform can prioritize jsxImportSource from tsconfig
             jsxImportSource: opts.jsxImportSource,
           },
-          optimizeDeps:
-            'rolldownVersion' in vite
-              ? { rollupOptions: { jsx: { mode: 'automatic' } } }
-              : { esbuildOptions: { jsx: 'automatic' } },
+          optimizeDeps: { esbuildOptions: { jsx: 'automatic' } },
         }
       }
     },
     configResolved(config) {
       runningInVite = true
+      base = config.base
+      // @ts-expect-error only available in newer rolldown-vite
+      if (config.experimental.fullBundleMode) {
+        isFullBundle = true
+      }
       projectRoot = config.root
       isProduction = config.isProduction
       skipFastRefresh =
@@ -179,17 +203,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
         .filter(defined)
-
-      if (
-        'rolldownVersion' in vite &&
-        !opts.babel &&
-        !hooks.length &&
-        !opts.disableOxcRecommendation
-      ) {
-        config.logger.warn(
-          '[vite:react-babel] We recommend switching to `@vitejs/plugin-react-oxc` for improved performance. More information at https://vite.dev/rolldown',
-        )
-      }
 
       if (hooks.length > 0) {
         runPluginOverrides = (babelOptions, context) => {
@@ -202,8 +215,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         staticBabelOptions = createBabelOptions(opts.babel)
 
         if (
+          (isRolldownVite || skipFastRefresh) &&
           canSkipBabel(staticBabelOptions.plugins, staticBabelOptions) &&
-          skipFastRefresh &&
           (opts.jsxRuntime === 'classic' ? isProduction : true)
         ) {
           delete viteBabel.transform
@@ -212,8 +225,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
     options(options) {
       if (!runningInVite) {
-        options.jsx = {
-          mode: opts.jsxRuntime,
+        // @ts-expect-error Rolldown has `transform.jsx`
+        options.transform ??= {}
+        // @ts-expect-error Rolldown has `transform.jsx`
+        options.transform.jsx = {
+          runtime: opts.jsxRuntime,
           importSource: opts.jsxImportSource,
         }
         return options
@@ -243,9 +259,27 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         })()
         const plugins = [...babelOptions.plugins]
 
+        // remove react-compiler plugin on non client environment
+        let reactCompilerPlugin = getReactCompilerPlugin(plugins)
+        if (reactCompilerPlugin && ssr) {
+          plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          reactCompilerPlugin = undefined
+        }
+
+        // filter by "use memo" when react-compiler { compilationMode: "annotation" }
+        // https://react.dev/learn/react-compiler/incremental-adoption#annotation-mode-configuration
+        if (
+          Array.isArray(reactCompilerPlugin) &&
+          reactCompilerPlugin[1]?.compilationMode === 'annotation' &&
+          !compilerAnnotationRE.test(code)
+        ) {
+          plugins.splice(plugins.indexOf(reactCompilerPlugin), 1)
+          reactCompilerPlugin = undefined
+        }
+
         const isJSX = filepath.endsWith('x')
         const useFastRefresh =
-          !skipFastRefresh &&
+          !(isRolldownVite || skipFastRefresh) &&
           !ssr &&
           (isJSX ||
             (opts.jsxRuntime === 'classic'
@@ -293,10 +327,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           // Required for esbuild.jsxDev to provide correct line numbers
           // This creates issues the react compiler because the re-order is too important
           // People should use @babel/plugin-transform-react-jsx-development to get back good line numbers
-          retainLines:
-            getReactCompilerPlugin(plugins) != null
-              ? false
-              : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
+          retainLines: reactCompilerPlugin
+            ? false
+            : !isProduction && isJSX && opts.jsxRuntime !== 'classic',
           parserOpts: {
             ...babelOptions.parserOpts,
             sourceType: 'module',
@@ -317,15 +350,120 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           if (!useFastRefresh) {
             return { code: result.code!, map: result.map }
           }
-          return addRefreshWrapper(
+          const code = addRefreshWrapper(
             result.code!,
-            result.map!,
             '@vitejs/plugin-react',
             id,
             opts.reactRefreshHost,
           )
+          return { code: code ?? result.code!, map: result.map }
         }
       },
+    },
+  }
+
+  // for rolldown-vite
+  const viteRefreshWrapper: Plugin = {
+    name: 'vite:react:refresh-wrapper',
+    apply: 'serve',
+    async applyToEnvironment(env) {
+      if (env.config.consumer !== 'client' || skipFastRefresh) {
+        return false
+      }
+
+      let nativePlugin: ((options: any) => Plugin) | undefined
+      try {
+        // NOTE: `+` is to bypass lint & typecheck. vite/internal exists for newer rolldown-vite
+        const vite = 'vite'
+        nativePlugin = (await import(vite + '/internal'))
+          .reactRefreshWrapperPlugin
+      } catch {}
+      if (
+        !nativePlugin ||
+        ['7.1.10', '7.1.11', '7.1.12'].includes(vite.version)
+      ) {
+        // the native plugin in 7.1.10 and 7.1.11 and 7.1.12 does not support dev properly
+        return true
+      }
+
+      delete viteRefreshWrapper.transform
+
+      return nativePlugin({
+        cwd: process.cwd(),
+        include: makeIdFiltersToMatchWithQuery(include),
+        exclude: makeIdFiltersToMatchWithQuery(exclude),
+        jsxImportSource,
+        reactRefreshHost: opts.reactRefreshHost ?? '',
+      }) as unknown as boolean
+    },
+    // we can remove this transform hook when we drop support for rolldown-vite 7.1.12 and below
+    transform: {
+      filter: {
+        id: {
+          include: makeIdFiltersToMatchWithQuery(include),
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
+        },
+      },
+      handler(code, id, options) {
+        const ssr = options?.ssr === true
+
+        const [filepath] = id.split('?')
+        const isJSX = filepath.endsWith('x')
+        const useFastRefresh =
+          !skipFastRefresh &&
+          !ssr &&
+          (isJSX ||
+            code.includes(jsxImportDevRuntime) ||
+            code.includes(jsxImportRuntime))
+        if (!useFastRefresh) return
+
+        const newCode = addRefreshWrapper(
+          code,
+          '@vitejs/plugin-react',
+          id,
+          opts.reactRefreshHost,
+        )
+        return newCode ? { code: newCode, map: null } : undefined
+      },
+    },
+  }
+
+  // for rolldown-vite
+  const viteConfigPost: Plugin = {
+    name: 'vite:react:config-post',
+    enforce: 'post',
+    config(userConfig) {
+      if (userConfig.server?.hmr === false) {
+        return {
+          oxc: {
+            jsx: {
+              refresh: false,
+            },
+          },
+          // oxc option is only available in rolldown-vite
+        } as any
+      }
+    },
+  }
+
+  // for rolldown-vite + full bundle mode
+  const viteReactRefreshFullBundleMode: Plugin = {
+    name: 'vite:react-refresh-fbm',
+    enforce: 'pre',
+    transformIndexHtml: {
+      handler() {
+        if (!skipFastRefresh && isFullBundle)
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module' },
+              children: getPreambleCode(base),
+            },
+          ]
+      },
+      // In unbundled mode, Vite transforms any requests.
+      // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+      order: 'pre',
     },
   }
 
@@ -372,19 +510,29 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         }
       },
     },
-    transformIndexHtml(_, config) {
-      if (!skipFastRefresh)
+    transformIndexHtml() {
+      if (!skipFastRefresh && !isFullBundle)
         return [
           {
             tag: 'script',
             attrs: { type: 'module' },
-            children: getPreambleCode(config.server!.config.base),
+            children: getPreambleCode(base),
           },
         ]
     },
   }
 
-  return [viteBabel, viteReactRefresh]
+  return [
+    viteBabel,
+    ...(isRolldownVite
+      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
+      : []),
+    viteReactRefresh,
+    virtualPreamblePlugin({
+      name: '@vitejs/plugin-react/preamble',
+      isEnabled: () => !skipFastRefresh && !isFullBundle,
+    }),
+  ]
 }
 
 viteReact.preambleCode = preambleCode

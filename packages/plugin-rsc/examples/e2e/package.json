@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@vitejs/plugin-rsc": "latest",
     "@vitejs/plugin-react": "latest",
-    "babel-plugin-react-compiler": "19.1.0-rc.2"
+    "@vitejs/plugin-rsc": "latest",
+    "babel-plugin-react-compiler": "19.1.0-rc.3",
+    "connect": "^3.7.0",
+    "rsc-html-stream": "^0.0.7",
+    "sirv": "^3.0.2"
   }
 }

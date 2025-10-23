@@ -10,12 +10,16 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
   const [name, ...args] = options.command.split(' ')
   const child = x(name!, args, { nodeOptions: options }).process!
   const label = `[${options.label ?? 'cli'}]`
+  let stdout = ''
+  let stderr = ''
   child.stdout!.on('data', (data) => {
+    stdout += stripVTControlCharacters(String(data))
     if (process.env.TEST_DEBUG) {
       console.log(styleText('cyan', label), data.toString())
     }
   })
   child.stderr!.on('data', (data) => {
+    stderr += stripVTControlCharacters(String(data))
     console.log(styleText('magenta', label), data.toString())
   })
   const done = new Promise<void>((resolve) => {
@@ -48,7 +52,14 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
     }
   }
 
-  return { proc: child, done, findPort, kill }
+  return {
+    proc: child,
+    done,
+    findPort,
+    kill,
+    stdout: () => stdout,
+    stderr: () => stderr,
+  }
 }
 
 export type Fixture = ReturnType<typeof useFixture>
@@ -64,12 +75,13 @@ export function useFixture(options: {
   let baseURL!: string
 
   const cwd = path.resolve(options.root)
+  let proc!: ReturnType<typeof runCli>
 
   // TODO: `beforeAll` is called again on any test failure.
   // https://playwright.dev/docs/test-retries
   test.beforeAll(async () => {
     if (options.mode === 'dev') {
-      const proc = runCli({
+      proc = runCli({
         command: options.command ?? `pnpm dev`,
         label: `${options.root}:dev`,
         cwd,
@@ -94,7 +106,7 @@ export function useFixture(options: {
         await proc.done
         assert(proc.proc.exitCode === 0)
       }
-      const proc = runCli({
+      proc = runCli({
         command: options.command ?? `pnpm preview`,
         label: `${options.root}:preview`,
         cwd,
@@ -113,7 +125,25 @@ export function useFixture(options: {
     await cleanup?.()
   })
 
+  const createEditor = useCreateEditor(cwd)
+
+  return {
+    mode: options.mode,
+    root: cwd,
+    url: (url: string = './') => new URL(url, baseURL).href,
+    createEditor,
+    proc: () => proc,
+  }
+}
+
+export function useCreateEditor(cwd: string) {
   const originalFiles: Record<string, string> = {}
+
+  test.afterAll(async () => {
+    for (const [filepath, content] of Object.entries(originalFiles)) {
+      fs.writeFileSync(filepath, content)
+    }
+  })
 
   function createEditor(filepath: string) {
     filepath = path.resolve(cwd, filepath)
@@ -121,6 +151,7 @@ export function useFixture(options: {
     originalFiles[filepath] ??= init
     let current = init
     return {
+      read: () => current,
       edit(editFn: (data: string) => string): void {
         const next = editFn(current)
         assert(next !== current, 'Edit function did not change the content')
@@ -130,26 +161,19 @@ export function useFixture(options: {
       reset(): void {
         fs.writeFileSync(filepath, originalFiles[filepath]!)
       },
+      resave(): void {
+        fs.writeFileSync(filepath, current)
+      },
     }
   }
 
-  test.afterAll(async () => {
-    for (const [filepath, content] of Object.entries(originalFiles)) {
-      fs.writeFileSync(filepath, content)
-    }
-  })
-
-  return {
-    mode: options.mode,
-    root: cwd,
-    url: (url: string = './') => new URL(url, baseURL).href,
-    createEditor,
-  }
+  return createEditor
 }
 
 export async function setupIsolatedFixture(options: {
   src: string
   dest: string
+  overrides?: Record<string, string>
 }) {
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
@@ -158,16 +182,31 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // setup package.json overrides
-  const packagesDir = path.join(import.meta.dirname, '..', '..')
+  // extract workspace overrides
+  const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  const workspaceYaml = fs.readFileSync(
+    path.join(rootDir, 'pnpm-workspace.yaml'),
+    'utf-8',
+  )
+  const overridesMatch = workspaceYaml.match(
+    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
+  )
+  const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
   const overrides = {
-    '@vitejs/plugin-rsc': `file:${path.join(packagesDir, 'plugin-rsc')}`,
-    '@vitejs/plugin-react': `file:${path.join(packagesDir, 'plugin-react')}`,
+    '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
+    '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
+    ...options.overrides,
   }
-  editFileJson(path.join(options.dest, 'package.json'), (pkg: any) => {
-    Object.assign(((pkg.pnpm ??= {}).overrides ??= {}), overrides)
-    return pkg
-  })
+  const tempWorkspaceYaml = `\
+${overridesSection}
+${Object.entries(overrides)
+  .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
+  .join('\n')}
+`
+  fs.writeFileSync(
+    path.join(options.dest, 'pnpm-workspace.yaml'),
+    tempWorkspaceYaml,
+  )
 
   // install
   await x('pnpm', ['i'], {
@@ -181,17 +220,6 @@ export async function setupIsolatedFixture(options: {
       ],
     },
   })
-}
-
-function editFileJson(filepath: string, edit: (s: string) => string) {
-  fs.writeFileSync(
-    filepath,
-    JSON.stringify(
-      edit(JSON.parse(fs.readFileSync(filepath, 'utf-8'))),
-      null,
-      2,
-    ),
-  )
 }
 
 // inspired by

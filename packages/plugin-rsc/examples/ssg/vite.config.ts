@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
@@ -7,11 +6,11 @@ import rsc from '@vitejs/plugin-rsc'
 import mdx from '@mdx-js/rollup'
 import react from '@vitejs/plugin-react'
 import { type Plugin, type ResolvedConfig, defineConfig } from 'vite'
-import inspect from 'vite-plugin-inspect'
 import { RSC_POSTFIX } from './src/framework/shared'
 
-export default defineConfig((env) => ({
+export default defineConfig({
   plugins: [
+    // import("vite-plugin-inspect").then(m => m.default()),
     mdx(),
     react(),
     rsc({
@@ -20,33 +19,29 @@ export default defineConfig((env) => ({
         rsc: './src/framework/entry.rsc.tsx',
         ssr: './src/framework/entry.ssr.tsx',
       },
-      serverHandler: env.isPreview ? false : undefined,
     }),
     rscSsgPlugin(),
-    inspect(),
   ],
-}))
+})
 
 function rscSsgPlugin(): Plugin[] {
   return [
     {
       name: 'rsc-ssg',
-      config(_config, env) {
-        if (env.isPreview) {
+      config: {
+        order: 'pre',
+        handler(_config, env) {
           return {
-            appType: 'mpa',
+            appType: env.isPreview ? 'mpa' : undefined,
+            rsc: {
+              serverHandler: env.isPreview ? false : undefined,
+            },
           }
-        }
+        },
       },
-      // Use post ssr writeBundle to wait for app is fully built.
-      // On Vite 7, you can use `buildApp` hook instead.
-      writeBundle: {
-        order: 'post',
-        async handler() {
-          if (this.environment.name === 'ssr') {
-            const config = this.environment.getTopLevelConfig()
-            await renderStatic(config)
-          }
+      buildApp: {
+        async handler(builder) {
+          await renderStatic(builder.config)
         },
       },
     },
@@ -65,27 +60,22 @@ async function renderStatic(config: ResolvedConfig) {
 
   // render rsc and html
   const baseDir = config.environments.client.build.outDir
-  for (const htmlPath of staticPaths) {
-    config.logger.info('[vite-rsc:ssg] -> ' + htmlPath)
-    const rscPath = htmlPath + RSC_POSTFIX
-    const htmlResponse = await entry.default(
-      new Request(new URL(htmlPath, 'http://ssg.local')),
+  for (const staticPatch of staticPaths) {
+    config.logger.info('[vite-rsc:ssg] -> ' + staticPatch)
+    const { html, rsc } = await entry.handleSsg(
+      new Request(new URL(staticPatch, 'http://ssg.local')),
     )
-    assert.equal(htmlResponse.status, 200)
-    await fs.promises.writeFile(
-      path.join(baseDir, normalizeHtmlFilePath(htmlPath)),
-      Readable.fromWeb(htmlResponse.body as any),
+    await writeFileStream(
+      path.join(baseDir, normalizeHtmlFilePath(staticPatch)),
+      html,
     )
-
-    const rscResponse = await entry.default(
-      new Request(new URL(rscPath, 'http://ssg.local')),
-    )
-    assert.equal(rscResponse.status, 200)
-    await fs.promises.writeFile(
-      path.join(baseDir, rscPath),
-      Readable.fromWeb(rscResponse.body as any),
-    )
+    await writeFileStream(path.join(baseDir, staticPatch + RSC_POSTFIX), rsc)
   }
+}
+
+async function writeFileStream(filePath: string, stream: ReadableStream) {
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.promises.writeFile(filePath, Readable.fromWeb(stream as any))
 }
 
 function normalizeHtmlFilePath(p: string) {

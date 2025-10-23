@@ -41,16 +41,15 @@ jobs:
     name: "Build&Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       - name: Set node version to ${{ matrix.node_version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node_version }}
-          cache: "pnpm"
 
       - name: Install deps
         run: pnpm install
@@ -93,24 +92,34 @@ jobs:
       - name: Test SWC
         run: pnpm --filter ./packages/plugin-react-swc run test
 
+      - name: Setup rolldown-vite
+        run: |
+          sed -i"" -e "s/overrides:/overrides:\n  vite: catalog:rolldown-vite/" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+
+      - name: Test serve (rolldown-vite)
+        run: pnpm run test-serve
+
+      - name: Test build (rolldown-vite)
+        run: pnpm run test-build
+
   lint:
     if: github.repository == 'vitejs/vite-plugin-react'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     name: "Lint: node-20, ubuntu-latest"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Install pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       - name: Set node version to 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: "pnpm"
 
       - name: Install deps
         run: pnpm install

@@ -1,6 +1,11 @@
-import * as ReactClient from '@vitejs/plugin-rsc/browser'
+import {
+  createFromFetch,
+  setServerCallback,
+  createTemporaryReferenceSet,
+  encodeReply,
+} from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import * as ReactDOMClient from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 import type { RscPayload } from './entry.rsc'
 
 async function main() {
@@ -8,7 +13,7 @@ async function main() {
   // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
   let setPayload: (v: RscPayload) => void
 
-  const initialPayload = await ReactClient.createFromFetch<RscPayload>(
+  const initialPayload = await createFromFetch<RscPayload>(
     fetch(window.location.href),
   )
 
@@ -30,7 +35,7 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await ReactClient.createFromFetch<RscPayload>(
+    const payload = await createFromFetch<RscPayload>(
       fetch(window.location.href),
     )
     setPayload(payload)
@@ -38,13 +43,13 @@ async function main() {
 
   // register a handler which will be internally called by React
   // on server function request after hydration.
-  ReactClient.setServerCallback(async (id, args) => {
+  setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
-    const temporaryReferences = ReactClient.createTemporaryReferenceSet()
-    const payload = await ReactClient.createFromFetch<RscPayload>(
+    const temporaryReferences = createTemporaryReferenceSet()
+    const payload = await createFromFetch<RscPayload>(
       fetch(url, {
         method: 'POST',
-        body: await ReactClient.encodeReply(args, { temporaryReferences }),
+        body: await encodeReply(args, { temporaryReferences }),
         headers: {
           'x-rsc-action': id,
         },
@@ -61,7 +66,7 @@ async function main() {
       <BrowserRoot />
     </React.StrictMode>
   )
-  ReactDOMClient.createRoot(document.body).render(browserRoot)
+  createRoot(document.body).render(browserRoot)
 
   // implement server HMR by trigering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {

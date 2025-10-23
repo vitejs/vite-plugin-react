@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Add `@vitejs/plugin-react-swc/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))
+
+SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react-swc/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.
+
+## 4.1.0 (2025-09-17)
+
+### Set SWC cacheRoot options
+
+This is set to `{viteCacheDir}/swc` and override the default of `.swc`.
+
+### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
+
+## 4.0.1 (2025-08-19)
+
+### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` for rolldown-vite ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
+
+`optimizeDeps.rollupOptions.jsx` is going to be deprecated in favor of `optimizeDeps.rollupOptions.transform.jsx`.
+
+## 4.0.0 (2025-08-07)
+
+## 4.0.0-beta.0 (2025-07-28)
+
 ### Require Node 20.19+, 22.12+
 
 This plugin now requires Node 20.19+ or 22.12+.

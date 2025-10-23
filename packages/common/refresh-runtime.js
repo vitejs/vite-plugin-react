@@ -243,7 +243,7 @@ function performReactRefresh() {
   }
 }
 
-function register(type, id) {
+export function register(type, id) {
   if (type === null) {
     return
   }
@@ -564,10 +564,6 @@ function isPlainObject(obj) {
  * Plugin utils
  */
 
-export function getRefreshReg(filename) {
-  return (type, id) => register(type, filename + ' ' + id)
-}
-
 // Taken from https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/main/lib/runtime/RefreshUtils.js#L141
 // This allows to resister components not detected by SWC like styled component
 export function registerExportsForReactRefresh(filename, moduleExports) {
@@ -653,10 +649,7 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
 
 function predicateOnExport(ignoredExports, moduleExports, predicate) {
   for (const key in moduleExports) {
-    if (key === '__esModule') continue
     if (ignoredExports.includes(key)) continue
-    const desc = Object.getOwnPropertyDescriptor(moduleExports, key)
-    if (desc && desc.get) return key
     if (!predicate(key, moduleExports[key])) return key
   }
   return true

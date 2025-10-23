@@ -1,5 +1,5 @@
-import { test } from '@playwright/test'
-import { setupInlineFixture, useFixture } from './fixture'
+import { expect, test } from '@playwright/test'
+import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { defineStarterTest } from './starter'
 
 test.describe(() => {
@@ -27,17 +27,31 @@ test.describe(() => {
 
   test.describe('dev-base', () => {
     const f = useFixture({ root, mode: 'dev' })
-    defineStarterTest({
+    const f2: Fixture = {
       ...f,
       url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
+    }
+    defineStarterTest(f2)
+    testRequestUrl(f2)
   })
 
   test.describe('build-base', () => {
     const f = useFixture({ root, mode: 'build' })
-    defineStarterTest({
+    const f2: Fixture = {
       ...f,
       url: (url) => new URL(url ?? './', f.url('./custom-base/')).href,
-    })
+    }
+    defineStarterTest(f2)
+    testRequestUrl(f2)
   })
+
+  function testRequestUrl(f: Fixture) {
+    test('request url', async ({ page }) => {
+      await page.goto(f.url())
+      await page.waitForSelector('#root')
+      await expect(page.locator('.card').nth(2)).toHaveText(
+        `Request URL: ${f.url()}`,
+      )
+    })
+  }
 })

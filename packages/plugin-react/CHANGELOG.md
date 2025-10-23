@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+### Add `@vitejs/plugin-react/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))
+
+SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.
+
+### Fix raw Rolldown support for Rolldown 1.0.0-beta.44+ ([#930](https://github.com/vitejs/vite-plugin-react/pull/930))
+
+Rolldown 1.0.0-beta.44+ removed the top-level `jsx` option in favor of `transform.jsx`. This plugin now uses the `transform.jsx` option to support Rolldown 1.0.0-beta.44+.
+
+## 5.0.4 (2025-09-27)
+
+### Perf: use native refresh wrapper plugin in rolldown-vite ([#881](https://github.com/vitejs/vite-plugin-react/pull/881))
+
+## 5.0.3 (2025-09-17)
+
+### HMR did not work for components imported with queries with rolldown-vite ([#872](https://github.com/vitejs/vite-plugin-react/pull/872))
+
+### Perf: simplify refresh wrapper generation ([#835](https://github.com/vitejs/vite-plugin-react/pull/835))
+
+## 5.0.2 (2025-08-28)
+
+### Skip transform hook completely in rolldown-vite in dev if possible ([#783](https://github.com/vitejs/vite-plugin-react/pull/783))
+
+## 5.0.1 (2025-08-19)
+
+### Set `optimizeDeps.rollupOptions.transform.jsx` instead of `optimizeDeps.rollupOptions.jsx` for rolldown-vite ([#735](https://github.com/vitejs/vite-plugin-react/pull/735))
+
+`optimizeDeps.rollupOptions.jsx` is going to be deprecated in favor of `optimizeDeps.rollupOptions.transform.jsx`.
+
+### Perf: skip `babel-plugin-react-compiler` if code has no `"use memo"` when `{ compilationMode: "annotation" }` ([#734](https://github.com/vitejs/vite-plugin-react/pull/734))
+
+### Respect tsconfig `jsxImportSource` ([#726](https://github.com/vitejs/vite-plugin-react/pull/726))
+
+### Fix `reactRefreshHost` option on rolldown-vite ([#716](https://github.com/vitejs/vite-plugin-react/pull/716))
+
+### Fix `RefreshRuntime` being injected twice for class components on rolldown-vite ([#708](https://github.com/vitejs/vite-plugin-react/pull/708))
+
+### Skip `babel-plugin-react-compiler` on non client environment ([689](https://github.com/vitejs/vite-plugin-react/pull/689))
+
+## 5.0.0 (2025-08-07)
+
+## 5.0.0-beta.0 (2025-07-28)
+
+### Use Oxc for react refresh transform in rolldown-vite
+
+When used with rolldown-vite, this plugin now uses Oxc for react refresh transform.
+
+Since this behavior is what `@vitejs/plugin-react-oxc` did, `@vitejs/plugin-react-oxc` is now deprecated and the `disableOxcRecommendation` option is removed.
+
+Also, while `@vitejs/plugin-react-oxc` used the production JSX transform even for `NODE_ENV=development` build, `@vitejs/plugin-react` uses the development JSX transform for `NODE_ENV=development` build.
+
 ### Allow processing files in `node_modules`
 
 The default value of `exclude` options is now `[/\/node_modules\//]` to allow processing files in `node_modules` directory. It was previously `[]` and files in `node_modules` was always excluded regardless of the value of `exclude` option.

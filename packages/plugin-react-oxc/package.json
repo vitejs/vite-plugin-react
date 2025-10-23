@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react-oxc",
-  "version": "0.3.0",
+  "version": "0.4.2",
   "license": "MIT",
   "author": "Evan You",
   "contributors": [
@@ -22,7 +22,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "scripts": {
-    "dev": "tsdown --watch",
+    "dev": "tsdown --watch ./src --watch ../common",
     "build": "tsdown",
     "prepublishOnly": "npm run build"
   },
@@ -43,11 +43,10 @@
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
-    "tsdown": "^0.13.0",
-    "unbuild": "^3.5.0",
+    "tsdown": "^0.15.8",
     "vite": "catalog:rolldown-vite"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.29"
+    "@rolldown/pluginutils": "1.0.0-beta.43"
   }
 }

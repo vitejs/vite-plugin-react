@@ -1,5 +1,5 @@
 {
-  "include": ["*.ts", "**/__tests__/*.ts", "**/vite.config.ts"],
+  "include": ["*.ts", "**/__tests__/**/*", "**/vite.config.ts"],
   "exclude": ["**/dist/**"],
   "compilerOptions": {
     "target": "ES2023",

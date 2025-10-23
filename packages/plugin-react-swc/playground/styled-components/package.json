@@ -8,15 +8,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-is": "^19.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
-    "@swc/plugin-styled-components": "^8.0.3",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@swc/plugin-styled-components": "^9.1.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@types/styled-components": "^5.1.34",
     "@vitejs/plugin-react-swc": "../../dist"
   }

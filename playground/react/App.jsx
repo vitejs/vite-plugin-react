@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import Button from 'jsx-entry'
-import Dummy from './components/Dummy?qs-should-not-break-plugin-react'
+import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 import { Accordion } from './components/Accordion'
 import Parent from './hmr/parent'
+import InjectExportsLater from './hmr/inject-exports-later'
 import { JsxImportRuntime } from './hmr/jsx-import-runtime'
 import { CountProvider } from './context/CountProvider'
 import { ContextButton } from './context/ContextButton'
 import { TestImportAttributes } from './import-attributes/test'
+import { TEST_NON_JSX, TestNonJsx } from './non-jsx/test'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -38,15 +40,18 @@ function App() {
         </a>
       </header>
 
-      <Dummy />
+      <WithQuery />
       <Accordion.Root>
         <Accordion.Item>First Item</Accordion.Item>
         <Accordion.Item>Second Item</Accordion.Item>
       </Accordion.Root>
       <Parent />
+      <InjectExportsLater />
       <JsxImportRuntime />
       <Button>button</Button>
       <TestImportAttributes />
+      {TestNonJsx()}
+      {TEST_NON_JSX()}
     </div>
   )
 }

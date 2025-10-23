@@ -12,6 +12,9 @@ on:
       - "packages/plugin-rsc/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/ci-rsc.yml"
+  schedule:
+    # Run daily at 00:00 UTC to test canary/experimental React versions
+    - cron: "0 0 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -21,24 +24,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - run: pnpm i
       - run: pnpm build
       - run: pnpm -C packages/plugin-rsc tsc
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.rolldown == true && '(rolldown)' || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
         rolldown: [false]
+        react_version: [""]
         include:
           - os: ubuntu-latest
             browser: firefox
@@ -47,27 +51,47 @@ jobs:
           - os: ubuntu-latest
             browser: chromium
             rolldown: true
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: canary
+          - os: ubuntu-latest
+            browser: chromium
+            react_version: experimental
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - run: pnpm i
+      - name: install react
+        if: ${{ matrix.react_version }}
+        run: |
+          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-server-dom-webpack: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+        env:
+          REACT_VERSION: ${{ matrix.react_version }}
       - run: pnpm build
       - name: install rolldown
         if: ${{ matrix.rolldown }}
         run: |
           sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
-      - run: pnpm -C packages/plugin-rsc exec playwright install ${{ matrix.browser }}
-      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project=${{ matrix.browser }}
+      - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
+        shell: bash
         env:
-          TEST_ISOLATED: true
+          BROWSER_NAME: ${{ matrix.browser }}
+      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME"
+        shell: bash
+        env:
+          BROWSER_NAME: ${{ matrix.browser }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
           path: |
             packages/plugin-rsc/test-results
+          if-no-files-found: ignore

@@ -4,29 +4,32 @@ This package provides [React Server Components](https://react.dev/reference/rsc/
 
 ## Features
 
-- **Framework-less RSC experience**: The plugin implements [RSC conventions](https://react.dev/reference/rsc/server-components) and provides low level `react-server-dom` runtime API without framework-specific abstractions.
-- **CSS support**: CSS is automatically code-split both at client and server components and they are injected upon rendering.
+- **Framework-agnostic**: The plugin implements [RSC bundler features](https://react.dev/reference/rsc/server-components) and provides low level RSC runtime (`react-server-dom`) API without framework-specific abstractions.
+- **Runtime-agnostic**: Built on [Vite environment API](https://vite.dev/guide/api-environment.html) and works with other runtimes (e.g., [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare)).
 - **HMR support**: Enables editing both client and server components without full page reloads.
-- **Runtime agnostic**: Built on [Vite environment API](https://vite.dev/guide/api-environment.html) and works with other runtimes (e.g., [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare)).
+- **CSS support**: CSS is automatically code-split both at client and server components and they are injected upon rendering.
 
 ## Getting Started
 
 You can create a starter project by:
 
 ```sh
-npx degit vitejs/vite-plugin-react/packages/plugin-rsc/examples/starter my-app
+npm create vite@latest -- --template rsc
 ```
 
 ## Examples
 
-- [`./examples/starter`](./examples/starter)
-  - This example provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
-- [`./examples/react-router`](./examples/react-router)
-  - This demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
-- [`./examples/basic`](./examples/basic)
-  - This is mainly used for e2e testing and include various advanced RSC usages (e.g. `"use cache"` example).
-- [`./examples/ssg`](./examples/ssg)
-  - Static site generation (SSG) example with MDX and client components for interactivity.
+**Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
+
+- Provides an in-depth overview of API with inline comments to explain how they function within RSC-powered React application.
+
+**Integration examples:**
+
+- [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
+  - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
+- [`./examples/react-router`](./examples/react-router) - React Router RSC integration
+  - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 
 ## Basic Concepts
 
@@ -128,11 +131,11 @@ export default defineConfig({
 - [`entry.rsc.tsx`](./examples/starter/src/framework/entry.rsc.tsx)
 
 ```tsx
-import * as ReactServer from '@vitejs/plugin-rsc/rsc' // re-export of react-server-dom/server.edge and client.edge
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 
 // the plugin assumes `rsc` entry having default export of request handler
 export default async function handler(request: Request): Promise<Response> {
-  // serialization React VDOM to RSC stream
+  // serialize React VDOM to RSC stream
   const root = (
     <html>
       <body>
@@ -140,7 +143,7 @@ export default async function handler(request: Request): Promise<Response> {
       </body>
     </html>
   )
-  const rscStream = ReactServer.renderToReadableStream(root)
+  const rscStream = renderToReadableStream(root)
 
   // respond direct RSC stream request based on framework's convention
   if (request.url.endsWith('.rsc')) {
@@ -165,24 +168,29 @@ export default async function handler(request: Request): Promise<Response> {
     },
   })
 }
+
+// add `import.meta.hot.accept` to handle server module change efficiently
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}
 ```
 
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
 
 ```tsx
-import * as ReactClient from '@vitejs/plugin-rsc/ssr' // re-export of react-server-dom/client.edge
-import * as ReactDOMServer from 'react-dom/server.edge'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import { renderToReadableStream } from 'react-dom/server.edge'
 
 export async function handleSsr(rscStream: ReadableStream) {
   // deserialize RSC stream back to React VDOM
-  const root = await ReactClient.createFromReadableStream(rscStream)
+  const root = await createFromReadableStream(rscStream)
 
   // helper API to allow referencing browser entry content from SSR environment
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
   // render html (traditional SSR)
-  const htmlStream = ReactDOMServer.renderToReadableStream(root, {
+  const htmlStream = renderToReadableStream(root, {
     bootstrapScriptContent,
   })
 
@@ -193,51 +201,26 @@ export async function handleSsr(rscStream: ReadableStream) {
 - [`entry.browser.tsx`](./examples/starter/src/framework/entry.browser.tsx)
 
 ```tsx
-import * as ReactClient from "@vitejs/plugin-rsc/browser"; // re-export of react-server-dom/client.browser
-import * as ReactDOMClient from "react-dom/client";
+import { createFromReadableStream } from '@vitejs/plugin-rsc/browser'
+import { hydrateRoot } from 'react-dom/client'
 
 async function main() {
   // fetch and deserialize RSC stream back to React VDOM
-  const rscResponse = await fetch(window.location.href + ".rsc);
-  const root = await ReactClient.createFromReadableStream(rscResponse.body);
+  const rscResponse = await fetch(window.location.href + '.rsc')
+  const root = await createFromReadableStream(rscResponse.body)
 
   // hydration (traditional CSR)
-  ReactDOMClient.hydrateRoot(document, root);
+  hydrateRoot(document, root)
 }
 
-main();
+main()
 ```
-
-## `react-server-dom` API
-
-### `@vitejs/plugin-rsc/rsc`
-
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
-
-- `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serailized RSC and deserializing it for later use.
-- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
-- `encodeReply/createClientTemporaryReferenceSet`
-
-### `@vitejs/plugin-rsc/ssr`
-
-This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
-
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-
-### `@vitejs/plugin-rsc/browser`
-
-This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
-
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
-- `encodeReply/setServerCallback`: server function related...
 
 ## Environment helper API
 
 The plugin provides an additional helper for multi environment interaction.
 
-### available on `rsc` or `ssr` environment
+### Available on `rsc` or `ssr` environment
 
 #### `import.meta.viteRsc.loadModule`
 
@@ -260,9 +243,12 @@ ssrModule.renderHTML(...);
 export function renderHTML(...) {}
 ```
 
-### available on `rsc` environment
+### Available on `rsc` environment
 
 #### `import.meta.viteRsc.loadCss`
+
+> [!NOTE]
+> The plugin automatically injects CSS for server components. See the [CSS Support](#css-support) section for detailed information about automatic CSS injection.
 
 - Type: `(importer?: string) => React.ReactNode`
 
@@ -284,7 +270,7 @@ export function ServerPage() {
 }
 ```
 
-Where specifying `loadCss(<id>)`, it will collect css through the server module resolved by `<id>`.
+When specifying `loadCss(<id>)`, it will collect css through the server module resolved by `<id>`.
 
 ```tsx
 // virtual:my-framework-helper
@@ -309,43 +295,13 @@ export function UserApp() {
 }
 ```
 
-#### `<id>?vite-rsc-css-export=<name>`
-
-This special query convention provides automatic injection of `import.meta.viteRsc.loadCss`.
-
-For example,
-
-```tsx
-// my-route.tsx
-export function Page(props) {
-  return <div>...</div>
-}
-
-// my-route.css?vite-rsc-css-export=Page
-function Page(props) {
-  return <div>...</div>
-}
-
-function __Page(props) {
-  return (
-    <>
-      {import.meta.viteRsc.loadCss()}
-      <Page {...props} />
-    </>
-  )
-}
-
-export { __Page as Page }
-```
-
-### available on `ssr` environment
+### Available on `ssr` environment
 
 #### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
 
 This provides a raw js code to execute a browser entry file specified by `environments.client.build.rollupOptions.input.index`. This is intended to be used with React DOM SSR API, such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream)
 
 ```js
-import bootstrapScriptContent from 'virtual:vite-rsc/bootstrap-script-content'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 const bootstrapScriptContent =
@@ -355,20 +311,18 @@ const htmlStream = await renderToReadableStream(reactNode, {
 })
 ```
 
-### available on `client` environment
+### Available on `client` environment
 
 #### `rsc:update` event
 
 This event is fired when server modules are updated, which can be used to trigger re-fetching and re-rendering of RSC components on browser.
 
 ```js
-import * as ReactClient from '@vitejs/plugin-rsc/browser'
+import { createFromFetch } from '@vitejs/plugin-rsc/browser'
 
 import.meta.hot.on('rsc:update', async () => {
   // re-fetch RSC stream
-  const rscPayload = await ReactClient.createFromFetch(
-    fetch(window.location.href + '.rsc'),
-  )
+  const rscPayload = await createFromFetch(fetch(window.location.href + '.rsc'))
   // re-render ...
 })
 ```
@@ -376,6 +330,8 @@ import.meta.hot.on('rsc:update', async () => {
 ## Plugin API
 
 ### `@vitejs/plugin-rsc`
+
+- Type: `rsc: (options?: RscPluginOptions) => Plugin[]`;
 
 ```js
 import rsc from '@vitejs/plugin-rsc'
@@ -397,6 +353,17 @@ export default defineConfig({
       // this behavior can be customized by `serverHandler` option.
       serverHandler: false,
 
+      // the plugin provides build-time validation of 'server-only' and 'client-only' imports.
+      // this is enabled by default. See the "server-only and client-only import" section below for details.
+      validateImports: true,
+
+      // by default, the plugin uses a build-time generated encryption key for
+      // "use server" closure argument binding.
+      // This can be overwritten by configuring `defineEncryptionKey` option,
+      // for example, to obtain a key through environment variable during runtime.
+      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
+      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+
       // when `loadModuleDevProxy: true`, `import.meta.viteRsc.loadModule` is implemented
       // through `fetch` based RPC, which allows, for example, rsc environment inside
       // cloudflare workers to communicate with node ssr environment on main Vite process.
@@ -406,35 +373,197 @@ export default defineConfig({
       // if it breaks, it can be opt-out or selectively applied based on files.
       rscCssTransform: { filter: (id) => id.includes('/my-app/') },
 
-      // by default, the plugin uses a build-time generated encryption key for
-      // "use server" closure argument binding.
-      // This can be overwritten by configuring `defineEncryptionKey` option,
-      // for example, to obtain a key through environment variable during runtime.
-      // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
-      defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
+      // see `RscPluginOptions` for full options ...
     }),
   ],
+  // the same options can be also specified via top-level `rsc` property.
+  // this allows other plugin to set options via `config` hook.
+  rsc: {
+    // ...
+  },
 })
 ```
 
-## High level API
+## RSC runtime (react-server-dom) API
 
-> [!NOTE]
-> High level API is deprecated. Please write on your own `@vitejs/plugin-rsc/{rsc,ssr,browser}` integration.
+### `@vitejs/plugin-rsc/rsc`
 
-This is a wrapper of `react-server-dom` API and helper API to setup a minimal RSC app without writing own framework code like [`./examples/starter/src/framework`](./examples/starter/src/framework/). See [`./examples/basic`](./examples/basic/) for how this API is used.
+This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
 
-### `@vitejs/plugin-rsc/extra/rsc`
+- `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serialized RSC and deserializing it for later use.
+- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
+- `encodeReply/createClientTemporaryReferenceSet`
 
-- `renderRequest`
+### `@vitejs/plugin-rsc/ssr`
 
-### `@vitejs/plugin-rsc/extra/ssr`
+This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
 
-- `renderHtml`
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
 
-### `@vitejs/plugin-rsc/extra/browser`
+### `@vitejs/plugin-rsc/browser`
 
-- `hydrate`
+This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
+
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
+- `encodeReply/setServerCallback`: server function related...
+
+## Tips
+
+### CSS Support
+
+The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
+
+1. **Component Detection**: The plugin automatically detects server components by looking for:
+   - Function exports with capital letter names (e.g., `export function Page() {}`)
+   - Default exports that are functions with capital names (e.g., `export default function Page() {}`)
+   - Const exports assigned to functions with capital names (e.g., `export const Page = () => {}`)
+
+2. **CSS Import Detection**: For detected components, the plugin checks if the module imports any CSS files (`.css`, `.scss`, `.sass`, etc.)
+
+3. **Automatic Wrapping**: When both conditions are met, the plugin wraps the component with a CSS injection wrapper:
+
+```tsx
+// Before transformation
+import './styles.css'
+
+export function Page() {
+  return <div>Hello</div>
+}
+
+// After transformation
+import './styles.css'
+
+export function Page() {
+  return (
+    <>
+      {import.meta.viteRsc.loadCss()}
+      <div>Hello</div>
+    </>
+  )
+}
+```
+
+### Canary and Experimental channel releases
+
+See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
+
+### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
+
+By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
+
+```sh
+Failed to resolve dependency: @vitejs/plugin-rsc/vendor/react-server-dom/client.browser, present in client 'optimizeDeps.include'
+```
+
+This can be fixed by updating `optimizeDeps.include` to reference `@vitejs/plugin-rsc` through your framework package. For example, you can add the following plugin:
+
+```js
+// package name is "my-rsc-framework"
+export default function myRscFrameworkPlugin() {
+  return {
+    name: 'my-rsc-framework:config',
+    configEnvironment(_name, config) {
+      if (config.optimizeDeps?.include) {
+        config.optimizeDeps.include = config.optimizeDeps.include.map(
+          (entry) => {
+            if (entry.startsWith('@vitejs/plugin-rsc')) {
+              entry = `my-rsc-framework > ${entry}`
+            }
+            return entry
+          },
+        )
+      }
+    },
+  }
+}
+```
+
+### Typescript
+
+Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you can add it to `tsconfig.json` to have types for `import.meta.viteRsc` APIs:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vitejs/plugin-rsc/types"]
+  }
+}
+```
+
+```ts
+import.meta.viteRsc.loadModule
+//                  ^^^^^^^^^^
+// <T>(environmentName: string, entryName: string) => Promise<T>
+```
+
+See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.
+
+### `server-only` and `client-only` import
+
+<!-- references? -->
+<!-- https://nextjs.org/docs/app/getting-started/server-and-client-components#preventing-environment-poisoning -->
+<!-- https://overreacted.io/how-imports-work-in-rsc/ -->
+
+You can use the `server-only` import to prevent accidentally importing server-only code into client bundles, which can expose sensitive server code in public static assets.
+For example, the plugin will show an error `'server-only' cannot be imported in client build` for the following code:
+
+- server-utils.js
+
+```tsx
+import 'server-only'
+
+export async function getData() {
+  const res = await fetch('https://internal-service.com/data', {
+    headers: {
+      authorization: process.env.API_KEY,
+    },
+  })
+  return res.json()
+}
+```
+
+- client.js
+
+```tsx
+'use client'
+import { getData } from './server-utils.js' // ❌ 'server-only' cannot be imported in client build
+...
+```
+
+Similarly, the `client-only` import ensures browser-specific code isn't accidentally imported into server environments.
+For example, the plugin will show an error `'client-only' cannot be imported in server build` for the following code:
+
+- client-utils.js
+
+```tsx
+import 'client-only'
+
+export function getStorage(key) {
+  // This uses browser-only APIs
+  return window.localStorage.getItem(key)
+}
+```
+
+- server.js
+
+```tsx
+import { getStorage } from './client-utils.js' // ❌ 'client-only' cannot be imported in server build
+
+export function ServerComponent() {
+  const data = getStorage("settings")
+  ...
+}
+```
+
+Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
+
+This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
+
+### `react-server-dom-webpack`
+
+Currently `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in user project's dependencies, the plugin will automatically use it instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
 
 ## Credits
 

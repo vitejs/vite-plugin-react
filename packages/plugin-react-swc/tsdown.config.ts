@@ -6,6 +6,7 @@ export default defineConfig({
   entry: 'src/index.ts',
   dts: true,
   tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
+  ignoreWatch: ['playground', 'playground-temp', 'test-results'],
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
@@ -18,6 +19,10 @@ export default defineConfig({
     {
       from: 'README.md',
       to: 'dist/README.md',
+    },
+    {
+      from: 'types',
+      to: 'dist/types',
     },
   ],
   onSuccess() {
@@ -33,7 +38,10 @@ export default defineConfig({
                 key !== 'private',
             ),
           ),
-          exports: './index.js',
+          exports: {
+            '.': './index.js',
+            './preamble': './types/preamble.d.ts',
+          },
         },
         null,
         2,

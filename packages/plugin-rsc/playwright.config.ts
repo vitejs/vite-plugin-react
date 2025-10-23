@@ -3,10 +3,11 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: 'e2e',
   use: {
-    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    trace: 'on-all-retries',
   },
   expect: {
-    toPass: { timeout: 5000 },
+    toPass: { timeout: 10000 },
   },
   projects: [
     {

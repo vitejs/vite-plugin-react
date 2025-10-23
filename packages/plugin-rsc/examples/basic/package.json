@@ -12,24 +12,29 @@
     "cf-release": "wrangler deploy"
   },
   "dependencies": {
-    "@vitejs/plugin-rsc": "latest",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.11",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "latest",
-    "@vitejs/test-dep-transitive-cjs": "file:./test-dep/transitive-cjs",
+    "@vitejs/plugin-rsc": "latest",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
+    "@vitejs/test-dep-css-in-server": "file:./test-dep/css-in-server",
     "@vitejs/test-dep-server-in-client": "file:./test-dep/server-in-client",
     "@vitejs/test-dep-server-in-server": "file:./test-dep/server-in-server",
+    "@vitejs/test-dep-transitive-cjs": "file:./test-dep/transitive-cjs",
+    "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
     "rsc-html-stream": "^0.0.7",
-    "tailwindcss": "^4.1.11",
-    "vite": "^7.0.5",
-    "vite-plugin-inspect": "^11.3.0",
-    "wrangler": "^4.25.1"
+    "tailwindcss": "^4.1.14",
+    "vite": "^7.1.10",
+    "wrangler": "^4.43.0"
+  },
+  "stackblitz": {
+    "installDependencies": false,
+    "startCommand": "pnpm i && pnpm dev"
   }
 }

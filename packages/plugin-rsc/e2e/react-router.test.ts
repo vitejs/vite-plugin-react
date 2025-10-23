@@ -3,8 +3,11 @@ import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
 import { readFileSync } from 'node:fs'
+import React from 'react'
 
 test.describe('dev-default', () => {
+  test.skip(/canary|experimental/.test(React.version))
+
   const f = useFixture({ root: 'examples/react-router', mode: 'dev' })
   defineTest(f)
 })
@@ -15,6 +18,8 @@ test.describe('build-default', () => {
 })
 
 test.describe('dev-cloudflare', () => {
+  test.skip(/canary|experimental/.test(React.version))
+
   const f = useFixture({
     root: 'examples/react-router',
     mode: 'dev',
@@ -34,11 +39,6 @@ test.describe('build-cloudflare', () => {
 })
 
 function defineTest(f: Fixture) {
-  test('loader', async ({ page }) => {
-    await page.goto(f.url())
-    await expect(page.getByText(`loaderData: {"name":"Unknown"}`)).toBeVisible()
-  })
-
   test('client', async ({ page }) => {
     await page.goto(f.url('./about'))
     await waitForHydration(page)

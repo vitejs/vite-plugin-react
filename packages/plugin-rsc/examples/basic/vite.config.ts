@@ -1,14 +1,23 @@
 import assert from 'node:assert'
-import rsc, { transformHoistInlineDirective } from '@vitejs/plugin-rsc'
+import rsc from '@vitejs/plugin-rsc'
+import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, defineConfig, normalizePath, parseAstAsync } from 'vite'
-import inspect from 'vite-plugin-inspect'
+import {
+  type Plugin,
+  type Rollup,
+  defineConfig,
+  normalizePath,
+  parseAstAsync,
+} from 'vite'
 import path from 'node:path'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   clearScreen: false,
   plugins: [
+    // import("vite-plugin-inspect").then(m => m.default()),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
@@ -20,21 +29,44 @@ export default defineConfig({
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
-      ignoredPackageWarnings: [/@vitejs\/test-dep-/],
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
+      clientChunks(meta) {
+        if (process.env.TEST_CUSTOM_CLIENT_CHUNKS) {
+          if (meta.id.includes('/src/routes/chunk/')) {
+            return 'custom-chunk'
+          }
+        }
+      },
     }),
-    // avoid ecosystem CI fail due to vite-plugin-inspect compatibility
-    !process.env.ECOSYSTEM_CI && inspect(),
     {
-      name: 'test-client-reference-tree-shaking',
+      name: 'test-tree-shake',
       enforce: 'post',
       writeBundle(_options, bundle) {
         for (const chunk of Object.values(bundle)) {
           if (chunk.type === 'chunk') {
             assert(!chunk.code.includes('__unused_client_reference__'))
+            assert(!chunk.code.includes('__unused_server_export__'))
+            assert(!chunk.code.includes('__unused_tree_shake2__'))
           }
         }
+      },
+    },
+    {
+      // dump entire bundle to analyze build output for e2e
+      name: 'test-metadata',
+      enforce: 'post',
+      writeBundle(options, bundle) {
+        const chunks: Rollup.OutputChunk[] = []
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            chunks.push(chunk)
+          }
+        }
+        fs.writeFileSync(
+          path.join(options.dir!, '.vite/test.json'),
+          JSON.stringify({ chunks }, null, 2),
+        )
       },
     },
     {
@@ -90,6 +122,78 @@ export default defineConfig({
       },
     },
     {
+      name: 'optimize-chunks',
+      apply: 'build',
+      config() {
+        const resolvePackageSource = (source: string) =>
+          normalizePath(fileURLToPath(import.meta.resolve(source)))
+
+        // TODO: this package entry isn't a public API.
+        const reactServerDom = resolvePackageSource(
+          '@vitejs/plugin-rsc/react/browser',
+        )
+
+        return {
+          environments: {
+            client: {
+              build: {
+                rollupOptions: {
+                  output: {
+                    manualChunks: (id) => {
+                      // need to use functional form to handle commonjs plugin proxy module
+                      // e.g. `(id)?commonjs-es-import`
+                      if (
+                        id.includes('node_modules/react/') ||
+                        id.includes('node_modules/react-dom/') ||
+                        id.includes(reactServerDom)
+                      ) {
+                        return 'lib-react'
+                      }
+                      if (id === '\0vite/preload-helper.js') {
+                        return 'lib-vite'
+                      }
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }
+      },
+      // verify chunks are "stable"
+      writeBundle(_options, bundle) {
+        if (this.environment.name === 'client') {
+          const entryChunks: Rollup.OutputChunk[] = []
+          const libChunks: Record<string, Rollup.OutputChunk[]> = {}
+          for (const chunk of Object.values(bundle)) {
+            if (chunk.type === 'chunk') {
+              if (chunk.isEntry) {
+                entryChunks.push(chunk)
+              }
+              if (chunk.name.startsWith('lib-')) {
+                ;(libChunks[chunk.name] ??= []).push(chunk)
+              }
+            }
+          }
+
+          // react vendor chunk has no import
+          assert.equal(libChunks['lib-react'].length, 1)
+          assert.deepEqual(
+            // https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
+            libChunks['lib-react'][0].imports.filter(
+              (f) => !f.includes('rolldown-runtime'),
+            ),
+            [],
+          )
+          assert.deepEqual(libChunks['lib-react'][0].dynamicImports, [])
+
+          // entry chunk has no export
+          assert.equal(entryChunks.length, 1)
+          assert.deepEqual(entryChunks[0].exports, [])
+        }
+      },
+    },
+    {
       name: 'cf-build',
       enforce: 'post',
       apply: () => !!process.env.CF_BUILD,
@@ -123,6 +227,8 @@ export default { fetch: handler };
             source: `\
 /favicon.ico
   Cache-Control: public, max-age=3600, s-maxage=3600
+/test.css
+  Cache-Control: public, max-age=3600, s-maxage=3600
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 `,
@@ -130,6 +236,7 @@ export default { fetch: handler };
         }
       },
     },
+    testBuildPlugin(),
   ],
   build: {
     minify: false,
@@ -151,15 +258,55 @@ export default { fetch: handler };
     },
     ssr: {
       optimizeDeps: {
-        // TODO: this should be somehow auto inferred or at least show a warning
-        // to guide users to `optimizeDeps.include`
-        include: [
-          '@vitejs/test-dep-transitive-cjs > use-sync-external-store/shim/index.js',
-        ],
+        include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
       },
     },
   },
 }) as any
+
+function testBuildPlugin(): Plugin[] {
+  const moduleIds: { name: string; ids: string[] }[] = []
+  return [
+    {
+      name: 'test-scan',
+      apply: 'build',
+      buildEnd() {
+        moduleIds.push({
+          name: this.environment.name,
+          ids: [...this.getModuleIds()],
+        })
+      },
+      buildApp: {
+        order: 'post',
+        async handler() {
+          // client scan build discovers additional modules for server references.
+          const [m1, m2] = moduleIds.filter((m) => m.name === 'rsc')
+          const diff = m2.ids.filter((id) => !m1.ids.includes(id))
+          assert(diff.length > 0)
+
+          // but make sure it's not due to import.meta.glob
+          // https://github.com/vitejs/rolldown-vite/issues/373
+          assert.equal(
+            diff.find((id) => id.includes('import-meta-glob/dep.tsx')),
+            undefined,
+          )
+        },
+      },
+    },
+    {
+      name: 'test-copyPublicDir',
+      apply: 'build',
+      buildApp: {
+        order: 'post',
+        async handler() {
+          assert(fs.existsSync('dist/client/favicon.ico'))
+          assert(!fs.existsSync('dist/rsc/favicon.ico'))
+          assert(!fs.existsSync('dist/ssr/favicon.ico'))
+        },
+      },
+    },
+  ]
+}
 
 function vitePluginUseCache(): Plugin[] {
   return [
