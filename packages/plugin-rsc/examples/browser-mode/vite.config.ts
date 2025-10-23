@@ -6,7 +6,6 @@ import {
   type HotChannel,
   type HotChannelClient,
   DevEnvironment,
-  type ResolvedConfig,
 } from 'vite'
 import {
   vitePluginRscMinimal,
@@ -14,7 +13,6 @@ import {
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
 import { createRequire } from 'node:module'
-// import inspect from 'vite-plugin-inspect'
 
 const require = createRequire(import.meta.url)
 
@@ -120,7 +118,7 @@ function createWebSocketHotChannel(options: {
 
 export default defineConfig({
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     rscBrowserModePlugin(),
   ],
   environments: {

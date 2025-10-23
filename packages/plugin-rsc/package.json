@@ -44,6 +44,7 @@
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.19",
     "periscopic": "^4.0.2",
+    "strip-literal": "^3.1.0",
     "turbo-stream": "^3.1.0",
     "vitefu": "^1.1.1"
   },
@@ -57,6 +58,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "workspace:*",
     "@vitejs/test-dep-cjs-and-esm": "./test-dep/cjs-and-esm",
+    "picocolors": "^1.1.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-server-dom-webpack": "^19.2.0",

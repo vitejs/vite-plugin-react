@@ -10,7 +10,6 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-// import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -18,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   clearScreen: false,
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
