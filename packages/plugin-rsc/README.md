@@ -373,6 +373,13 @@ export default defineConfig({
       // if it breaks, it can be opt-out or selectively applied based on files.
       rscCssTransform: { filter: (id) => id.includes('/my-app/') },
 
+      // experimental options
+      experimental: {
+        // enable parallel building of client and SSR environments after RSC build completes.
+        // this can significantly reduce build time by running builds concurrently.
+        parallelBuild: true,
+      },
+
       // see `RscPluginOptions` for full options ...
     }),
   ],

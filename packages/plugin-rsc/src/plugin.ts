@@ -202,6 +202,20 @@ export type RscPluginOptions = {
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
+
+  /**
+   * Experimental parallel build option
+   * @experimental
+   * @default false
+   */
+  experimental?: {
+    /**
+     * Build client and SSR environments in parallel after RSC build completes.
+     * This can significantly reduce build time by avoiding sequential builds.
+     * @default false
+     */
+    parallelBuild?: boolean
+  }
 }
 
 export type PluginApi = {
@@ -276,6 +290,8 @@ export default function vitePluginRsc(
       builder.config.logger.info(colors.blue(msg))
     }
 
+    const parallelBuild = rscPluginOptions.experimental?.parallelBuild ?? false
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
@@ -312,10 +328,19 @@ export default function vitePluginRsc(
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
     manager.stabilize()
-    logStep('[4/5] build client environment...')
-    await builder.build(builder.environments.client!)
-    logStep('[5/5] build ssr environment...')
-    await builder.build(builder.environments.ssr!)
+
+    if (parallelBuild) {
+      logStep('[4/5] build client and ssr environments in parallel...')
+      await Promise.all([
+        builder.build(builder.environments.client!),
+        builder.build(builder.environments.ssr!),
+      ])
+    } else {
+      logStep('[4/5] build client environment...')
+      await builder.build(builder.environments.client!)
+      logStep('[5/5] build ssr environment...')
+      await builder.build(builder.environments.ssr!)
+    }
     writeAssetsManifest(['ssr', 'rsc'])
   }
 
