@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-browser-mode2",
+  "name": "@vitejs/plugin-rsc-examples-browser",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",

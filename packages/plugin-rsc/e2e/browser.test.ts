@@ -8,13 +8,13 @@ import fs from 'node:fs'
 // > TypeError: ReadableByteStreamController is not implemented
 test.skip(({ browserName }) => browserName === 'webkit')
 
-test.describe('dev-browser-mode2', () => {
-  const f = useFixture({ root: 'examples/browser-mode2', mode: 'dev' })
+test.describe('dev-browser', () => {
+  const f = useFixture({ root: 'examples/browser', mode: 'dev' })
   defineStarterTest(f, 'no-ssr')
 })
 
-test.describe('build-browser-mode2', () => {
-  const f = useFixture({ root: 'examples/browser-mode2', mode: 'build' })
+test.describe('build-browser', () => {
+  const f = useFixture({ root: 'examples/browser', mode: 'build' })
   defineStarterTest(f, 'no-ssr')
 
   test('no ssr build', () => {
