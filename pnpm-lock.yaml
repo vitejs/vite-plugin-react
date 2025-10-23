@@ -451,6 +451,9 @@ importers:
       periscopic:
         specifier: ^4.0.2
         version: 4.0.2
+      strip-literal:
+        specifier: ^3.1.0
+        version: 3.1.0
       turbo-stream:
         specifier: ^3.1.0
         version: 3.1.0
@@ -485,6 +488,9 @@ importers:
       '@vitejs/test-dep-cjs-and-esm':
         specifier: ./test-dep/cjs-and-esm
         version: link:test-dep/cjs-and-esm
+      picocolors:
+        specifier: ^1.1.1
+        version: 1.1.1
       react:
         specifier: ^19.2.0
         version: 19.2.0
