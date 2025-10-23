@@ -1,8 +1,11 @@
+import assert from 'node:assert'
 import { rmSync } from 'node:fs'
 import path from 'node:path'
-import { normalizePath, type Plugin } from 'vite'
+import { normalizePath, type Plugin, type Rollup } from 'vite'
 
 export default function vitePluginRscBrowser(): Plugin[] {
+  let rscBundle: Rollup.OutputBundle
+
   return [
     {
       name: 'rsc-browser',
@@ -19,6 +22,11 @@ export default function vitePluginRscBrowser(): Plugin[] {
             rsc: {
               build: {
                 outDir: 'dist/client/__server',
+                rollupOptions: {
+                  output: {
+                    entryFileNames: '[name]-[hash].js',
+                  },
+                },
               },
               keepProcessEnv: false,
               resolve: {
@@ -75,8 +83,17 @@ export default function vitePluginRscBrowser(): Plugin[] {
           return { id: source, external: true }
         }
       },
+      generateBundle(_options, bundle) {
+        if (this.environment.name === 'rsc') {
+          rscBundle = bundle
+        }
+      },
       renderChunk(code, chunk) {
         if (code.includes('virtual:vite-rsc-browser/load-rsc')) {
+          assert(this.environment.name === 'client')
+          const rscEntry = Object.values(rscBundle).find(
+            (v) => v.type === 'chunk' && v.isEntry,
+          )!
           const config = this.environment.getTopLevelConfig()
           const replacement = normalizeRelativePath(
             path.relative(
@@ -85,7 +102,10 @@ export default function vitePluginRscBrowser(): Plugin[] {
                 chunk.fileName,
                 '..',
               ),
-              path.join(config.environments.rsc.build.outDir, 'index.js'),
+              path.join(
+                config.environments.rsc.build.outDir,
+                rscEntry.fileName,
+              ),
             ),
           )
           code = code.replaceAll(
