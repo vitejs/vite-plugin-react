@@ -1,0 +1,205 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.logo-container {
+  margin-bottom: 1rem;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  margin: 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 1.2em;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+section {
+  margin: 2rem 0;
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.static-section {
+  border-left: 4px solid #646cff;
+}
+
+.dynamic-section {
+  border-left: 4px solid #42b883;
+}
+
+.info-section {
+  border-left: 4px solid #ffc107;
+}
+
+h2 {
+  margin-top: 0;
+  color: #646cff;
+}
+
+.dynamic-card {
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.dynamic-card h3 {
+  margin-top: 0;
+  color: #42b883;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+dt {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+dd {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  min-height: 100px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.user-widget .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-name {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-indicator.online {
+  background-color: #42b883;
+  box-shadow: 0 0 8px #42b883;
+}
+
+.user-last-seen {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9em;
+}
+
+ol {
+  line-height: 1.8;
+}
+
+a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  section {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .dynamic-card {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  dd {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}

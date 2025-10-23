@@ -27,6 +27,8 @@ npm create vite@latest -- --template rsc
 
 - [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
   - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/ppr`](./examples/ppr) - Partial Prerendering (PPR) demonstration
+  - Shows how to use React's PPR feature to combine static prerendering with dynamic streaming using Suspense boundaries.
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/react-router`](./examples/react-router) - React Router RSC integration
   - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
