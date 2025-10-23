@@ -51,17 +51,18 @@ export default function vitePluginRscBrowser(): Plugin[] {
         },
       },
       configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-rsc') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['rsc']!.hot.handleInvoke(payload)
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
-          next()
+        const { client, rsc } = server.environments
+        client.hot.on('transport-proxy:send', async (payload) => {
+          const result = await rsc.hot.handleInvoke(payload)
+          client.hot.send('transport-proxy:onMessage', {
+            type: 'custom',
+            event: 'vite:invoke',
+            data: {
+              name: payload.data.name,
+              id: payload.data.id.replace('send', 'response'),
+              data: result,
+            },
+          })
         })
       },
     },
