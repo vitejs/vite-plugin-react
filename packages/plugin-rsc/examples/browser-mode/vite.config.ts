@@ -4,11 +4,10 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
-// import inspect from 'vite-plugin-inspect'
 
 export default defineConfig({
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     rscBrowserModePlugin(),
   ],
   environments: {
