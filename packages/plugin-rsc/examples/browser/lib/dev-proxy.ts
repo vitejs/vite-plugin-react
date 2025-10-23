@@ -1,19 +1,30 @@
-import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
+import {
+  ESModulesEvaluator,
+  ModuleRunner,
+  createWebSocketModuleRunnerTransport,
+} from 'vite/module-runner'
 
 const runner = new ModuleRunner(
   {
     sourcemapInterceptor: false,
-    transport: {
-      invoke: async (payload) => {
-        const response = await fetch(
-          '/@vite/invoke-rsc?' +
-            new URLSearchParams({
-              data: JSON.stringify(payload),
-            }),
+    // transport: {
+    //   invoke: async (payload) => {
+    //     const response = await fetch(
+    //       '/@vite/invoke-rsc?' +
+    //         new URLSearchParams({
+    //           data: JSON.stringify(payload),
+    //         }),
+    //     )
+    //     return response.json()
+    //   },
+    // },
+    transport: createWebSocketModuleRunnerTransport({
+      createConnection() {
+        return new WebSocket(
+          `ws://${location.host}/@vite/module-runner-transport/rsc`,
         )
-        return response.json()
       },
-    },
+    }),
     hmr: false,
   },
   new ESModulesEvaluator(),
