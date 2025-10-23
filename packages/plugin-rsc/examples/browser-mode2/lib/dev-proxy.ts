@@ -24,7 +24,7 @@ export default new Proxy(
   {
     get(_target, p, _receiver) {
       return async (...args: any[]) => {
-        const module = await runner.import('/src/framework/entry.rsc.tsx')
+        const module = await runner.import('/src/framework/entry.rsc')
         return module.default[p](...args)
       }
     },

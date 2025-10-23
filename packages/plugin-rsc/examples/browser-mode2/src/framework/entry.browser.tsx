@@ -7,13 +7,14 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
+import { loadEntryRsc } from '../../lib/runtime'
 
 async function fetchRsc(request: Request): Promise<Response> {
-  const module = await import('virtual:vite-rsc-browser-mode2/load-rsc')
+  const module = await loadEntryRsc()
   return module.default.fetch(request)
 }
 
-export async function main() {
+async function main() {
   // stash `setPayload` function to trigger re-rendering
   // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
   let setPayload: (v: RscPayload) => void
@@ -130,3 +131,5 @@ function listenNavigation(onNavigation: () => void) {
     window.history.replaceState = oldReplaceState
   }
 }
+
+main()
