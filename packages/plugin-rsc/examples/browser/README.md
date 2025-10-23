@@ -1,4 +1,4 @@
-# browser-mode2
+# `rsc` environment on browser
 
 Hybrid RSC example that combines:
 
