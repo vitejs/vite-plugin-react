@@ -1,34 +1,56 @@
-import * as ReactServer from '@vitejs/plugin-rsc/rsc'
-import * as ReactDOMServer from 'react-dom/server'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-import { injectRscStreamToHtml } from 'rsc-html-stream/server'
+import { renderToReadableStream } from 'react-dom/server.edge'
+import { injectRSCPayload } from 'rsc-html-stream/server'
+import type { RscPayload } from './entry.rsc'
 
 export async function renderHTML(
-  rscStream: ReadableStream,
+  rscStream: ReadableStream<Uint8Array>,
   options: {
     formState?: ReactFormState
+    nonce?: string
     debugNojs?: boolean
   },
-): Promise<ReadableStream> {
+) {
+  // duplicate one RSC stream into two.
+  // - one for SSR (ReactClient.createFromReadableStream below)
+  // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee()
 
-  // Deserialize RSC stream to React elements for SSR
-  const root = await ReactServer.createFromNodeStream(
-    rscStream1,
-    {},
-    { clientManifest: import.meta.viteRsc.clientManifest },
-  )
+  // deserialize RSC stream back to React VDOM
+  let payload: Promise<RscPayload>
+  function SsrRoot() {
+    // deserialization needs to be kicked off inside ReactDOMServer context
+    // for ReactDomServer preinit/preloading to work
+    payload ??= createFromReadableStream<RscPayload>(rscStream1)
+    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
+  }
 
-  // Render to HTML stream
-  const htmlStream = await ReactDOMServer.renderToReadableStream(root, {
-    formState: options.formState,
-    bootstrapModules: options.debugNojs
-      ? []
-      : [import.meta.viteRsc.clientManifest.entryModule],
+  function FixSsrThenable(props: React.PropsWithChildren) {
+    return props.children
+  }
+
+  // render html (traditional SSR)
+  const bootstrapScriptContent =
+    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const htmlStream = await renderToReadableStream(<SsrRoot />, {
+    bootstrapScriptContent: options?.debugNojs
+      ? undefined
+      : bootstrapScriptContent,
+    nonce: options?.nonce,
+    formState: options?.formState,
   })
 
-  // Inject RSC stream into HTML for client hydration
-  const mergedStream = injectRscStreamToHtml(htmlStream, rscStream2)
+  let responseStream: ReadableStream<Uint8Array> = htmlStream
+  if (!options?.debugNojs) {
+    // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    responseStream = responseStream.pipeThrough(
+      injectRSCPayload(rscStream2, {
+        nonce: options?.nonce,
+      }),
+    )
+  }
 
-  return mergedStream
+  return responseStream
 }

@@ -6,6 +6,6 @@ export async function incrementServerCounter() {
   serverCounter++
 }
 
-export function getServerCounter() {
+export async function getServerCounter() {
   return serverCounter
 }
