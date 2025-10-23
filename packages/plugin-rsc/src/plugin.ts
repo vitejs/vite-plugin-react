@@ -270,23 +270,28 @@ export default function vitePluginRsc(
   const manager = new RscPluginManager()
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    const colors = await import('picocolors')
+    const logStep = (msg: string) => {
+      builder.config.logger.info(colors.blue(msg))
+    }
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
       manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
       builder.environments.client!.config.build.write = false
-      manager.config.logger.info('[1/4] analyze client references...')
+      logStep('[1/4] analyze client references...')
       await builder.build(builder.environments.rsc!)
-      manager.config.logger.info('[2/4] analyze server references...')
+      logStep('[2/4] analyze server references...')
       await builder.build(builder.environments.client!)
       manager.isScanBuild = false
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
-      manager.config.logger.info('[3/4] build rsc environment...')
+      logStep('[3/4] build rsc environment...')
       await builder.build(builder.environments.rsc!)
       manager.stabilize()
-      manager.config.logger.info('[4/4] build client environment...')
+      logStep('[4/4] build client environment...')
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -296,19 +301,19 @@ export default function vitePluginRsc(
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
-    manager.config.logger.info('[1/5] analyze client references...')
+    logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
-    manager.config.logger.info('[2/5] analyze server references...')
+    logStep('[2/5] analyze server references...')
     await builder.build(builder.environments.ssr!)
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
-    manager.config.logger.info('[3/5] build rsc environment...')
+    logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
     manager.stabilize()
-    manager.config.logger.info('[4/5] build client environment...')
+    logStep('[4/5] build client environment...')
     await builder.build(builder.environments.client!)
-    manager.config.logger.info('[5/5] build ssr environment...')
+    logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
   }
