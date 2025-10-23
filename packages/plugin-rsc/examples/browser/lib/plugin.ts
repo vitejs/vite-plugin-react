@@ -1,6 +1,7 @@
 import { rmSync } from 'node:fs'
 import path from 'node:path'
 import { normalizePath, type Plugin } from 'vite'
+import { createRPCServer } from 'vite-dev-rpc'
 
 export default function vitePluginRscBrowser(): Plugin[] {
   return [
@@ -51,17 +52,9 @@ export default function vitePluginRscBrowser(): Plugin[] {
         },
       },
       configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-rsc') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['rsc']!.hot.handleInvoke(payload)
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
-          next()
+        createRPCServer('rsc:transport-proxy', server.ws, {
+          invoke: (payload: any) =>
+            server.environments.rsc.hot.handleInvoke(payload),
         })
       },
     },

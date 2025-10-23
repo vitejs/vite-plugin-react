@@ -1,18 +1,16 @@
 import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
+import { createRPCClient } from 'vite-dev-rpc'
+
+const rpcClient = createRPCClient<{ invoke: Function }, {}>(
+  'rsc:transport-proxy',
+  import.meta.hot!,
+)
 
 const runner = new ModuleRunner(
   {
     sourcemapInterceptor: false,
     transport: {
-      invoke: async (payload) => {
-        const response = await fetch(
-          '/@vite/invoke-rsc?' +
-            new URLSearchParams({
-              data: JSON.stringify(payload),
-            }),
-        )
-        return response.json()
-      },
+      invoke: (payload) => rpcClient.invoke(payload),
     },
     hmr: false,
   },
