@@ -7,7 +7,7 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import type React from 'react'
+import { Root } from '../root.tsx'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -25,15 +25,7 @@ export type RscPayload = {
 // the plugin by default assumes `rsc` entry having default export of request handler.
 // however, how server entries are executed can be customized by registering
 // own server handler e.g. `@cloudflare/vite-plugin`.
-export async function handleRequest({
-  request,
-  getRoot,
-  nonce,
-}: {
-  request: Request
-  getRoot: () => React.ReactNode
-  nonce?: string
-}): Promise<Response> {
+export default async function handler(request: Request): Promise<Response> {
   // handle server function request
   const isAction = request.method === 'POST'
   let returnValue: unknown | undefined
@@ -62,8 +54,16 @@ export async function handleRequest({
     }
   }
 
+  // serialization from React VDOM tree to RSC stream.
+  // we render RSC stream after handling server function request
+  // so that new render reflects updated state from server function call
+  // to achieve single round trip to mutate and fetch from server.
   const url = new URL(request.url)
-  const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
+  const rscPayload: RscPayload = {
+    root: <Root url={url} />,
+    formState,
+    returnValue,
+  }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
@@ -93,7 +93,6 @@ export async function handleRequest({
   >('ssr', 'index')
   const htmlStream = await ssrEntryModule.renderHTML(rscStream, {
     formState,
-    nonce,
     // allow quick simulation of javscript disabled browser
     debugNojs: url.searchParams.has('__nojs'),
   })
@@ -101,8 +100,12 @@ export async function handleRequest({
   // respond html
   return new Response(htmlStream, {
     headers: {
-      'content-type': 'text/html;charset=utf-8',
+      'Content-type': 'text/html',
       vary: 'accept',
     },
   })
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept()
 }

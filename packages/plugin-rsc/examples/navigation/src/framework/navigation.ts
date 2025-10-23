@@ -32,7 +32,7 @@ const supportsNavigationAPI = 'navigation' in window
 export class NavigationManager {
   private state: NavigationState
   private cache = new BackForwardCache<Promise<RscPayload>>()
-  private setState?: (state: NavigationState) => void
+  private setState!: (state: NavigationState) => void
   private startTransition?: (fn: () => void) => void
   // History API fallback
   private oldPushState = window.history.pushState
@@ -128,9 +128,9 @@ export class NavigationManager {
    */
   listen(): () => void {
     // Use modern Navigation API if available
-    if (supportsNavigationAPI) {
-      return this.listenNavigationAPI()
-    }
+    // if (supportsNavigationAPI) {
+    //   return this.listenNavigationAPI()
+    // }
     // Fallback to History API
     return this.listenHistoryAPI()
   }
