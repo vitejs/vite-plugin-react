@@ -1,3 +1,4 @@
+import { Root } from '../root.tsx'
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -7,7 +8,6 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import { Root } from '../root.tsx'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.

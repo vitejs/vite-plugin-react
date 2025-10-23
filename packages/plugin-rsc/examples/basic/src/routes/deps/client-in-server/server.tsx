@@ -1,8 +1,8 @@
+import { TestContextValueIndirect } from './client'
 // @ts-ignore
 import { TestClientInServerDep } from '@vitejs/test-dep-client-in-server/server'
 // @ts-ignore
 import { TestContextProviderInServer } from '@vitejs/test-dep-client-in-server2/server'
-import { TestContextValueIndirect } from './client'
 
 export function TestClientInServer() {
   return (

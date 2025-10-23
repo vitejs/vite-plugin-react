@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs'
 import { generateChangelog, release } from '@vitejs/release-scripts'
+import { readFileSync, writeFileSync } from 'node:fs'
 import colors from 'picocolors'
 
 const nextH2RE = /^## /gm

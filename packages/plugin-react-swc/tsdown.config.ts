@@ -1,6 +1,6 @@
+import packageJSON from './package.json' with { type: 'json' }
 import { writeFileSync } from 'node:fs'
 import { defineConfig } from 'tsdown'
-import packageJSON from './package.json' with { type: 'json' }
 
 export default defineConfig({
   entry: 'src/index.ts',

@@ -1,4 +1,3 @@
-import { expect, test } from '@playwright/test'
 import { type Fixture } from './fixture'
 import {
   expectNoPageError,
@@ -6,6 +5,7 @@ import {
   testNoJs,
   waitForHydration as waitForHydration_,
 } from './helper'
+import { expect, test } from '@playwright/test'
 
 export function defineStarterTest(
   f: Fixture,

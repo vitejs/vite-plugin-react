@@ -1,6 +1,6 @@
-import { test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
+import { test } from '@playwright/test'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/module-runner-hmr-false'

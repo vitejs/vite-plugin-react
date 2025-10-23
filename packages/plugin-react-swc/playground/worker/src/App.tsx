@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import MyWorker from './worker-via-import.ts?worker&inline'
+import { useState } from 'react'
 
 new MyWorker()
 

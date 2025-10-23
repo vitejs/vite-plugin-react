@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { transformScanBuildStrip } from './scan'
+import { describe, expect, it } from 'vitest'
 
 describe(transformScanBuildStrip, () => {
   it('basic', async () => {

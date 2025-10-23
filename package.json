@@ -18,7 +18,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "simple-git-hooks",
-    "format": "prettier --write --cache .",
+    "format": "oxfmt",
     "lint": "eslint --cache .",
     "typecheck": "tsc -p scripts && tsc -p playground && tsc -p packages/plugin-react",
     "test": "pnpm run test-unit && pnpm run test-serve && pnpm run test-build && pnpm --filter ./packages/plugin-react-swc run test",
@@ -44,6 +44,7 @@
     "fs-extra": "^11.3.2",
     "globals": "^16.4.0",
     "lint-staged": "^16.2.4",
+    "oxfmt": "^0.8.0",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.56.1",
     "prettier": "^3.6.2",
@@ -59,7 +60,7 @@
   },
   "lint-staged": {
     "*": [
-      "prettier --write --cache --ignore-unknown"
+      "oxfmt"
     ],
     "packages/*/{src,types}/**/*.ts": [
       "eslint --cache --fix"

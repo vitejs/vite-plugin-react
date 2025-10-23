@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test'
 import {
   expectColor,
   setupBuildAndPreview,
   setupDevServer,
   setupWaitForLogs,
 } from '../../utils.ts'
+import { expect, test } from '@playwright/test'
 
 test('Emotion build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('emotion')

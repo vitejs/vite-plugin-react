@@ -1,9 +1,9 @@
-import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
 import {
   vitePluginRscMinimal,
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
+import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
   plugins: [

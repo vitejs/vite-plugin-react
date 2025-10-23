@@ -1,8 +1,8 @@
 import './index.css'
-import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
+import viteLogo from '/vite.svg'
 
 export function Root() {
   return (

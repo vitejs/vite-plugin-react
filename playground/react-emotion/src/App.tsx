@@ -1,6 +1,6 @@
+import { Counter, StyledCode } from './Counter.tsx'
 import { useState } from 'react'
 import _Switch from 'react-switch'
-import { Counter, StyledCode } from './Counter.tsx'
 
 const Switch = (_Switch as any).default || _Switch
 

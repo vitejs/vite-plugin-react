@@ -1,6 +1,6 @@
+import { createServerConsumerManifest } from '../core/ssr'
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
-import { createServerConsumerManifest } from '../core/ssr'
 
 export { setRequireModule } from '../core/ssr'
 

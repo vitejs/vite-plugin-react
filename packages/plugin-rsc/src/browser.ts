@@ -1,5 +1,5 @@
-import * as clientReferences from 'virtual:vite-rsc/client-references'
 import { setRequireModule } from './core/browser'
+import * as clientReferences from 'virtual:vite-rsc/client-references'
 
 export * from './react/browser'
 

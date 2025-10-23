@@ -1,7 +1,7 @@
-import path from 'node:path'
-import { expect, test } from 'vitest'
-import { type Plugin, rolldown } from 'rolldown'
 import pluginReact, { type Options } from '../src/index.ts'
+import path from 'node:path'
+import { type Plugin, rolldown } from 'rolldown'
+import { expect, test } from 'vitest'
 
 test('HMR related code should not be included when using rolldown', async () => {
   const { output } = await bundleWithRolldown()

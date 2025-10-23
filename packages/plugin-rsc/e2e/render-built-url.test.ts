@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineStarterTest } from './starter'
 import { expectNoPageError, waitForHydration } from './helper'
+import { defineStarterTest } from './starter'
+import { expect, test } from '@playwright/test'
 import fs from 'node:fs'
 import type { RenderBuiltAssetUrl } from 'vite'
 

@@ -1,6 +1,6 @@
 import './server.css'
-import styles from './server.module.css'
 import styleUrl from './server-url.css?url'
+import styles from './server.module.css'
 
 export function TestStyleServer() {
   return (

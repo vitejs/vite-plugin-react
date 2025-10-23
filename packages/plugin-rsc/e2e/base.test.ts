@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { defineStarterTest } from './starter'
+import { expect, test } from '@playwright/test'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/base'

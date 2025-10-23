@@ -1,9 +1,9 @@
+import { testSerializationAction } from './action'
+import { TestSerializationClient } from './client'
 import {
   createFromReadableStream,
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
-import { testSerializationAction } from './action'
-import { TestSerializationClient } from './client'
 
 export function TestSerializationServer() {
   const original = <TestSerializationClient action={testSerializationAction} />

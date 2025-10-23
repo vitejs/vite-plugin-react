@@ -1,5 +1,5 @@
-import { useContext } from 'react'
 import { CountContext } from './CountProvider'
+import { useContext } from 'react'
 
 export function ContextButton() {
   const { count, setCount } = useContext(CountContext)

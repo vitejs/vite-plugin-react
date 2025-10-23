@@ -1,6 +1,6 @@
 import '@vitejs/plugin-react/preamble'
-import ReactDOM from 'react-dom/client'
 import { App } from './App'
+import ReactDOM from 'react-dom/client'
 
 ReactDOM.hydrateRoot(
   document.getElementById('app'),

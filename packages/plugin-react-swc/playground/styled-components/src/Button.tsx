@@ -1,5 +1,5 @@
-import styled, { css } from 'styled-components'
 import { useState } from 'react'
+import styled, { css } from 'styled-components'
 
 // Ensure HMR of styled component alongside other components
 export const StyledCode = styled.code`

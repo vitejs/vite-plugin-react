@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
-import { x } from 'tinyexec'
 import { waitForHydration } from './helper'
+import { test, expect } from '@playwright/test'
+import { x } from 'tinyexec'
 
 test.describe('buildApp hook', () => {
   const root = 'examples/e2e/temp/buildApp'

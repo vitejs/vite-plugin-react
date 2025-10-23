@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test'
 import { setupInlineFixture } from './fixture'
+import { test, expect } from '@playwright/test'
 import { x } from 'tinyexec'
 
 test.describe('invalid directives', () => {

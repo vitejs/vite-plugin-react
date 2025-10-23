@@ -6,8 +6,8 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
 import type React from 'react'
+import type { ReactFormState } from 'react-dom/client'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.

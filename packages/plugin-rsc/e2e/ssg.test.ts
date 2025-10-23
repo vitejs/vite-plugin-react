@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
+import { expect, test } from '@playwright/test'
 
 test.describe('dev', () => {
   const f = useFixture({

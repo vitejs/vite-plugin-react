@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
 import { clientDep } from './client-dep'
 import { ClientDepComp } from './client-dep-comp'
+import React from 'react'
 
 export function TestHmrClientDepA() {
   const [count, setCount] = React.useState(0)

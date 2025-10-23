@@ -1,11 +1,45 @@
+import vitePluginRscCore from './core/plugin'
+import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import { scanBuildStripPlugin } from './plugins/scan'
+import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import {
+  createVirtualPlugin,
+  getEntrySource,
+  hashString,
+  normalizeRelativePath,
+  getFetchHandlerExport,
+  sortObject,
+  withRollupError,
+} from './plugins/utils'
+import { validateImportPlugin } from './plugins/validate-import'
+import {
+  cleanUrl,
+  directRequestRE,
+  evalValue,
+  normalizeViteImportAnalysisUrl,
+  prepareError,
+} from './plugins/vite-utils'
+import {
+  type TransformWrapExportFilter,
+  hasDirective,
+  transformDirectiveProxyExport,
+  transformServerActionServer,
+  transformWrapExport,
+  findDirectives,
+} from './transforms'
+import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
+import { createRpcServer } from './utils/rpc'
+import { createDebug } from '@hiogawa/utils'
+import { createRequestListener } from '@remix-run/node-fetch-server'
+import * as esModuleLexer from 'es-module-lexer'
+import MagicString from 'magic-string'
 import assert from 'node:assert'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { createRequestListener } from '@remix-run/node-fetch-server'
-import * as esModuleLexer from 'es-module-lexer'
-import MagicString from 'magic-string'
+import { stripLiteral } from 'strip-literal'
 import * as vite from 'vite'
 import {
   type BuilderOptions,
@@ -22,40 +56,6 @@ import {
   parseAstAsync,
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
-import vitePluginRscCore from './core/plugin'
-import {
-  type TransformWrapExportFilter,
-  hasDirective,
-  transformDirectiveProxyExport,
-  transformServerActionServer,
-  transformWrapExport,
-  findDirectives,
-} from './transforms'
-import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
-import { createRpcServer } from './utils/rpc'
-import {
-  cleanUrl,
-  directRequestRE,
-  evalValue,
-  normalizeViteImportAnalysisUrl,
-  prepareError,
-} from './plugins/vite-utils'
-import { cjsModuleRunnerPlugin } from './plugins/cjs'
-import {
-  createVirtualPlugin,
-  getEntrySource,
-  hashString,
-  normalizeRelativePath,
-  getFetchHandlerExport,
-  sortObject,
-  withRollupError,
-} from './plugins/utils'
-import { createDebug } from '@hiogawa/utils'
-import { scanBuildStripPlugin } from './plugins/scan'
-import { validateImportPlugin } from './plugins/validate-import'
-import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
-import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
