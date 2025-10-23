@@ -18,16 +18,8 @@ type HistoryState = null | {
 }
 
 /**
- * Feature detection for Navigation API
- */
-const supportsNavigationAPI = 'navigation' in window
-
-/**
  * Navigation manager
  * Encapsulates all navigation logic: history interception, caching, transitions
- *
- * Uses modern Navigation API when available, falls back to History API
- * https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API
  */
 export class NavigationManager {
   private state: NavigationState
@@ -44,9 +36,7 @@ export class NavigationManager {
       push: false,
       payloadPromise: Promise.resolve(initialPayload),
     }
-    if (!supportsNavigationAPI) {
-      this.initializeHistoryState()
-    }
+    this.initializeHistoryState()
   }
 
   /**
@@ -117,8 +107,6 @@ export class NavigationManager {
    * Only needed for History API fallback
    */
   commitHistoryPush(url: string) {
-    if (supportsNavigationAPI) return
-
     this.state.push = false
     this.oldPushState.call(window.history, this.addStateKey({}), '', url)
   }
@@ -127,56 +115,6 @@ export class NavigationManager {
    * Setup navigation interception and listeners
    */
   listen(): () => void {
-    // Use modern Navigation API if available
-    // if (supportsNavigationAPI) {
-    //   return this.listenNavigationAPI()
-    // }
-    // Fallback to History API
-    return this.listenHistoryAPI()
-  }
-
-  /**
-   * Setup listeners using modern Navigation API
-   * https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API
-   */
-  private listenNavigationAPI(): () => void {
-    const onNavigate = (e: NavigateEvent) => {
-      // Skip non-interceptable navigations (e.g., cross-origin)
-      if (!e.canIntercept) {
-        return
-      }
-
-      // Skip if navigation is to same URL
-      if (e.destination.url === window.location.href) {
-        return
-      }
-
-      // Skip external links
-      const url = new URL(e.destination.url)
-      if (url.origin !== location.origin) {
-        return
-      }
-
-      // Intercept navigation
-      e.intercept({
-        handler: async () => {
-          // Navigation API automatically updates URL, no need for push flag
-          this.navigate(url.href, false)
-        },
-      })
-    }
-
-    window.navigation.addEventListener('navigate', onNavigate as any)
-
-    return () => {
-      window.navigation.removeEventListener('navigate', onNavigate as any)
-    }
-  }
-
-  /**
-   * Setup listeners using History API (fallback for older browsers)
-   */
-  private listenHistoryAPI(): () => void {
     // Intercept pushState
     window.history.pushState = (...args) => {
       args[0] = this.addStateKey(args[0])
@@ -287,9 +225,6 @@ class BackForwardCache<T> {
    * Uses Navigation API when available, falls back to History API
    */
   private getCurrentKey(): string | undefined {
-    if (supportsNavigationAPI && window.navigation.currentEntry) {
-      return window.navigation.currentEntry.key
-    }
     return (window.history.state as HistoryState)?.key
   }
 }
