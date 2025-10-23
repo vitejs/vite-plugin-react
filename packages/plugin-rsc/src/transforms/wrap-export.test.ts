@@ -1,10 +1,10 @@
-import { parseAstAsync } from 'vite'
-import { describe, expect, test } from 'vitest'
 import { debugSourceMap } from './test-utils'
 import {
   type TransformWrapExportOptions,
   transformWrapExport,
 } from './wrap-export'
+import { parseAstAsync } from 'vite'
+import { describe, expect, test } from 'vitest'
 
 async function testTransform(
   input: string,

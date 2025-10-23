@@ -1,8 +1,8 @@
-import path from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 // @ts-ignore
 import connect from 'connect'
-import { createRequestListener } from '@remix-run/node-fetch-server'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import sirv from 'sirv'
 import type { Connect } from 'vite'
 

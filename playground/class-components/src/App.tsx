@@ -1,5 +1,5 @@
-import { Component } from 'react'
 import { getGetting } from './utils'
+import { Component } from 'react'
 
 export class App extends Component {
   render() {

@@ -1,8 +1,8 @@
-import { parseAstAsync } from 'vite'
-import { describe, expect, test } from 'vitest'
 import { transformProxyExport } from './proxy-export'
 import { debugSourceMap } from './test-utils'
 import { transformWrapExport } from './wrap-export'
+import { parseAstAsync } from 'vite'
+import { describe, expect, test } from 'vitest'
 
 async function testTransform(input: string, options?: { keep?: boolean }) {
   const ast = await parseAstAsync(input)

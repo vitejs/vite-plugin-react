@@ -1,6 +1,6 @@
-import { expect, test, type Page } from '@playwright/test'
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
+import { expect, test, type Page } from '@playwright/test'
 
 // Webkit fails by
 // > TypeError: ReadableByteStreamController is not implemented

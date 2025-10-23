@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
 import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
+import React, { useState } from 'react'
 
 function App() {
   const [count, setCount] = useState(0)

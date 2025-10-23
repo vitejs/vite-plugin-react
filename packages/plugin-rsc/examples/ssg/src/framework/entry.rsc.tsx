@@ -1,6 +1,6 @@
-import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 import { Root, getStaticPaths } from '../root'
 import { RSC_POSTFIX, type RscPayload } from './shared'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 
 export { getStaticPaths }
 

@@ -1,7 +1,7 @@
-import * as esModuleLexer from 'es-module-lexer'
-import { parseAstAsync, type Plugin } from 'vite'
-import { walk } from 'estree-walker'
 import type { RscPluginManager } from '../plugin'
+import * as esModuleLexer from 'es-module-lexer'
+import { walk } from 'estree-walker'
+import { parseAstAsync, type Plugin } from 'vite'
 
 // During scan build, we strip all code but imports to
 // traverse module graph faster and just discover client/server references.

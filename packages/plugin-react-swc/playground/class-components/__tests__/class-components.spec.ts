@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test'
 import { setupDevServer, setupWaitForLogs } from '../../utils.ts'
+import { expect, test } from '@playwright/test'
 
 test('Class component HMR', async ({ page }) => {
   const { testUrl, server, editFile } = await setupDevServer('class-components')

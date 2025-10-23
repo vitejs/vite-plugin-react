@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { testShared } from './shared'
+import React from 'react'
 
 export function TestClient({
   testSharedFromServer,

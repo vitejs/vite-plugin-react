@@ -1,5 +1,5 @@
-import { type Page, expect, test } from '@playwright/test'
 import { setupBuildAndPreview, setupDevServer } from '../../utils.ts'
+import { type Page, expect, test } from '@playwright/test'
 
 test('TS lib build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('ts-lib')

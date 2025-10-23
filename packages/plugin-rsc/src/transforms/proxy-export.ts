@@ -1,8 +1,8 @@
+import { hasDirective } from './utils'
 import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extract_names } from 'periscopic'
-import { hasDirective } from './utils'
 
 export type TransformProxyExportOptions = {
   /** Required for source map and `keep` options */

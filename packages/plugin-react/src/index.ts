@@ -1,11 +1,9 @@
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import { createFilter } from 'vite'
-import * as vite from 'vite'
-import type { Plugin, ResolvedConfig } from 'vite'
+import {
+  exactRegex,
+  makeIdFiltersToMatchWithQuery,
+} from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -14,10 +12,12 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import {
-  exactRegex,
-  makeIdFiltersToMatchWithQuery,
-} from '@rolldown/pluginutils'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createFilter } from 'vite'
+import * as vite from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')

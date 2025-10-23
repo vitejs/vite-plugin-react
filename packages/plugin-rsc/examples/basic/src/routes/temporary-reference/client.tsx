@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { action } from './action'
+import React from 'react'
 
 export function TestTemporaryReference() {
   const [result, setResult] = React.useState<React.ReactNode>('(none)')

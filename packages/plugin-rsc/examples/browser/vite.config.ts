@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
+import rscBrowser from './lib/plugin'
 import react from '@vitejs/plugin-react'
 import rsc from '@vitejs/plugin-rsc'
-import rscBrowser from './lib/plugin'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [

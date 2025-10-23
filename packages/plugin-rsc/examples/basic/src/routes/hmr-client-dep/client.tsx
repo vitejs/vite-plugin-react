@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { ClientDep } from './client-dep'
+import React from 'react'
 
 export function TestHmrClientDep(props: { url: Pick<URL, 'search'> }) {
   const [count, setCount] = React.useState(0)

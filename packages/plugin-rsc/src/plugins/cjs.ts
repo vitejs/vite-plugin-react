@@ -1,11 +1,11 @@
+import { transformCjsToEsm } from '../transforms/cjs'
+import { parseIdQuery } from './shared'
+import { createDebug } from '@hiogawa/utils'
+import * as esModuleLexer from 'es-module-lexer'
+import fs from 'node:fs'
+import path from 'node:path'
 import { parseAstAsync, type Plugin } from 'vite'
 import { findClosestPkgJsonPath } from 'vitefu'
-import path from 'node:path'
-import fs from 'node:fs'
-import * as esModuleLexer from 'es-module-lexer'
-import { transformCjsToEsm } from '../transforms/cjs'
-import { createDebug } from '@hiogawa/utils'
-import { parseIdQuery } from './shared'
 
 const debug = createDebug('vite-rsc:cjs')
 

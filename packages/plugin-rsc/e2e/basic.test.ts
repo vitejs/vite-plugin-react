@@ -1,6 +1,3 @@
-import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
-import { type Page, expect, test } from '@playwright/test'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -8,9 +5,12 @@ import {
   testNoJs,
   waitForHydration,
 } from './helper'
+import { type Page, expect, test } from '@playwright/test'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { x } from 'tinyexec'
 import { normalizePath, type Rollup } from 'vite'
-import path from 'node:path'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })

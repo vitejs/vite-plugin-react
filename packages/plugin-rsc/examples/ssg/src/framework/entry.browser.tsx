@@ -1,3 +1,4 @@
+import { RSC_POSTFIX, type RscPayload } from './shared'
 import {
   createFromFetch,
   createFromReadableStream,
@@ -5,7 +6,6 @@ import {
 import React from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-import { RSC_POSTFIX, type RscPayload } from './shared'
 
 async function hydrate(): Promise<void> {
   async function onNavigation() {

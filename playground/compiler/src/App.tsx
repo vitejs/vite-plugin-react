@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import './App.css'
 import { ClassComponent } from './ClassComponent'
+import './App.css'
+import { useState } from 'react'
 
 export function App() {
   const [count, setCount] = useState(0)

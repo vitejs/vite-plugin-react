@@ -1,7 +1,7 @@
-import { parseAstAsync } from 'vite'
-import { describe, expect, it } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
+import { parseAstAsync } from 'vite'
+import { describe, expect, it } from 'vitest'
 
 describe(transformHoistInlineDirective, () => {
   async function testTransform(

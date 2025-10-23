@@ -1,3 +1,4 @@
+import { routes } from '../app/routes'
 import {
   createTemporaryReferenceSet,
   decodeAction,
@@ -7,7 +8,6 @@ import {
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
 import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-router'
-import { routes } from '../app/routes'
 
 export function fetchServer(request: Request) {
   return matchRSCServerRequest({

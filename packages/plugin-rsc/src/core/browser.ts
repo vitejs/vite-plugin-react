@@ -1,5 +1,5 @@
-import { memoize } from '@hiogawa/utils'
 import { removeReferenceCacheTag, setInternalRequire } from './shared'
+import { memoize } from '@hiogawa/utils'
 
 let init = false
 

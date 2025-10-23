@@ -1,3 +1,4 @@
+import { page, testDir } from './vitestSetup'
 // test utils used in e2e tests for playgrounds.
 // `import { getColor } from '~utils'`
 
@@ -5,7 +6,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { ConsoleMessage, ElementHandle } from 'playwright-chromium'
 import { expect } from 'vitest'
-import { page, testDir } from './vitestSetup'
 
 export * from './vitestSetup'
 

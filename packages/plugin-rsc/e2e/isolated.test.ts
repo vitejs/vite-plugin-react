@@ -1,11 +1,11 @@
-import { expect, test, type Page } from '@playwright/test'
 import { setupIsolatedFixture, useFixture } from './fixture'
-import { defineStarterTest } from './starter'
-import path from 'node:path'
-import os from 'node:os'
-import * as vite from 'vite'
 import { waitForHydration } from './helper'
+import { defineStarterTest } from './starter'
+import { expect, test, type Page } from '@playwright/test'
+import os from 'node:os'
+import path from 'node:path'
 import { x } from 'tinyexec'
+import * as vite from 'vite'
 
 test.describe(() => {
   // use RUNNER_TEMP on Github Actions
