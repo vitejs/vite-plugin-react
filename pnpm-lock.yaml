@@ -488,6 +488,9 @@ importers:
       '@vitejs/test-dep-cjs-and-esm':
         specifier: ./test-dep/cjs-and-esm
         version: link:test-dep/cjs-and-esm
+      picocolors:
+        specifier: ^1.1.1
+        version: 1.1.1
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -562,6 +565,34 @@ importers:
         specifier: ^4.43.0
         version: 4.43.0
 
+  packages/plugin-rsc/examples/browser:
+    dependencies:
+      react:
+        specifier: ^19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: ^19.2.0
+        version: 19.2.0(react@19.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19.2.2
+        version: 19.2.2(@types/react@19.2.2)
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      vite:
+        specifier: ^7.1.10
+        version: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+      vite-dev-rpc:
+        specifier: ^1.1.0
+        version: 1.1.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1))
+
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
       react:
@@ -586,6 +617,9 @@ importers:
       vite:
         specifier: ^7.1.10
         version: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+      vite-dev-rpc:
+        specifier: ^1.1.0
+        version: 1.1.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1))
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
@@ -2651,9 +2685,6 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
-
-  birpc@2.5.0:
-    resolution: {integrity: sha512-VSWO/W6nNQdyP520F1mhf+Lc2f8pjGQOtoHHm7Ze8Go1kX7akpVIrtTa0fn+HB0QJEDVacl6aO08YE0PgXfdnQ==}
 
   birpc@2.6.1:
     resolution: {integrity: sha512-LPnFhlDpdSH6FJhJyn4M0kFO7vtQ5iPw24FnG0y21q09xC7e8+1LeR31S1MAIrDAHp4m7aas4bEkTDTvMAtebQ==}
@@ -6192,8 +6223,6 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  birpc@2.5.0: {}
-
   birpc@2.6.1: {}
 
   blake3-wasm@2.1.5: {}
@@ -8320,7 +8349,7 @@ snapshots:
 
   vite-dev-rpc@1.1.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)):
     dependencies:
-      birpc: 2.5.0
+      birpc: 2.6.1
       vite: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
       vite-hot-client: 2.1.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1))
 

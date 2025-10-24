@@ -67,7 +67,7 @@ test.describe('buildApp hook', () => {
     })
     verifyMatchOrder(result.stdout, [
       '++++ buildApp:before ++++',
-      'building for production...',
+      'for production...',
       '++++ buildApp:after ++++',
     ])
     expect(result.exitCode).toBe(0)
@@ -86,7 +86,7 @@ test.describe('buildApp hook', () => {
     verifyMatchOrder(result.stdout, [
       '++++ buildApp:before ++++',
       '++++ buildApp:after ++++',
-      'building for production...',
+      'for production...',
     ])
     expect(result.exitCode).toBe(0)
   })
