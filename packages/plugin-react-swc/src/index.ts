@@ -198,7 +198,7 @@ const react = (_options?: Options): Plugin[] => {
         return { code: newCode ?? result.code, map: result.map }
       },
     },
-    options.plugins
+    options.plugins || options.useAtYourOwnRisk_mutateSwcOptions
       ? {
           name: 'vite:react-swc',
           apply: 'build',
