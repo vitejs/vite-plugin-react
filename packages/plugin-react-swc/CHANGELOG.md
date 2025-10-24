@@ -6,6 +6,10 @@
 
 SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react-swc/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.
 
+### Use SWC when useAtYourOwnRisk_mutateSwcOptions is provided ([#951](https://github.com/vitejs/vite-plugin-react/pull/951))
+
+Previously, this plugin did not use SWC if plugins were not provided even if `useAtYourOwnRisk_mutateSwcOptions` was provided. This is now fixed.
+
 ## 4.1.0 (2025-09-17)
 
 ### Set SWC cacheRoot options
