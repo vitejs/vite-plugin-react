@@ -16,7 +16,7 @@
     "@swc/plugin-styled-components": "^9.1.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@types/styled-components": "^5.1.34",
+    "@types/styled-components": "^5.1.35",
     "@vitejs/plugin-react-swc": "../../dist"
   }
 }
