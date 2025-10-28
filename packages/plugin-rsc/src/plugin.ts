@@ -2046,8 +2046,7 @@ function vitePluginRscCss(
         handler(_code, id, _options) {
           if (
             this.environment.name === 'client' &&
-            this.environment.mode === 'dev' &&
-            isCSSRequest(id)
+            this.environment.mode === 'dev'
           ) {
             const mod = this.environment.moduleGraph.getModuleById(id)
             if (mod && !mod.isSelfAccepting) {
