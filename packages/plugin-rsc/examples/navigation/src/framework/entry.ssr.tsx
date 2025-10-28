@@ -13,16 +13,10 @@ export async function renderHTML(
     debugNojs?: boolean
   },
 ) {
-  // duplicate one RSC stream into two.
-  // - one for SSR (ReactClient.createFromReadableStream below)
-  // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee()
 
-  // deserialize RSC stream back to React VDOM
   let payload: Promise<RscPayload>
   function SsrRoot() {
-    // deserialization needs to be kicked off inside ReactDOMServer context
-    // for ReactDomServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1)
     return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
   }
@@ -31,7 +25,6 @@ export async function renderHTML(
     return props.children
   }
 
-  // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
   const htmlStream = await renderToReadableStream(<SsrRoot />, {
@@ -44,7 +37,6 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
-    // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
