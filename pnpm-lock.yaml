@@ -439,6 +439,9 @@ importers:
       '@remix-run/node-fetch-server':
         specifier: ^0.11.0
         version: 0.11.0
+      '@rolldown/pluginutils':
+        specifier: 1.0.0-beta.45
+        version: 1.0.0-beta.45
       es-module-lexer:
         specifier: ^1.7.0
         version: 1.7.0
