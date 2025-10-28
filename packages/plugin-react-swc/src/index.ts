@@ -202,7 +202,7 @@ const react = (_options?: Options): Plugin[] => {
           }
         : {
             // Add filter for default extensions: .tsx, .ts, .mts, .jsx, .mdx
-            filter: { id: /\.(tsx?|mts|jsx|mdx)(?:$|\?)/ },
+            filter: { id: /\.(tsx|ts|mts|jsx|mdx)(?:$|\?)/ },
             async handler(code, _id, transformOptions) {
               const id = _id.split('?')[0]
               const refresh = !transformOptions?.ssr && !hmrDisabled
@@ -261,7 +261,7 @@ const react = (_options?: Options): Plugin[] => {
                 )
             : {
                 // Add filter for default extensions: .tsx, .ts, .mts, .jsx, .mdx
-                filter: { id: /\.(tsx?|mts|jsx|mdx)(?:$|\?)/ },
+                filter: { id: /\.(tsx|ts|mts|jsx|mdx)(?:$|\?)/ },
                 handler: (code, _id) =>
                   transformWithOptions(
                     _id.split('?')[0],
