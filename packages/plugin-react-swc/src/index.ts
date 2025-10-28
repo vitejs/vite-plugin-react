@@ -169,34 +169,69 @@ const react = (_options?: Options): Plugin[] => {
           ]
         }
       },
-      async transform(code, _id, transformOptions) {
-        const id = _id.split('?')[0]
-        const refresh = !transformOptions?.ssr && !hmrDisabled
+      transform: options.parserConfig
+        ? // When custom parserConfig is provided, we can't add a filter
+          // because the user controls which files are handled
+          async (code, _id, transformOptions) => {
+            const id = _id.split('?')[0]
+            const refresh = !transformOptions?.ssr && !hmrDisabled
 
-        const result = await transformWithOptions(
-          id,
-          code,
-          options.devTarget,
-          options,
-          viteCacheRoot,
-          {
-            refresh,
-            development: true,
-            runtime: 'automatic',
-            importSource: options.jsxImportSource,
+            const result = await transformWithOptions(
+              id,
+              code,
+              options.devTarget,
+              options,
+              viteCacheRoot,
+              {
+                refresh,
+                development: true,
+                runtime: 'automatic',
+                importSource: options.jsxImportSource,
+              },
+            )
+            if (!result) return
+            if (!refresh) return result
+
+            const newCode = addRefreshWrapper(
+              result.code,
+              '@vitejs/plugin-react-swc',
+              id,
+              options.reactRefreshHost,
+            )
+            return { code: newCode ?? result.code, map: result.map }
+          }
+        : {
+            // Add filter for default extensions: .tsx, .ts, .mts, .jsx, .mdx
+            filter: { id: /\.(tsx?|mts|jsx|mdx)(?:$|\?)/ },
+            async handler(code, _id, transformOptions) {
+              const id = _id.split('?')[0]
+              const refresh = !transformOptions?.ssr && !hmrDisabled
+
+              const result = await transformWithOptions(
+                id,
+                code,
+                options.devTarget,
+                options,
+                viteCacheRoot,
+                {
+                  refresh,
+                  development: true,
+                  runtime: 'automatic',
+                  importSource: options.jsxImportSource,
+                },
+              )
+              if (!result) return
+              if (!refresh) return result
+
+              const newCode = addRefreshWrapper(
+                result.code,
+                '@vitejs/plugin-react-swc',
+                id,
+                options.reactRefreshHost,
+              )
+              return { code: newCode ?? result.code, map: result.map }
+            },
           },
-        )
-        if (!result) return
-        if (!refresh) return result
-
-        const newCode = addRefreshWrapper(
-          result.code,
-          '@vitejs/plugin-react-swc',
-          id,
-          options.reactRefreshHost,
-        )
-        return { code: newCode ?? result.code, map: result.map }
-      },
     },
     options.plugins || options.useAtYourOwnRisk_mutateSwcOptions
       ? {
@@ -209,18 +244,37 @@ const react = (_options?: Options): Plugin[] => {
           configResolved(config) {
             viteCacheRoot = config.cacheDir
           },
-          transform: (code, _id) =>
-            transformWithOptions(
-              _id.split('?')[0],
-              code,
-              'esnext',
-              options,
-              viteCacheRoot,
-              {
-                runtime: 'automatic',
-                importSource: options.jsxImportSource,
+          transform: options.parserConfig
+            ? // When custom parserConfig is provided, we can't add a filter
+              // because the user controls which files are handled
+              (code, _id) =>
+                transformWithOptions(
+                  _id.split('?')[0],
+                  code,
+                  'esnext',
+                  options,
+                  viteCacheRoot,
+                  {
+                    runtime: 'automatic',
+                    importSource: options.jsxImportSource,
+                  },
+                )
+            : {
+                // Add filter for default extensions: .tsx, .ts, .mts, .jsx, .mdx
+                filter: { id: /\.(tsx?|mts|jsx|mdx)(?:$|\?)/ },
+                handler: (code, _id) =>
+                  transformWithOptions(
+                    _id.split('?')[0],
+                    code,
+                    'esnext',
+                    options,
+                    viteCacheRoot,
+                    {
+                      runtime: 'automatic',
+                      importSource: options.jsxImportSource,
+                    },
+                  ),
               },
-            ),
         }
       : {
           name: 'vite:react-swc',

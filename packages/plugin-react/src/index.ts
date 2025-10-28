@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import { createFilter } from 'vite'
 import * as vite from 'vite'
 import type { Plugin, ResolvedConfig } from 'vite'
 import {
@@ -107,7 +106,6 @@ const compilerAnnotationRE = /['"]use memo['"]/
 export default function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude ?? defaultExcludeRE
-  const filter = createFilter(include, exclude)
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
@@ -247,7 +245,6 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       },
       async handler(code, id, options) {
         const [filepath] = id.split('?')
-        if (!filter(filepath)) return
 
         const ssr = options?.ssr === true
         const babelOptions = (() => {
