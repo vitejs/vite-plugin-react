@@ -14,16 +14,16 @@ import { NavigationManager, type NavigationState } from './navigation'
 async function main() {
   const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
 
-  const router = new NavigationManager(initialPayload)
+  const manager = new NavigationManager(initialPayload)
 
   function BrowserRoot() {
-    const [state, setState] = React.useState(router.getState())
+    const [state, setState] = React.useState(manager.getState())
     const [isPending, startTransition] = React.useTransition()
 
     // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/use-action-queue.ts#L49
     React.useEffect(() => {
-      router.setReactHandlers(setState, startTransition)
-      return router.listen()
+      manager.setReactHandlers(setState, startTransition)
+      return manager.listen()
     }, [])
 
     return (
@@ -38,7 +38,7 @@ async function main() {
   // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/app-router.tsx#L96
   function HistoryUpdater({ url }: { url: string }) {
     React.useInsertionEffect(() => {
-      router.commitHistoryPush(url)
+      manager.commitHistoryPush(url)
     }, [url])
     return null
   }
@@ -92,7 +92,7 @@ async function main() {
       }),
       { temporaryReferences },
     )
-    router.handleServerAction(payload)
+    manager.handleServerAction(payload)
     return payload.returnValue
   })
 
@@ -106,8 +106,8 @@ async function main() {
 
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
-      router.invalidateCache()
-      router.navigate(window.location.href)
+      manager.invalidateCache()
+      manager.navigate(window.location.href)
     })
   }
 }
