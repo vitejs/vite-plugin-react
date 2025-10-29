@@ -117,7 +117,7 @@ export class NavigationManager {
     // Intercept pushState
     window.history.pushState = (...args) => {
       args[0] = this.addStateKey(args[0])
-      this.oldPushState.apply(window.history, args)
+      this.oldPushState.apply(window.history, args) // TODO: no. shouldn't commit url yet
       const url = new URL(args[2] || window.location.href, window.location.href)
       this.navigate(url.href, false) // push flag handled by commitHistoryPush
     }
@@ -125,7 +125,7 @@ export class NavigationManager {
     // Intercept replaceState
     window.history.replaceState = (...args) => {
       args[0] = this.addStateKey(args[0])
-      this.oldReplaceState.apply(window.history, args)
+      this.oldReplaceState.apply(window.history, args) // TODO: no. shouldn't commit url yet
       const url = new URL(args[2] || window.location.href, window.location.href)
       this.navigate(url.href)
     }

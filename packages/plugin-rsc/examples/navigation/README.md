@@ -1,6 +1,8 @@
 # Navigation Example - Coordinating History, Transitions, and Caching
 
-This example demonstrates how to properly coordinate browser history navigation with React transitions and implement instant back/forward navigation via caching in a React Server Components application.
+TODO: review
+
+This example demonstrates how to properly coordinate Browser URL update with React transitions and implement instant back/forward navigation via caching in a React Server Components application.
 
 ## Problem
 
