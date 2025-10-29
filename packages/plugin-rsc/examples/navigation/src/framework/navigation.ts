@@ -131,7 +131,9 @@ export class NavigationManager {
     }
 
     // Handle popstate (back/forward)
-    const onPopstate = () => {
+    const onPopstate = (e: PopStateEvent) => {
+      // TODO: use state key from event to look up cache
+      e.state.key
       this.navigate(window.location.href)
     }
     window.addEventListener('popstate', onPopstate)
@@ -182,9 +184,7 @@ export class NavigationManager {
     }
   }
 
-  /**
-   * Add unique key to history state (History API only)
-   */
+  // https://github.com/TanStack/router/blob/05941e5ef2b7d2776e885cf473fdcc3970548b22/packages/history/src/index.ts
   private addStateKey(state: any): HistoryState {
     const key = Math.random().toString(36).slice(2)
     return { ...state, key }
