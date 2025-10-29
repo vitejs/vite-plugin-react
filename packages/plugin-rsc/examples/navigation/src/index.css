@@ -23,18 +23,13 @@ body {
   min-height: 100vh;
 }
 
-.app {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .nav {
   background: rgba(255, 255, 255, 0.05);
   padding: 1rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -71,6 +66,10 @@ body {
 }
 
 .main {
+  display: flex;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
 }
 

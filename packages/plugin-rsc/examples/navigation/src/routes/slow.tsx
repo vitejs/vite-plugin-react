@@ -3,7 +3,7 @@
  * the navigation transition coordination.
  */
 export async function SlowPage(props: { url: URL }) {
-  const delay = Number(props.url.searchParams.get('delay')) || 2000
+  const delay = Number(props.url.searchParams.get('delay')) || 500
 
   // Simulate slow server response
   await new Promise((resolve) => setTimeout(resolve, delay))

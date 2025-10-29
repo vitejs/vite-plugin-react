@@ -2,7 +2,6 @@ import './index.css'
 import { HomePage } from './routes/home'
 import { AboutPage } from './routes/about'
 import { SlowPage } from './routes/slow'
-import { CounterPage } from './routes/counter'
 
 export function Root(props: { url: URL }) {
   const pathname = props.url.pathname
@@ -16,9 +15,6 @@ export function Root(props: { url: URL }) {
   } else if (pathname === '/slow') {
     page = <SlowPage url={props.url} />
     title = 'Slow Page - Navigation Example'
-  } else if (pathname === '/counter') {
-    page = <CounterPage />
-    title = 'Counter - Navigation Example'
   } else {
     page = <HomePage />
     title = 'Home - Navigation Example'
@@ -48,12 +44,6 @@ export function Root(props: { url: URL }) {
               </a>
               <a href="/slow" className={pathname === '/slow' ? 'active' : ''}>
                 Slow Page
-              </a>
-              <a
-                href="/counter"
-                className={pathname === '/counter' ? 'active' : ''}
-              >
-                Counter
               </a>
             </div>
           </nav>
