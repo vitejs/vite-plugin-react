@@ -20,6 +20,7 @@ async function main() {
     const [state, setState] = React.useState(router.getState())
     const [isPending, startTransition] = React.useTransition()
 
+    // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/use-action-queue.ts#L49
     React.useEffect(() => {
       router.setReactHandlers(setState, startTransition)
       return router.listen()
@@ -34,6 +35,7 @@ async function main() {
     )
   }
 
+  // https://github.com/vercel/next.js/blob/08bf0e08f74304afb3a9f79e521e5148b77bf96e/packages/next/src/client/components/app-router.tsx#L96
   function HistoryUpdater({ url }: { url: string }) {
     React.useInsertionEffect(() => {
       router.commitHistoryPush(url)

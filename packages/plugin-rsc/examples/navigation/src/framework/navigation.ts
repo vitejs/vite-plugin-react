@@ -1,9 +1,8 @@
 import { createFromFetch } from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
 
-/**
- * Navigation state shape
- */
+// https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router-instance.ts
+// https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router.tsx
 export type NavigationState = {
   url: string
   push?: boolean
