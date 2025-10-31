@@ -40,3 +40,34 @@ jobs:
 
       - name: Publish
         run: pnpm dlx pkg-pr-new@0.0 publish --pnpm --compact './packages/*' './packages/plugin-react-swc/dist'
+
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - run: pnpm i
+      # - run: pnpm build
+
+      # # canary
+      - run: |
+          sed -i "/^overrides:/a\  react: \"canary\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-dom: \"canary\"" pnpm-workspace.yaml
+          sed -i "/^overrides:/a\  react-server-dom-webpack: \"canary\"" pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
+      # # experimental
+      # - run: |
+      #     pnpm -C packages/plugin-rsc i react-server-dom-webpack@experimental
+      #     pnpm i --no-frozen-lockfile
+      #     pnpm -C packages/plugin-rsc build
+      #     cp -rf packages/plugin-rsc packages/plugin-rsc-experimental
+      #     sed -i 's#"name": "@vitejs/plugin-rsc"#"name": "@vitejs/plugin-rsc-experimental"#' packages/plugin-rsc-experimental/package.json
+      # # strip prepack to avoid duplicate builds
+      # - run: |
+      #     sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-canary/package.json
+      #     sed -i 's#"prepack"#"x-prepack"#' packages/plugin-rsc-experimental/package.json
+      - run: |
+          pnpm dlx pkg-pr-new@0.0 publish --pnpm --compact --comment=off packages/plugin-rsc
