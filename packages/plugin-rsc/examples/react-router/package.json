@@ -26,7 +26,7 @@
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "tailwindcss": "^4.1.16",
-    "vite": "^7.1.10",
+    "vite": "^7.1.12",
     "wrangler": "^4.45.3"
   }
 }

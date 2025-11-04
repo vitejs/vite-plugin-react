@@ -50,7 +50,7 @@
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3",
-    "vite": "^7.1.10",
+    "vite": "^7.1.12",
     "vite-plugin-inspect": "^11.3.3",
     "vitest": "^3.2.4"
   },
