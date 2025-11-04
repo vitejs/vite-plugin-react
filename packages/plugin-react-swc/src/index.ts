@@ -239,6 +239,14 @@ const react = (_options?: Options): Plugin[] => {
             viteCacheRoot = config.cacheDir
           },
         },
+    {
+			name: "vite:react-swc:force-disable-hmr",
+			apply: "build",
+			enforce: "pre",
+			configResolved() {
+				hmrDisabled = true;
+			}
+		},
     virtualPreamblePlugin({
       name: '@vitejs/plugin-react-swc/preamble',
       isEnabled: () => !hmrDisabled,
