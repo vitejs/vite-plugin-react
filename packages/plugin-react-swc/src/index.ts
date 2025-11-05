@@ -133,7 +133,7 @@ const react = (_options?: Options): Plugin[] => {
       }),
       configResolved(config) {
         viteCacheRoot = config.cacheDir
-        if (config.server.hmr === false) hmrDisabled = true
+        hmrDisabled = config.server.hmr === false
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
         )
