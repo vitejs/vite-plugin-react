@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 5.1.0 (2025-10-24)
+
 ### Add `@vitejs/plugin-react/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))
 
 SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.

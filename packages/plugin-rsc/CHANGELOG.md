@@ -1,3 +1,21 @@
+## <small>[0.5.1](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.0...plugin-rsc@0.5.1) (2025-10-23)</small>
+### Features
+
+* **rsc:** show logs for build steps ([#936](https://github.com/vitejs/vite-plugin-react/issues/936)) ([170f74e](https://github.com/vitejs/vite-plugin-react/commit/170f74e264d611fccc87125fff7af17df0eeed60))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#918](https://github.com/vitejs/vite-plugin-react/issues/918)) ([a2d76d9](https://github.com/vitejs/vite-plugin-react/commit/a2d76d94768fa6ec33d8045ea51a1f6aa6026da2))
+* **rsc:** fix "use server" transform for source file without ending new line ([#923](https://github.com/vitejs/vite-plugin-react/issues/923)) ([4b2768f](https://github.com/vitejs/vite-plugin-react/commit/4b2768f7bbd4ee51af3ecc21aa29d465f4f0c16e))
+* **rsc:** fix false detection of `import.meta.viteRsc` API inside comments and strings ([#938](https://github.com/vitejs/vite-plugin-react/issues/938)) ([a212cd5](https://github.com/vitejs/vite-plugin-react/commit/a212cd5b1f5546b2bd9cf59110d94c4cb53829f3))
+
+### Miscellaneous Chores
+
+* **deps:** update all non-major dependencies ([#926](https://github.com/vitejs/vite-plugin-react/issues/926)) ([c54d3c6](https://github.com/vitejs/vite-plugin-react/commit/c54d3c69983695785c90998760d0ec879c84dd33))
+* **deps:** update dependency @types/react-dom to ^19.2.2 ([#927](https://github.com/vitejs/vite-plugin-react/issues/927)) ([31445e5](https://github.com/vitejs/vite-plugin-react/commit/31445e525f3d3477d85f3497220e58174c688e3e))
+* **rsc:** remove redundant SSG test from isolated.test.ts ([#940](https://github.com/vitejs/vite-plugin-react/issues/940)) ([202ed19](https://github.com/vitejs/vite-plugin-react/commit/202ed19a3b7cda4c109663489aa1dea6de9bf3a0))
+* **rsc:** use one-liner for vite-plugin-inspect in examples ([#941](https://github.com/vitejs/vite-plugin-react/issues/941)) ([b2c00ed](https://github.com/vitejs/vite-plugin-react/commit/b2c00edf7b60d4ae51cbf4bb0ed052df71a689da))
+
 ## [0.5.0](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.4.34...plugin-rsc@0.5.0) (2025-10-09)
 ### ⚠ BREAKING CHANGES
 

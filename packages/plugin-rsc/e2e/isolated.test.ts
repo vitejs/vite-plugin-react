@@ -61,37 +61,6 @@ test.describe('vite 6', () => {
   })
 })
 
-test.describe('examples/ssg', () => {
-  const tmpRoot = path.join(
-    process.env['RUNNER_TEMP'] || os.tmpdir(),
-    'test-vite-rsc-ssg',
-  )
-  test.beforeAll(async () => {
-    await setupIsolatedFixture({
-      src: 'examples/ssg',
-      dest: tmpRoot,
-    })
-  })
-
-  test.describe('dev', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'dev' })
-
-    test('basic', async ({ page }) => {
-      await page.goto(f.url())
-      await waitForHydration(page)
-    })
-  })
-
-  test.describe('build', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'build' })
-
-    test('basic', async ({ page }) => {
-      await page.goto(f.url())
-      await waitForHydration(page)
-    })
-  })
-})
-
 test.describe('react-server-dom-webpack', () => {
   const tmpRoot = path.join(
     process.env['RUNNER_TEMP'] || os.tmpdir(),

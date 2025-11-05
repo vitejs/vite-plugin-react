@@ -189,7 +189,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     configResolved(config) {
       runningInVite = true
       base = config.base
-      // @ts-expect-error only available in newer rolldown-vite
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+      // @ts-ignore only available in newer rolldown-vite
       if (config.experimental.fullBundleMode) {
         isFullBundle = true
       }
@@ -225,9 +226,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
     options(options) {
       if (!runningInVite) {
-        // @ts-expect-error Rolldown has `transform.jsx`
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+        // @ts-ignore Rolldown has `transform.jsx`
         options.transform ??= {}
-        // @ts-expect-error Rolldown has `transform.jsx`
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+        // @ts-ignore Rolldown has `transform.jsx`
         options.transform.jsx = {
           runtime: opts.jsxRuntime,
           importSource: opts.jsxImportSource,

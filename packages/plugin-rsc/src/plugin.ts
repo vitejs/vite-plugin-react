@@ -55,6 +55,7 @@ import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -270,19 +271,28 @@ export default function vitePluginRsc(
   const manager = new RscPluginManager()
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    const colors = await import('picocolors')
+    const logStep = (msg: string) => {
+      builder.config.logger.info(colors.blue(msg))
+    }
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
       manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
       builder.environments.client!.config.build.write = false
+      logStep('[1/4] analyze client references...')
       await builder.build(builder.environments.rsc!)
+      logStep('[2/4] analyze server references...')
       await builder.build(builder.environments.client!)
       manager.isScanBuild = false
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
+      logStep('[3/4] build rsc environment...')
       await builder.build(builder.environments.rsc!)
       manager.stabilize()
+      logStep('[4/4] build client environment...')
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -292,14 +302,19 @@ export default function vitePluginRsc(
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
+    logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
+    logStep('[2/5] analyze server references...')
     await builder.build(builder.environments.ssr!)
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
+    logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
     manager.stabilize()
+    logStep('[4/5] build client environment...')
     await builder.build(builder.environments.client!)
+    logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
   }
@@ -702,10 +717,11 @@ export default function vitePluginRsc(
         if (!code.includes('import.meta.viteRsc.loadModule')) return
         const { server } = manager
         const s = new MagicString(code)
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
         )) {
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           const [environmentName, entryName] = evalValue(`[${argCode}]`)
           let replacement: string
           if (
@@ -973,10 +989,11 @@ export default assetsManifest.bootstrapScriptContent;
         assert(this.environment.name !== 'client')
         const output = new MagicString(code)
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent\(([\s\S]*?)\)/dg,
         )) {
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           const entryName = evalValue(argCode)
           assert(
             entryName,
@@ -2087,11 +2104,12 @@ function vitePluginRscCss(
         const output = new MagicString(code)
         let importAdded = false
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
         )) {
           const [start, end] = match.indices![0]!
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           let importer = id
           if (argCode) {
             const argValue = evalValue<string>(argCode)
