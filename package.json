@@ -5,7 +5,7 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "packageManager": "pnpm@10.19.0",
+  "packageManager": "pnpm@10.20.0",
   "homepage": "https://github.com/vitejs/vite-plugin-react/",
   "keywords": [
     "frontend",
@@ -33,24 +33,24 @@
     "ci-publish": "node scripts/publishCI.ts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^9.39.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.18.12",
+    "@types/node": "^22.19.0",
     "@vitejs/release-scripts": "^1.6.0",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.1",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-regexp": "^2.10.0",
     "fs-extra": "^11.3.2",
-    "globals": "^16.4.0",
+    "globals": "^16.5.0",
     "lint-staged": "^16.2.6",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.56.1",
     "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.2",
-    "vite": "^7.1.10",
+    "typescript-eslint": "^8.46.3",
+    "vite": "^7.1.12",
     "vite-plugin-inspect": "^11.3.3",
     "vitest": "^3.2.4"
   },
