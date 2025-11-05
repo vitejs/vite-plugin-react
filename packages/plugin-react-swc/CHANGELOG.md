@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.1 (2025-11-05)
+
 ### Fix `@vitejs/plugin-react-swc/preamble` on build ([#962](https://github.com/vitejs/vite-plugin-react/pull/962))
 
 ## 4.2.0 (2025-10-24)
