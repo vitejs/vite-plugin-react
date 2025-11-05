@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Fix `@vitejs/plugin-react-swc/preamble` on build ([#962](https://github.com/vitejs/vite-plugin-react/pull/962))
+
 ## 4.2.0 (2025-10-24)
 
 ### Add `@vitejs/plugin-react-swc/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))
