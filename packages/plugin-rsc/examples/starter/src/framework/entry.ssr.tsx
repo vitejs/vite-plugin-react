@@ -24,16 +24,7 @@ export async function renderHTML(
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1)
-    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
-  }
-
-  // Add an empty component in between `SsrRoot` and user `root` to avoid React SSR bugs.
-  //   SsrRoot (use)
-  //     => FixSsrThenable
-  //       => root (which potentially has `lazy` + `use`)
-  // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
-  function FixSsrThenable(props: React.PropsWithChildren) {
-    return props.children
+    return React.use(payload).root
   }
 
   // render html (traditional SSR)

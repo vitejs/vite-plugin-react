@@ -24,11 +24,7 @@ export async function renderHTML(
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1)
-    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
-  }
-
-  function FixSsrThenable(props: React.PropsWithChildren) {
-    return props.children
+    return React.use(payload).root
   }
 
   // render html (traditional SSR)
