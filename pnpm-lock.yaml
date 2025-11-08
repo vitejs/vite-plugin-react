@@ -436,9 +436,6 @@ importers:
 
   packages/plugin-rsc:
     dependencies:
-      '@remix-run/node-fetch-server':
-        specifier: ^0.11.0
-        version: 0.11.0
       es-module-lexer:
         specifier: ^1.7.0
         version: 1.7.0
@@ -451,6 +448,9 @@ importers:
       periscopic:
         specifier: ^4.0.2
         version: 4.0.2
+      srvx:
+        specifier: ^0.9.5
+        version: 0.9.5
       strip-literal:
         specifier: ^3.1.0
         version: 3.1.0
@@ -1787,9 +1787,6 @@ packages:
 
   '@quansync/fs@0.1.5':
     resolution: {integrity: sha512-lNS9hL2aS2NZgNW7BBj+6EBl4rOf8l+tQ0eRY6JWCI8jI2kc53gSoqbjojU0OnAWhzoXiOjFyGsHcDGePB3lhA==}
-
-  '@remix-run/node-fetch-server@0.11.0':
-    resolution: {integrity: sha512-nCrFHVxDFioSHc0g/3m5ztwgjBt7g8qh/UwmYkDjuMePKFepMKfNGgH5S6L7iXKX+jUrf3ooVmhx3NGIoa9iYA==}
 
   '@remix-run/node-fetch-server@0.8.0':
     resolution: {integrity: sha512-8/sKegb4HrM6IdcQeU0KPhj9VOHm5SUqswJDHuMCS3mwbr/NRx078QDbySmn0xslahvvZoOENd7EnK40kWKxkg==}
@@ -4251,6 +4248,11 @@ packages:
   spdx-license-ids@3.0.21:
     resolution: {integrity: sha512-Bvg/8F5XephndSK3JffaRqdT+gyhfqIPwDHpX80tJrF8QQRYMo8sNMeaZ2Dp5+jhwKnUmIOyFFQfHRkjJm5nXg==}
 
+  srvx@0.9.5:
+    resolution: {integrity: sha512-nQsA2c8q3XwbSn6kTxVQjz0zS096rV+Be2pzJwrYEAdtnYszLw4MTy8JWJjz1XEGBZwP0qW51SUIX3WdjdRemQ==}
+    engines: {node: '>=20.16.0'}
+    hasBin: true
+
   stable-hash-x@0.2.0:
     resolution: {integrity: sha512-o3yWv49B/o4QZk5ZcsALc6t0+eCelPc44zZsLtCQnZPDwFpDYSWcDnrv2TtMmMbQ7uKo3J0HTURCqckw23czNQ==}
     engines: {node: '>=12.0.0'}
@@ -5410,8 +5412,6 @@ snapshots:
   '@quansync/fs@0.1.5':
     dependencies:
       quansync: 0.2.11
-
-  '@remix-run/node-fetch-server@0.11.0': {}
 
   '@remix-run/node-fetch-server@0.8.0': {}
 
@@ -7915,6 +7915,8 @@ snapshots:
       spdx-license-ids: 3.0.21
 
   spdx-license-ids@3.0.21: {}
+
+  srvx@0.9.5: {}
 
   stable-hash-x@0.2.0: {}
 
