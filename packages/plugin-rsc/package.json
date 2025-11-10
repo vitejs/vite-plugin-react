@@ -39,7 +39,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@remix-run/node-fetch-server": "^0.11.0",
+    "@remix-run/node-fetch-server": "^0.12.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
@@ -62,8 +62,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-server-dom-webpack": "^19.2.0",
-    "tinyexec": "^1.0.1",
-    "tsdown": "^0.15.12"
+    "tinyexec": "^1.0.2",
+    "tsdown": "^0.16.1"
   },
   "peerDependencies": {
     "react": "*",
