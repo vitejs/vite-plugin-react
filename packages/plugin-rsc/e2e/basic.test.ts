@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { type Page, expect, test } from '@playwright/test'
+import {
+  type Page,
+  type Response as PlaywrightResponse,
+  expect,
+  test,
+} from '@playwright/test'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -1102,7 +1107,6 @@ function defineTest(f: Fixture) {
     )
   })
 
-  // TODO: test nojs
   test('server action error @js', async ({ page }) => {
     // it doesn't seem possible to assert react error stack mapping on playwright.
     // this need to be verified manually on browser devtools console.
@@ -1133,6 +1137,27 @@ function defineTest(f: Fixture) {
     await expect(
       page.getByRole('button', { name: 'test-server-action-error' }),
     ).toBeVisible()
+  })
+
+  test.describe(() => {
+    test.use({ javaScriptEnabled: false })
+
+    test('server action error @nojs', async ({ page }) => {
+      await page.goto(f.url())
+      const responsePromise = new Promise<PlaywrightResponse>((resolve) => {
+        page.on('response', async (response) => {
+          if (response.request().method() === 'POST') {
+            resolve(response)
+          }
+        })
+      })
+      await page
+        .getByRole('button', { name: 'test-server-action-error' })
+        .click()
+      const response = await responsePromise
+      expect(response.status()).toBe(500)
+      await expect(response.text()).resolves.toBe('Internal Server Error')
+    })
   })
 
   test('client error', async ({ page }) => {
