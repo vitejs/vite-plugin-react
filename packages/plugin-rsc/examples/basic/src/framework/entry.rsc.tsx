@@ -39,6 +39,7 @@ export async function handleRequest({
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
+  let statusCode = 200
   if (isAction) {
     // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
     const actionId = request.headers.get('x-rsc-action')
@@ -55,6 +56,7 @@ export async function handleRequest({
         returnValue = { ok: true, data }
       } catch (e) {
         returnValue = { ok: false, data: e }
+        statusCode = 500
       }
     } else {
       // otherwise server function is called via `<form action={...}>`
@@ -62,8 +64,12 @@ export async function handleRequest({
       // aka progressive enhancement.
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
-      const result = await decodedAction()
-      formState = await decodeFormState(result, formData)
+      try {
+        const result = await decodedAction()
+        formState = await decodeFormState(result, formData)
+      } catch (e) {
+        statusCode = 500
+      }
     }
   }
 
@@ -82,7 +88,7 @@ export async function handleRequest({
 
   if (isRscRequest) {
     return new Response(rscStream, {
-      status: returnValue?.ok === false ? 500 : undefined,
+      status: statusCode,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
         vary: 'accept',
@@ -106,6 +112,7 @@ export async function handleRequest({
 
   // respond html
   return new Response(htmlStream, {
+    status: statusCode,
     headers: {
       'content-type': 'text/html;charset=utf-8',
       vary: 'accept',
