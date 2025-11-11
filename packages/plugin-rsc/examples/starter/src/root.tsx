@@ -2,7 +2,7 @@ import './index.css' // css import is automatically injected in exported server 
 import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
-import { ClientCounter } from './client.tsx'
+import { ClientCounter, ErrorBoundary } from './client.tsx'
 
 export function Root(props: { url: URL }) {
   return (
@@ -14,7 +14,9 @@ export function Root(props: { url: URL }) {
         <title>Vite + RSC</title>
       </head>
       <body>
-        <App {...props} />
+        <ErrorBoundary>
+          <App {...props} />
+        </ErrorBoundary>
       </body>
     </html>
   )
