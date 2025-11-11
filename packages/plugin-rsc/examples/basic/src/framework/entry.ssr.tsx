@@ -28,15 +28,32 @@ export async function renderHTML(
   }
 
   // render html (traditional SSR)
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await renderToReadableStream(<SsrRoot />, {
-    bootstrapScriptContent: options?.debugNojs
-      ? undefined
-      : bootstrapScriptContent,
-    nonce: options?.nonce,
-    formState: options?.formState,
-  })
+  const bootstrapScriptContent = options?.debugNojs
+    ? undefined
+    : await import.meta.viteRsc.loadBootstrapScriptContent('index')
+
+  let htmlStream: ReadableStream<Uint8Array>
+  try {
+    htmlStream = await renderToReadableStream(<SsrRoot />, {
+      bootstrapScriptContent: options?.debugNojs
+        ? undefined
+        : bootstrapScriptContent,
+      nonce: options?.nonce,
+      formState: options?.formState,
+    })
+  } catch (e) {
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which replays server component error via error boundary.
+    htmlStream = await renderToReadableStream(
+      <html>
+        <body></body>
+      </html>,
+      {
+        bootstrapScriptContent: `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
+        nonce: options?.nonce,
+      },
+    )
+  }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
