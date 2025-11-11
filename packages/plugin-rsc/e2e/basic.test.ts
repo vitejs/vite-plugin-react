@@ -1108,7 +1108,7 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await page.getByRole('button', { name: 'test-server-action-error' }).click()
-    await expect(page.getByText('ErrorBoundary caught')).toBeVisible()
+    await expect(page.getByText('ErrorBoundary triggered')).toBeVisible()
     await page.getByRole('button', { name: 'reset-error' }).click()
     await expect(
       page.getByRole('button', { name: 'test-server-action-error' }),
