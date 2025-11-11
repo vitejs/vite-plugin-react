@@ -14,7 +14,7 @@ export default class ErrorBoundary extends React.Component<{
   render() {
     if (this.state.error) {
       return (
-        <div>
+        <div data-testid="action-error-boundary">
           ErrorBoundary triggered
           <button
             onClick={() => {

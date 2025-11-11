@@ -1102,13 +1102,26 @@ function defineTest(f: Fixture) {
     )
   })
 
+  // TODO: test nojs
   test('server action error @js', async ({ page }) => {
     // it doesn't seem possible to assert react error stack mapping on playwright.
     // this need to be verified manually on browser devtools console.
     await page.goto(f.url())
     await waitForHydration(page)
+    // TODO: assert POST response with 500 status
     await page.getByRole('button', { name: 'test-server-action-error' }).click()
-    await expect(page.getByText('ErrorBoundary triggered')).toBeVisible()
+    await expect(page.getByTestId('action-error-boundary')).toContainText(
+      'ErrorBoundary triggered',
+    )
+    if (f.mode === 'dev') {
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: boom!)',
+      )
+    } else {
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: An error occurred in the Server Components render.',
+      )
+    }
     await page.getByRole('button', { name: 'reset-error' }).click()
     await expect(
       page.getByRole('button', { name: 'test-server-action-error' }),
