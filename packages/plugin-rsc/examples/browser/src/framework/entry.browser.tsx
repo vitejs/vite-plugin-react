@@ -8,6 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
 import { loadEntryRsc } from '../../lib/runtime'
+import { GlobalErrorBoundary } from './error-boundary'
 
 async function fetchRsc(request: Request): Promise<Response> {
   const module = await loadEntryRsc()
@@ -73,7 +74,9 @@ async function main() {
   // hydration
   const browserRoot = (
     <React.StrictMode>
-      <BrowserRoot />
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
     </React.StrictMode>
   )
   createRoot(document.body).render(browserRoot)
