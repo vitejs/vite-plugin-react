@@ -17,7 +17,7 @@ export type RscPayload = {
   // based on your own route conventions.
   root: React.ReactNode
   // server action return value of non-progressive enhancement case
-  returnValue?: unknown
+  returnValue?: { ok: boolean; data: unknown }
   // server action form state (e.g. useActionState) of progressive enhancement case
   formState?: ReactFormState
 }
@@ -36,7 +36,7 @@ export async function handleRequest({
 }): Promise<Response> {
   // handle server function request
   const isAction = request.method === 'POST'
-  let returnValue: unknown | undefined
+  let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   if (isAction) {
@@ -50,7 +50,12 @@ export async function handleRequest({
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
       const action = await loadServerAction(actionId)
-      returnValue = await action.apply(null, args)
+      try {
+        const data = await action.apply(null, args)
+        returnValue = { ok: true, data }
+      } catch (e) {
+        returnValue = { ok: false, data: e }
+      }
     } else {
       // otherwise server function is called via `<form action={...}>`
       // before hydration (e.g. when javascript is disabled).
@@ -77,6 +82,7 @@ export async function handleRequest({
 
   if (isRscRequest) {
     return new Response(rscStream, {
+      status: returnValue?.ok === false ? 500 : undefined,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
         vary: 'accept',
