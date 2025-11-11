@@ -9,7 +9,6 @@ import {
 } from '@vitejs/plugin-rsc/react/browser'
 import type { RscPayload } from './entry.rsc'
 import buildClientReferences from 'virtual:vite-rsc-browser-mode/build-client-references'
-import { GlobalErrorBoundary } from './error-boundary'
 
 let fetchServer: typeof import('./entry.rsc').fetchServer
 
@@ -70,9 +69,7 @@ export async function main() {
 
   const browserRoot = (
     <React.StrictMode>
-      <GlobalErrorBoundary>
-        <BrowserRoot />
-      </GlobalErrorBoundary>
+      <BrowserRoot />
     </React.StrictMode>
   )
   createRoot(document.body).render(browserRoot)

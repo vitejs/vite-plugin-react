@@ -9,7 +9,6 @@ import React from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
-import { GlobalErrorBoundary } from './error-boundary'
 
 async function main() {
   // stash `setPayload` function to trigger re-rendering
@@ -70,9 +69,7 @@ async function main() {
   // hydration
   const browserRoot = (
     <React.StrictMode>
-      <GlobalErrorBoundary>
-        <BrowserRoot />
-      </GlobalErrorBoundary>
+      <BrowserRoot />
     </React.StrictMode>
   )
   hydrateRoot(document, browserRoot, {
