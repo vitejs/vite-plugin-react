@@ -28,10 +28,8 @@ export async function renderHTML(
   }
 
   // render html (traditional SSR)
-  const bootstrapScriptContent = options?.debugNojs
-    ? undefined
-    : await import.meta.viteRsc.loadBootstrapScriptContent('index')
-
+  const bootstrapScriptContent =
+    await import.meta.viteRsc.loadBootstrapScriptContent('index')
   let htmlStream: ReadableStream<Uint8Array>
   try {
     htmlStream = await renderToReadableStream(<SsrRoot />, {
@@ -43,7 +41,7 @@ export async function renderHTML(
     })
   } catch (e) {
     // fallback to render an empty shell and run pure CSR on browser,
-    // which replays server component error via error boundary.
+    // which can replay server component error and trigger error boundary.
     htmlStream = await renderToReadableStream(
       <html>
         <body></body>
