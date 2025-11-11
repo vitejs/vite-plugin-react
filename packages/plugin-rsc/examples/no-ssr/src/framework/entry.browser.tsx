@@ -57,7 +57,9 @@ async function main() {
       { temporaryReferences },
     )
     setPayload(payload)
-    return payload.returnValue
+    const { ok, data } = payload.returnValue!
+    if (!ok) throw data
+    return data
   })
 
   // hydration
