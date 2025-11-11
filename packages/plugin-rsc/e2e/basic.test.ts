@@ -1108,11 +1108,18 @@ function defineTest(f: Fixture) {
     // this need to be verified manually on browser devtools console.
     await page.goto(f.url())
     await waitForHydration(page)
-    // TODO: assert POST response with 500 status
+    const errorResponse = new Promise((resolve) => {
+      page.on('response', async (response) => {
+        if (response.request().method() === 'POST') {
+          resolve(response.status())
+        }
+      })
+    })
     await page.getByRole('button', { name: 'test-server-action-error' }).click()
     await expect(page.getByTestId('action-error-boundary')).toContainText(
       'ErrorBoundary triggered',
     )
+    await expect(errorResponse).resolves.toEqual(500)
     if (f.mode === 'dev') {
       await expect(page.getByTestId('action-error-boundary')).toContainText(
         '(Error: boom!)',
