@@ -3,7 +3,6 @@ import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
-import { ErrorBoundary } from './error-boundary.tsx'
 
 export function Root(props: { url: URL }) {
   return (
@@ -15,9 +14,7 @@ export function Root(props: { url: URL }) {
         <title>Vite + RSC</title>
       </head>
       <body>
-        <ErrorBoundary>
-          <App {...props} />
-        </ErrorBoundary>
+        <App {...props} />
       </body>
     </html>
   )
