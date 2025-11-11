@@ -42,8 +42,7 @@ export default async function handler(request: Request): Promise<Response> {
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
       const action = await loadServerAction(actionId)
-      // no need to await. rejection can trigger client error boundary.
-      // TODO: what about progressive enhancement case below?
+      // no need to await. rejection can trigger error boundary on browser.
       returnValue = action.apply(null, args)
     } else {
       // otherwise server function is called via `<form action={...}>`
