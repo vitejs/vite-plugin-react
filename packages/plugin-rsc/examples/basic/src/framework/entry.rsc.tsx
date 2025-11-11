@@ -68,7 +68,11 @@ export async function handleRequest({
         const result = await decodedAction()
         formState = await decodeFormState(result, formData)
       } catch (e) {
-        statusCode = 500
+        // there's no single general obvious way to surface this error,
+        // so explicitly return classic 500 response.
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
+        })
       }
     }
   }

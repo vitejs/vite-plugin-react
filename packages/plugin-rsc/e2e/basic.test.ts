@@ -1156,7 +1156,9 @@ function defineTest(f: Fixture) {
         .click()
       const response = await responsePromise
       expect(response.status()).toBe(500)
-      await expect(response.text()).resolves.toBe('Internal Server Error')
+      await expect(response.text()).resolves.toBe(
+        'Internal Server Error: server action failed',
+      )
     })
   })
 
