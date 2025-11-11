@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-// Minimal ErrorBoundary implementation to handel errors globally
+// Minimal ErrorBoundary example to handel errors globally on browser
 export function GlobalErrorBoundary(props: { children?: React.ReactNode }) {
   return (
     <ErrorBoundary errorComponent={DefaultGlobalErrorPage}>
