@@ -2,19 +2,10 @@
 
 import * as React from 'react'
 
-interface Props {
+export default class ErrorBoundary extends React.Component<{
   children?: React.ReactNode
-}
-
-interface State {
-  error: Error | null
-}
-
-export default class ErrorBoundary extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = { error: null }
-  }
+}> {
+  state: { error?: Error } = {}
 
   static getDerivedStateFromError(error: Error) {
     return { error }
@@ -24,7 +15,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.error) {
       return (
         <div>
-          ErrorBoundary caught '{this.state.error.message}'
+          ErrorBoundary triggered
           <button
             onClick={() => {
               this.setState({ error: null })
@@ -32,6 +23,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
           >
             reset-error
           </button>
+          (<code>Error: {this.state.error.message}</code>)
         </div>
       )
     }
