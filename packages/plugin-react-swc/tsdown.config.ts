@@ -4,6 +4,7 @@ import packageJSON from './package.json' with { type: 'json' }
 
 export default defineConfig({
   entry: 'src/index.ts',
+  fixedExtension: false,
   dts: true,
   tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
   ignoreWatch: ['playground', 'playground-temp', 'test-results'],
