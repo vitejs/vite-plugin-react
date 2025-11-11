@@ -1135,6 +1135,26 @@ function defineTest(f: Fixture) {
     ).toBeVisible()
   })
 
+  test('client error', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const locator = page.getByTestId('test-client-error')
+    await expect(locator).toHaveText('test-client-error: 0')
+    await locator.click()
+    await expect(locator).toHaveText('test-client-error: 1')
+    await locator.click()
+    await expect(page.getByText('Caught an unexpected error')).toBeVisible()
+    if (f.mode === 'dev') {
+      await expect(
+        page.getByText('Error: Client error triggered'),
+      ).toBeVisible()
+    } else {
+      await expect(page.getByText('Error: (Unknown)')).toBeVisible()
+    }
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(locator).toHaveText('test-client-error: 0')
+  })
+
   test('hydrate while streaming @js', async ({ page }) => {
     // client is interactive before suspense is resolved
     await page.goto(f.url('./?test-suspense=1000'), { waitUntil: 'commit' })
