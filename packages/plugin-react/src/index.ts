@@ -163,7 +163,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
             },
             optimizeDeps: {
-              rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+              rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
             },
           }
         }
