@@ -7,20 +7,7 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import type React from 'react'
-
-// The schema of payload which is serialized into RSC stream on rsc environment
-// and deserialized on ssr/client environments.
-export type RscPayload = {
-  // this demo renders/serializes/deserizlies entire root html element
-  // but this mechanism can be changed to render/fetch different parts of components
-  // based on your own route conventions.
-  root: React.ReactNode
-  // server action return value of non-progressive enhancement case
-  returnValue?: { ok: boolean; data: unknown }
-  // server action form state (e.g. useActionState) of progressive enhancement case
-  formState?: ReactFormState
-}
+import { RSC_POSTFIX, type RscPayload } from './shared'
 
 // the plugin by default assumes `rsc` entry having default export of request handler.
 // however, how server entries are executed can be customized by registering
@@ -67,18 +54,16 @@ export async function handleRequest({
     }
   }
 
-  const url = new URL(request.url)
+  let url = new URL(request.url)
+  let isRscRequest = false
+  if (url.pathname.endsWith(RSC_POSTFIX)) {
+    isRscRequest = true
+    url.pathname = url.pathname.slice(0, -RSC_POSTFIX.length)
+  }
+
   const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
-
-  // respond RSC stream without HTML rendering based on framework's convention.
-  // here we use request header `content-type`.
-  // additionally we allow `?__rsc` and `?__html` to easily view payload directly.
-  const isRscRequest =
-    (!request.headers.get('accept')?.includes('text/html') &&
-      !url.searchParams.has('__html')) ||
-    url.searchParams.has('__rsc')
 
   if (isRscRequest) {
     return new Response(rscStream, {
