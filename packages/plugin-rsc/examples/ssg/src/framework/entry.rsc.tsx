@@ -27,9 +27,10 @@ export default async function handler(request: Request): Promise<Response> {
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  const htmlStream = await ssr.renderHtml(rscStream)
+  const ssrResult = await ssr.renderHtml(rscStream)
 
-  return new Response(htmlStream, {
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
       vary: 'accept',
@@ -50,11 +51,11 @@ export async function handleSsg(request: Request): Promise<{
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  const htmlStream = await ssr.renderHtml(rscStream1, {
+  const ssrResult = await ssr.renderHtml(rscStream1, {
     ssg: true,
   })
 
-  return { html: htmlStream, rsc: rscStream2 }
+  return { html: ssrResult.stream, rsc: rscStream2 }
 }
 
 if (import.meta.hot) {
