@@ -4,8 +4,7 @@ export async function TestServerError(props: { url: URL }) {
   }
   return (
     <div>
-      <span>test-server-error</span>{' '}
-      <a href="?test-server-error">test-server-error</a>{' '}
+      <a href="?test-server-error">test-server-error</a>
     </div>
   )
 }
