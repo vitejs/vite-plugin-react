@@ -39,7 +39,7 @@ export async function handleRequest({
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
-  let statusCode = 200
+  let actionStatus: number | undefined
   if (isAction) {
     // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
     const actionId = request.headers.get('x-rsc-action')
@@ -56,7 +56,7 @@ export async function handleRequest({
         returnValue = { ok: true, data }
       } catch (e) {
         returnValue = { ok: false, data: e }
-        statusCode = 500
+        actionStatus = 500
       }
     } else {
       // otherwise server function is called via `<form action={...}>`
@@ -92,7 +92,7 @@ export async function handleRequest({
 
   if (isRscRequest) {
     return new Response(rscStream, {
-      status: statusCode,
+      status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
         vary: 'accept',
@@ -107,7 +107,7 @@ export async function handleRequest({
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  const htmlStream = await ssrEntryModule.renderHTML(rscStream, {
+  const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     nonce,
     // allow quick simulation of javscript disabled browser
@@ -115,8 +115,8 @@ export async function handleRequest({
   })
 
   // respond html
-  return new Response(htmlStream, {
-    status: statusCode,
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
       vary: 'accept',

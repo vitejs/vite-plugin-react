@@ -12,7 +12,7 @@ export async function renderHTML(
     nonce?: string
     debugNojs?: boolean
   },
-) {
+): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
   // duplicate one RSC stream into two.
   // - one for SSR (ReactClient.createFromReadableStream below)
   // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
@@ -31,6 +31,7 @@ export async function renderHTML(
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
   let htmlStream: ReadableStream<Uint8Array>
+  let status: number | undefined
   try {
     htmlStream = await renderToReadableStream(<SsrRoot />, {
       bootstrapScriptContent: options?.debugNojs
@@ -42,6 +43,7 @@ export async function renderHTML(
   } catch (e) {
     // fallback to render an empty shell and run pure CSR on browser,
     // which can replay server component error and trigger error boundary.
+    status = 500
     htmlStream = await renderToReadableStream(
       <html>
         <body>
@@ -49,7 +51,9 @@ export async function renderHTML(
         </body>
       </html>,
       {
-        bootstrapScriptContent: `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
+        bootstrapScriptContent:
+          `self.__NO_HYDRATE=1;` +
+          (options?.debugNojs ? '' : bootstrapScriptContent),
         nonce: options?.nonce,
       },
     )
@@ -65,5 +69,5 @@ export async function renderHTML(
     )
   }
 
-  return responseStream
+  return { stream: responseStream, status }
 }
