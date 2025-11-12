@@ -70,7 +70,6 @@ export async function handleRequest({
       status: returnValue?.ok === false ? 500 : undefined,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
-        vary: 'accept',
       },
     })
   }
@@ -93,7 +92,6 @@ export async function handleRequest({
   return new Response(htmlStream, {
     headers: {
       'content-type': 'text/html;charset=utf-8',
-      vary: 'accept',
     },
   })
 }
