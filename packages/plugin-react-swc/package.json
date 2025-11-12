@@ -41,7 +41,7 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.19.0",
+    "@types/node": "^24.10.1",
     "@vitejs/react-common": "workspace:*",
     "fs-extra": "^11.3.2",
     "prettier": "^3.0.3",
