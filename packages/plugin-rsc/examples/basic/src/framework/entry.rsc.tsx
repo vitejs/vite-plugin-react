@@ -39,6 +39,7 @@ export async function handleRequest({
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
+  let actionStatus: number | undefined
   if (isAction) {
     // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
     const actionId = request.headers.get('x-rsc-action')
@@ -55,6 +56,7 @@ export async function handleRequest({
         returnValue = { ok: true, data }
       } catch (e) {
         returnValue = { ok: false, data: e }
+        actionStatus = 500
       }
     } else {
       // otherwise server function is called via `<form action={...}>`
@@ -62,8 +64,16 @@ export async function handleRequest({
       // aka progressive enhancement.
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
-      const result = await decodedAction()
-      formState = await decodeFormState(result, formData)
+      try {
+        const result = await decodedAction()
+        formState = await decodeFormState(result, formData)
+      } catch (e) {
+        // there's no single general obvious way to surface this error,
+        // so explicitly return classic 500 response.
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
+        })
+      }
     }
   }
 
@@ -82,7 +92,7 @@ export async function handleRequest({
 
   if (isRscRequest) {
     return new Response(rscStream, {
-      status: returnValue?.ok === false ? 500 : undefined,
+      status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
         vary: 'accept',
@@ -97,7 +107,7 @@ export async function handleRequest({
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  const htmlStream = await ssrEntryModule.renderHTML(rscStream, {
+  const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     nonce,
     // allow quick simulation of javscript disabled browser
@@ -105,7 +115,8 @@ export async function handleRequest({
   })
 
   // respond html
-  return new Response(htmlStream, {
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
       vary: 'accept',

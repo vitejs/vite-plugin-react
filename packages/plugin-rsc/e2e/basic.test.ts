@@ -1156,11 +1156,13 @@ function defineTest(f: Fixture) {
         .click()
       const response = await responsePromise
       expect(response.status()).toBe(500)
-      await expect(response.text()).resolves.toBe('Internal Server Error')
+      await expect(response.text()).resolves.toBe(
+        'Internal Server Error: server action failed',
+      )
     })
   })
 
-  test('client error', async ({ page }) => {
+  test('client component error', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     const locator = page.getByTestId('test-client-error')
@@ -1178,6 +1180,23 @@ function defineTest(f: Fixture) {
     }
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(locator).toHaveText('test-client-error: 0')
+  })
+
+  test('server component error', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    const expectedText =
+      f.mode === 'dev' ? 'Error: test-server-error!' : 'Error: (Unknown)'
+
+    // trigger client navigation error
+    await page.getByRole('link', { name: 'test-server-error' }).click()
+    await page.getByText(expectedText).click()
+
+    // trigger SSR error
+    const res = await page.goto(f.url('./?test-server-error'))
+    await page.getByText(expectedText).click()
+    expect(res?.status()).toBe(500)
   })
 
   test('hydrate while streaming @js', async ({ page }) => {
