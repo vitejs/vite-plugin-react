@@ -24,31 +24,34 @@ export async function renderHtml(
 
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
-  try {
-    if (options?.ssg) {
-      const prerenderResult = await prerender(<SsrRoot />, {
-        bootstrapScriptContent,
-      })
-      htmlStream = prerenderResult.prelude
-    } else {
+  if (options?.ssg) {
+    // for static site generation, let errors throw to fail the build
+    const prerenderResult = await prerender(<SsrRoot />, {
+      bootstrapScriptContent,
+    })
+    htmlStream = prerenderResult.prelude
+  } else {
+    // for regular SSR, catch errors and fallback to CSR
+    try {
       htmlStream = await renderToReadableStream(<SsrRoot />, {
         bootstrapScriptContent,
       })
+    } catch (e) {
+      // fallback to render an empty shell and run pure CSR on browser,
+      // which can replay server component error and trigger error boundary.
+      status = 500
+      htmlStream = await renderToReadableStream(
+        <html>
+          <body>
+            <noscript>Internal Server Error: SSR failed</noscript>
+          </body>
+        </html>,
+        {
+          bootstrapScriptContent:
+            `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
+        },
+      )
     }
-  } catch (e) {
-    // fallback to render an empty shell and run pure CSR on browser,
-    // which can replay server component error and trigger error boundary.
-    status = 500
-    htmlStream = await renderToReadableStream(
-      <html>
-        <body>
-          <noscript>Internal Server Error: SSR failed</noscript>
-        </body>
-      </html>,
-      {
-        bootstrapScriptContent: `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
-      },
-    )
   }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
