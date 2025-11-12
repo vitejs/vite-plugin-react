@@ -83,7 +83,7 @@ async function main() {
     })
   }
 
-  // implement server HMR by trigering re-fetch/render of RSC upon server code change
+  // implement server HMR by triggering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
       fetchRscPayload()

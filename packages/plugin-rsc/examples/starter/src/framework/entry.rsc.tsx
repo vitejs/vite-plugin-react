@@ -109,7 +109,7 @@ export default async function handler(request: Request): Promise<Response> {
   >('ssr', 'index')
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
-    // allow quick simulation of javscript disabled browser
+    // allow quick simulation of javascript disabled browser
     debugNojs: url.searchParams.has('__nojs'),
   })
 

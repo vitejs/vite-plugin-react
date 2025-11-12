@@ -110,7 +110,7 @@ export async function handleRequest({
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     nonce,
-    // allow quick simulation of javscript disabled browser
+    // allow quick simulation of javascript disabled browser
     debugNojs: url.searchParams.has('__nojs'),
   })
 
