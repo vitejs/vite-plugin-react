@@ -16,6 +16,7 @@ async function handler(request: Request): Promise<Response> {
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
+  let actionStatus: number | undefined
   if (isAction) {
     // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
     const actionId = request.headers.get('x-rsc-action')
@@ -32,6 +33,7 @@ async function handler(request: Request): Promise<Response> {
         returnValue = { ok: true, data }
       } catch (e) {
         returnValue = { ok: false, data: e }
+        actionStatus = 500
       }
     } else {
       // otherwise server function is called via `<form action={...}>`
@@ -39,8 +41,16 @@ async function handler(request: Request): Promise<Response> {
       // aka progressive enhancement.
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
-      const result = await decodedAction()
-      formState = await decodeFormState(result, formData)
+      try {
+        const result = await decodedAction()
+        formState = await decodeFormState(result, formData)
+      } catch (e) {
+        // there's no single general obvious way to surface this error,
+        // so explicitly return classic 500 response.
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
+        })
+      }
     }
   }
 
@@ -61,7 +71,7 @@ async function handler(request: Request): Promise<Response> {
 
   if (isRscRequest) {
     return new Response(rscStream, {
-      status: returnValue?.ok === false ? 500 : undefined,
+      status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
       },
@@ -71,15 +81,15 @@ async function handler(request: Request): Promise<Response> {
   const { renderHTML } = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  const htmlStream = await renderHTML(rscStream, {
+  const ssrResult = await renderHTML(rscStream, {
     formState,
-    // allow quick simulation of javscript disabled browser
+    // allow quick simulation of javascript disabled browser
     debugNojs: url.searchParams.has('__nojs'),
   })
 
   // respond html
-  return new Response(htmlStream, {
-    status: returnValue?.ok === false ? 500 : undefined,
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
     headers: {
       'Content-type': 'text/html',
     },

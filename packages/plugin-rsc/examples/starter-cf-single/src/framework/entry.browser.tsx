@@ -6,9 +6,10 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import { RSC_POSTFIX, type RscPayload } from './shared'
+import { GlobalErrorBoundary } from './error-boundary'
 
 async function main() {
   // stash `setPayload` function to trigger re-rendering
@@ -70,14 +71,20 @@ async function main() {
   // hydration
   const browserRoot = (
     <React.StrictMode>
-      <BrowserRoot />
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
     </React.StrictMode>
   )
-  hydrateRoot(document, browserRoot, {
-    formState: initialPayload.formState,
-  })
+  if ('__NO_HYDRATE' in globalThis) {
+    createRoot(document).render(browserRoot)
+  } else {
+    hydrateRoot(document, browserRoot, {
+      formState: initialPayload.formState,
+    })
+  }
 
-  // implement server HMR by trigering re-fetch/render of RSC upon server code change
+  // implement server HMR by triggering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
       fetchRscPayload()
