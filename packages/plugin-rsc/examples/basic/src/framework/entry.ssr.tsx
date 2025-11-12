@@ -44,7 +44,9 @@ export async function renderHTML(
     // which can replay server component error and trigger error boundary.
     htmlStream = await renderToReadableStream(
       <html>
-        <body></body>
+        <body>
+          <noscript>Internal Server Error: SSR failed</noscript>
+        </body>
       </html>,
       {
         bootstrapScriptContent: `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
