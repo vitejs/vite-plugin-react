@@ -35,7 +35,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.19.0",
+    "@types/node": "^24.10.1",
     "@vitejs/release-scripts": "^1.6.0",
     "eslint": "^9.39.1",
     "eslint-plugin-import-x": "^4.16.1",
