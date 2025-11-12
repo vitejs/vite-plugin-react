@@ -57,7 +57,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             jsxImportDevRuntime,
             jsxImportRuntime,
           ],
-          rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+          rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
         },
       }
     },
