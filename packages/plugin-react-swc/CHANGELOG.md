@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.2 (2025-11-12)
+
 ### Update code to support newer `rolldown-vite` ([#978](https://github.com/vitejs/vite-plugin-react/pull/978))
 
 `rolldown-vite` will remove `optimizeDeps.rollupOptions` in favor of `optimizeDeps.rolldownOptions` soon. This plugin now uses `optimizeDeps.rolldownOptions` to support newer `rolldown-vite`. Please update `rolldown-vite` to the latest version if you are using an older version.
