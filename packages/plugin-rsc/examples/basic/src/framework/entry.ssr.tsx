@@ -3,7 +3,7 @@ import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
-import type { RscPayload } from './entry.rsc'
+import type { RscPayload } from './shared'
 
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
