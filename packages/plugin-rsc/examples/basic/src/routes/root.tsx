@@ -47,6 +47,7 @@ import { TestHmrClientDep3 } from './hmr-client-dep3/server'
 import { TestChunk2 } from './chunk2/server'
 import { TestUseId } from './use-id/server'
 import { TestClientError } from './client-error/client'
+import { TestServerError } from './server-error/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -80,6 +81,7 @@ export function Root(props: { url: URL }) {
         <TestTemporaryReference />
         <TestServerActionError />
         <TestClientError />
+        <TestServerError url={props.url} />
         <TestReplayConsoleLogs url={props.url} />
         <TestSuspense url={props.url} />
         <TestActionFromClient />
