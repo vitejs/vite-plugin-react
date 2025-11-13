@@ -1,25 +1,21 @@
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
 import { Root, getStaticPaths } from '../root'
-import { RSC_POSTFIX, type RscPayload } from './shared'
+import { parseRenderRequest } from './request'
+import type { RscPayload } from './shared'
 
 export { getStaticPaths }
 
 export default async function handler(request: Request): Promise<Response> {
-  let url = new URL(request.url)
-  let isRscRequest = false
-  if (url.pathname.endsWith(RSC_POSTFIX)) {
-    isRscRequest = true
-    url.pathname = url.pathname.slice(0, -RSC_POSTFIX.length)
-  }
+  // differentiate RSC and SSR request
+  const renderRequest = parseRenderRequest(request)
 
-  const rscPayload: RscPayload = { root: <Root url={url} /> }
+  const rscPayload: RscPayload = { root: <Root url={renderRequest.url} /> }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload)
 
-  if (isRscRequest) {
+  if (renderRequest.isRsc) {
     return new Response(rscStream, {
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
-        vary: 'accept',
       },
     })
   }
@@ -33,7 +29,6 @@ export default async function handler(request: Request): Promise<Response> {
     status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
-      vary: 'accept',
     },
   })
 }
