@@ -39,7 +39,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@remix-run/node-fetch-server": "^0.11.0",
+    "@remix-run/node-fetch-server": "^0.12.0",
     "es-module-lexer": "^1.7.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
@@ -51,9 +51,9 @@
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.56.1",
-    "@tsconfig/strictest": "^2.0.6",
+    "@tsconfig/strictest": "^2.0.7",
     "@types/estree": "^1.0.8",
-    "@types/node": "^22.18.12",
+    "@types/node": "^24.10.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "workspace:*",
@@ -62,8 +62,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-server-dom-webpack": "^19.2.0",
-    "tinyexec": "^1.0.1",
-    "tsdown": "^0.15.10"
+    "tinyexec": "^1.0.2",
+    "tsdown": "^0.16.1"
   },
   "peerDependencies": {
     "react": "*",

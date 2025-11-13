@@ -10,7 +10,7 @@ export async function renderHtml(
   options?: {
     ssg?: boolean
   },
-) {
+): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
   const [rscStream1, rscStream2] = rscStream.tee()
 
   let payload: Promise<RscPayload>
@@ -23,18 +23,38 @@ export async function renderHtml(
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
   let htmlStream: ReadableStream<Uint8Array>
+  let status: number | undefined
   if (options?.ssg) {
+    // for static site generation, let errors throw to fail the build
     const prerenderResult = await prerender(<SsrRoot />, {
       bootstrapScriptContent,
     })
     htmlStream = prerenderResult.prelude
   } else {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent,
-    })
+    // for regular SSR, catch errors and fallback to CSR
+    try {
+      htmlStream = await renderToReadableStream(<SsrRoot />, {
+        bootstrapScriptContent,
+      })
+    } catch (e) {
+      // fallback to render an empty shell and run pure CSR on browser,
+      // which can replay server component error and trigger error boundary.
+      status = 500
+      htmlStream = await renderToReadableStream(
+        <html>
+          <body>
+            <noscript>Internal Server Error: SSR failed</noscript>
+          </body>
+        </html>,
+        {
+          bootstrapScriptContent:
+            `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
+        },
+      )
+    }
   }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   responseStream = responseStream.pipeThrough(injectRSCPayload(rscStream2))
-  return responseStream
+  return { stream: responseStream, status }
 }

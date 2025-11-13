@@ -75,7 +75,7 @@ type Options = {
 }
 
 const react = (_options?: Options): Plugin[] => {
-  let hmrDisabled = false
+  let hmrDisabled = true
   let viteCacheRoot: string | undefined
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
@@ -126,14 +126,16 @@ const react = (_options?: Options): Plugin[] => {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
           ...('rolldownVersion' in vite
             ? {
-                rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+                rolldownOptions: {
+                  transform: { jsx: { runtime: 'automatic' } },
+                },
               }
             : { esbuildOptions: { jsx: 'automatic' } }),
         },
       }),
       configResolved(config) {
         viteCacheRoot = config.cacheDir
-        if (config.server.hmr === false) hmrDisabled = true
+        hmrDisabled = config.server.hmr === false
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
         )

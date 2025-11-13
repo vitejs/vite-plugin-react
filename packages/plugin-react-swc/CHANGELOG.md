@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 4.2.2 (2025-11-12)
+
+### Update code to support newer `rolldown-vite` ([#978](https://github.com/vitejs/vite-plugin-react/pull/978))
+
+`rolldown-vite` will remove `optimizeDeps.rollupOptions` in favor of `optimizeDeps.rolldownOptions` soon. This plugin now uses `optimizeDeps.rolldownOptions` to support newer `rolldown-vite`. Please update `rolldown-vite` to the latest version if you are using an older version.
+
+## 4.2.1 (2025-11-05)
+
+### Fix `@vitejs/plugin-react-swc/preamble` on build ([#962](https://github.com/vitejs/vite-plugin-react/pull/962))
+
 ## 4.2.0 (2025-10-24)
 
 ### Add `@vitejs/plugin-react-swc/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))

@@ -20,6 +20,6 @@
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "^7.1.10"
+    "vite": "^7.2.2"
   }
 }
