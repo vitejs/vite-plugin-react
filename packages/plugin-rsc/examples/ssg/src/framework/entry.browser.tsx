@@ -5,14 +5,14 @@ import {
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-import { RSC_POSTFIX, type RscPayload } from './shared'
 import { GlobalErrorBoundary } from './error-boundary'
+import { createRscRenderRequest } from './request'
+import type { RscPayload } from './shared'
 
 async function hydrate(): Promise<void> {
   async function onNavigation() {
-    const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
-    const payload = await createFromFetch<RscPayload>(fetch(url))
+    const renderRequest = createRscRenderRequest(window.location.href)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
     setPayload(payload)
   }
 
