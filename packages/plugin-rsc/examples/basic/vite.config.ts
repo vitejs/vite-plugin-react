@@ -91,13 +91,13 @@ export default defineConfig({
         assert(viteManifest.type === 'asset')
         assert(typeof viteManifest.source === 'string')
         if (this.environment.name === 'rsc') {
-          assert(viteManifest.source.includes('src/server.tsx'))
+          assert(viteManifest.source.includes('src/framework/entry.rsc.tsx'))
           assert(
             !viteManifest.source.includes('src/framework/entry.browser.tsx'),
           )
         }
         if (this.environment.name === 'client') {
-          assert(!viteManifest.source.includes('src/server.tsx'))
+          assert(!viteManifest.source.includes('src/framework/entry.rsc.tsx'))
           assert(
             viteManifest.source.includes('src/framework/entry.browser.tsx'),
           )
