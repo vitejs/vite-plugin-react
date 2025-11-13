@@ -8,7 +8,12 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
-import { RSC_POSTFIX, type RscPayload } from './shared'
+
+export type RscPayload = {
+  root: React.ReactNode
+  returnValue?: { ok: boolean; data: unknown }
+  formState?: ReactFormState
+}
 
 async function handler(request: Request): Promise<Response> {
   // handle server function request
@@ -58,22 +63,25 @@ async function handler(request: Request): Promise<Response> {
   // we render RSC stream after handling server function request
   // so that new render reflects updated state from server function call
   // to achieve single round trip to mutate and fetch from server.
-  let url = new URL(request.url)
-  let isRscRequest = false
-  if (url.pathname.endsWith(RSC_POSTFIX)) {
-    isRscRequest = true
-    url.pathname = url.pathname.slice(0, -RSC_POSTFIX.length)
-  }
-
   const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
+
+  // respond RSC stream without HTML rendering based on framework's convention.
+  // here we use request header `content-type`.
+  // additionally we allow `?__rsc` and `?__html` to easily view payload directly.
+  const url = new URL(request.url)
+  const isRscRequest =
+    (!request.headers.get('accept')?.includes('text/html') &&
+      !url.searchParams.has('__html')) ||
+    url.searchParams.has('__rsc')
 
   if (isRscRequest) {
     return new Response(rscStream, {
       status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
+        vary: 'accept',
       },
     })
   }
@@ -92,6 +100,7 @@ async function handler(request: Request): Promise<Response> {
     status: ssrResult.status,
     headers: {
       'Content-type': 'text/html',
+      vary: 'accept',
     },
   })
 }

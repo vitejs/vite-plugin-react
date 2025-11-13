@@ -8,7 +8,7 @@ import {
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-import { RSC_POSTFIX, type RscPayload } from './shared'
+import type { RscPayload } from './entry.rsc'
 import { GlobalErrorBoundary } from './error-boundary'
 
 async function main() {
@@ -40,9 +40,9 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
-    const payload = await createFromFetch<RscPayload>(fetch(url))
+    const payload = await createFromFetch<RscPayload>(
+      fetch(window.location.href),
+    )
     setPayload(payload)
   }
 
@@ -50,7 +50,6 @@ async function main() {
   // on server function request after hydration.
   setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
     const temporaryReferences = createTemporaryReferenceSet()
     const payload = await createFromFetch<RscPayload>(
       fetch(url, {
