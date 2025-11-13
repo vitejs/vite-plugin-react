@@ -668,7 +668,7 @@ importers:
         version: 0.0.7
       vite:
         specifier: ^7.1.10
-        version: 7.1.10(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
+        version: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
