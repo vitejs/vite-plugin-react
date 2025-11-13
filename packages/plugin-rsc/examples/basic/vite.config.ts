@@ -25,7 +25,7 @@ export default defineConfig({
       entries: {
         client: './src/framework/entry.browser.tsx',
         ssr: './src/framework/entry.ssr.tsx',
-        rsc: './src/server.tsx',
+        rsc: './src/framework/entry.rsc.tsx',
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
