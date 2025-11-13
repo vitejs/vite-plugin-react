@@ -34,38 +34,39 @@ export default async function handler(request: Request): Promise<Response> {
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
-  if (typeof renderRequest.action === 'string') {
-    // action is called via `ReactClient.setServerCallback`.
-    const contentType = request.headers.get('content-type')
-    const body = contentType?.startsWith('multipart/form-data')
-      ? await request.formData()
-      : await request.text()
-    temporaryReferences = createTemporaryReferenceSet()
-    const args = await decodeReply(body, { temporaryReferences })
-    const action = await loadServerAction(renderRequest.action)
-    try {
-      const data = await action.apply(null, args)
-      returnValue = { ok: true, data }
-    } catch (e) {
-      returnValue = { ok: false, data: e }
-      actionStatus = 500
-    }
-  }
-  if (renderRequest.action === true) {
-    // otherwise server function is called via `<form action={...}>`
-    // before hydration (e.g. when javascript is disabled).
-    // aka progressive enhancement.
-    const formData = await request.formData()
-    const decodedAction = await decodeAction(formData)
-    try {
-      const result = await decodedAction()
-      formState = await decodeFormState(result, formData)
-    } catch (e) {
-      // there's no single general obvious way to surface this error,
-      // so explicitly return classic 500 response.
-      return new Response('Internal Server Error: server action failed', {
-        status: 500,
-      })
+  if (renderRequest.isAction === true) {
+    if (renderRequest.actionId) {
+      // action is called via `ReactClient.setServerCallback`.
+      const contentType = request.headers.get('content-type')
+      const body = contentType?.startsWith('multipart/form-data')
+        ? await request.formData()
+        : await request.text()
+      temporaryReferences = createTemporaryReferenceSet()
+      const args = await decodeReply(body, { temporaryReferences })
+      const action = await loadServerAction(renderRequest.actionId)
+      try {
+        const data = await action.apply(null, args)
+        returnValue = { ok: true, data }
+      } catch (e) {
+        returnValue = { ok: false, data: e }
+        actionStatus = 500
+      }
+    } else {
+      // otherwise server function is called via `<form action={...}>`
+      // before hydration (e.g. when javascript is disabled).
+      // aka progressive enhancement.
+      const formData = await request.formData()
+      const decodedAction = await decodeAction(formData)
+      try {
+        const result = await decodedAction()
+        formState = await decodeFormState(result, formData)
+      } catch (e) {
+        // there's no single general obvious way to surface this error,
+        // so explicitly return classic 500 response.
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
+        })
+      }
     }
   }
 
@@ -81,7 +82,7 @@ export default async function handler(request: Request): Promise<Response> {
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
-  if (renderRequest.type === 'rsc') {
+  if (renderRequest.isRsc) {
     return new Response(rscStream, {
       status: actionStatus,
       headers: {

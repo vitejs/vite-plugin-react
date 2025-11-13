@@ -1,7 +1,8 @@
 // TODO: explain
 type RenderRequest = {
-  type: 'rsc' | 'html'
-  action?: string | boolean // action id string for js request
+  isRsc: boolean
+  isAction: boolean
+  actionId?: string
   request: Request
   url: URL
 }
@@ -28,6 +29,7 @@ export function encodeRenderRequest(
 
 export function decodeRenderRequest(request: Request): RenderRequest {
   const url = new URL(request.url)
+  const isAction = request.method === 'POST'
   if (url.pathname.endsWith(URL_POSTFIX)) {
     url.pathname = url.pathname.slice(0, -URL_POSTFIX.length)
     const actionId = request.headers.get(HEADER_ACTION_ID) || undefined
@@ -35,15 +37,16 @@ export function decodeRenderRequest(request: Request): RenderRequest {
       throw new Error('Missing action id header for RSC action request')
     }
     return {
-      type: 'rsc',
-      action: actionId,
+      isRsc: true,
+      isAction,
+      actionId,
       request: new Request(url, request),
       url,
     }
   } else {
     return {
-      type: 'html',
-      action: request.method === 'POST',
+      isRsc: false,
+      isAction,
       request,
       url,
     }
