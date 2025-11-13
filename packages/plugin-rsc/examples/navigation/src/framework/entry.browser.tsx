@@ -10,6 +10,7 @@ import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 import { NavigationManager, type NavigationState } from './navigation'
+import { GlobalErrorBoundary } from './error-boundary'
 
 async function main() {
   const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
@@ -99,7 +100,9 @@ async function main() {
   hydrateRoot(
     document,
     <React.StrictMode>
-      <BrowserRoot />
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
     </React.StrictMode>,
     { formState: initialPayload.formState },
   )
