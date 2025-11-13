@@ -49,11 +49,11 @@ async function main() {
   // register a handler which will be internally called by React
   // on server function request after hydration.
   setServerCallback(async (id, args) => {
+    const temporaryReferences = createTemporaryReferenceSet()
     const renderRequest = createRscRenderRequest(window.location.href, {
       id,
-      body: await encodeReply(args),
+      body: await encodeReply(args, { temporaryReferences }),
     })
-    const temporaryReferences = createTemporaryReferenceSet()
     const payload = await createFromFetch<RscPayload>(fetch(renderRequest), {
       temporaryReferences,
     })
