@@ -1,3 +1,9 @@
+// Framework conventions (arbitrary choices for this demo):
+// - Use `_.rsc` URL suffix to differentiate RSC requests from SSR requests
+// - Use `x-rsc-action` header to pass server action ID
+const URL_POSTFIX = '_.rsc'
+const HEADER_ACTION_ID = 'x-rsc-action'
+
 // Parsed request information used to route between RSC/SSR rendering and action handling.
 // Created by parseRenderRequest() from incoming HTTP requests.
 type RenderRequest = {
@@ -7,9 +13,6 @@ type RenderRequest = {
   request: Request // normalized Request with _.rsc suffix removed from URL
   url: URL // normalized URL with _.rsc suffix removed
 }
-
-const URL_POSTFIX = '_.rsc'
-const HEADER_ACTION_ID = 'x-rsc-action'
 
 export function createRenderRequest(
   url: URL,

@@ -69,6 +69,7 @@ async function handler(request: Request): Promise<Response> {
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
+  // Respond RSC stream without HTML rendering as decided by `RenderRequest`
   if (renderRequest.isRsc) {
     return new Response(rscStream, {
       status: actionStatus,
