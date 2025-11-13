@@ -14,11 +14,11 @@ type RenderRequest = {
   url: URL // normalized URL with _.rsc suffix removed
 }
 
-export function createRenderRequest(
-  url: URL,
+export function createRscRenderRequest(
+  urlString: string,
   action?: { id: string; body: BodyInit },
 ): Request {
-  url = new URL(url)
+  const url = new URL(urlString)
   url.pathname += URL_POSTFIX
   const headers = new Headers()
   if (action) {

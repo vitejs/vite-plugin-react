@@ -10,7 +10,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import { GlobalErrorBoundary } from './error-boundary'
 import type { RscPayload } from './entry.rsc'
-import { createRenderRequest } from './request'
+import { createRscRenderRequest } from './request'
 
 async function main() {
   // stash `setPayload` function to trigger re-rendering
@@ -41,8 +41,7 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const url = new URL(window.location.href)
-    const renderRequest = createRenderRequest(url)
+    const renderRequest = createRscRenderRequest(window.location.href)
     const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
     setPayload(payload)
   }
@@ -50,8 +49,7 @@ async function main() {
   // register a handler which will be internally called by React
   // on server function request after hydration.
   setServerCallback(async (id, args) => {
-    const url = new URL(window.location.href)
-    const renderRequest = createRenderRequest(url, {
+    const renderRequest = createRscRenderRequest(window.location.href, {
       id,
       body: await encodeReply(args),
     })
