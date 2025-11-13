@@ -6,7 +6,7 @@ import rsc from '@vitejs/plugin-rsc'
 import mdx from '@mdx-js/rollup'
 import react from '@vitejs/plugin-react'
 import { type Plugin, type ResolvedConfig, defineConfig } from 'vite'
-import { RSC_POSTFIX } from './src/framework/shared'
+const RSC_POSTFIX = '_.rsc'
 
 export default defineConfig({
   plugins: [
