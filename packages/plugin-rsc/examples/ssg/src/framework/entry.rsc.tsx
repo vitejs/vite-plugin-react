@@ -19,7 +19,6 @@ export default async function handler(request: Request): Promise<Response> {
     return new Response(rscStream, {
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
-        vary: 'accept',
       },
     })
   }
@@ -33,7 +32,6 @@ export default async function handler(request: Request): Promise<Response> {
     status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
-      vary: 'accept',
     },
   })
 }

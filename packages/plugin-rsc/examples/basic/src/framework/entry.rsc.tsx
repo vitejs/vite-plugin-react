@@ -8,6 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import type React from 'react'
+import { parseRenderRequest } from './request.tsx'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -34,23 +35,24 @@ export async function handleRequest({
   getRoot: () => React.ReactNode
   nonce?: string
 }): Promise<Response> {
+  // differentiate RSC, SSR, action, etc.
+  const renderRequest = parseRenderRequest(request)
+
   // handle server function request
-  const isAction = request.method === 'POST'
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
-  if (isAction) {
-    // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
-    const actionId = request.headers.get('x-rsc-action')
-    if (actionId) {
+  if (renderRequest.isAction === true) {
+    if (renderRequest.actionId) {
+      // action is called via `ReactClient.setServerCallback`.
       const contentType = request.headers.get('content-type')
       const body = contentType?.startsWith('multipart/form-data')
         ? await request.formData()
         : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
-      const action = await loadServerAction(actionId)
+      const action = await loadServerAction(renderRequest.actionId)
       try {
         const data = await action.apply(null, args)
         returnValue = { ok: true, data }
@@ -77,25 +79,15 @@ export async function handleRequest({
     }
   }
 
-  const url = new URL(request.url)
   const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
-  // respond RSC stream without HTML rendering based on framework's convention.
-  // here we use request header `content-type`.
-  // additionally we allow `?__rsc` and `?__html` to easily view payload directly.
-  const isRscRequest =
-    (!request.headers.get('accept')?.includes('text/html') &&
-      !url.searchParams.has('__html')) ||
-    url.searchParams.has('__rsc')
-
-  if (isRscRequest) {
+  if (renderRequest.isRsc) {
     return new Response(rscStream, {
       status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
-        vary: 'accept',
       },
     })
   }
@@ -111,7 +103,7 @@ export async function handleRequest({
     formState,
     nonce,
     // allow quick simulation of javascript disabled browser
-    debugNojs: url.searchParams.has('__nojs'),
+    debugNojs: renderRequest.url.searchParams.has('__nojs'),
   })
 
   // respond html
@@ -119,7 +111,6 @@ export async function handleRequest({
     status: ssrResult.status,
     headers: {
       'content-type': 'text/html;charset=utf-8',
-      vary: 'accept',
     },
   })
 }

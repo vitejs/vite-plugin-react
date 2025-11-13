@@ -8,7 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
-import { decodeRenderRequest } from './request.tsx'
+import { parseRenderRequest } from './request.tsx'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -27,7 +27,7 @@ export type RscPayload = {
 // however, how server entries are executed can be customized by registering own server handler.
 export default async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
-  const renderRequest = decodeRenderRequest(request)
+  const renderRequest = parseRenderRequest(request)
 
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
