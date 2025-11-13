@@ -8,8 +8,9 @@ import {
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-import { RSC_POSTFIX, type RscPayload } from './shared'
 import { GlobalErrorBoundary } from './error-boundary'
+import type { RscPayload } from './entry.rsc'
+import { encodeRenderRequest } from './request'
 
 async function main() {
   // stash `setPayload` function to trigger re-rendering
@@ -41,8 +42,8 @@ async function main() {
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
     const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
-    const payload = await createFromFetch<RscPayload>(fetch(url))
+    const renderRequest = encodeRenderRequest(url)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
     setPayload(payload)
   }
 
@@ -50,18 +51,14 @@ async function main() {
   // on server function request after hydration.
   setServerCallback(async (id, args) => {
     const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
+    const renderRequest = encodeRenderRequest(url, {
+      id,
+      body: await encodeReply(args),
+    })
     const temporaryReferences = createTemporaryReferenceSet()
-    const payload = await createFromFetch<RscPayload>(
-      fetch(url, {
-        method: 'POST',
-        body: await encodeReply(args, { temporaryReferences }),
-        headers: {
-          'x-rsc-action': id,
-        },
-      }),
-      { temporaryReferences },
-    )
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest), {
+      temporaryReferences,
+    })
     setPayload(payload)
     const { ok, data } = payload.returnValue!
     if (!ok) throw data

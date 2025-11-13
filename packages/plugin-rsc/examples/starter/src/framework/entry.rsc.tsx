@@ -8,52 +8,64 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
-import { RSC_POSTFIX, type RscPayload } from './shared'
+import { decodeRenderRequest } from './request.tsx'
+
+// The schema of payload which is serialized into RSC stream on rsc environment
+// and deserialized on ssr/client environments.
+export type RscPayload = {
+  // this demo renders/serializes/deserizlies entire root html element
+  // but this mechanism can be changed to render/fetch different parts of components
+  // based on your own route conventions.
+  root: React.ReactNode
+  // server action return value of non-progressive enhancement case
+  returnValue?: { ok: boolean; data: unknown }
+  // server action form state (e.g. useActionState) of progressive enhancement case
+  formState?: ReactFormState
+}
 
 // the plugin by default assumes `rsc` entry having default export of request handler.
-// however, how server entries are executed can be customized by registering
-// own server handler e.g. `@cloudflare/vite-plugin`.
+// however, how server entries are executed can be customized by registering own server handler.
 export default async function handler(request: Request): Promise<Response> {
+  // differentiate RSC, SSR, action, etc.
+  const renderRequest = decodeRenderRequest(request)
+
   // handle server function request
-  const isAction = request.method === 'POST'
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
-  if (isAction) {
-    // x-rsc-action header exists when action is called via `ReactClient.setServerCallback`.
-    const actionId = request.headers.get('x-rsc-action')
-    if (actionId) {
-      const contentType = request.headers.get('content-type')
-      const body = contentType?.startsWith('multipart/form-data')
-        ? await request.formData()
-        : await request.text()
-      temporaryReferences = createTemporaryReferenceSet()
-      const args = await decodeReply(body, { temporaryReferences })
-      const action = await loadServerAction(actionId)
-      try {
-        const data = await action.apply(null, args)
-        returnValue = { ok: true, data }
-      } catch (e) {
-        returnValue = { ok: false, data: e }
-        actionStatus = 500
-      }
-    } else {
-      // otherwise server function is called via `<form action={...}>`
-      // before hydration (e.g. when javascript is disabled).
-      // aka progressive enhancement.
-      const formData = await request.formData()
-      const decodedAction = await decodeAction(formData)
-      try {
-        const result = await decodedAction()
-        formState = await decodeFormState(result, formData)
-      } catch (e) {
-        // there's no single general obvious way to surface this error,
-        // so explicitly return classic 500 response.
-        return new Response('Internal Server Error: server action failed', {
-          status: 500,
-        })
-      }
+  if (typeof renderRequest.action === 'string') {
+    // action is called via `ReactClient.setServerCallback`.
+    const contentType = request.headers.get('content-type')
+    const body = contentType?.startsWith('multipart/form-data')
+      ? await request.formData()
+      : await request.text()
+    temporaryReferences = createTemporaryReferenceSet()
+    const args = await decodeReply(body, { temporaryReferences })
+    const action = await loadServerAction(renderRequest.action)
+    try {
+      const data = await action.apply(null, args)
+      returnValue = { ok: true, data }
+    } catch (e) {
+      returnValue = { ok: false, data: e }
+      actionStatus = 500
+    }
+  }
+  if (renderRequest.action === true) {
+    // otherwise server function is called via `<form action={...}>`
+    // before hydration (e.g. when javascript is disabled).
+    // aka progressive enhancement.
+    const formData = await request.formData()
+    const decodedAction = await decodeAction(formData)
+    try {
+      const result = await decodedAction()
+      formState = await decodeFormState(result, formData)
+    } catch (e) {
+      // there's no single general obvious way to surface this error,
+      // so explicitly return classic 500 response.
+      return new Response('Internal Server Error: server action failed', {
+        status: 500,
+      })
     }
   }
 
@@ -61,22 +73,15 @@ export default async function handler(request: Request): Promise<Response> {
   // we render RSC stream after handling server function request
   // so that new render reflects updated state from server function call
   // to achieve single round trip to mutate and fetch from server.
-  let url = new URL(request.url)
-  let isRscRequest = false
-  if (url.pathname.endsWith(RSC_POSTFIX)) {
-    isRscRequest = true
-    url.pathname = url.pathname.slice(0, -RSC_POSTFIX.length)
-  }
-
   const rscPayload: RscPayload = {
-    root: <Root url={url} />,
+    root: <Root url={renderRequest.url} />,
     formState,
     returnValue,
   }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
-  if (isRscRequest) {
+  if (renderRequest.type === 'rsc') {
     return new Response(rscStream, {
       status: actionStatus,
       headers: {
@@ -95,7 +100,7 @@ export default async function handler(request: Request): Promise<Response> {
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     // allow quick simulation of javascript disabled browser
-    debugNojs: url.searchParams.has('__nojs'),
+    debugNojs: renderRequest.url.searchParams.has('__nojs'),
   })
 
   // respond html
