@@ -37,7 +37,7 @@ export function decodeRenderRequest(request: Request): RenderRequest {
     return {
       type: 'rsc',
       action: actionId,
-      request: new Request(url.toString(), request), // TODO: undici compat?
+      request: new Request(url, request),
       url,
     }
   } else {
