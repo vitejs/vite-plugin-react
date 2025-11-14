@@ -52,7 +52,6 @@ export default async function handler(request: Request): Promise<Response> {
     status: returnValue?.ok === false ? 500 : undefined,
     headers: {
       'content-type': 'text/x-component;charset=utf-8',
-      vary: 'accept',
     },
   })
 }
