@@ -17,8 +17,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.17",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
