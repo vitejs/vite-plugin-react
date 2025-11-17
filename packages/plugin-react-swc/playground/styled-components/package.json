@@ -13,7 +13,7 @@
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
-    "@swc/plugin-styled-components": "^9.5.0",
+    "@swc/plugin-styled-components": "^11.0.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/styled-components": "^5.1.35",
