@@ -18,10 +18,6 @@ async function main() {
 
   const manager = new NavigationManager(initialPayload)
 
-  function Router(props: React.PropsWithChildren<{}>) {
-    return props.children
-  }
-
   function BrowserRoot() {
     const [state, setState] = React.useState(manager.getState())
     const [isPending, startTransition] = React.useTransition()
