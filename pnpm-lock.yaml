@@ -653,10 +653,10 @@ importers:
     devDependencies:
       '@types/react':
         specifier: ^19.2.2
-        version: 19.2.2
+        version: 19.2.5
       '@types/react-dom':
         specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
+        version: 19.2.3(@types/react@19.2.5)
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
@@ -5675,7 +5675,7 @@ snapshots:
 
   '@types/hoist-non-react-statics@3.3.6':
     dependencies:
-      '@types/react': 18.3.20
+      '@types/react': 19.2.5
       hoist-non-react-statics: 3.3.2
 
   '@types/json-schema@7.0.15': {}
