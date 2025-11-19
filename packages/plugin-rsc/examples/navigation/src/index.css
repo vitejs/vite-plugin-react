@@ -65,6 +65,11 @@ body {
   color: white;
 }
 
+.nav-links a.active:hover {
+  background: #535bf2;
+  border-color: transparent;
+}
+
 .main {
   display: flex;
   justify-content: center;
