@@ -1,5 +1,6 @@
 import { createFromFetch } from '@vitejs/plugin-rsc/browser'
 import type { RscPayload } from './entry.rsc'
+import { createRscRenderRequest } from './request'
 
 // https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router-instance.ts
 // https://github.com/vercel/next.js/blob/9436dce61f1a3ff9478261dc2eba47e0527acf3d/packages/next/src/client/components/app-router.tsx
@@ -69,7 +70,7 @@ export class NavigationManager {
         url,
         push,
         payloadPromise: this.cache.run(() =>
-          createFromFetch<RscPayload>(fetch(url)),
+          createFromFetch<RscPayload>(fetch(createRscRenderRequest(url))),
         ),
       }
       this.setState(this.state)

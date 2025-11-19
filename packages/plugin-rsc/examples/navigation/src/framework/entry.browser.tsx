@@ -6,11 +6,12 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
 import { NavigationManager, type NavigationState } from './navigation'
 import { GlobalErrorBoundary } from './error-boundary'
+import { createRscRenderRequest } from './request'
 
 async function main() {
   const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
@@ -81,31 +82,35 @@ async function main() {
   }
 
   setServerCallback(async (id, args) => {
-    const url = new URL(window.location.href)
     const temporaryReferences = createTemporaryReferenceSet()
-    const payload = await createFromFetch<RscPayload>(
-      fetch(url, {
-        method: 'POST',
-        body: await encodeReply(args, { temporaryReferences }),
-        headers: {
-          'x-rsc-action': id,
-        },
-      }),
-      { temporaryReferences },
-    )
+    const renderRequest = createRscRenderRequest(window.location.href, {
+      id,
+      body: await encodeReply(args, { temporaryReferences }),
+    })
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest), {
+      temporaryReferences,
+    })
     manager.handleServerAction(payload)
-    return payload.returnValue
+    const { ok, data } = payload.returnValue!
+    if (!ok) throw data
+    return data
   })
 
-  hydrateRoot(
-    document,
+  const browserRoot = (
     <React.StrictMode>
       <GlobalErrorBoundary>
         <BrowserRoot />
       </GlobalErrorBoundary>
-    </React.StrictMode>,
-    { formState: initialPayload.formState },
+    </React.StrictMode>
   )
+
+  if ('__NO_HYDRATE' in globalThis) {
+    createRoot(document).render(browserRoot)
+  } else {
+    hydrateRoot(document, browserRoot, {
+      formState: initialPayload.formState,
+    })
+  }
 
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
