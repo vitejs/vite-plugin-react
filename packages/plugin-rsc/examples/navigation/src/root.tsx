@@ -4,7 +4,7 @@ import { AboutPage } from './routes/about'
 import { SlowPage } from './routes/slow'
 
 export function Root(props: { url: URL }) {
-  const pathname = props.url.pathname
+  const { pathname, searchParams } = props.url
 
   let page: React.ReactNode
   let title = 'Navigation Example'
@@ -42,8 +42,25 @@ export function Root(props: { url: URL }) {
               >
                 About
               </a>
-              <a href="/slow" className={pathname === '/slow' ? 'active' : ''}>
-                Slow Page
+              <a
+                href="/slow?delay=1000"
+                className={
+                  pathname === '/slow' && searchParams.get('delay') === '1000'
+                    ? 'active'
+                    : ''
+                }
+              >
+                Slow Page (1s)
+              </a>
+              <a
+                href="/slow?delay=2000"
+                className={
+                  pathname === '/slow' && searchParams.get('delay') === '2000'
+                    ? 'active'
+                    : ''
+                }
+              >
+                Slow Page (2s)
               </a>
             </div>
           </nav>

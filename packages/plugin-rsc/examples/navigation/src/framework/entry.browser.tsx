@@ -9,10 +9,10 @@ import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
 import type { RscPayload } from './entry.rsc'
-import { NavigationManager, type NavigationState } from './navigation'
+// import { NavigationManager, type NavigationState } from './navigation'
 import { GlobalErrorBoundary } from './error-boundary'
 import { createRscRenderRequest } from './request'
-import { RouterContext, type RouterContextType } from './router'
+// import { RouterContext, type RouterContextType } from './router'
 // import { createBrowserHistory } from "@tanstack/history"
 
 type NavigationEntry = {
@@ -40,12 +40,12 @@ function RenderNavigationEntry({ entry }: { entry: NavigationEntry }) {
   return React.use(entry.data).root
 }
 
-class NavigationEntryManager {
-  // TODO
-  // entries for navigation stack
-  // TODO
-  // dispatch(url: string) {}
-}
+// class NavigationEntryManager {
+//   // TODO
+//   // entries for navigation stack
+//   // TODO
+//   // dispatch(url: string) {}
+// }
 
 async function main() {
   const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
@@ -81,8 +81,24 @@ async function main() {
     flush: () => {},
   }
 
+  let setCurrentEntry: React.Dispatch<React.SetStateAction<NavigationEntry>>
+
+  function navigate(url: string, options?: { replace?: boolean }) {
+    setCurrentEntry({
+      url,
+      data: createFromFetch<RscPayload>(fetch(createRscRenderRequest(url))),
+      flush: () => {
+        if (options?.replace) {
+          window.history.replaceState({}, '', url)
+        } else {
+          window.history.pushState({}, '', url)
+        }
+      },
+    })
+  }
+
   function BrowserRoot() {
-    const [currentEntry, setCurrentEntry] =
+    const [currentEntry, setCurrentEntry_] =
       React.useState<NavigationEntry>(initialEntry)
     // const [isPending, setIsPending] = React.useOptimistic(false);
     const [isPending, startTransition] = React.useTransition()
@@ -97,6 +113,8 @@ async function main() {
     // }, [])
 
     React.useEffect(() => {
+      setCurrentEntry = setCurrentEntry_
+
       const handleAnchorClick = (e: MouseEvent) => {
         const link = (e.target as Element).closest('a')
         if (
@@ -115,15 +133,7 @@ async function main() {
         ) {
           e.preventDefault()
           startTransition(() => {
-            setCurrentEntry({
-              url: link.href,
-              data: createFromFetch<RscPayload>(
-                fetch(createRscRenderRequest(link.href)),
-              ),
-              flush: () => {
-                window.history.pushState({}, '', link.href)
-              },
-            })
+            navigate(link.href)
           })
         }
       }
@@ -187,6 +197,7 @@ async function main() {
   //   return null
   // }
 
+  // TODO: expose `isPending` via store / context
   function TransitionStatus(props: { isPending: boolean }) {
     React.useEffect(() => {
       let el = document.querySelector('#pending') as HTMLDivElement
@@ -235,6 +246,11 @@ async function main() {
     // manager.handleServerAction(payload)
     const { ok, data } = payload.returnValue!
     if (!ok) throw data
+    setCurrentEntry({
+      url: window.location.href,
+      data: Promise.resolve(payload),
+      flush: () => {},
+    })
     return data
   })
 
@@ -258,6 +274,7 @@ async function main() {
     import.meta.hot.on('rsc:update', () => {
       // manager.invalidateCache()
       // manager.navigate(window.location.href)
+      navigate(window.location.href, { replace: true })
     })
   }
 }
