@@ -134,7 +134,11 @@ export type RscPluginOptions = {
     | false
 
   /** @default false */
-  loadModuleDevProxy?: boolean
+  loadModuleDevProxy?:
+    | boolean
+    | {
+        url: string
+      }
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
@@ -728,10 +732,16 @@ export default function vitePluginRsc(
             this.environment.mode === 'dev' &&
             rscPluginOptions.loadModuleDevProxy
           ) {
-            const origin = server.resolvedUrls?.local[0]
-            assert(origin, '[vite-rsc] no server for loadModueleDevProxy')
+            let baseUrl: string
+            if (typeof rscPluginOptions.loadModuleDevProxy === 'object') {
+              baseUrl = rscPluginOptions.loadModuleDevProxy.url
+            } else {
+              const origin = server.resolvedUrls?.local[0]
+              assert(origin, '[vite-rsc] no server for loadModueleDevProxy')
+              baseUrl = origin
+            }
             const endpoint =
-              origin +
+              baseUrl +
               '__vite_rsc_load_module_dev_proxy?' +
               new URLSearchParams({ environmentName, entryName })
             replacement = `__vite_rsc_rpc.createRpcClient(${JSON.stringify({
