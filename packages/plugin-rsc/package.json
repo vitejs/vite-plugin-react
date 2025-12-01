@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.56.1",
+    "@playwright/test": "^1.57.0",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.8",
     "@types/node": "^24.10.1",
@@ -63,7 +63,7 @@
     "react-dom": "^19.2.0",
     "react-server-dom-webpack": "^19.2.0",
     "tinyexec": "^1.0.2",
-    "tsdown": "^0.16.4"
+    "tsdown": "^0.16.8"
   },
   "peerDependencies": {
     "react": "*",
