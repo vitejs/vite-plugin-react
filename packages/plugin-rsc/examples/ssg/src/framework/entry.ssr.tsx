@@ -3,7 +3,6 @@ import React from 'react'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
-
 import type { RscPayload } from './shared'
 
 export async function renderHtml(

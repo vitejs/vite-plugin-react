@@ -24,7 +24,6 @@ import {
   parseAstAsync,
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
-
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
@@ -736,8 +735,9 @@ export default function vitePluginRsc(
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
             replacement =
-              `globalThis.__viteRscDevServer.environments[${JSON.stringify(environmentName)}]` +
-              `.runner.import(${JSON.stringify(resolved.id)})`
+              `globalThis.__viteRscDevServer.environments[${JSON.stringify(
+                environmentName,
+              )}]` + `.runner.import(${JSON.stringify(resolved.id)})`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
@@ -1397,7 +1397,9 @@ function vitePluginUseClient(
             (v) => v.packageSource === source,
           )!
           const exportNames = meta.exportNames
-          return `export {${exportNames.join(',')}} from ${JSON.stringify(source)};\n`
+          return `export {${exportNames.join(',')}} from ${JSON.stringify(
+            source,
+          )};\n`
         }
       },
       generateBundle(_options, bundle) {
@@ -1586,7 +1588,9 @@ function vitePluginDefineEncryptionKey(
           const normalizedPath = normalizeRelativePath(
             path.relative(path.join(chunk.fileName, '..'), KEY_FILE),
           )
-          const replacement = `import(${JSON.stringify(normalizedPath)}).then(__m => __m.default)`
+          const replacement = `import(${JSON.stringify(
+            normalizedPath,
+          )}).then(__m => __m.default)`
           code = code.replaceAll(KEY_PLACEHOLDER, () => replacement)
           return { code }
         }
@@ -2196,7 +2200,9 @@ function vitePluginRscCss(
             return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
               ${generateResourcesCode(
-                `__vite_rsc_assets_manifest__.serverResources[${JSON.stringify(key)}]`,
+                `__vite_rsc_assets_manifest__.serverResources[${JSON.stringify(
+                  key,
+                )}]`,
                 manager,
               )}
             `
@@ -2309,7 +2315,9 @@ function __vite_rsc_wrap_css__(value, name) {
     return __vite_rsc_react__.createElement(
       __vite_rsc_react__.Fragment,
       null,
-      import.meta.viteRsc.loadCss(${options.id ? JSON.stringify(options.id) : ''}),
+      import.meta.viteRsc.loadCss(${
+        options.id ? JSON.stringify(options.id) : ''
+      }),
       __vite_rsc_react__.createElement(value, props),
     );
   }

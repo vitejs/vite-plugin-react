@@ -1,5 +1,4 @@
 import type { Program } from 'estree'
-
 import { tinyassert } from '@hiogawa/utils'
 import { extract_names } from 'periscopic'
 

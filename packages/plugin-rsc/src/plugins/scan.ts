@@ -1,7 +1,6 @@
 import * as esModuleLexer from 'es-module-lexer'
 import { walk } from 'estree-walker'
 import { parseAstAsync, type Plugin } from 'vite'
-
 import type { RscPluginManager } from '../plugin'
 
 // During scan build, we strip all code but imports to

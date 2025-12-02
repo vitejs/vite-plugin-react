@@ -1,6 +1,5 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
-
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
 
@@ -17,7 +16,11 @@ describe(transformHoistInlineDirective, () => {
     const { output } = transformHoistInlineDirective(input, ast, {
       runtime: (value, name, meta) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)}` +
-        `${options?.directive instanceof RegExp ? `, ${JSON.stringify(meta)}` : ''})`,
+        `${
+          options?.directive instanceof RegExp
+            ? `, ${JSON.stringify(meta)}`
+            : ''
+        })`,
       directive: options?.directive ?? 'use server',
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,

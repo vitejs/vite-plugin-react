@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { clientDep } from './client-dep'
 import { ClientDepComp } from './client-dep-comp'
 

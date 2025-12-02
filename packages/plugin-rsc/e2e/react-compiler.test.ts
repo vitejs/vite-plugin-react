@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-
 import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 import { defineStarterTest } from './starter'

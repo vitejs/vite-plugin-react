@@ -35,10 +35,7 @@ export default defineConfig({
         fs.cpSync(
           './node_modules/react-server-dom-webpack',
           './dist/vendor/react-server-dom',
-          {
-            recursive: true,
-            dereference: true,
-          },
+          { recursive: true, dereference: true },
         )
         fs.rmSync('./dist/vendor/react-server-dom/node_modules', {
           recursive: true,

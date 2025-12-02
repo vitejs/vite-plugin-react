@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { clientDep } from './client-dep'
 
 export function TestHmrClientDep2(props: { url: Pick<URL, 'search'> }) {

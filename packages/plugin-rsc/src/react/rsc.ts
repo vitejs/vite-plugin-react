@@ -1,10 +1,8 @@
 import type { ReactFormState } from 'react-dom/client'
-
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
 // @ts-ignore
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
-
 import {
   createClientManifest,
   createServerDecodeClientManifest,

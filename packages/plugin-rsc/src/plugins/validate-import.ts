@@ -1,5 +1,4 @@
 import type { DevEnvironment, Plugin, Rollup } from 'vite'
-
 import path from 'node:path'
 
 // https://github.com/vercel/next.js/blob/90f564d376153fe0b5808eab7b83665ee5e08aaf/packages/next/src/build/webpack-config.ts#L1249-L1280

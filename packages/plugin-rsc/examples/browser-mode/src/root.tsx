@@ -1,6 +1,5 @@
 import './index.css'
 import viteLogo from '/vite.svg'
-
 import { TestActionBind } from './action-bind/server.tsx'
 import { TestUseActionState } from './action-from-client/client.tsx'
 import { getServerCounter, updateServerCounter } from './action.tsx'

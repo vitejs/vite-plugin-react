@@ -4,7 +4,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseAstAsync, type Plugin } from 'vite'
 import { findClosestPkgJsonPath } from 'vitefu'
-
 import { transformCjsToEsm } from '../transforms/cjs'
 import { parseIdQuery } from './shared'
 

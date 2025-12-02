@@ -1,5 +1,4 @@
 import type { PluginItem as BabelPlugin } from '@babel/core'
-
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 

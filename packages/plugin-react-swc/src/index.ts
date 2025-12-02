@@ -1,5 +1,4 @@
 import type { Plugin } from 'vite'
-
 import { exactRegex } from '@rolldown/pluginutils'
 import {
   type JscTarget,

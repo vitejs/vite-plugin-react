@@ -1,5 +1,4 @@
 import type { Program, Node } from 'estree'
-
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import path from 'node:path'

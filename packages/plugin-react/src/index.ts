@@ -1,7 +1,6 @@
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
 import type { Plugin, ResolvedConfig } from 'vite'
-
 import {
   exactRegex,
   makeIdFiltersToMatchWithQuery,

@@ -1,5 +1,4 @@
 import type { ReactFormState } from 'react-dom/client'
-
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -8,7 +7,6 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
 

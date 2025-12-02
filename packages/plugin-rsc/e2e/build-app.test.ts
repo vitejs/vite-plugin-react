@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { x } from 'tinyexec'
-
 import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 

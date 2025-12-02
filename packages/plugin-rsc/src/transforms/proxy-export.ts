@@ -1,9 +1,7 @@
 import type { Node, Program } from 'estree'
-
 import { tinyassert } from '@hiogawa/utils'
 import MagicString from 'magic-string'
 import { extract_names } from 'periscopic'
-
 import { hasDirective } from './utils'
 
 export type TransformProxyExportOptions = {
@@ -105,9 +103,7 @@ export function transformProxyExport(
                 const value = options.code.slice(decl.init.start, decl.init.end)
                 const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
                   name,
-                  {
-                    value,
-                  },
+                  { value },
                 )};`
                 output.update(node.start, node.end, newCode)
                 exportNames.push(name)

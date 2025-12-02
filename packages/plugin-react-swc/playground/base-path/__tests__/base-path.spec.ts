@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-
 import { setupDevServer, setupWaitForLogs } from '../../utils.ts'
 
 test('Base path HMR', async ({ page }) => {

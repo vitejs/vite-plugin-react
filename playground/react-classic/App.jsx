@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-
 import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 
 function App() {

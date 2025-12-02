@@ -103,7 +103,9 @@ if (!isBuild) {
         new RegExp(
           `^${escapeRegex(
             '[vite] invalidate /hmr/no-exported-comp.jsx: Could not Fast Refresh ("Foo" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/',
-          )}plugin-react(?:-\\w+)?${escapeRegex('#consistent-components-exports')}`,
+          )}plugin-react(?:-\\w+)?${escapeRegex(
+            '#consistent-components-exports',
+          )}`,
         ),
         '[vite] hot updated: /hmr/no-exported-comp.jsx',
         '[vite] hot updated: /hmr/parent.jsx',
@@ -132,7 +134,9 @@ if (!isBuild) {
         new RegExp(
           `^${escapeRegex(
             '[vite] invalidate /context/CountProvider.jsx: Could not Fast Refresh ("CountContext" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/',
-          )}plugin-react(?:-\\w+)?${escapeRegex('#consistent-components-exports')}`,
+          )}plugin-react(?:-\\w+)?${escapeRegex(
+            '#consistent-components-exports',
+          )}`,
         ),
         '[vite] hot updated: /context/CountProvider.jsx',
         '[vite] hot updated: /App.jsx',

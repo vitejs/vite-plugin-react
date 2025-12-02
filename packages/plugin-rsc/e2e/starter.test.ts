@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { x } from 'tinyexec'
-
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 import { defineStarterTest } from './starter'

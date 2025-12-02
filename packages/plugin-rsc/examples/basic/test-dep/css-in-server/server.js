@@ -1,5 +1,4 @@
 import React from 'react'
-
 import './server.css'
 
 const h = React.createElement

@@ -1,7 +1,6 @@
 import { test } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
-
 import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 

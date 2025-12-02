@@ -11,7 +11,6 @@ import type {
   ViteDevServer,
 } from 'vite'
 import type { RunnerTestFile } from 'vitest'
-
 import fs from 'fs-extra'
 import path, { dirname, resolve } from 'node:path'
 import { chromium } from 'playwright-chromium'

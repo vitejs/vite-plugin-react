@@ -1,5 +1,4 @@
 import type MagicString from 'magic-string'
-
 import { hashString } from '@hiogawa/utils'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'

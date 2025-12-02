@@ -1,6 +1,5 @@
 import './styles.css'
 import { Link, Outlet } from 'react-router'
-
 import { TestClientState, TestHydrated } from './routes/client'
 import { DumpError, GlobalNavigationLoadingBar } from './routes/root.client'
 

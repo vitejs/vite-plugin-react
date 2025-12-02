@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { changeCounter } from './server.js'
 
 const h = React.createElement

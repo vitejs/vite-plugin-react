@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-
 import {
   setupBuildAndPreview,
   setupDevServer,

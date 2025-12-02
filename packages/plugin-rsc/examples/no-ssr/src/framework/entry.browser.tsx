@@ -6,7 +6,6 @@ import {
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-
 import type { RscPayload } from './entry.rsc'
 
 async function main() {

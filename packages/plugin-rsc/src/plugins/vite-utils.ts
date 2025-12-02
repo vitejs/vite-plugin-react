@@ -1,7 +1,6 @@
-import type { DevEnvironment, ErrorPayload, Rollup } from 'vite'
-
 // misc utilities copied from vite
 
+import type { DevEnvironment, ErrorPayload, Rollup } from 'vite'
 import fs from 'node:fs'
 import path from 'node:path'
 import { stripVTControlCharacters as strip } from 'node:util'

@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import { action } from './action'
 
 export function TestTemporaryReference() {

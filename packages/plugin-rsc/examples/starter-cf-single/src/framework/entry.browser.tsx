@@ -8,9 +8,7 @@ import {
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-
 import type { RscPayload } from './entry.rsc'
-
 import { GlobalErrorBoundary } from './error-boundary'
 import { createRscRenderRequest } from './request'
 

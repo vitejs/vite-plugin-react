@@ -1,6 +1,5 @@
 import type { BrowserServer } from 'playwright-chromium'
 import type { TestProject } from 'vitest/node'
-
 import fs from 'fs-extra'
 import path from 'node:path'
 import { chromium } from 'playwright-chromium'

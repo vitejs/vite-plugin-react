@@ -1,7 +1,5 @@
 import { memoize } from '@hiogawa/utils'
-
 import type { ServerConsumerManifest } from '../types'
-
 import { removeReferenceCacheTag, setInternalRequire } from './shared'
 
 let init = false

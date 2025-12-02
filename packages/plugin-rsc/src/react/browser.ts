@@ -1,6 +1,5 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser'
-
 import type { CallServerCallback } from '../types'
 
 export { setRequireModule } from '../core/browser'

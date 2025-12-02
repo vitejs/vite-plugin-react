@@ -1,5 +1,4 @@
 import type { Program, Literal } from 'estree'
-
 import { tinyassert } from '@hiogawa/utils'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -102,7 +101,9 @@ export function transformHoistInlineDirective(
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
-            `const [${bindVars.join(',')}] = ${options.decode('$$hoist_encoded')};\n`,
+            `const [${bindVars.join(',')}] = ${options.decode(
+              '$$hoist_encoded',
+            )};\n`,
           )
         }
 

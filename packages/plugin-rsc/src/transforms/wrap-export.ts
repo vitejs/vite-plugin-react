@@ -1,5 +1,4 @@
 import type { Node, Program } from 'estree'
-
 import { tinyassert } from '@hiogawa/utils'
 import MagicString from 'magic-string'
 import { extract_names } from 'periscopic'
@@ -53,7 +52,11 @@ export function transformWrapExport(
     const newCode = exports
       .map((e) => [
         filter(e.name, e.meta) &&
-          `${e.name} = /* #__PURE__ */ ${options.runtime(e.name, e.name, e.meta)};\n`,
+          `${e.name} = /* #__PURE__ */ ${options.runtime(
+            e.name,
+            e.name,
+            e.meta,
+          )};\n`,
         `export { ${e.name} };\n`,
       ])
       .flat()
@@ -71,7 +74,11 @@ export function transformWrapExport(
     }
 
     toAppend.push(
-      `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(name, exportName, meta)}`,
+      `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
+        name,
+        exportName,
+        meta,
+      )}`,
       `export { $$wrap_${name} as ${exportName} }`,
     )
   }

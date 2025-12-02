@@ -1,9 +1,5 @@
 import { memoize, tinyassert } from '@hiogawa/utils'
-// @ts-ignore
-import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
-
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
-
 import {
   SERVER_DECODE_CLIENT_PREFIX,
   SERVER_REFERENCE_PREFIX,
@@ -11,6 +7,9 @@ import {
   removeReferenceCacheTag,
   setInternalRequire,
 } from './shared'
+
+// @ts-ignore
+import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 
 let init = false
 let requireModule!: (id: string) => unknown

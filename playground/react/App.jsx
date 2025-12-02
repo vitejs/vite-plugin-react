@@ -1,6 +1,5 @@
 import Button from 'jsx-entry'
 import { useState } from 'react'
-
 import { Accordion } from './components/Accordion'
 import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 import { ContextButton } from './context/ContextButton'

@@ -1,5 +1,4 @@
 import type { BuildOptions, Plugin } from 'vite'
-
 import { exactRegex } from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,

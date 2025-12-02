@@ -8,7 +8,6 @@ import {
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 import buildClientReferences from 'virtual:vite-rsc-browser-mode/build-client-references'
-
 import type { RscPayload } from './entry.rsc'
 
 let fetchServer: typeof import('./entry.rsc').fetchServer

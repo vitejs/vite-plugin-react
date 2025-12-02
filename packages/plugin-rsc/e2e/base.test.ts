@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { defineStarterTest } from './starter'
 

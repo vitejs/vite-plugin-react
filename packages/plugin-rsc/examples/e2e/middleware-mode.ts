@@ -1,5 +1,4 @@
 import type { Connect } from 'vite'
-
 import { createRequestListener } from '@remix-run/node-fetch-server'
 // @ts-ignore
 import connect from 'connect'

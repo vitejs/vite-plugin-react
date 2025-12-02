@@ -3,7 +3,6 @@ import os from 'node:os'
 import path from 'node:path'
 import { x } from 'tinyexec'
 import * as vite from 'vite'
-
 import { setupIsolatedFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 import { defineStarterTest } from './starter'

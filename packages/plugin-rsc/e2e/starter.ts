@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-
 import { type Fixture } from './fixture'
 import {
   expectNoPageError,

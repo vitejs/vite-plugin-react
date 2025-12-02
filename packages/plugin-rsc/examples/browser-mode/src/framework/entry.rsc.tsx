@@ -1,6 +1,5 @@
 import type React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-
 import {
   setRequireModule,
   renderToReadableStream,
@@ -11,7 +10,6 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/react/rsc'
 import buildServerReferences from 'virtual:vite-rsc-browser-mode/build-server-references'
-
 import { Root } from '../root'
 
 export type RscPayload = {

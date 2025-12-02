@@ -1,5 +1,4 @@
 import type { Plugin } from 'vite'
-
 import { exactRegex } from '@rolldown/pluginutils'
 
 export const runtimePublicPath = '/@react-refresh'
@@ -42,7 +41,9 @@ if (import.meta.hot && !inWebWorker) {
   }
 
   RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
-    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(id)}, currentExports);
+    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
+      id,
+    )}, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
       const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(

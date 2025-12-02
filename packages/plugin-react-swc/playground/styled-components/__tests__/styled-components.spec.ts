@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-
 import {
   expectColor,
   setupBuildAndPreview,

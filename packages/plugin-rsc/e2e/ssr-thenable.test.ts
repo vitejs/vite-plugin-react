@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import {
   expectNoPageError,

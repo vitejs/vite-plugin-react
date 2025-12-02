@@ -3,5 +3,8 @@
   "printWidth": 80,
   "semi": false,
   "singleQuote": true,
-  "experimentalSortImports": {}
+  "experimentalSortImports": {
+    "newlinesBetween": false,
+    "partitionByNewline": true
+  }
 }

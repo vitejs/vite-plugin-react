@@ -9,7 +9,6 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { x } from 'tinyexec'
 import { normalizePath, type Rollup } from 'vite'
-
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -391,9 +390,7 @@ function defineTest(f: Fixture) {
       if (!options.js) await page.goto(f.url())
       await expect(
         page.getByRole('button', { name: 'server-counter: 0' }),
-      ).toBeVisible({
-        timeout: 10,
-      })
+      ).toBeVisible({ timeout: 10 })
     }).toPass()
 
     await page.getByRole('button', { name: 'server-counter: 0' }).click()
@@ -406,9 +403,7 @@ function defineTest(f: Fixture) {
       if (!options.js) await page.goto(f.url())
       await expect(
         page.getByRole('button', { name: 'server-counter: 0' }),
-      ).toBeVisible({
-        timeout: 10,
-      })
+      ).toBeVisible({ timeout: 10 })
     }).toPass()
   }
 
@@ -806,9 +801,7 @@ function defineTest(f: Fixture) {
         await expect(page.locator('.test-style-client-dep')).toHaveCSS(
           'color',
           'rgb(0, 0, 0)',
-          {
-            timeout: 10,
-          },
+          { timeout: 10 },
         )
       }).toPass()
 
@@ -900,9 +893,7 @@ function defineTest(f: Fixture) {
         await expect(page.locator('.test-style-server')).toHaveCSS(
           'color',
           'rgb(255, 165, 0)',
-          {
-            timeout: 10,
-          },
+          { timeout: 10 },
         )
       }).toPass()
     })
@@ -932,9 +923,7 @@ function defineTest(f: Fixture) {
         await expect(page.locator('.test-style-server')).toHaveCSS(
           'color',
           'rgb(0, 0, 0)',
-          {
-            timeout: 10,
-          },
+          { timeout: 10 },
         )
       }).toPass()
 
@@ -946,9 +935,7 @@ function defineTest(f: Fixture) {
         await expect(page.locator('.test-style-server')).toHaveCSS(
           'color',
           'rgb(255, 165, 0)',
-          {
-            timeout: 10,
-          },
+          { timeout: 10 },
         )
       }).toPass()
     }
