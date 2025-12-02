@@ -12,11 +12,7 @@ export function transformHoistInlineDirective(
     rejectNonAsyncFunction,
     ...options
   }: {
-    runtime: (
-      value: string,
-      name: string,
-      meta: { directiveMatch: RegExpMatchArray },
-    ) => string
+    runtime: (value: string, name: string, meta: { directiveMatch: RegExpMatchArray }) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
@@ -33,9 +29,7 @@ export function transformHoistInlineDirective(
   }
   const output = new MagicString(input)
   const directive =
-    typeof options.directive === 'string'
-      ? exactRegex(options.directive)
-      : options.directive
+    typeof options.directive === 'string' ? exactRegex(options.directive) : options.directive
 
   // re-export somehow confuses periscopic scopes so remove them before analysis
   walk(ast, {
@@ -63,12 +57,9 @@ export function transformHoistInlineDirective(
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
-          throw Object.assign(
-            new Error(`"${directive}" doesn't allow non async function`),
-            {
-              pos: node.start,
-            },
-          )
+          throw Object.assign(new Error(`"${directive}" doesn't allow non async function`), {
+            pos: node.start,
+          })
         }
 
         const scope = analyzed.map.get(node)
@@ -90,10 +81,9 @@ export function transformHoistInlineDirective(
           const owner = scope.find_owner(ref)
           return owner && owner !== scope && owner !== analyzed.scope
         })
-        let newParams = [
-          ...bindVars,
-          ...node.params.map((n) => input.slice(n.start, n.end)),
-        ].join(', ')
+        let newParams = [...bindVars, ...node.params.map((n) => input.slice(n.start, n.end))].join(
+          ', ',
+        )
         if (bindVars.length > 0 && options.decode) {
           newParams = [
             '$$hoist_encoded',
@@ -101,15 +91,12 @@ export function transformHoistInlineDirective(
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
-            `const [${bindVars.join(',')}] = ${options.decode(
-              '$$hoist_encoded',
-            )};\n`,
+            `const [${bindVars.join(',')}] = ${options.decode('$$hoist_encoded')};\n`,
           )
         }
 
         // append a new `FunctionDeclaration` at the end
-        const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+        const newName = `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
         output.update(
           node.start,

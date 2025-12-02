@@ -12,11 +12,5 @@ export function TestHydrated() {
 }
 
 export function TestClientState() {
-  return (
-    <input
-      className="input py-0"
-      data-testid="client-state"
-      placeholder="client-state"
-    />
-  )
+  return <input className="input py-0" data-testid="client-state" placeholder="client-state" />
 }

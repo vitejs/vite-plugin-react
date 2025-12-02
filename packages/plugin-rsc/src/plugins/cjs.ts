@@ -31,9 +31,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           if (id.endsWith('.js')) {
             const pkgJsonPath = await findClosestPkgJsonPath(path.dirname(id))
             if (pkgJsonPath) {
-              const pkgJson = JSON.parse(
-                fs.readFileSync(pkgJsonPath, 'utf-8'),
-              ) as { type?: string }
+              const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8')) as { type?: string }
               if (pkgJson.type === 'module') return
             }
           }
@@ -45,9 +43,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           // warning once per package
           const packageKey = extractPackageKey(id)
           if (!warnedPackages.has(packageKey)) {
-            debug(
-              `non-optimized CJS dependency in '${this.environment.name}' environment: ${id}`,
-            )
+            debug(`non-optimized CJS dependency in '${this.environment.name}' environment: ${id}`)
             warnedPackages.add(packageKey)
           }
 

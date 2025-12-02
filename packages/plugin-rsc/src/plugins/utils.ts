@@ -1,16 +1,9 @@
 import assert from 'node:assert'
 import { createHash } from 'node:crypto'
-import {
-  normalizePath,
-  type Plugin,
-  type ResolvedConfig,
-  type Rollup,
-} from 'vite'
+import { normalizePath, type Plugin, type ResolvedConfig, type Rollup } from 'vite'
 
 export function sortObject<T extends object>(o: T) {
-  return Object.fromEntries(
-    Object.entries(o).sort(([a], [b]) => a.localeCompare(b)),
-  ) as T
+  return Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b))) as T
 }
 
 // Rethrow transform error through `this.error` with `error.pos`
@@ -37,10 +30,7 @@ export function withRollupError<F extends (...args: any[]) => any>(
   } as F
 }
 
-export function createVirtualPlugin(
-  name: string,
-  load: Plugin['load'],
-): Plugin {
+export function createVirtualPlugin(name: string, load: Plugin['load']): Plugin {
   name = 'virtual:' + name
   return {
     name: `rsc:virtual-${name}`,

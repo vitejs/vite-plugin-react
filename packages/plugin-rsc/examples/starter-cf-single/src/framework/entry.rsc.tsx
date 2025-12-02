@@ -79,9 +79,10 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const { renderHTML } = await import.meta.viteRsc.loadModule<
-    typeof import('./entry.ssr.tsx')
-  >('ssr', 'index')
+  const { renderHTML } = await import.meta.viteRsc.loadModule<typeof import('./entry.ssr.tsx')>(
+    'ssr',
+    'index',
+  )
   const ssrResult = await renderHTML(rscStream, {
     formState,
     // allow quick simulation of javascript disabled browser

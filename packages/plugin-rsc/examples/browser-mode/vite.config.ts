@@ -1,9 +1,5 @@
 import { defaultClientConditions, defineConfig, type Plugin } from 'vite'
-import {
-  vitePluginRscMinimal,
-  getPluginApi,
-  type PluginApi,
-} from '@vitejs/plugin-rsc/plugin'
+import { vitePluginRscMinimal, getPluginApi, type PluginApi } from '@vitejs/plugin-rsc/plugin'
 import { createRPCServer } from 'vite-dev-rpc'
 
 export default defineConfig({
@@ -35,9 +31,7 @@ function rscBrowserModePlugin(): Plugin[] {
       config(userConfig, env) {
         return {
           define: {
-            'import.meta.env.__vite_rsc_build__': JSON.stringify(
-              env.command === 'build',
-            ),
+            'import.meta.env.__vite_rsc_build__': JSON.stringify(env.command === 'build'),
           },
           environments: {
             client: {
@@ -103,8 +97,7 @@ function rscBrowserModePlugin(): Plugin[] {
               onwarn(warning, defaultHandler) {
                 if (
                   warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-                  (warning.message.includes('use client') ||
-                    warning.message.includes('use server'))
+                  (warning.message.includes('use client') || warning.message.includes('use server'))
                 ) {
                   return
                 }
@@ -131,8 +124,7 @@ function rscBrowserModePlugin(): Plugin[] {
       },
       configureServer(server) {
         createRPCServer('transport-proxy', server.ws, {
-          invoke: (payload: any) =>
-            server.environments.react_client.hot.handleInvoke(payload),
+          invoke: (payload: any) => server.environments.react_client.hot.handleInvoke(payload),
         })
       },
       hotUpdate(ctx) {
@@ -180,9 +172,7 @@ function rscBrowserModePlugin(): Plugin[] {
     {
       name: 'rsc-browser-mode:build-client-references',
       resolveId(source) {
-        if (
-          source === 'virtual:vite-rsc-browser-mode/build-client-references'
-        ) {
+        if (source === 'virtual:vite-rsc-browser-mode/build-client-references') {
           return '\0' + source
         }
       },
@@ -202,9 +192,7 @@ function rscBrowserModePlugin(): Plugin[] {
     {
       name: 'rsc-browser-mode:build-server-references',
       resolveId(source) {
-        if (
-          source === 'virtual:vite-rsc-browser-mode/build-server-references'
-        ) {
+        if (source === 'virtual:vite-rsc-browser-mode/build-server-references') {
           return '\0' + source
         }
       },

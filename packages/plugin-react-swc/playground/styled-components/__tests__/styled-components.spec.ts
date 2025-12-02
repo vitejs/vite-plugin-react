@@ -1,10 +1,5 @@
 import { expect, test } from '@playwright/test'
-import {
-  expectColor,
-  setupBuildAndPreview,
-  setupDevServer,
-  setupWaitForLogs,
-} from '../../utils.ts'
+import { expectColor, setupBuildAndPreview, setupDevServer, setupWaitForLogs } from '../../utils.ts'
 
 test('styled-components build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('styled-components')
@@ -23,8 +18,7 @@ test('styled-components build', async ({ page }) => {
 })
 
 test('styled-components HMR', async ({ page }) => {
-  const { testUrl, server, editFile } =
-    await setupDevServer('styled-components')
+  const { testUrl, server, editFile } = await setupDevServer('styled-components')
   const waitForLogs = await setupWaitForLogs(page)
   await page.goto(testUrl)
   await waitForLogs('[vite] connected.')

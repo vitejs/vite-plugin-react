@@ -6,11 +6,7 @@ import { TestCssQueriesClient } from './client'
 export function TestCssQueries() {
   return (
     <div>
-      <TestCssQueriesClient
-        serverUrl={cssUrl}
-        serverInline={cssInline}
-        serverRaw={cssRaw}
-      />
+      <TestCssQueriesClient serverUrl={cssUrl} serverInline={cssInline} serverRaw={cssRaw} />
       <span className="test-css-url-server">test-css-url-server</span>
       <span>|</span>
       <span className="test-css-inline-server">test-css-inline-server</span>

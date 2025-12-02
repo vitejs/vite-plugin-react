@@ -30,15 +30,12 @@ export async function renderHTML(
   }
 
   // render html (traditional SSR)
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent('index')
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
     htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options?.debugNojs
-        ? undefined
-        : bootstrapScriptContent,
+      bootstrapScriptContent: options?.debugNojs ? undefined : bootstrapScriptContent,
       nonce: options?.nonce,
       formState: options?.formState,
     })
@@ -54,8 +51,7 @@ export async function renderHTML(
       </html>,
       {
         bootstrapScriptContent:
-          `self.__NO_HYDRATE=1;` +
-          (options?.debugNojs ? '' : bootstrapScriptContent),
+          `self.__NO_HYDRATE=1;` + (options?.debugNojs ? '' : bootstrapScriptContent),
         nonce: options?.nonce,
       },
     )

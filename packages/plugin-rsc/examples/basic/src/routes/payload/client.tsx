@@ -1,11 +1,6 @@
 'use client'
 
-export function TestPayloadClient(props: {
-  test1?: any
-  test2?: any
-  test3?: any
-  test4?: any
-}) {
+export function TestPayloadClient(props: { test1?: any; test2?: any; test3?: any; test4?: any }) {
   const results = {
     test1: props.test1 === '🙂',
     test2: props.test2 === "<script>throw new Error('boom')</script>",

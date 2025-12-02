@@ -1,9 +1,5 @@
 import { expect, test } from '@playwright/test'
-import {
-  setupBuildAndPreview,
-  setupDevServer,
-  setupWaitForLogs,
-} from '../../utils.ts'
+import { setupBuildAndPreview, setupDevServer, setupWaitForLogs } from '../../utils.ts'
 
 test('Default build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('hmr')
@@ -41,10 +37,7 @@ test('HMR invalidate', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('Vite * React!')
 
   // Add non-component export
-  editFile('src/TitleWithExport.tsx', [
-    "React!'",
-    "React!'\nexport const useless = 3",
-  ])
+  editFile('src/TitleWithExport.tsx', ["React!'", "React!'\nexport const useless = 3"])
   await waitForLogs(
     '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (new export)',
     '[vite] hot updated: /src/App.tsx',
@@ -67,10 +60,7 @@ test('HMR invalidate', async ({ page }) => {
   await expect(page.locator('h2')).toHaveText('Title2')
 
   // Remove component export
-  editFile('src/TitleWithExport.tsx', [
-    '\nexport const Title2 = () => <h2>Title2</h2>',
-    '',
-  ])
+  editFile('src/TitleWithExport.tsx', ['\nexport const Title2 = () => <h2>Title2</h2>', ''])
   await waitForLogs(
     '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export removed)',
     '[vite] hot updated: /src/App.tsx',

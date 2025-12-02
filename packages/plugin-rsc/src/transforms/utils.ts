@@ -2,10 +2,7 @@ import { tinyassert } from '@hiogawa/utils'
 import type { Program } from 'estree'
 import { extract_names } from 'periscopic'
 
-export function hasDirective(
-  body: Program['body'],
-  directive: string,
-): boolean {
+export function hasDirective(body: Program['body'], directive: string): boolean {
   return !!body.find(
     (stmt) =>
       stmt.type === 'ExpressionStatement' &&
@@ -61,10 +58,7 @@ export function getExportNames(
     /**
      * export * from './foo'
      */
-    if (
-      !options.ignoreExportAllDeclaration &&
-      node.type === 'ExportAllDeclaration'
-    ) {
+    if (!options.ignoreExportAllDeclaration && node.type === 'ExportAllDeclaration') {
       throw new Error('unsupported ExportAllDeclaration')
     }
 

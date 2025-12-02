@@ -32,11 +32,10 @@ export default defineConfig({
       buildStart() {
         fs.rmSync('./dist/vendor/', { recursive: true, force: true })
         fs.mkdirSync('./dist/vendor', { recursive: true })
-        fs.cpSync(
-          './node_modules/react-server-dom-webpack',
-          './dist/vendor/react-server-dom',
-          { recursive: true, dereference: true },
-        )
+        fs.cpSync('./node_modules/react-server-dom-webpack', './dist/vendor/react-server-dom', {
+          recursive: true,
+          dereference: true,
+        })
         fs.rmSync('./dist/vendor/react-server-dom/node_modules', {
           recursive: true,
           force: true,

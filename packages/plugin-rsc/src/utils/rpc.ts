@@ -20,9 +20,7 @@ export function createRpcServer<T extends object>(handlers: T) {
     )
     const handler = (handlers as any)[reqPayload.method]
     if (!handler) {
-      throw new Error(
-        `loadModuleDevProxy error: unknown method ${reqPayload.method}`,
-      )
+      throw new Error(`loadModuleDevProxy error: unknown method ${reqPayload.method}`)
     }
     const resPayload: ResponsePayload = { ok: true, data: undefined }
     try {
@@ -49,13 +47,9 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
       duplex: 'half',
     })
     if (!res.ok || !res.body) {
-      throw new Error(
-        `loadModuleDevProxy error: ${res.status} ${res.statusText}`,
-      )
+      throw new Error(`loadModuleDevProxy error: ${res.status} ${res.statusText}`)
     }
-    const resPayload = await decode<ResponsePayload>(
-      res.body.pipeThrough(new TextDecoderStream()),
-    )
+    const resPayload = await decode<ResponsePayload>(res.body.pipeThrough(new TextDecoderStream()))
     if (!resPayload.ok) {
       throw resPayload.data
     }

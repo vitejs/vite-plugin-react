@@ -25,9 +25,7 @@ async function main() {
         ignores: false,
       }),
     )
-    const entry = await import(
-      pathToFileURL(path.resolve('dist/rsc/index.js')).href
-    )
+    const entry = await import(pathToFileURL(path.resolve('dist/rsc/index.js')).href)
     app.use(createRequestListener(entry.default))
   } else {
     console.error(`Unknown command: ${command}`)

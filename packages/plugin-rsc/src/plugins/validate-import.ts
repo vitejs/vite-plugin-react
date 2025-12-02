@@ -52,11 +52,7 @@ export function validateImportPlugin(): Plugin {
         if (this.environment.mode === 'dev') {
           if (id.startsWith(`\0virtual:vite-rsc/validate-imports/invalid/`)) {
             const chain = getImportChainDev(this.environment, id)
-            validateImportChain(
-              chain,
-              this.environment.name,
-              this.environment.config.root,
-            )
+            validateImportChain(chain, this.environment.name, this.environment.config.root)
           }
         }
       },
@@ -69,20 +65,12 @@ export function validateImportPlugin(): Plugin {
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/server-only',
         )
-        validateImportChain(
-          serverOnly,
-          this.environment.name,
-          this.environment.config.root,
-        )
+        validateImportChain(serverOnly, this.environment.name, this.environment.config.root)
         const clientOnly = getImportChainBuild(
           this,
           '\0virtual:vite-rsc/validate-imports/invalid/client-only',
         )
-        validateImportChain(
-          clientOnly,
-          this.environment.name,
-          this.environment.config.root,
-        )
+        validateImportChain(clientOnly, this.environment.name, this.environment.config.root)
       }
     },
   }
@@ -120,11 +108,7 @@ function getImportChainBuild(ctx: Rollup.PluginContext, id: string): string[] {
   return chain
 }
 
-function validateImportChain(
-  chain: string[],
-  environmentName: string,
-  root: string,
-) {
+function validateImportChain(chain: string[], environmentName: string, root: string) {
   if (chain.length === 0) return
   const id = chain[0]!
   const source = id.slice(id.lastIndexOf('/') + 1)
@@ -134,8 +118,7 @@ function validateImportChain(
     .slice(1, 6)
     .map(
       (id, i) =>
-        ' '.repeat(i + 1) +
-        `imported by ${path.relative(root, id).replaceAll('\0', '')}\n`,
+        ' '.repeat(i + 1) + `imported by ${path.relative(root, id).replaceAll('\0', '')}\n`,
     )
     .join('')
   if (chain.length > 6) {

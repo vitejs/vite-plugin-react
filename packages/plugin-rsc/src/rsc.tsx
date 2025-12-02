@@ -1,16 +1,9 @@
 import serverReferences from 'virtual:vite-rsc/server-references'
 import { setRequireModule } from './core/rsc'
 
-export {
-  createClientManifest,
-  createServerManifest,
-  loadServerAction,
-} from './core/rsc'
+export { createClientManifest, createServerManifest, loadServerAction } from './core/rsc'
 
-export {
-  encryptActionBoundArgs,
-  decryptActionBoundArgs,
-} from './utils/encryption-runtime'
+export { encryptActionBoundArgs, decryptActionBoundArgs } from './utils/encryption-runtime'
 
 export * from './react/rsc'
 

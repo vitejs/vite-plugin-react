@@ -11,11 +11,7 @@ export function TestStyleServer() {
         test-css-module-server
       </div>
       <span>|</span>
-      <link
-        rel="stylesheet"
-        href={styleUrl}
-        precedence="test-style-manual-link"
-      />
+      <link rel="stylesheet" href={styleUrl} precedence="test-style-manual-link" />
       <div className="test-style-url-server">test-style-url-server</div>
       <span>|</span>
       <link

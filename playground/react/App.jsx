@@ -17,10 +17,7 @@ function App() {
       <header className="App-header">
         <h1>Hello Vite + React</h1>
         <p>
-          <button
-            id="state-button"
-            onClick={() => setCount((count) => count + 1)}
-          >
+          <button id="state-button" onClick={() => setCount((count) => count + 1)}>
             count is: {count}
           </button>
         </p>

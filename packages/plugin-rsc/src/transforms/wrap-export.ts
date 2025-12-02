@@ -9,10 +9,7 @@ type ExportMeta = {
   defaultExportIdentifierName?: string
 }
 
-export type TransformWrapExportFilter = (
-  name: string,
-  meta: ExportMeta,
-) => boolean
+export type TransformWrapExportFilter = (name: string, meta: ExportMeta) => boolean
 
 export type TransformWrapExportOptions = {
   runtime: (value: string, name: string, meta: ExportMeta) => string
@@ -34,11 +31,7 @@ export function transformWrapExport(
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
 
-  function wrapSimple(
-    start: number,
-    end: number,
-    exports: { name: string; meta: ExportMeta }[],
-  ) {
+  function wrapSimple(start: number, end: number, exports: { name: string; meta: ExportMeta }[]) {
     exportNames.push(...exports.map((e) => e.name))
     // update code and move to preserve `registerServerReference` position
     // e.g.
@@ -52,11 +45,7 @@ export function transformWrapExport(
     const newCode = exports
       .map((e) => [
         filter(e.name, e.meta) &&
-          `${e.name} = /* #__PURE__ */ ${options.runtime(
-            e.name,
-            e.name,
-            e.meta,
-          )};\n`,
+          `${e.name} = /* #__PURE__ */ ${options.runtime(e.name, e.name, e.meta)};\n`,
         `export { ${e.name} };\n`,
       ])
       .flat()
@@ -74,11 +63,7 @@ export function transformWrapExport(
     }
 
     toAppend.push(
-      `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
-        name,
-        exportName,
-        meta,
-      )}`,
+      `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(name, exportName, meta)}`,
       `export { $$wrap_${name} as ${exportName} }`,
     )
   }
@@ -124,15 +109,9 @@ export function transformWrapExport(
             }
           }
           if (node.declaration.kind === 'const') {
-            output.update(
-              node.declaration.start,
-              node.declaration.start + 5,
-              'let',
-            )
+            output.update(node.declaration.start, node.declaration.start + 5, 'let')
           }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extract_names(decl.id),
-          )
+          const names = node.declaration.declarations.flatMap((decl) => extract_names(decl.id))
           // treat only simple single decl as function
           let isFunction = false
           if (node.declaration.declarations.length === 1) {
@@ -163,9 +142,7 @@ export function transformWrapExport(
             tinyassert(spec.local.type === 'Identifier')
             tinyassert(spec.exported.type === 'Identifier')
             const name = spec.local.name
-            toAppend.push(
-              `import { ${name} as $$import_${name} } from ${node.source.raw}`,
-            )
+            toAppend.push(`import { ${name} as $$import_${name} } from ${node.source.raw}`)
             wrapExport(`$$import_${name}`, spec.exported.name)
           }
         } else {
@@ -188,10 +165,7 @@ export function transformWrapExport(
     // vue sfc uses ExportAllDeclaration to re-export setup script.
     // for now we just give an option to not throw for this case.
     // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
-    if (
-      !options.ignoreExportAllDeclaration &&
-      node.type === 'ExportAllDeclaration'
-    ) {
+    if (!options.ignoreExportAllDeclaration && node.type === 'ExportAllDeclaration') {
       throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
         pos: node.start,
       })

@@ -65,10 +65,7 @@ async function renderStatic(config: ResolvedConfig) {
     const { html, rsc } = await entry.handleSsg(
       new Request(new URL(staticPatch, 'http://ssg.local')),
     )
-    await writeFileStream(
-      path.join(baseDir, normalizeHtmlFilePath(staticPatch)),
-      html,
-    )
+    await writeFileStream(path.join(baseDir, normalizeHtmlFilePath(staticPatch)), html)
     await writeFileStream(path.join(baseDir, staticPatch + RSC_POSTFIX), rsc)
   }
 }

@@ -79,8 +79,7 @@ export function transformProxyExport(
            */
           validateNonAsyncFunction(
             node,
-            node.declaration.type === 'FunctionDeclaration' &&
-              node.declaration.async,
+            node.declaration.type === 'FunctionDeclaration' && node.declaration.async,
           )
           createExport(node, [node.declaration.id.name])
         } else if (node.declaration.type === 'VariableDeclaration') {
@@ -90,9 +89,7 @@ export function transformProxyExport(
           validateNonAsyncFunction(
             node,
             node.declaration.declarations.every(
-              (decl) =>
-                decl.init?.type === 'ArrowFunctionExpression' &&
-                decl.init.async,
+              (decl) => decl.init?.type === 'ArrowFunctionExpression' && decl.init.async,
             ),
           )
           if (options.keep && options.code) {
@@ -101,19 +98,16 @@ export function transformProxyExport(
               if (decl.id.type === 'Identifier' && decl.init) {
                 const name = decl.id.name
                 const value = options.code.slice(decl.init.start, decl.init.end)
-                const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
-                  name,
-                  { value },
-                )};`
+                const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(name, {
+                  value,
+                })};`
                 output.update(node.start, node.end, newCode)
                 exportNames.push(name)
                 continue
               }
             }
           }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extract_names(decl.id),
-          )
+          const names = node.declaration.declarations.flatMap((decl) => extract_names(decl.id))
           createExport(node, names)
         } else {
           node.declaration satisfies never
@@ -136,10 +130,7 @@ export function transformProxyExport(
     /**
      * export * from './foo'
      */
-    if (
-      !options.ignoreExportAllDeclaration &&
-      node.type === 'ExportAllDeclaration'
-    ) {
+    if (!options.ignoreExportAllDeclaration && node.type === 'ExportAllDeclaration') {
       throw new Error('unsupported ExportAllDeclaration')
     }
 
@@ -152,8 +143,7 @@ export function transformProxyExport(
       validateNonAsyncFunction(
         node,
         node.declaration.type === 'Identifier' ||
-          (node.declaration.type === 'FunctionDeclaration' &&
-            node.declaration.async),
+          (node.declaration.type === 'FunctionDeclaration' && node.declaration.async),
       )
       createExport(node, ['default'])
       continue

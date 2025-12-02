@@ -14,10 +14,7 @@ test('.md extension should work', async () => {
 if (isServe) {
   test('should hmr', async () => {
     editFile('src/demo.mdx', (code) => code.replace('Vite + MDX', 'Updated'))
-    await untilBrowserLogAfter(
-      () => page.textContent('h1'),
-      '[vite] hot updated: /src/demo.mdx',
-    )
+    await untilBrowserLogAfter(() => page.textContent('h1'), '[vite] hot updated: /src/demo.mdx')
     await expect.poll(() => page.textContent('h1')).toMatch('Updated')
   })
 

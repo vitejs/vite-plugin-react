@@ -49,9 +49,7 @@ test.describe(() => {
     test('request url', async ({ page }) => {
       await page.goto(f.url())
       await page.waitForSelector('#root')
-      await expect(page.locator('.card').nth(2)).toHaveText(
-        `Request URL: ${f.url()}`,
-      )
+      await expect(page.locator('.card').nth(2)).toHaveText(`Request URL: ${f.url()}`)
     })
   }
 })

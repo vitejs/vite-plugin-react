@@ -8,16 +8,12 @@ export function TestHmrClientDep2(props: { url: Pick<URL, 'search'> }) {
   return (
     <div>
       <span data-testid="test-hmr-client-dep2">
-        <button onClick={() => setCount((c) => c + 1)}>
-          test-hmr-client-dep2: {count}
-        </button>
+        <button onClick={() => setCount((c) => c + 1)}>test-hmr-client-dep2: {count}</button>
         {clientDep()}
       </span>{' '}
       <a href="?test-hmr-client-dep2-re-render">
         re-render
-        {props.url.search.includes('test-hmr-client-dep2-re-render')
-          ? ' [ok]'
-          : ''}
+        {props.url.search.includes('test-hmr-client-dep2-re-render') ? ' [ok]' : ''}
       </a>
     </div>
   )

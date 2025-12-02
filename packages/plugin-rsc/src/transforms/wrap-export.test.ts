@@ -1,19 +1,12 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { debugSourceMap } from './test-utils'
-import {
-  type TransformWrapExportOptions,
-  transformWrapExport,
-} from './wrap-export'
+import { type TransformWrapExportOptions, transformWrapExport } from './wrap-export'
 
-async function testTransform(
-  input: string,
-  options?: Omit<TransformWrapExportOptions, 'runtime'>,
-) {
+async function testTransform(input: string, options?: Omit<TransformWrapExportOptions, 'runtime'>) {
   const ast = await parseAstAsync(input)
   const { output } = transformWrapExport(input, ast, {
-    runtime: (value, name) =>
-      `$$wrap(${value}, "<id>", ${JSON.stringify(name)})`,
+    runtime: (value, name) => `$$wrap(${value}, "<id>", ${JSON.stringify(name)})`,
     ignoreExportAllDeclaration: true,
     ...options,
   })
@@ -26,8 +19,7 @@ async function testTransform(
 async function testTransformNames(input: string) {
   const ast = await parseAstAsync(input)
   const result = transformWrapExport(input, ast, {
-    runtime: (value, name) =>
-      `$$wrap(${value}, "<id>", ${JSON.stringify(name)})`,
+    runtime: (value, name) => `$$wrap(${value}, "<id>", ${JSON.stringify(name)})`,
     ignoreExportAllDeclaration: true,
   })
   return result.exportNames

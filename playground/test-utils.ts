@@ -64,10 +64,7 @@ export function readFile(filename: string): string {
   return fs.readFileSync(path.resolve(testDir, filename), 'utf-8')
 }
 
-export function editFile(
-  filename: string,
-  replacer: (str: string) => string,
-): void {
+export function editFile(filename: string, replacer: (str: string) => string): void {
   filename = path.resolve(testDir, filename)
   const content = fs.readFileSync(filename, 'utf-8')
   const modified = replacer(content)
@@ -145,9 +142,7 @@ async function untilBrowserLog(
       } else {
         const remainingMatchers = target.map(isMatch)
         processMsg = (text: string) => {
-          const nextIndex = remainingMatchers.findIndex((matcher) =>
-            matcher(text),
-          )
+          const nextIndex = remainingMatchers.findIndex((matcher) => matcher(text))
           if (nextIndex >= 0) {
             remainingMatchers.splice(nextIndex, 1)
           }

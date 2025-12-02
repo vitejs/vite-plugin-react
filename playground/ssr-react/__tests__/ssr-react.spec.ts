@@ -51,9 +51,7 @@ test.skipIf(isBuild)('hmr', async () => {
   await untilBrowserLogAfter(() => page.goto(url), 'hydrated')
 
   await expect.poll(() => page.textContent('h1')).toMatch('Home')
-  editFile('src/pages/Home.jsx', (code) =>
-    code.replace('<h1>Home', '<h1>changed'),
-  )
+  editFile('src/pages/Home.jsx', (code) => code.replace('<h1>Home', '<h1>changed'))
   await expect.poll(() => page.textContent('h1')).toMatch('changed')
 
   // verify the change also affects next SSR
@@ -69,9 +67,7 @@ test('client navigation', async () => {
   await expect.poll(() => page.textContent('h1')).toMatch('About')
 
   if (!isBuild) {
-    editFile('src/pages/About.jsx', (code) =>
-      code.replace('<h1>About', '<h1>changed'),
-    )
+    editFile('src/pages/About.jsx', (code) => code.replace('<h1>About', '<h1>changed'))
     await expect.poll(() => page.textContent('h1')).toMatch('changed')
   }
 })

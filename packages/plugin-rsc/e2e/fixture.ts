@@ -184,13 +184,8 @@ export async function setupIsolatedFixture(options: {
 
   // extract workspace overrides
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
-  const workspaceYaml = fs.readFileSync(
-    path.join(rootDir, 'pnpm-workspace.yaml'),
-    'utf-8',
-  )
-  const overridesMatch = workspaceYaml.match(
-    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
-  )
+  const workspaceYaml = fs.readFileSync(path.join(rootDir, 'pnpm-workspace.yaml'), 'utf-8')
+  const overridesMatch = workspaceYaml.match(/overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/)
   const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
   const overrides = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
@@ -203,21 +198,14 @@ ${Object.entries(overrides)
   .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
   .join('\n')}
 `
-  fs.writeFileSync(
-    path.join(options.dest, 'pnpm-workspace.yaml'),
-    tempWorkspaceYaml,
-  )
+  fs.writeFileSync(path.join(options.dest, 'pnpm-workspace.yaml'), tempWorkspaceYaml)
 
   // install
   await x('pnpm', ['i'], {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
-      stdio: [
-        'ignore',
-        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
-        'inherit',
-      ],
+      stdio: ['ignore', process.env.TEST_DEBUG ? 'inherit' : 'ignore', 'inherit'],
     },
   })
 }
@@ -229,10 +217,7 @@ ${Object.entries(overrides)
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: Record<
-    string,
-    string | { cp: string } | { edit: (s: string) => string }
-  >
+  files?: Record<string, string | { cp: string } | { edit: (s: string) => string }>
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })

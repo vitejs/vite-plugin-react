@@ -108,9 +108,7 @@ test.describe(() => {
         f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
         'utf-8',
       )
-      expect(manifestFileContent).toContain(
-        `__dynamicBase + "assets/entry.rsc-`,
-      )
+      expect(manifestFileContent).toContain(`__dynamicBase + "assets/entry.rsc-`)
     })
   })
 })

@@ -37,16 +37,11 @@ export default defineConfig({
           server.middlewares.use(async (req, res, next) => {
             const url = req.originalUrl ?? '/'
             try {
-              const { render } = await server.ssrLoadModule(
-                '/src/entry-server.jsx',
-              )
+              const { render } = await server.ssrLoadModule('/src/entry-server.jsx')
               const appHtml = render(url)
               // "@vitejs/plugin-react/preamble" is used instead of transformIndexHtml
               // to setup react hmr globals.
-              const template = fs.readFileSync(
-                path.resolve(_dirname, 'index.html'),
-                'utf-8',
-              )
+              const template = fs.readFileSync(path.resolve(_dirname, 'index.html'), 'utf-8')
               const html = template.replace(`<!--app-html-->`, appHtml)
               res.setHeader('content-type', 'text/html').end(html)
             } catch (e) {
@@ -56,14 +51,9 @@ export default defineConfig({
         }
       },
       async configurePreviewServer(server) {
-        const template = fs.readFileSync(
-          path.resolve(_dirname, 'dist/client/index.html'),
-          'utf-8',
-        )
+        const template = fs.readFileSync(path.resolve(_dirname, 'dist/client/index.html'), 'utf-8')
         const { render } = await import(
-          url.pathToFileURL(
-            path.resolve(_dirname, './dist/server/entry-server.js'),
-          )
+          url.pathToFileURL(path.resolve(_dirname, './dist/server/entry-server.js'))
         )
         return () => {
           server.middlewares.use(async (req, res, next) => {

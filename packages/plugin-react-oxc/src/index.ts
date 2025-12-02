@@ -51,12 +51,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           jsxRefreshExclude: exclude,
         },
         optimizeDeps: {
-          include: [
-            'react',
-            'react-dom',
-            jsxImportDevRuntime,
-            jsxImportRuntime,
-          ],
+          include: ['react', 'react-dom', jsxImportDevRuntime, jsxImportRuntime],
           rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
         },
       }
@@ -134,9 +129,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         const useFastRefresh =
           !skipFastRefresh &&
           !ssr &&
-          (isJSX ||
-            code.includes(jsxImportDevRuntime) ||
-            code.includes(jsxImportRuntime))
+          (isJSX || code.includes(jsxImportDevRuntime) || code.includes(jsxImportRuntime))
         if (!useFastRefresh) return
 
         const newCode = addRefreshWrapper(code, '@vitejs/plugin-react-oxc', id)

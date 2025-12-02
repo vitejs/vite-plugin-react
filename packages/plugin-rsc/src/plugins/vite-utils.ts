@@ -110,10 +110,7 @@ export function normalizeResolvedIdToUrl(
   return url
 }
 
-export function normalizeViteImportAnalysisUrl(
-  environment: DevEnvironment,
-  id: string,
-): string {
+export function normalizeViteImportAnalysisUrl(environment: DevEnvironment, id: string): string {
   let url = normalizeResolvedIdToUrl(environment, id, { id })
 
   // https://github.com/vitejs/vite/blob/c18ce868c4d70873406e9f7d1b2d0a03264d2168/packages/vite/src/node/plugins/importAnalysis.ts#L416

@@ -14,24 +14,16 @@ import {
 // https://github.com/vercel/next.js/blob/c10c10daf9e95346c31c24dc49d6b7cda48b5bc8/packages/next/src/server/app-render/encryption.ts
 // https://github.com/vercel/next.js/pull/56377
 
-export async function encryptActionBoundArgs(
-  originalValue: unknown,
-): Promise<string> {
+export async function encryptActionBoundArgs(originalValue: unknown): Promise<string> {
   const serialized = renderToReadableStream(originalValue)
   const serializedBuffer = await concatArrayStream(serialized)
-  return encryptBuffer(
-    serializedBuffer as BufferSource,
-    await getEncryptionKey(),
-  )
+  return encryptBuffer(serializedBuffer as BufferSource, await getEncryptionKey())
 }
 
 export async function decryptActionBoundArgs(
   encrypted: ReturnType<typeof encryptActionBoundArgs>,
 ): Promise<unknown> {
-  const serializedBuffer = await decryptBuffer(
-    await encrypted,
-    await getEncryptionKey(),
-  )
+  const serializedBuffer = await decryptBuffer(await encrypted, await getEncryptionKey())
   const serialized = arrayToStream(new Uint8Array(serializedBuffer))
   return createFromReadableStream(serialized)
 }

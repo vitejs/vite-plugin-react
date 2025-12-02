@@ -1,12 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { type Locator, type Page, expect } from '@playwright/test'
-import {
-  build,
-  createServer,
-  loadConfigFromFile,
-  mergeConfig,
-  preview,
-} from 'vite'
+import { build, createServer, loadConfigFromFile, mergeConfig, preview } from 'vite'
 
 export const setupWaitForLogs = async (page: Page) => {
   let logs: string[] = []
@@ -18,9 +12,7 @@ export const setupWaitForLogs = async (page: Page) => {
       .poll(() => {
         if (
           messages.every((m) =>
-            typeof m === 'string'
-              ? logs.includes(m)
-              : logs.some((l) => m.test(l)),
+            typeof m === 'string' ? logs.includes(m) : logs.some((l) => m.test(l)),
           )
         ) {
           logs = []
@@ -35,11 +27,7 @@ let port = 5173
 export const setupDevServer = async (name: string) => {
   process.env['NODE_ENV'] = 'development'
   const root = `playground-temp/${name}`
-  const res = await loadConfigFromFile(
-    { command: 'serve', mode: 'development' },
-    undefined,
-    root,
-  )
+  const res = await loadConfigFromFile({ command: 'serve', mode: 'development' }, undefined, root)
   const testConfig = mergeConfig(res!.config, {
     root,
     logLevel: 'silent',
@@ -50,10 +38,7 @@ export const setupDevServer = async (name: string) => {
   return {
     testUrl: `http://localhost:${server.config.server.port}${server.config.base}`,
     server,
-    editFile: (
-      name: string,
-      ...replacements: [searchValue: string, replaceValue: string][]
-    ) => {
+    editFile: (name: string, ...replacements: [searchValue: string, replaceValue: string][]) => {
       const path = `${root}/${name}`
       let content = readFileSync(path, 'utf-8')
       for (const [search, replace] of replacements) {
@@ -70,11 +55,7 @@ export const setupDevServer = async (name: string) => {
 export const setupBuildAndPreview = async (name: string) => {
   process.env['NODE_ENV'] = 'production'
   const root = `playground-temp/${name}`
-  const res = await loadConfigFromFile(
-    { command: 'build', mode: 'production' },
-    undefined,
-    root,
-  )
+  const res = await loadConfigFromFile({ command: 'build', mode: 'production' }, undefined, root)
   const testConfig = mergeConfig(
     { root, logLevel: 'silent', configFile: false, preview: { port: port++ } },
     res!.config,
@@ -94,12 +75,7 @@ export const expectColor = async (
 ) => {
   await expect
     .poll(async () =>
-      rgbToHex(
-        await locator.evaluate(
-          (el, prop) => getComputedStyle(el)[prop],
-          property,
-        ),
-      ),
+      rgbToHex(await locator.evaluate((el, prop) => getComputedStyle(el)[prop], property)),
     )
     .toBe(color)
 }

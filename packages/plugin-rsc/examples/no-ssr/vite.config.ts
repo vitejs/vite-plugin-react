@@ -45,10 +45,7 @@ function spaPlugin(): Plugin[] {
           server.middlewares.use(async (req, res, next) => {
             try {
               if (req.headers.accept?.includes('text/html')) {
-                const html = await fsp.readFile(
-                  'dist/client/index.html',
-                  'utf-8',
-                )
+                const html = await fsp.readFile('dist/client/index.html', 'utf-8')
                 res.end(html)
                 return
               }

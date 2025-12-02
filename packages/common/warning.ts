@@ -1,14 +1,11 @@
 import type { BuildOptions, UserConfig } from 'vite'
 
-export const silenceUseClientWarning = (
-  userConfig: UserConfig,
-): BuildOptions => ({
+export const silenceUseClientWarning = (userConfig: UserConfig): BuildOptions => ({
   rollupOptions: {
     onwarn(warning, defaultHandler) {
       if (
         warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-        (warning.message.includes('use client') ||
-          warning.message.includes('use server'))
+        (warning.message.includes('use client') || warning.message.includes('use server'))
       ) {
         return
       }

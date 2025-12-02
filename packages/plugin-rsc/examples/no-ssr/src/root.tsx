@@ -15,10 +15,7 @@ function App() {
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
-        <a
-          href="https://react.dev/reference/rsc/server-components"
-          target="_blank"
-        >
+        <a href="https://react.dev/reference/rsc/server-components" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>

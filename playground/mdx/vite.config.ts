@@ -5,8 +5,5 @@ import mdx from '@mdx-js/rollup'
 // https://vite.dev/config/
 export default defineConfig({
   server: { port: 8901 /* Should be unique */ },
-  plugins: [
-    { enforce: 'pre', ...mdx() },
-    react({ include: /\.(mdx|md|ts|tsx)$/ }),
-  ],
+  plugins: [{ enforce: 'pre', ...mdx() }, react({ include: /\.(mdx|md|ts|tsx)$/ })],
 })

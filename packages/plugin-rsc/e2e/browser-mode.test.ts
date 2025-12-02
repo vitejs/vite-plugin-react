@@ -27,18 +27,10 @@ function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
   })
 
   async function testActionBindSimple(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText(
-      '[?]',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-simple' })
-      .click()
-    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText(
-      'true',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-reset' })
-      .click()
+    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText('[?]')
+    await page.getByRole('button', { name: 'test-server-action-bind-simple' }).click()
+    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText('true')
+    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
   }
 
   test('action bind client', async ({ page }) => {
@@ -47,18 +39,10 @@ function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
   })
 
   async function testActionBindClient(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText(
-      '[?]',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-client' })
-      .click()
-    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText(
-      'true',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-reset' })
-      .click()
+    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText('[?]')
+    await page.getByRole('button', { name: 'test-server-action-bind-client' }).click()
+    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText('true')
+    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
   }
 
   test('action bind action', async ({ page }) => {
@@ -67,17 +51,9 @@ function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
   })
 
   async function testActionBindAction(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText(
-      '[?]',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-action' })
-      .click()
-    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText(
-      '[true,true]',
-    )
-    await page
-      .getByRole('button', { name: 'test-server-action-bind-reset' })
-      .click()
+    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText('[?]')
+    await page.getByRole('button', { name: 'test-server-action-bind-action' }).click()
+    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText('[true,true]')
+    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
   }
 }

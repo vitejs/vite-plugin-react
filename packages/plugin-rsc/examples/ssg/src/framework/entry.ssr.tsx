@@ -19,8 +19,7 @@ export async function renderHtml(
     const root = React.use(payload).root
     return root
   }
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
@@ -47,8 +46,7 @@ export async function renderHtml(
           </body>
         </html>,
         {
-          bootstrapScriptContent:
-            `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
+          bootstrapScriptContent: `self.__NO_HYDRATE=1;` + bootstrapScriptContent,
         },
       )
     }

@@ -2,9 +2,7 @@ import { expect, test } from 'vitest'
 import { editFile, getColor, isServe, page } from '~utils'
 
 test('should render', async () => {
-  expect(await page.textContent('h1')).toMatch(
-    'Hello Vite + React + @emotion/react',
-  )
+  expect(await page.textContent('h1')).toMatch('Hello Vite + React + @emotion/react')
 })
 
 test('should update', async () => {
@@ -14,14 +12,10 @@ test('should update', async () => {
 })
 
 test.runIf(isServe)('should hmr', async () => {
-  editFile('src/App.tsx', (code) =>
-    code.replace('Vite + React + @emotion/react', 'Updated'),
-  )
+  editFile('src/App.tsx', (code) => code.replace('Vite + React + @emotion/react', 'Updated'))
   await expect.poll(() => page.textContent('h1')).toMatch('Hello Updated')
 
-  editFile('src/Counter.tsx', (code) =>
-    code.replace('color: #646cff;', 'color: #d26ac2;'),
-  )
+  editFile('src/Counter.tsx', (code) => code.replace('color: #646cff;', 'color: #d26ac2;'))
 
   await expect.poll(() => getColor('code')).toMatch('#d26ac2')
 

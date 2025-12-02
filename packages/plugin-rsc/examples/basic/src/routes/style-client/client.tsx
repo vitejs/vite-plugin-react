@@ -14,11 +14,7 @@ export function TestStyleClient() {
         test-css-module-client
       </div>
       <span>|</span>
-      <link
-        rel="stylesheet"
-        href={styleUrl}
-        precedence="test-style-manual-link"
-      />
+      <link rel="stylesheet" href={styleUrl} precedence="test-style-manual-link" />
       <div className="test-style-url-client">test-style-url-client</div>
       <span>|</span>
       <TestClientDep />

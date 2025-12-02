@@ -37,9 +37,7 @@ function concatArray(chunks: Uint8Array[]): Uint8Array {
   return result
 }
 
-export async function concatArrayStream(
-  stream: ReadableStream<Uint8Array>,
-): Promise<Uint8Array> {
+export async function concatArrayStream(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
   const chunks: Uint8Array[] = []
   await stream.pipeTo(
     new WritableStream({
@@ -81,10 +79,7 @@ export async function generateEncryptionKey(): Promise<Uint8Array> {
   return new Uint8Array(exported)
 }
 
-export async function encryptBuffer(
-  data: BufferSource,
-  key: CryptoKey,
-): Promise<string> {
+export async function encryptBuffer(data: BufferSource, key: CryptoKey): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(16))
   const encrypted = await crypto.subtle.encrypt(
     {
@@ -97,10 +92,7 @@ export async function encryptBuffer(
   return toBase64(concatArray([iv, new Uint8Array(encrypted)]))
 }
 
-export async function decryptBuffer(
-  encryptedString: string,
-  key: CryptoKey,
-): Promise<ArrayBuffer> {
+export async function decryptBuffer(encryptedString: string, key: CryptoKey): Promise<ArrayBuffer> {
   const concatenated = fromBase64(encryptedString)
   const iv = concatenated.slice(0, 16)
   const encrypted = concatenated.slice(16)

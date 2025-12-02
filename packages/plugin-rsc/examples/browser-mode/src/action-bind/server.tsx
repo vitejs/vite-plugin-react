@@ -45,9 +45,7 @@ export function TestServerActionBindSimple() {
     >
       <input type="hidden" name="value" value={outerValue} />
       <button type="submit">test-server-action-bind-simple</button>
-      <span data-testid="test-server-action-bind-simple">
-        {testServerActionBindSimpleState}
-      </span>
+      <span data-testid="test-server-action-bind-simple">{testServerActionBindSimpleState}</span>
     </form>
   )
 }
@@ -63,12 +61,7 @@ export function TestServerActionBindClient() {
     return client
   }
 
-  return (
-    <TestServerActionBindClientForm
-      key={testServerActionBindClientState}
-      action={action}
-    />
-  )
+  return <TestServerActionBindClientForm key={testServerActionBindClientState} action={action} />
 }
 
 let testServerActionBindActionState = '[?]'
@@ -99,9 +92,7 @@ export function TestServerActionBindAction() {
     >
       <input type="hidden" name="value" value="ok" />
       <button type="submit">test-server-action-bind-action</button>
-      <span data-testid="test-server-action-bind-action">
-        {testServerActionBindActionState}
-      </span>
+      <span data-testid="test-server-action-bind-action">{testServerActionBindActionState}</span>
     </form>
   )
 }

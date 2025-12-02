@@ -33,10 +33,7 @@ export default defineConfig({
         {
           ...Object.fromEntries(
             Object.entries(packageJSON).filter(
-              ([key, _val]) =>
-                key !== 'devDependencies' &&
-                key !== 'scripts' &&
-                key !== 'private',
+              ([key, _val]) => key !== 'devDependencies' && key !== 'scripts' && key !== 'private',
             ),
           ),
           exports: {

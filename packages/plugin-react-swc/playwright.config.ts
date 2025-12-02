@@ -8,11 +8,7 @@ fs.emptyDirSync(tempDir)
 fs.copySync(fileURLToPath(new URL('playground', import.meta.url)), tempDir, {
   filter: (src) => {
     src = src.replaceAll('\\', '/')
-    return (
-      !src.includes('/__tests__') &&
-      !src.includes('/.vite') &&
-      !src.includes('/dist')
-    )
+    return !src.includes('/__tests__') && !src.includes('/.vite') && !src.includes('/dist')
   },
 })
 

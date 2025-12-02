@@ -10,9 +10,7 @@ function initialize(): void {
     load: async (id) => {
       if (!import.meta.env.__vite_rsc_build__) {
         // @ts-ignore
-        return __vite_rsc_raw_import__(
-          withTrailingSlash(import.meta.env.BASE_URL) + id.slice(1),
-        )
+        return __vite_rsc_raw_import__(withTrailingSlash(import.meta.env.BASE_URL) + id.slice(1))
       } else {
         const import_ = clientReferences.default[id]
         if (!import_) {

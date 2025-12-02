@@ -17,9 +17,7 @@ export function TestUseActionState() {
 
   return (
     <form action={formAction}>
-      <button data-testid="use-action-state">
-        test-useActionState: {state}
-      </button>
+      <button data-testid="use-action-state">test-useActionState: {state}</button>
     </form>
   )
 }

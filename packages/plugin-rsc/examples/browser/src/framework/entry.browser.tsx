@@ -41,9 +41,7 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await createFromFetch<RscPayload>(
-      fetchRsc(new Request(window.location.href)),
-    )
+    const payload = await createFromFetch<RscPayload>(fetchRsc(new Request(window.location.href)))
     setPayload(payload)
   }
 

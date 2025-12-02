@@ -2,9 +2,7 @@
 
 import * as React from 'react'
 
-const BrowserDep = (
-  import.meta.env.SSR ? undefined : React.lazy(() => import('./browser-dep'))
-)!
+const BrowserDep = (import.meta.env.SSR ? undefined : React.lazy(() => import('./browser-dep')))!
 
 export function TestBrowserOnly() {
   return (

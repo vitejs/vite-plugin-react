@@ -53,22 +53,13 @@ export function transformCjsToEsm(
         if (isTopLevel) {
           // top-level scope `require` to dynamic import with interop
           // (this allows handling react development/production re-export within top-level if branch)
-          output.update(
-            node.start,
-            node.callee.end,
-            '(__cjs_interop__(await import',
-          )
+          output.update(node.start, node.callee.end, '(__cjs_interop__(await import')
           output.appendRight(node.end, '))')
         } else {
           // hoist non top-level `require` to top-level
           const hoisted = `__cjs_to_esm_hoist_${hoistIndex}`
-          const importee = code.slice(
-            node.arguments[0]!.start,
-            node.arguments[0]!.end,
-          )
-          hoistedCodes.push(
-            `const ${hoisted} = __cjs_interop__(await import(${importee}));\n`,
-          )
+          const importee = code.slice(node.arguments[0]!.start, node.arguments[0]!.end)
+          hoistedCodes.push(`const ${hoisted} = __cjs_interop__(await import(${importee}));\n`)
           output.update(node.start, node.end, hoisted)
           hoistIndex++
         }

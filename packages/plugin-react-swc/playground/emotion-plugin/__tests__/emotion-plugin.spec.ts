@@ -1,10 +1,5 @@
 import { expect, test } from '@playwright/test'
-import {
-  expectColor,
-  setupBuildAndPreview,
-  setupDevServer,
-  setupWaitForLogs,
-} from '../../utils.ts'
+import { expectColor, setupBuildAndPreview, setupDevServer, setupWaitForLogs } from '../../utils.ts'
 
 test('Emotion plugin build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('emotion-plugin')
@@ -39,10 +34,7 @@ test('Emotion plugin HMR', async ({ page }) => {
   const code = page.locator('code')
   await expectColor(code, 'color', '#646cff')
 
-  editFile('src/Button.jsx', [
-    'background-color: #d26ac2;',
-    'background-color: #646cff;',
-  ])
+  editFile('src/Button.jsx', ['background-color: #d26ac2;', 'background-color: #646cff;'])
   await waitForLogs('[vite] hot updated: /src/Button.jsx')
   await expect(button).toHaveText('count is 1')
   await expectColor(button, 'backgroundColor', '#646cff')

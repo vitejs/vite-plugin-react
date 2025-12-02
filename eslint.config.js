@@ -9,12 +9,7 @@ import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: [
-      '**/dist/**',
-      '**/playground-temp/**',
-      '**/temp/**',
-      'packages/plugin-rsc/**',
-    ],
+    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**', 'packages/plugin-rsc/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -65,10 +60,7 @@ export default tseslint.config(
         'error',
         { allowArgumentsExplicitlyTypedAsAny: true },
       ],
-      '@typescript-eslint/no-empty-function': [
-        'error',
-        { allow: ['arrowFunctions'] },
-      ],
+      '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-extra-semi': 'off',
