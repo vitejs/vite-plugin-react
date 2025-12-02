@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test'
+import fs from 'node:fs'
+import path from 'node:path'
+
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
-import path from 'node:path'
-import fs from 'node:fs'
 
 // Webkit fails by
 // > TypeError: ReadableByteStreamController is not implemented

@@ -1,7 +1,7 @@
-import rsc from '@vitejs/plugin-rsc'
 import react from '@vitejs/plugin-react'
-import { defineConfig, type Plugin } from 'vite'
+import rsc from '@vitejs/plugin-rsc'
 import fsp from 'node:fs/promises'
+import { defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -45,7 +45,10 @@ function spaPlugin(): Plugin[] {
           server.middlewares.use(async (req, res, next) => {
             try {
               if (req.headers.accept?.includes('text/html')) {
-                const html = await fsp.readFile('dist/client/index.html', 'utf-8')
+                const html = await fsp.readFile(
+                  'dist/client/index.html',
+                  'utf-8',
+                )
                 res.end(html)
                 return
               }

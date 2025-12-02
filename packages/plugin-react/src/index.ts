@@ -1,11 +1,11 @@
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import { createFilter } from 'vite'
-import * as vite from 'vite'
 import type { Plugin, ResolvedConfig } from 'vite'
+
+import {
+  exactRegex,
+  makeIdFiltersToMatchWithQuery,
+} from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -14,7 +14,11 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import { exactRegex, makeIdFiltersToMatchWithQuery } from '@rolldown/pluginutils'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createFilter } from 'vite'
+import * as vite from 'vite'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
@@ -45,7 +49,9 @@ export interface Options {
   /**
    * Babel configuration applied in both dev and prod.
    */
-  babel?: BabelOptions | ((id: string, options: { ssr?: boolean }) => BabelOptions)
+  babel?:
+    | BabelOptions
+    | ((id: string, options: { ssr?: boolean }) => BabelOptions)
   /**
    * React Fast Refresh runtime URL prefix.
    * Useful in a module federation context to enable HMR by specifying
@@ -58,7 +64,12 @@ export interface Options {
 
 export type BabelOptions = Omit<
   TransformOptions,
-  'ast' | 'filename' | 'root' | 'sourceFileName' | 'sourceMaps' | 'inputSourceMap'
+  | 'ast'
+  | 'filename'
+  | 'root'
+  | 'sourceFileName'
+  | 'sourceMaps'
+  | 'inputSourceMap'
 >
 
 /**
@@ -186,7 +197,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       }
       projectRoot = config.root
       isProduction = config.isProduction
-      skipFastRefresh = isProduction || config.command === 'build' || config.server.hmr === false
+      skipFastRefresh =
+        isProduction ||
+        config.command === 'build' ||
+        config.server.hmr === false
 
       const hooks: ReactBabelHook[] = config.plugins
         .map((plugin) => plugin.api?.reactBabel)
@@ -240,7 +254,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         const babelOptions = (() => {
           if (staticBabelOptions) return staticBabelOptions
           const newBabelOptions = createBabelOptions(
-            typeof opts.babel === 'function' ? opts.babel(id, { ssr }) : opts.babel,
+            typeof opts.babel === 'function'
+              ? opts.babel(id, { ssr })
+              : opts.babel,
           )
           runPluginOverrides?.(newBabelOptions, { id, ssr })
           return newBabelOptions
@@ -272,9 +288,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           (isJSX ||
             (opts.jsxRuntime === 'classic'
               ? importReactRE.test(code)
-              : code.includes(jsxImportDevRuntime) || code.includes(jsxImportRuntime)))
+              : code.includes(jsxImportDevRuntime) ||
+                code.includes(jsxImportRuntime)))
         if (useFastRefresh) {
-          plugins.push([await loadPlugin('react-refresh/babel'), { skipEnvCheck: true }])
+          plugins.push([
+            await loadPlugin('react-refresh/babel'),
+            { skipEnvCheck: true },
+          ])
         }
 
         if (opts.jsxRuntime === 'classic' && isJSX) {
@@ -359,9 +379,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       try {
         // NOTE: `+` is to bypass lint & typecheck. vite/internal exists for newer rolldown-vite
         const vite = 'vite'
-        nativePlugin = (await import(vite + '/internal')).reactRefreshWrapperPlugin
+        nativePlugin = (await import(vite + '/internal'))
+          .reactRefreshWrapperPlugin
       } catch {}
-      if (!nativePlugin || ['7.1.10', '7.1.11', '7.1.12'].includes(vite.version)) {
+      if (
+        !nativePlugin ||
+        ['7.1.10', '7.1.11', '7.1.12'].includes(vite.version)
+      ) {
         // the native plugin in 7.1.10 and 7.1.11 and 7.1.12 does not support dev properly
         return true
       }
@@ -392,10 +416,17 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         const useFastRefresh =
           !skipFastRefresh &&
           !ssr &&
-          (isJSX || code.includes(jsxImportDevRuntime) || code.includes(jsxImportRuntime))
+          (isJSX ||
+            code.includes(jsxImportDevRuntime) ||
+            code.includes(jsxImportRuntime))
         if (!useFastRefresh) return
 
-        const newCode = addRefreshWrapper(code, '@vitejs/plugin-react', id, opts.reactRefreshHost)
+        const newCode = addRefreshWrapper(
+          code,
+          '@vitejs/plugin-react',
+          id,
+          opts.reactRefreshHost,
+        )
         return newCode ? { code: newCode, map: null } : undefined
       },
     },
@@ -440,11 +471,18 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
-  const dependencies = ['react', 'react-dom', jsxImportDevRuntime, jsxImportRuntime]
-  const staticBabelPlugins = typeof opts.babel === 'object' ? (opts.babel?.plugins ?? []) : []
+  const dependencies = [
+    'react',
+    'react-dom',
+    jsxImportDevRuntime,
+    jsxImportRuntime,
+  ]
+  const staticBabelPlugins =
+    typeof opts.babel === 'object' ? (opts.babel?.plugins ?? []) : []
   const reactCompilerPlugin = getReactCompilerPlugin(staticBabelPlugins)
   if (reactCompilerPlugin != null) {
-    const reactCompilerRuntimeModule = getReactCompilerRuntimeModule(reactCompilerPlugin)
+    const reactCompilerRuntimeModule =
+      getReactCompilerRuntimeModule(reactCompilerPlugin)
     dependencies.push(reactCompilerRuntimeModule)
   }
 
@@ -490,7 +528,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 
   return [
     viteBabel,
-    ...(isRolldownVite ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode] : []),
+    ...(isRolldownVite
+      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
+      : []),
     viteReactRefresh,
     virtualPreamblePlugin({
       name: '@vitejs/plugin-react/preamble',
@@ -510,7 +550,10 @@ Object.assign(viteReactForCjs, {
 })
 export { viteReactForCjs as 'module.exports' }
 
-function canSkipBabel(plugins: ReactBabelOptions['plugins'], babelOptions: ReactBabelOptions) {
+function canSkipBabel(
+  plugins: ReactBabelOptions['plugins'],
+  babelOptions: ReactBabelOptions,
+) {
   return !(
     plugins.length ||
     babelOptions.presets.length ||
@@ -564,7 +607,9 @@ function getReactCompilerPlugin(plugins: ReactBabelOptions['plugins']) {
 type ReactCompilerRuntimeModule =
   | 'react/compiler-runtime' // from react namespace
   | 'react-compiler-runtime' // npm package
-function getReactCompilerRuntimeModule(plugin: babelCore.PluginItem): ReactCompilerRuntimeModule {
+function getReactCompilerRuntimeModule(
+  plugin: babelCore.PluginItem,
+): ReactCompilerRuntimeModule {
   let moduleName: ReactCompilerRuntimeModule = 'react/compiler-runtime'
   if (Array.isArray(plugin)) {
     if (plugin[1]?.target === '17' || plugin[1]?.target === '18') {

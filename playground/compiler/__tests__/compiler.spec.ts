@@ -9,6 +9,8 @@ test('should render', async () => {
 })
 
 test.runIf(isServe)('should hmr', async () => {
-  editFile('src/App.tsx', (code) => code.replace('count is {count}', 'count is {count}!'))
+  editFile('src/App.tsx', (code) =>
+    code.replace('count is {count}', 'count is {count}!'),
+  )
   await expect.poll(() => page.textContent('button')).toMatch('count is 1!')
 })

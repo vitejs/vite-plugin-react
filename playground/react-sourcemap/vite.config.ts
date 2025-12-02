@@ -1,5 +1,6 @@
-import react from '@vitejs/plugin-react'
 import type { UserConfig } from 'vite'
+
+import react from '@vitejs/plugin-react'
 
 const config: UserConfig = {
   server: { port: 8906 /* Should be unique */ },

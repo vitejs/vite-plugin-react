@@ -1,7 +1,9 @@
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+
+import type { RscPayload } from './shared'
+
 import { Root, getStaticPaths } from '../root'
 import { parseRenderRequest } from './request'
-import type { RscPayload } from './shared'
 
 export { getStaticPaths }
 
@@ -20,7 +22,9 @@ export default async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const ssr = await import.meta.viteRsc.loadModule<typeof import('./entry.ssr')>('ssr', 'index')
+  const ssr = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr')
+  >('ssr', 'index')
   const ssrResult = await ssr.renderHtml(rscStream)
 
   return new Response(ssrResult.stream, {
@@ -41,7 +45,9 @@ export async function handleSsg(request: Request): Promise<{
   const rscStream = renderToReadableStream<RscPayload>(rscPayload)
   const [rscStream1, rscStream2] = rscStream.tee()
 
-  const ssr = await import.meta.viteRsc.loadModule<typeof import('./entry.ssr')>('ssr', 'index')
+  const ssr = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr')
+  >('ssr', 'index')
   const ssrResult = await ssr.renderHtml(rscStream1, {
     ssg: true,
   })

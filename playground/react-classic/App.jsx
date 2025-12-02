@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+
 import WithQuery from './components/WithQuery?qs-should-not-break-plugin-react'
 
 function App() {
@@ -8,7 +9,9 @@ function App() {
       <header className="App-header">
         <h1>Hello Vite + React</h1>
         <p>
-          <button onClick={() => setCount((count) => count + 1)}>count is: {count}</button>
+          <button onClick={() => setCount((count) => count + 1)}>
+            count is: {count}
+          </button>
         </p>
         <p>
           Edit <code>App.jsx</code> and save to test HMR updates.

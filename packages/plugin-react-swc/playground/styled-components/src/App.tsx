@@ -21,6 +21,8 @@ export const App = () => (
         Edit <StyledCode>src/Button.tsx</StyledCode> and save to test HMR
       </p>
     </div>
-    <p className="read-the-docs">Click on the Vite and Styled Components logos to learn more</p>
+    <p className="read-the-docs">
+      Click on the Vite and Styled Components logos to learn more
+    </p>
   </div>
 )

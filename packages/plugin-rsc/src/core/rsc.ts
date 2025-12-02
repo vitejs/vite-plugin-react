@@ -1,5 +1,9 @@
 import { memoize, tinyassert } from '@hiogawa/utils'
+// @ts-ignore
+import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
+
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
+
 import {
   SERVER_DECODE_CLIENT_PREFIX,
   SERVER_REFERENCE_PREFIX,
@@ -8,13 +12,12 @@ import {
   setInternalRequire,
 } from './shared'
 
-// @ts-ignore
-import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
-
 let init = false
 let requireModule!: (id: string) => unknown
 
-export function setRequireModule(options: { load: (id: string) => unknown }): void {
+export function setRequireModule(options: {
+  load: (id: string) => unknown
+}): void {
   if (init) return
   init = true
 
@@ -23,29 +26,33 @@ export function setRequireModule(options: { load: (id: string) => unknown }): vo
   }
 
   // need memoize to return stable promise from __webpack_require__
-  ;(globalThis as any).__vite_rsc_server_require__ = memoize(async (id: string) => {
-    if (id.startsWith(SERVER_DECODE_CLIENT_PREFIX)) {
-      id = id.slice(SERVER_DECODE_CLIENT_PREFIX.length)
-      id = removeReferenceCacheTag(id)
-      // create `registerClientReference` on the fly since there's no way to
-      // grab the original client reference module on ther server.
-      // cf. https://github.com/lazarv/react-server/blob/79e7acebc6f4a8c930ad8422e2a4a9fdacfcce9b/packages/react-server/server/module-loader.mjs#L19
-      // decode client reference on the server
-      return new Proxy({} as any, {
-        get(target, name, _receiver) {
-          if (typeof name !== 'string' || name === 'then') return
-          return (target[name] ??= ReactServer.registerClientReference(
-            () => {
-              throw new Error(`Unexpectedly client reference export '${name}' is called on server`)
-            },
-            id,
-            name,
-          ))
-        },
-      })
-    }
-    return requireModule(id)
-  })
+  ;(globalThis as any).__vite_rsc_server_require__ = memoize(
+    async (id: string) => {
+      if (id.startsWith(SERVER_DECODE_CLIENT_PREFIX)) {
+        id = id.slice(SERVER_DECODE_CLIENT_PREFIX.length)
+        id = removeReferenceCacheTag(id)
+        // create `registerClientReference` on the fly since there's no way to
+        // grab the original client reference module on ther server.
+        // cf. https://github.com/lazarv/react-server/blob/79e7acebc6f4a8c930ad8422e2a4a9fdacfcce9b/packages/react-server/server/module-loader.mjs#L19
+        // decode client reference on the server
+        return new Proxy({} as any, {
+          get(target, name, _receiver) {
+            if (typeof name !== 'string' || name === 'then') return
+            return (target[name] ??= ReactServer.registerClientReference(
+              () => {
+                throw new Error(
+                  `Unexpectedly client reference export '${name}' is called on server`,
+                )
+              },
+              id,
+              name,
+            ))
+          },
+        })
+      }
+      return requireModule(id)
+    },
+  )
 
   setInternalRequire()
 }

@@ -1,10 +1,11 @@
 import './index.css'
 import viteLogo from '/vite.svg'
+
+import { TestActionBind } from './action-bind/server.tsx'
+import { TestUseActionState } from './action-from-client/client.tsx'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
-import { TestUseActionState } from './action-from-client/client.tsx'
-import { TestActionBind } from './action-bind/server.tsx'
 
 export function Root() {
   return <App />
@@ -17,7 +18,10 @@ function App() {
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
-        <a href="https://react.dev/reference/rsc/server-components" target="_blank">
+        <a
+          href="https://react.dev/reference/rsc/server-components"
+          target="_blank"
+        >
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>

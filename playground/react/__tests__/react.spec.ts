@@ -20,12 +20,18 @@ test('should update', async () => {
 })
 
 test.runIf(isServe)('should hmr', async () => {
-  editFile('App.jsx', (code) => code.replace('Vite + React', 'Vite + React Updated'))
-  await expect.poll(() => page.textContent('h1')).toMatch('Hello Vite + React Updated')
+  editFile('App.jsx', (code) =>
+    code.replace('Vite + React', 'Vite + React Updated'),
+  )
+  await expect
+    .poll(() => page.textContent('h1'))
+    .toMatch('Hello Vite + React Updated')
   // preserve state
   expect(await page.textContent('#state-button')).toMatch('count is: 1')
 
-  editFile('App.jsx', (code) => code.replace('Vite + React Updated', 'Vite + React'))
+  editFile('App.jsx', (code) =>
+    code.replace('Vite + React Updated', 'Vite + React'),
+  )
   await expect.poll(() => page.textContent('h1')).toMatch('Hello Vite + React')
 })
 
@@ -36,17 +42,25 @@ test.runIf(isServe)('should hmr files with queries', async () => {
   await page.click('#WithQuery-button')
   expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
 
-  editFile('components/WithQuery.jsx', (code) => code.replace('With Query', 'With Query Updated'))
-  await expect.poll(() => page.textContent('#WithQuery')).toBe('With Query Updated')
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query', 'With Query Updated'),
+  )
+  await expect
+    .poll(() => page.textContent('#WithQuery'))
+    .toBe('With Query Updated')
   // preserve state
   expect(await page.textContent('#WithQuery-button')).toMatch('count is: 1')
 
-  editFile('components/WithQuery.jsx', (code) => code.replace('With Query Updated', 'With Query'))
+  editFile('components/WithQuery.jsx', (code) =>
+    code.replace('With Query Updated', 'With Query'),
+  )
   await expect.poll(() => page.textContent('#WithQuery')).toBe('With Query')
 })
 
 test.runIf(isServe)('should not invalidate when code is invalid', async () => {
-  editFile('App.jsx', (code) => code.replace('<div className="App">', '<div className="App"}>'))
+  editFile('App.jsx', (code) =>
+    code.replace('<div className="App">', '<div className="App"}>'),
+  )
 
   await expect
     .poll(() => page.textContent('vite-error-overlay .message-body'))
@@ -63,12 +77,15 @@ test.runIf(isServe)('should not invalidate when code is invalid', async () => {
   )
 })
 
-test.runIf(isServe)('should have annotated jsx with file location metadata', async () => {
-  const res = await page.request.get(viteTestUrl + '/App.jsx')
-  const code = await res.text()
-  expect(code).toMatch(/lineNumber:\s*\d+/)
-  expect(code).toMatch(/columnNumber:\s*\d+/)
-})
+test.runIf(isServe)(
+  'should have annotated jsx with file location metadata',
+  async () => {
+    const res = await page.request.get(viteTestUrl + '/App.jsx')
+    const code = await res.text()
+    expect(code).toMatch(/lineNumber:\s*\d+/)
+    expect(code).toMatch(/columnNumber:\s*\d+/)
+  },
+)
 
 test('import attributes', async () => {
   expect(await page.textContent('.import-attributes')).toBe('ok')
@@ -78,7 +95,10 @@ if (!isBuild) {
   // #9869
   test('should only hmr files with exported react components', async () => {
     await untilBrowserLogAfter(
-      () => editFile('hmr/no-exported-comp.jsx', (code) => code.replace('An Object', 'Updated')),
+      () =>
+        editFile('hmr/no-exported-comp.jsx', (code) =>
+          code.replace('An Object', 'Updated'),
+        ),
       [
         new RegExp(
           `^${escapeRegex(
@@ -95,9 +115,13 @@ if (!isBuild) {
 
   // #3301
   test('should hmr react context', async () => {
-    expect(await page.textContent('#context-button')).toMatch('context-based count is: 0')
+    expect(await page.textContent('#context-button')).toMatch(
+      'context-based count is: 0',
+    )
     await page.click('#context-button')
-    expect(await page.textContent('#context-button')).toMatch('context-based count is: 1')
+    expect(await page.textContent('#context-button')).toMatch(
+      'context-based count is: 1',
+    )
 
     await untilBrowserLogAfter(
       () =>
@@ -129,7 +153,10 @@ if (!isBuild) {
     await untilBrowserLogAfter(
       () =>
         editFile('hmr/jsx-import-runtime.js', (code) =>
-          code.replace('JSX import runtime works', 'JSX import runtime updated'),
+          code.replace(
+            'JSX import runtime works',
+            'JSX import runtime updated',
+          ),
         ),
       ['[vite] hot updated: /hmr/jsx-import-runtime.js'],
     )
@@ -150,7 +177,9 @@ if (!isBuild) {
       ['[vite] hot updated: /components/Accordion.jsx'],
     )
 
-    await expect.poll(() => page.textContent('#accordion-root')).toMatch('Accordion Root Updated')
+    await expect
+      .poll(() => page.textContent('#accordion-root'))
+      .toMatch('Accordion Root Updated')
   })
 
   test('no refresh transform for non-jsx files', async () => {

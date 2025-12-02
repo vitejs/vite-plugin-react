@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
+
 import { setupInlineFixture, useFixture } from './fixture'
-import { defineStarterTest } from './starter'
 import { waitForHydration } from './helper'
+import { defineStarterTest } from './starter'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/react-compiler'

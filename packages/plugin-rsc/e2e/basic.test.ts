@@ -1,11 +1,22 @@
+import {
+  type Page,
+  type Response as PlaywrightResponse,
+  expect,
+  test,
+} from '@playwright/test'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { type Page, type Response as PlaywrightResponse, expect, test } from '@playwright/test'
-import { type Fixture, useCreateEditor, useFixture } from './fixture'
-import { expectNoPageError, expectNoReload, testNoJs, waitForHydration } from './helper'
+import path from 'node:path'
 import { x } from 'tinyexec'
 import { normalizePath, type Rollup } from 'vite'
-import path from 'node:path'
+
+import { type Fixture, useCreateEditor, useFixture } from './fixture'
+import {
+  expectNoPageError,
+  expectNoReload,
+  testNoJs,
+  waitForHydration,
+} from './helper'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
@@ -18,8 +29,14 @@ test.describe('dev-initial', () => {
   // verify css is collected properly on server startup (i.e. empty module graph)
   testNoJs('style', async ({ page }) => {
     await page.goto(f.url('./'))
-    await expect(page.locator('.test-style-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+    await expect(page.locator('.test-style-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
     await expect(page.locator('.test-tw-client')).toHaveCSS(
       'color',
       // blue-500
@@ -91,7 +108,10 @@ test.describe('dev-non-optimized-cjs', () => {
     // remove explicitly added optimizeDeps.include
     const editor = f.createEditor('vite.config.ts')
     editor.edit((s) =>
-      s.replace(`include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],`, ``),
+      s.replace(
+        `include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],`,
+        ``,
+      ),
     )
   })
 
@@ -117,7 +137,9 @@ test.describe('dev-inconsistent-client-optimization', () => {
   test.beforeAll(async () => {
     // remove explicitly added optimizeDeps.exclude
     const editor = f.createEditor('vite.config.ts')
-    editor.edit((s) => s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``))
+    editor.edit((s) =>
+      s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``),
+    )
   })
 
   const f = useFixture({
@@ -127,7 +149,9 @@ test.describe('dev-inconsistent-client-optimization', () => {
 
   test('show warning', async ({ page }) => {
     await page.goto(f.url())
-    expect(f.proc().stderr()).toContain('client component dependency is inconsistently optimized.')
+    expect(f.proc().stderr()).toContain(
+      'client component dependency is inconsistently optimized.',
+    )
   })
 })
 
@@ -211,9 +235,13 @@ function defineTest(f: Fixture) {
   async function testAction(page: Page) {
     await page.getByRole('button', { name: 'server-counter: 0' }).click()
     await page.getByRole('button', { name: 'server-counter: 1' }).click()
-    await expect(page.getByRole('button', { name: 'server-counter: 2' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'server-counter: 2' }),
+    ).toBeVisible()
     await page.getByRole('button', { name: 'server-counter-reset' }).click()
-    await expect(page.getByRole('button', { name: 'server-counter: 0' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'server-counter: 0' }),
+    ).toBeVisible()
   }
 
   test('useActionState @js', async ({ page }) => {
@@ -247,9 +275,13 @@ function defineTest(f: Fixture) {
     // no js
     js = false
     await page.goto(f.url())
-    await expect(page.getByTestId('use-action-state')).toContainText('test-useActionState: 0')
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 0',
+    )
     await page.getByTestId('use-action-state').click()
-    await expect(page.getByTestId('use-action-state')).toContainText('test-useActionState: 1')
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 1',
+    )
 
     // with js (hydration)
     js = true
@@ -261,11 +293,17 @@ function defineTest(f: Fixture) {
   })
 
   async function testUseActionState(page: Page) {
-    await expect(page.getByTestId('use-action-state')).toContainText('test-useActionState: 0')
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 0',
+    )
     await page.getByTestId('use-action-state').click()
-    await expect(page.getByTestId('use-action-state')).toContainText('test-useActionState: 1')
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 1',
+    )
     await page.getByTestId('use-action-state').click()
-    await expect(page.getByTestId('use-action-state')).toContainText('test-useActionState: 2')
+    await expect(page.getByTestId('use-action-state')).toContainText(
+      'test-useActionState: 2',
+    )
   }
 
   test('useActionState with jsx @js', async ({ page }) => {
@@ -282,7 +320,9 @@ function defineTest(f: Fixture) {
 
   async function testUseActionStateJsx(page: Page, options?: { js?: boolean }) {
     await page.getByTestId('use-action-state-jsx').getByRole('button').click()
-    await expect(page.getByTestId('use-action-state-jsx')).toContainText(/\(ok\)/)
+    await expect(page.getByTestId('use-action-state-jsx')).toContainText(
+      /\(ok\)/,
+    )
 
     // 1st call "works" but it shows an error during reponse and it breaks 2nd call.
     //   Failed to serialize an action for progressive enhancement:
@@ -291,7 +331,9 @@ function defineTest(f: Fixture) {
     if (!options?.js) return
 
     await page.getByTestId('use-action-state-jsx').getByRole('button').click()
-    await expect(page.getByTestId('use-action-state-jsx')).toContainText(/\(ok\).*\(ok\)/)
+    await expect(page.getByTestId('use-action-state-jsx')).toContainText(
+      /\(ok\).*\(ok\)/,
+    )
   }
 
   test.describe(() => {
@@ -301,15 +343,19 @@ function defineTest(f: Fixture) {
       await page.goto(f.url())
       const srcs = await page
         .locator(`head >> link[rel="modulepreload"]`)
-        .evaluateAll((elements) => elements.map((el) => el.getAttribute('href')))
+        .evaluateAll((elements) =>
+          elements.map((el) => el.getAttribute('href')),
+        )
       const manifest = JSON.parse(
-        readFileSync(f.root + '/dist/ssr/__vite_rsc_assets_manifest.js', 'utf-8').slice(
-          'export default '.length,
-        ),
+        readFileSync(
+          f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
+          'utf-8',
+        ).slice('export default '.length),
       )
       const hashString = (v: string) =>
         createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
-      const deps = manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
+      const deps =
+        manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
     })
   })
@@ -332,25 +378,35 @@ function defineTest(f: Fixture) {
 
   async function testServerActionUpdate(page: Page, options: { js: boolean }) {
     await page.getByRole('button', { name: 'server-counter: 0' }).click()
-    await expect(page.getByRole('button', { name: 'server-counter: 1' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'server-counter: 1' }),
+    ).toBeVisible()
 
     // update server code
     const editor = f.createEditor('src/routes/action/action.tsx')
-    editor.edit((s) => s.replace('const TEST_UPDATE = 1\n', 'const TEST_UPDATE = 10\n'))
+    editor.edit((s) =>
+      s.replace('const TEST_UPDATE = 1\n', 'const TEST_UPDATE = 10\n'),
+    )
     await expect(async () => {
       if (!options.js) await page.goto(f.url())
-      await expect(page.getByRole('button', { name: 'server-counter: 0' })).toBeVisible({
+      await expect(
+        page.getByRole('button', { name: 'server-counter: 0' }),
+      ).toBeVisible({
         timeout: 10,
       })
     }).toPass()
 
     await page.getByRole('button', { name: 'server-counter: 0' }).click()
-    await expect(page.getByRole('button', { name: 'server-counter: 10' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'server-counter: 10' }),
+    ).toBeVisible()
 
     editor.reset()
     await expect(async () => {
       if (!options.js) await page.goto(f.url())
-      await expect(page.getByRole('button', { name: 'server-counter: 0' })).toBeVisible({
+      await expect(
+        page.getByRole('button', { name: 'server-counter: 0' }),
+      ).toBeVisible({
         timeout: 10,
       })
     }).toPass()
@@ -363,11 +419,15 @@ function defineTest(f: Fixture) {
       await page.goto(f.url())
       await waitForHydration(page)
       await page.getByRole('button', { name: 'client-counter: 0' }).click()
-      await expect(page.getByRole('button', { name: 'client-counter: 1' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'client-counter: 1' }),
+      ).toBeVisible()
 
       const editor = f.createEditor('src/routes/client.tsx')
       editor.edit((s) => s.replace('client-counter', 'client-[edit]-counter'))
-      await expect(page.getByRole('button', { name: 'client-[edit]-counter: 1' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'client-[edit]-counter: 1' }),
+      ).toBeVisible()
 
       // check next ssr is also updated
       const res = await page.goto(f.url())
@@ -392,9 +452,9 @@ function defineTest(f: Fixture) {
 
       // check next rsc payload includes current client reference and preserves state
       await page.locator("a[href='?test-hmr-client-dep-re-render']").click()
-      await expect(page.locator("a[href='?test-hmr-client-dep-re-render']")).toHaveText(
-        're-render [ok]',
-      )
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep-re-render']"),
+      ).toHaveText('re-render [ok]')
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
 
       // check next ssr is also updated
@@ -424,9 +484,9 @@ function defineTest(f: Fixture) {
 
       // check next rsc payload includes an updated client reference and preserves state
       await page.locator("a[href='?test-hmr-client-dep2-re-render']").click()
-      await expect(page.locator("a[href='?test-hmr-client-dep2-re-render']")).toHaveText(
-        're-render [ok]',
-      )
+      await expect(
+        page.locator("a[href='?test-hmr-client-dep2-re-render']"),
+      ).toHaveText('re-render [ok]')
       await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
 
       // check next ssr is also updated
@@ -447,9 +507,13 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/action/server.tsx')
       editor.edit((s) => s.replace('server-counter', 'server-[edit]-counter'))
-      await expect(page.getByRole('button', { name: 'server-[edit]-counter: 0' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'server-[edit]-counter: 0' }),
+      ).toBeVisible()
       editor.reset()
-      await expect(page.getByRole('button', { name: 'server-counter: 0' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'server-counter: 0' }),
+      ).toBeVisible()
     })
 
     test('module invalidation', async ({ page }) => {
@@ -479,8 +543,12 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
 
       // Test initial state
-      await expect(page.getByTestId('test-hmr-shared-server')).toContainText('(shared1, shared2)')
-      await expect(page.getByTestId('test-hmr-shared-client')).toContainText('(shared1, shared2)')
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
 
       // Test 1: Component HMR (shared1.tsx)
       const editor1 = f.createEditor('src/routes/hmr-shared/shared1.tsx')
@@ -495,8 +563,12 @@ function defineTest(f: Fixture) {
       )
 
       editor1.reset()
-      await expect(page.getByTestId('test-hmr-shared-server')).toContainText('(shared1, shared2)')
-      await expect(page.getByTestId('test-hmr-shared-client')).toContainText('(shared1, shared2)')
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
 
       // Test 2: Non-component HMR (shared2.tsx)
       const editor2 = f.createEditor('src/routes/hmr-shared/shared2.tsx')
@@ -511,8 +583,12 @@ function defineTest(f: Fixture) {
       )
 
       editor2.reset()
-      await expect(page.getByTestId('test-hmr-shared-server')).toContainText('(shared1, shared2)')
-      await expect(page.getByTestId('test-hmr-shared-client')).toContainText('(shared1, shared2)')
+      await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
+        '(shared1, shared2)',
+      )
+      await expect(page.getByTestId('test-hmr-shared-client')).toContainText(
+        '(shared1, shared2)',
+      )
     })
 
     // for this use case to work, server refetch/render and client hmr needs to applied atomically
@@ -521,19 +597,25 @@ function defineTest(f: Fixture) {
     test('shared hmr not atomic', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText('ok (test-shared)')
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ok (test-shared)',
+      )
 
       // non-atomic update causes an error
       const editor = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
       editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
-      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText('ErrorBoundary')
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
 
       await page.reload()
       await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
 
       // non-atomic update causes an error
       editor.reset()
-      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText('ErrorBoundary')
+      await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
+        'ErrorBoundary',
+      )
 
       await page.reload()
       await expect(page.getByText('ok (test-shared)')).toBeVisible()
@@ -544,14 +626,20 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
 
-      await expect(page.getByTestId('test-hmr-switch-server')).toContainText('(useState: false)')
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
       const editor = f.createEditor('src/routes/hmr-switch/server.tsx')
       editor.edit((s) => `"use client";\n` + s)
-      await expect(page.getByTestId('test-hmr-switch-server')).toContainText('(useState: true)')
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: true)',
+      )
 
       await page.waitForTimeout(100)
       editor.reset()
-      await expect(page.getByTestId('test-hmr-switch-server')).toContainText('(useState: false)')
+      await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
+        '(useState: false)',
+      )
     })
 
     test('hmr switch client to server', async ({ page }) => {
@@ -559,14 +647,20 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
 
-      await expect(page.getByTestId('test-hmr-switch-client')).toContainText('(useState: true)')
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
       const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
       editor.edit((s) => s.replace(`'use client'`, ''))
-      await expect(page.getByTestId('test-hmr-switch-client')).toContainText('(useState: false)')
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: false)',
+      )
 
       await page.waitForTimeout(100)
       editor.reset()
-      await expect(page.getByTestId('test-hmr-switch-client')).toContainText('(useState: true)')
+      await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
+        '(useState: true)',
+      )
     })
   })
 
@@ -583,12 +677,30 @@ function defineTest(f: Fixture) {
 
   async function testCssBasic(page: Page) {
     await testCss(page)
-    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.locator('.test-style-server-manual')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.getByTestId('css-module-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.getByTestId('css-module-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.locator('.test-style-url-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
-    await expect(page.locator('.test-style-url-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+    await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.getByTestId('css-module-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.getByTestId('css-module-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-url-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(page.locator('.test-style-url-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
   }
 
   async function testCss(page: Page, color = 'rgb(255, 165, 0)') {
@@ -606,28 +718,50 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.locator('.test-style-client')).toHaveCSS('color', 'rgb(0, 165, 255)')
-      editor.edit((s) => s.replaceAll(`color: rgb(0, 165, 255);`, `/* color: rgb(0, 165, 255); */`))
-      await expect(page.locator('.test-style-client')).toHaveCSS('color', 'rgb(0, 0, 0)')
+      await expect(page.locator('.test-style-client')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.edit((s) =>
+        s.replaceAll(
+          `color: rgb(0, 165, 255);`,
+          `/* color: rgb(0, 165, 255); */`,
+        ),
+      )
+      await expect(page.locator('.test-style-client')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       // wait longer for multiple edits
       await page.waitForTimeout(100)
       editor.reset()
-      await expect(page.locator('.test-style-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.locator('.test-style-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
       await expectNoDuplicateServerCss(page)
     })
 
     async function expectNoDuplicateServerCss(page: Page) {
       // verify duplicate client-reference style link are removed
       await expect(
-        page.locator('link[rel="stylesheet"][data-precedence="vite-rsc/client-reference"]'),
+        page.locator(
+          'link[rel="stylesheet"][data-precedence="vite-rsc/client-reference"]',
+        ),
       ).toHaveCount(0)
       await expect(
         page
-          .locator('link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]')
+          .locator(
+            'link[rel="stylesheet"][data-precedence="vite-rsc/importer-resources"]',
+          )
           .nth(0),
       ).toBeAttached()
       await expect(
-        page.locator('link[rel="stylesheet"][data-precedence="test-style-manual-link"]').nth(0),
+        page
+          .locator(
+            'link[rel="stylesheet"][data-precedence="test-style-manual-link"]',
+          )
+          .nth(0),
       ).toBeAttached()
     }
 
@@ -649,20 +783,33 @@ function defineTest(f: Fixture) {
       await testAddRemoveCssClient(page, { js: false })
     })
 
-    async function testAddRemoveCssClient(page: Page, options: { js: boolean }) {
-      await expect(page.locator('.test-style-client-dep')).toHaveCSS('color', 'rgb(255, 165, 0)')
+    async function testAddRemoveCssClient(
+      page: Page,
+      options: { js: boolean },
+    ) {
+      await expect(page.locator('.test-style-client-dep')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
 
       // remove css import
       const editor = f.createEditor('src/routes/style-client/client-dep.tsx')
       editor.edit((s) =>
-        s.replaceAll(`import './client-dep.css'`, `/* import './client-dep.css' */`),
+        s.replaceAll(
+          `import './client-dep.css'`,
+          `/* import './client-dep.css' */`,
+        ),
       )
       await page.waitForTimeout(100)
       await expect(async () => {
         if (!options.js) await page.reload()
-        await expect(page.locator('.test-style-client-dep')).toHaveCSS('color', 'rgb(0, 0, 0)', {
-          timeout: 10,
-        })
+        await expect(page.locator('.test-style-client-dep')).toHaveCSS(
+          'color',
+          'rgb(0, 0, 0)',
+          {
+            timeout: 10,
+          },
+        )
       }).toPass()
 
       // add back css import
@@ -685,12 +832,29 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(0, 165, 255)')
-      editor.edit((s) => s.replaceAll(`color: rgb(0, 165, 255);`, `/* color: rgb(0, 165, 255); */`))
-      await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(0, 0, 0)')
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
+      editor.edit((s) =>
+        s.replaceAll(
+          `color: rgb(0, 165, 255);`,
+          `/* color: rgb(0, 165, 255); */`,
+        ),
+      )
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       editor.reset()
-      await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
-      await expect(page.locator('.test-style-server-manual')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+      await expect(page.locator('.test-style-server-manual')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
       await expectNoDuplicateServerCss(page)
     })
 
@@ -698,7 +862,10 @@ function defineTest(f: Fixture) {
     test('adding/removing css server @js', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
 
       const editor = f.createEditor('src/routes/style-server/server.tsx')
 
@@ -707,12 +874,22 @@ function defineTest(f: Fixture) {
         await using _ = await expectNoReload(page)
 
         // remove css import
-        editor.edit((s) => s.replaceAll(`import './server.css'`, `/* import './server.css' */`))
-        await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(0, 0, 0)')
+        editor.edit((s) =>
+          s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
+        )
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 0, 0)',
+        )
 
         // add new css
-        editor.edit((s) => s.replaceAll(`/* import './server.css' */`, `import './server2.css'`))
-        await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(0, 255, 165)')
+        editor.edit((s) =>
+          s.replaceAll(`/* import './server.css' */`, `import './server2.css'`),
+        )
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 255, 165)',
+        )
       }
 
       // TODO: React doesn't re-inert same css link. so manual reload is required.
@@ -720,9 +897,13 @@ function defineTest(f: Fixture) {
       await page.waitForTimeout(100)
       await expect(async () => {
         await page.reload()
-        await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)', {
-          timeout: 10,
-        })
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(255, 165, 0)',
+          {
+            timeout: 10,
+          },
+        )
       }).toPass()
     })
 
@@ -731,18 +912,30 @@ function defineTest(f: Fixture) {
       await testAddRemoveCssServer(page, { js: false })
     })
 
-    async function testAddRemoveCssServer(page: Page, options: { js: boolean }) {
-      await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+    async function testAddRemoveCssServer(
+      page: Page,
+      options: { js: boolean },
+    ) {
+      await expect(page.locator('.test-style-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
 
       // remove css import
       const editor = f.createEditor('src/routes/style-server/server.tsx')
-      editor.edit((s) => s.replaceAll(`import './server.css'`, `/* import './server.css' */`))
+      editor.edit((s) =>
+        s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
+      )
       await page.waitForTimeout(100)
       await expect(async () => {
         if (!options.js) await page.reload()
-        await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(0, 0, 0)', {
-          timeout: 10,
-        })
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(0, 0, 0)',
+          {
+            timeout: 10,
+          },
+        )
       }).toPass()
 
       // add back css import
@@ -750,9 +943,13 @@ function defineTest(f: Fixture) {
       await page.waitForTimeout(100)
       await expect(async () => {
         if (!options.js) await page.reload()
-        await expect(page.locator('.test-style-server')).toHaveCSS('color', 'rgb(255, 165, 0)', {
-          timeout: 10,
-        })
+        await expect(page.locator('.test-style-server')).toHaveCSS(
+          'color',
+          'rgb(255, 165, 0)',
+          {
+            timeout: 10,
+          },
+        )
       }).toPass()
     }
 
@@ -762,9 +959,15 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client.module.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.getByTestId('css-module-client')).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
       editor.reset()
-      await expect(page.getByTestId('css-module-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
     })
 
     test('css module server hmr', async ({ page }) => {
@@ -773,9 +976,15 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server.module.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.getByTestId('css-module-server')).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
       editor.reset()
-      await expect(page.getByTestId('css-module-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
     })
 
     test('css url client hmr', async ({ page }) => {
@@ -784,9 +993,15 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client-url.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.locator('.test-style-url-client')).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(page.locator('.test-style-url-client')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
       editor.reset()
-      await expect(page.locator('.test-style-url-client')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.locator('.test-style-url-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
     })
 
     test('css url server hmr', async ({ page }) => {
@@ -795,9 +1010,15 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server-url.css')
       editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
-      await expect(page.locator('.test-style-url-server')).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(page.locator('.test-style-url-server')).toHaveCSS(
+        'color',
+        'rgb(0, 165, 255)',
+      )
       editor.reset()
-      await expect(page.locator('.test-style-url-server')).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(page.locator('.test-style-url-server')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
     })
   })
 
@@ -806,7 +1027,10 @@ function defineTest(f: Fixture) {
     await waitForHydration(page)
     await using _ = await expectNoReload(page)
     await page.locator("a[href='?test-client-style-no-ssr']").click()
-    await expect(page.locator('.test-style-client-no-ssr')).toHaveCSS('color', 'rgb(0, 200, 100)')
+    await expect(page.locator('.test-style-client-no-ssr')).toHaveCSS(
+      'color',
+      'rgb(0, 200, 100)',
+    )
   })
 
   test('tailwind @js', async ({ page }) => {
@@ -845,15 +1069,27 @@ function defineTest(f: Fixture) {
 
       const clientFile = f.createEditor('src/routes/tailwind/client.tsx')
       clientFile.edit((s) => s.replaceAll('text-[#00f]', 'text-[#88f]'))
-      await expect(page.locator('.test-tw-client')).toHaveCSS('color', 'rgb(136, 136, 255)')
+      await expect(page.locator('.test-tw-client')).toHaveCSS(
+        'color',
+        'rgb(136, 136, 255)',
+      )
       clientFile.reset()
-      await expect(page.locator('.test-tw-client')).toHaveCSS('color', 'rgb(0, 0, 255)')
+      await expect(page.locator('.test-tw-client')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 255)',
+      )
 
       const serverFile = f.createEditor('src/routes/tailwind/server.tsx')
       serverFile.edit((s) => s.replaceAll('text-[#f00]', 'text-[#f88]'))
-      await expect(page.locator('.test-tw-server')).toHaveCSS('color', 'rgb(255, 136, 136)')
+      await expect(page.locator('.test-tw-server')).toHaveCSS(
+        'color',
+        'rgb(255, 136, 136)',
+      )
       serverFile.reset()
-      await expect(page.locator('.test-tw-server')).toHaveCSS('color', 'rgb(255, 0, 0)')
+      await expect(page.locator('.test-tw-server')).toHaveCSS(
+        'color',
+        'rgb(255, 0, 0)',
+      )
     })
 
     test('tailwind no redundant server hmr', async ({ page }) => {
@@ -869,7 +1105,9 @@ function defineTest(f: Fixture) {
       await page.waitForTimeout(200)
       f.createEditor('src/routes/tailwind/server.tsx').resave()
       await page.waitForTimeout(200)
-      expect(logs).toEqual([expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/)])
+      expect(logs).toEqual([
+        expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),
+      ])
     })
   })
 
@@ -877,7 +1115,9 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await page.getByRole('button', { name: 'test-temporary-reference' }).click()
-    await expect(page.getByTestId('temporary-reference')).toContainText('result: [server [client]]')
+    await expect(page.getByTestId('temporary-reference')).toContainText(
+      'result: [server [client]]',
+    )
   })
 
   test('server action error @js', async ({ page }) => {
@@ -893,17 +1133,23 @@ function defineTest(f: Fixture) {
       })
     })
     await page.getByRole('button', { name: 'test-server-action-error' }).click()
-    await expect(page.getByTestId('action-error-boundary')).toContainText('ErrorBoundary triggered')
+    await expect(page.getByTestId('action-error-boundary')).toContainText(
+      'ErrorBoundary triggered',
+    )
     await expect(errorResponse).resolves.toEqual(500)
     if (f.mode === 'dev') {
-      await expect(page.getByTestId('action-error-boundary')).toContainText('(Error: boom!)')
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: boom!)',
+      )
     } else {
       await expect(page.getByTestId('action-error-boundary')).toContainText(
         '(Error: An error occurred in the Server Components render.',
       )
     }
     await page.getByRole('button', { name: 'reset-error' }).click()
-    await expect(page.getByRole('button', { name: 'test-server-action-error' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'test-server-action-error' }),
+    ).toBeVisible()
   })
 
   test.describe(() => {
@@ -918,10 +1164,14 @@ function defineTest(f: Fixture) {
           }
         })
       })
-      await page.getByRole('button', { name: 'test-server-action-error' }).click()
+      await page
+        .getByRole('button', { name: 'test-server-action-error' })
+        .click()
       const response = await responsePromise
       expect(response.status()).toBe(500)
-      await expect(response.text()).resolves.toBe('Internal Server Error: server action failed')
+      await expect(response.text()).resolves.toBe(
+        'Internal Server Error: server action failed',
+      )
     })
   })
 
@@ -935,7 +1185,9 @@ function defineTest(f: Fixture) {
     await locator.click()
     await expect(page.getByText('Caught an unexpected error')).toBeVisible()
     if (f.mode === 'dev') {
-      await expect(page.getByText('Error: Client error triggered')).toBeVisible()
+      await expect(
+        page.getByText('Error: Client error triggered'),
+      ).toBeVisible()
     } else {
       await expect(page.getByText('Error: (Unknown)')).toBeVisible()
     }
@@ -947,7 +1199,8 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
 
-    const expectedText = f.mode === 'dev' ? 'Error: test-server-error!' : 'Error: (Unknown)'
+    const expectedText =
+      f.mode === 'dev' ? 'Error: test-server-error!' : 'Error: (Unknown)'
 
     // trigger client navigation error
     await page.getByRole('link', { name: 'test-server-error' }).click()
@@ -963,8 +1216,12 @@ function defineTest(f: Fixture) {
     // client is interactive before suspense is resolved
     await page.goto(f.url('./?test-suspense=1000'), { waitUntil: 'commit' })
     await waitForHydration(page)
-    await expect(page.getByTestId('suspense')).toContainText('suspense-fallback')
-    await expect(page.getByTestId('suspense')).toContainText('suspense-resolved')
+    await expect(page.getByTestId('suspense')).toContainText(
+      'suspense-fallback',
+    )
+    await expect(page.getByTestId('suspense')).toContainText(
+      'suspense-resolved',
+    )
   })
 
   test('ssr rsc payload encoding', async ({ page }) => {
@@ -994,10 +1251,18 @@ function defineTest(f: Fixture) {
   })
 
   async function testActionBindSimple(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText('[?]')
-    await page.getByRole('button', { name: 'test-server-action-bind-simple' }).click()
-    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText('true')
-    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
+    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText(
+      '[?]',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-simple' })
+      .click()
+    await expect(page.getByTestId('test-server-action-bind-simple')).toHaveText(
+      'true',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-reset' })
+      .click()
   }
 
   test('action bind client @js', async ({ page }) => {
@@ -1014,10 +1279,18 @@ function defineTest(f: Fixture) {
   })
 
   async function testActionBindClient(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText('[?]')
-    await page.getByRole('button', { name: 'test-server-action-bind-client' }).click()
-    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText('true')
-    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
+    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText(
+      '[?]',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-client' })
+      .click()
+    await expect(page.getByTestId('test-server-action-bind-client')).toHaveText(
+      'true',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-reset' })
+      .click()
   }
 
   test('action bind action @js', async ({ page }) => {
@@ -1033,10 +1306,18 @@ function defineTest(f: Fixture) {
   })
 
   async function testActionBindAction(page: Page) {
-    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText('[?]')
-    await page.getByRole('button', { name: 'test-server-action-bind-action' }).click()
-    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText('[true,true]')
-    await page.getByRole('button', { name: 'test-server-action-bind-reset' }).click()
+    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText(
+      '[?]',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-action' })
+      .click()
+    await expect(page.getByTestId('test-server-action-bind-action')).toHaveText(
+      '[true,true]',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-reset' })
+      .click()
   }
 
   test('test serialization @js', async ({ page }) => {
@@ -1060,69 +1341,105 @@ function defineTest(f: Fixture) {
   test('server-in-server package', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.getByTestId('server-in-server')).toHaveText('server-in-server: 0')
+    await expect(page.getByTestId('server-in-server')).toHaveText(
+      'server-in-server: 0',
+    )
     await page.getByTestId('server-in-server').click()
-    await expect(page.getByTestId('server-in-server')).toHaveText('server-in-server: 1')
+    await expect(page.getByTestId('server-in-server')).toHaveText(
+      'server-in-server: 1',
+    )
     await page.reload()
-    await expect(page.getByTestId('server-in-server')).toHaveText('server-in-server: 1')
+    await expect(page.getByTestId('server-in-server')).toHaveText(
+      'server-in-server: 1',
+    )
   })
 
   test('server-in-client package', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.getByTestId('server-in-client')).toHaveText('server-in-client: ?')
+    await expect(page.getByTestId('server-in-client')).toHaveText(
+      'server-in-client: ?',
+    )
     await page.getByTestId('server-in-client').click()
-    await expect(page.getByTestId('server-in-client')).toHaveText('server-in-client: 1')
+    await expect(page.getByTestId('server-in-client')).toHaveText(
+      'server-in-client: 1',
+    )
     await page.reload()
     await waitForHydration(page)
-    await expect(page.getByTestId('server-in-client')).toHaveText('server-in-client: ?')
+    await expect(page.getByTestId('server-in-client')).toHaveText(
+      'server-in-client: ?',
+    )
     await page.getByTestId('server-in-client').click()
-    await expect(page.getByTestId('server-in-client')).toHaveText('server-in-client: 2')
+    await expect(page.getByTestId('server-in-client')).toHaveText(
+      'server-in-client: 2',
+    )
   })
 
   test('transitive cjs dep', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await expect(page.getByTestId('transitive-cjs-client')).toHaveText('ok')
-    await expect(page.getByTestId('transitive-use-sync-external-store-client')).toHaveText(
-      'ok:browser',
-    )
+    await expect(
+      page.getByTestId('transitive-use-sync-external-store-client'),
+    ).toHaveText('ok:browser')
   })
 
   test('use cache function', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-fn')
-    await expect(locator.locator('span')).toHaveText('(actionCount: 0, cacheFnCount: 0)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 0, cacheFnCount: 0)',
+    )
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 1, cacheFnCount: 1)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 1, cacheFnCount: 1)',
+    )
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 2, cacheFnCount: 1)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 2, cacheFnCount: 1)',
+    )
     await locator.getByRole('textbox').fill('test')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 3, cacheFnCount: 2)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 3, cacheFnCount: 2)',
+    )
     await locator.getByRole('textbox').fill('test')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 4, cacheFnCount: 2)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 4, cacheFnCount: 2)',
+    )
 
     // revalidate cache
     await locator.getByRole('textbox').fill('revalidate')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 5, cacheFnCount: 3)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 5, cacheFnCount: 3)',
+    )
     await locator.getByRole('textbox').fill('test')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 6, cacheFnCount: 4)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 6, cacheFnCount: 4)',
+    )
   })
 
   test('use cache component', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    const static1 = await page.getByTestId('test-use-cache-component-static').textContent()
-    const dynamic1 = await page.getByTestId('test-use-cache-component-dynamic').textContent()
+    const static1 = await page
+      .getByTestId('test-use-cache-component-static')
+      .textContent()
+    const dynamic1 = await page
+      .getByTestId('test-use-cache-component-dynamic')
+      .textContent()
     await page.waitForTimeout(100)
     await page.reload()
-    const static2 = await page.getByTestId('test-use-cache-component-static').textContent()
-    const dynamic2 = await page.getByTestId('test-use-cache-component-dynamic').textContent()
+    const static2 = await page
+      .getByTestId('test-use-cache-component-static')
+      .textContent()
+    const dynamic2 = await page
+      .getByTestId('test-use-cache-component-dynamic')
+      .textContent()
     expect({ static2, dynamic2 }).toEqual({
       static2: expect.stringMatching(static1!),
       dynamic2: expect.not.stringMatching(dynamic1!),
@@ -1133,37 +1450,49 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-closure')
-    await expect(locator.locator('span')).toHaveText('(actionCount: 0, innerFnCount: 0)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 0, innerFnCount: 0)',
+    )
 
     // (x, y)
     await locator.getByPlaceholder('outer').fill('x')
     await locator.getByPlaceholder('inner').fill('y')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 1, innerFnCount: 1)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 1, innerFnCount: 1)',
+    )
 
     // (x, y)
     await locator.getByPlaceholder('outer').fill('x')
     await locator.getByPlaceholder('inner').fill('y')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 2, innerFnCount: 1)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 2, innerFnCount: 1)',
+    )
 
     // (xx, y)
     await locator.getByPlaceholder('outer').fill('xx')
     await locator.getByPlaceholder('inner').fill('y')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 3, innerFnCount: 2)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 3, innerFnCount: 2)',
+    )
 
     // (xx, y)
     await locator.getByPlaceholder('outer').fill('xx')
     await locator.getByPlaceholder('inner').fill('y')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 4, innerFnCount: 2)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 4, innerFnCount: 2)',
+    )
 
     // (xx, yy)
     await locator.getByPlaceholder('outer').fill('xx')
     await locator.getByPlaceholder('inner').fill('yy')
     await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText('(actionCount: 5, innerFnCount: 3)')
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 5, innerFnCount: 3)',
+    )
   })
 
   test('hydration mismatch', async ({ page }) => {
@@ -1189,7 +1518,9 @@ function defineTest(f: Fixture) {
 
   test('browser only', async ({ page, browser }) => {
     await page.goto(f.url())
-    await expect(page.getByTestId('test-browser-only')).toHaveText('test-browser-only: true')
+    await expect(page.getByTestId('test-browser-only')).toHaveText(
+      'test-browser-only: true',
+    )
 
     const pageNoJs = await browser.newPage({ javaScriptEnabled: false })
     await pageNoJs.goto(f.url())
@@ -1241,14 +1572,12 @@ function defineTest(f: Fixture) {
   test('assets', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.getByTestId('test-assets-server-import')).not.toHaveJSProperty(
-      'naturalWidth',
-      0,
-    )
-    await expect(page.getByTestId('test-assets-client-import')).not.toHaveJSProperty(
-      'naturalWidth',
-      0,
-    )
+    await expect(
+      page.getByTestId('test-assets-server-import'),
+    ).not.toHaveJSProperty('naturalWidth', 0)
+    await expect(
+      page.getByTestId('test-assets-client-import'),
+    ).not.toHaveJSProperty('naturalWidth', 0)
 
     async function testBackgroundImage(selector: string) {
       const url = await page

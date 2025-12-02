@@ -1,17 +1,22 @@
-import path from 'node:path'
-import fs from 'fs-extra'
-import type { TestProject } from 'vitest/node'
 import type { BrowserServer } from 'playwright-chromium'
+import type { TestProject } from 'vitest/node'
+
+import fs from 'fs-extra'
+import path from 'node:path'
 import { chromium } from 'playwright-chromium'
 
 let browserServer: BrowserServer | undefined
 
 export async function setup({ provide }: TestProject): Promise<void> {
-  process.env.NODE_ENV = process.env.VITE_TEST_BUILD ? 'production' : 'development'
+  process.env.NODE_ENV = process.env.VITE_TEST_BUILD
+    ? 'production'
+    : 'development'
 
   browserServer = await chromium.launchServer({
     headless: !process.env.VITE_DEBUG_SERVE,
-    args: process.env.CI ? ['--no-sandbox', '--disable-setuid-sandbox'] : undefined,
+    args: process.env.CI
+      ? ['--no-sandbox', '--disable-setuid-sandbox']
+      : undefined,
   })
 
   provide('wsEndpoint', browserServer.wsEndpoint())

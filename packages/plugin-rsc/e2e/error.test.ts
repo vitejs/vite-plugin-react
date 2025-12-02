@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture } from './fixture'
 import { x } from 'tinyexec'
+
+import { setupInlineFixture } from './fixture'
 
 test.describe('invalid directives', () => {
   test.describe('"use server" in "use client"', () => {
@@ -48,7 +49,9 @@ test.describe('invalid directives', () => {
         throwOnError: false,
         nodeOptions: { cwd: root },
       })
-      expect(result.stderr).toContain(`'use server' directive is not allowed inside 'use client'`)
+      expect(result.stderr).toContain(
+        `'use server' directive is not allowed inside 'use client'`,
+      )
       expect(result.exitCode).not.toBe(0)
     })
   })

@@ -1,15 +1,20 @@
+import eslint from '@eslint/js'
+import pluginImportX from 'eslint-plugin-import-x'
+import pluginN from 'eslint-plugin-n'
+import pluginRegExp from 'eslint-plugin-regexp'
+import globals from 'globals'
 // @ts-check
 import { builtinModules } from 'node:module'
-import eslint from '@eslint/js'
-import pluginN from 'eslint-plugin-n'
-import pluginImportX from 'eslint-plugin-import-x'
-import pluginRegExp from 'eslint-plugin-regexp'
 import tseslint from 'typescript-eslint'
-import globals from 'globals'
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/playground-temp/**', '**/temp/**', 'packages/plugin-rsc/**'],
+    ignores: [
+      '**/dist/**',
+      '**/playground-temp/**',
+      '**/temp/**',
+      'packages/plugin-rsc/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -60,7 +65,10 @@ export default tseslint.config(
         'error',
         { allowArgumentsExplicitlyTypedAsAny: true },
       ],
-      '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
+      '@typescript-eslint/no-empty-function': [
+        'error',
+        { allow: ['arrowFunctions'] },
+      ],
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-extra-semi': 'off',
@@ -95,17 +103,18 @@ export default tseslint.config(
         { allow: builtinModules.map((mod) => `node:${mod}`) },
       ],
       'import-x/no-duplicates': 'error',
-      'import-x/order': 'error',
-      'sort-imports': [
-        'error',
-        {
-          ignoreCase: false,
-          ignoreDeclarationSort: true,
-          ignoreMemberSort: false,
-          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-          allowSeparatedGroups: false,
-        },
-      ],
+      // import ordering handled by oxfmt
+      // 'import-x/order': 'error',
+      // 'sort-imports': [
+      //   'error',
+      //   {
+      //     ignoreCase: false,
+      //     ignoreDeclarationSort: true,
+      //     ignoreMemberSort: false,
+      //     memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+      //     allowSeparatedGroups: false,
+      //   },
+      // ],
 
       'regexp/prefer-regexp-exec': 'error',
       'regexp/prefer-regexp-test': 'error',

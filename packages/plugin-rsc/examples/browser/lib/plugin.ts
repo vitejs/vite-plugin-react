@@ -39,7 +39,9 @@ export default function vitePluginRscBrowser(): Plugin[] {
       },
       configResolved(config) {
         // avoid globalThis.AsyncLocalStorage injection in browser mode
-        const plugin = config.plugins.find((p) => p.name === 'rsc:inject-async-local-storage')
+        const plugin = config.plugins.find(
+          (p) => p.name === 'rsc:inject-async-local-storage',
+        )
         delete plugin!.transform
       },
       buildApp: {
@@ -51,7 +53,8 @@ export default function vitePluginRscBrowser(): Plugin[] {
       },
       configureServer(server) {
         createRPCServer('rsc:transport-proxy', server.ws, {
-          invoke: (payload: any) => server.environments.rsc.hot.handleInvoke(payload),
+          invoke: (payload: any) =>
+            server.environments.rsc.hot.handleInvoke(payload),
         })
       },
     },
@@ -70,11 +73,18 @@ export default function vitePluginRscBrowser(): Plugin[] {
           const config = this.environment.getTopLevelConfig()
           const replacement = normalizeRelativePath(
             path.relative(
-              path.join(config.environments.client.build.outDir, chunk.fileName, '..'),
+              path.join(
+                config.environments.client.build.outDir,
+                chunk.fileName,
+                '..',
+              ),
               path.join(config.environments.rsc.build.outDir, 'index.js'),
             ),
           )
-          code = code.replaceAll('virtual:vite-rsc-browser/load-rsc', () => replacement)
+          code = code.replaceAll(
+            'virtual:vite-rsc-browser/load-rsc',
+            () => replacement,
+          )
           return { code }
         }
       },

@@ -2,7 +2,6 @@
 
 // @ts-ignore
 import { TestClient } from '@vitejs/test-dep-transitive-cjs/client'
-
 // @ts-ignore
 import { TestClient as TestClient2 } from '@vitejs/test-dep-transitive-use-sync-external-store/client'
 

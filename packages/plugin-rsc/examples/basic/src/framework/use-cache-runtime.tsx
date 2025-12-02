@@ -12,7 +12,10 @@ import {
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
 const cachedFnMap = new WeakMap<Function, unknown>()
-const cachedFnCacheEntries = new WeakMap<Function, Record<string, Promise<StreamCacher>>>()
+const cachedFnCacheEntries = new WeakMap<
+  Function,
+  Record<string, Promise<StreamCacher>>
+>()
 
 export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
   if (cachedFnMap.has(fn)) {
@@ -89,6 +92,9 @@ async function replyToCacheKey(reply: string | FormData) {
   if (typeof reply === 'string') {
     return reply
   }
-  const buffer = await crypto.subtle.digest('SHA-256', await new Response(reply).arrayBuffer())
+  const buffer = await crypto.subtle.digest(
+    'SHA-256',
+    await new Response(reply).arrayBuffer(),
+  )
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
 }

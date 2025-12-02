@@ -6,6 +6,7 @@ import {
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+
 import type { RscPayload } from './entry.rsc'
 
 async function main() {
@@ -13,7 +14,9 @@ async function main() {
   // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
   let setPayload: (v: RscPayload) => void
 
-  const initialPayload = await createFromFetch<RscPayload>(fetch(window.location.href))
+  const initialPayload = await createFromFetch<RscPayload>(
+    fetch(window.location.href),
+  )
 
   // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
@@ -33,7 +36,9 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await createFromFetch<RscPayload>(fetch(window.location.href))
+    const payload = await createFromFetch<RscPayload>(
+      fetch(window.location.href),
+    )
     setPayload(payload)
   }
 

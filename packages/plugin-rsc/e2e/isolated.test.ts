@@ -1,16 +1,20 @@
 import { expect, test, type Page } from '@playwright/test'
-import { setupIsolatedFixture, useFixture } from './fixture'
-import { defineStarterTest } from './starter'
-import path from 'node:path'
 import os from 'node:os'
-import * as vite from 'vite'
-import { waitForHydration } from './helper'
+import path from 'node:path'
 import { x } from 'tinyexec'
+import * as vite from 'vite'
+
+import { setupIsolatedFixture, useFixture } from './fixture'
+import { waitForHydration } from './helper'
+import { defineStarterTest } from './starter'
 
 test.describe(() => {
   // use RUNNER_TEMP on Github Actions
   // https://github.com/actions/toolkit/issues/518
-  const tmpRoot = path.join(process.env['RUNNER_TEMP'] || os.tmpdir(), 'test-vite-rsc')
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc',
+  )
   test.beforeAll(async () => {
     await setupIsolatedFixture({ src: 'examples/starter', dest: tmpRoot })
   })
@@ -33,7 +37,10 @@ test.describe(() => {
 test.describe('vite 6', () => {
   test.skip(!!process.env.ECOSYSTEM_CI || 'rolldownVersion' in vite)
 
-  const tmpRoot = path.join(process.env['RUNNER_TEMP'] || os.tmpdir(), 'test-vite-rsc-vite-6')
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc-vite-6',
+  )
   test.beforeAll(async () => {
     await setupIsolatedFixture({
       src: 'examples/starter',
@@ -56,7 +63,10 @@ test.describe('vite 6', () => {
 })
 
 test.describe('react-server-dom-webpack', () => {
-  const tmpRoot = path.join(process.env['RUNNER_TEMP'] || os.tmpdir(), 'test-vite-rsc-webpack')
+  const tmpRoot = path.join(
+    process.env['RUNNER_TEMP'] || os.tmpdir(),
+    'test-vite-rsc-webpack',
+  )
   test.beforeAll(async () => {
     await setupIsolatedFixture({
       src: 'examples/starter',
@@ -90,17 +100,27 @@ test.describe('react-server-dom-webpack', () => {
   })
 })
 
-async function testReactServerDom(page: Page, url: string, expectVendor: boolean) {
+async function testReactServerDom(
+  page: Page,
+  url: string,
+  expectVendor: boolean,
+) {
   let hasVendor = false
   let hasNonVendor = false
   page.on('request', async (request) => {
-    if (request.url().includes('.vite/deps/react-server-dom-webpack_client__browser.js')) {
+    if (
+      request
+        .url()
+        .includes('.vite/deps/react-server-dom-webpack_client__browser.js')
+    ) {
       hasNonVendor = true
     }
     if (
       request
         .url()
-        .includes('.vite/deps/@vitejs_plugin-rsc_vendor_react-server-dom_client__browser.js')
+        .includes(
+          '.vite/deps/@vitejs_plugin-rsc_vendor_react-server-dom_client__browser.js',
+        )
     ) {
       hasVendor = true
     }

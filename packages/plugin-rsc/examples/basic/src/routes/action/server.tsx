@@ -1,4 +1,8 @@
-import { changeServerCounter, getServerCounter, resetServerCounter } from './action'
+import {
+  changeServerCounter,
+  getServerCounter,
+  resetServerCounter,
+} from './action'
 
 export function ServerCounter() {
   return (

@@ -1,5 +1,6 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
+
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
 
@@ -34,7 +35,8 @@ describe(transformHoistInlineDirective, () => {
   async function testTransformNames(input: string) {
     const ast = await parseAstAsync(input)
     const result = transformHoistInlineDirective(input, ast, {
-      runtime: (value, name) => `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
       directive: 'use server',
     })
     return result.names
@@ -106,7 +108,9 @@ export default function w() {
     `)
 
     // nothing to encode
-    expect(await testTransform(input, { encode: true })).toBe(await testTransform(input))
+    expect(await testTransform(input, { encode: true })).toBe(
+      await testTransform(input),
+    )
 
     expect(await testTransformNames(input)).toMatchInlineSnapshot(`
       [

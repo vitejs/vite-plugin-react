@@ -1,12 +1,14 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
 import {
   createFromFetch,
   setServerCallback,
   createTemporaryReferenceSet,
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+
 import type { RscPayload } from './entry.rsc'
+
 import { loadEntryRsc } from '../../lib/runtime'
 
 async function fetchRsc(request: Request): Promise<Response> {
@@ -41,7 +43,9 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await createFromFetch<RscPayload>(fetchRsc(new Request(window.location.href)))
+    const payload = await createFromFetch<RscPayload>(
+      fetchRsc(new Request(window.location.href)),
+    )
     setPayload(payload)
   }
 

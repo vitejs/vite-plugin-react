@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+
 import { setupDevServer, setupWaitForLogs } from '../../utils.ts'
 
 test('Shadow export HMR', async ({ page }) => {

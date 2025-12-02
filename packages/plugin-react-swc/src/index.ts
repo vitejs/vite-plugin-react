@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { createRequire } from 'node:module'
+import type { Plugin } from 'vite'
+
+import { exactRegex } from '@rolldown/pluginutils'
 import {
   type JscTarget,
   type Output,
@@ -9,7 +9,6 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { Plugin } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -17,8 +16,10 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import * as vite from 'vite'
-import { exactRegex } from '@rolldown/pluginutils'
 
 const resolve = createRequire(import.meta.url).resolve
 
@@ -86,7 +87,8 @@ const react = (_options?: Options): Plugin[] => {
     devTarget: _options?.devTarget ?? 'es2020',
     parserConfig: _options?.parserConfig,
     reactRefreshHost: _options?.reactRefreshHost,
-    useAtYourOwnRisk_mutateSwcOptions: _options?.useAtYourOwnRisk_mutateSwcOptions,
+    useAtYourOwnRisk_mutateSwcOptions:
+      _options?.useAtYourOwnRisk_mutateSwcOptions,
     disableOxcRecommendation: _options?.disableOxcRecommendation,
   }
 
@@ -135,12 +137,17 @@ const react = (_options?: Options): Plugin[] => {
       configResolved(config) {
         viteCacheRoot = config.cacheDir
         hmrDisabled = config.server.hmr === false
-        const mdxIndex = config.plugins.findIndex((p) => p.name === '@mdx-js/rollup')
+        const mdxIndex = config.plugins.findIndex(
+          (p) => p.name === '@mdx-js/rollup',
+        )
         if (
           mdxIndex !== -1 &&
-          mdxIndex > config.plugins.findIndex((p) => p.name === 'vite:react-swc')
+          mdxIndex >
+            config.plugins.findIndex((p) => p.name === 'vite:react-swc')
         ) {
-          throw new Error('[vite:react-swc] The MDX plugin should be placed before this plugin')
+          throw new Error(
+            '[vite:react-swc] The MDX plugin should be placed before this plugin',
+          )
         }
 
         if (
@@ -206,10 +213,17 @@ const react = (_options?: Options): Plugin[] => {
             viteCacheRoot = config.cacheDir
           },
           transform: (code, _id) =>
-            transformWithOptions(_id.split('?')[0], code, 'esnext', options, viteCacheRoot, {
-              runtime: 'automatic',
-              importSource: options.jsxImportSource,
-            }),
+            transformWithOptions(
+              _id.split('?')[0],
+              code,
+              'esnext',
+              options,
+              viteCacheRoot,
+              {
+                runtime: 'automatic',
+                importSource: options.jsxImportSource,
+              },
+            ),
         }
       : {
           name: 'vite:react-swc',

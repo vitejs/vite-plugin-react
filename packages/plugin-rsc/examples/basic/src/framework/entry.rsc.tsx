@@ -1,3 +1,6 @@
+import type React from 'react'
+import type { ReactFormState } from 'react-dom/client'
+
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -6,8 +9,7 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
-import type React from 'react'
+
 import { parseRenderRequest } from './request.tsx'
 import '../styles.css'
 
@@ -95,10 +97,9 @@ async function handleRequest({
   // The plugin provides `loadModule` helper to allow loading SSR environment entry module
   // in RSC environment. however this can be customized by implementing own runtime communication
   // e.g. `@cloudflare/vite-plugin`'s service binding.
-  const ssrEntryModule = await import.meta.viteRsc.loadModule<typeof import('./entry.ssr.tsx')>(
-    'ssr',
-    'index',
-  )
+  const ssrEntryModule = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr.tsx')
+  >('ssr', 'index')
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     nonce,

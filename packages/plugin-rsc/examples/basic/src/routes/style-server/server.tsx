@@ -1,6 +1,6 @@
 import './server.css'
-import styles from './server.module.css'
 import styleUrl from './server-url.css?url'
+import styles from './server.module.css'
 
 export function TestStyleServer() {
   return (
@@ -11,7 +11,11 @@ export function TestStyleServer() {
         test-css-module-server
       </div>
       <span>|</span>
-      <link rel="stylesheet" href={styleUrl} precedence="test-style-manual-link" />
+      <link
+        rel="stylesheet"
+        href={styleUrl}
+        precedence="test-style-manual-link"
+      />
       <div className="test-style-url-server">test-style-url-server</div>
       <span>|</span>
       <link

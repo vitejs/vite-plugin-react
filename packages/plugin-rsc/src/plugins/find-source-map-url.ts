@@ -1,6 +1,7 @@
-import { fileURLToPath } from 'node:url'
 import type { EnvironmentModuleNode, Plugin, ViteDevServer } from 'vite'
+
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 //
 // support findSourceMapURL
@@ -20,7 +21,11 @@ export function vitePluginFindSourceMapURL(): Plugin[] {
             let filename = url.searchParams.get('filename')!
             let environmentName = url.searchParams.get('environmentName')!
             try {
-              const map = await findSourceMapURL(server, filename, environmentName)
+              const map = await findSourceMapURL(
+                server,
+                filename,
+                environmentName,
+              )
               res.setHeader('content-type', 'application/json')
               if (!map) res.statusCode = 404
               res.end(JSON.stringify(map ?? {}))
@@ -59,7 +64,9 @@ async function findSourceMapURL(
 
   // server component stack, replace log, `registerServerReference`, etc...
   let mod: EnvironmentModuleNode | undefined
-  let map: NonNullable<EnvironmentModuleNode['transformResult']>['map'] | undefined
+  let map:
+    | NonNullable<EnvironmentModuleNode['transformResult']>['map']
+    | undefined
   if (environmentName === 'Server') {
     mod = server.environments.rsc!.moduleGraph.getModuleById(filename)
     // React extracts stacktrace via resetting `prepareStackTrace` on the server

@@ -1,8 +1,10 @@
+import * as ReactDOM from 'react-dom'
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
-import * as ReactDOM from 'react-dom'
-import { setRequireModule } from './core/ssr'
+
 import type { ResolvedAssetDeps } from './plugin'
+
+import { setRequireModule } from './core/ssr'
 import { toCssVirtual } from './plugins/shared'
 
 export { createServerConsumerManifest } from './core/ssr'

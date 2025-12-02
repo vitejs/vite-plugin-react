@@ -19,15 +19,20 @@ export async function generateHTML(
     // Render the router to HTML.
     async renderHTML(getPayload) {
       const payload = await getPayload()
-      const formState = payload.type === 'render' ? await payload.formState : undefined
+      const formState =
+        payload.type === 'render' ? await payload.formState : undefined
 
-      const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent('index')
+      const bootstrapScriptContent =
+        await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
-      return await renderHTMLToReadableStream(<RSCStaticRouter getPayload={getPayload} />, {
-        bootstrapScriptContent,
-        // @ts-expect-error - no types for this yet
-        formState,
-      })
+      return await renderHTMLToReadableStream(
+        <RSCStaticRouter getPayload={getPayload} />,
+        {
+          bootstrapScriptContent,
+          // @ts-expect-error - no types for this yet
+          formState,
+        },
+      )
     },
   })
 }

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { x } from 'tinyexec'
+
+import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 
 test.describe('validate imports', () => {
@@ -104,7 +105,9 @@ test.describe('validate imports', () => {
       })
       // assertion is adjusted for rolldown-vite
       expect(result.stderr).toContain(`rsc:validate-imports`)
-      expect(result.stderr).toContain(`'server-only' cannot be imported in client build`)
+      expect(result.stderr).toContain(
+        `'server-only' cannot be imported in client build`,
+      )
       expect(result.exitCode).not.toBe(0)
     })
   })
@@ -152,7 +155,9 @@ test.describe('validate imports', () => {
         nodeOptions: { cwd: root },
       })
       expect(result.stderr).toContain(`rsc:validate-imports`)
-      expect(result.stderr).toContain(`'client-only' cannot be imported in server build`)
+      expect(result.stderr).toContain(
+        `'client-only' cannot be imported in server build`,
+      )
       expect(result.exitCode).not.toBe(0)
     })
   })

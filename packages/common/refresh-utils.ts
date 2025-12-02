@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite'
+
 import { exactRegex } from '@rolldown/pluginutils'
 
 export const runtimePublicPath = '/@react-refresh'
@@ -14,7 +15,8 @@ injectIntoGlobalHook(window);
 window.$RefreshReg$ = () => {};
 window.$RefreshSig$ = () => (type) => type;`
 
-export const getPreambleCode = (base: string): string => preambleCode.replace('__BASE__', base)
+export const getPreambleCode = (base: string): string =>
+  preambleCode.replace('__BASE__', base)
 
 export function addRefreshWrapper(
   code: string,

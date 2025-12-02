@@ -1,3 +1,5 @@
+import type { ReactFormState } from 'react-dom/client'
+
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -6,7 +8,7 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
+
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
 
@@ -79,10 +81,9 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const { renderHTML } = await import.meta.viteRsc.loadModule<typeof import('./entry.ssr.tsx')>(
-    'ssr',
-    'index',
-  )
+  const { renderHTML } = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr.tsx')
+  >('ssr', 'index')
   const ssrResult = await renderHTML(rscStream, {
     formState,
     // allow quick simulation of javascript disabled browser

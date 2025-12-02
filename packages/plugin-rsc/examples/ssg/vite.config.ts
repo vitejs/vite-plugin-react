@@ -1,10 +1,10 @@
+import mdx from '@mdx-js/rollup'
+import react from '@vitejs/plugin-react'
+import rsc from '@vitejs/plugin-rsc'
 import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pathToFileURL } from 'node:url'
-import rsc from '@vitejs/plugin-rsc'
-import mdx from '@mdx-js/rollup'
-import react from '@vitejs/plugin-react'
 import { type Plugin, type ResolvedConfig, defineConfig } from 'vite'
 const RSC_POSTFIX = '_.rsc'
 
@@ -65,7 +65,10 @@ async function renderStatic(config: ResolvedConfig) {
     const { html, rsc } = await entry.handleSsg(
       new Request(new URL(staticPatch, 'http://ssg.local')),
     )
-    await writeFileStream(path.join(baseDir, normalizeHtmlFilePath(staticPatch)), html)
+    await writeFileStream(
+      path.join(baseDir, normalizeHtmlFilePath(staticPatch)),
+      html,
+    )
     await writeFileStream(path.join(baseDir, staticPatch + RSC_POSTFIX), rsc)
   }
 }

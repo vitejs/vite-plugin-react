@@ -1,6 +1,10 @@
 import { test } from '@playwright/test'
+
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
-import { expectNoPageError, waitForHydration as waitForHydration_ } from './helper'
+import {
+  expectNoPageError,
+  waitForHydration as waitForHydration_,
+} from './helper'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/ssr-thenable'

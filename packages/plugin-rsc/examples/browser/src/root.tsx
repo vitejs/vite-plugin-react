@@ -1,5 +1,6 @@
 import './index.css' // css import is automatically injected in exported server components
 import viteLogo from '/vite.svg'
+
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
@@ -15,7 +16,10 @@ function App() {
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
-        <a href="https://react.dev/reference/rsc/server-components" target="_blank">
+        <a
+          href="https://react.dev/reference/rsc/server-components"
+          target="_blank"
+        >
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>

@@ -3,7 +3,10 @@ import { Counter } from './counter'
 async function getPosts() {
   let glob = import.meta.glob('./posts/*.mdx', { eager: true })
   glob = Object.fromEntries(
-    Object.entries(glob).map(([k, v]) => [k.slice('./posts'.length, -'.mdx'.length), v]),
+    Object.entries(glob).map(([k, v]) => [
+      k.slice('./posts'.length, -'.mdx'.length),
+      v,
+    ]),
   )
   return glob
 }
@@ -54,7 +57,9 @@ export async function Root({ url }: { url: URL }) {
             <a href="/">RSC + MDX + SSG</a>
           </h1>
           <Counter />
-          <span data-testid="timestamp">Rendered at {new Date().toISOString()}</span>
+          <span data-testid="timestamp">
+            Rendered at {new Date().toISOString()}
+          </span>
         </header>
         <main>
           <RootContent />

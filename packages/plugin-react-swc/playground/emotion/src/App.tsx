@@ -8,7 +8,11 @@ export const App = () => (
         <img src="/vite.svg" className="logo" alt="Vite logo" />
       </a>
       <a href="https://emotion.sh/" target="_blank" rel="noreferrer">
-        <img src="https://emotion.sh/logo-96x96.png" className="logo emotion" alt="Emotion logo" />
+        <img
+          src="https://emotion.sh/logo-96x96.png"
+          className="logo emotion"
+          alt="Emotion logo"
+        />
       </a>
     </div>
     <div className="card">
@@ -17,6 +21,8 @@ export const App = () => (
         Edit <StyledCode>src/Button.tsx</StyledCode> and save to test HMR
       </p>
     </div>
-    <p className="read-the-docs">Click on the Vite and Emotion logos to learn more</p>
+    <p className="read-the-docs">
+      Click on the Vite and Emotion logos to learn more
+    </p>
   </div>
 )

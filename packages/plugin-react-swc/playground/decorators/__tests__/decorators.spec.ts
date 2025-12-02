@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+
 import { setupBuildAndPreview, setupDevServer } from '../../utils.ts'
 
 test('Decorators build', async ({ page }) => {

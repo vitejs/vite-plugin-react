@@ -1,5 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { defineConfig } from 'tsdown'
+
 import packageJSON from './package.json' with { type: 'json' }
 
 export default defineConfig({
@@ -33,7 +34,10 @@ export default defineConfig({
         {
           ...Object.fromEntries(
             Object.entries(packageJSON).filter(
-              ([key, _val]) => key !== 'devDependencies' && key !== 'scripts' && key !== 'private',
+              ([key, _val]) =>
+                key !== 'devDependencies' &&
+                key !== 'scripts' &&
+                key !== 'private',
             ),
           ),
           exports: {

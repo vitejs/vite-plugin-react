@@ -1,5 +1,6 @@
 import type { Program } from 'estree'
 import type MagicString from 'magic-string'
+
 import { transformHoistInlineDirective } from './hoist'
 import { hasDirective } from './utils'
 import { transformWrapExport } from './wrap-export'

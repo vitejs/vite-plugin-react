@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser'
+
 import type { CallServerCallback } from '../types'
 
 export { setRequireModule } from '../core/browser'
@@ -26,10 +27,13 @@ export function createFromFetch<T>(
   })
 }
 
-export const encodeReply: (v: unknown[], options?: unknown) => Promise<string | FormData> =
-  ReactClient.encodeReply
+export const encodeReply: (
+  v: unknown[],
+  options?: unknown,
+) => Promise<string | FormData> = ReactClient.encodeReply
 
-export const createServerReference: (...args: any[]) => unknown = ReactClient.createServerReference
+export const createServerReference: (...args: any[]) => unknown =
+  ReactClient.createServerReference
 
 // use global instead of local variable  to tolerate duplicate modules
 // e.g. when `setServerCallback` is pre-bundled but `createServerReference` is not
@@ -44,9 +48,13 @@ export function setServerCallback(fn: CallServerCallback): void {
 
 export type { CallServerCallback }
 
-export const createTemporaryReferenceSet: () => unknown = ReactClient.createTemporaryReferenceSet
+export const createTemporaryReferenceSet: () => unknown =
+  ReactClient.createTemporaryReferenceSet
 
-export function findSourceMapURL(filename: string, environmentName: string): string | null {
+export function findSourceMapURL(
+  filename: string,
+  environmentName: string,
+): string | null {
   // TODO: respect config.server.origin and config.base?
   const url = new URL('/__vite_rsc_findSourceMapURL', window.location.origin)
   url.searchParams.set('filename', filename)

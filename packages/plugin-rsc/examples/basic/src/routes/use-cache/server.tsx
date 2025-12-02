@@ -60,7 +60,9 @@ async function TestComponent(props: { children?: React.ReactNode }) {
       <span data-testid="test-use-cache-component-static">
         (static: {new Date().toISOString()})
       </span>{' '}
-      <span data-testid="test-use-cache-component-dynamic">(dynamic: {props.children})</span>
+      <span data-testid="test-use-cache-component-dynamic">
+        (dynamic: {props.children})
+      </span>
     </div>
   )
 }

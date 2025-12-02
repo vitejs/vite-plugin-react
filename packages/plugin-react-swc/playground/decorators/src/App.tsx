@@ -1,4 +1,5 @@
 import type { ComponentClass } from 'react'
+
 import { Component } from 'react'
 
 function decorated(target: ComponentClass) {

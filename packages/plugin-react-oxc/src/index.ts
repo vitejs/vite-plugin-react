@@ -1,14 +1,15 @@
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
 import type { BuildOptions, Plugin } from 'vite'
+
+import { exactRegex } from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,
   getPreambleCode,
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
-import { exactRegex } from '@rolldown/pluginutils'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
@@ -51,7 +52,12 @@ export default function viteReact(opts: Options = {}): Plugin[] {
           jsxRefreshExclude: exclude,
         },
         optimizeDeps: {
-          include: ['react', 'react-dom', jsxImportDevRuntime, jsxImportRuntime],
+          include: [
+            'react',
+            'react-dom',
+            jsxImportDevRuntime,
+            jsxImportRuntime,
+          ],
           rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
         },
       }
@@ -129,7 +135,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         const useFastRefresh =
           !skipFastRefresh &&
           !ssr &&
-          (isJSX || code.includes(jsxImportDevRuntime) || code.includes(jsxImportRuntime))
+          (isJSX ||
+            code.includes(jsxImportDevRuntime) ||
+            code.includes(jsxImportRuntime))
         if (!useFastRefresh) return
 
         const newCode = addRefreshWrapper(code, '@vitejs/plugin-react-oxc', id)

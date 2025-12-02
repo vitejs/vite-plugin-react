@@ -5,7 +5,11 @@ export function TestHydrationMismatch(props: { url: URL }) {
   return (
     <div>
       <span>test-hydration-mismatch</span>{' '}
-      {show ? <a href="?">hide</a> : <a href="?test-hydration-mismatch">show</a>}{' '}
+      {show ? (
+        <a href="?">hide</a>
+      ) : (
+        <a href="?test-hydration-mismatch">show</a>
+      )}{' '}
       {show && <Mismatch />}
     </div>
   )

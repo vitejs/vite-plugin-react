@@ -1,5 +1,6 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
+
 import { transformDirectiveProxyExport } from './proxy-export'
 import { transformServerActionServer } from './server-action'
 import { debugSourceMap } from './test-utils'
@@ -12,7 +13,8 @@ async function testDirectiveTransform(input: string, directive: string) {
   const result = transformDirectiveProxyExport(ast, {
     directive,
     code: input,
-    runtime: (name) => `$runtime(${JSON.stringify('<id>#' + name)}, ${JSON.stringify(name)})`,
+    runtime: (name) =>
+      `$runtime(${JSON.stringify('<id>#' + name)}, ${JSON.stringify(name)})`,
     keep: directive === 'use client',
   })
 
@@ -31,7 +33,8 @@ describe('internal transform function for server environment', () => {
   async function testTransform(input: string) {
     const ast = await parseAstAsync(input)
     const result = transformServerActionServer(input, ast, {
-      runtime: (value, name) => `$runtime(${value}, "<id>", ${JSON.stringify(name)})`,
+      runtime: (value, name) =>
+        `$runtime(${value}, "<id>", ${JSON.stringify(name)})`,
     })
 
     if (!('output' in result) || !result.output.hasChanged()) {
@@ -99,7 +102,8 @@ export default function App() {
   return "Hello World";
 }
 `
-    expect(await testDirectiveTransform(input, 'use client')).toMatchInlineSnapshot(`
+    expect(await testDirectiveTransform(input, 'use client'))
+      .toMatchInlineSnapshot(`
       "
       'use client';
 
@@ -495,7 +499,8 @@ export default async function log4(mesg) {
   console.log(mesg);
 }
 `
-    expect(await testDirectiveTransform(input, 'use server')).toMatchInlineSnapshot(`
+    expect(await testDirectiveTransform(input, 'use server'))
+      .toMatchInlineSnapshot(`
       "
 
 
@@ -528,7 +533,8 @@ export async function log(mesg) {
   console.log(mesg);
 }
 `
-    expect(await testDirectiveTransform(input, 'use server')).toMatchInlineSnapshot(`
+    expect(await testDirectiveTransform(input, 'use server'))
+      .toMatchInlineSnapshot(`
       "
 
 

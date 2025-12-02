@@ -1,12 +1,18 @@
-import assert from 'node:assert'
-import rsc from '@vitejs/plugin-rsc'
-import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { type Plugin, type Rollup, defineConfig, normalizePath, parseAstAsync } from 'vite'
-import path from 'node:path'
+import rsc from '@vitejs/plugin-rsc'
+import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
+import assert from 'node:assert'
 import fs from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  type Plugin,
+  type Rollup,
+  defineConfig,
+  normalizePath,
+  parseAstAsync,
+} from 'vite'
 
 export default defineConfig({
   clearScreen: false,
@@ -23,7 +29,8 @@ export default defineConfig({
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
-      copyServerAssetsToClient: (fileName) => fileName !== '__server_secret.txt',
+      copyServerAssetsToClient: (fileName) =>
+        fileName !== '__server_secret.txt',
       clientChunks(meta) {
         if (process.env.TEST_CUSTOM_CLIENT_CHUNKS) {
           if (meta.id.includes('/src/routes/chunk/')) {
@@ -85,11 +92,15 @@ export default defineConfig({
         assert(typeof viteManifest.source === 'string')
         if (this.environment.name === 'rsc') {
           assert(viteManifest.source.includes('src/framework/entry.rsc.tsx'))
-          assert(!viteManifest.source.includes('src/framework/entry.browser.tsx'))
+          assert(
+            !viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
         if (this.environment.name === 'client') {
           assert(!viteManifest.source.includes('src/framework/entry.rsc.tsx'))
-          assert(viteManifest.source.includes('src/framework/entry.browser.tsx'))
+          assert(
+            viteManifest.source.includes('src/framework/entry.browser.tsx'),
+          )
         }
       },
     },
@@ -99,7 +110,9 @@ export default defineConfig({
         const moduleIds = Object.values(bundle).flatMap((c) =>
           c.type === 'chunk' ? [...c.moduleIds] : [],
         )
-        const browserId = normalizePath(path.resolve('src/routes/browser-only/browser-dep.tsx'))
+        const browserId = normalizePath(
+          path.resolve('src/routes/browser-only/browser-dep.tsx'),
+        )
         if (this.environment.name === 'client') {
           assert(moduleIds.includes(browserId))
         }
@@ -116,7 +129,9 @@ export default defineConfig({
           normalizePath(fileURLToPath(import.meta.resolve(source)))
 
         // TODO: this package entry isn't a public API.
-        const reactServerDom = resolvePackageSource('@vitejs/plugin-rsc/react/browser')
+        const reactServerDom = resolvePackageSource(
+          '@vitejs/plugin-rsc/react/browser',
+        )
 
         return {
           environments: {
@@ -165,7 +180,9 @@ export default defineConfig({
           assert.equal(libChunks['lib-react'].length, 1)
           assert.deepEqual(
             // https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
-            libChunks['lib-react'][0].imports.filter((f) => !f.includes('rolldown-runtime')),
+            libChunks['lib-react'][0].imports.filter(
+              (f) => !f.includes('rolldown-runtime'),
+            ),
             [],
           )
           assert.deepEqual(libChunks['lib-react'][0].dynamicImports, [])
@@ -228,7 +245,10 @@ export default { fetch: handler };
   environments: {
     client: {
       optimizeDeps: {
-        entries: ['./src/routes/**/client.tsx', './src/framework/entry.browser.tsx'],
+        entries: [
+          './src/routes/**/client.tsx',
+          './src/framework/entry.browser.tsx',
+        ],
         exclude: [
           '@vitejs/test-dep-client-in-server/client',
           '@vitejs/test-dep-client-in-server2/client',
@@ -303,7 +323,9 @@ function vitePluginUseCache(): Plugin[] {
           noExport: true,
         })
         if (!result.output.hasChanged()) return
-        result.output.prepend(`import __vite_rsc_cache from "/src/framework/use-cache-runtime";`)
+        result.output.prepend(
+          `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
+        )
         return {
           code: result.output.toString(),
           map: result.output.generateMap({ hires: 'boundary' }),

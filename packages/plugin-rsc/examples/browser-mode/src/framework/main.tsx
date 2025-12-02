@@ -1,5 +1,6 @@
-import * as server from './entry.rsc'
 import loadClient from 'virtual:vite-rsc-browser-mode/load-client'
+
+import * as server from './entry.rsc'
 
 async function main() {
   const client = await loadClient()

@@ -5,7 +5,10 @@ export default function WithQuery() {
   return (
     <>
       <div id="WithQuery">With Query</div>
-      <button id="WithQuery-button" onClick={() => setCount((count) => count + 1)}>
+      <button
+        id="WithQuery-button"
+        onClick={() => setCount((count) => count + 1)}
+      >
         count is: {count}
       </button>
     </>

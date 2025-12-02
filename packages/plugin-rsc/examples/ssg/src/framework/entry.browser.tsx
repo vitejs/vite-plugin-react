@@ -1,10 +1,15 @@
-import { createFromFetch, createFromReadableStream } from '@vitejs/plugin-rsc/browser'
+import {
+  createFromFetch,
+  createFromReadableStream,
+} from '@vitejs/plugin-rsc/browser'
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
+
+import type { RscPayload } from './shared'
+
 import { GlobalErrorBoundary } from './error-boundary'
 import { createRscRenderRequest } from './request'
-import type { RscPayload } from './shared'
 
 async function hydrate(): Promise<void> {
   async function onNavigation() {

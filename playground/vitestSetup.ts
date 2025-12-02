@@ -1,7 +1,5 @@
 import type * as http from 'node:http'
-import path, { dirname, resolve } from 'node:path'
-import fs from 'fs-extra'
-import { chromium } from 'playwright-chromium'
+import type { Browser, Page } from 'playwright-chromium'
 import type {
   ConfigEnv,
   InlineConfig,
@@ -12,10 +10,20 @@ import type {
   UserConfig,
   ViteDevServer,
 } from 'vite'
-import type { Browser, Page } from 'playwright-chromium'
 import type { RunnerTestFile } from 'vitest'
+
+import fs from 'fs-extra'
+import path, { dirname, resolve } from 'node:path'
+import { chromium } from 'playwright-chromium'
+import {
+  build,
+  createBuilder,
+  createServer,
+  loadConfigFromFile,
+  mergeConfig,
+  preview,
+} from 'vite'
 import { beforeAll, inject } from 'vitest'
-import { build, createBuilder, createServer, loadConfigFromFile, mergeConfig, preview } from 'vite'
 
 // #region env
 
@@ -175,7 +183,10 @@ async function loadConfig(configEnv: ConfigEnv) {
   // config file named by convention as the *.spec.ts folder
   const variantName = path.basename(path.dirname(testPath))
   if (variantName !== '__tests__') {
-    const configVariantPath = path.resolve(rootDir, `vite.config-${variantName}.js`)
+    const configVariantPath = path.resolve(
+      rootDir,
+      `vite.config-${variantName}.js`,
+    )
     if (fs.existsSync(configVariantPath)) {
       const res = await loadConfigFromFile(configEnv, configVariantPath)
       if (res) {
@@ -222,7 +233,10 @@ export async function startDefaultServe(): Promise<void> {
     process.env.VITE_INLINE = 'inline-serve'
     const config = await loadConfig({ command: 'serve', mode: 'development' })
     viteServer = server = await (await createServer(config)).listen()
-    viteTestUrl = stripTrailingSlashIfNeeded(server.resolvedUrls.local[0], server.config.base)
+    viteTestUrl = stripTrailingSlashIfNeeded(
+      server.resolvedUrls.local[0],
+      server.config.base,
+    )
     await page.goto(viteTestUrl)
   } else {
     process.env.VITE_INLINE = 'inline-build'
@@ -234,9 +248,12 @@ export async function startDefaultServe(): Promise<void> {
         resolvedConfig = config
       },
     })
-    const buildConfig = mergeConfig(await loadConfig({ command: 'build', mode: 'production' }), {
-      plugins: [resolvedPlugin()],
-    })
+    const buildConfig = mergeConfig(
+      await loadConfig({ command: 'build', mode: 'production' }),
+      {
+        plugins: [resolvedPlugin()],
+      },
+    )
     if (buildConfig.builder) {
       const builder = await createBuilder(buildConfig)
       await builder.buildApp()

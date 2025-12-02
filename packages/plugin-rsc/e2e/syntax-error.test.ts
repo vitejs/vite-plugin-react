@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+
 import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration, expectNoReload } from './helper'
 
@@ -62,7 +63,9 @@ test.describe(() => {
 
       // Set client state to verify preservation after HMR
       await page.getByTestId('client-counter').click()
-      await expect(page.getByTestId('client-counter')).toHaveText('Client Count: 1')
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
 
       // add syntax error
       const editor = f.createEditor('src/client.tsx')
@@ -84,8 +87,12 @@ test.describe(() => {
       )
       await expect(page.locator('vite-error-overlay')).not.toBeVisible()
       await expect(page.getByTestId('client-syntax-ready')).toBeVisible()
-      await expect(page.getByTestId('client-content')).toHaveText('client:fixed')
-      await expect(page.getByTestId('client-counter')).toHaveText('Client Count: 1')
+      await expect(page.getByTestId('client-content')).toHaveText(
+        'client:fixed',
+      )
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
     })
   })
 
@@ -101,7 +108,9 @@ test.describe(() => {
 
       // Set client state to verify preservation during server HMR
       await page.getByTestId('client-counter').click()
-      await expect(page.getByTestId('client-counter')).toHaveText('Client Count: 1')
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
 
       // add syntax error
       const editor = f.createEditor('src/root.tsx')
@@ -122,8 +131,12 @@ test.describe(() => {
         ),
       )
       await expect(page.locator('vite-error-overlay')).not.toBeVisible()
-      await expect(page.getByTestId('server-content')).toHaveText('server:fixed')
-      await expect(page.getByTestId('client-counter')).toHaveText('Client Count: 1')
+      await expect(page.getByTestId('server-content')).toHaveText(
+        'server:fixed',
+      )
+      await expect(page.getByTestId('client-counter')).toHaveText(
+        'Client Count: 1',
+      )
     })
   })
 
@@ -152,7 +165,9 @@ test.describe(() => {
       )
       await expect(async () => {
         await page.goto(f.url())
-        await expect(page.getByTestId('client-content')).toHaveText('client:fixed')
+        await expect(page.getByTestId('client-content')).toHaveText(
+          'client:fixed',
+        )
       }).toPass()
       await waitForHydration(page)
     })
@@ -183,7 +198,9 @@ test.describe(() => {
       )
       await expect(async () => {
         await page.goto(f.url())
-        await expect(page.getByTestId('server-content')).toHaveText('server:fixed')
+        await expect(page.getByTestId('server-content')).toHaveText(
+          'server:fixed',
+        )
       }).toPass()
       await waitForHydration(page)
     })

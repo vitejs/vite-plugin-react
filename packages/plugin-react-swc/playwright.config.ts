@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import { type PlaywrightTestConfig, devices } from '@playwright/test'
 import fs from 'fs-extra'
+import { fileURLToPath } from 'node:url'
 
 const tempDir = fileURLToPath(new URL('playground-temp', import.meta.url))
 fs.ensureDirSync(tempDir)
@@ -8,7 +8,11 @@ fs.emptyDirSync(tempDir)
 fs.copySync(fileURLToPath(new URL('playground', import.meta.url)), tempDir, {
   filter: (src) => {
     src = src.replaceAll('\\', '/')
-    return !src.includes('/__tests__') && !src.includes('/.vite') && !src.includes('/dist')
+    return (
+      !src.includes('/__tests__') &&
+      !src.includes('/.vite') &&
+      !src.includes('/dist')
+    )
   },
 })
 

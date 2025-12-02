@@ -1,5 +1,10 @@
 import { test } from '@playwright/test'
-import { setupBuildAndPreview, setupDevServer, setupWaitForLogs } from '../../utils.ts'
+
+import {
+  setupBuildAndPreview,
+  setupDevServer,
+  setupWaitForLogs,
+} from '../../utils.ts'
 
 test('Worker build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('worker')

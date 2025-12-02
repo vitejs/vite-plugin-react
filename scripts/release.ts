@@ -1,12 +1,17 @@
-import { readFileSync, writeFileSync } from 'node:fs'
 import { generateChangelog, release } from '@vitejs/release-scripts'
+import { readFileSync, writeFileSync } from 'node:fs'
 import colors from 'picocolors'
 
 const nextH2RE = /^## /gm
 
 release({
   repo: 'vite-plugin-react',
-  packages: ['plugin-react', 'plugin-react-swc', 'plugin-react-oxc', 'plugin-rsc'],
+  packages: [
+    'plugin-react',
+    'plugin-react-swc',
+    'plugin-react-oxc',
+    'plugin-rsc',
+  ],
   getPkgDir(pkg) {
     if (pkg === 'plugin-react-swc') {
       return `packages/${pkg}/dist`
@@ -48,7 +53,10 @@ release({
     const date = new Date().toISOString().slice(0, 10)
     writeFileSync(
       `packages/${pkgName}/CHANGELOG.md`,
-      changelog.replace('## Unreleased', `## Unreleased\n\n## ${version} (${date})`),
+      changelog.replace(
+        '## Unreleased',
+        `## Unreleased\n\n## ${version} (${date})`,
+      ),
     )
   },
 })

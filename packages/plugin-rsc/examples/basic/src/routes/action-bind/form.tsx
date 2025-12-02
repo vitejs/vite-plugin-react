@@ -2,7 +2,9 @@
 
 import React from 'react'
 
-export function TestServerActionBindClientForm(props: { action: () => Promise<React.ReactNode> }) {
+export function TestServerActionBindClientForm(props: {
+  action: () => Promise<React.ReactNode>
+}) {
   const [result, formAction] = React.useActionState(props.action, '[?]')
 
   return (

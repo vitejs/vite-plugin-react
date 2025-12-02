@@ -1,11 +1,16 @@
 import * as esModuleLexer from 'es-module-lexer'
-import { parseAstAsync, type Plugin } from 'vite'
 import { walk } from 'estree-walker'
+import { parseAstAsync, type Plugin } from 'vite'
+
 import type { RscPluginManager } from '../plugin'
 
 // During scan build, we strip all code but imports to
 // traverse module graph faster and just discover client/server references.
-export function scanBuildStripPlugin({ manager }: { manager: RscPluginManager }): Plugin {
+export function scanBuildStripPlugin({
+  manager,
+}: {
+  manager: RscPluginManager
+}): Plugin {
   return {
     name: 'rsc:scan-strip',
     apply: 'build',

@@ -7,7 +7,10 @@ function Root({ children }) {
         margin: '16px 0',
       }}
     >
-      <h3 id="accordion-root" style={{ padding: '12px', margin: '0', backgroundColor: '#f5f5f5' }}>
+      <h3
+        id="accordion-root"
+        style={{ padding: '12px', margin: '0', backgroundColor: '#f5f5f5' }}
+      >
         Accordion Root
       </h3>
       <div style={{ padding: '12px' }}>{children}</div>

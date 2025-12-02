@@ -30,5 +30,7 @@ export default defineConfig({
   workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: ['list', process.env.CI && 'github'].filter(Boolean).map((name) => [name] as any),
+  reporter: ['list', process.env.CI && 'github']
+    .filter(Boolean)
+    .map((name) => [name] as any),
 }) as any
