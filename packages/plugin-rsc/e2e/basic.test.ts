@@ -1252,7 +1252,8 @@ function defineTest(f: Fixture) {
       .click()
   }
 
-  test('action bind client @js', async ({ page }) => {
+  // TODO: skipped since 19.2.1
+  test.skip('action bind client @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await using _ = await expectNoReload(page)
@@ -1307,7 +1308,10 @@ function defineTest(f: Fixture) {
       .click()
   }
 
-  test('test serialization @js', async ({ page }) => {
+  // TODO: skipped since 19.2.1 as round-tripping server action is broken
+  // import { createFromReadableStream, renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+  // renderToReadableStream -> createFromReadableStream
+  test.skip('test serialization @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await expect(page.getByTestId('serialization')).toHaveText('?')
