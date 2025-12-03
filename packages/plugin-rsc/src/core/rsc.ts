@@ -47,6 +47,28 @@ export function setRequireModule(options: {
               name,
             ))
           },
+          // React 19.2.1+ uses hasOwnProperty.call() to check for exports
+          // https://github.com/facebook/react/pull/35277
+          // hasOwnProperty uses getOwnPropertyDescriptor under the hood
+          getOwnPropertyDescriptor(target, name) {
+            if (typeof name !== 'string' || name === 'then') {
+              return Reflect.getOwnPropertyDescriptor(target, name)
+            }
+            // Eagerly create the client reference so hasOwnProperty returns true
+            // and the property is available for subsequent access
+            if (!(name in target)) {
+              target[name] = ReactServer.registerClientReference(
+                () => {
+                  throw new Error(
+                    `Unexpectedly client reference export '${name}' is called on server`,
+                  )
+                },
+                id,
+                name,
+              )
+            }
+            return Reflect.getOwnPropertyDescriptor(target, name)
+          },
         })
       }
       return requireModule(id)
