@@ -1,3 +1,16 @@
+## <small>[0.5.5](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.4...plugin-rsc@0.5.5) (2025-12-04)</small>
+### Features
+
+* **rsc:** support serialization of Request and Response with `loadModuleDevProxy` ([#1004](https://github.com/vitejs/vite-plugin-react/issues/1004)) ([7f71e15](https://github.com/vitejs/vite-plugin-react/commit/7f71e15b4524e203b05e762e378cefd5abae1cb7))
+
+### Miscellaneous Chores
+
+* **rsc/examples:** use normalized request after `parseRenderRequest` ([#1005](https://github.com/vitejs/vite-plugin-react/issues/1005)) ([b14456c](https://github.com/vitejs/vite-plugin-react/commit/b14456cf4354bbf982240ea74afa28287602cdbb))
+
+### Code Refactoring
+
+* **rsc:** simplify proxy get access ([#1002](https://github.com/vitejs/vite-plugin-react/issues/1002)) ([cc77583](https://github.com/vitejs/vite-plugin-react/commit/cc77583c441594fe53fc820b8e362d32d4c1810b))
+
 ## <small>[0.5.4](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.3...plugin-rsc@0.5.4) (2025-12-04)</small>
 ### Bug Fixes
 
