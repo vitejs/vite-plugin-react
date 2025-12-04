@@ -47,11 +47,6 @@ export function setRequireModule(options: {
           ))
         }
         return new Proxy(target, {
-          get(_target, name, _receiver) {
-            // not thennable
-            if (typeof name !== 'string' || name === 'then') return
-            return getOrCreateClientReference(name)
-          },
           // React 19.2.1+ uses hasOwnProperty.call() to check for exports
           // https://github.com/facebook/react/pull/35277
           getOwnPropertyDescriptor(_target, name) {
