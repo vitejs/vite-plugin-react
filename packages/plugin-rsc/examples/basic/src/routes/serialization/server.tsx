@@ -6,9 +6,6 @@ import { testSerializationAction } from './action'
 import { TestSerializationClient } from './client'
 
 export function TestSerializationServer() {
-  if (1) {
-    return <div>test-serialization:todo</div>
-  }
   const original = <TestSerializationClient action={testSerializationAction} />
   let serialized = renderToReadableStream(original)
   // debug serialization
