@@ -28,14 +28,13 @@ export function setRequireModule(options: {
   ;(globalThis as any).__vite_rsc_server_require__ = memoize(
     async (id: string) => {
       if (id.startsWith(SERVER_DECODE_CLIENT_PREFIX)) {
+        // decode client reference on the server
         id = id.slice(SERVER_DECODE_CLIENT_PREFIX.length)
         id = removeReferenceCacheTag(id)
         // create `registerClientReference` on the fly since there's no way to
         // grab the original client reference module on ther server.
         // cf. https://github.com/lazarv/react-server/blob/79e7acebc6f4a8c930ad8422e2a4a9fdacfcce9b/packages/react-server/server/module-loader.mjs#L19
-        // decode client reference on the server
         const target = {} as any
-        // Helper to get or create a client reference for the given export name
         const getOrCreateClientReference = (name: string) => {
           return (target[name] ??= ReactServer.registerClientReference(
             () => {
@@ -49,22 +48,16 @@ export function setRequireModule(options: {
         }
         return new Proxy(target, {
           get(_target, name, _receiver) {
-            // Skip non-string properties and 'then' to avoid being treated as a thenable
-            // which would cause issues with Promise resolution
+            // not thennable
             if (typeof name !== 'string' || name === 'then') return
             return getOrCreateClientReference(name)
           },
           // React 19.2.1+ uses hasOwnProperty.call() to check for exports
           // https://github.com/facebook/react/pull/35277
-          // hasOwnProperty uses getOwnPropertyDescriptor under the hood
           getOwnPropertyDescriptor(_target, name) {
-            // Skip non-string properties and 'then' to avoid being treated as a thenable
-            // which would cause issues with Promise resolution
             if (typeof name !== 'string' || name === 'then') {
               return Reflect.getOwnPropertyDescriptor(target, name)
             }
-            // Eagerly create the client reference so hasOwnProperty returns true
-            // and the property is available for subsequent access
             getOrCreateClientReference(name)
             return Reflect.getOwnPropertyDescriptor(target, name)
           },
