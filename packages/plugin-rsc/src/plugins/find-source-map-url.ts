@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import type { EnvironmentModuleNode, Plugin, ViteDevServer } from 'vite'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 //
 // support findSourceMapURL

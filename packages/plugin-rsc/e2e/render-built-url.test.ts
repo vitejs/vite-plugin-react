@@ -1,9 +1,9 @@
-import { expect, test } from '@playwright/test'
-import { setupInlineFixture, useFixture } from './fixture'
-import { defineStarterTest } from './starter'
-import { expectNoPageError, waitForHydration } from './helper'
-import fs from 'node:fs'
 import type { RenderBuiltAssetUrl } from 'vite'
+import { expect, test } from '@playwright/test'
+import fs from 'node:fs'
+import { setupInlineFixture, useFixture } from './fixture'
+import { expectNoPageError, waitForHydration } from './helper'
+import { defineStarterTest } from './starter'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/renderBuiltUrl-runtime'

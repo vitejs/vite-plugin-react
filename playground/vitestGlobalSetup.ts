@@ -1,7 +1,7 @@
-import path from 'node:path'
-import fs from 'fs-extra'
-import type { TestProject } from 'vitest/node'
 import type { BrowserServer } from 'playwright-chromium'
+import type { TestProject } from 'vitest/node'
+import fs from 'fs-extra'
+import path from 'node:path'
 import { chromium } from 'playwright-chromium'
 
 let browserServer: BrowserServer | undefined

@@ -1,6 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import { type PlaywrightTestConfig, devices } from '@playwright/test'
 import fs from 'fs-extra'
+import { fileURLToPath } from 'node:url'
 
 const tempDir = fileURLToPath(new URL('playground-temp', import.meta.url))
 fs.ensureDirSync(tempDir)

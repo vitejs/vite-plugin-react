@@ -1,10 +1,10 @@
-import path from 'node:path'
-import { pathToFileURL } from 'node:url'
+import type { Connect } from 'vite'
+import { createRequestListener } from '@remix-run/node-fetch-server'
 // @ts-ignore
 import connect from 'connect'
-import { createRequestListener } from '@remix-run/node-fetch-server'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import sirv from 'sirv'
-import type { Connect } from 'vite'
 
 async function main() {
   const app = connect() as Connect.Server

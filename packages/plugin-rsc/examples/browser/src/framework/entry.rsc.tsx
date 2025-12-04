@@ -1,3 +1,4 @@
+import type { ReactFormState } from 'react-dom/client'
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -6,7 +7,6 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 
 export type RscPayload = {
