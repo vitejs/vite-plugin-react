@@ -1,3 +1,8 @@
+## <small>[0.5.4](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.3...plugin-rsc@0.5.4) (2025-12-04)</small>
+### Bug Fixes
+
+* **rsc:** fix deserializing client reference in server environment with React 19.2.1+ ([#1000](https://github.com/vitejs/vite-plugin-react/issues/1000)) ([486ebb0](https://github.com/vitejs/vite-plugin-react/commit/486ebb03defe1608505fd8ecd05623f6ec1c4571))
+
 ## <small>[0.5.3](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.2...plugin-rsc@0.5.3) (2025-12-03)</small>
 ### Bug Fixes
 
