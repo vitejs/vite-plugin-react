@@ -228,7 +228,7 @@ The plugin provides an additional helper for multi environment interaction.
 
 This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa.
 
-During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process.
+During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process. This proxy mechanism uses [turbo-stream](https://github.com/jacob-ebey/turbo-stream) for serializing data types beyond JSON, with custom encoders/decoders to additionally support `Request` and `Response` instances.
 
 During production build, this API will be rewritten into a static import of the specified entry of other environment build and the modules are executed inside the same runtime.
 
