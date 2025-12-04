@@ -19,6 +19,7 @@ export type RscPayload = {
 async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
+  request = renderRequest.request
 
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
@@ -29,10 +30,9 @@ async function handler(request: Request): Promise<Response> {
     if (renderRequest.actionId) {
       // action is called via `ReactClient.setServerCallback`.
       const contentType = request.headers.get('content-type')
-      const clone = request.clone()
       const body = contentType?.startsWith('multipart/form-data')
-        ? await clone.formData()
-        : await clone.text()
+        ? await request.formData()
+        : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
       const action = await loadServerAction(renderRequest.actionId)
@@ -47,8 +47,7 @@ async function handler(request: Request): Promise<Response> {
       // otherwise server function is called via `<form action={...}>`
       // before hydration (e.g. when javascript is disabled).
       // aka progressive enhancement.
-      const clone = request.clone()
-      const formData = await clone.formData()
+      const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
       try {
         const result = await decodedAction()
