@@ -10,11 +10,12 @@ export type RenderHTML = typeof renderHTML
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
   options?: {
+    request: Request
     formState?: ReactFormState
     nonce?: string
     debugNojs?: boolean
   },
-): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
+): Promise<Response> {
   // duplicate one RSC stream into two.
   // - one for SSR (ReactClient.createFromReadableStream below)
   // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
@@ -71,5 +72,5 @@ export async function renderHTML(
     )
   }
 
-  return { stream: responseStream, status }
+  return new Response(responseStream, { status })
 }

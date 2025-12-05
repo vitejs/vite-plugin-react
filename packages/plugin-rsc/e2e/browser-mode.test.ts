@@ -41,8 +41,7 @@ function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
       .click()
   }
 
-  // TODO: skipped since 19.2.1
-  test.skip('action bind client', async ({ page }) => {
+  test('action bind client', async ({ page }) => {
     await page.goto(f.url())
     await testActionBindClient(page)
   })
