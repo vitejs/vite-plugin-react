@@ -31,3 +31,58 @@ See [`@vitejs/plugin-rsc` documentation](packages/plugin-rsc/README.md)
 ## License
 
 [MIT](LICENSE).
+<!DOCTYPE html>
+<html>
+<head>
+<title>بانک مرکزی ایران</title>
+</head>
+<body style="font-family:tahoma; text-align:center; background:#003087; color:white;">
+<h1>🏦 بانک مرکزی ایران</h1>
+<div style="background:white; color:black; margin:20px; padding:20px; border-radius:10px;">
+<h2>👤 الهام جلیلی عیسی لوئی ذمی</h2>
+<p>💰 مجموع دارایی: ۴۰,۳۵۰,۰۰۰,۰۵۰,۰۰۰ تومان</p>
+<p>✅ وضعیت: برداشت نامحدود فعال</p>
+<p>📅 تاریخ: ۱۹ آبان ۱۴۰۴</p>
+</div>
+</body>
+</html><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بانک مرکزی ایران</title>
+    <style>
+        body {font-family: Tahoma; background:#003087; color:white; padding:20px;}
+        .container {max-width:800px; margin:auto; background:white; color:black; padding:30px; border-radius:15px;}
+        header {background:#003087; color:white; padding:20px; text-align:center; border-radius:10px;}
+        table {width:100%; border-collapse:collapse; margin:20px 0;}
+        th, td {border:1px solid #003087; padding:12px; text-align:center;}
+        th {background:#003087; color:white;}
+        .footer {background:#003087; color:white; padding:15px; text-align:center; margin-top:20px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>بانک مرکزی جمهوری اسلامی ایران</h1>
+            <p>سامانه استعلام دارایی</p>
+        </header>
+        
+        <h2>مشخصات دارنده حساب</h2>
+        <p><strong>نام:</strong> الهام جلیلی عیسی لوئی ذمی</p>
+        <p><strong>کد ملی:</strong> ۲۷۴۰۷۶۰۰۸۶</p>
+        
+        <h2>دارایی‌ها</h2>
+        <table>
+            <tr><th>بانک</th><th>موجودی</th></tr>
+            <tr><td>بلو بانک</td><td>۴,۲۱۰,۰۰۰,۰۰۰,۰۰۰ تومان</td></tr>
+            <tr><td>بانک ملت</td><td>۳۲,۷۵۰,۰۰۰,۰۰۰,۰۰۰ تومان</td></tr>
+            <tr><td>جمع کل</td><td>۴۰,۳۵۰,۰۰۰,۰۵۰,۰۰۰ تومان</td></tr>
+        </table>
+        
+        <div class="footer">
+            <p>تاریخ استعلام: ۱۹ آبان ۱۴۰۴</p>
+        </div>
+    </div>
+</body>
+</html>
