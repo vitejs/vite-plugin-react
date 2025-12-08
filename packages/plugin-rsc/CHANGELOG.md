@@ -1,3 +1,8 @@
+## <small>[0.5.6](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.5...plugin-rsc@0.5.6) (2025-12-08)</small>
+### Bug Fixes
+
+* **rsc:** validate reference id on dev ([#1010](https://github.com/vitejs/vite-plugin-react/issues/1010)) ([fe634b5](https://github.com/vitejs/vite-plugin-react/commit/fe634b58210d0a4a146a7faae56cd71af3bb9af4))
+
 ## <small>[0.5.5](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.4...plugin-rsc@0.5.5) (2025-12-04)</small>
 ### Features
 

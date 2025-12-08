@@ -7,6 +7,51 @@ import { x } from 'tinyexec'
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
   defineStarterTest(f)
+
+  test('validate reference 1', async () => {
+    const requestUrl = f.url('_.rsc')
+    const formData = new FormData()
+    const payload = {
+      '0': [1, '$F1'],
+      '1': { id: '__invalid_reference__# ' },
+    }
+    for (const [k, v] of Object.entries(payload)) {
+      formData.append(k, JSON.stringify(v))
+    }
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'x-rsc-action': '/src/action.tsx#updateServerCounter',
+      },
+    })
+    expect(f.proc().stderr()).toContain(
+      `invalid server reference '__invalid_reference__`,
+    )
+    expect(response.status).toBe(500)
+  })
+
+  test('validate reference 2', async () => {
+    const requestUrl = f.url('_.rsc')
+    const formData = new FormData()
+    const payload = {
+      '0': [1],
+    }
+    for (const [k, v] of Object.entries(payload)) {
+      formData.append(k, JSON.stringify(v))
+    }
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'x-rsc-action': `__invalid_reference__# `,
+      },
+    })
+    expect(f.proc().stderr()).toContain(
+      `invalid server reference '__invalid_reference__'`,
+    )
+    expect(response.status).toBe(500)
+  })
 })
 
 test.describe('build-default', () => {
