@@ -63,7 +63,7 @@
     "react-dom": "^19.2.1",
     "react-server-dom-webpack": "^19.2.1",
     "tinyexec": "^1.0.2",
-    "tsdown": "^0.16.8"
+    "tsdown": "^0.17.1"
   },
   "peerDependencies": {
     "react": "*",
