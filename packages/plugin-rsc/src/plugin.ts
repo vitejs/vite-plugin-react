@@ -54,7 +54,12 @@ import { createDebug } from '@hiogawa/utils'
 import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import {
+  parseCssVirtual,
+  toCssVirtual,
+  parseIdQuery,
+  parseReferenceValidationVirtual,
+} from './plugins/shared'
 import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
@@ -261,6 +266,37 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    {
+      name: 'rsc:reference-validation',
+      apply: 'serve',
+      load: {
+        handler(id, _options) {
+          if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
+            const parsed = parseReferenceValidationVirtual(id)
+            assert(parsed)
+            if (parsed.type === 'client') {
+              const meta = Object.values(manager.clientReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            if (parsed.type === 'server') {
+              const meta = Object.values(manager.serverReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            this.error(
+              `[vite-rsc] invalid ${parsed.type} reference '${parsed.id}'`,
+            )
+          }
+        },
+      },
+    },
     scanBuildStripPlugin({ manager }),
   ]
 }
