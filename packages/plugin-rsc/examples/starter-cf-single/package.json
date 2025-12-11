@@ -11,16 +11,17 @@
     "release": "wrangler deploy"
   },
   "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.13.18",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
+    "@cloudflare/vite-plugin": "^1.17.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "^7.1.12"
+    "vite": "^7.2.7",
+    "wrangler": "^4.53.0"
   }
 }

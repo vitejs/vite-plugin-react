@@ -126,7 +126,9 @@ const react = (_options?: Options): Plugin[] => {
           include: [`${options.jsxImportSource}/jsx-dev-runtime`],
           ...('rolldownVersion' in vite
             ? {
-                rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+                rolldownOptions: {
+                  transform: { jsx: { runtime: 'automatic' } },
+                },
               }
             : { esbuildOptions: { jsx: 'automatic' } }),
         },

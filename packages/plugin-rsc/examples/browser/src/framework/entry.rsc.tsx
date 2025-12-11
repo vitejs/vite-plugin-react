@@ -11,13 +11,13 @@ import { Root } from '../root.tsx'
 
 export type RscPayload = {
   root: React.ReactNode
-  returnValue?: unknown
+  returnValue?: { ok: boolean; data: unknown }
   formState?: ReactFormState
 }
 
 async function handler(request: Request): Promise<Response> {
   const isAction = request.method === 'POST'
-  let returnValue: unknown | undefined
+  let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   if (isAction) {
@@ -30,7 +30,12 @@ async function handler(request: Request): Promise<Response> {
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
       const action = await loadServerAction(actionId)
-      returnValue = await action.apply(null, args)
+      try {
+        const data = await action.apply(null, args)
+        returnValue = { ok: true, data }
+      } catch (e) {
+        returnValue = { ok: false, data: e }
+      }
     } else {
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
@@ -44,9 +49,9 @@ async function handler(request: Request): Promise<Response> {
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
   return new Response(rscStream, {
+    status: returnValue?.ok === false ? 500 : undefined,
     headers: {
       'content-type': 'text/x-component;charset=utf-8',
-      vary: 'accept',
     },
   })
 }

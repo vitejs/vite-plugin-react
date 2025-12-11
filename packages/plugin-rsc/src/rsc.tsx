@@ -1,5 +1,6 @@
 import serverReferences from 'virtual:vite-rsc/server-references'
 import { setRequireModule } from './core/rsc'
+import { toReferenceValidationVirtual } from './plugins/shared'
 
 export {
   createClientManifest,
@@ -20,6 +21,10 @@ function initialize(): void {
   setRequireModule({
     load: async (id) => {
       if (!import.meta.env.__vite_rsc_build__) {
+        await import(
+          /* @vite-ignore */ '/@id/__x00__' +
+            toReferenceValidationVirtual({ id, type: 'server' })
+        )
         return import(/* @vite-ignore */ id)
       } else {
         const import_ = serverReferences[id]

@@ -54,7 +54,12 @@ import { createDebug } from '@hiogawa/utils'
 import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import {
+  parseCssVirtual,
+  toCssVirtual,
+  parseIdQuery,
+  parseReferenceValidationVirtual,
+} from './plugins/shared'
 import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
@@ -261,6 +266,37 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    {
+      name: 'rsc:reference-validation',
+      apply: 'serve',
+      load: {
+        handler(id, _options) {
+          if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
+            const parsed = parseReferenceValidationVirtual(id)
+            assert(parsed)
+            if (parsed.type === 'client') {
+              const meta = Object.values(manager.clientReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            if (parsed.type === 'server') {
+              const meta = Object.values(manager.serverReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            this.error(
+              `[vite-rsc] invalid ${parsed.type} reference '${parsed.id}'`,
+            )
+          }
+        },
+      },
+    },
     scanBuildStripPlugin({ manager }),
   ]
 }
@@ -726,18 +762,7 @@ export default function vitePluginRsc(
             this.environment.mode === 'dev' &&
             rscPluginOptions.loadModuleDevProxy
           ) {
-            const origin = server.resolvedUrls?.local[0]
-            assert(origin, '[vite-rsc] no server for loadModueleDevProxy')
-            const endpoint =
-              origin +
-              '__vite_rsc_load_module_dev_proxy?' +
-              new URLSearchParams({ environmentName, entryName })
-            replacement = `__vite_rsc_rpc.createRpcClient(${JSON.stringify({
-              endpoint,
-            })})`
-            s.prepend(
-              `import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";`,
-            )
+            replacement = `import("virtual:vite-rsc/rpc-client").then((module) => module.createRpcClient(${JSON.stringify({ environmentName, entryName })}))`
           } else if (this.environment.mode === 'dev') {
             const environment = server.environments[environmentName]!
             const source = getEntrySource(environment.config, entryName)
@@ -847,6 +872,32 @@ export default function vitePluginRsc(
           }
           next()
         })
+      },
+    },
+    {
+      name: 'rsc:virtual:vite-rsc/rpc-client',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc/rpc-client') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc/rpc-client') {
+          const { server } = manager
+          const origin = server.resolvedUrls?.local[0]
+          assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
+
+          return `\
+import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";
+export function createRpcClient(params) {
+  const endpoint =
+    "${origin}" +
+    "__vite_rsc_load_module_dev_proxy?" +
+    new URLSearchParams(params);
+  return __vite_rsc_rpc.createRpcClient({ endpoint });
+}
+          `
+        }
       },
     },
     {
