@@ -499,7 +499,7 @@ importers:
         version: 19.2.1(react@19.2.1)
       react-server-dom-webpack:
         specifier: ^19.2.1
-        version: 19.2.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 19.2.2(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       tinyexec:
         specifier: ^1.0.2
         version: 1.0.2
@@ -3973,12 +3973,13 @@ packages:
       react-dom:
         optional: true
 
-  react-server-dom-webpack@19.2.1:
-    resolution: {integrity: sha512-6z3FuEtZ7wVWyPYRhKKRo4TF7IyQ7XrQZRW1fTjzK2mLVmcv7xJtoANSixaUJ+EFjCh2ekNOaBSoI9spiMSnNA==}
+  react-server-dom-webpack@19.2.2:
+    resolution: {integrity: sha512-E/4xJS8dS6b6sEXio0WoNrDY2d7FjjfEwan547ew4QSeefH7OSB+I7tgBCDV//TL+UUPNR/Fa5Qy3qiywOgdTg==}
     engines: {node: '>=0.10.0'}
+    deprecated: High Security Vulnerability in React Server Components
     peerDependencies:
-      react: ^19.2.1
-      react-dom: ^19.2.1
+      react: ^19.2.2
+      react-dom: ^19.2.2
       webpack: ^5.59.0
 
   react-switch@7.1.0:
@@ -7546,7 +7547,7 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.1(react@19.2.1)
 
-  react-server-dom-webpack@19.2.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
+  react-server-dom-webpack@19.2.2(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
