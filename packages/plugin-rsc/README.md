@@ -445,23 +445,11 @@ export function Page() {
 }
 ```
 
-### Using React Canary and Experimental versions
+### Using different React versions
 
-To use React's [canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#all-release-channels) versions with `@vitejs/plugin-rsc`, you have two options:
+By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. When `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead, allowing you to use any React version you need.
 
-**Option 1: Use preview releases from pkg.pr.new**
-
-You can use preview releases that bundle specific React versions. See [PR #524](https://github.com/vitejs/vite-plugin-react/pull/524) for instructions on installing these preview packages.
-
-**Option 2: Install `react-server-dom-webpack` directly**
-
-By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead. This allows you to:
-
-- Stay up-to-date with the latest React Server Components runtime without waiting for plugin updates
-- Use any specific React version (stable, canary, experimental, or arbitrary versions)
-- Quickly update to patched versions when security vulnerabilities are discovered
-
-Simply install the version you need:
+**[Canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#experimental-channel) versions:**
 
 ```json
 {
@@ -473,26 +461,14 @@ Simply install the version you need:
 }
 ```
 
-Or for experimental:
+**Specific versions (e.g., for security updates):**
 
 ```json
 {
   "dependencies": {
-    "react": "experimental",
-    "react-dom": "experimental",
-    "react-server-dom-webpack": "experimental"
-  }
-}
-```
-
-Or any specific version (e.g., to address a security vulnerability):
-
-```json
-{
-  "dependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-server-dom-webpack": "18.3.1"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-server-dom-webpack": "19.2.3"
   }
 }
 ```
