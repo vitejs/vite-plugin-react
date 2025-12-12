@@ -13,8 +13,8 @@
     "cf-release": "wrangler deploy -c dist/rsc/wrangler.json && wrangler deploy"
   },
   "dependencies": {
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-router": "7.10.1"
   },
   "devDependencies": {
