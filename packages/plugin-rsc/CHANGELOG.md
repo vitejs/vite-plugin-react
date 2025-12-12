@@ -1,3 +1,10 @@
+## <small>[0.5.7](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.6...plugin-rsc@0.5.7) (2025-12-12)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1008](https://github.com/vitejs/vite-plugin-react/issues/1008)) ([1f372b6](https://github.com/vitejs/vite-plugin-react/commit/1f372b65aca67a58230f4eabbc704f43f53b5236))
+* **deps:** update dependency es-module-lexer to v2 ([#1009](https://github.com/vitejs/vite-plugin-react/issues/1009)) ([f4c4f9a](https://github.com/vitejs/vite-plugin-react/commit/f4c4f9a438b61c53e4fff5cdea614fcb6dcb597f))
+* **deps:** update react 19.2.3 ([#1017](https://github.com/vitejs/vite-plugin-react/issues/1017)) ([cfa3c8b](https://github.com/vitejs/vite-plugin-react/commit/cfa3c8b3ead0dc9c71046e6edf64c6c2b9909e2b))
+
 ## <small>[0.5.6](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.5...plugin-rsc@0.5.6) (2025-12-08)</small>
 ### Bug Fixes
 
