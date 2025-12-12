@@ -458,7 +458,8 @@ You can use preview releases that bundle specific React versions. See [PR #524](
 By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead. This allows you to:
 
 - Stay up-to-date with the latest React Server Components runtime without waiting for plugin updates
-- Use specific React versions (stable, canary, or experimental)
+- Use any specific React version (stable, canary, experimental, or arbitrary versions)
+- Quickly update to patched versions when security vulnerabilities are discovered
 
 Simply install the version you need:
 
@@ -480,6 +481,18 @@ Or for experimental:
     "react": "experimental",
     "react-dom": "experimental",
     "react-server-dom-webpack": "experimental"
+  }
+}
+```
+
+Or any specific version (e.g., to address a security vulnerability):
+
+```json
+{
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-server-dom-webpack": "18.3.1"
   }
 }
 ```
