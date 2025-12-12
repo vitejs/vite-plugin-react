@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { createRequestListener } from '@remix-run/node-fetch-server'
+import { toNodeHandler } from 'srvx/node'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import * as vite from 'vite'
@@ -573,9 +573,7 @@ export default function vitePluginRsc(
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
-              // ensure catching rejected promise
-              // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
-              await createRequestListener(fetchHandler)(req, res)
+              await toNodeHandler(fetchHandler)(req, res)
             } catch (e) {
               next(e)
             }
@@ -596,7 +594,7 @@ export default function vitePluginRsc(
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
         const fetchHandler = getFetchHandlerExport(mod)
-        const handler = createRequestListener(fetchHandler)
+        const handler = toNodeHandler(fetchHandler)
 
         // disable compressions since it breaks html streaming
         // https://github.com/vitejs/vite/blob/9f5c59f07aefb1756a37bcb1c0aff24d54288950/packages/vite/src/node/preview.ts#L178
@@ -866,7 +864,7 @@ export default function vitePluginRsc(
           if (url.pathname === '/__vite_rsc_load_module_dev_proxy') {
             try {
               const handler = await createHandler(url)
-              createRequestListener(handler)(req, res)
+              await toNodeHandler(handler)(req, res)
             } catch (e) {
               next(e)
             }
