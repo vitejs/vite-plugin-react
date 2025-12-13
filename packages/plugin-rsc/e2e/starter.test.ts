@@ -13,7 +13,7 @@ test.describe('dev-default', () => {
     const formData = new FormData()
     const payload = {
       '0': [1, '$F1'],
-      '1': { id: '__invalid_reference__# ' },
+      '1': { id: '__invalid_reference1__# ' },
     }
     for (const [k, v] of Object.entries(payload)) {
       formData.append(k, JSON.stringify(v))
@@ -25,9 +25,11 @@ test.describe('dev-default', () => {
         'x-rsc-action': '/src/action.tsx#updateServerCounter',
       },
     })
-    expect(f.proc().stderr()).toContain(
-      `invalid server reference '__invalid_reference__`,
-    )
+    // patch for 19.2.3 seems to make the payload above invalid and not reach server reference decoding anymore.
+    // https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components
+    // expect(f.proc().stderr()).toContain(
+    //   `invalid server reference '__invalid_reference1__`,
+    // )
     expect(response.status).toBe(500)
   })
 
@@ -44,11 +46,11 @@ test.describe('dev-default', () => {
       method: 'POST',
       body: formData,
       headers: {
-        'x-rsc-action': `__invalid_reference__# `,
+        'x-rsc-action': `__invalid_reference2__# `,
       },
     })
     expect(f.proc().stderr()).toContain(
-      `invalid server reference '__invalid_reference__'`,
+      `invalid server reference '__invalid_reference2__'`,
     )
     expect(response.status).toBe(500)
   })
