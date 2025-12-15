@@ -121,8 +121,8 @@ importers:
         specifier: 1.0.0-beta.53
         version: 1.0.0-beta.53
       tsdown:
-        specifier: ^0.17.1
-        version: 0.17.1(publint@0.3.12)(typescript@5.9.3)
+        specifier: ^0.17.4
+        version: 0.17.4(publint@0.3.12)(typescript@5.9.3)
 
   packages/plugin-react-oxc:
     dependencies:
@@ -134,8 +134,8 @@ importers:
         specifier: workspace:*
         version: link:../common
       tsdown:
-        specifier: ^0.17.1
-        version: 0.17.1(publint@0.3.12)(typescript@5.9.3)
+        specifier: ^0.17.4
+        version: 0.17.4(publint@0.3.12)(typescript@5.9.3)
       vite:
         specifier: catalog:rolldown-vite
         version: rolldown-vite@7.2.10(@types/node@24.10.1)(esbuild@0.25.4)(jiti@2.6.1)(yaml@2.8.1)
@@ -168,8 +168,8 @@ importers:
         specifier: ^3.0.3
         version: 3.6.2
       tsdown:
-        specifier: ^0.17.1
-        version: 0.17.1(publint@0.3.12)(typescript@5.9.3)
+        specifier: ^0.17.4
+        version: 0.17.4(publint@0.3.12)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -504,8 +504,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       tsdown:
-        specifier: ^0.17.1
-        version: 0.17.1(publint@0.3.12)(typescript@5.9.3)
+        specifier: ^0.17.4
+        version: 0.17.4(publint@0.3.12)(typescript@5.9.3)
 
   packages/plugin-rsc/examples/basic:
     dependencies:
@@ -3304,8 +3304,8 @@ packages:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
 
-  import-without-cache@0.2.2:
-    resolution: {integrity: sha512-4TTuRrZ0jBULXzac3EoX9ZviOs8Wn9iAbNhJEyLhTpAGF9eNmYSruaMMN/Tec/yqaO7H6yS2kALfQDJ5FxfatA==}
+  import-without-cache@0.2.3:
+    resolution: {integrity: sha512-roCvX171VqJ7+7pQt1kSRfwaJvFAC2zhThJWXal1rN8EqzPS3iapkAoNpHh4lM8Na1BDen+n9rVfo73RN+Y87g==}
     engines: {node: '>=20.19.0'}
 
   imurmurhash@0.1.4:
@@ -4344,8 +4344,8 @@ packages:
     peerDependencies:
       typescript: '>=4.0.0'
 
-  tsdown@0.17.1:
-    resolution: {integrity: sha512-SqRyd/wliY0CgOhxbE3gJVUQioHVWMibeiswOruBa9XxJuFTy7xEuC9vqCCkuJ6Owqt2/F7S3vG9tXCQWQN+Fg==}
+  tsdown@0.17.4:
+    resolution: {integrity: sha512-z+kNuv1rwM1POQIufDUVrdNc/uGy0ueRVafCyDH39IdHxin4JXgB8DNGSPoqdIpcOpqUoRbNreK8NxENFmlhKw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
@@ -4454,8 +4454,8 @@ packages:
   unrs-resolver@1.9.2:
     resolution: {integrity: sha512-VUyWiTNQD7itdiMuJy+EuLEErLj3uwX/EpHQF8EOf33Dq3Ju6VW1GXm+swk6+1h7a49uv9fKZ+dft9jU7esdLA==}
 
-  unrun@0.2.17:
-    resolution: {integrity: sha512-mumOyjZp1K1bsa1QwfRPw7+9TxyVHSgx6LHB2dBWI4m1hGDG9b2TK3fS3H8vCl/Gl9YTSxhZ9XuLbWv3QF8GEA==}
+  unrun@0.2.19:
+    resolution: {integrity: sha512-DbwbJ9BvPEb3BeZnIpP9S5tGLO/JIgPQ3JrpMRFIfZMZfMG19f26OlLbC2ml8RRdrI2ZA7z2t+at5tsIHbh6Qw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
@@ -6756,7 +6756,7 @@ snapshots:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
-  import-without-cache@0.2.2: {}
+  import-without-cache@0.2.3: {}
 
   imurmurhash@0.1.4: {}
 
@@ -7921,13 +7921,14 @@ snapshots:
       picomatch: 4.0.3
       typescript: 5.9.3
 
-  tsdown@0.17.1(publint@0.3.12)(typescript@5.9.3):
+  tsdown@0.17.4(publint@0.3.12)(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 6.7.14
+      defu: 6.1.4
       empathic: 2.0.0
       hookable: 5.5.3
-      import-without-cache: 0.2.2
+      import-without-cache: 0.2.3
       obug: 2.1.1
       rolldown: 1.0.0-beta.53
       rolldown-plugin-dts: 0.18.3(rolldown@1.0.0-beta.53)(typescript@5.9.3)
@@ -7936,7 +7937,7 @@ snapshots:
       tinyglobby: 0.2.15
       tree-kill: 1.2.2
       unconfig-core: 7.4.2
-      unrun: 0.2.17
+      unrun: 0.2.19
     optionalDependencies:
       publint: 0.3.12
       typescript: 5.9.3
@@ -8064,9 +8065,8 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.9.2
       '@unrs/resolver-binding-win32-x64-msvc': 1.9.2
 
-  unrun@0.2.17:
+  unrun@0.2.19:
     dependencies:
-      '@oxc-project/runtime': 0.101.0
       rolldown: 1.0.0-beta.53
 
   update-browserslist-db@1.1.1(browserslist@4.24.4):
