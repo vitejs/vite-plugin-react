@@ -7,7 +7,7 @@ export default defineConfig({
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
-      to: 'dist/refresh-runtime.js',
+      to: 'dist',
     },
   ],
 })
