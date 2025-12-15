@@ -18,15 +18,15 @@
     "react-router": "7.10.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.17.0",
+    "@cloudflare/vite-plugin": "^1.17.1",
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^4.1.18",
     "vite": "^7.2.7",
-    "wrangler": "^4.53.0"
+    "wrangler": "^4.54.0"
   }
 }
