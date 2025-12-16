@@ -1,5 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import type { EnvironmentModuleNode, Plugin, ViteDevServer } from 'vite'
+import {
+  isFileLoadingAllowed,
+  type EnvironmentModuleNode,
+  type Plugin,
+  type ViteDevServer,
+} from 'vite'
 import fs from 'node:fs'
 
 //
@@ -48,7 +53,10 @@ async function findSourceMapURL(
   // this is likely server external (i.e. outside of Vite processing)
   if (filename.startsWith('file://')) {
     filename = fileURLToPath(filename)
-    if (fs.existsSync(filename)) {
+    if (
+      isFileLoadingAllowed(server.config, filename) &&
+      fs.existsSync(filename)
+    ) {
       // line-by-line identity source map
       const content = fs.readFileSync(filename, 'utf-8')
       return {
