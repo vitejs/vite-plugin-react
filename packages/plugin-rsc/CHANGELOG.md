@@ -1,3 +1,21 @@
+## <small>[0.5.8](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.7...plugin-rsc@0.5.8) (2025-12-16)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1020](https://github.com/vitejs/vite-plugin-react/issues/1020)) ([b0a929b](https://github.com/vitejs/vite-plugin-react/commit/b0a929b933cd14834db14a032d4fbe9518d59000))
+* **rsc:** validate `findSourceMapURL` request ([#1024](https://github.com/vitejs/vite-plugin-react/issues/1024)) ([582fba0](https://github.com/vitejs/vite-plugin-react/commit/582fba0b9a52b13fcff6beaaa3bfbd532bc5359d))
+
+### Performance Improvements
+
+* **rsc:** use `srvx/node` in dev and preview ([#964](https://github.com/vitejs/vite-plugin-react/issues/964)) ([5a41e3b](https://github.com/vitejs/vite-plugin-react/commit/5a41e3b60719bbf52dd68621e58b3eb8f78c8888))
+
+### Documentation
+
+* **plugin-rsc:** clarify arbitrary React version support for security updates ([#1018](https://github.com/vitejs/vite-plugin-react/issues/1018)) ([8ea9eda](https://github.com/vitejs/vite-plugin-react/commit/8ea9eda3c6984c254f9db22cbe9bc044fc4fddd0))
+
+### Miscellaneous Chores
+
+* **deps:** update tsdown ([#1021](https://github.com/vitejs/vite-plugin-react/issues/1021)) ([baa49a2](https://github.com/vitejs/vite-plugin-react/commit/baa49a20c502b6edd3eb31c28002619e5dcd8698))
+
 ## <small>[0.5.7](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.6...plugin-rsc@0.5.7) (2025-12-12)</small>
 ### Bug Fixes
 
