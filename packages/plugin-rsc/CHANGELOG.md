@@ -1,3 +1,8 @@
+## <small>[0.5.9](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.8...plugin-rsc@0.5.9) (2025-12-16)</small>
+### Bug Fixes
+
+* **rsc:** fix `findSourceMapURL` on Windows ([#1025](https://github.com/vitejs/vite-plugin-react/issues/1025)) ([4d77ae3](https://github.com/vitejs/vite-plugin-react/commit/4d77ae3b5055079677d702b63494863cc632c3d7))
+
 ## <small>[0.5.8](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.7...plugin-rsc@0.5.8) (2025-12-16)</small>
 ### Bug Fixes
 
