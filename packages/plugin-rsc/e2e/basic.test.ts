@@ -20,6 +20,17 @@ import path from 'node:path'
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
+
+  test('validate findSourceMapURL', async () => {
+    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
+    requestUrl.searchParams.set(
+      'filename',
+      new URL('../examples/basic/.env', import.meta.url).href,
+    )
+    requestUrl.searchParams.set('environmentName', 'Server')
+    const response = await fetch(requestUrl)
+    expect(response.status).toBe(404)
+  })
 })
 
 test.describe('dev-initial', () => {
