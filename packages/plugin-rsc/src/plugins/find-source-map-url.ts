@@ -6,7 +6,6 @@ import {
   type ViteDevServer,
 } from 'vite'
 import fs from 'node:fs'
-import { slash } from './vite-utils'
 
 //
 // support findSourceMapURL
@@ -53,7 +52,7 @@ async function findSourceMapURL(
 ): Promise<object | undefined> {
   // this is likely server external (i.e. outside of Vite processing)
   if (filename.startsWith('file://')) {
-    filename = slash(fileURLToPath(filename))
+    filename = fileURLToPath(filename)
     if (
       isFileLoadingAllowed(server.config, filename) &&
       fs.existsSync(filename)
