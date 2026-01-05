@@ -39,7 +39,6 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
           }
 
           // skip faux esm (e.g. from "module" field)
-          await esModuleLexer.init
           const [, , , hasModuleSyntax] = esModuleLexer.parse(code)
           if (hasModuleSyntax) return
 

@@ -2039,7 +2039,6 @@ function vitePluginRscCss(
       return false
 
     // skip transform if no css imports
-    await esModuleLexer.init
     const result = esModuleLexer.parse(code)
     if (!result[0].some((i) => i.t === 1 && i.n && isCSSRequest(i.n))) {
       return false

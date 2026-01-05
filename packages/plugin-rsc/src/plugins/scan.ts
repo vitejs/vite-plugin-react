@@ -26,7 +26,6 @@ export function scanBuildStripPlugin({
 const importGlobRE = /\bimport\.meta\.glob(?:<\w+>)?\s*\(/g
 
 export async function transformScanBuildStrip(code: string): Promise<string> {
-  await esModuleLexer.init
   const [imports] = esModuleLexer.parse(code)
   let output = imports
     .map((e) => e.n && `import ${JSON.stringify(e.n)};\n`)

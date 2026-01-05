@@ -1,7 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
+import * as esModuleLexer from 'es-module-lexer'
 import { transformScanBuildStrip } from './scan'
 
 describe(transformScanBuildStrip, () => {
+  beforeAll(async () => {
+    await esModuleLexer.init
+  })
+
   it('basic', async () => {
     const input = `\
 import { a } from "a";
