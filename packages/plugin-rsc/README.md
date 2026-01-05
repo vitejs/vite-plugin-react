@@ -351,9 +351,8 @@ globalThis.__VITE_GET_MODULE_RUNNER__ = async (environmentName) => {
 Frameworks with custom environment setups (e.g., environments running in separate workers) can override this global to provide their own module runner resolution.
 
 ```js
-// worker-entry.js
+// Custom logic to get the runner, e.g., from a worker runtime
 globalThis.__VITE_GET_MODULE_RUNNER__ = async (environmentName) => {
-  // Custom logic to get the runner, e.g., from a worker
   return myWorkerModuleRunners[environmentName]
 }
 ```
