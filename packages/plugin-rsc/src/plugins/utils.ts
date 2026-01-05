@@ -65,11 +65,6 @@ export function getEntrySource(
   name: string = 'index',
 ): string {
   const input = config.build.rollupOptions.input
-  // TODO: not documented feature yet, but for now,
-  // this is for Nitro's single entry convention.
-  if (typeof input === 'string') {
-    return input
-  }
   assert(
     typeof input === 'object' &&
       !Array.isArray(input) &&
