@@ -88,7 +88,7 @@ jobs:
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.rolldown == true && '-rolldown' || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
