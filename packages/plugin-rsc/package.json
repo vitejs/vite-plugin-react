@@ -43,7 +43,7 @@
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
     "periscopic": "^4.0.2",
-    "srvx": "^0.9.8",
+    "srvx": "^0.10.0",
     "strip-literal": "^3.1.0",
     "turbo-stream": "^3.1.0",
     "vitefu": "^1.1.1"
@@ -63,7 +63,7 @@
     "react-dom": "^19.2.3",
     "react-server-dom-webpack": "^19.2.3",
     "tinyexec": "^1.0.2",
-    "tsdown": "^0.17.4"
+    "tsdown": "^0.18.4"
   },
   "peerDependencies": {
     "react": "*",

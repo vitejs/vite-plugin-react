@@ -30,7 +30,7 @@
     "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
     "rsc-html-stream": "^0.0.7",
     "tailwindcss": "^4.1.18",
-    "vite": "^7.2.7",
+    "vite": "^7.3.0",
     "wrangler": "^4.54.0"
   },
   "stackblitz": {
