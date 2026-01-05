@@ -1,3 +1,9 @@
+## <small>[0.5.10](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.9...plugin-rsc@0.5.10) (2026-01-05)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1030](https://github.com/vitejs/vite-plugin-react/issues/1030)) ([6d203af](https://github.com/vitejs/vite-plugin-react/commit/6d203af3ca5d43c24cee08d25e9b333315b6261e))
+* **rsc:** use proper origin for source map lookup ([#1031](https://github.com/vitejs/vite-plugin-react/issues/1031)) ([4340cce](https://github.com/vitejs/vite-plugin-react/commit/4340cce69a62fa8a762a6a049e75405974444628))
+
 ## <small>[0.5.9](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.8...plugin-rsc@0.5.9) (2025-12-16)</small>
 ### Bug Fixes
 
