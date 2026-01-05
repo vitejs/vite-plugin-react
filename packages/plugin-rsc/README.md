@@ -228,7 +228,9 @@ The plugin provides an additional helper for multi environment interaction.
 
 This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa.
 
-During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process. This proxy mechanism uses [turbo-stream](https://github.com/jacob-ebey/turbo-stream) for serializing data types beyond JSON, with custom encoders/decoders to additionally support `Request` and `Response` instances.
+During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process as `RunnableDevEnvironment`. Internally, `loadModule` uses the global `__VITE_GET_MODULE_RUNNER__` function to obtain the module runner for the target environment (see [`__VITE_GET_MODULE_RUNNER__`](#__vite_get_module_runner__) below).
+
+When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process. This proxy mechanism uses [turbo-stream](https://github.com/jacob-ebey/turbo-stream) for serializing data types beyond JSON, with custom encoders/decoders to additionally support `Request` and `Response` instances.
 
 During production build, this API will be rewritten into a static import of the specified entry of other environment build and the modules are executed inside the same runtime.
 
@@ -326,6 +328,37 @@ import.meta.hot.on('rsc:update', async () => {
   // re-render ...
 })
 ```
+
+### Global API
+
+#### `__VITE_GET_MODULE_RUNNER__`
+
+- Type: `(environmentName: string) => Promise<ModuleRunner>`
+- Availability: Development only (set by `configureServer`)
+
+This global function provides a standardized way to obtain a Vite [ModuleRunner](https://vite.dev/guide/api-environment#modulerunner) for a given environment during development. It is used internally by `import.meta.viteRsc.loadModule` to execute modules in the target environment.
+
+By default, the plugin sets this global to retrieve the runner from the Vite dev server as both run in the same main process:
+
+```js
+globalThis.__VITE_GET_MODULE_RUNNER__ = async (environmentName) => {
+  return server.environments[environmentName].runner
+}
+```
+
+**Custom Environment Integration:**
+
+Frameworks with custom environment setups (e.g., environments running in separate workers) can override this global to provide their own module runner resolution.
+
+```js
+// worker-entry.js
+globalThis.__VITE_GET_MODULE_RUNNER__ = async (environmentName) => {
+  // Custom logic to get the runner, e.g., from a worker
+  return myWorkerModuleRunners[environmentName]
+}
+```
+
+This allows `import.meta.viteRsc.loadModule` to work seamlessly with different runtime configurations without requiring changes to user code.
 
 ## Plugin API
 
