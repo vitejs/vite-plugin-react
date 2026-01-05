@@ -301,6 +301,13 @@ export function vitePluginRscMinimal(
   ]
 }
 
+declare global {
+  function __VITE_ENVIRONMENT_RUNNER_IMPORT__(
+    environmentName: string,
+    id: string,
+  ): Promise<any>
+}
+
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
@@ -516,7 +523,23 @@ export default function vitePluginRsc(
         },
       },
       configureServer(server) {
-        ;(globalThis as any).__viteRscDevServer = server
+        globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async function (
+          environmentName,
+          id,
+        ) {
+          const environment = server.environments[environmentName]
+          if (!environment) {
+            throw new Error(
+              `[vite-rsc] unknown environment '${environmentName}'`,
+            )
+          }
+          if (!vite.isRunnableDevEnvironment(environment)) {
+            throw new Error(
+              `[vite-rsc] environment '${environmentName}' is not runnable`,
+            )
+          }
+          return environment.runner.import(id)
+        }
 
         // intercept client hmr to propagate client boundary invalidation to server environment
         const oldSend = server.environments.client.hot.send
@@ -768,10 +791,7 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            replacement =
-              `globalThis.__viteRscDevServer.environments[${JSON.stringify(
-                environmentName,
-              )}]` + `.runner.import(${JSON.stringify(resolved.id)})`
+            replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
