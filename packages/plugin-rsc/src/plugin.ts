@@ -61,6 +61,7 @@ import {
   parseReferenceValidationVirtual,
 } from './plugins/shared'
 import { stripLiteral } from 'strip-literal'
+import type { ModuleRunner } from 'vite/module-runner'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -301,6 +302,12 @@ export function vitePluginRscMinimal(
   ]
 }
 
+declare global {
+  function __VITE_EXPERIMENTAL_GET_MODULE_RUNNER__(
+    environmentName: string,
+  ): Promise<ModuleRunner>
+}
+
 export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
@@ -516,7 +523,22 @@ export default function vitePluginRsc(
         },
       },
       configureServer(server) {
-        ;(globalThis as any).__viteRscDevServer = server
+        globalThis.__VITE_EXPERIMENTAL_GET_MODULE_RUNNER__ = async function (
+          environmentName,
+        ) {
+          const environment = server.environments[environmentName]
+          if (!environment) {
+            throw new Error(
+              `[vite-rsc] unknown environment '${environmentName}'`,
+            )
+          }
+          if (!vite.isRunnableDevEnvironment(environment)) {
+            throw new Error(
+              `[vite-rsc] environment '${environmentName}' is not runnable`,
+            )
+          }
+          return environment.runner
+        }
 
         // intercept client hmr to propagate client boundary invalidation to server environment
         const oldSend = server.environments.client.hot.send
@@ -768,10 +790,9 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            replacement =
-              `globalThis.__viteRscDevServer.environments[${JSON.stringify(
-                environmentName,
-              )}]` + `.runner.import(${JSON.stringify(resolved.id)})`
+            const environmentNameEscaped = JSON.stringify(environmentName)
+            const resolveIdEscaped = JSON.stringify(resolved.id)
+            replacement = `globalThis.__VITE_EXPERIMENTAL_GET_MODULE_RUNNER__(${environmentNameEscaped}).then(runner => runner.import(${resolveIdEscaped}))`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
