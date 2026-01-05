@@ -573,7 +573,7 @@ export default function vitePluginRsc(
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
-              await toNodeHandler(fetchHandler)(req, res)
+              await toNodeHandler(fetchHandler)(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -607,7 +607,7 @@ export default function vitePluginRsc(
           server.middlewares.use(async (req, res, next) => {
             try {
               req.url = req.originalUrl ?? req.url
-              await handler(req, res)
+              await handler(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -864,7 +864,7 @@ export default function vitePluginRsc(
           if (url.pathname === '/__vite_rsc_load_module_dev_proxy') {
             try {
               const handler = await createHandler(url)
-              await toNodeHandler(handler)(req, res)
+              await toNodeHandler(handler)(req as any, res as any)
             } catch (e) {
               next(e)
             }
