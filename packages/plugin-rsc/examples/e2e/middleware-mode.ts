@@ -28,7 +28,7 @@ async function main() {
     const entry = await import(
       pathToFileURL(path.resolve('dist/rsc/index.js')).href
     )
-    app.use(toNodeHandler(entry.default))
+    app.use(toNodeHandler(entry.default) as any)
   } else {
     console.error(`Unknown command: ${command}`)
     process.exitCode = 1
