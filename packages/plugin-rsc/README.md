@@ -334,7 +334,6 @@ import.meta.hot.on('rsc:update', async () => {
 #### `__VITE_ENVIRONMENT_RUNNER_IMPORT__`
 
 - Type: `(environmentName: string, id: string) => Promise<any>`
-- Availability: Development only (set by `configureServer`)
 
 This global function provides a standardized way to import a module in a given environment during development. It is used internally by `import.meta.viteRsc.loadModule` to execute modules in the target environment.
 
@@ -351,9 +350,9 @@ globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async (environmentName, id) => {
 Frameworks with custom environment setups (e.g., environments running in separate workers or with custom module loading) can override this global to provide their own module import logic.
 
 ```js
-// Custom logic to import module, e.g., via RPC to a worker
+// Custom logic to import module between multiple environments inside worker
 globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async (environmentName, id) => {
-  return myWorkerRpc.import(environmentName, id)
+  return myWorkerRunners[environmentname].import(id)
 }
 ```
 
