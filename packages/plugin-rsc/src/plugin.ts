@@ -303,7 +303,7 @@ export function vitePluginRscMinimal(
 }
 
 declare global {
-  function __VITE_EXPERIMENTAL_GET_MODULE_RUNNER__(
+  function __VITE_GET_MODULE_RUNNER__(
     environmentName: string,
   ): Promise<ModuleRunner>
 }
@@ -523,7 +523,7 @@ export default function vitePluginRsc(
         },
       },
       configureServer(server) {
-        globalThis.__VITE_EXPERIMENTAL_GET_MODULE_RUNNER__ = async function (
+        globalThis.__VITE_GET_MODULE_RUNNER__ = async function (
           environmentName,
         ) {
           const environment = server.environments[environmentName]
@@ -790,9 +790,9 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            const environmentNameEscaped = JSON.stringify(environmentName)
-            const resolveIdEscaped = JSON.stringify(resolved.id)
-            replacement = `globalThis.__VITE_EXPERIMENTAL_GET_MODULE_RUNNER__(${environmentNameEscaped}).then(runner => runner.import(${resolveIdEscaped}))`
+            const environmentNameJson = JSON.stringify(environmentName)
+            const resolvedIdJson = JSON.stringify(resolved.id)
+            replacement = `globalThis.__VITE_GET_MODULE_RUNNER__(${environmentNameJson}).then(runner => runner.import(${resolvedIdJson}))`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
