@@ -61,7 +61,6 @@ import {
   parseReferenceValidationVirtual,
 } from './plugins/shared'
 import { stripLiteral } from 'strip-literal'
-import type { ModuleRunner } from 'vite/module-runner'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -303,9 +302,10 @@ export function vitePluginRscMinimal(
 }
 
 declare global {
-  function __VITE_GET_MODULE_RUNNER__(
+  function __VITE_ENVIRONMENT_RUNNER_IMPORT__(
     environmentName: string,
-  ): Promise<ModuleRunner>
+    id: string,
+  ): Promise<any>
 }
 
 export default function vitePluginRsc(
@@ -523,8 +523,9 @@ export default function vitePluginRsc(
         },
       },
       configureServer(server) {
-        globalThis.__VITE_GET_MODULE_RUNNER__ = async function (
+        globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async function (
           environmentName,
+          id,
         ) {
           const environment = server.environments[environmentName]
           if (!environment) {
@@ -537,7 +538,7 @@ export default function vitePluginRsc(
               `[vite-rsc] environment '${environmentName}' is not runnable`,
             )
           }
-          return environment.runner
+          return environment.runner.import(id)
         }
 
         // intercept client hmr to propagate client boundary invalidation to server environment
@@ -790,9 +791,7 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            const environmentNameJson = JSON.stringify(environmentName)
-            const resolvedIdJson = JSON.stringify(resolved.id)
-            replacement = `globalThis.__VITE_GET_MODULE_RUNNER__(${environmentNameJson}).then(runner => runner.import(${resolvedIdJson}))`
+            replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
           } else {
             replacement = JSON.stringify(
               `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
