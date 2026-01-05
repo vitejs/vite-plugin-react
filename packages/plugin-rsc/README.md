@@ -228,7 +228,7 @@ The plugin provides an additional helper for multi environment interaction.
 
 This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa.
 
-During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process.
+During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process. This proxy mechanism uses [turbo-stream](https://github.com/jacob-ebey/turbo-stream) for serializing data types beyond JSON, with custom encoders/decoders to additionally support `Request` and `Response` instances.
 
 During production build, this API will be rewritten into a static import of the specified entry of other environment build and the modules are executed inside the same runtime.
 
@@ -445,9 +445,33 @@ export function Page() {
 }
 ```
 
-### Canary and Experimental channel releases
+### Using different React versions
 
-See https://github.com/vitejs/vite-plugin-react/pull/524 for how to install the package for React [canary](https://react.dev/community/versioning-policy#canary-channel) and [experimental](https://react.dev/community/versioning-policy#all-release-channels) usages.
+By default, `@vitejs/plugin-rsc` includes a [vendored version](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-rsc/package.json#L64) of `react-server-dom-webpack`. When `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead, allowing you to use any React version you need.
+
+**[Canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#experimental-channel) versions:**
+
+```json
+{
+  "dependencies": {
+    "react": "canary",
+    "react-dom": "canary",
+    "react-server-dom-webpack": "canary"
+  }
+}
+```
+
+**Specific versions (e.g., for security updates):**
+
+```json
+{
+  "dependencies": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-server-dom-webpack": "19.2.3"
+  }
+}
+```
 
 ### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
@@ -560,10 +584,6 @@ export function ServerComponent() {
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
-
-### `react-server-dom-webpack`
-
-Currently `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in user project's dependencies, the plugin will automatically use it instead. This allows you to stay up-to-date with the latest React Server Components runtime without waiting for plugin updates.
 
 ## Credits
 

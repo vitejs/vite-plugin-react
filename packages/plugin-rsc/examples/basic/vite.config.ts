@@ -10,7 +10,6 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-// import inspect from 'vite-plugin-inspect'
 import path from 'node:path'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -18,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   clearScreen: false,
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     tailwindcss(),
     react(),
     vitePluginUseCache(),
@@ -26,7 +25,7 @@ export default defineConfig({
       entries: {
         client: './src/framework/entry.browser.tsx',
         ssr: './src/framework/entry.ssr.tsx',
-        rsc: './src/server.tsx',
+        rsc: './src/framework/entry.rsc.tsx',
       },
       // disable auto css injection to manually test `loadCss` feature.
       rscCssTransform: false,
@@ -92,13 +91,13 @@ export default defineConfig({
         assert(viteManifest.type === 'asset')
         assert(typeof viteManifest.source === 'string')
         if (this.environment.name === 'rsc') {
-          assert(viteManifest.source.includes('src/server.tsx'))
+          assert(viteManifest.source.includes('src/framework/entry.rsc.tsx'))
           assert(
             !viteManifest.source.includes('src/framework/entry.browser.tsx'),
           )
         }
         if (this.environment.name === 'client') {
-          assert(!viteManifest.source.includes('src/server.tsx'))
+          assert(!viteManifest.source.includes('src/framework/entry.rsc.tsx'))
           assert(
             viteManifest.source.includes('src/framework/entry.browser.tsx'),
           )

@@ -4,11 +4,11 @@ import {
   getPluginApi,
   type PluginApi,
 } from '@vitejs/plugin-rsc/plugin'
-// import inspect from 'vite-plugin-inspect'
+import { createRPCServer } from 'vite-dev-rpc'
 
 export default defineConfig({
   plugins: [
-    // inspect(),
+    // import("vite-plugin-inspect").then(m => m.default()),
     rscBrowserModePlugin(),
   ],
   environments: {
@@ -130,19 +130,9 @@ function rscBrowserModePlugin(): Plugin[] {
         manager = getPluginApi(config)!.manager
       },
       configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', 'https://any.local')
-          if (url.pathname === '/@vite/invoke-react-client') {
-            const payload = JSON.parse(url.searchParams.get('data')!)
-            const result =
-              await server.environments['react_client']!.hot.handleInvoke(
-                payload,
-              )
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(result))
-            return
-          }
-          next()
+        createRPCServer('transport-proxy', server.ws, {
+          invoke: (payload: any) =>
+            server.environments.react_client.hot.handleInvoke(payload),
         })
       },
       hotUpdate(ctx) {

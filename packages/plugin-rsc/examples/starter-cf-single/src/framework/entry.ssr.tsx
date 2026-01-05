@@ -10,11 +10,12 @@ export type RenderHTML = typeof renderHTML
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
   options?: {
+    request: Request
     formState?: ReactFormState
     nonce?: string
     debugNojs?: boolean
   },
-) {
+): Promise<Response> {
   // duplicate one RSC stream into two.
   // - one for SSR (ReactClient.createFromReadableStream below)
   // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
@@ -32,13 +33,34 @@ export async function renderHTML(
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await renderToReadableStream(<SsrRoot />, {
-    bootstrapScriptContent: options?.debugNojs
-      ? undefined
-      : bootstrapScriptContent,
-    nonce: options?.nonce,
-    formState: options?.formState,
-  })
+  let htmlStream: ReadableStream<Uint8Array>
+  let status: number | undefined
+  try {
+    htmlStream = await renderToReadableStream(<SsrRoot />, {
+      bootstrapScriptContent: options?.debugNojs
+        ? undefined
+        : bootstrapScriptContent,
+      nonce: options?.nonce,
+      formState: options?.formState,
+    })
+  } catch (e) {
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which can replay server component error and trigger error boundary.
+    status = 500
+    htmlStream = await renderToReadableStream(
+      <html>
+        <body>
+          <noscript>Internal Server Error: SSR failed</noscript>
+        </body>
+      </html>,
+      {
+        bootstrapScriptContent:
+          `self.__NO_HYDRATE=1;` +
+          (options?.debugNojs ? '' : bootstrapScriptContent),
+        nonce: options?.nonce,
+      },
+    )
+  }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
@@ -50,5 +72,5 @@ export async function renderHTML(
     )
   }
 
-  return responseStream
+  return new Response(responseStream, { status })
 }

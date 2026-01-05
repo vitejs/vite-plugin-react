@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { createRequestListener } from '@remix-run/node-fetch-server'
+import { toNodeHandler } from 'srvx/node'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import * as vite from 'vite'
@@ -54,7 +54,13 @@ import { createDebug } from '@hiogawa/utils'
 import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import {
+  parseCssVirtual,
+  toCssVirtual,
+  parseIdQuery,
+  parseReferenceValidationVirtual,
+} from './plugins/shared'
+import { stripLiteral } from 'strip-literal'
 
 const isRolldownVite = 'rolldownVersion' in vite
 
@@ -263,6 +269,37 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    {
+      name: 'rsc:reference-validation',
+      apply: 'serve',
+      load: {
+        handler(id, _options) {
+          if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
+            const parsed = parseReferenceValidationVirtual(id)
+            assert(parsed)
+            if (parsed.type === 'client') {
+              const meta = Object.values(manager.clientReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            if (parsed.type === 'server') {
+              const meta = Object.values(manager.serverReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            this.error(
+              `[vite-rsc] invalid ${parsed.type} reference '${parsed.id}'`,
+            )
+          }
+        },
+      },
+    },
     scanBuildStripPlugin({ manager }),
   ]
 }
@@ -273,19 +310,28 @@ export default function vitePluginRsc(
   const manager = new RscPluginManager()
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
+    const colors = await import('picocolors')
+    const logStep = (msg: string) => {
+      builder.config.logger.info(colors.blue(msg))
+    }
+
     // no-ssr case
     // rsc -> client -> rsc -> client
     if (!builder.environments.ssr?.config.build.rollupOptions.input) {
       manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
       builder.environments.client!.config.build.write = false
+      logStep('[1/4] analyze client references...')
       await builder.build(builder.environments.rsc!)
+      logStep('[2/4] analyze server references...')
       await builder.build(builder.environments.client!)
       manager.isScanBuild = false
       builder.environments.rsc!.config.build.write = true
       builder.environments.client!.config.build.write = true
+      logStep('[3/4] build rsc environment...')
       await builder.build(builder.environments.rsc!)
       manager.stabilize()
+      logStep('[4/4] build client environment...')
       await builder.build(builder.environments.client!)
       writeAssetsManifest(['rsc'])
       return
@@ -295,14 +341,19 @@ export default function vitePluginRsc(
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
+    logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
+    logStep('[2/5] analyze server references...')
     await builder.build(builder.environments.ssr!)
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
+    logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
     manager.stabilize()
+    logStep('[4/5] build client environment...')
     await builder.build(builder.environments.client!)
+    logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
     writeAssetsManifest(['ssr', 'rsc'])
   }
@@ -525,9 +576,7 @@ export default function vitePluginRsc(
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
-              // ensure catching rejected promise
-              // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
-              await createRequestListener(fetchHandler)(req, res)
+              await toNodeHandler(fetchHandler)(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -548,7 +597,7 @@ export default function vitePluginRsc(
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
         const fetchHandler = getFetchHandlerExport(mod)
-        const handler = createRequestListener(fetchHandler)
+        const handler = toNodeHandler(fetchHandler)
 
         // disable compressions since it breaks html streaming
         // https://github.com/vitejs/vite/blob/9f5c59f07aefb1756a37bcb1c0aff24d54288950/packages/vite/src/node/preview.ts#L178
@@ -561,7 +610,7 @@ export default function vitePluginRsc(
           server.middlewares.use(async (req, res, next) => {
             try {
               req.url = req.originalUrl ?? req.url
-              await handler(req, res)
+              await handler(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -705,28 +754,18 @@ export default function vitePluginRsc(
         if (!code.includes('import.meta.viteRsc.loadModule')) return
         const { server } = manager
         const s = new MagicString(code)
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
         )) {
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           const [environmentName, entryName] = evalValue(`[${argCode}]`)
           let replacement: string
           if (
             this.environment.mode === 'dev' &&
             rscPluginOptions.loadModuleDevProxy
           ) {
-            const origin = server.resolvedUrls?.local[0]
-            assert(origin, '[vite-rsc] no server for loadModueleDevProxy')
-            const endpoint =
-              origin +
-              '__vite_rsc_load_module_dev_proxy?' +
-              new URLSearchParams({ environmentName, entryName })
-            replacement = `__vite_rsc_rpc.createRpcClient(${JSON.stringify({
-              endpoint,
-            })})`
-            s.prepend(
-              `import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";`,
-            )
+            replacement = `import("virtual:vite-rsc/rpc-client").then((module) => module.createRpcClient(${JSON.stringify({ environmentName, entryName })}))`
           } else if (this.environment.mode === 'dev') {
             const environment = server.environments[environmentName]!
             const source = getEntrySource(environment.config, entryName)
@@ -828,7 +867,7 @@ export default function vitePluginRsc(
           if (url.pathname === '/__vite_rsc_load_module_dev_proxy') {
             try {
               const handler = await createHandler(url)
-              createRequestListener(handler)(req, res)
+              await toNodeHandler(handler)(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -836,6 +875,32 @@ export default function vitePluginRsc(
           }
           next()
         })
+      },
+    },
+    {
+      name: 'rsc:virtual:vite-rsc/rpc-client',
+      resolveId(source) {
+        if (source === 'virtual:vite-rsc/rpc-client') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:vite-rsc/rpc-client') {
+          const { server } = manager
+          const origin = server.resolvedUrls?.local[0]
+          assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
+
+          return `\
+import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";
+export function createRpcClient(params) {
+  const endpoint =
+    "${origin}" +
+    "__vite_rsc_load_module_dev_proxy?" +
+    new URLSearchParams(params);
+  return __vite_rsc_rpc.createRpcClient({ endpoint });
+}
+          `
+        }
       },
     },
     {
@@ -976,10 +1041,11 @@ export default assetsManifest.bootstrapScriptContent;
         assert(this.environment.name !== 'client')
         const output = new MagicString(code)
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent\(([\s\S]*?)\)/dg,
         )) {
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           const entryName = evalValue(argCode)
           assert(
             entryName,
@@ -2090,11 +2156,12 @@ function vitePluginRscCss(
         const output = new MagicString(code)
         let importAdded = false
 
-        for (const match of code.matchAll(
+        for (const match of stripLiteral(code).matchAll(
           /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
         )) {
           const [start, end] = match.indices![0]!
-          const argCode = match[1]!.trim()
+          const [argStart, argEnd] = match.indices![1]!
+          const argCode = code.slice(argStart, argEnd).trim()
           let importer = id
           if (argCode) {
             const argValue = evalValue<string>(argCode)

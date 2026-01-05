@@ -12,7 +12,7 @@ export async function renderHTML(
     nonce?: string
     debugNojs?: boolean
   },
-) {
+): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
   // duplicate one RSC stream into two.
   // - one for SSR (ReactClient.createFromReadableStream below)
   // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
@@ -24,28 +24,40 @@ export async function renderHTML(
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1)
-    return <FixSsrThenable>{React.use(payload).root}</FixSsrThenable>
-  }
-
-  // Add an empty component in between `SsrRoot` and user `root` to avoid React SSR bugs.
-  //   SsrRoot (use)
-  //     => FixSsrThenable
-  //       => root (which potentially has `lazy` + `use`)
-  // https://github.com/facebook/react/issues/33937#issuecomment-3091349011
-  function FixSsrThenable(props: React.PropsWithChildren) {
-    return props.children
+    return React.use(payload).root
   }
 
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
-  const htmlStream = await renderToReadableStream(<SsrRoot />, {
-    bootstrapScriptContent: options?.debugNojs
-      ? undefined
-      : bootstrapScriptContent,
-    nonce: options?.nonce,
-    formState: options?.formState,
-  })
+  let htmlStream: ReadableStream<Uint8Array>
+  let status: number | undefined
+  try {
+    htmlStream = await renderToReadableStream(<SsrRoot />, {
+      bootstrapScriptContent: options?.debugNojs
+        ? undefined
+        : bootstrapScriptContent,
+      nonce: options?.nonce,
+      formState: options?.formState,
+    })
+  } catch (e) {
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which can replay server component error and trigger error boundary.
+    status = 500
+    htmlStream = await renderToReadableStream(
+      <html>
+        <body>
+          <noscript>Internal Server Error: SSR failed</noscript>
+        </body>
+      </html>,
+      {
+        bootstrapScriptContent:
+          `self.__NO_HYDRATE=1;` +
+          (options?.debugNojs ? '' : bootstrapScriptContent),
+        nonce: options?.nonce,
+      },
+    )
+  }
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
@@ -58,5 +70,5 @@ export async function renderHTML(
     )
   }
 
-  return responseStream
+  return { stream: responseStream, status }
 }

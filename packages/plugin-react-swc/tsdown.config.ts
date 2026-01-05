@@ -4,25 +4,26 @@ import packageJSON from './package.json' with { type: 'json' }
 
 export default defineConfig({
   entry: 'src/index.ts',
+  fixedExtension: false,
   dts: true,
   tsconfig: './tsconfig.src.json', // https://github.com/sxzz/rolldown-plugin-dts/issues/55
   ignoreWatch: ['playground', 'playground-temp', 'test-results'],
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
-      to: 'dist/refresh-runtime.js',
+      to: 'dist',
     },
     {
       from: 'LICENSE',
-      to: 'dist/LICENSE',
+      to: 'dist',
     },
     {
       from: 'README.md',
-      to: 'dist/README.md',
+      to: 'dist',
     },
     {
       from: 'types',
-      to: 'dist/types',
+      to: 'dist',
     },
   ],
   onSuccess() {

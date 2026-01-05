@@ -6,9 +6,11 @@ import {
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
+import { GlobalErrorBoundary } from './error-boundary'
 import type { RscPayload } from './entry.rsc'
+import { createRscRenderRequest } from './request'
 
 async function main() {
   // stash `setPayload` function to trigger re-rendering
@@ -39,42 +41,45 @@ async function main() {
 
   // re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
-    const payload = await createFromFetch<RscPayload>(
-      fetch(window.location.href),
-    )
+    const renderRequest = createRscRenderRequest(window.location.href)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
     setPayload(payload)
   }
 
   // register a handler which will be internally called by React
   // on server function request after hydration.
   setServerCallback(async (id, args) => {
-    const url = new URL(window.location.href)
     const temporaryReferences = createTemporaryReferenceSet()
-    const payload = await createFromFetch<RscPayload>(
-      fetch(url, {
-        method: 'POST',
-        body: await encodeReply(args, { temporaryReferences }),
-        headers: {
-          'x-rsc-action': id,
-        },
-      }),
-      { temporaryReferences },
-    )
+    const renderRequest = createRscRenderRequest(window.location.href, {
+      id,
+      body: await encodeReply(args, { temporaryReferences }),
+    })
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest), {
+      temporaryReferences,
+    })
     setPayload(payload)
-    return payload.returnValue
+    const { ok, data } = payload.returnValue!
+    if (!ok) throw data
+    return data
   })
 
   // hydration
   const browserRoot = (
     <React.StrictMode>
-      <BrowserRoot />
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
     </React.StrictMode>
   )
-  hydrateRoot(document, browserRoot, {
-    formState: initialPayload.formState,
-  })
+  if ('__NO_HYDRATE' in globalThis) {
+    createRoot(document).render(browserRoot)
+  } else {
+    hydrateRoot(document, browserRoot, {
+      formState: initialPayload.formState,
+    })
+  }
 
-  // implement server HMR by trigering re-fetch/render of RSC upon server code change
+  // implement server HMR by triggering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', (e) => {
       console.log('[vite-rsc:update]', e.file)

@@ -27,3 +27,23 @@ export function parseIdQuery(id: string): {
   const query = Object.fromEntries(new URLSearchParams(rawQuery))
   return { filename, query }
 }
+
+export type ReferenceValidationVirtual = {
+  id: string
+  type: 'server' | 'client'
+}
+
+export function toReferenceValidationVirtual({
+  id,
+  type,
+}: ReferenceValidationVirtual) {
+  return `virtual:vite-rsc/reference-validation?type=${type}&id=${encodeURIComponent(id)}&lang.js`
+}
+
+export function parseReferenceValidationVirtual(
+  id: string,
+): ReferenceValidationVirtual | undefined {
+  if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
+    return parseIdQuery(id).query as any
+  }
+}

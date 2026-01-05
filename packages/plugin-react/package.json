@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react",
-  "version": "5.0.4",
+  "version": "5.1.2",
   "license": "MIT",
   "author": "Evan You",
   "description": "The default Vite plugin for React projects",
@@ -44,10 +44,10 @@
   },
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
   "dependencies": {
-    "@babel/core": "^7.28.4",
+    "@babel/core": "^7.28.5",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.43",
+    "@rolldown/pluginutils": "1.0.0-beta.58",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.18.0"
   },
@@ -57,9 +57,9 @@
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "rolldown": "1.0.0-beta.43",
-    "tsdown": "^0.15.7"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "rolldown": "1.0.0-beta.58",
+    "tsdown": "^0.18.4"
   }
 }

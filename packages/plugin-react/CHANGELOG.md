@@ -2,9 +2,23 @@
 
 ## Unreleased
 
+## 5.1.2 (2025-12-08)
+
+## 5.1.1 (2025-11-12)
+
+### Update code to support newer `rolldown-vite` ([#976](https://github.com/vitejs/vite-plugin-react/pull/976))
+
+`rolldown-vite` will remove `optimizeDeps.rollupOptions` in favor of `optimizeDeps.rolldownOptions` soon. This plugin now uses `optimizeDeps.rolldownOptions` to support newer `rolldown-vite`. Please update `rolldown-vite` to the latest version if you are using an older version.
+
+## 5.1.0 (2025-10-24)
+
 ### Add `@vitejs/plugin-react/preamble` virtual module for SSR HMR ([#890](https://github.com/vitejs/vite-plugin-react/pull/890))
 
 SSR applications can now initialize HMR runtime by importing `@vitejs/plugin-react/preamble` at the top of their client entry instead of manually calling `transformIndexHtml`. This simplifies SSR setup for applications that don't use the `transformIndexHtml` API.
+
+### Fix raw Rolldown support for Rolldown 1.0.0-beta.44+ ([#930](https://github.com/vitejs/vite-plugin-react/pull/930))
+
+Rolldown 1.0.0-beta.44+ removed the top-level `jsx` option in favor of `transform.jsx`. This plugin now uses the `transform.jsx` option to support Rolldown 1.0.0-beta.44+.
 
 ## 5.0.4 (2025-09-27)
 

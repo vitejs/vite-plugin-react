@@ -3,15 +3,16 @@ import {
   createFromReadableStream,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
-import { RSC_POSTFIX, type RscPayload } from './shared'
+import { GlobalErrorBoundary } from './error-boundary'
+import { createRscRenderRequest } from './request'
+import type { RscPayload } from './shared'
 
 async function hydrate(): Promise<void> {
   async function onNavigation() {
-    const url = new URL(window.location.href)
-    url.pathname = url.pathname + RSC_POSTFIX
-    const payload = await createFromFetch<RscPayload>(fetch(url))
+    const renderRequest = createRscRenderRequest(window.location.href)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
     setPayload(payload)
   }
 
@@ -35,11 +36,17 @@ async function hydrate(): Promise<void> {
 
   const browserRoot = (
     <React.StrictMode>
-      <BrowserRoot />
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
     </React.StrictMode>
   )
 
-  hydrateRoot(document, browserRoot)
+  if ('__NO_HYDRATE' in globalThis) {
+    createRoot(document).render(browserRoot)
+  } else {
+    hydrateRoot(document, browserRoot)
+  }
 
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {

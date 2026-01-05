@@ -21,6 +21,7 @@ export default defineConfig({
     'src/utils/encryption-runtime.ts',
   ],
   format: ['esm'],
+  fixedExtension: false,
   external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
   dts: {
     sourcemap: process.argv.slice(2).includes('--sourcemap'),

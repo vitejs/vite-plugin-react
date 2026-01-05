@@ -7,12 +7,14 @@ import {
 import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import {
-  unstable_createCallServer as createCallServer,
-  unstable_getRSCStream as getRSCStream,
-  unstable_RSCHydratedRouter as RSCHydratedRouter,
   type DataRouter,
   type unstable_RSCPayload as RSCServerPayload,
 } from 'react-router'
+import {
+  unstable_createCallServer as createCallServer,
+  unstable_getRSCStream as getRSCStream,
+  unstable_RSCHydratedRouter as RSCHydratedRouter,
+} from 'react-router/dom'
 
 // Create and set the callServer function to support post-hydration server actions.
 setServerCallback(

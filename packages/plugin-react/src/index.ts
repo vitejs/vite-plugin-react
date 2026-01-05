@@ -119,7 +119,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   let projectRoot = process.cwd()
   let skipFastRefresh = true
   let base: string
-  let isFullBundle = false
+  let isBundledDev = false
   let runPluginOverrides:
     | ((options: ReactBabelOptions, context: ReactBabelHookContext) => void)
     | undefined
@@ -163,7 +163,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
               jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
             },
             optimizeDeps: {
-              rollupOptions: { transform: { jsx: { runtime: 'automatic' } } },
+              rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
             },
           }
         }
@@ -189,9 +189,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     configResolved(config) {
       runningInVite = true
       base = config.base
-      // @ts-expect-error only available in newer rolldown-vite
-      if (config.experimental.fullBundleMode) {
-        isFullBundle = true
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+      // @ts-ignore only available in newer rolldown-vite
+      if (config.experimental.bundledDev) {
+        isBundledDev = true
       }
       projectRoot = config.root
       isProduction = config.isProduction
@@ -225,8 +226,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
     options(options) {
       if (!runningInVite) {
-        options.jsx = {
-          mode: opts.jsxRuntime,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+        // @ts-ignore Rolldown has `transform.jsx`
+        options.transform ??= {}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- use ts-ignore for ecosystem-ci
+        // @ts-ignore Rolldown has `transform.jsx`
+        options.transform.jsx = {
+          runtime: opts.jsxRuntime,
           importSource: opts.jsxImportSource,
         }
         return options
@@ -444,12 +450,12 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   }
 
   // for rolldown-vite + full bundle mode
-  const viteReactRefreshFullBundleMode: Plugin = {
+  const viteReactRefreshBundledDevMode: Plugin = {
     name: 'vite:react-refresh-fbm',
     enforce: 'pre',
     transformIndexHtml: {
       handler() {
-        if (!skipFastRefresh && isFullBundle)
+        if (!skipFastRefresh && isBundledDev)
           return [
             {
               tag: 'script',
@@ -508,7 +514,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       },
     },
     transformIndexHtml() {
-      if (!skipFastRefresh && !isFullBundle)
+      if (!skipFastRefresh && !isBundledDev)
         return [
           {
             tag: 'script',
@@ -522,12 +528,12 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   return [
     viteBabel,
     ...(isRolldownVite
-      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshFullBundleMode]
+      ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshBundledDevMode]
       : []),
     viteReactRefresh,
     virtualPreamblePlugin({
       name: '@vitejs/plugin-react/preamble',
-      isEnabled: () => !skipFastRefresh && !isFullBundle,
+      isEnabled: () => !skipFastRefresh && !isBundledDev,
     }),
   ]
 }

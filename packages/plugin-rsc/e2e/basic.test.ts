@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { type Page, expect, test } from '@playwright/test'
+import {
+  type Page,
+  type Response as PlaywrightResponse,
+  expect,
+  test,
+} from '@playwright/test'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -15,6 +20,31 @@ import path from 'node:path'
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
+
+  test('validate findSourceMapURL - reject', async () => {
+    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
+    requestUrl.searchParams.set(
+      'filename',
+      new URL('../examples/basic/.env', import.meta.url).href,
+    )
+    requestUrl.searchParams.set('environmentName', 'Server')
+    const response = await fetch(requestUrl)
+    expect(response.status).toBe(404)
+  })
+
+  test('validate findSourceMapURL - pass', async () => {
+    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
+    requestUrl.searchParams.set(
+      'filename',
+      new URL('../examples/basic/package.json', import.meta.url).href,
+    )
+    requestUrl.searchParams.set('environmentName', 'Server')
+    const response = await fetch(requestUrl)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      version: 3,
+    })
+  })
 })
 
 test.describe('dev-initial', () => {
@@ -1107,12 +1137,91 @@ function defineTest(f: Fixture) {
     // this need to be verified manually on browser devtools console.
     await page.goto(f.url())
     await waitForHydration(page)
+    const errorResponse = new Promise((resolve) => {
+      page.on('response', async (response) => {
+        if (response.request().method() === 'POST') {
+          resolve(response.status())
+        }
+      })
+    })
     await page.getByRole('button', { name: 'test-server-action-error' }).click()
-    await expect(page.getByText('ErrorBoundary caught')).toBeVisible()
+    await expect(page.getByTestId('action-error-boundary')).toContainText(
+      'ErrorBoundary triggered',
+    )
+    await expect(errorResponse).resolves.toEqual(500)
+    if (f.mode === 'dev') {
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: boom!)',
+      )
+    } else {
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: An error occurred in the Server Components render.',
+      )
+    }
     await page.getByRole('button', { name: 'reset-error' }).click()
     await expect(
       page.getByRole('button', { name: 'test-server-action-error' }),
     ).toBeVisible()
+  })
+
+  test.describe(() => {
+    test.use({ javaScriptEnabled: false })
+
+    test('server action error @nojs', async ({ page }) => {
+      await page.goto(f.url())
+      const responsePromise = new Promise<PlaywrightResponse>((resolve) => {
+        page.on('response', async (response) => {
+          if (response.request().method() === 'POST') {
+            resolve(response)
+          }
+        })
+      })
+      await page
+        .getByRole('button', { name: 'test-server-action-error' })
+        .click()
+      const response = await responsePromise
+      expect(response.status()).toBe(500)
+      await expect(response.text()).resolves.toBe(
+        'Internal Server Error: server action failed',
+      )
+    })
+  })
+
+  test('client component error', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const locator = page.getByTestId('test-client-error')
+    await expect(locator).toHaveText('test-client-error: 0')
+    await locator.click()
+    await expect(locator).toHaveText('test-client-error: 1')
+    await locator.click()
+    await expect(page.getByText('Caught an unexpected error')).toBeVisible()
+    if (f.mode === 'dev') {
+      await expect(
+        page.getByText('Error: Client error triggered'),
+      ).toBeVisible()
+    } else {
+      await expect(page.getByText('Error: (Unknown)')).toBeVisible()
+    }
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(locator).toHaveText('test-client-error: 0')
+  })
+
+  test('server component error', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    const expectedText =
+      f.mode === 'dev' ? 'Error: test-server-error!' : 'Error: (Unknown)'
+
+    // trigger client navigation error
+    await page.getByRole('link', { name: 'test-server-error' }).click()
+    await page.getByText(expectedText).click()
+
+    // trigger SSR error
+    const res = await page.goto(f.url('./?test-server-error'))
+    await page.getByText(expectedText).click()
+    expect(res?.status()).toBe(500)
   })
 
   test('hydrate while streaming @js', async ({ page }) => {
