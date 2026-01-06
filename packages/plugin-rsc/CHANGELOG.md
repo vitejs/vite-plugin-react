@@ -1,3 +1,17 @@
+## <small>[0.5.11](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.10...plugin-rsc@0.5.11) (2026-01-06)</small>
+### Features
+
+* **rsc:** support optional single entry for `loadModule` ([#1040](https://github.com/vitejs/vite-plugin-react/issues/1040)) ([261bde2](https://github.com/vitejs/vite-plugin-react/commit/261bde21db0482f70b18f59035df107aa3f59ada))
+* **rsc:** use `__VITE_ENVIRONMENT_RUNNER_IMPORT__` for `import.meta.viteRsc.loadModule` global ([#1037](https://github.com/vitejs/vite-plugin-react/issues/1037)) ([687458d](https://github.com/vitejs/vite-plugin-react/commit/687458df29bfc2454b87994fab676603fb2d312a))
+
+### Miscellaneous Chores
+
+* **rsc:** update rsc payload url in example ([#1041](https://github.com/vitejs/vite-plugin-react/issues/1041)) ([5c440f9](https://github.com/vitejs/vite-plugin-react/commit/5c440f90d63d398412b2561fa9d97ecef2ac9665))
+
+### Tests
+
+* **rsc:** fix flaky scan.test.ts by initializing es-module-lexer WASM in test setup ([#1038](https://github.com/vitejs/vite-plugin-react/issues/1038)) ([04cba94](https://github.com/vitejs/vite-plugin-react/commit/04cba943fa70d1aacc20eb6167eb4e13433cc3f6))
+
 ## <small>[0.5.10](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.9...plugin-rsc@0.5.10) (2026-01-05)</small>
 ### Bug Fixes
 
