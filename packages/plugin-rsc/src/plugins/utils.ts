@@ -62,22 +62,29 @@ export function normalizeRelativePath(s: string): string {
 
 export function getEntrySource(
   config: Pick<ResolvedConfig, 'build'>,
-  name: string,
+  name?: string,
 ): string {
   const input = config.build.rollupOptions.input
-  if (input) {
-    if (typeof input === 'string') {
-      return input
-    } else if (Array.isArray(input)) {
-      if (input.length > 0) {
-        return input[0]!
-      }
-    } else if (name && name in input && typeof input[name] === 'string') {
-      return input[name]
+  if (!name) {
+    const entries = Object.entries(normalizeRollupOpitonsInput(input))
+    if (entries.length === 1) {
+      return entries[0]![1]!
+    } else {
+      throw new Error(
+        `[vite-rsc:getEntrySource] multiple entry points found, please specify the entry name`,
+      )
     }
   }
+  if (
+    typeof input === 'object' &&
+    !Array.isArray(input) &&
+    name in input &&
+    typeof input[name] === 'string'
+  ) {
+    return input[name]
+  }
   throw new Error(
-    `[vite-rsc] unable to determine entry source. Please specify build.rollupOptions.input${name ? `['${name}']` : ''}.`,
+    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
 }
 

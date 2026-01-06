@@ -131,11 +131,11 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @default { enviornmentName: "rsc", entryName: "index" } */
+  /** @default { enviornmentName: "rsc" } */
   serverHandler?:
     | {
         environmentName: string
-        entryName: string
+        entryName?: string
       }
     | false
 
@@ -780,7 +780,8 @@ export default function vitePluginRsc(
         )) {
           const [argStart, argEnd] = match.indices![1]!
           const argCode = code.slice(argStart, argEnd).trim()
-          const [environmentName, entryName] = evalValue(`[${argCode}]`)
+          const [environmentName, entryName]: [string, string | undefined] =
+            evalValue(`[${argCode}]`)
           let replacement: string
           if (
             this.environment.mode === 'dev' &&
@@ -883,7 +884,6 @@ export default function vitePluginRsc(
             url.searchParams,
           )
           assert(environmentName)
-          assert(entryName)
           const environment = server.environments[
             environmentName
           ] as RunnableDevEnvironment
