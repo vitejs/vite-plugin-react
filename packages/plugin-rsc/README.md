@@ -224,9 +224,9 @@ The plugin provides an additional helper for multi environment interaction.
 
 #### `import.meta.viteRsc.loadModule`
 
-- Type: `(environmentName: "ssr" | "rsc", entryName: string) => Promise<T>`
+- Type: `(environmentName: "ssr" | "rsc", entryName?: string) => Promise<T>`
 
-This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa.
+This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa. When `entryName` is omitted, the function automatically uses the single entry from the target environment's `rollupOptions.input`.
 
 During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process as `RunnableDevEnvironment`. Internally, `loadModule` uses the global `__VITE_ENVIRONMENT_RUNNER_IMPORT__` function to import modules in the target environment (see [`__VITE_ENVIRONMENT_RUNNER_IMPORT__`](#__vite_environment_runner_import__) below).
 
@@ -550,7 +550,7 @@ Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you
 ```ts
 import.meta.viteRsc.loadModule
 //                  ^^^^^^^^^^
-// <T>(environmentName: string, entryName: string) => Promise<T>
+// <T>(environmentName: string, entryName?: string) => Promise<T>
 ```
 
 See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.

@@ -49,6 +49,7 @@ import {
   getFetchHandlerExport,
   sortObject,
   withRollupError,
+  getFallbackRollupEntry,
 } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
 import { scanBuildStripPlugin } from './plugins/scan'
@@ -609,7 +610,6 @@ export default function vitePluginRsc(
           environmentName: 'rsc',
           entryName: 'index',
         }
-
         const entryFile = path.join(
           manager.config.environments[options.environmentName]!.build.outDir,
           `${options.entryName}.js`,
@@ -779,7 +779,8 @@ export default function vitePluginRsc(
         )) {
           const [argStart, argEnd] = match.indices![1]!
           const argCode = code.slice(argStart, argEnd).trim()
-          const [environmentName, entryName] = evalValue(`[${argCode}]`)
+          const [environmentName, entryName]: [string, string | undefined] =
+            evalValue(`[${argCode}]`)
           let replacement: string
           if (
             this.environment.mode === 'dev' &&
@@ -793,8 +794,21 @@ export default function vitePluginRsc(
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
             replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
           } else {
+            const environment = manager.config.environments[environmentName]!
+            const targetName =
+              entryName ||
+              getFallbackRollupEntry(environment.build.rollupOptions.input).name
             replacement = JSON.stringify(
-              `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
+              `__vite_rsc_load_module_start__:` +
+                JSON.stringify({
+                  fromEnv: this.environment.name,
+                  toEnv: environmentName,
+                  // TODO: custom entyFileNames
+                  // we can probably use an intermediate file like "__vite_rsc_assets_manifest.js"
+                  // and generate during buildApp.
+                  targetFileName: `${targetName}.js`,
+                }) +
+                `:__vite_rsc_load_module_end__`,
             )
           }
           const [start, end] = match.indices![0]!
@@ -812,9 +826,15 @@ export default function vitePluginRsc(
         const { config } = manager
         const s = new MagicString(code)
         for (const match of code.matchAll(
-          /['"]__vite_rsc_load_module:(\w+):(\w+):(\w+)['"]/dg,
+          /[`'"]__vite_rsc_load_module_start__:([\s\S]*?):__vite_rsc_load_module_end__[`'"]/dg,
         )) {
-          const [fromEnv, toEnv, entryName] = match.slice(1)
+          const markerString = evalValue(match[0])
+          const { fromEnv, toEnv, targetFileName } = JSON.parse(
+            markerString.slice(
+              '__vite_rsc_load_module_start__:'.length,
+              -'__:vite_rsc_load_module_end__'.length,
+            ),
+          )
           const importPath = normalizeRelativePath(
             path.relative(
               path.join(
@@ -824,8 +844,7 @@ export default function vitePluginRsc(
               ),
               path.join(
                 config.environments[toEnv!]!.build.outDir,
-                // TODO: this breaks when custom entyFileNames
-                `${entryName}.js`,
+                targetFileName,
               ),
             ),
           )
@@ -851,7 +870,6 @@ export default function vitePluginRsc(
             url.searchParams,
           )
           assert(environmentName)
-          assert(entryName)
           const environment = server.environments[
             environmentName
           ] as RunnableDevEnvironment
