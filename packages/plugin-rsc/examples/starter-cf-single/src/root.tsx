@@ -52,7 +52,7 @@ function App() {
         </li>
         <li>
           Visit{' '}
-          <a href="/_.rsc" target="_blank">
+          <a href="./_.rsc" target="_blank">
             <code>/_.rsc</code>
           </a>{' '}
           to view RSC stream payload.

@@ -53,8 +53,8 @@ function App(props: { url: URL }) {
         </li>
         <li>
           Visit{' '}
-          <a href="/_.rsc" target="_blank">
-            <code>/_.rsc</code>
+          <a href="./_.rsc" target="_blank">
+            <code>_.rsc</code>
           </a>{' '}
           to view RSC stream payload.
         </li>
