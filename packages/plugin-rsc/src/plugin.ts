@@ -131,11 +131,11 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @default { enviornmentName: "rsc" } */
+  /** @default { enviornmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
         environmentName: string
-        entryName?: string
+        entryName: string
       }
     | false
 
@@ -574,6 +574,7 @@ export default function vitePluginRsc(
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
+          entryName: 'index',
         }
         const environment = server.environments[
           options.environmentName
@@ -607,15 +608,11 @@ export default function vitePluginRsc(
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
+          entryName: 'index',
         }
-        const environment =
-          manager.config.environments[options.environmentName]!
-        const targetName =
-          options.entryName ||
-          getFallbackRollupEntry(environment.build.rollupOptions.input).name
         const entryFile = path.join(
-          environment.build.outDir,
-          `${targetName}.js`,
+          manager.config.environments[options.environmentName]!.build.outDir,
+          `${options.entryName}.js`,
         )
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)

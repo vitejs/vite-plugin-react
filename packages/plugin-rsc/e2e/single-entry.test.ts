@@ -20,13 +20,6 @@ test.describe(() => {
 
           const overrideConfig = defineConfig({
             environments: {
-              rsc: {
-                build: {
-                  rollupOptions: {
-                    input: './src/framework/entry.rsc.tsx'
-                  },
-                },
-              },
               ssr: {
                 build: {
                   rollupOptions: {
