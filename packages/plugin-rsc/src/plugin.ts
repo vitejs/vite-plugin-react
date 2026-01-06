@@ -49,7 +49,7 @@ import {
   getFetchHandlerExport,
   sortObject,
   withRollupError,
-  normalizeRollupOpitonsInput,
+  getFallbackRollupEntry,
 } from './plugins/utils'
 import { createDebug } from '@hiogawa/utils'
 import { scanBuildStripPlugin } from './plugins/scan'
@@ -574,7 +574,6 @@ export default function vitePluginRsc(
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
-          entryName: 'index',
         }
         const environment = server.environments[
           options.environmentName
@@ -608,12 +607,15 @@ export default function vitePluginRsc(
         if (rscPluginOptions.serverHandler === false) return
         const options = rscPluginOptions.serverHandler ?? {
           environmentName: 'rsc',
-          entryName: 'index',
         }
-
+        const environment =
+          manager.config.environments[options.environmentName]!
+        const targetName =
+          options.entryName ||
+          getFallbackRollupEntry(environment.build.rollupOptions.input).name
         const entryFile = path.join(
-          manager.config.environments[options.environmentName]!.build.outDir,
-          `${options.entryName}.js`,
+          environment.build.outDir,
+          `${targetName}.js`,
         )
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
@@ -796,22 +798,9 @@ export default function vitePluginRsc(
             replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
           } else {
             const environment = manager.config.environments[environmentName]!
-            const input = normalizeRollupOpitonsInput(
-              environment.build.rollupOptions.input,
-            )
-            let targetName: string
-            if (entryName) {
-              targetName = entryName
-            } else {
-              const inputEntries = Object.entries(input)
-              if (inputEntries.length === 1) {
-                targetName = inputEntries[0]![0]
-              } else {
-                this.error(
-                  `[vite-rsc] loadModule entryName is required when rollupOptions.input has multiple entries`,
-                )
-              }
-            }
+            const targetName =
+              entryName ||
+              getFallbackRollupEntry(environment.build.rollupOptions.input).name
             replacement = JSON.stringify(
               `__vite_rsc_load_module_start__:` +
                 JSON.stringify({

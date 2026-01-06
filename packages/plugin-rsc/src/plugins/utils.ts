@@ -66,14 +66,7 @@ export function getEntrySource(
 ): string {
   const input = config.build.rollupOptions.input
   if (!name) {
-    const entries = Object.entries(normalizeRollupOpitonsInput(input))
-    if (entries.length === 1) {
-      return entries[0]![1]!
-    } else {
-      throw new Error(
-        `[vite-rsc:getEntrySource] multiple entry points found, please specify the entry name`,
-      )
-    }
+    return getFallbackRollupEntry(input).source
   }
   if (
     typeof input === 'object' &&
@@ -88,10 +81,26 @@ export function getEntrySource(
   )
 }
 
+export function getFallbackRollupEntry(
+  input: Rollup.InputOptions['input'] = {},
+): {
+  name: string
+  source: string
+} {
+  const inputEntries = Object.entries(normalizeRollupOpitonsInput(input))
+  if (inputEntries.length === 1) {
+    const [name, source] = inputEntries[0]!
+    return { name, source }
+  }
+  throw new Error(
+    `[vite-rsc] cannot determine fallback entry name from multiple entries, please specify the entry name explicitly`,
+  )
+}
+
 // normalize to object form
 // https://rollupjs.org/configuration-options/#input
 // https://rollupjs.org/configuration-options/#output-entryfilenames
-export function normalizeRollupOpitonsInput(
+function normalizeRollupOpitonsInput(
   input: Rollup.InputOptions['input'] = {},
 ): Record<string, string> {
   if (typeof input === 'string') {
