@@ -1,5 +1,5 @@
-import assert from 'node:assert'
 import { createHash } from 'node:crypto'
+import path from 'node:path'
 import {
   normalizePath,
   type Plugin,
@@ -62,17 +62,43 @@ export function normalizeRelativePath(s: string): string {
 
 export function getEntrySource(
   config: Pick<ResolvedConfig, 'build'>,
-  name: string = 'index',
+  name: string,
 ): string {
   const input = config.build.rollupOptions.input
-  assert(
-    typeof input === 'object' &&
-      !Array.isArray(input) &&
-      name in input &&
-      typeof input[name] === 'string',
-    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
+  if (input) {
+    if (typeof input === 'string') {
+      return input
+    } else if (Array.isArray(input)) {
+      if (input.length > 0) {
+        return input[0]!
+      }
+    } else if (name && name in input && typeof input[name] === 'string') {
+      return input[name]
+    }
+  }
+  throw new Error(
+    `[vite-rsc] unable to determine entry source. Please specify build.rollupOptions.input${name ? `['${name}']` : ''}.`,
   )
-  return input[name]
+}
+
+// normalize to object form
+// https://rollupjs.org/configuration-options/#input
+// https://rollupjs.org/configuration-options/#output-entryfilenames
+export function normalizeRollupOpitonsInput(
+  input: Rollup.InputOptions['input'] = {},
+): Record<string, string> {
+  if (typeof input === 'string') {
+    input = [input]
+  }
+  if (Array.isArray(input)) {
+    return Object.fromEntries(
+      input.map((file) => [
+        path.basename(file).slice(0, -path.extname(file).length),
+        file,
+      ]),
+    )
+  }
+  return input
 }
 
 export function hashString(v: string): string {
