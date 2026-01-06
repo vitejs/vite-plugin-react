@@ -802,7 +802,16 @@ export default function vitePluginRsc(
               entryName ||
               getFallbackRollupEntry(environment.build.rollupOptions.input).name
             replacement = JSON.stringify(
-              `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${targetName}`,
+              `__vite_rsc_load_module_start__:` +
+                JSON.stringify({
+                  fromEnv: this.environment.name,
+                  toEnv: environmentName,
+                  // TODO: custom entyFileNames
+                  // we can probably use an intermediate file like "__vite_rsc_assets_manifest.js"
+                  // and generate during buildApp.
+                  targetFileName: `${targetName}.js`,
+                }) +
+                `:__vite_rsc_load_module_end__`,
             )
           }
           const [start, end] = match.indices![0]!
@@ -820,9 +829,15 @@ export default function vitePluginRsc(
         const { config } = manager
         const s = new MagicString(code)
         for (const match of code.matchAll(
-          /['"]__vite_rsc_load_module:(\w+):(\w+):(\w+)['"]/dg,
+          /[`'"]__vite_rsc_load_module_start__:([\s\S]*?):__vite_rsc_load_module_end__[`'"]/dg,
         )) {
-          const [fromEnv, toEnv, entryName] = match.slice(1)
+          const markerString = evalValue(match[0])
+          const { fromEnv, toEnv, targetFileName } = JSON.parse(
+            markerString.slice(
+              '__vite_rsc_load_module_start__:'.length,
+              -'__:vite_rsc_load_module_end__'.length,
+            ),
+          )
           const importPath = normalizeRelativePath(
             path.relative(
               path.join(
@@ -832,8 +847,7 @@ export default function vitePluginRsc(
               ),
               path.join(
                 config.environments[toEnv!]!.build.outDir,
-                // TODO: this breaks when custom entyFileNames
-                `${entryName}.js`,
+                targetFileName,
               ),
             ),
           )
