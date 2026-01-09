@@ -211,20 +211,18 @@ const react = (_options?: Options): Plugin[] => {
           configResolved(config) {
             viteCacheRoot = config.cacheDir
           },
-          transform: {
-            handler: (code, _id) =>
-              transformWithOptions(
-                _id.split('?')[0],
-                code,
-                'esnext',
-                options,
-                viteCacheRoot,
-                {
-                  runtime: 'automatic',
-                  importSource: options.jsxImportSource,
-                },
-              ),
-          },
+          transform: (code, _id) =>
+            transformWithOptions(
+              _id.split('?')[0],
+              code,
+              'esnext',
+              options,
+              viteCacheRoot,
+              {
+                runtime: 'automatic',
+                importSource: options.jsxImportSource,
+              },
+            ),
         }
       : {
           name: 'vite:react-swc',
