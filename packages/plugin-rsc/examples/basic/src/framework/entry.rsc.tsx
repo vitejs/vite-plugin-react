@@ -35,6 +35,7 @@ async function handleRequest({
 }): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
+  request = renderRequest.request
 
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined

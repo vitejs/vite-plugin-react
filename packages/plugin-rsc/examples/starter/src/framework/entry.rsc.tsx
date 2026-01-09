@@ -28,6 +28,7 @@ export type RscPayload = {
 export default async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
+  request = renderRequest.request
 
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined

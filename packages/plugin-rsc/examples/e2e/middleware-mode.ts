@@ -1,10 +1,10 @@
 import type { Connect } from 'vite'
-import { createRequestListener } from '@remix-run/node-fetch-server'
 // @ts-ignore
 import connect from 'connect'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import sirv from 'sirv'
+import { toNodeHandler } from 'srvx/node'
 
 async function main() {
   const app = connect() as Connect.Server
@@ -28,7 +28,7 @@ async function main() {
     const entry = await import(
       pathToFileURL(path.resolve('dist/rsc/index.js')).href
     )
-    app.use(createRequestListener(entry.default))
+    app.use(toNodeHandler(entry.default) as any)
   } else {
     console.error(`Unknown command: ${command}`)
     process.exitCode = 1

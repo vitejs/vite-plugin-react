@@ -12,11 +12,11 @@
     "cf-release": "wrangler deploy"
   },
   "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
@@ -29,9 +29,9 @@
     "@vitejs/test-dep-transitive-cjs": "file:./test-dep/transitive-cjs",
     "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
     "rsc-html-stream": "^0.0.7",
-    "tailwindcss": "^4.1.17",
-    "vite": "^7.2.4",
-    "wrangler": "^4.51.0"
+    "tailwindcss": "^4.1.18",
+    "vite": "^7.3.0",
+    "wrangler": "^4.54.0"
   },
   "stackblitz": {
     "installDependencies": false,

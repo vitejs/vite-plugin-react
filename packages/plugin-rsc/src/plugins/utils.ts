@@ -1,5 +1,5 @@
-import assert from 'node:assert'
 import { createHash } from 'node:crypto'
+import path from 'node:path'
 import {
   normalizePath,
   type Plugin,
@@ -62,17 +62,59 @@ export function normalizeRelativePath(s: string): string {
 
 export function getEntrySource(
   config: Pick<ResolvedConfig, 'build'>,
-  name: string = 'index',
+  name?: string,
 ): string {
   const input = config.build.rollupOptions.input
-  assert(
+  if (!name) {
+    return getFallbackRollupEntry(input).source
+  }
+  if (
     typeof input === 'object' &&
-      !Array.isArray(input) &&
-      name in input &&
-      typeof input[name] === 'string',
+    !Array.isArray(input) &&
+    name in input &&
+    typeof input[name] === 'string'
+  ) {
+    return input[name]
+  }
+  throw new Error(
     `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
-  return input[name]
+}
+
+export function getFallbackRollupEntry(
+  input: Rollup.InputOptions['input'] = {},
+): {
+  name: string
+  source: string
+} {
+  const inputEntries = Object.entries(normalizeRollupOpitonsInput(input))
+  if (inputEntries.length === 1) {
+    const [name, source] = inputEntries[0]!
+    return { name, source }
+  }
+  throw new Error(
+    `[vite-rsc] cannot determine fallback entry name from multiple entries, please specify the entry name explicitly`,
+  )
+}
+
+// normalize to object form
+// https://rollupjs.org/configuration-options/#input
+// https://rollupjs.org/configuration-options/#output-entryfilenames
+function normalizeRollupOpitonsInput(
+  input: Rollup.InputOptions['input'] = {},
+): Record<string, string> {
+  if (typeof input === 'string') {
+    input = [input]
+  }
+  if (Array.isArray(input)) {
+    return Object.fromEntries(
+      input.map((file) => [
+        path.basename(file).slice(0, -path.extname(file).length),
+        file,
+      ]),
+    )
+  }
+  return input
 }
 
 export function hashString(v: string): string {

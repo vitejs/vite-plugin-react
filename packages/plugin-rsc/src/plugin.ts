@@ -1,5 +1,4 @@
 import { createDebug } from '@hiogawa/utils'
-import { createRequestListener } from '@remix-run/node-fetch-server'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import assert from 'node:assert'
@@ -7,6 +6,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { toNodeHandler } from 'srvx/node'
 import { stripLiteral } from 'strip-literal'
 import * as vite from 'vite'
 import {
@@ -28,7 +28,12 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import { scanBuildStripPlugin } from './plugins/scan'
-import { parseCssVirtual, toCssVirtual, parseIdQuery } from './plugins/shared'
+import {
+  parseCssVirtual,
+  toCssVirtual,
+  parseIdQuery,
+  parseReferenceValidationVirtual,
+} from './plugins/shared'
 import {
   createVirtualPlugin,
   getEntrySource,
@@ -37,6 +42,7 @@ import {
   getFetchHandlerExport,
   sortObject,
   withRollupError,
+  getFallbackRollupEntry,
 } from './plugins/utils'
 import { validateImportPlugin } from './plugins/validate-import'
 import {
@@ -261,8 +267,46 @@ export function vitePluginRscMinimal(
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
     ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    {
+      name: 'rsc:reference-validation',
+      apply: 'serve',
+      load: {
+        handler(id, _options) {
+          if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
+            const parsed = parseReferenceValidationVirtual(id)
+            assert(parsed)
+            if (parsed.type === 'client') {
+              const meta = Object.values(manager.clientReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            if (parsed.type === 'server') {
+              const meta = Object.values(manager.serverReferenceMetaMap).find(
+                (meta) => meta.referenceKey === parsed.id,
+              )
+              if (meta) {
+                return `export {}`
+              }
+            }
+            this.error(
+              `[vite-rsc] invalid ${parsed.type} reference '${parsed.id}'`,
+            )
+          }
+        },
+      },
+    },
     scanBuildStripPlugin({ manager }),
   ]
+}
+
+declare global {
+  function __VITE_ENVIRONMENT_RUNNER_IMPORT__(
+    environmentName: string,
+    id: string,
+  ): Promise<any>
 }
 
 export default function vitePluginRsc(
@@ -480,7 +524,23 @@ export default function vitePluginRsc(
         },
       },
       configureServer(server) {
-        ;(globalThis as any).__viteRscDevServer = server
+        globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async function (
+          environmentName,
+          id,
+        ) {
+          const environment = server.environments[environmentName]
+          if (!environment) {
+            throw new Error(
+              `[vite-rsc] unknown environment '${environmentName}'`,
+            )
+          }
+          if (!vite.isRunnableDevEnvironment(environment)) {
+            throw new Error(
+              `[vite-rsc] environment '${environmentName}' is not runnable`,
+            )
+          }
+          return environment.runner.import(id)
+        }
 
         // intercept client hmr to propagate client boundary invalidation to server environment
         const oldSend = server.environments.client.hot.send
@@ -537,9 +597,7 @@ export default function vitePluginRsc(
               // for example, this restores `base` which is automatically stripped by Vite.
               // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/server/middlewares/base.ts#L18-L20
               req.url = req.originalUrl ?? req.url
-              // ensure catching rejected promise
-              // https://github.com/mjackson/remix-the-web/blob/b5aa2ae24558f5d926af576482caf6e9b35461dc/packages/node-fetch-server/src/lib/request-listener.ts#L87
-              await createRequestListener(fetchHandler)(req, res)
+              await toNodeHandler(fetchHandler)(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -552,7 +610,6 @@ export default function vitePluginRsc(
           environmentName: 'rsc',
           entryName: 'index',
         }
-
         const entryFile = path.join(
           manager.config.environments[options.environmentName]!.build.outDir,
           `${options.entryName}.js`,
@@ -560,7 +617,7 @@ export default function vitePluginRsc(
         const entry = pathToFileURL(entryFile).href
         const mod = await import(/* @vite-ignore */ entry)
         const fetchHandler = getFetchHandlerExport(mod)
-        const handler = createRequestListener(fetchHandler)
+        const handler = toNodeHandler(fetchHandler)
 
         // disable compressions since it breaks html streaming
         // https://github.com/vitejs/vite/blob/9f5c59f07aefb1756a37bcb1c0aff24d54288950/packages/vite/src/node/preview.ts#L178
@@ -573,7 +630,7 @@ export default function vitePluginRsc(
           server.middlewares.use(async (req, res, next) => {
             try {
               req.url = req.originalUrl ?? req.url
-              await handler(req, res)
+              await handler(req as any, res as any)
             } catch (e) {
               next(e)
             }
@@ -722,7 +779,8 @@ export default function vitePluginRsc(
         )) {
           const [argStart, argEnd] = match.indices![1]!
           const argCode = code.slice(argStart, argEnd).trim()
-          const [environmentName, entryName] = evalValue(`[${argCode}]`)
+          const [environmentName, entryName]: [string, string | undefined] =
+            evalValue(`[${argCode}]`)
           let replacement: string
           if (
             this.environment.mode === 'dev' &&
@@ -734,13 +792,23 @@ export default function vitePluginRsc(
             const source = getEntrySource(environment.config, entryName)
             const resolved = await environment.pluginContainer.resolveId(source)
             assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            replacement =
-              `globalThis.__viteRscDevServer.environments[${JSON.stringify(
-                environmentName,
-              )}]` + `.runner.import(${JSON.stringify(resolved.id)})`
+            replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
           } else {
+            const environment = manager.config.environments[environmentName]!
+            const targetName =
+              entryName ||
+              getFallbackRollupEntry(environment.build.rollupOptions.input).name
             replacement = JSON.stringify(
-              `__vite_rsc_load_module:${this.environment.name}:${environmentName}:${entryName}`,
+              `__vite_rsc_load_module_start__:` +
+                JSON.stringify({
+                  fromEnv: this.environment.name,
+                  toEnv: environmentName,
+                  // TODO: custom entyFileNames
+                  // we can probably use an intermediate file like "__vite_rsc_assets_manifest.js"
+                  // and generate during buildApp.
+                  targetFileName: `${targetName}.js`,
+                }) +
+                `:__vite_rsc_load_module_end__`,
             )
           }
           const [start, end] = match.indices![0]!
@@ -758,9 +826,15 @@ export default function vitePluginRsc(
         const { config } = manager
         const s = new MagicString(code)
         for (const match of code.matchAll(
-          /['"]__vite_rsc_load_module:(\w+):(\w+):(\w+)['"]/dg,
+          /[`'"]__vite_rsc_load_module_start__:([\s\S]*?):__vite_rsc_load_module_end__[`'"]/dg,
         )) {
-          const [fromEnv, toEnv, entryName] = match.slice(1)
+          const markerString = evalValue(match[0])
+          const { fromEnv, toEnv, targetFileName } = JSON.parse(
+            markerString.slice(
+              '__vite_rsc_load_module_start__:'.length,
+              -'__:vite_rsc_load_module_end__'.length,
+            ),
+          )
           const importPath = normalizeRelativePath(
             path.relative(
               path.join(
@@ -770,8 +844,7 @@ export default function vitePluginRsc(
               ),
               path.join(
                 config.environments[toEnv!]!.build.outDir,
-                // TODO: this breaks when custom entyFileNames
-                `${entryName}.js`,
+                targetFileName,
               ),
             ),
           )
@@ -797,7 +870,6 @@ export default function vitePluginRsc(
             url.searchParams,
           )
           assert(environmentName)
-          assert(entryName)
           const environment = server.environments[
             environmentName
           ] as RunnableDevEnvironment
@@ -830,7 +902,7 @@ export default function vitePluginRsc(
           if (url.pathname === '/__vite_rsc_load_module_dev_proxy') {
             try {
               const handler = await createHandler(url)
-              createRequestListener(handler)(req, res)
+              await toNodeHandler(handler)(req as any, res as any)
             } catch (e) {
               next(e)
             }

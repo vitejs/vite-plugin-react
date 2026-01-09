@@ -5,32 +5,27 @@ import {
   unstable_RSCStaticRouter as RSCStaticRouter,
 } from 'react-router'
 
-export async function generateHTML(
+export default async function handler(
   request: Request,
-  fetchServer: (request: Request) => Promise<Response>,
+  serverResponse: Response,
 ): Promise<Response> {
-  return await routeRSCServerRequest({
-    // The incoming request.
-    request,
-    // How to call the React Server.
-    fetchServer,
-    // Provide the React Server touchpoints.
-    createFromReadableStream,
-    // Render the router to HTML.
-    async renderHTML(getPayload) {
-      const payload = await getPayload()
-      const formState =
-        payload.type === 'render' ? await payload.formState : undefined
+  const bootstrapScriptContent =
+    await import.meta.viteRsc.loadBootstrapScriptContent('index')
 
-      const bootstrapScriptContent =
-        await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  return await routeRSCServerRequest({
+    request,
+    serverResponse,
+    createFromReadableStream,
+    async renderHTML(getPayload, options) {
+      const payload = getPayload()
 
       return await renderHTMLToReadableStream(
         <RSCStaticRouter getPayload={getPayload} />,
         {
+          ...options,
           bootstrapScriptContent,
-          // @ts-expect-error - no types for this yet
-          formState,
+          signal: request.signal,
+          formState: await payload.formState,
         },
       )
     },

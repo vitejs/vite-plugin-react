@@ -224,11 +224,13 @@ The plugin provides an additional helper for multi environment interaction.
 
 #### `import.meta.viteRsc.loadModule`
 
-- Type: `(environmentName: "ssr" | "rsc", entryName: string) => Promise<T>`
+- Type: `(environmentName: "ssr" | "rsc", entryName?: string) => Promise<T>`
 
-This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa.
+This allows importing `ssr` environment module specified by `environments.ssr.build.rollupOptions.input[entryName]` inside `rsc` environment and vice versa. When `entryName` is omitted, the function automatically uses the single entry from the target environment's `rollupOptions.input`.
 
-During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process. When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process.
+During development, by default, this API assumes both `rsc` and `ssr` environments execute under the main Vite process as `RunnableDevEnvironment`. Internally, `loadModule` uses the global `__VITE_ENVIRONMENT_RUNNER_IMPORT__` function to import modules in the target environment (see [`__VITE_ENVIRONMENT_RUNNER_IMPORT__`](#__vite_environment_runner_import__) below).
+
+When enabling `rsc({ loadModuleDevProxy: true })` plugin option, the loaded module is implemented as a proxy with `fetch`-based RPC to call in node environment on the main Vite process, which for example, allows `rsc` environment inside cloudflare workers to access `ssr` environment on the main Vite process. This proxy mechanism uses [turbo-stream](https://github.com/jacob-ebey/turbo-stream) for serializing data types beyond JSON, with custom encoders/decoders to additionally support `Request` and `Response` instances.
 
 During production build, this API will be rewritten into a static import of the specified entry of other environment build and the modules are executed inside the same runtime.
 
@@ -326,6 +328,35 @@ import.meta.hot.on('rsc:update', async () => {
   // re-render ...
 })
 ```
+
+### Global API
+
+#### `__VITE_ENVIRONMENT_RUNNER_IMPORT__`
+
+- Type: `(environmentName: string, id: string) => Promise<any>`
+
+This global function provides a standardized way to import a module in a given environment during development. It is used internally by `import.meta.viteRsc.loadModule` to execute modules in the target environment.
+
+By default, the plugin sets this global to import via the environment's module runner:
+
+```js
+globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async (environmentName, id) => {
+  return server.environments[environmentName].runner.import(id)
+}
+```
+
+**Custom Environment Integration:**
+
+Frameworks with custom environment setups (e.g., environments running in separate workers or with custom module loading) can override this global to provide their own module import logic.
+
+```js
+// Custom logic to import module between multiple environments inside worker
+globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async (environmentName, id) => {
+  return myWorkerRunners[environmentname].import(id)
+}
+```
+
+This allows `import.meta.viteRsc.loadModule` to work seamlessly with different runtime configurations without requiring changes to user code.
 
 ## Plugin API
 
@@ -445,22 +476,11 @@ export function Page() {
 }
 ```
 
-### Using React Canary and Experimental versions
+### Using different React versions
 
-To use React's [canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#all-release-channels) versions with `@vitejs/plugin-rsc`, you have two options:
+By default, `@vitejs/plugin-rsc` includes a [vendored version](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-rsc/package.json#L64) of `react-server-dom-webpack`. When `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead, allowing you to use any React version you need.
 
-**Option 1: Use preview releases from pkg.pr.new**
-
-You can use preview releases that bundle specific React versions. See [PR #524](https://github.com/vitejs/vite-plugin-react/pull/524) for instructions on installing these preview packages.
-
-**Option 2: Install `react-server-dom-webpack` directly**
-
-By default, `@vitejs/plugin-rsc` includes a vendored version of `react-server-dom-webpack`. However, when `react-server-dom-webpack` is installed in your project's dependencies, the plugin will automatically use it instead. This allows you to:
-
-- Stay up-to-date with the latest React Server Components runtime without waiting for plugin updates
-- Use specific React versions (stable, canary, or experimental)
-
-Simply install the version you need:
+**[Canary](https://react.dev/community/versioning-policy#canary-channel) or [experimental](https://react.dev/community/versioning-policy#experimental-channel) versions:**
 
 ```json
 {
@@ -472,14 +492,14 @@ Simply install the version you need:
 }
 ```
 
-Or for experimental:
+**Specific versions (e.g., for security updates):**
 
 ```json
 {
   "dependencies": {
-    "react": "experimental",
-    "react-dom": "experimental",
-    "react-server-dom-webpack": "experimental"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-server-dom-webpack": "19.2.3"
   }
 }
 ```
@@ -530,7 +550,7 @@ Types for global API are defined in `@vitejs/plugin-rsc/types`. For example, you
 ```ts
 import.meta.viteRsc.loadModule
 //                  ^^^^^^^^^^
-// <T>(environmentName: string, entryName: string) => Promise<T>
+// <T>(environmentName: string, entryName?: string) => Promise<T>
 ```
 
 See also [Vite documentation](https://vite.dev/guide/api-hmr.html#intellisense-for-typescript) for `vite/client` types.

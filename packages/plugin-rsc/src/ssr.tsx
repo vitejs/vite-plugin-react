@@ -3,7 +3,7 @@ import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
 import type { ResolvedAssetDeps } from './plugin'
 import { setRequireModule } from './core/ssr'
-import { toCssVirtual } from './plugins/shared'
+import { toCssVirtual, toReferenceValidationVirtual } from './plugins/shared'
 
 export { createServerConsumerManifest } from './core/ssr'
 
@@ -15,6 +15,10 @@ function initialize(): void {
   setRequireModule({
     load: async (id) => {
       if (!import.meta.env.__vite_rsc_build__) {
+        await import(
+          /* @vite-ignore */ '/@id/__x00__' +
+            toReferenceValidationVirtual({ id, type: 'client' })
+        )
         const mod = await import(/* @vite-ignore */ id)
         const modCss = await import(
           /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })

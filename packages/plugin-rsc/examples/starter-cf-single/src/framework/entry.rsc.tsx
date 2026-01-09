@@ -19,6 +19,7 @@ export type RscPayload = {
 async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
+  request = renderRequest.request
 
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
@@ -82,18 +83,11 @@ async function handler(request: Request): Promise<Response> {
   const { renderHTML } = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  const ssrResult = await renderHTML(rscStream, {
+  return await renderHTML(rscStream, {
+    request,
     formState,
     // allow quick simulation of javascript disabled browser
     debugNojs: renderRequest.url.searchParams.has('__nojs'),
-  })
-
-  // respond html
-  return new Response(ssrResult.stream, {
-    status: ssrResult.status,
-    headers: {
-      'Content-type': 'text/html',
-    },
   })
 }
 

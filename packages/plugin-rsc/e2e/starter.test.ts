@@ -7,6 +7,53 @@ import { defineStarterTest } from './starter'
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'dev' })
   defineStarterTest(f)
+
+  test('validate reference 1', async () => {
+    const requestUrl = f.url('_.rsc')
+    const formData = new FormData()
+    const payload = {
+      '0': [1, '$F1'],
+      '1': { id: '__invalid_reference1__# ' },
+    }
+    for (const [k, v] of Object.entries(payload)) {
+      formData.append(k, JSON.stringify(v))
+    }
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'x-rsc-action': '/src/action.tsx#updateServerCounter',
+      },
+    })
+    // patch for 19.2.3 seems to make the payload above invalid and not reach server reference decoding anymore.
+    // https://react.dev/blog/2025/12/11/denial-of-service-and-source-code-exposure-in-react-server-components
+    // expect(f.proc().stderr()).toContain(
+    //   `invalid server reference '__invalid_reference1__`,
+    // )
+    expect(response.status).toBe(500)
+  })
+
+  test('validate reference 2', async () => {
+    const requestUrl = f.url('_.rsc')
+    const formData = new FormData()
+    const payload = {
+      '0': [1],
+    }
+    for (const [k, v] of Object.entries(payload)) {
+      formData.append(k, JSON.stringify(v))
+    }
+    const response = await fetch(requestUrl, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'x-rsc-action': `__invalid_reference2__# `,
+      },
+    })
+    expect(f.proc().stderr()).toContain(
+      `invalid server reference '__invalid_reference2__'`,
+    )
+    expect(response.status).toBe(500)
+  })
 })
 
 test.describe('build-default', () => {

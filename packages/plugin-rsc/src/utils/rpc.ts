@@ -1,4 +1,9 @@
-import { decode, encode } from 'turbo-stream'
+import {
+  decode,
+  encode,
+  type DecodePlugin,
+  type EncodePlugin,
+} from 'turbo-stream'
 
 type RequestPayload = {
   method: string
@@ -10,6 +15,64 @@ type ResponsePayload = {
   data: any
 }
 
+const decodePlugins: DecodePlugin[] = [
+  (type, ...rest) => {
+    switch (type) {
+      case 'Request': {
+        const [method, url, headers, body] = rest as [
+          string,
+          string,
+          [string, string][],
+          null | ReadableStream<Uint8Array>,
+        ]
+        return {
+          value: new Request(url, {
+            body,
+            headers,
+            method,
+            // @ts-ignore undici compat
+            duplex: body ? 'half' : undefined,
+          }),
+        }
+      }
+      case 'Response': {
+        const [status, statusText, headers, body] = rest as [
+          number,
+          string,
+          [string, string][],
+          null | ReadableStream<Uint8Array>,
+        ]
+        return {
+          value: new Response(body, {
+            headers,
+            status,
+            statusText,
+          }),
+        }
+      }
+    }
+    return false
+  },
+]
+
+const encodePlugins: EncodePlugin[] = [
+  (obj) => {
+    if (obj instanceof Request) {
+      return ['Request', obj.method, obj.url, Array.from(obj.headers), obj.body]
+    }
+    if (obj instanceof Response) {
+      return [
+        'Response',
+        obj.status,
+        obj.statusText,
+        Array.from(obj.headers),
+        obj.body,
+      ]
+    }
+    return false
+  },
+]
+
 export function createRpcServer<T extends object>(handlers: T) {
   return async (request: Request): Promise<Response> => {
     if (!request.body) {
@@ -17,6 +80,9 @@ export function createRpcServer<T extends object>(handlers: T) {
     }
     const reqPayload = await decode<RequestPayload>(
       request.body.pipeThrough(new TextDecoderStream()),
+      {
+        plugins: decodePlugins,
+      },
     )
     const handler = (handlers as any)[reqPayload.method]
     if (!handler) {
@@ -31,7 +97,12 @@ export function createRpcServer<T extends object>(handlers: T) {
       resPayload.ok = false
       resPayload.data = e
     }
-    return new Response(encode(resPayload))
+    return new Response(
+      encode(resPayload, {
+        plugins: encodePlugins,
+        redactErrors: false,
+      }),
+    )
   }
 }
 
@@ -41,7 +112,10 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
       method,
       args,
     }
-    const body = encode(reqPayload).pipeThrough(new TextEncoderStream())
+    const body = encode(reqPayload, {
+      plugins: encodePlugins,
+      redactErrors: false,
+    }).pipeThrough(new TextEncoderStream())
     const res = await fetch(options.endpoint, {
       method: 'POST',
       body,
@@ -55,6 +129,9 @@ export function createRpcClient<T>(options: { endpoint: string }): T {
     }
     const resPayload = await decode<ResponsePayload>(
       res.body.pipeThrough(new TextDecoderStream()),
+      {
+        plugins: decodePlugins,
+      },
     )
     if (!resPayload.ok) {
       throw resPayload.data
