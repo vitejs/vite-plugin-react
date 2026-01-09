@@ -103,18 +103,6 @@ export default tseslint.config(
         { allow: builtinModules.map((mod) => `node:${mod}`) },
       ],
       'import-x/no-duplicates': 'error',
-      // import ordering handled by oxfmt
-      // 'import-x/order': 'error',
-      // 'sort-imports': [
-      //   'error',
-      //   {
-      //     ignoreCase: false,
-      //     ignoreDeclarationSort: true,
-      //     ignoreMemberSort: false,
-      //     memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-      //     allowSeparatedGroups: false,
-      //   },
-      // ],
 
       'regexp/prefer-regexp-exec': 'error',
       'regexp/prefer-regexp-test': 'error',
