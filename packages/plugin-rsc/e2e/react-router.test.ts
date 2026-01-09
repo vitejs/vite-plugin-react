@@ -3,10 +3,10 @@ import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
 import { readFileSync } from 'node:fs'
-import React from 'react'
+// import React from 'react'
 
 test.describe('dev-default', () => {
-  test.skip(/canary|experimental/.test(React.version))
+  // test.skip(/canary|experimental/.test(React.version))
 
   const f = useFixture({ root: 'examples/react-router', mode: 'dev' })
   defineTest(f)
@@ -18,7 +18,7 @@ test.describe('build-default', () => {
 })
 
 test.describe('dev-cloudflare', () => {
-  test.skip(/canary|experimental/.test(React.version))
+  // test.skip(/canary|experimental/.test(React.version))
 
   const f = useFixture({
     root: 'examples/react-router',
