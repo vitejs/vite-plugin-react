@@ -1,5 +1,5 @@
-import type { Node, Program } from 'estree'
 import { tinyassert } from '@hiogawa/utils'
+import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extract_names } from 'periscopic'
 

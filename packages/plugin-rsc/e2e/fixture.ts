@@ -1,9 +1,9 @@
-import test from '@playwright/test'
 import assert from 'node:assert'
 import { type SpawnOptions, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { stripVTControlCharacters, styleText } from 'node:util'
+import test from '@playwright/test'
 import { x } from 'tinyexec'
 
 function runCli(options: { command: string; label?: string } & SpawnOptions) {

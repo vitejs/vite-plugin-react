@@ -5,6 +5,7 @@
   "singleQuote": true,
   "experimentalSortImports": {
     "newlinesBetween": false,
-    "partitionByNewline": true
+    "partitionByNewline": true,
+    "groups": [["builtin"], ["external"]]
   }
 }

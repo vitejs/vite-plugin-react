@@ -1,10 +1,10 @@
+// @ts-check
+import { builtinModules } from 'node:module'
 import eslint from '@eslint/js'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginN from 'eslint-plugin-n'
 import pluginRegExp from 'eslint-plugin-regexp'
 import globals from 'globals'
-// @ts-check
-import { builtinModules } from 'node:module'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(

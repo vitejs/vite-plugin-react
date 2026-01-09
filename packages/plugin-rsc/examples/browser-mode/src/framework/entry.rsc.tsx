@@ -1,5 +1,3 @@
-import type React from 'react'
-import type { ReactFormState } from 'react-dom/client'
 import {
   setRequireModule,
   renderToReadableStream,
@@ -9,6 +7,8 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/react/rsc'
+import type React from 'react'
+import type { ReactFormState } from 'react-dom/client'
 import buildServerReferences from 'virtual:vite-rsc-browser-mode/build-server-references'
 import { Root } from '../root'
 

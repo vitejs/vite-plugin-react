@@ -1,11 +1,11 @@
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import rsc from '@vitejs/plugin-rsc'
-import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
 import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import rsc from '@vitejs/plugin-rsc'
+import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
 import {
   type Plugin,
   type Rollup,

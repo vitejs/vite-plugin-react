@@ -1,5 +1,5 @@
-import type { Program, Literal } from 'estree'
 import { tinyassert } from '@hiogawa/utils'
+import type { Program, Literal } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'

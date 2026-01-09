@@ -1,10 +1,10 @@
-import type { Connect } from 'vite'
-// @ts-ignore
-import connect from 'connect'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+// @ts-ignore
+import connect from 'connect'
 import sirv from 'sirv'
 import { toNodeHandler } from 'srvx/node'
+import type { Connect } from 'vite'
 
 async function main() {
   const app = connect() as Connect.Server

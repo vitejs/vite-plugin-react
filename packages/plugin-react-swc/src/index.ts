@@ -1,4 +1,6 @@
-import type { Plugin } from 'vite'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import { exactRegex } from '@rolldown/pluginutils'
 import {
   type JscTarget,
@@ -15,9 +17,7 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import type { Plugin } from 'vite'
 import * as vite from 'vite'
 
 const resolve = createRequire(import.meta.url).resolve

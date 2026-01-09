@@ -1,4 +1,6 @@
-import type { BuildOptions, Plugin } from 'vite'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { exactRegex } from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,
@@ -6,9 +8,7 @@ import {
   runtimePublicPath,
   silenceUseClientWarning,
 } from '@vitejs/react-common'
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import type { BuildOptions, Plugin } from 'vite'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')

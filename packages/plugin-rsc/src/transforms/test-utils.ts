@@ -1,7 +1,7 @@
-import type MagicString from 'magic-string'
+import { dirname } from 'path'
 import { hashString } from '@hiogawa/utils'
 import { mkdir, writeFile } from 'fs/promises'
-import { dirname } from 'path'
+import type MagicString from 'magic-string'
 
 export async function debugSourceMap(output: MagicString): Promise<void> {
   // load it directly to https://evanw.github.io/source-map-visualization

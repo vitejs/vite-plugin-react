@@ -1,6 +1,6 @@
-import { expect, test, type Page } from '@playwright/test'
 import os from 'node:os'
 import path from 'node:path'
+import { expect, test, type Page } from '@playwright/test'
 import { x } from 'tinyexec'
 import * as vite from 'vite'
 import { setupIsolatedFixture, useFixture } from './fixture'

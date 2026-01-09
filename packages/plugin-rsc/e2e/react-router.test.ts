@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { expect, test } from '@playwright/test'
 import React from 'react'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'

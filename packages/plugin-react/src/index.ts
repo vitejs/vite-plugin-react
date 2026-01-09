@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import type { Plugin, ResolvedConfig } from 'vite'
 import {
   exactRegex,
   makeIdFiltersToMatchWithQuery,
@@ -13,9 +15,7 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import type { Plugin, ResolvedConfig } from 'vite'
 import { createFilter } from 'vite'
 import * as vite from 'vite'
 
