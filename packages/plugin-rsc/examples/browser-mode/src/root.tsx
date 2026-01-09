@@ -1,10 +1,10 @@
 import './index.css'
 import viteLogo from '/vite.svg'
+import { TestActionBind } from './action-bind/server.tsx'
+import { TestUseActionState } from './action-from-client/client.tsx'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
-import { TestUseActionState } from './action-from-client/client.tsx'
-import { TestActionBind } from './action-bind/server.tsx'
 
 export function Root() {
   return <App />

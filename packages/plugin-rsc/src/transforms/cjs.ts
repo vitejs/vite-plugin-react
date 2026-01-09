@@ -1,9 +1,9 @@
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Program, Node } from 'estree'
+import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
-import { walk } from 'estree-walker'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import path from 'node:path'
 
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.

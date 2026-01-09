@@ -6,8 +6,8 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
 import type React from 'react'
+import type { ReactFormState } from 'react-dom/client'
 import { parseRenderRequest } from './request.tsx'
 import '../styles.css'
 
