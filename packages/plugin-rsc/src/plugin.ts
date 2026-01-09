@@ -914,18 +914,21 @@ export default function vitePluginRsc(
     },
     {
       name: 'rsc:virtual:vite-rsc/rpc-client',
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/rpc-client') {
-          return `\0${source}`
-        }
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/rpc-client') {
+            return `\0${source}`
+          }
+        },
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/rpc-client') {
-          const { server } = manager
-          const origin = server.resolvedUrls?.local[0]
-          assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/rpc-client') {
+            const { server } = manager
+            const origin = server.resolvedUrls?.local[0]
+            assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
 
-          return `\
+            return `\
 import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";
 export function createRpcClient(params) {
   const endpoint =
@@ -934,34 +937,39 @@ export function createRpcClient(params) {
     new URLSearchParams(params);
   return __vite_rsc_rpc.createRpcClient({ endpoint });
 }
-          `
-        }
+            `
+          }
+        },
       },
     },
     {
       name: 'rsc:virtual:vite-rsc/assets-manifest',
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/assets-manifest') {
-          if (this.environment.mode === 'build') {
-            return { id: source, external: true }
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/assets-manifest') {
+            if (this.environment.mode === 'build') {
+              return { id: source, external: true }
+            }
+            return `\0` + source
           }
-          return `\0` + source
-        }
+        },
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/assets-manifest') {
-          assert(this.environment.name !== 'client')
-          assert(this.environment.mode === 'dev')
-          const entryUrl = assetsURL(
-            '@id/__x00__' + VIRTUAL_ENTRIES.browser,
-            manager,
-          )
-          const manifest: AssetsManifest = {
-            bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
-            clientReferenceDeps: {},
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/assets-manifest') {
+            assert(this.environment.name !== 'client')
+            assert(this.environment.mode === 'dev')
+            const entryUrl = assetsURL(
+              '@id/__x00__' + VIRTUAL_ENTRIES.browser,
+              manager,
+            )
+            const manifest: AssetsManifest = {
+              bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
+              clientReferenceDeps: {},
+            }
+            return `export default ${JSON.stringify(manifest, null, 2)}`
           }
-          return `export default ${JSON.stringify(manifest, null, 2)}`
-        }
+        },
       },
       // client build
       generateBundle(_options, bundle) {
@@ -1342,103 +1350,113 @@ function vitePluginUseClient(
     },
     {
       name: 'rsc:use-client/build-references',
-      resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/client-references')) {
-          return '\0' + source
-        }
-      },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/client-references') {
-          // not used during dev
-          if (this.environment.mode === 'dev') {
-            return { code: `export default {}`, map: null }
+      resolveId: {
+        handler(source) {
+          if (source.startsWith('virtual:vite-rsc/client-references')) {
+            return '\0' + source
           }
-          // no custom chunking needed for scan
-          if (manager.isScanBuild) {
-            let code = ``
+        },
+      },
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/client-references') {
+            // not used during dev
+            if (this.environment.mode === 'dev') {
+              return { code: `export default {}`, map: null }
+            }
+            // no custom chunking needed for scan
+            if (manager.isScanBuild) {
+              let code = ``
+              for (const meta of Object.values(
+                manager.clientReferenceMetaMap,
+              )) {
+                code += `import ${JSON.stringify(meta.importId)};\n`
+              }
+              return { code, map: null }
+            }
+            let code = ''
+            // group client reference modules by `clientChunks` option
+            manager.clientReferenceGroups = {}
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              code += `import ${JSON.stringify(meta.importId)};\n`
+              // no server chunk is associated when the entire "use client" module is tree-shaken
+              if (!meta.serverChunk) continue
+              let name =
+                useClientPluginOptions.clientChunks?.({
+                  id: meta.importId,
+                  normalizedId: manager.toRelativeId(meta.importId),
+                  serverChunk: meta.serverChunk,
+                }) ?? meta.serverChunk
+              // ensure clean virtual id to avoid interfering with other plugins
+              name = cleanUrl(name.replaceAll('..', '__'))
+              const group = (manager.clientReferenceGroups[name] ??= [])
+              group.push(meta)
+              meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
+            }
+            debug('client-reference-groups', manager.clientReferenceGroups)
+            for (const [name, metas] of Object.entries(
+              manager.clientReferenceGroups,
+            )) {
+              const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
+              for (const meta of metas) {
+                code += `\
+                  ${JSON.stringify(meta.referenceKey)}: async () => {
+                    const m = await import(${JSON.stringify(groupVirtual)});
+                    return m.export_${meta.referenceKey};
+                  },
+                `
+              }
+            }
+            code = `export default {${code}};\n`
+            return { code, map: null }
+          }
+          // re-export client reference modules from each group
+          if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
+            const name = id.slice(
+              '\0virtual:vite-rsc/client-references/group/'.length,
+            )
+            const metas = manager.clientReferenceGroups[name]
+            assert(metas, `unknown client reference group: ${name}`)
+            let code = ``
+            for (const meta of metas) {
+              // pick only renderedExports to tree-shake unused client references
+              const exports = meta.renderedExports
+                .map(
+                  (name) => `${name}: import_${meta.referenceKey}.${name},\n`,
+                )
+                .sort()
+                .join('')
+              code += `
+                import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+                export const export_${meta.referenceKey} = {${exports}};
+              `
             }
             return { code, map: null }
           }
-          let code = ''
-          // group client reference modules by `clientChunks` option
-          manager.clientReferenceGroups = {}
-          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            // no server chunk is associated when the entire "use client" module is tree-shaken
-            if (!meta.serverChunk) continue
-            let name =
-              useClientPluginOptions.clientChunks?.({
-                id: meta.importId,
-                normalizedId: manager.toRelativeId(meta.importId),
-                serverChunk: meta.serverChunk,
-              }) ?? meta.serverChunk
-            // ensure clean virtual id to avoid interfering with other plugins
-            name = cleanUrl(name.replaceAll('..', '__'))
-            const group = (manager.clientReferenceGroups[name] ??= [])
-            group.push(meta)
-            meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
-          }
-          debug('client-reference-groups', manager.clientReferenceGroups)
-          for (const [name, metas] of Object.entries(
-            manager.clientReferenceGroups,
-          )) {
-            const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
-            for (const meta of metas) {
-              code += `\
-                ${JSON.stringify(meta.referenceKey)}: async () => {
-                  const m = await import(${JSON.stringify(groupVirtual)});
-                  return m.export_${meta.referenceKey};
-                },
-              `
-            }
-          }
-          code = `export default {${code}};\n`
-          return { code, map: null }
-        }
-        // re-export client reference modules from each group
-        if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
-          const name = id.slice(
-            '\0virtual:vite-rsc/client-references/group/'.length,
-          )
-          const metas = manager.clientReferenceGroups[name]
-          assert(metas, `unknown client reference group: ${name}`)
-          let code = ``
-          for (const meta of metas) {
-            // pick only renderedExports to tree-shake unused client references
-            const exports = meta.renderedExports
-              .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
-              .sort()
-              .join('')
-            code += `
-              import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
-              export const export_${meta.referenceKey} = {${exports}};
-            `
-          }
-          return { code, map: null }
-        }
+        },
       },
     },
     {
       name: 'rsc:virtual-client-in-server-package',
-      async load(id) {
-        if (
-          id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
-        ) {
-          assert.equal(this.environment.mode, 'dev')
-          assert(this.environment.name !== serverEnvironmentName)
-          id = decodeURIComponent(
-            id.slice(
-              '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
-            ),
-          )
-          // TODO: avoid `export default undefined`
-          return `
-            export * from ${JSON.stringify(id)};
-            import * as __all__ from ${JSON.stringify(id)};
-            export default __all__.default;
-          `
-        }
+      load: {
+        async handler(id) {
+          if (
+            id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
+          ) {
+            assert.equal(this.environment.mode, 'dev')
+            assert(this.environment.name !== serverEnvironmentName)
+            id = decodeURIComponent(
+              id.slice(
+                '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
+              ),
+            )
+            // TODO: avoid `export default undefined`
+            return `
+              export * from ${JSON.stringify(id)};
+              import * as __all__ from ${JSON.stringify(id)};
+              export default __all__.default;
+            `
+          }
+        },
       },
     },
     {
@@ -1459,20 +1477,22 @@ function vitePluginUseClient(
           }
         },
       },
-      async load(id) {
-        if (id.startsWith('\0virtual:vite-rsc/client-package-proxy/')) {
-          assert(this.environment.mode === 'dev')
-          const source = id.slice(
-            '\0virtual:vite-rsc/client-package-proxy/'.length,
-          )
-          const meta = Object.values(manager.clientReferenceMetaMap).find(
-            (v) => v.packageSource === source,
-          )!
-          const exportNames = meta.exportNames
-          return `export {${exportNames.join(',')}} from ${JSON.stringify(
-            source,
-          )};\n`
-        }
+      load: {
+        async handler(id) {
+          if (id.startsWith('\0virtual:vite-rsc/client-package-proxy/')) {
+            assert(this.environment.mode === 'dev')
+            const source = id.slice(
+              '\0virtual:vite-rsc/client-package-proxy/'.length,
+            )
+            const meta = Object.values(manager.clientReferenceMetaMap).find(
+              (v) => v.packageSource === source,
+            )!
+            const exportNames = meta.exportNames
+            return `export {${exportNames.join(',')}} from ${JSON.stringify(
+              source,
+            )};\n`
+          }
+        },
       },
       generateBundle(_options, bundle) {
         if (manager.isScanBuild) return
@@ -1638,20 +1658,24 @@ function vitePluginDefineEncryptionKey(
             JSON.stringify(toBase64(await generateEncryptionKey()))
         }
       },
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/encryption-key') {
-          // encryption logic can be tree-shaken if action bind is not used.
-          return { id: '\0' + source, moduleSideEffects: false }
-        }
-      },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/encryption-key') {
-          if (this.environment.mode === 'build') {
-            // during build, load key from an external file to make chunks stable.
-            return `export default () => ${KEY_PLACEHOLDER}`
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/encryption-key') {
+            // encryption logic can be tree-shaken if action bind is not used.
+            return { id: '\0' + source, moduleSideEffects: false }
           }
-          return `export default () => (${defineEncryptionKey})`
-        }
+        },
+      },
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/encryption-key') {
+            if (this.environment.mode === 'build') {
+              // during build, load key from an external file to make chunks stable.
+              return `export default () => ${KEY_PLACEHOLDER}`
+            }
+            return `export default () => (${defineEncryptionKey})`
+          }
+        },
       },
       renderChunk(code, chunk) {
         if (code.includes(KEY_PLACEHOLDER)) {
@@ -2139,31 +2163,35 @@ function vitePluginRscCss(
     },
     {
       name: 'rsc:css-virtual',
-      resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/css?')) {
-          return '\0' + source
-        }
+      resolveId: {
+        handler(source) {
+          if (source.startsWith('virtual:vite-rsc/css?')) {
+            return '\0' + source
+          }
+        },
       },
-      async load(id) {
-        const parsed = parseCssVirtual(id)
-        if (parsed?.type === 'ssr') {
-          id = parsed.id
-          const { server } = manager
-          const mod =
-            await server.environments.ssr.moduleGraph.getModuleByUrl(id)
-          if (!mod?.id || !mod?.file) {
-            return `export default []`
+      load: {
+        async handler(id) {
+          const parsed = parseCssVirtual(id)
+          if (parsed?.type === 'ssr') {
+            id = parsed.id
+            const { server } = manager
+            const mod =
+              await server.environments.ssr.moduleGraph.getModuleByUrl(id)
+            if (!mod?.id || !mod?.file) {
+              return `export default []`
+            }
+            const result = collectCss(server.environments.ssr, mod.id)
+            // invalidate virtual module on js file changes to reflect added/deleted css import
+            for (const file of [mod.file, ...result.visitedFiles]) {
+              this.addWatchFile(file)
+            }
+            const hrefs = result.hrefs.map((href) =>
+              assetsURL(href.slice(1), manager),
+            )
+            return `export default ${serializeValueWithRuntime(hrefs)}`
           }
-          const result = collectCss(server.environments.ssr, mod.id)
-          // invalidate virtual module on js file changes to reflect added/deleted css import
-          for (const file of [mod.file, ...result.visitedFiles]) {
-            this.addWatchFile(file)
-          }
-          const hrefs = result.hrefs.map((href) =>
-            assetsURL(href.slice(1), manager),
-          )
-          return `export default ${serializeValueWithRuntime(hrefs)}`
-        }
+        },
       },
     },
     {
