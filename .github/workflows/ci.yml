@@ -5,7 +5,7 @@ env:
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
   NODE_OPTIONS: --max-old-space-size=6144
   # install playwright binary manually (because pnpm only runs install script once)
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
   # Vitest auto retry on flaky segfault
   VITEST_SEGFAULT_RETRY: 3
 
@@ -38,7 +38,7 @@ jobs:
             node_version: 22
       fail-fast: false
 
-    name: "Build&Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
+    name: 'Build&Test: node-${{ matrix.node_version }}, ${{ matrix.os }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -107,7 +107,7 @@ jobs:
     if: github.repository == 'vitejs/vite-plugin-react'
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    name: "Lint: node-20, ubuntu-latest"
+    name: 'Lint: node-20, ubuntu-latest'
     steps:
       - uses: actions/checkout@v6
         with:

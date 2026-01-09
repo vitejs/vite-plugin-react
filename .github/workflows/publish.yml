@@ -3,7 +3,7 @@ name: Publish Package
 on:
   push:
     tags:
-      - "plugin-*"
+      - 'plugin-*'
 
 jobs:
   publish:
@@ -33,7 +33,7 @@ jobs:
       - name: Install deps
         run: pnpm install
         env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Get pkgName for tag
         id: tag
