@@ -1,6 +1,6 @@
 type CssVirtual = {
   id: string
-  type: 'ssr' | 'rsc'
+  type: 'ssr' | 'rsc' | 'rsc-browser'
 }
 
 export function toCssVirtual({ id, type }: CssVirtual) {
