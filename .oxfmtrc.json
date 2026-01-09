@@ -1,11 +1,20 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "printWidth": 80,
   "semi": false,
   "singleQuote": true,
+  "printWidth": 80,
   "experimentalSortImports": {
     "newlinesBetween": false,
     "partitionByNewline": true,
     "groups": [["builtin"], ["external"]]
-  }
+  },
+  "ignorePatterns": [
+    "packages/*/CHANGELOG.md",
+    "playground-temp/",
+    "dist/",
+    "temp/",
+    "LICENSE.md",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml"
+  ]
 }
