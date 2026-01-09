@@ -54,8 +54,8 @@
     "pre-commit": "pnpm exec lint-staged --concurrent false"
   },
   "lint-staged": {
-    "*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,vue,astro,svelte,json,jsonc}": [
-      "oxfmt"
+    "*": [
+      "oxfmt --no-error-on-unmatched-pattern"
     ],
     "packages/*/{src,types}/**/*.ts": [
       "eslint --cache --fix"
