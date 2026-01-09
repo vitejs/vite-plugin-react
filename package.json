@@ -43,7 +43,6 @@
     "oxfmt": "^0.23.0",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.57.0",
-    "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.51.0",

@@ -59,9 +59,6 @@ importers:
       playwright-chromium:
         specifier: ^1.57.0
         version: 1.57.0
-      prettier:
-        specifier: ^3.6.2
-        version: 3.6.2
       simple-git-hooks:
         specifier: ^2.13.1
         version: 2.13.1
