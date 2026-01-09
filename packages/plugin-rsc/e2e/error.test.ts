@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture } from './fixture'
 import { x } from 'tinyexec'
+import { setupInlineFixture } from './fixture'
 
 test.describe('invalid directives', () => {
   test.describe('"use server" in "use client"', () => {

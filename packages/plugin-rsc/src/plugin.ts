@@ -3,9 +3,11 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { toNodeHandler } from 'srvx/node'
+import { createDebug } from '@hiogawa/utils'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
+import { toNodeHandler } from 'srvx/node'
+import { stripLiteral } from 'strip-literal'
 import * as vite from 'vite'
 import {
   type BuilderOptions,
@@ -23,24 +25,15 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
-import {
-  type TransformWrapExportFilter,
-  hasDirective,
-  transformDirectiveProxyExport,
-  transformServerActionServer,
-  transformWrapExport,
-  findDirectives,
-} from './transforms'
-import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
-import { createRpcServer } from './utils/rpc'
-import {
-  cleanUrl,
-  directRequestRE,
-  evalValue,
-  normalizeViteImportAnalysisUrl,
-  prepareError,
-} from './plugins/vite-utils'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import { scanBuildStripPlugin } from './plugins/scan'
+import {
+  parseCssVirtual,
+  toCssVirtual,
+  parseIdQuery,
+  parseReferenceValidationVirtual,
+} from './plugins/shared'
 import {
   createVirtualPlugin,
   getEntrySource,
@@ -51,17 +44,24 @@ import {
   withRollupError,
   getFallbackRollupEntry,
 } from './plugins/utils'
-import { createDebug } from '@hiogawa/utils'
-import { scanBuildStripPlugin } from './plugins/scan'
 import { validateImportPlugin } from './plugins/validate-import'
-import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
-  parseCssVirtual,
-  toCssVirtual,
-  parseIdQuery,
-  parseReferenceValidationVirtual,
-} from './plugins/shared'
-import { stripLiteral } from 'strip-literal'
+  cleanUrl,
+  directRequestRE,
+  evalValue,
+  normalizeViteImportAnalysisUrl,
+  prepareError,
+} from './plugins/vite-utils'
+import {
+  type TransformWrapExportFilter,
+  hasDirective,
+  transformDirectiveProxyExport,
+  transformServerActionServer,
+  transformWrapExport,
+  findDirectives,
+} from './transforms'
+import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
+import { createRpcServer } from './utils/rpc'
 
 const isRolldownVite = 'rolldownVersion' in vite
 

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { createRequire } from 'node:module'
+import { join } from 'node:path'
+import { exactRegex } from '@rolldown/pluginutils'
 import {
   type JscTarget,
   type Output,
@@ -9,7 +10,6 @@ import {
   type Options as SWCOptions,
   transform,
 } from '@swc/core'
-import type { Plugin } from 'vite'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -17,8 +17,8 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
+import type { Plugin } from 'vite'
 import * as vite from 'vite'
-import { exactRegex } from '@rolldown/pluginutils'
 
 const resolve = createRequire(import.meta.url).resolve
 

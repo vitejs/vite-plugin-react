@@ -1,7 +1,7 @@
 {
   "name": "playground-styled-components",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

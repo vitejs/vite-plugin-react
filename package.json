@@ -1,24 +1,20 @@
 {
   "name": "@vitejs/vite-plugin-react-monorepo",
   "private": true,
-  "type": "module",
-  "engines": {
-    "node": "^20.19.0 || >=22.12.0"
-  },
-  "packageManager": "pnpm@10.27.0",
-  "homepage": "https://github.com/vitejs/vite-plugin-react/",
   "keywords": [
+    "build-tool",
+    "dev-server",
     "frontend",
     "hmr",
-    "dev-server",
-    "build-tool",
-    "vite",
-    "react"
+    "react",
+    "vite"
   ],
+  "homepage": "https://github.com/vitejs/vite-plugin-react/",
+  "type": "module",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "simple-git-hooks",
-    "format": "prettier --write --cache .",
+    "format": "oxfmt",
     "lint": "eslint --cache .",
     "typecheck": "tsc -p scripts && tsc -p playground && tsc -p packages/plugin-react",
     "test": "pnpm run test-unit && pnpm run test-serve && pnpm run test-build && pnpm --filter ./packages/plugin-react-swc run test",
@@ -44,9 +40,9 @@
     "fs-extra": "^11.3.3",
     "globals": "^17.0.0",
     "lint-staged": "^16.2.7",
+    "oxfmt": "^0.23.0",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.57.0",
-    "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.51.0",
@@ -59,7 +55,7 @@
   },
   "lint-staged": {
     "*": [
-      "prettier --write --cache --ignore-unknown"
+      "oxfmt --no-error-on-unmatched-pattern"
     ],
     "packages/*/{src,types}/**/*.ts": [
       "eslint --cache --fix"
@@ -70,5 +66,9 @@
     "playground/**/__tests__/**/*.ts": [
       "eslint --cache --fix"
     ]
-  }
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "packageManager": "pnpm@10.27.0"
 }

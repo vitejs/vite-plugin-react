@@ -2,8 +2,8 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 // @ts-ignore
 import connect from 'connect'
-import { toNodeHandler } from 'srvx/node'
 import sirv from 'sirv'
+import { toNodeHandler } from 'srvx/node'
 import type { Connect } from 'vite'
 
 async function main() {

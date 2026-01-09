@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import {
   isFileLoadingAllowed,
@@ -5,7 +6,6 @@ import {
   type Plugin,
   type ViteDevServer,
 } from 'vite'
-import fs from 'node:fs'
 import { slash } from './vite-utils'
 
 //

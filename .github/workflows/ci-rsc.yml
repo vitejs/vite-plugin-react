@@ -9,12 +9,12 @@ on:
       - main
   pull_request:
     paths:
-      - "packages/plugin-rsc/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/ci-rsc.yml"
+      - 'packages/plugin-rsc/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/ci-rsc.yml'
   schedule:
     # Run daily at 00:00 UTC to test canary/experimental React versions
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -42,7 +42,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
         rolldown: [false]
-        react_version: [""]
+        react_version: ['']
         include:
           - os: ubuntu-latest
             browser: firefox

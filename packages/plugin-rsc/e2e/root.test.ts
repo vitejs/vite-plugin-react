@@ -1,8 +1,8 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
-import fs from 'node:fs'
-import path from 'node:path'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/root'

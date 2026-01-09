@@ -1,13 +1,13 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
 import {
   createFromFetch,
   setServerCallback,
   createTemporaryReferenceSet,
   encodeReply,
 } from '@vitejs/plugin-rsc/browser'
-import type { RscPayload } from './entry.rsc'
+import React from 'react'
+import { createRoot } from 'react-dom/client'
 import { loadEntryRsc } from '../../lib/runtime'
+import type { RscPayload } from './entry.rsc'
 
 async function fetchRsc(request: Request): Promise<Response> {
   const module = await loadEntryRsc()

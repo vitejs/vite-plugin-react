@@ -1,7 +1,7 @@
-import rsc from '@vitejs/plugin-rsc'
-import react from '@vitejs/plugin-react'
-import { defineConfig, type Plugin } from 'vite'
 import fsp from 'node:fs/promises'
+import react from '@vitejs/plugin-react'
+import rsc from '@vitejs/plugin-rsc'
+import { defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
   plugins: [
