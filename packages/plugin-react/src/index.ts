@@ -32,7 +32,18 @@ async function loadBabel() {
 }
 
 export interface Options {
+  /**
+   * Can be used to process extra files like `.mdx`
+   * @example include: /\.(mdx|js|jsx|ts|tsx)$/
+   * @default /\.[tj]sx?$/
+   */
   include?: string | RegExp | Array<string | RegExp>
+  /**
+   * Can be used to exclude JSX/TSX files that runs in a worker or are not React files.
+   * Except if explicitly desired, you should keep node_modules in the exclude list
+   * @example exclude: [/\/pdf\//, /\.solid\.tsx$/, /\/node_modules\//]
+   * @default /\/node_modules\//
+   */
   exclude?: string | RegExp | Array<string | RegExp>
   /**
    * Control where the JSX factory is imported from.
