@@ -2260,7 +2260,10 @@ function vitePluginRscCss(
             for (const file of [importer, ...result.visitedFiles]) {
               this.addWatchFile(file)
             }
-            const cssHrefs = result.hrefs.map((href) => href.slice(1))
+            const cssHrefs = result.hrefs.map((href) => {
+              const url = href.slice(1)
+              return url.includes('?') ? url + '&direct' : url + '?direct'
+            })
             const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
