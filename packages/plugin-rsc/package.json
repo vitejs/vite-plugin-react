@@ -54,7 +54,7 @@
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.8",
     "@types/node": "^24.10.4",
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",
     "@vitejs/test-dep-cjs-and-esm": "./test-dep/cjs-and-esm",
