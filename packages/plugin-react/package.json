@@ -41,10 +41,10 @@
     "test-unit": "vitest run"
   },
   "dependencies": {
-    "@babel/core": "^7.28.5",
+    "@babel/core": "^7.28.6",
     "@babel/plugin-transform-react-jsx-self": "^7.27.1",
     "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-beta.58",
+    "@rolldown/pluginutils": "1.0.0-beta.59",
     "@types/babel__core": "^7.20.5",
     "react-refresh": "^0.18.0"
   },
@@ -53,8 +53,8 @@
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "rolldown": "1.0.0-beta.58",
-    "tsdown": "^0.18.4"
+    "rolldown": "1.0.0-beta.59",
+    "tsdown": "^0.19.0"
   },
   "peerDependencies": {
     "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
