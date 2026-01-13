@@ -19,9 +19,9 @@ export default defineConfig({
 
 ## Options
 
-### include/exclude
+### include
 
-Includes `.js`, `.jsx`, `.ts` & `.tsx` and excludes `/node_modules/` by default. This option can be used to add fast refresh to `.mdx` files:
+Includes `.js`, `.jsx`, `.ts` & `.tsx` by default. This option can be used to add fast refresh to `.mdx` files:
 
 ```js
 import { defineConfig } from 'vite'
@@ -32,6 +32,22 @@ export default defineConfig({
   plugins: [
     { enforce: 'pre', ...mdx() },
     react({ include: /\.(mdx|js|jsx|ts|tsx)$/ }),
+  ],
+})
+```
+
+### exclude
+
+The default value is `/node_modules/`. You may use it to exclude JSX/TSX files that runs in a worker or are not React files.
+Except if explicitly desired, you should keep `node_modules` in the exclude list:
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [
+    react({ exclude: [/\/pdf\//, /\.solid\.tsx$/, /\/node_modules\//] }),
   ],
 })
 ```
