@@ -1,7 +1,7 @@
-import cssUrl from './server-url.css?url'
+import { TestCssQueriesClient } from './client'
 import cssInline from './server-inline.css?inline'
 import cssRaw from './server-raw.css?raw'
-import { TestCssQueriesClient } from './client'
+import cssUrl from './server-url.css?url'
 
 export function TestCssQueries() {
   return (

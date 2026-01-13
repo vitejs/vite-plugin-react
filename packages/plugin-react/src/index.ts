@@ -1,11 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readFileSync } from 'node:fs'
 import type * as babelCore from '@babel/core'
 import type { ParserOptions, TransformOptions } from '@babel/core'
-import { createFilter } from 'vite'
-import * as vite from 'vite'
-import type { Plugin, ResolvedConfig } from 'vite'
+import {
+  exactRegex,
+  makeIdFiltersToMatchWithQuery,
+} from '@rolldown/pluginutils'
 import {
   addRefreshWrapper,
   getPreambleCode,
@@ -14,10 +15,9 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import {
-  exactRegex,
-  makeIdFiltersToMatchWithQuery,
-} from '@rolldown/pluginutils'
+import type { Plugin, ResolvedConfig } from 'vite'
+import { createFilter } from 'vite'
+import * as vite from 'vite'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
@@ -32,7 +32,18 @@ async function loadBabel() {
 }
 
 export interface Options {
+  /**
+   * Can be used to process extra files like `.mdx`
+   * @example include: /\.(mdx|js|jsx|ts|tsx)$/
+   * @default /\.[tj]sx?$/
+   */
   include?: string | RegExp | Array<string | RegExp>
+  /**
+   * Can be used to exclude JSX/TSX files that runs in a worker or are not React files.
+   * Except if explicitly desired, you should keep node_modules in the exclude list
+   * @example exclude: [/\/pdf\//, /\.solid\.tsx$/, /\/node_modules\//]
+   * @default /\/node_modules\//
+   */
   exclude?: string | RegExp | Array<string | RegExp>
   /**
    * Control where the JSX factory is imported from.

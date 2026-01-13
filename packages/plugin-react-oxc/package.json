@@ -1,21 +1,30 @@
 {
   "name": "@vitejs/plugin-react-oxc",
   "version": "0.4.3",
+  "description": "The future default Vite plugin for React projects",
+  "keywords": [
+    "fast refresh",
+    "oxc",
+    "react",
+    "react-refresh",
+    "vite",
+    "vite-plugin"
+  ],
+  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
+  "bugs": {
+    "url": "https://github.com/vitejs/vite-plugin-react/issues"
+  },
   "license": "MIT",
   "author": "Evan You",
   "contributors": [
     "Alec Larson",
     "Arnaud Barré"
   ],
-  "description": "The future default Vite plugin for React projects",
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "react",
-    "oxc",
-    "react-refresh",
-    "fast refresh"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
+    "directory": "packages/plugin-react-oxc"
+  },
   "files": [
     "dist"
   ],
@@ -26,27 +35,18 @@
     "build": "tsdown",
     "prepublishOnly": "npm run build"
   },
-  "engines": {
-    "node": "^20.19.0 || >=22.12.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vitejs/vite-plugin-react.git",
-    "directory": "packages/plugin-react-oxc"
-  },
-  "bugs": {
-    "url": "https://github.com/vitejs/vite-plugin-react/issues"
-  },
-  "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme",
-  "peerDependencies": {
-    "vite": "^6.3.0 || ^7.0.0"
+  "dependencies": {
+    "@rolldown/pluginutils": "1.0.0-beta.59"
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
-    "tsdown": "^0.18.4",
+    "tsdown": "^0.19.0",
     "vite": "catalog:rolldown-vite"
   },
-  "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.58"
+  "peerDependencies": {
+    "vite": "^6.3.0 || ^7.0.0"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
