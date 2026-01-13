@@ -1147,8 +1147,12 @@ import.meta.hot.on("rsc:update", () => {
           const nodes = document.querySelectorAll<HTMLLinkElement>(
             "link[rel='stylesheet']",
           )
+          // normalize paths with ?direct suffix for comparison
+          // TODO: we also have SSR CSS without ?direct
+          // TODO: test virtual css?
+          const prunePaths = e.paths.flatMap((p) => [p, p + '?direct'])
           nodes.forEach((node) => {
-            if (e.paths.includes(node.dataset.rscCssHref!)) {
+            if (prunePaths.includes(node.dataset.rscCssHref!)) {
               node.remove()
             }
           })
