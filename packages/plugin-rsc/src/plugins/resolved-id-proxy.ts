@@ -1,8 +1,7 @@
 import type { Plugin } from 'vite'
 
 // Resolved ID proxy plugin
-// This enables virtual modules (with \0 prefix) to be used in import specifiers
-// and handles ?direct query for CSS requests in dev mode.
+// This enables virtual modules (with \0 prefix) to be used in import specifiers.
 //
 // Input/Output examples:
 //
@@ -14,6 +13,10 @@ import type { Plugin } from 'vite'
 //
 //   fromResolvedIdProxy("virtual:vite-rsc/resolved-id/__x00__virtual:test.css?direct")
 //     => "\0virtual:test.css"
+//
+// TODO: ?direct query handling for virtual CSS doesn't work yet.
+// Vite adds ?direct for text/css requests, but the query is lost during resolution,
+// causing JS wrapper to be returned instead of raw CSS.
 
 const RESOLVED_ID_PROXY_PREFIX = 'virtual:vite-rsc/resolved-id/'
 const NULL_BYTE_PLACEHOLDER = '__x00__'
