@@ -27,6 +27,10 @@ import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import {
+  vitePluginResolvedIdProxy,
+  toResolvedIdProxy,
+} from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
 import {
   parseCssVirtual,
@@ -299,6 +303,7 @@ export function vitePluginRscMinimal(
       },
     },
     scanBuildStripPlugin({ manager }),
+    vitePluginResolvedIdProxy(),
   ]
 }
 
@@ -1357,10 +1362,9 @@ function vitePluginUseClient(
           if (manager.isScanBuild) {
             let code = ``
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              // TODO: Vite's virtual module convention uses \0 prefix internally,
-              // but it cannot be used as an import specifier. Strip it for virtual modules.
+              // Use resolved-id proxy for virtual modules (\0 prefix)
               const importId = meta.importId.startsWith('\0')
-                ? meta.importId.slice(1)
+                ? toResolvedIdProxy(meta.importId)
                 : meta.importId
               code += `import ${JSON.stringify(importId)};\n`
             }
@@ -1415,10 +1419,9 @@ function vitePluginUseClient(
               .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
               .join('')
-            // TODO: Vite's virtual module convention uses \0 prefix internally,
-            // but it cannot be used as an import specifier. Strip it for virtual modules.
+            // Use resolved-id proxy for virtual modules (\0 prefix)
             const importId = meta.importId.startsWith('\0')
-              ? meta.importId.slice(1)
+              ? toResolvedIdProxy(meta.importId)
               : meta.importId
             code += `
               import * as import_${meta.referenceKey} from ${JSON.stringify(importId)};
@@ -2053,9 +2056,13 @@ function vitePluginRscCss(
     recurse(entryId)
 
     // this doesn't include ?t= query so that RSC <link /> won't keep adding styles.
-    const hrefs = [...cssIds].map((id) =>
-      normalizeViteImportAnalysisUrl(environment, id),
-    )
+    // Use resolved-id proxy for virtual CSS modules to handle ?direct query
+    const hrefs = [...cssIds].map((id) => {
+      if (id.startsWith('\0')) {
+        return `/@id/${toResolvedIdProxy(id)}`
+      }
+      return normalizeViteImportAnalysisUrl(environment, id)
+    })
     return { ids: [...cssIds], hrefs, visitedFiles: [...visitedFiles] }
   }
 
