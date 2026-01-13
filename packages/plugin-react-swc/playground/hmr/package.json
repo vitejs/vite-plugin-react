@@ -1,7 +1,7 @@
 {
   "name": "playground-hmr",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

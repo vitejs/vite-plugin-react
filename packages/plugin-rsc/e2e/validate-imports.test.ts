@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { x } from 'tinyexec'
+import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 
 test.describe('validate imports', () => {

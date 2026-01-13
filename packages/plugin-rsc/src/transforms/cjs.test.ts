@@ -1,8 +1,8 @@
+import path from 'node:path'
 import { createServer, createServerModuleRunner, parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { debugSourceMap } from './test-utils'
 import { transformCjsToEsm } from './cjs'
-import path from 'node:path'
+import { debugSourceMap } from './test-utils'
 
 describe(transformCjsToEsm, () => {
   async function testTransform(input: string) {

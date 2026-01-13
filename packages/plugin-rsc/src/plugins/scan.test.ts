@@ -1,5 +1,5 @@
-import { beforeAll, describe, expect, it } from 'vitest'
 import * as esModuleLexer from 'es-module-lexer'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { transformScanBuildStrip } from './scan'
 
 describe(transformScanBuildStrip, () => {

@@ -1,5 +1,5 @@
-import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
 import { createRPCClient } from 'vite-dev-rpc'
+import { ESModulesEvaluator, ModuleRunner } from 'vite/module-runner'
 
 const rpcClient = createRPCClient<{ invoke: Function }, {}>(
   'transport-proxy',

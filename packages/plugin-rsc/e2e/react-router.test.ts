@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
+import React from 'react'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoReload, testNoJs, waitForHydration } from './helper'
-import { readFileSync } from 'node:fs'
-import React from 'react'
 
 test.describe('dev-default', () => {
   test.skip(/canary|experimental/.test(React.version))

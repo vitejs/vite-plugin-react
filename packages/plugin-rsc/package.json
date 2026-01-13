@@ -3,19 +3,23 @@
   "version": "0.5.11",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
-    "vite",
-    "vite-plugin",
     "react",
     "react-server-components",
-    "rsc"
+    "rsc",
+    "vite",
+    "vite-plugin"
   ],
   "homepage": "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitejs/vite-plugin-react.git",
     "directory": "packages/plugin-rsc"
   },
-  "license": "MIT",
+  "files": [
+    "dist",
+    "types"
+  ],
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
@@ -24,10 +28,6 @@
     "./transforms": "./dist/transforms/index.js",
     "./*": "./dist/*.js"
   },
-  "files": [
-    "dist",
-    "types"
-  ],
   "scripts": {
     "test": "vitest",
     "test-e2e": "playwright test --project=chromium",

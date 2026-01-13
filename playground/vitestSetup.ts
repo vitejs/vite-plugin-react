@@ -1,6 +1,7 @@
 import type * as http from 'node:http'
 import path, { dirname, resolve } from 'node:path'
 import fs from 'fs-extra'
+import type { Browser, Page } from 'playwright-chromium'
 import { chromium } from 'playwright-chromium'
 import type {
   ConfigEnv,
@@ -12,9 +13,6 @@ import type {
   UserConfig,
   ViteDevServer,
 } from 'vite'
-import type { Browser, Page } from 'playwright-chromium'
-import type { RunnerTestFile } from 'vitest'
-import { beforeAll, inject } from 'vitest'
 import {
   build,
   createBuilder,
@@ -23,6 +21,8 @@ import {
   mergeConfig,
   preview,
 } from 'vite'
+import type { RunnerTestFile } from 'vitest'
+import { beforeAll, inject } from 'vitest'
 
 // #region env
 
