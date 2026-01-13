@@ -3,7 +3,6 @@ import type { Plugin } from 'vite'
 // Resolved ID proxy plugin
 // This enables virtual modules (with \0 prefix) to be used in import specifiers
 // and handles ?direct query for CSS requests in dev mode.
-// See .dev-notes/dist/virtual-module-e2e-test-plan.md for details.
 //
 // Input/Output examples:
 //
@@ -22,6 +21,12 @@ const NULL_BYTE_PLACEHOLDER = '__x00__'
 export function toResolvedIdProxy(resolvedId: string): string {
   const encoded = resolvedId.replace(/\0/g, NULL_BYTE_PLACEHOLDER)
   return RESOLVED_ID_PROXY_PREFIX + encoded
+}
+
+export function withResolvedIdProxy(resolvedId: string): string {
+  return resolvedId.startsWith('\0')
+    ? toResolvedIdProxy(resolvedId)
+    : resolvedId
 }
 
 export function fromResolvedIdProxy(source: string): string | undefined {

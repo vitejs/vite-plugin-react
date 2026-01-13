@@ -30,6 +30,7 @@ import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   vitePluginResolvedIdProxy,
   toResolvedIdProxy,
+  withResolvedIdProxy,
 } from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
 import {
@@ -1362,11 +1363,7 @@ function vitePluginUseClient(
           if (manager.isScanBuild) {
             let code = ``
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              // Use resolved-id proxy for virtual modules (\0 prefix)
-              const importId = meta.importId.startsWith('\0')
-                ? toResolvedIdProxy(meta.importId)
-                : meta.importId
-              code += `import ${JSON.stringify(importId)};\n`
+              code += `import ${JSON.stringify(withResolvedIdProxy(meta.importId))};\n`
             }
             return { code, map: null }
           }
@@ -1419,12 +1416,8 @@ function vitePluginUseClient(
               .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
               .join('')
-            // Use resolved-id proxy for virtual modules (\0 prefix)
-            const importId = meta.importId.startsWith('\0')
-              ? toResolvedIdProxy(meta.importId)
-              : meta.importId
             code += `
-              import * as import_${meta.referenceKey} from ${JSON.stringify(importId)};
+              import * as import_${meta.referenceKey} from ${JSON.stringify(withResolvedIdProxy(meta.importId))};
               export const export_${meta.referenceKey} = {${exports}};
             `
           }
