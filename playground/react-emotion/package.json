@@ -16,7 +16,7 @@
     "react-switch": "^7.1.0"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-pipeline-operator": "^7.27.1",
+    "@babel/plugin-proposal-pipeline-operator": "^7.28.6",
     "@emotion/babel-plugin": "^11.13.5",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
