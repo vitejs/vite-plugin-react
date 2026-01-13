@@ -1357,7 +1357,12 @@ function vitePluginUseClient(
           if (manager.isScanBuild) {
             let code = ``
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              code += `import ${JSON.stringify(meta.importId)};\n`
+              // TODO: Vite's virtual module convention uses \0 prefix internally,
+              // but it cannot be used as an import specifier. Strip it for virtual modules.
+              const importId = meta.importId.startsWith('\0')
+                ? meta.importId.slice(1)
+                : meta.importId
+              code += `import ${JSON.stringify(importId)};\n`
             }
             return { code, map: null }
           }
@@ -1410,8 +1415,13 @@ function vitePluginUseClient(
               .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
               .sort()
               .join('')
+            // TODO: Vite's virtual module convention uses \0 prefix internally,
+            // but it cannot be used as an import specifier. Strip it for virtual modules.
+            const importId = meta.importId.startsWith('\0')
+              ? meta.importId.slice(1)
+              : meta.importId
             code += `
-              import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+              import * as import_${meta.referenceKey} from ${JSON.stringify(importId)};
               export const export_${meta.referenceKey} = {${exports}};
             `
           }
