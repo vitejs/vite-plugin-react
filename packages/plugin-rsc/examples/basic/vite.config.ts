@@ -371,9 +371,6 @@ export function TestVirtualClient() {
     {
       name: 'test-virtual-css',
       resolveId(source) {
-        if (source === 'virtual:test-style.css') {
-          return `\0${source}`
-        }
         if (source === 'virtual:test-style-server.css') {
           return `\0${source}`
         }
@@ -382,13 +379,6 @@ export function TestVirtualClient() {
         }
       },
       load(id) {
-        if (id === '\0virtual:test-style.css') {
-          return `
-.test-virtual-style {
-  color: rgb(100, 200, 50);
-}
-`
-        }
         if (id === '\0virtual:test-style-server.css') {
           return `
 .test-virtual-style-server {
