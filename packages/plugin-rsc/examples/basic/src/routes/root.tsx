@@ -48,6 +48,7 @@ import { TestTreeShakeServer } from './tree-shake/server'
 import { TestTreeShake2 } from './tree-shake2/server'
 import { TestUseCache } from './use-cache/server'
 import { TestUseId } from './use-id/server'
+import { TestVirtualModule } from './virtual-module/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -70,6 +71,7 @@ export function Root(props: { url: URL }) {
         <TestTailwind />
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
+        <TestVirtualModule />
         <TestHmrClientDep url={{ search: props.url.search }} />
         <TestHmrClientDep2 url={{ search: props.url.search }} />
         <TestHmrClientDep3 />

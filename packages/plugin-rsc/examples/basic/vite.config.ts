@@ -21,6 +21,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vitePluginUseCache(),
+    vitePluginVirtualModuleTest(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -329,6 +330,78 @@ function vitePluginUseCache(): Plugin[] {
         return {
           code: result.output.toString(),
           map: result.output.generateMap({ hires: 'boundary' }),
+        }
+      },
+    },
+  ]
+}
+
+function vitePluginVirtualModuleTest(): Plugin[] {
+  return [
+    {
+      name: 'test-virtual-client',
+      resolveId(source) {
+        if (source === 'virtual:test-virtual-client') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:test-virtual-client') {
+          return `
+'use client'
+
+import React from 'react'
+
+export function TestVirtualClient() {
+  const [clicked, setClicked] = React.useState(false)
+  return React.createElement(
+    'button',
+    {
+      type: 'button',
+      'data-testid': 'test-virtual-client',
+      onClick: () => setClicked(true),
+    },
+    'test-virtual-client: ' + (clicked ? 'clicked' : 'not-clicked')
+  )
+}
+`
+        }
+      },
+    },
+    {
+      name: 'test-virtual-css',
+      resolveId(source) {
+        if (source === 'virtual:test-style.css') {
+          return `\0${source}`
+        }
+        if (source === 'virtual:test-style-server.css') {
+          return `\0${source}`
+        }
+        if (source === 'virtual:test-style-client.css') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:test-style.css') {
+          return `
+.test-virtual-style {
+  color: rgb(100, 200, 50);
+}
+`
+        }
+        if (id === '\0virtual:test-style-server.css') {
+          return `
+.test-virtual-style-server {
+  color: rgb(50, 100, 200);
+}
+`
+        }
+        if (id === '\0virtual:test-style-client.css') {
+          return `
+.test-virtual-style-client {
+  color: rgb(200, 50, 100);
+}
+`
         }
       },
     },

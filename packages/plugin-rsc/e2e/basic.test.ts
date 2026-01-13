@@ -1620,4 +1620,53 @@ function defineTest(f: Fixture) {
       'test-tree-shake2:lib-client1|lib-server1',
     )
   })
+
+  test('virtual module with use client', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    // Test that the virtual client component renders and works
+    await expect(page.getByTestId('test-virtual-client')).toHaveText(
+      'test-virtual-client: not-clicked',
+    )
+    await page.getByTestId('test-virtual-client').click()
+    await expect(page.getByTestId('test-virtual-client')).toHaveText(
+      'test-virtual-client: clicked',
+    )
+  })
+
+  test('virtual css module in server component', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    // Test that the virtual CSS imported in server component is applied
+    await expect(page.locator('.test-virtual-style')).toHaveCSS(
+      'color',
+      'rgb(100, 200, 50)',
+    )
+    await expect(page.locator('.test-virtual-style-server')).toHaveCSS(
+      'color',
+      'rgb(50, 100, 200)',
+    )
+  })
+
+  test('virtual css module in client component', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    // Test that the real "use client" component with virtual CSS works
+    await expect(page.getByTestId('test-client-with-virtual-css')).toHaveText(
+      'test-client-with-virtual-css: not-clicked',
+    )
+    await page.getByTestId('test-client-with-virtual-css').click()
+    await expect(page.getByTestId('test-client-with-virtual-css')).toHaveText(
+      'test-client-with-virtual-css: clicked',
+    )
+
+    // Test that the virtual CSS imported in client component is applied
+    await expect(page.locator('.test-virtual-style-client')).toHaveCSS(
+      'color',
+      'rgb(200, 50, 100)',
+    )
+  })
 }
