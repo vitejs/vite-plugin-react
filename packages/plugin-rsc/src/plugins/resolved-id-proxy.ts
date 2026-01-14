@@ -132,11 +132,14 @@ export function fromResolvedIdProxy(source: string): string | undefined {
 export function vitePluginResolvedIdProxy(): Plugin {
   return {
     name: 'rsc:resolved-id-proxy',
-    resolveId(source) {
-      const originalId = fromResolvedIdProxy(source)
-      if (originalId !== undefined) {
-        return originalId
-      }
+    resolveId: {
+      // TODO: filter
+      handler(source) {
+        const originalId = fromResolvedIdProxy(source)
+        if (originalId !== undefined) {
+          return originalId
+        }
+      },
     },
   }
 }
