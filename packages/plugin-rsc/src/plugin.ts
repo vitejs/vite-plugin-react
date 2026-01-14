@@ -373,6 +373,20 @@ export default function vitePluginRsc(
       return
     }
 
+    // Check if RSC outDir is inside SSR outDir to avoid SSR build overwriting RSC output
+    const rscOutDir = builder.environments.rsc!.config.build.outDir
+    const ssrOutDir = builder.environments.ssr!.config.build.outDir
+    const rscInsideSsr = path
+      .normalize(rscOutDir)
+      .startsWith(path.normalize(ssrOutDir) + path.sep)
+
+    const tempRscOutDir = path.join(
+      builder.config.root,
+      'node_modules',
+      '.vite-rsc-temp',
+      'rsc',
+    )
+
     // rsc -> ssr -> rsc -> client -> ssr
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
@@ -386,11 +400,31 @@ export default function vitePluginRsc(
     builder.environments.ssr!.config.build.write = true
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
+
+    // Evacuate RSC output to temp before SSR build overwrites it
+    if (rscInsideSsr) {
+      if (fs.existsSync(tempRscOutDir)) {
+        fs.rmSync(tempRscOutDir, { recursive: true })
+      }
+      fs.mkdirSync(path.dirname(tempRscOutDir), { recursive: true })
+      fs.renameSync(rscOutDir, tempRscOutDir)
+    }
+
     manager.stabilize()
     logStep('[4/5] build client environment...')
     await builder.build(builder.environments.client!)
     logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
+
+    // Restore RSC output from temp after SSR build
+    if (rscInsideSsr) {
+      if (fs.existsSync(rscOutDir)) {
+        fs.rmSync(rscOutDir, { recursive: true })
+      }
+      fs.mkdirSync(path.dirname(rscOutDir), { recursive: true })
+      fs.renameSync(tempRscOutDir, rscOutDir)
+    }
+
     manager.writeAssetsManifest(['ssr', 'rsc'])
   }
 
