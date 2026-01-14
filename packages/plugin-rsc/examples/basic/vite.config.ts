@@ -21,6 +21,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     vitePluginUseCache(),
+    vitePluginVirtualModuleTest(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -329,6 +330,88 @@ function vitePluginUseCache(): Plugin[] {
         return {
           code: result.output.toString(),
           map: result.output.generateMap({ hires: 'boundary' }),
+        }
+      },
+    },
+  ]
+}
+
+function vitePluginVirtualModuleTest(): Plugin[] {
+  return [
+    {
+      name: 'test-virtual-client',
+      resolveId(source) {
+        if (source === 'virtual:test-virtual-client') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:test-virtual-client') {
+          return `
+'use client'
+
+import React from 'react'
+
+export function TestVirtualClient() {
+  const [clicked, setClicked] = React.useState(false)
+  return React.createElement(
+    'button',
+    {
+      type: 'button',
+      'data-testid': 'test-virtual-client',
+      onClick: () => setClicked(true),
+    },
+    'test-virtual-client: ' + (clicked ? 'clicked' : 'not-clicked')
+  )
+}
+`
+        }
+      },
+    },
+    // Query-aware virtual CSS: handles ?direct query, works with <link> in dev
+    {
+      name: 'test-virtual-css-query-aware',
+      resolveId(source) {
+        const clean = source.split('?')[0]
+        if (
+          clean === 'virtual:test-style-server-query.css' ||
+          clean === 'virtual:test-style-client-query.css'
+        ) {
+          // Preserve query in resolved id for Vite's CSS plugin to see ?direct
+          const query = source.includes('?')
+            ? source.slice(source.indexOf('?'))
+            : ''
+          return `\0${clean}${query}`
+        }
+      },
+      load(id) {
+        const clean = id.split('?')[0]
+        if (clean === '\0virtual:test-style-server-query.css') {
+          return `.test-virtual-style-server-query { color: rgb(50, 100, 150); }`
+        }
+        if (clean === '\0virtual:test-style-client-query.css') {
+          return `.test-virtual-style-client-query { color: rgb(50, 150, 100); }`
+        }
+      },
+    },
+    // Exact-match virtual CSS: standard pattern, does NOT work with <link> in dev
+    // (works fine when imported via JS)
+    {
+      name: 'test-virtual-css-exact',
+      resolveId(source) {
+        if (source === 'virtual:test-style-server-exact.css') {
+          return `\0${source}`
+        }
+        if (source === 'virtual:test-style-client-exact.css') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:test-style-server-exact.css') {
+          return `.test-virtual-style-server-exact { color: rgb(200, 100, 50); }`
+        }
+        if (id === '\0virtual:test-style-client-exact.css') {
+          return `.test-virtual-style-client-exact { color: rgb(200, 50, 100); }`
         }
       },
     },

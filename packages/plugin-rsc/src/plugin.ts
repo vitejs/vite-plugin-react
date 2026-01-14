@@ -27,6 +27,10 @@ import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import {
+  vitePluginResolvedIdProxy,
+  withResolvedIdProxy,
+} from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
 import {
   parseCssVirtual,
@@ -299,6 +303,7 @@ export function vitePluginRscMinimal(
       },
     },
     scanBuildStripPlugin({ manager }),
+    vitePluginResolvedIdProxy(),
   ]
 }
 
@@ -1357,7 +1362,7 @@ function vitePluginUseClient(
           if (manager.isScanBuild) {
             let code = ``
             for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              code += `import ${JSON.stringify(meta.importId)};\n`
+              code += `import ${JSON.stringify(withResolvedIdProxy(meta.importId))};\n`
             }
             return { code, map: null }
           }
@@ -1411,7 +1416,7 @@ function vitePluginUseClient(
               .sort()
               .join('')
             code += `
-              import * as import_${meta.referenceKey} from ${JSON.stringify(meta.importId)};
+              import * as import_${meta.referenceKey} from ${JSON.stringify(withResolvedIdProxy(meta.importId))};
               export const export_${meta.referenceKey} = {${exports}};
             `
           }
