@@ -103,11 +103,9 @@ resolveId and load hooks. See examples/basic/vite.config.ts for patterns.
 */
 
 const RESOLVED_ID_PROXY_PREFIX = 'virtual:vite-rsc/resolved-id/'
-const NULL_BYTE_PLACEHOLDER = '__x00__'
 
 export function toResolvedIdProxy(resolvedId: string): string {
-  const encoded = resolvedId.replace(/\0/g, NULL_BYTE_PLACEHOLDER)
-  return RESOLVED_ID_PROXY_PREFIX + encoded
+  return RESOLVED_ID_PROXY_PREFIX + encodeURIComponent(resolvedId)
 }
 
 export function withResolvedIdProxy(resolvedId: string): string {
@@ -117,13 +115,12 @@ export function withResolvedIdProxy(resolvedId: string): string {
 }
 
 export function fromResolvedIdProxy(source: string): string | undefined {
-  // Strip query params (e.g., ?direct added by Vite for CSS)
-  const clean = source.split('?')[0]!
-  if (!clean.startsWith(RESOLVED_ID_PROXY_PREFIX)) {
+  if (!source.startsWith(RESOLVED_ID_PROXY_PREFIX)) {
     return undefined
   }
-  const encoded = clean.slice(RESOLVED_ID_PROXY_PREFIX.length)
-  return encoded.replace(new RegExp(NULL_BYTE_PLACEHOLDER, 'g'), '\0')
+  // Strip query params (e.g., ?direct added by Vite for CSS)
+  const clean = source.split('?')[0]!
+  return decodeURIComponent(clean.slice(RESOLVED_ID_PROXY_PREFIX.length))
 }
 
 /**
