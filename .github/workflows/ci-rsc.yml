@@ -78,7 +78,7 @@ jobs:
       - name: install rolldown
         if: ${{ matrix.rolldown }}
         run: |
-          sed -i '/^overrides:/a\  vite: "npm:rolldown-vite@latest"' pnpm-workspace.yaml
+          yq -i '.overrides.vite = "beta"' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
         shell: bash
