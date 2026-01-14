@@ -535,18 +535,17 @@ export default function vitePluginRsc(
               },
             },
           },
-          builder: {
-            sharedPlugins: true,
-            sharedConfigBuild: true,
-            async buildApp(builder) {
-              if (rscPluginOptions.customBuildApp) {
-                return
-              }
-              if (!rscPluginOptions.useBuildAppHook) {
-                await buildApp(builder)
-              }
-            },
-          },
+          builder: rscPluginOptions.customBuildApp
+            ? undefined
+            : {
+                sharedPlugins: true,
+                sharedConfigBuild: true,
+                async buildApp(builder) {
+                  if (!rscPluginOptions.useBuildAppHook) {
+                    await buildApp(builder)
+                  }
+                },
+              },
         }
       },
       configResolved() {
