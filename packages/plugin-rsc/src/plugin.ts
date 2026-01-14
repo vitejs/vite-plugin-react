@@ -29,7 +29,6 @@ import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   vitePluginResolvedIdProxy,
-  toResolvedIdProxy,
   withResolvedIdProxy,
 } from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
@@ -2049,13 +2048,9 @@ function vitePluginRscCss(
     recurse(entryId)
 
     // this doesn't include ?t= query so that RSC <link /> won't keep adding styles.
-    // Use resolved-id proxy for virtual CSS modules to handle ?direct query
-    const hrefs = [...cssIds].map((id) => {
-      if (id.startsWith('\0')) {
-        return `/@id/${toResolvedIdProxy(id)}`
-      }
-      return normalizeViteImportAnalysisUrl(environment, id)
-    })
+    const hrefs = [...cssIds].map((id) =>
+      normalizeViteImportAnalysisUrl(environment, id),
+    )
     return { ids: [...cssIds], hrefs, visitedFiles: [...visitedFiles] }
   }
 

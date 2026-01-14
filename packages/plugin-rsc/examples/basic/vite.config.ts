@@ -368,27 +368,43 @@ export function TestVirtualClient() {
         }
       },
     },
+    // Query-aware virtual CSS: handles ?direct query, works with <link> in dev
     {
-      name: 'test-virtual-css',
+      name: 'test-virtual-css-query-aware',
       resolveId(source) {
-        if (source === 'virtual:test-style-server.css') {
-          return `\0${source}`
-        }
-        if (source === 'virtual:test-style-client.css') {
-          return `\0${source}`
+        const clean = source.split('?')[0]
+        if (clean === 'virtual:test-style-query-aware.css') {
+          // Preserve query in resolved id for Vite's CSS plugin to see ?direct
+          const query = source.includes('?')
+            ? source.slice(source.indexOf('?'))
+            : ''
+          return `\0${clean}${query}`
         }
       },
       load(id) {
-        if (id === '\0virtual:test-style-server.css') {
+        const clean = id.split('?')[0]
+        if (clean === '\0virtual:test-style-query-aware.css') {
           return `
-.test-virtual-style-server {
+.test-virtual-style-query-aware {
   color: rgb(50, 100, 200);
 }
 `
         }
-        if (id === '\0virtual:test-style-client.css') {
+      },
+    },
+    // Exact-match virtual CSS: standard pattern, does NOT work with <link> in dev
+    // (works fine when imported via JS)
+    {
+      name: 'test-virtual-css-exact',
+      resolveId(source) {
+        if (source === 'virtual:test-style-exact.css') {
+          return `\0${source}`
+        }
+      },
+      load(id) {
+        if (id === '\0virtual:test-style-exact.css') {
           return `
-.test-virtual-style-client {
+.test-virtual-style-exact {
   color: rgb(200, 50, 100);
 }
 `
