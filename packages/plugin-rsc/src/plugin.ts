@@ -187,6 +187,14 @@ export type RscPluginOptions = {
   useBuildAppHook?: boolean
 
   /**
+   * Skip the default buildApp orchestration and expose utilities on `builder.rsc`
+   * for downstream frameworks to implement custom build pipelines.
+   * @experimental
+   * @default false
+   */
+  customBuildApp?: boolean
+
+  /**
    * Custom environment configuration
    * @experimental
    * @default { browser: 'client', ssr: 'ssr', rsc: 'rsc' }
@@ -383,9 +391,31 @@ export default function vitePluginRsc(
     }
   }
 
+  function getManifestEnvironments(builder: vite.ViteBuilder): string[] {
+    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
+      return ['rsc']
+    }
+    return ['ssr', 'rsc']
+  }
+
   let hasReactServerDomWebpack = false
 
   return [
+    {
+      name: 'rsc:builder-api',
+      buildApp: {
+        order: 'pre' as const,
+        async handler(builder) {
+          builder.rsc = {
+            manager,
+            writeAssetsManifest: async () => {
+              const envNames = getManifestEnvironments(builder)
+              writeAssetsManifest(envNames)
+            },
+          }
+        },
+      },
+    },
     {
       name: 'rsc',
       async config(config, env) {
@@ -509,6 +539,9 @@ export default function vitePluginRsc(
             sharedPlugins: true,
             sharedConfigBuild: true,
             async buildApp(builder) {
+              if (rscPluginOptions.customBuildApp) {
+                return
+              }
               if (!rscPluginOptions.useBuildAppHook) {
                 await buildApp(builder)
               }
@@ -523,6 +556,9 @@ export default function vitePluginRsc(
       },
       buildApp: {
         async handler(builder) {
+          if (rscPluginOptions.customBuildApp) {
+            return
+          }
           if (rscPluginOptions.useBuildAppHook) {
             await buildApp(builder)
           }
