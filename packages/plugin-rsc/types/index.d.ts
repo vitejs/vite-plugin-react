@@ -27,8 +27,6 @@ declare module 'vite' {
     rsc: {
       /** Access to internal RscPluginManager for controlling build phases */
       manager: import('@vitejs/plugin-rsc').RscPluginManager
-      /** Write assets manifest to appropriate environments (ssr, rsc) */
-      writeAssetsManifest(): Promise<void>
     }
   }
 }

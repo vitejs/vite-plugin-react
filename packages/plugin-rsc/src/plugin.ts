@@ -106,6 +106,9 @@ function resolvePackage(name: string) {
 
 export type { RscPluginManager }
 
+/**
+ * @experimental
+ */
 class RscPluginManager {
   server!: ViteDevServer
   config!: ResolvedConfig
@@ -126,6 +129,21 @@ class RscPluginManager {
 
   toRelativeId(id: string): string {
     return normalizePath(path.relative(this.config.root, id))
+  }
+
+  writeAssetsManifest(environmentNames: string[]): void {
+    // write client manifest to all non-client builds during post-build step.
+    // this makes each server build to be self-contained and deploy-able for cloudflare.
+    const assetsManifestCode = `export default ${serializeValueWithRuntime(
+      this.buildAssetsManifest,
+    )}`
+    for (const name of environmentNames) {
+      const manifestPath = path.join(
+        this.config.environments[name]!.build.outDir,
+        BUILD_ASSETS_MANIFEST_NAME,
+      )
+      fs.writeFileSync(manifestPath, assetsManifestCode)
+    }
   }
 }
 
@@ -351,7 +369,7 @@ export default function vitePluginRsc(
       manager.stabilize()
       logStep('[4/4] build client environment...')
       await builder.build(builder.environments.client!)
-      writeAssetsManifest(['rsc'])
+      manager.writeAssetsManifest(['rsc'])
       return
     }
 
@@ -373,29 +391,7 @@ export default function vitePluginRsc(
     await builder.build(builder.environments.client!)
     logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
-    writeAssetsManifest(['ssr', 'rsc'])
-  }
-
-  function writeAssetsManifest(environmentNames: string[]) {
-    // output client manifest to non-client build directly.
-    // this makes server build to be self-contained and deploy-able for cloudflare.
-    const assetsManifestCode = `export default ${serializeValueWithRuntime(
-      manager.buildAssetsManifest,
-    )}`
-    for (const name of environmentNames) {
-      const manifestPath = path.join(
-        manager.config.environments[name]!.build.outDir,
-        BUILD_ASSETS_MANIFEST_NAME,
-      )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
-    }
-  }
-
-  function getManifestEnvironments(builder: vite.ViteBuilder): string[] {
-    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-      return ['rsc']
-    }
-    return ['ssr', 'rsc']
+    manager.writeAssetsManifest(['ssr', 'rsc'])
   }
 
   let hasReactServerDomWebpack = false
@@ -408,10 +404,6 @@ export default function vitePluginRsc(
         async handler(builder) {
           builder.rsc = {
             manager,
-            writeAssetsManifest: async () => {
-              const envNames = getManifestEnvironments(builder)
-              writeAssetsManifest(envNames)
-            },
           }
         },
       },
