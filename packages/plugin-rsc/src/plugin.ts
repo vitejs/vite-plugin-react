@@ -380,6 +380,7 @@ export default function vitePluginRsc(
       if (fs.existsSync(tempRscOutDir)) {
         fs.rmSync(tempRscOutDir, { recursive: true })
       }
+      fs.mkdirSync(path.dirname(tempRscOutDir), { recursive: true })
       fs.renameSync(rscOutDir, tempRscOutDir)
     }
 
