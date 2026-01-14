@@ -373,7 +373,10 @@ export function TestVirtualClient() {
       name: 'test-virtual-css-query-aware',
       resolveId(source) {
         const clean = source.split('?')[0]
-        if (clean === 'virtual:test-style-query-aware.css') {
+        if (
+          clean === 'virtual:test-style-server-query.css' ||
+          clean === 'virtual:test-style-client-query.css'
+        ) {
           // Preserve query in resolved id for Vite's CSS plugin to see ?direct
           const query = source.includes('?')
             ? source.slice(source.indexOf('?'))
@@ -383,12 +386,11 @@ export function TestVirtualClient() {
       },
       load(id) {
         const clean = id.split('?')[0]
-        if (clean === '\0virtual:test-style-query-aware.css') {
-          return `
-.test-virtual-style-query-aware {
-  color: rgb(50, 100, 200);
-}
-`
+        if (clean === '\0virtual:test-style-server-query.css') {
+          return `.test-virtual-style-server-query { color: rgb(50, 100, 150); }`
+        }
+        if (clean === '\0virtual:test-style-client-query.css') {
+          return `.test-virtual-style-client-query { color: rgb(50, 150, 100); }`
         }
       },
     },
@@ -397,17 +399,19 @@ export function TestVirtualClient() {
     {
       name: 'test-virtual-css-exact',
       resolveId(source) {
-        if (source === 'virtual:test-style-exact.css') {
+        if (source === 'virtual:test-style-server-exact.css') {
+          return `\0${source}`
+        }
+        if (source === 'virtual:test-style-client-exact.css') {
           return `\0${source}`
         }
       },
       load(id) {
-        if (id === '\0virtual:test-style-exact.css') {
-          return `
-.test-virtual-style-exact {
-  color: rgb(200, 50, 100);
-}
-`
+        if (id === '\0virtual:test-style-server-exact.css') {
+          return `.test-virtual-style-server-exact { color: rgb(200, 100, 50); }`
+        }
+        if (id === '\0virtual:test-style-client-exact.css') {
+          return `.test-virtual-style-client-exact { color: rgb(200, 50, 100); }`
         }
       },
     },

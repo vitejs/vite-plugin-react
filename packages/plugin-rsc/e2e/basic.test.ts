@@ -1638,13 +1638,26 @@ function defineTest(f: Fixture) {
   test('virtual css module', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    // Query-aware virtual CSS: works in both dev and build
-    await expect(page.locator('.test-virtual-style-query-aware')).toHaveCSS(
+
+    // Server CSS (loaded via <link>)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-server-query')).toHaveCSS(
       'color',
-      'rgb(50, 100, 200)',
+      'rgb(50, 100, 150)',
     )
-    // Exact-match virtual CSS: works via JS import (HMR injects styles)
-    await expect(page.locator('.test-virtual-style-exact')).toHaveCSS(
+    // Exact-match: fails via <link> in dev (Vite limitation), works in build
+    await expect(page.locator('.test-virtual-style-server-exact')).toHaveCSS(
+      'color',
+      f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 100, 50)',
+    )
+
+    // Client CSS (loaded via JS import, HMR injects styles)
+    // Both patterns work because no ?direct is involved in JS imports
+    await expect(page.locator('.test-virtual-style-client-query')).toHaveCSS(
+      'color',
+      'rgb(50, 150, 100)',
+    )
+    await expect(page.locator('.test-virtual-style-client-exact')).toHaveCSS(
       'color',
       'rgb(200, 50, 100)',
     )
@@ -1652,14 +1665,27 @@ function defineTest(f: Fixture) {
 
   testNoJs('virtual css module @nojs', async ({ page }) => {
     await page.goto(f.url())
-    // Query-aware virtual CSS: works via <link> in both dev and build
-    await expect(page.locator('.test-virtual-style-query-aware')).toHaveCSS(
+
+    // Server CSS (loaded via <link>)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-server-query')).toHaveCSS(
       'color',
-      'rgb(50, 100, 200)',
+      'rgb(50, 100, 150)',
     )
-    // Exact-match virtual CSS: fails via <link> in dev (Vite limitation)
-    // Standard virtual module pattern doesn't handle ?direct query injection
-    await expect(page.locator('.test-virtual-style-exact')).toHaveCSS(
+    // Exact-match: fails via <link> in dev (Vite limitation)
+    await expect(page.locator('.test-virtual-style-server-exact')).toHaveCSS(
+      'color',
+      f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 100, 50)',
+    )
+
+    // Client CSS (loaded via <link> in noJS mode)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-client-query')).toHaveCSS(
+      'color',
+      'rgb(50, 150, 100)',
+    )
+    // Exact-match: fails via <link> in dev (Vite limitation)
+    await expect(page.locator('.test-virtual-style-client-exact')).toHaveCSS(
       'color',
       f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 50, 100)',
     )
