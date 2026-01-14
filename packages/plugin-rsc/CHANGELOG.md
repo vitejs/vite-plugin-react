@@ -1,3 +1,18 @@
+## <small>[0.5.12](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.11...plugin-rsc@0.5.12) (2026-01-14)</small>
+### Features
+
+* **rsc:** add resolved-id proxy for virtual modules + document ?direct limitation ([#1050](https://github.com/vitejs/vite-plugin-react/issues/1050)) ([77c1b1b](https://github.com/vitejs/vite-plugin-react/commit/77c1b1b256bf5cdf992bcf6d3b53b3316136ede4))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1048](https://github.com/vitejs/vite-plugin-react/issues/1048)) ([fefad3d](https://github.com/vitejs/vite-plugin-react/commit/fefad3dfd9a8505cb8e99d48848d56aa56a7bb48))
+* **deps:** update dependency react-router to v7.12.0 [security] ([#1042](https://github.com/vitejs/vite-plugin-react/issues/1042)) ([79bf57c](https://github.com/vitejs/vite-plugin-react/commit/79bf57cc8b9c77e33970ec2e876bd6d2f1568d5d))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react to ^19.2.8 ([#1047](https://github.com/vitejs/vite-plugin-react/issues/1047)) ([a5124db](https://github.com/vitejs/vite-plugin-react/commit/a5124db7210019b8c2a3f170d8a218262eba8da4))
+* setup oxfmt for formatting ([#997](https://github.com/vitejs/vite-plugin-react/issues/997)) ([36704df](https://github.com/vitejs/vite-plugin-react/commit/36704df36f17f767b8c591327dbd03bf7869b5ea))
+
 ## <small>[0.5.11](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.10...plugin-rsc@0.5.11) (2026-01-06)</small>
 ### Features
 
