@@ -1059,7 +1059,11 @@ function defineTest(f: Fixture) {
 
   testNoJs('lazy client css @nojs', async ({ page }) => {
     await page.goto(f.url())
-    // CSS from lazy client component is not included in SSR (FOUC)
+    // lazy component is rendered correctly in SSR
+    await expect(page.locator('.test-lazy-client-css')).toHaveText(
+      'lazy-client-css',
+    )
+    // but CSS from lazy client component is not included in SSR (FOUC)
     await expect(page.locator('.test-lazy-client-css')).toHaveCSS(
       'color',
       'rgb(0, 0, 0)',
