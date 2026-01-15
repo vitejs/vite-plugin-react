@@ -1045,78 +1045,76 @@ function defineTest(f: Fixture) {
     )
   })
 
-  // TODO: lazy client component CSS is not yet supported
-  // https://github.com/wakujs/waku/issues/1911
+  // TODO: lazy component CSS is not yet fully supported
+  // https://github.com/vitejs/vite-plugin-react/issues/1057
 
-  // Case 1: client component -> lazy client component -> CSS (two steps)
-  test('lazy client css @js', async ({ page }) => {
+  // Case 1: client -> lazy client -> CSS
+  test('lazy css client to client @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    // CSS is loaded after hydration via JS, so it works
-    await expect(page.locator('.test-lazy-client-css')).toHaveCSS(
+    // CSS is loaded after hydration via JS
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
     )
   })
 
-  testNoJs('lazy client css @nojs', async ({ page }) => {
+  testNoJs('lazy css client to client @nojs', async ({ page }) => {
     await page.goto(f.url())
-    // lazy component is rendered correctly in SSR
-    await expect(page.locator('.test-lazy-client-css')).toHaveText(
-      'lazy-client-css',
+    // component is rendered correctly in SSR
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveText(
+      'lazy-css-client-to-client',
     )
-    // but CSS from lazy client component is not included in SSR (FOUC)
-    await expect(page.locator('.test-lazy-client-css')).toHaveCSS(
+    // but CSS is not included in SSR (FOUC)
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
       'color',
       'rgb(0, 0, 0)',
     )
   })
 
-  // Case 2: server component -> lazy client component with CSS (one step)
-  // This works because the client component CSS is tracked
-  test('lazy client css direct @js', async ({ page }) => {
+  // Case 2: server -> lazy client with CSS
+  test('lazy css server to client @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.locator('.test-lazy-client-css-direct')).toHaveCSS(
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
     )
   })
 
-  testNoJs('lazy client css direct @nojs', async ({ page }) => {
+  testNoJs('lazy css server to client @nojs', async ({ page }) => {
     await page.goto(f.url())
-    await expect(page.locator('.test-lazy-client-css-direct')).toHaveText(
-      'lazy-client-css-direct',
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveText(
+      'lazy-css-server-to-client',
     )
-    // CSS is included in SSR for direct lazy client components
-    await expect(page.locator('.test-lazy-client-css-direct')).toHaveCSS(
+    // CSS is included in SSR
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
       'color',
       'rgb(255, 165, 0)',
     )
   })
 
-  // Case 3: server component -> lazy server component with CSS
-  // CSS from lazy server components is not supported
-  test('lazy server css @js', async ({ page }) => {
+  // Case 3: server -> lazy server with CSS
+  test('lazy css server to server @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
-    await expect(page.locator('.test-lazy-server-css')).toHaveText(
-      'lazy-server-css',
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+      'lazy-css-server-to-server',
     )
     // CSS is never loaded (not even via JS)
-    await expect(page.locator('.test-lazy-server-css')).toHaveCSS(
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
       'color',
       'rgb(0, 0, 0)',
     )
   })
 
-  testNoJs('lazy server css @nojs', async ({ page }) => {
+  testNoJs('lazy css server to server @nojs', async ({ page }) => {
     await page.goto(f.url())
-    await expect(page.locator('.test-lazy-server-css')).toHaveText(
-      'lazy-server-css',
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+      'lazy-css-server-to-server',
     )
-    // CSS from lazy server component is not included in SSR
-    await expect(page.locator('.test-lazy-server-css')).toHaveCSS(
+    // CSS is not included in SSR
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
       'color',
       'rgb(0, 0, 0)',
     )

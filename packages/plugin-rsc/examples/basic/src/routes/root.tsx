@@ -34,8 +34,9 @@ import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestHmrSwitchServer } from './hmr-switch/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
 import { TestImportMetaGlob } from './import-meta-glob/server'
-import { TestLazyClientCss } from './lazy-css/client'
-import { TestLazyClientCssServer, TestLazyServerCss } from './lazy-css/server'
+import { TestLazyCssClientToClient } from './lazy-css/client-to-client'
+import { TestLazyCssServerToClient } from './lazy-css/server-to-client'
+import { TestLazyCssServerToServer } from './lazy-css/server-to-server'
 import { TestModuleInvalidationServer } from './module-invalidation/server'
 import { TestPayloadServer } from './payload/server'
 import { TestReactCache } from './react-cache/server'
@@ -103,9 +104,9 @@ export function Root(props: { url: URL }) {
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
-        <TestLazyClientCss />
-        <TestLazyClientCssServer />
-        <TestLazyServerCss />
+        <TestLazyCssClientToClient />
+        <TestLazyCssServerToClient />
+        <TestLazyCssServerToServer />
         <TestUseCache />
         <TestReactCache url={props.url} />
         <TestCssQueries />
