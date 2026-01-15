@@ -205,8 +205,8 @@ export type RscPluginOptions = {
   useBuildAppHook?: boolean
 
   /**
-   * Skip the default buildApp orchestration and expose utilities on `builder.rsc`
-   * for downstream frameworks to implement custom build pipelines.
+   * Skip the default buildApp orchestration for downstream frameworks
+   * to implement custom build pipelines using `getPluginApi()`.
    * @experimental
    * @default false
    */
@@ -431,17 +431,6 @@ export default function vitePluginRsc(
   let hasReactServerDomWebpack = false
 
   return [
-    {
-      name: 'rsc:builder-api',
-      buildApp: {
-        order: 'pre' as const,
-        async handler(builder) {
-          builder.rsc = {
-            manager,
-          }
-        },
-      },
-    },
     {
       name: 'rsc',
       async config(config, env) {
