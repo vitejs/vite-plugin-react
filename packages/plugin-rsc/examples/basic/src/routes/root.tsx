@@ -75,6 +75,9 @@ export function Root(props: { url: URL }) {
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
         <TestVirtualModule />
+        <TestLazyCssClientToClient />
+        <TestLazyCssServerToClient />
+        <TestLazyCssServerToServer />
         <TestHmrClientDep url={{ search: props.url.search }} />
         <TestHmrClientDep2 url={{ search: props.url.search }} />
         <TestHmrClientDep3 />
@@ -104,9 +107,6 @@ export function Root(props: { url: URL }) {
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
-        <TestLazyCssClientToClient />
-        <TestLazyCssServerToClient />
-        <TestLazyCssServerToServer />
         <TestUseCache />
         <TestReactCache url={props.url} />
         <TestCssQueries />
