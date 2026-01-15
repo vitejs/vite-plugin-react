@@ -1060,7 +1060,7 @@ export function createRpcClient(params) {
 
           const assetDeps = collectAssetDeps(bundle)
           const entry = Object.values(assetDeps).find(
-            (v) => v.chunk.name === 'index',
+            (v) => v.chunk.name === 'index' && v.chunk.isEntry,
           )
           assert(entry)
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
