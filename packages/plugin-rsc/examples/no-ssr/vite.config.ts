@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises'
 import react from '@vitejs/plugin-react'
-import rsc from '@vitejs/plugin-rsc'
+import rsc, { getPluginApi } from '@vitejs/plugin-rsc'
 import { defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
@@ -11,8 +11,21 @@ export default defineConfig({
       entries: {
         rsc: './src/framework/entry.rsc.tsx',
       },
+      customBuildApp: true,
     }),
   ],
+  builder: {
+    sharedPlugins: true,
+    sharedConfigBuild: true,
+    async buildApp(builder) {
+      const { manager } = getPluginApi(builder.config)!
+      await builder.build(builder.environments.rsc!)
+      manager.stabilize()
+      await builder.build(builder.environments.client!)
+      await builder.build(builder.environments.rsc!)
+      manager.writeAssetsManifest(['rsc'])
+    },
+  },
 })
 
 function spaPlugin(): Plugin[] {
