@@ -1,3 +1,12 @@
+## <small>[0.5.13](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.12...plugin-rsc@0.5.13) (2026-01-15)</small>
+### Features
+
+* **rsc:** add `customBuildApp` option  ([#1052](https://github.com/vitejs/vite-plugin-react/issues/1052)) ([8aaab1b](https://github.com/vitejs/vite-plugin-react/commit/8aaab1beaf9a76d36b9f28054c40fd3480a99494))
+
+### Bug Fixes
+
+* **rsc:** support nested RSC outDir inside SSR outDir ([#1053](https://github.com/vitejs/vite-plugin-react/issues/1053)) ([35004e3](https://github.com/vitejs/vite-plugin-react/commit/35004e321005147926a4c3e0bbd4715f8e30c65c))
+
 ## <small>[0.5.12](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.11...plugin-rsc@0.5.12) (2026-01-14)</small>
 ### Features
 
