@@ -4,48 +4,42 @@ import rsc from '@vitejs/plugin-rsc'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  clearScreen: false,
-  build: {
-    minify: false,
-  },
   plugins: [
     react(),
     rsc({
-      entries: {
-        client: './src/framework/entry.browser.tsx',
-        ssr: './src/framework/entry.ssr.tsx',
-      },
       serverHandler: false,
-      loadModuleDevProxy: true,
     }),
     cloudflare({
-      configPath: './wrangler.jsonc',
       viteEnvironment: {
         name: 'rsc',
+        // Define `ssr` as a child environment so that it runs in the same Worker as the parent `rsc` environment
+        childEnvironments: ['ssr'],
       },
     }),
   ],
   environments: {
-    rsc: {
-      build: {
-        rollupOptions: {
-          // ensure `default` export only in cloudflare entry output
-          preserveEntrySignatures: 'exports-only',
-        },
-      },
-      optimizeDeps: {
-        include: ['turbo-stream'],
-      },
-    },
     ssr: {
-      keepProcessEnv: false,
       build: {
         // build `ssr` inside `rsc` directory so that
         // wrangler can deploy self-contained `dist/rsc`
         outDir: './dist/rsc/ssr',
+        rollupOptions: {
+          input: {
+            index: './src/framework/entry.ssr.tsx',
+          },
+        },
       },
-      resolve: {
-        noExternal: true,
+      optimizeDeps: {
+        entries: ['./src/framework/entry.ssr.tsx'],
+      },
+    },
+    client: {
+      build: {
+        rollupOptions: {
+          input: {
+            index: './src/framework/entry.browser.tsx',
+          },
+        },
       },
     },
   },
