@@ -1095,27 +1095,28 @@ function defineTest(f: Fixture) {
   })
 
   // Case 3: server -> lazy server with CSS
-  // Skipped: behavior is inconsistent across platforms (works on macOS, not on Linux)
-  test.skip('lazy css server to server @js', async ({ page }) => {
+  test('lazy css server to server @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
       'lazy-css-server-to-server',
     )
+    // CSS is never loaded (not even via JS)
     await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
       'color',
-      'rgb(255, 165, 0)',
+      'rgb(0, 0, 0)',
     )
   })
 
-  testNoJs.skip('lazy css server to server @nojs', async ({ page }) => {
+  testNoJs('lazy css server to server @nojs', async ({ page }) => {
     await page.goto(f.url())
     await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
       'lazy-css-server-to-server',
     )
+    // CSS is not included in SSR
     await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
       'color',
-      'rgb(255, 165, 0)',
+      'rgb(0, 0, 0)',
     )
   })
 
