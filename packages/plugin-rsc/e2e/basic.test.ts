@@ -1299,15 +1299,18 @@ function defineTest(f: Fixture) {
     expect(res?.status()).toBe(500)
   })
 
-  test('hydrate while streaming @js', async ({ page }) => {
-    // client is interactive before suspense is resolved
+  test('streaming @js', async ({ page }) => {
+    // suspense streaming works
     await page.goto(f.url('./?test-suspense=1000'), { waitUntil: 'commit' })
+    await expect(page.getByTestId('suspense')).toContainText(
+      'suspense-resolved',
+    )
+
+    // also client is interactive (hydrated) before suspense is resolved
+    await page.goto(f.url('./?test-suspense=100000'), { waitUntil: 'commit' })
     await waitForHydration(page)
     await expect(page.getByTestId('suspense')).toContainText(
       'suspense-fallback',
-    )
-    await expect(page.getByTestId('suspense')).toContainText(
-      'suspense-resolved',
     )
   })
 

@@ -1,3 +1,4 @@
+import '../styles.css'
 import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
 import React from 'react'
 import {
@@ -59,7 +60,6 @@ export function Root(props: { url: URL }) {
       <head>
         <meta charSet="utf-8" />
         <title>vite-rsc</title>
-        {import.meta.viteRsc.loadCss('/src/routes/root.tsx')}
       </head>
       <body className="flex flex-col gap-2 items-start p-2">
         <div>
