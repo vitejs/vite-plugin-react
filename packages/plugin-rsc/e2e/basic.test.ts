@@ -1045,6 +1045,23 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('lazy client css @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-lazy-client-css')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  testNoJs('lazy client css @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    await expect(page.locator('.test-lazy-client-css')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
   test('tailwind @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
