@@ -17,6 +17,18 @@ declare module 'vite' {
     /** Options for `@vitejs/plugin-rsc` */
     rsc?: import('@vitejs/plugin-rsc').RscPluginOptions
   }
+
+  interface ViteBuilder {
+    /**
+     * RSC plugin API exposed for custom build pipelines.
+     * Available when using `rsc({ customBuildApp: true })`.
+     * @experimental
+     */
+    rsc: {
+      /** Access to internal RscPluginManager for controlling build phases */
+      manager: import('@vitejs/plugin-rsc').RscPluginManager
+    }
+  }
 }
 
 export {}
