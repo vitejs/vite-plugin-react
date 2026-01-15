@@ -19,10 +19,22 @@ export default defineConfig({
     sharedConfigBuild: true,
     async buildApp(builder) {
       const { manager } = getPluginApi(builder.config)!
+
+      // ssr build (scan)
+      manager.isScanBuild = true
+      builder.environments.rsc.config.build.write = false
       await builder.build(builder.environments.rsc!)
+      builder.environments.rsc.config.build.write = true
+      manager.isScanBuild = false
       manager.stabilize()
+
+      // clien build
       await builder.build(builder.environments.client!)
+
+      // rsc build
       await builder.build(builder.environments.rsc!)
+
+      // write manifest
       manager.writeAssetsManifest(['rsc'])
     },
   },
