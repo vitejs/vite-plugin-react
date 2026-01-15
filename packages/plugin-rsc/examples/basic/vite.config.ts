@@ -28,8 +28,6 @@ export default defineConfig({
         ssr: './src/framework/entry.ssr.tsx',
         rsc: './src/framework/entry.rsc.tsx',
       },
-      // disable auto css injection to manually test `loadCss` feature.
-      rscCssTransform: false,
       copyServerAssetsToClient: (fileName) =>
         fileName !== '__server_secret.txt',
       clientChunks(meta) {

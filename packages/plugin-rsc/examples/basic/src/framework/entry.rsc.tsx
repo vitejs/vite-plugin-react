@@ -9,7 +9,6 @@ import {
 import type React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { parseRenderRequest } from './request.tsx'
-import '../styles.css'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -125,8 +124,6 @@ async function handler(request: Request): Promise<Response> {
   const nonceMeta = nonce && <meta property="csp-nonce" nonce={nonce} />
   const root = (
     <>
-      {/* this `loadCss` only collects `styles.css` but not css inside dynamic import `root.tsx` */}
-      {import.meta.viteRsc.loadCss()}
       {nonceMeta}
       <Root url={url} />
     </>
