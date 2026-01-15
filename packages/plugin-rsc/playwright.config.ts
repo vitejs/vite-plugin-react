@@ -1,5 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const browsers = [
+  {
+    name: 'chromium',
+    use: {
+      ...devices['Desktop Chrome'],
+      viewport: null,
+      deviceScaleFactor: undefined,
+    },
+  },
+  { name: 'firefox', use: devices['Desktop Firefox'] },
+  { name: 'webkit', use: devices['Desktop Safari'] },
+]
+
 export default defineConfig({
   testDir: 'e2e',
   use: {
@@ -10,22 +23,13 @@ export default defineConfig({
     toPass: { timeout: 10000 },
   },
   projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: null,
-        deviceScaleFactor: undefined,
-      },
-    },
-    {
-      name: 'firefox',
-      use: devices['Desktop Firefox'],
-    },
-    {
-      name: 'webkit',
-      use: devices['Desktop Safari'],
-    },
+    ...browsers,
+    // "others-*" projects exclude basic.test.ts for parallel runs
+    ...browsers.map((b) => ({
+      ...b,
+      name: `others-${b.name}`,
+      testIgnore: 'basic.test.ts',
+    })),
   ],
   workers: 2,
   forbidOnly: !!process.env.CI,
