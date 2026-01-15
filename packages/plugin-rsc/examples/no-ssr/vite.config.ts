@@ -20,19 +20,20 @@ export default defineConfig({
     async buildApp(builder) {
       const { manager } = getPluginApi(builder.config)!
 
-      // ssr build (scan)
+      // Scan
       manager.isScanBuild = true
-      builder.environments.rsc.config.build.write = false
+      builder.environments.rsc!.config.build.write = false
+      builder.environments.client!.config.build.write = false
       await builder.build(builder.environments.rsc!)
-      builder.environments.rsc.config.build.write = true
+      await builder.build(builder.environments.client!)
+      builder.environments.rsc!.config.build.write = true
+      builder.environments.client!.config.build.write = true
       manager.isScanBuild = false
       manager.stabilize()
 
-      // clien build
-      await builder.build(builder.environments.client!)
-
-      // rsc build
+      // Build
       await builder.build(builder.environments.rsc!)
+      await builder.build(builder.environments.client!)
 
       // write manifest
       manager.writeAssetsManifest(['rsc'])
