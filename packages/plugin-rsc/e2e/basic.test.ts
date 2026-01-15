@@ -1045,6 +1045,85 @@ function defineTest(f: Fixture) {
     )
   })
 
+  // TODO: lazy component CSS is not yet fully supported
+  // https://github.com/vitejs/vite-plugin-react/issues/1057
+
+  // Case 1: client -> lazy client -> CSS
+  test('lazy css client to client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    // CSS is loaded after hydration via JS
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  testNoJs('lazy css client to client @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    // component is rendered correctly in SSR
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveText(
+      'lazy-css-client-to-client',
+    )
+    // but CSS is not included in SSR (FOUC)
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
+      'color',
+      'rgb(0, 0, 0)',
+    )
+  })
+
+  // Case 2: server -> lazy client with CSS
+  test('lazy css server to client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  testNoJs('lazy css server to client @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveText(
+      'lazy-css-server-to-client',
+    )
+    // CSS is included in SSR
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  // Case 3: server -> lazy server with CSS
+  test('lazy css server to server @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+      'lazy-css-server-to-server',
+    )
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  // suspense can fallback due to `viteRsc.loadCss` wrapper
+  // but streamed lazy server component html comes with css, so no FOUC.
+  // TODO: skipped for now since not reliable
+  testNoJs('lazy css server to server @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+    //   'loading',
+    // )
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+    //   'lazy-css-server-to-server',
+    // )
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
+    //   'color',
+    //   'rgb(255, 165, 0)',
+    // )
+  })
+
   test('tailwind @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
