@@ -84,10 +84,7 @@ jobs:
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
-      # Run basic.test.ts serially first to avoid resource contention, then others in parallel
-      - run: |
-          pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME" basic.test.ts --workers=1
-          pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME" --ignore-pattern=basic.test.ts
+      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME"
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
