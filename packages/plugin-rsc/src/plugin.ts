@@ -30,6 +30,7 @@ import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ENV_IMPORTS_MANIFEST_NAME,
   vitePluginImportEnvironment,
+  type EnvironmentImportMeta,
 } from './plugins/import-environment'
 import {
   vitePluginResolvedIdProxy,
@@ -124,16 +125,7 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
-  environmentImportMetaMap: Record<
-    string,
-    {
-      resolvedId: string
-      targetEnv: string
-      sourceEnv: string
-      specifier: string
-      entryName: string
-    }
-  > = {}
+  environmentImportMetaMap: Record<string, EnvironmentImportMeta> = {}
   // Maps resolvedId to output fileName (populated in generateBundle)
   environmentImportOutputMap: Record<string, string> = {}
 

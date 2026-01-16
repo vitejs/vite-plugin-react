@@ -51,16 +51,18 @@ export function vitePluginImportEnvironment(
           this.environment.mode === 'build' &&
           source.endsWith(ENV_IMPORTS_MANIFEST_NAME)
         ) {
+          // TODO: relativity should be enforced via another renderChunk patch
           return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
         }
-        // Virtual scan placeholder for scan builds without entries
         if (source === ENV_IMPORTS_ENTRY_FALLBACK) {
           return '\0' + ENV_IMPORTS_ENTRY_FALLBACK
         }
       },
       load(id) {
+        // TODO: how to avoid warning?
+        // > Generated an empty chunk: "__vite_rsc_env_imports_entry_fallback".
         if (id === '\0' + ENV_IMPORTS_ENTRY_FALLBACK) {
-          return 'export default () => "__vite_rsc_env_imports_entry_fallback"'
+          return 'export default "__vite_rsc_env_imports_entry_fallback"'
         }
       },
       buildStart() {
