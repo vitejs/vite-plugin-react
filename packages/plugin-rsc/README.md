@@ -245,17 +245,32 @@ ssrModule.renderHTML(...);
 export function renderHTML(...) {}
 ```
 
-#### `import.meta.viteRsc.import(..., { environment: ... })`
+#### `import.meta.viteRsc.import`
 
-TODO
+- Type: `<T>(specifier: string, options: { environment: string }) => Promise<T>`
+
+A more ergonomic alternative to `loadModule`:
+
+1. No manual `rollupOptions.input` config needed - entries are auto-discovered
+2. Specifier matches the path in `typeof import(...)` type annotations
+
+**Comparison:**
 
 ```ts
-const ssrModule = await import.meta.viteRsc.import(
-  "./entry.ssr.tsx",
-  { with: { environment: "ssr" } }
+// Before (loadModule) - requires vite.config.ts:
+// environments.ssr.build.rollupOptions.input = { index: './entry.ssr.tsx' }
+import.meta.viteRsc.loadModule<typeof import('./entry.ssr.tsx')>('ssr', 'index')
+
+// After (import) - no config needed, auto-discovered
+import.meta.viteRsc.import<typeof import('./entry.ssr.tsx')>(
+  './entry.ssr.tsx',
+  { environment: 'ssr' },
 )
-ssrModule.renderHTML(...);
 ```
+
+During development, this works the same as `loadModule`, using the `__VITE_ENVIRONMENT_RUNNER_IMPORT__` function to import modules in the target environment.
+
+During production build, the plugin auto-discovers these imports and emits them as entries in the target environment. A manifest file (`__vite_rsc_env_imports_manifest.js`) is generated to map module specifiers to their output filenames.
 
 ### Available on `rsc` environment
 

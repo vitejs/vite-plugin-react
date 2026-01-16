@@ -5,10 +5,28 @@ declare global {
       loadModule: <T>(environmentName: string, entryName?: string) => Promise<T>
       loadBootstrapScriptContent: (entryName: string) => Promise<string>
       /**
-       * TODO: jsdoc
-       * @experimental
+       * Import a module from another environment using a module specifier.
+       *
+       * A more ergonomic alternative to `loadModule` that takes a relative path
+       * instead of an entry name, so the specifier matches what you'd use in
+       * `typeof import(...)` type annotations.
+       *
+       * @example
+       * ```ts
+       * const ssr = await import.meta.viteRsc.import<typeof import('./entry.ssr')>(
+       *   './entry.ssr',
+       *   { environment: 'ssr' }
+       * );
+       * ```
+       *
+       * @param specifier - Relative path to the module (e.g., './entry.ssr')
+       * @param options - Options object with `environment` specifying the target environment
+       * @returns Promise resolving to the module exports
        */
-      import: <T>(specifier, attributes: { environment: string }) => Promise<T>
+      import: <T>(
+        specifier: string,
+        options: { environment: string },
+      ) => Promise<T>
     }
   }
 
