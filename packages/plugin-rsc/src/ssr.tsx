@@ -9,6 +9,29 @@ export { createServerConsumerManifest } from './core/ssr'
 
 export * from './react/ssr'
 
+/**
+ * Callback type for client reference dependency notifications.
+ * Called during SSR when a client component's dependencies are loaded.
+ */
+export type OnClientReferenceDeps = (deps: {
+  js: readonly string[]
+  css: readonly string[]
+}) => void
+
+// Registered callback for client reference deps
+let onClientReferenceDepsCallback: OnClientReferenceDeps | undefined
+
+/**
+ * Register a callback to be notified when client reference dependencies are loaded.
+ * Called during SSR when a client component is accessed.
+ *
+ */
+export function setOnClientReferenceDeps(
+  callback: OnClientReferenceDeps | undefined,
+): void {
+  onClientReferenceDepsCallback = callback
+}
+
 initialize()
 
 function initialize(): void {
@@ -36,6 +59,17 @@ function initialize(): void {
         }
         const mod: any = await import_()
         return wrapResourceProxy(mod, deps)
+      }
+    },
+    // Called EVERY time a module is requested (not memoized).
+    // Notify framework callback for per-request asset collection.
+    onLoad: (id) => {
+      if (!import.meta.env.__vite_rsc_build__) return
+      if (onClientReferenceDepsCallback) {
+        const deps = assetsManifest.clientReferenceDeps[id]
+        if (deps) {
+          onClientReferenceDepsCallback({ js: deps.js, css: deps.css })
+        }
       }
     },
   })
