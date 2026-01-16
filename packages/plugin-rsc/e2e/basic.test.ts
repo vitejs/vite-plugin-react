@@ -247,7 +247,7 @@ function defineTest(f: Fixture) {
   test('import environment', async ({ page }) => {
     await page.goto(f.url())
     await expect(page.getByTestId('import-environment')).toHaveText(
-      '[test-import-environment: test-ssr]',
+      '[test-import-environment: test-ssr-module: test-rsc-module]',
     )
   })
 
