@@ -1,3 +1,19 @@
+## <small>[0.5.14](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.13...plugin-rsc@0.5.14) (2026-01-16)</small>
+### Bug Fixes
+
+* **rsc:** correctly select entry chunk when multiple chunks are named "index" (fix [#1060](https://github.com/vitejs/vite-plugin-react/issues/1060)) ([#1061](https://github.com/vitejs/vite-plugin-react/issues/1061)) ([3536062](https://github.com/vitejs/vite-plugin-react/commit/35360623f29c32eced1d6b2e1965239c146a8079))
+* **rsc:** remove redundant `builder.rsc` injection ([#1055](https://github.com/vitejs/vite-plugin-react/issues/1055)) ([a599f46](https://github.com/vitejs/vite-plugin-react/commit/a599f462a29d8f6f7c4963f93fa464923e96a425))
+
+### Miscellaneous Chores
+
+* **rsc:** update starter-cf-single example ([#1062](https://github.com/vitejs/vite-plugin-react/issues/1062)) ([82f45aa](https://github.com/vitejs/vite-plugin-react/commit/82f45aa721345ccfb9b6d8b1a8c9a17901f5cff6))
+
+### Tests
+
+* **rsc:** add lazy client CSS reproduction ([#1056](https://github.com/vitejs/vite-plugin-react/issues/1056)) ([caf9bf1](https://github.com/vitejs/vite-plugin-react/commit/caf9bf1d130e187d3f924967075386278d2eca85))
+* **rsc:** fix flaky streaming test ([#1059](https://github.com/vitejs/vite-plugin-react/issues/1059)) ([e8271c1](https://github.com/vitejs/vite-plugin-react/commit/e8271c167dc275c38995d5ce25e87ca91766af7b))
+* **rsc:** use default CSS auto-injection in basic e2e fixture ([#1058](https://github.com/vitejs/vite-plugin-react/issues/1058)) ([a1f1e99](https://github.com/vitejs/vite-plugin-react/commit/a1f1e9911795b44c26466d715c99b76c66c965c9))
+
 ## <small>[0.5.13](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.12...plugin-rsc@0.5.13) (2026-01-15)</small>
 ### Features
 
