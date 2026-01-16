@@ -27,6 +27,7 @@ import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
+import { vitePluginImportEnvironment } from './plugins/import-environment'
 import {
   vitePluginResolvedIdProxy,
   withResolvedIdProxy,
@@ -120,6 +121,16 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+  environmentImportMetaMap: Record<
+    string,
+    {
+      resolvedId: string
+      targetEnv: string
+      sourceEnv: string
+      specifier: string
+      entryName: string
+    }
+  > = {}
 
   stabilize(): void {
     // sort for stable build
@@ -388,16 +399,44 @@ export default function vitePluginRsc(
     )
 
     // rsc -> ssr -> rsc -> client -> ssr
+    // Check if SSR has entries configured - if not, we'll inject after RSC scan
+    const ssrInput = builder.environments.ssr!.config.build.rollupOptions
+      .input as Record<string, string> | undefined
+    const hasSsrInput = ssrInput && Object.keys(ssrInput).length > 0
+
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
-    builder.environments.ssr!.config.build.write = false
+    if (hasSsrInput) {
+      builder.environments.ssr!.config.build.write = false
+    }
     logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
-    logStep('[2/5] analyze server references...')
-    await builder.build(builder.environments.ssr!)
+
+    // Inject discovered environment imports into target environment's input
+    // This must happen after RSC scan discovers them
+    for (const meta of Object.values(manager.environmentImportMetaMap)) {
+      const targetEnv = builder.environments[meta.targetEnv]
+      if (targetEnv) {
+        const input = (targetEnv.config.build.rollupOptions.input ??=
+          {}) as Record<string, string>
+        if (!(meta.entryName in input)) {
+          input[meta.entryName] = meta.resolvedId
+        }
+      }
+    }
+
+    if (
+      hasSsrInput ||
+      Object.keys(manager.environmentImportMetaMap).length > 0
+    ) {
+      builder.environments.ssr!.config.build.write = false
+      logStep('[2/5] analyze server references...')
+      await builder.build(builder.environments.ssr!)
+    }
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
+
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
 
@@ -1212,6 +1251,7 @@ import.meta.hot.on("rsc:update", () => {
       },
     ),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
+    ...vitePluginImportEnvironment(manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {
