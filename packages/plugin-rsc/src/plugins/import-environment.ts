@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
-import type { Plugin } from 'vite'
+import type { Plugin, ResolvedConfig } from 'vite'
 import type { RscPluginManager } from '../plugin'
 import {
   createVirtualPlugin,
@@ -24,34 +24,31 @@ export type EnvironmentImportMeta = {
   specifier: string
 }
 
+// ensure at least one entry since otherwise rollup build fails
+export function ensureEnvironmentImportsEntryFallback({
+  environments,
+}: ResolvedConfig): void {
+  for (const [name, config] of Object.entries(environments)) {
+    if (name === 'client') continue
+    const input = normalizeRollupOpitonsInput(
+      config.build?.rollupOptions?.input,
+    )
+    if (Object.keys(input).length === 0) {
+      config.build = config.build || {}
+      config.build.rollupOptions = config.build.rollupOptions || {}
+      config.build.rollupOptions.input = {
+        __vite_rsc_env_imports_entry_fallback: ENV_IMPORTS_ENTRY_FALLBACK,
+      }
+    }
+  }
+}
+
 export function vitePluginImportEnvironment(
   manager: RscPluginManager,
 ): Plugin[] {
   return [
     {
       name: 'rsc:import-environment',
-      configEnvironment: {
-        order: 'post',
-        handler(name, config, _env) {
-          if (name === 'client') return
-          // ensure at least one entry since otherwise rollup build fails
-          const input = normalizeRollupOpitonsInput(
-            config.build?.rollupOptions?.input,
-          )
-          if (Object.keys(input).length === 0) {
-            return {
-              build: {
-                rollupOptions: {
-                  input: {
-                    __vite_rsc_env_imports_entry_fallback:
-                      ENV_IMPORTS_ENTRY_FALLBACK,
-                  },
-                },
-              },
-            }
-          }
-        },
-      },
       resolveId(source) {
         // Use placeholder as external, renderChunk will replace with correct relative path
         if (source === ENV_IMPORTS_MANIFEST_PLACEHOLDER) {

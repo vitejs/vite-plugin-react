@@ -28,6 +28,7 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
+  ensureEnvironmentImportsEntryFallback,
   vitePluginImportEnvironment,
   writeEnvironmentImportsManifest,
   type EnvironmentImportMeta,
@@ -408,6 +409,7 @@ export default function vitePluginRsc(
     )
 
     // rsc -> ssr -> rsc -> client -> ssr
+    ensureEnvironmentImportsEntryFallback(builder.config)
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
