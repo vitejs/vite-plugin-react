@@ -128,8 +128,11 @@ class RscPluginManager {
   environmentImportMetaMap: Record<
     string, // sourceEnv
     Record<
-      string, // resolvedId
-      EnvironmentImportMeta
+      string, // targetEnv
+      Record<
+        string, // resolvedId
+        EnvironmentImportMeta
+      >
     >
   > = {}
 
@@ -164,33 +167,40 @@ class RscPluginManager {
     }
 
     // Write manifest to each source environment's output
-    for (const [sourceEnv, imports] of Object.entries(
+    for (const [sourceEnv, byTargetEnv] of Object.entries(
       this.environmentImportMetaMap,
     )) {
       const sourceOutDir = this.config.environments[sourceEnv]!.build.outDir
       const manifestPath = path.join(sourceOutDir, ENV_IMPORTS_MANIFEST_NAME)
 
       let code = 'export default {\n'
-      for (const [resolvedId, meta] of Object.entries(imports)) {
+      for (const [targetEnv, imports] of Object.entries(byTargetEnv)) {
         // Lookup fileName from bundle
-        const bundle = this.bundles[meta.targetEnv]
-        const chunk = Object.values(bundle ?? {}).find(
-          (c) =>
-            c.type === 'chunk' && c.isEntry && c.facadeModuleId === resolvedId,
-        )
-        if (!chunk) {
-          throw new Error(
-            `[vite-rsc] missing output for environment import: ${resolvedId}`,
+        const bundle = this.bundles[targetEnv]
+        for (const [resolvedId, meta] of Object.entries(imports)) {
+          const chunk = Object.values(bundle ?? {}).find(
+            (c) =>
+              c.type === 'chunk' &&
+              c.isEntry &&
+              c.facadeModuleId === resolvedId,
           )
+          if (!chunk) {
+            throw new Error(
+              `[vite-rsc] missing output for environment import: ${resolvedId}`,
+            )
+          }
+          const targetOutDir =
+            this.config.environments[meta.targetEnv]!.build.outDir
+          const relativePath = normalizeRelativePath(
+            path.relative(
+              sourceOutDir,
+              path.join(targetOutDir, chunk.fileName),
+            ),
+          )
+          // Use relative ID for stable builds across different machines
+          const relativeId = this.toRelativeId(resolvedId)
+          code += `  ${JSON.stringify(relativeId)}: () => import(${JSON.stringify(relativePath)}),\n`
         }
-        const targetOutDir =
-          this.config.environments[meta.targetEnv]!.build.outDir
-        const relativePath = normalizeRelativePath(
-          path.relative(sourceOutDir, path.join(targetOutDir, chunk.fileName)),
-        )
-        // Use relative ID for stable builds across different machines
-        const relativeId = this.toRelativeId(resolvedId)
-        code += `  ${JSON.stringify(relativeId)}: () => import(${JSON.stringify(relativePath)}),\n`
       }
       code += '}\n'
 

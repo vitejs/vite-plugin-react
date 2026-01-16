@@ -63,12 +63,13 @@ export function vitePluginImportEnvironment(
 
         // Collect unique entries targeting this environment (may be imported from multiple sources)
         const emitted = new Set<string>()
-        for (const imports of Object.values(manager.environmentImportMetaMap)) {
+        for (const byTargetEnv of Object.values(
+          manager.environmentImportMetaMap,
+        )) {
+          const imports = byTargetEnv[this.environment.name]
+          if (!imports) continue
           for (const meta of Object.values(imports)) {
-            if (
-              meta.targetEnv === this.environment.name &&
-              !emitted.has(meta.resolvedId)
-            ) {
+            if (!emitted.has(meta.resolvedId)) {
               emitted.add(meta.resolvedId)
               this.emitFile({
                 type: 'chunk',
@@ -131,13 +132,16 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
-            // TODO: environmentImportMetaMap structure should be [sourceEnv][targetEnv][resolvedId]
-            // Track discovered entry, keyed by [sourceEnv][resolvedId]
+            // Track discovered entry, keyed by [sourceEnv][targetEnv][resolvedId]
             const sourceEnv = this.environment.name
+            const targetEnv = environmentName
             manager.environmentImportMetaMap[sourceEnv] ??= {}
-            manager.environmentImportMetaMap[sourceEnv]![resolvedId] = {
+            manager.environmentImportMetaMap[sourceEnv]![targetEnv] ??= {}
+            manager.environmentImportMetaMap[sourceEnv]![targetEnv]![
+              resolvedId
+            ] = {
               resolvedId,
-              targetEnv: environmentName,
+              targetEnv,
               sourceEnv,
               specifier,
             }
