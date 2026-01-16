@@ -21,6 +21,7 @@ export type EnvironmentImportMeta = {
   targetEnv: string
   sourceEnv: string
   specifier: string
+  fileName?: string
 }
 
 export function vitePluginImportEnvironment(
@@ -179,9 +180,9 @@ export function vitePluginImportEnvironment(
         // This runs in both RSC and SSR builds to capture all outputs
         for (const [fileName, chunk] of Object.entries(bundle)) {
           if (chunk.type === 'chunk' && chunk.isEntry && chunk.facadeModuleId) {
-            const resolvedId = chunk.facadeModuleId
-            if (resolvedId in manager.environmentImportMetaMap) {
-              manager.environmentImportOutputMap[resolvedId] = fileName
+            const meta = manager.environmentImportMetaMap[chunk.facadeModuleId]
+            if (meta) {
+              meta.fileName = fileName
             }
           }
         }

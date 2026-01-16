@@ -126,9 +126,6 @@ class RscPluginManager {
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<string, EnvironmentImportMeta> = {}
-  // TODO: per-environment (can we merge to environmentImportMetaMap?)
-  // Maps resolvedId to output fileName (populated in generateBundle)
-  environmentImportOutputMap: Record<string, string> = {}
 
   stabilize(): void {
     // sort for stable build
@@ -176,8 +173,7 @@ class RscPluginManager {
 
       let code = 'export default {\n'
       for (const [resolvedId, meta] of Object.entries(imports)) {
-        const outputFileName = this.environmentImportOutputMap[resolvedId]
-        if (!outputFileName) {
+        if (!meta.fileName) {
           console.warn(
             `[vite-rsc] missing output for environment import: ${resolvedId}`,
           )
@@ -186,7 +182,7 @@ class RscPluginManager {
         const targetOutDir =
           this.config.environments[meta.targetEnv]!.build.outDir
         const relativePath = normalizeRelativePath(
-          path.relative(sourceOutDir, path.join(targetOutDir, outputFileName)),
+          path.relative(sourceOutDir, path.join(targetOutDir, meta.fileName)),
         )
         code += `  ${JSON.stringify(resolvedId)}: () => import(${JSON.stringify(relativePath)}),\n`
       }
