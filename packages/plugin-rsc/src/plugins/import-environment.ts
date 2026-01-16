@@ -2,11 +2,13 @@ import assert from 'node:assert'
 import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
-import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+import type { Plugin } from 'vite'
+import type { RscPluginManager } from '../plugin'
 import { evalValue } from './vite-utils'
 
 export const ENV_IMPORTS_MANIFEST_NAME = '__vite_rsc_env_imports_manifest.js'
-export const ENV_IMPORTS_SCAN_VIRTUAL = 'virtual:vite-rsc/env-imports-scan'
+export const ENV_IMPORTS_ENTRY_FALLBACK =
+  'virtual:vite-rsc/env-imports-entry-fallbacks'
 
 export type EnvironmentImportMeta = {
   resolvedId: string
@@ -16,18 +18,32 @@ export type EnvironmentImportMeta = {
   entryName: string
 }
 
-interface PluginManager {
-  server: ViteDevServer
-  config: ResolvedConfig
-  isScanBuild: boolean
-  environmentImportMetaMap: Record<string, EnvironmentImportMeta>
-  environmentImportOutputMap: Record<string, string>
-}
-
-export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
+export function vitePluginImportEnvironment(
+  manager: RscPluginManager,
+): Plugin[] {
   return [
     {
       name: 'rsc:import-environment',
+      configEnvironment: {
+        order: 'post',
+        handler(name, config, _env) {
+          if (name === 'ssr' || name === 'rsc') {
+            // ensure at least one entry since otherwise rollup build fails
+            if (!config.build?.rollupOptions?.input) {
+              return {
+                build: {
+                  rollupOptions: {
+                    input: {
+                      __vite_rsc_env_imports_entry_fallback:
+                        ENV_IMPORTS_ENTRY_FALLBACK,
+                    },
+                  },
+                },
+              }
+            }
+          }
+        },
+      },
       resolveId(source) {
         // Mark manifest imports as external during build
         // The actual file is generated in buildApp after all builds complete
@@ -38,19 +54,18 @@ export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
           return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
         }
         // Virtual scan placeholder for scan builds without entries
-        if (source === ENV_IMPORTS_SCAN_VIRTUAL) {
-          return '\0' + ENV_IMPORTS_SCAN_VIRTUAL
+        if (source === ENV_IMPORTS_ENTRY_FALLBACK) {
+          return '\0' + ENV_IMPORTS_ENTRY_FALLBACK
         }
       },
       load(id) {
-        // Empty module for scan placeholder
-        if (id === '\0' + ENV_IMPORTS_SCAN_VIRTUAL) {
-          return 'export {}'
+        if (id === '\0' + ENV_IMPORTS_ENTRY_FALLBACK) {
+          return 'export default () => "__vite_rsc_env_imports_entry_fallback"'
         }
       },
       buildStart() {
-        // Emit discovered entries in real builds (not scan builds)
-        if (this.environment.mode !== 'build' || manager.isScanBuild) return
+        // Emit discovered entries during build
+        if (this.environment.mode !== 'build') return
 
         for (const meta of Object.values(manager.environmentImportMetaMap)) {
           if (meta.targetEnv === this.environment.name) {
@@ -115,6 +130,7 @@ export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
               resolvedId = resolved.id
             }
 
+            // TODO: shouldn't be necessary. replace with internal ID.
             // Derive entry name from specifier (e.g., './entry.ssr.tsx' -> 'entry.ssr')
             const entryName = deriveEntryName(specifier)
 

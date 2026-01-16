@@ -29,7 +29,6 @@ import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ENV_IMPORTS_MANIFEST_NAME,
-  ENV_IMPORTS_SCAN_VIRTUAL,
   vitePluginImportEnvironment,
 } from './plugins/import-environment'
 import {
@@ -447,37 +446,13 @@ export default function vitePluginRsc(
     )
 
     // rsc -> ssr -> rsc -> client -> ssr
-    // Check if SSR has entries configured - if not, we'll inject after RSC scan
-    const ssrInput = builder.environments.ssr!.config.build.rollupOptions
-      .input as Record<string, string> | undefined
-    const hasSsrInput = ssrInput && Object.keys(ssrInput).length > 0
-
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
-    if (hasSsrInput) {
-      builder.environments.ssr!.config.build.write = false
-    }
+    builder.environments.ssr!.config.build.write = false
     logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
-
-    // Check if we need SSR scan (has input or discovered imports targeting SSR)
-    const hasRscToSsrImports = Object.values(
-      manager.environmentImportMetaMap,
-    ).some((meta) => meta.targetEnv === 'ssr')
-
-    if (hasSsrInput || hasRscToSsrImports) {
-      // Use dummy input for scan builds that have no configured input
-      // Real entries are emitted via emitFile in buildStart
-      if (!hasSsrInput) {
-        builder.environments.ssr!.config.build.rollupOptions.input = {
-          __vite_rsc_env_imports_scan: ENV_IMPORTS_SCAN_VIRTUAL,
-        }
-      }
-      builder.environments.ssr!.config.build.write = false
-      logStep('[2/5] analyze server references...')
-      await builder.build(builder.environments.ssr!)
-    }
-
+    logStep('[2/5] analyze server references...')
+    await builder.build(builder.environments.ssr!)
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
