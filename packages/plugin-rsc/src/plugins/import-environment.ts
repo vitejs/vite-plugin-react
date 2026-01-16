@@ -4,11 +4,12 @@ import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
 import type { Plugin } from 'vite'
 import type { RscPluginManager } from '../plugin'
+import { createVirtualPlugin, normalizeRollupOpitonsInput } from './utils'
 import { evalValue } from './vite-utils'
 
 export const ENV_IMPORTS_MANIFEST_NAME = '__vite_rsc_env_imports_manifest.js'
 export const ENV_IMPORTS_ENTRY_FALLBACK =
-  'virtual:vite-rsc/env-imports-entry-fallbacks'
+  'virtual:vite-rsc/env-imports-entry-fallback'
 
 export type EnvironmentImportMeta = {
   resolvedId: string
@@ -27,19 +28,21 @@ export function vitePluginImportEnvironment(
       configEnvironment: {
         order: 'post',
         handler(name, config, _env) {
-          if (name === 'ssr' || name === 'rsc') {
-            // ensure at least one entry since otherwise rollup build fails
-            if (!config.build?.rollupOptions?.input) {
-              return {
-                build: {
-                  rollupOptions: {
-                    input: {
-                      __vite_rsc_env_imports_entry_fallback:
-                        ENV_IMPORTS_ENTRY_FALLBACK,
-                    },
+          if (name === 'client') return
+          // ensure at least one entry since otherwise rollup build fails
+          const input = normalizeRollupOpitonsInput(
+            config.build?.rollupOptions?.input,
+          )
+          if (Object.keys(input).length === 0) {
+            return {
+              build: {
+                rollupOptions: {
+                  input: {
+                    __vite_rsc_env_imports_entry_fallback:
+                      ENV_IMPORTS_ENTRY_FALLBACK,
                   },
                 },
-              }
+              },
             }
           }
         },
@@ -53,16 +56,6 @@ export function vitePluginImportEnvironment(
         ) {
           // TODO: relativity should be enforced via another renderChunk patch
           return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
-        }
-        if (source === ENV_IMPORTS_ENTRY_FALLBACK) {
-          return '\0' + ENV_IMPORTS_ENTRY_FALLBACK
-        }
-      },
-      load(id) {
-        // TODO: how to avoid warning?
-        // > Generated an empty chunk: "__vite_rsc_env_imports_entry_fallback".
-        if (id === '\0' + ENV_IMPORTS_ENTRY_FALLBACK) {
-          return 'export default "__vite_rsc_env_imports_entry_fallback"'
         }
       },
       buildStart() {
@@ -138,6 +131,7 @@ export function vitePluginImportEnvironment(
 
             // Track discovered entry
             manager.environmentImportMetaMap[resolvedId] = {
+              // TODO: relative-ize resolveId
               resolvedId,
               targetEnv: environmentName,
               sourceEnv: this.environment.name,
@@ -168,6 +162,8 @@ export function vitePluginImportEnvironment(
       },
 
       generateBundle(_options, bundle) {
+        if (this.environment.name === 'client') return
+
         // Track output filenames for discovered environment imports
         // This runs in both RSC and SSR builds to capture all outputs
         for (const [fileName, chunk] of Object.entries(bundle)) {
@@ -180,6 +176,14 @@ export function vitePluginImportEnvironment(
         }
       },
     },
+    createVirtualPlugin(
+      ENV_IMPORTS_ENTRY_FALLBACK.slice('virtual:'.length),
+      () => {
+        // TODO: how to avoid warning during scan build?
+        // > Generated an empty chunk: "__vite_rsc_env_imports_entry_fallback".
+        return `export default "__vite_rsc_env_imports_entry_fallback";`
+      },
+    ),
   ]
 }
 

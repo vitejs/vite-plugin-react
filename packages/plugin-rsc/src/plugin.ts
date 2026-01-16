@@ -126,6 +126,7 @@ class RscPluginManager {
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<string, EnvironmentImportMeta> = {}
+  // TODO: per-environment (can we merge to environmentImportMetaMap?)
   // Maps resolvedId to output fileName (populated in generateBundle)
   environmentImportOutputMap: Record<string, string> = {}
 
