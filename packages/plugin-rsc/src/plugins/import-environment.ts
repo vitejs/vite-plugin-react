@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import fs from 'node:fs'
 import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
@@ -197,4 +198,48 @@ export function vitePluginImportEnvironment(
       },
     ),
   ]
+}
+
+export function writeEnvironmentImportsManifest(
+  manager: RscPluginManager,
+): void {
+  if (Object.keys(manager.environmentImportMetaMap).length === 0) {
+    return
+  }
+
+  // Write manifest to each source environment's output
+  for (const [sourceEnv, byTargetEnv] of Object.entries(
+    manager.environmentImportMetaMap,
+  )) {
+    const sourceOutDir = manager.config.environments[sourceEnv]!.build.outDir
+    const manifestPath = path.join(sourceOutDir, ENV_IMPORTS_MANIFEST_NAME)
+
+    let code = 'export default {\n'
+    for (const [_targetEnv, imports] of Object.entries(byTargetEnv)) {
+      // Lookup fileName from bundle
+      for (const [resolvedId, meta] of Object.entries(imports)) {
+        const bundle = manager.bundles[meta.targetEnv]
+        const chunk = Object.values(bundle ?? {}).find(
+          (c) =>
+            c.type === 'chunk' && c.isEntry && c.facadeModuleId === resolvedId,
+        )
+        if (!chunk) {
+          throw new Error(
+            `[vite-rsc] missing output for environment import: ${resolvedId}`,
+          )
+        }
+        const targetOutDir =
+          manager.config.environments[meta.targetEnv]!.build.outDir
+        const relativePath = normalizeRelativePath(
+          path.relative(sourceOutDir, path.join(targetOutDir, chunk.fileName)),
+        )
+        // Use relative ID for stable builds across different machines
+        const relativeId = manager.toRelativeId(resolvedId)
+        code += `  ${JSON.stringify(relativeId)}: () => import(${JSON.stringify(relativePath)}),\n`
+      }
+    }
+    code += '}\n'
+
+    fs.writeFileSync(manifestPath, code)
+  }
 }

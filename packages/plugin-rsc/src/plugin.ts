@@ -28,8 +28,8 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
-  ENV_IMPORTS_MANIFEST_NAME,
   vitePluginImportEnvironment,
+  writeEnvironmentImportsManifest,
   type EnvironmentImportMeta,
 } from './plugins/import-environment'
 import {
@@ -162,50 +162,7 @@ class RscPluginManager {
   }
 
   writeEnvironmentImportsManifest(): void {
-    if (Object.keys(this.environmentImportMetaMap).length === 0) {
-      return
-    }
-
-    // Write manifest to each source environment's output
-    for (const [sourceEnv, byTargetEnv] of Object.entries(
-      this.environmentImportMetaMap,
-    )) {
-      const sourceOutDir = this.config.environments[sourceEnv]!.build.outDir
-      const manifestPath = path.join(sourceOutDir, ENV_IMPORTS_MANIFEST_NAME)
-
-      let code = 'export default {\n'
-      for (const [targetEnv, imports] of Object.entries(byTargetEnv)) {
-        // Lookup fileName from bundle
-        const bundle = this.bundles[targetEnv]
-        for (const [resolvedId, meta] of Object.entries(imports)) {
-          const chunk = Object.values(bundle ?? {}).find(
-            (c) =>
-              c.type === 'chunk' &&
-              c.isEntry &&
-              c.facadeModuleId === resolvedId,
-          )
-          if (!chunk) {
-            throw new Error(
-              `[vite-rsc] missing output for environment import: ${resolvedId}`,
-            )
-          }
-          const targetOutDir =
-            this.config.environments[meta.targetEnv]!.build.outDir
-          const relativePath = normalizeRelativePath(
-            path.relative(
-              sourceOutDir,
-              path.join(targetOutDir, chunk.fileName),
-            ),
-          )
-          // Use relative ID for stable builds across different machines
-          const relativeId = this.toRelativeId(resolvedId)
-          code += `  ${JSON.stringify(relativeId)}: () => import(${JSON.stringify(relativePath)}),\n`
-        }
-      }
-      code += '}\n'
-
-      fs.writeFileSync(manifestPath, code)
-    }
+    writeEnvironmentImportsManifest(this)
   }
 }
 
