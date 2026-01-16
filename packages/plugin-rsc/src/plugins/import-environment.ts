@@ -133,6 +133,8 @@ export function vitePluginImportEnvironment(
             }
 
             // TODO: environmentImportMetaMap structure seems still awkward
+            // should be [sourceEnv][targetEnv][resolvedId]
+
             // Track discovered entry, keyed by [sourceEnv][resolvedId]
             const sourceEnv = this.environment.name
             manager.environmentImportMetaMap[sourceEnv] ??= {}
@@ -187,6 +189,9 @@ export function vitePluginImportEnvironment(
 
       generateBundle(_options, bundle) {
         if (this.environment.name === 'client') return
+
+        // TODO: delay `fileName` assigment to right before writeEnvironmentImportsManifest
+        // TODO: we can just hold old `bundles: Record<string, ..>` in manager
 
         // Track output filenames for discovered environment imports
         // Only set fileName when this bundle's environment matches the target
