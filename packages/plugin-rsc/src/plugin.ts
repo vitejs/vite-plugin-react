@@ -173,10 +173,9 @@ class RscPluginManager {
       let code = 'export default {\n'
       for (const [resolvedId, meta] of Object.entries(imports)) {
         if (!meta.fileName) {
-          console.warn(
+          throw new Error(
             `[vite-rsc] missing output for environment import: ${resolvedId}`,
           )
-          continue
         }
         const targetOutDir =
           this.config.environments[meta.targetEnv]!.build.outDir

@@ -132,10 +132,11 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
+            // TODO: environmentImportMetaMap structure seems still awkward
             // Track discovered entry, keyed by [sourceEnv][resolvedId]
             const sourceEnv = this.environment.name
             manager.environmentImportMetaMap[sourceEnv] ??= {}
-            manager.environmentImportMetaMap[sourceEnv]![resolvedId] = {
+            manager.environmentImportMetaMap[sourceEnv]![resolvedId] ??= {
               resolvedId,
               targetEnv: environmentName,
               sourceEnv,
