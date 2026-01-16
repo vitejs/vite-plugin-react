@@ -100,7 +100,7 @@ export function getFallbackRollupEntry(
 // normalize to object form
 // https://rollupjs.org/configuration-options/#input
 // https://rollupjs.org/configuration-options/#output-entryfilenames
-function normalizeRollupOpitonsInput(
+export function normalizeRollupOpitonsInput(
   input: Rollup.InputOptions['input'] = {},
 ): Record<string, string> {
   if (typeof input === 'string') {
