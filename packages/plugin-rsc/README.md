@@ -245,6 +245,18 @@ ssrModule.renderHTML(...);
 export function renderHTML(...) {}
 ```
 
+#### `import.meta.viteRsc.import(..., { environment: ... })`
+
+TODO
+
+```ts
+const ssrModule = await import.meta.viteRsc.import(
+  "./entry.ssr.tsx",
+  { with: { environment: "ssr" } }
+)
+ssrModule.renderHTML(...);
+```
+
 ### Available on `rsc` environment
 
 #### `import.meta.viteRsc.loadCss`
