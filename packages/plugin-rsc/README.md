@@ -628,6 +628,13 @@ Note that while there are official npm packages [`server-only`](https://www.npmj
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
 
+## Architecture Documentation
+
+For developers interested in the internal architecture:
+
+- **[docs/architecture.md](docs/architecture.md)** - Build pipeline, data flow, and key components
+- **[docs/bundler-comparison.md](docs/bundler-comparison.md)** - How different bundlers approach RSC
+
 ## Credits
 
 This project builds on fundamental techniques and insights from pioneering Vite RSC implementations.

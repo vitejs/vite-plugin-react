@@ -92,9 +92,9 @@ async function handleRequest({
   }
 
   // TODO: implement this
-  import.meta.viteRsc.import<typeof import('./entry.ssr.tsx')>('./entry.ssr', {
-    environment: 'ssr',
-  })
+  // import.meta.viteRsc.import<typeof import('./entry.ssr.tsx')>('./entry.ssr', {
+  //   environment: 'ssr',
+  // })
   // import.meta.viteRsc.importEnvironment(import("./entry.ssr.tsx"));
   // import.meta.viteRsc.importAsset(import("./entry.browser.tsx"));
   // import(String("test"), { with: { viteRsc: "environment:ssr" } });
