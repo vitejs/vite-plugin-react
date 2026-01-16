@@ -21,7 +21,6 @@ export type EnvironmentImportMeta = {
   targetEnv: string
   sourceEnv: string
   specifier: string
-  fileName?: string
 }
 
 export function vitePluginImportEnvironment(
@@ -132,13 +131,11 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
-            // TODO: environmentImportMetaMap structure seems still awkward
-            // should be [sourceEnv][targetEnv][resolvedId]
-
+            // TODO: environmentImportMetaMap structure should be [sourceEnv][targetEnv][resolvedId]
             // Track discovered entry, keyed by [sourceEnv][resolvedId]
             const sourceEnv = this.environment.name
             manager.environmentImportMetaMap[sourceEnv] ??= {}
-            manager.environmentImportMetaMap[sourceEnv]![resolvedId] ??= {
+            manager.environmentImportMetaMap[sourceEnv]![resolvedId] = {
               resolvedId,
               targetEnv: environmentName,
               sourceEnv,
@@ -185,29 +182,6 @@ export function vitePluginImportEnvironment(
           return { code }
         }
         return
-      },
-
-      generateBundle(_options, bundle) {
-        if (this.environment.name === 'client') return
-
-        // TODO: delay `fileName` assigment to right before writeEnvironmentImportsManifest
-        // TODO: we can just hold old `bundles: Record<string, ..>` in manager
-
-        // Track output filenames for discovered environment imports
-        // Only set fileName when this bundle's environment matches the target
-        for (const [fileName, chunk] of Object.entries(bundle)) {
-          if (chunk.type === 'chunk' && chunk.isEntry && chunk.facadeModuleId) {
-            const resolvedId = chunk.facadeModuleId
-            for (const imports of Object.values(
-              manager.environmentImportMetaMap,
-            )) {
-              const meta = imports[resolvedId]
-              if (meta && meta.targetEnv === this.environment.name) {
-                meta.fileName = fileName
-              }
-            }
-          }
-        }
       },
     },
     createVirtualPlugin(

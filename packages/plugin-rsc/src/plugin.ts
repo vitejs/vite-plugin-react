@@ -117,7 +117,7 @@ export type { RscPluginManager }
 class RscPluginManager {
   server!: ViteDevServer
   config!: ResolvedConfig
-  rscBundle!: Rollup.OutputBundle
+  bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
@@ -172,7 +172,13 @@ class RscPluginManager {
 
       let code = 'export default {\n'
       for (const [resolvedId, meta] of Object.entries(imports)) {
-        if (!meta.fileName) {
+        // Lookup fileName from bundle
+        const bundle = this.bundles[meta.targetEnv]
+        const chunk = Object.values(bundle ?? {}).find(
+          (c) =>
+            c.type === 'chunk' && c.isEntry && c.facadeModuleId === resolvedId,
+        )
+        if (!chunk) {
           throw new Error(
             `[vite-rsc] missing output for environment import: ${resolvedId}`,
           )
@@ -180,7 +186,7 @@ class RscPluginManager {
         const targetOutDir =
           this.config.environments[meta.targetEnv]!.build.outDir
         const relativePath = normalizeRelativePath(
-          path.relative(sourceOutDir, path.join(targetOutDir, meta.fileName)),
+          path.relative(sourceOutDir, path.join(targetOutDir, chunk.fileName)),
         )
         // Use relative ID for stable builds across different machines
         const relativeId = this.toRelativeId(resolvedId)
@@ -1069,9 +1075,7 @@ export function createRpcClient(params) {
       // client build
       generateBundle(_options, bundle) {
         // copy assets from rsc build to client build
-        if (this.environment.name === 'rsc') {
-          manager.rscBundle = bundle
-        }
+        manager.bundles[this.environment.name] = bundle
 
         if (this.environment.name === 'client') {
           const filterAssets =
@@ -1081,7 +1085,7 @@ export function createRpcClient(params) {
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(manager.rscBundle)) {
+          for (const asset of Object.values(manager.bundles['rsc']!)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
               this.emitFile({
@@ -1093,7 +1097,7 @@ export function createRpcClient(params) {
           }
 
           const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(manager.rscBundle)
+          const rscAssetDeps = collectAssetDeps(manager.bundles['rsc']!)
           for (const [id, meta] of Object.entries(
             manager.serverResourcesMetaMap,
           )) {
