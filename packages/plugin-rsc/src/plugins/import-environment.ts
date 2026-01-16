@@ -4,12 +4,17 @@ import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
 import type { Plugin } from 'vite'
 import type { RscPluginManager } from '../plugin'
-import { createVirtualPlugin, normalizeRollupOpitonsInput } from './utils'
+import {
+  createVirtualPlugin,
+  normalizeRelativePath,
+  normalizeRollupOpitonsInput,
+} from './utils'
 import { evalValue } from './vite-utils'
 
 export const ENV_IMPORTS_MANIFEST_NAME = '__vite_rsc_env_imports_manifest.js'
-export const ENV_IMPORTS_ENTRY_FALLBACK =
-  'virtual:vite-rsc/env-imports-entry-fallback'
+
+const ENV_IMPORTS_MANIFEST_PLACEHOLDER = 'virtual:vite-rsc/env-imports-manifest'
+const ENV_IMPORTS_ENTRY_FALLBACK = 'virtual:vite-rsc/env-imports-entry-fallback'
 
 export type EnvironmentImportMeta = {
   resolvedId: string
@@ -48,14 +53,9 @@ export function vitePluginImportEnvironment(
         },
       },
       resolveId(source) {
-        // Mark manifest imports as external during build
-        // The actual file is generated in buildApp after all builds complete
-        if (
-          this.environment.mode === 'build' &&
-          source.endsWith(ENV_IMPORTS_MANIFEST_NAME)
-        ) {
-          // TODO: relativity should be enforced via another renderChunk patch
-          return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
+        // Use placeholder as external, renderChunk will replace with correct relative path
+        if (source === ENV_IMPORTS_MANIFEST_PLACEHOLDER) {
+          return { id: ENV_IMPORTS_MANIFEST_PLACEHOLDER, external: true }
         }
       },
       buildStart() {
@@ -145,7 +145,8 @@ export function vitePluginImportEnvironment(
             } else {
               // Build: emit manifest lookup with static import
               // The manifest is generated in buildApp after all builds complete
-              replacement = `(await import(${JSON.stringify('./' + ENV_IMPORTS_MANIFEST_NAME)})).default[${JSON.stringify(resolvedId)}]()`
+              // Use placeholder that renderChunk will replace with correct relative path
+              replacement = `(await import(${JSON.stringify(ENV_IMPORTS_MANIFEST_PLACEHOLDER)})).default[${JSON.stringify(resolvedId)}]()`
             }
 
             const [start, end] = match.indices![0]!
@@ -159,6 +160,23 @@ export function vitePluginImportEnvironment(
             }
           }
         },
+      },
+
+      renderChunk(code, chunk) {
+        if (code.includes(ENV_IMPORTS_MANIFEST_PLACEHOLDER)) {
+          const replacement = normalizeRelativePath(
+            path.relative(
+              path.join(chunk.fileName, '..'),
+              ENV_IMPORTS_MANIFEST_NAME,
+            ),
+          )
+          code = code.replaceAll(
+            ENV_IMPORTS_MANIFEST_PLACEHOLDER,
+            () => replacement,
+          )
+          return { code }
+        }
+        return
       },
 
       generateBundle(_options, bundle) {
