@@ -4,13 +4,19 @@ https://vite-rsc-starter.hiro18181.workers.dev
 
 [examples/starter](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/starter) integrated with [`@cloudflare/vite-plugin`](https://github.com/cloudflare/workers-sdk/tree/main/packages/vite-plugin-cloudflare).
 
-The difference from [examples/react-router](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/react-router) is that this doesn't require two workers.
+The difference from [examples/react-router](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-rsc/examples/react-router) is that this doesn't require two Workers.
 
-- RSC environment always runs on Cloudflare Workers.
-- During development, SSR environment runs as Vite's default Node environment.
-- During production, SSR environment build output is directly imported into RSC environment build and both codes run on the same worker.
+`rsc` is defined as the main Worker environment while `ssr` is defined as a child environment that is embedded in the same Worker.
 
-Such communication mechanism is enabled via `rsc({ loadModuleDevProxy: true })` plugin option.
+```ts
+cloudflare({
+  viteEnvironment: {
+    name: 'rsc',
+    // Define `ssr` as a child environment so that it runs in the same Worker as the parent `rsc` environment
+    childEnvironments: ['ssr'],
+  },
+}),
+```
 
 ```sh
 # run dev server
