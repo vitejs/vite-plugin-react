@@ -21,7 +21,6 @@ export type EnvironmentImportMeta = {
   targetEnv: string
   sourceEnv: string
   specifier: string
-  entryName: string
 }
 
 export function vitePluginImportEnvironment(
@@ -67,7 +66,6 @@ export function vitePluginImportEnvironment(
             this.emitFile({
               type: 'chunk',
               id: meta.resolvedId,
-              name: meta.entryName,
             })
           }
         }
@@ -125,10 +123,6 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
-            // TODO: shouldn't be necessary. replace with internal ID.
-            // Derive entry name from specifier (e.g., './entry.ssr.tsx' -> 'entry.ssr')
-            const entryName = deriveEntryName(specifier)
-
             // Track discovered entry
             manager.environmentImportMetaMap[resolvedId] = {
               // TODO: relative-ize resolveId
@@ -136,7 +130,6 @@ export function vitePluginImportEnvironment(
               targetEnv: environmentName,
               sourceEnv: this.environment.name,
               specifier,
-              entryName,
             }
 
             let replacement: string
@@ -203,14 +196,4 @@ export function vitePluginImportEnvironment(
       },
     ),
   ]
-}
-
-function deriveEntryName(specifier: string): string {
-  // Remove leading ./ or ../
-  let name = specifier.replace(/^\.\.?\//, '')
-  // Remove extension
-  name = name.replace(/\.[^.]+$/, '')
-  // Get basename if it's a path
-  name = path.basename(name)
-  return name
 }
