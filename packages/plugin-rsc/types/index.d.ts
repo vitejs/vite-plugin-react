@@ -4,12 +4,11 @@ declare global {
       loadCss: (importer?: string) => import('react').ReactNode
       loadModule: <T>(environmentName: string, entryName?: string) => Promise<T>
       loadBootstrapScriptContent: (entryName: string) => Promise<string>
-
-      // TODO: loadModule alternative
+      /**
+       * TODO: jsdoc
+       * @experimental
+       */
       import: <T>(specifier, attributes: { environment: string }) => Promise<T>
-
-      // TODO: loadBootstrapScriptContent alternative?
-      // import: (specifier, attributes: { asset: string }) => Promise<string>
     }
   }
 

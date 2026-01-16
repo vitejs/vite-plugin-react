@@ -125,10 +125,12 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
-  // Keyed by [sourceEnv][resolvedId] to support same module imported from multiple environments
   environmentImportMetaMap: Record<
-    string,
-    Record<string, EnvironmentImportMeta>
+    string, // sourceEnv
+    Record<
+      string, // resolvedId
+      EnvironmentImportMeta
+    >
   > = {}
 
   stabilize(): void {
