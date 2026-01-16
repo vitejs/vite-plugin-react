@@ -34,6 +34,7 @@ import { TestHmrSharedServer } from './hmr-shared/server'
 import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestHmrSwitchServer } from './hmr-switch/server'
 import { TestHydrationMismatch } from './hydration-mismatch/server'
+import { TestImportEnvironment } from './import-environment/server'
 import { TestImportMetaGlob } from './import-meta-glob/server'
 import { TestLazyCssClientToClient } from './lazy-css/client-to-client'
 import { TestLazyCssServerToClient } from './lazy-css/server-to-client'
@@ -111,6 +112,7 @@ export function Root(props: { url: URL }) {
         <TestReactCache url={props.url} />
         <TestCssQueries />
         <TestImportMetaGlob />
+        <TestImportEnvironment />
         <TestAssetsServer />
         <TestTreeShakeServer />
         <TestTreeShake2 />

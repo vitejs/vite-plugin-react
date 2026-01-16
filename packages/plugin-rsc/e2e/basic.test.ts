@@ -244,6 +244,13 @@ function defineTest(f: Fixture) {
     await page.getByRole('button', { name: 'client-counter: 1' }).click()
   })
 
+  test('import environment', async ({ page }) => {
+    await page.goto(f.url())
+    await expect(page.getByTestId('import-environment')).toHaveText(
+      '[test-import-environment: test-ssr]',
+    )
+  })
+
   test('server action @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
