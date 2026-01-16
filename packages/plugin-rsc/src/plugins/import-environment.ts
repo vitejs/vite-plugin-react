@@ -124,9 +124,8 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
-            // Track discovered entry
+            // Track discovered entry (keyed by absolute path for generateBundle lookup)
             manager.environmentImportMetaMap[resolvedId] = {
-              // TODO: relative-ize resolveId
               resolvedId,
               targetEnv: environmentName,
               sourceEnv: this.environment.name,
@@ -140,7 +139,9 @@ export function vitePluginImportEnvironment(
               // Build: emit manifest lookup with static import
               // The manifest is generated in buildApp after all builds complete
               // Use placeholder that renderChunk will replace with correct relative path
-              replacement = `(await import(${JSON.stringify(ENV_IMPORTS_MANIFEST_PLACEHOLDER)})).default[${JSON.stringify(resolvedId)}]()`
+              // Use relative ID for stable builds across different machines
+              const relativeId = manager.toRelativeId(resolvedId)
+              replacement = `(await import(${JSON.stringify(ENV_IMPORTS_MANIFEST_PLACEHOLDER)})).default[${JSON.stringify(relativeId)}]()`
             }
 
             const [start, end] = match.indices![0]!

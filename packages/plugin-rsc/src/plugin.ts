@@ -184,7 +184,9 @@ class RscPluginManager {
         const relativePath = normalizeRelativePath(
           path.relative(sourceOutDir, path.join(targetOutDir, meta.fileName)),
         )
-        code += `  ${JSON.stringify(resolvedId)}: () => import(${JSON.stringify(relativePath)}),\n`
+        // Use relative ID for stable builds across different machines
+        const relativeId = this.toRelativeId(resolvedId)
+        code += `  ${JSON.stringify(relativeId)}: () => import(${JSON.stringify(relativePath)}),\n`
       }
       code += '}\n'
 
