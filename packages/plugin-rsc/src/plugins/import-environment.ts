@@ -6,6 +6,7 @@ import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { evalValue } from './vite-utils'
 
 export const ENV_IMPORTS_MANIFEST_NAME = '__vite_rsc_env_imports_manifest.js'
+export const ENV_IMPORTS_SCAN_VIRTUAL = 'virtual:vite-rsc/env-imports-scan'
 
 export type EnvironmentImportMeta = {
   resolvedId: string
@@ -18,6 +19,7 @@ export type EnvironmentImportMeta = {
 interface PluginManager {
   server: ViteDevServer
   config: ResolvedConfig
+  isScanBuild: boolean
   environmentImportMetaMap: Record<string, EnvironmentImportMeta>
   environmentImportOutputMap: Record<string, string>
 }
@@ -34,6 +36,30 @@ export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
           source.endsWith(ENV_IMPORTS_MANIFEST_NAME)
         ) {
           return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
+        }
+        // Virtual scan placeholder for scan builds without entries
+        if (source === ENV_IMPORTS_SCAN_VIRTUAL) {
+          return '\0' + ENV_IMPORTS_SCAN_VIRTUAL
+        }
+      },
+      load(id) {
+        // Empty module for scan placeholder
+        if (id === '\0' + ENV_IMPORTS_SCAN_VIRTUAL) {
+          return 'export {}'
+        }
+      },
+      buildStart() {
+        // Emit discovered entries in real builds (not scan builds)
+        if (this.environment.mode !== 'build' || manager.isScanBuild) return
+
+        for (const meta of Object.values(manager.environmentImportMetaMap)) {
+          if (meta.targetEnv === this.environment.name) {
+            this.emitFile({
+              type: 'chunk',
+              id: meta.resolvedId,
+              name: meta.entryName,
+            })
+          }
         }
       },
       transform: {
