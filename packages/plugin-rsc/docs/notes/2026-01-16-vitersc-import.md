@@ -281,8 +281,7 @@ Transform emits manifest lookup:
 ```ts
 // Original:
 await import.meta.viteRsc
-  .import('./entry.ssr', { environment: 'ssr' })
-  (
+  .import('./entry.ssr', { environment: 'ssr' })(
     // Build transform to:
     await import('./__vite_rsc_env_imports_manifest.js'),
   )
@@ -439,12 +438,12 @@ export default {
 2. [x] Clean up `import-environment.ts`: add imports, parameterize with manager
 3. [x] Implement transform to discover and track imports
 4. [x] Inject discovered entries into target environment's input
-5. [ ] **Fix**: Move entry injection to AFTER both scans (currently after RSC scan only)
-6. [ ] Update transform to emit manifest lookup (build mode)
-7. [ ] Remove renderChunk marker replacement
-8. [ ] Add `environmentImportOutputMap` to track resolvedId → outputFileName
-9. [ ] Add generateBundle hook to populate output map (in both RSC and SSR)
-10. [ ] Add `writeEnvironmentImportsManifest` in buildApp (per source environment)
-11. [ ] Test with basic example (RSC → SSR)
+5. [x] Split entry injection: after RSC scan (RSC → other), after SSR scan (SSR → other)
+6. [x] Update transform to emit manifest lookup (build mode)
+7. [x] Remove renderChunk marker replacement, add resolveId to mark manifest as external
+8. [x] Add `environmentImportOutputMap` to track resolvedId → outputFileName
+9. [x] Add generateBundle hook to populate output map (in both RSC and SSR)
+10. [x] Add `writeEnvironmentImportsManifest` in buildApp (per source environment)
+11. [x] Test with basic example (RSC → SSR) - all 38 starter tests pass
 12. [ ] Test bidirectional (SSR → RSC) if applicable
 13. [ ] Update documentation

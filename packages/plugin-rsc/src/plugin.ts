@@ -27,7 +27,10 @@ import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
-import { vitePluginImportEnvironment } from './plugins/import-environment'
+import {
+  ENV_IMPORTS_MANIFEST_NAME,
+  vitePluginImportEnvironment,
+} from './plugins/import-environment'
 import {
   vitePluginResolvedIdProxy,
   withResolvedIdProxy,
@@ -131,6 +134,8 @@ class RscPluginManager {
       entryName: string
     }
   > = {}
+  // Maps resolvedId to output fileName (populated in generateBundle)
+  environmentImportOutputMap: Record<string, string> = {}
 
   stabilize(): void {
     // sort for stable build
@@ -154,6 +159,47 @@ class RscPluginManager {
         BUILD_ASSETS_MANIFEST_NAME,
       )
       fs.writeFileSync(manifestPath, assetsManifestCode)
+    }
+  }
+
+  writeEnvironmentImportsManifest(): void {
+    if (Object.keys(this.environmentImportMetaMap).length === 0) {
+      return
+    }
+
+    // Group imports by source environment
+    const bySourceEnv: Record<string, typeof this.environmentImportMetaMap> = {}
+    for (const [resolvedId, meta] of Object.entries(
+      this.environmentImportMetaMap,
+    )) {
+      bySourceEnv[meta.sourceEnv] ??= {}
+      bySourceEnv[meta.sourceEnv]![resolvedId] = meta
+    }
+
+    // Write manifest to each source environment's output
+    for (const [sourceEnv, imports] of Object.entries(bySourceEnv)) {
+      const sourceOutDir = this.config.environments[sourceEnv]!.build.outDir
+      const manifestPath = path.join(sourceOutDir, ENV_IMPORTS_MANIFEST_NAME)
+
+      let code = 'export default {\n'
+      for (const [resolvedId, meta] of Object.entries(imports)) {
+        const outputFileName = this.environmentImportOutputMap[resolvedId]
+        if (!outputFileName) {
+          console.warn(
+            `[vite-rsc] missing output for environment import: ${resolvedId}`,
+          )
+          continue
+        }
+        const targetOutDir =
+          this.config.environments[meta.targetEnv]!.build.outDir
+        const relativePath = normalizeRelativePath(
+          path.relative(sourceOutDir, path.join(targetOutDir, outputFileName)),
+        )
+        code += `  ${JSON.stringify(resolvedId)}: () => import(${JSON.stringify(relativePath)}),\n`
+      }
+      code += '}\n'
+
+      fs.writeFileSync(manifestPath, code)
     }
   }
 }
@@ -381,6 +427,7 @@ export default function vitePluginRsc(
       logStep('[4/4] build client environment...')
       await builder.build(builder.environments.client!)
       manager.writeAssetsManifest(['rsc'])
+      manager.writeEnvironmentImportsManifest()
       return
     }
 
@@ -412,8 +459,9 @@ export default function vitePluginRsc(
     logStep('[1/5] analyze client references...')
     await builder.build(builder.environments.rsc!)
 
-    // Inject discovered environment imports into target environment's input
-    // This must happen after RSC scan discovers them
+    // TODO: let's configuere dummy input e.g. __vite_rsc_xxx: "virtual:..."
+    // Inject RSC → other environment imports discovered during RSC scan
+    // This must happen before SSR scan so SSR has input
     for (const meta of Object.values(manager.environmentImportMetaMap)) {
       const targetEnv = builder.environments[meta.targetEnv]
       if (targetEnv) {
@@ -425,14 +473,32 @@ export default function vitePluginRsc(
       }
     }
 
-    if (
-      hasSsrInput ||
-      Object.keys(manager.environmentImportMetaMap).length > 0
-    ) {
+    // Check if we need SSR scan (has input or discovered imports targeting SSR)
+    // TODO: no need of optimization yet. just leave it as future follow TODO.
+    const ssrInputAfterRsc = builder.environments.ssr!.config.build
+      .rollupOptions.input as Record<string, string> | undefined
+    const hasSsrInputAfterRsc =
+      ssrInputAfterRsc && Object.keys(ssrInputAfterRsc).length > 0
+
+    if (hasSsrInput || hasSsrInputAfterRsc) {
       builder.environments.ssr!.config.build.write = false
       logStep('[2/5] analyze server references...')
       await builder.build(builder.environments.ssr!)
+
+      // Inject SSR → other environment imports discovered during SSR scan
+      // (for bidirectional support)
+      for (const meta of Object.values(manager.environmentImportMetaMap)) {
+        const targetEnv = builder.environments[meta.targetEnv]
+        if (targetEnv) {
+          const input = (targetEnv.config.build.rollupOptions.input ??=
+            {}) as Record<string, string>
+          if (!(meta.entryName in input)) {
+            input[meta.entryName] = meta.resolvedId
+          }
+        }
+      }
     }
+
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
@@ -465,6 +531,7 @@ export default function vitePluginRsc(
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
+    manager.writeEnvironmentImportsManifest()
   }
 
   let hasReactServerDomWebpack = false

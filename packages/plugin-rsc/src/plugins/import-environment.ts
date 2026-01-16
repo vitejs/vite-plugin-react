@@ -3,8 +3,9 @@ import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
-import { normalizeRelativePath } from './utils'
 import { evalValue } from './vite-utils'
+
+export const ENV_IMPORTS_MANIFEST_NAME = '__vite_rsc_env_imports_manifest.js'
 
 export type EnvironmentImportMeta = {
   resolvedId: string
@@ -18,12 +19,23 @@ interface PluginManager {
   server: ViteDevServer
   config: ResolvedConfig
   environmentImportMetaMap: Record<string, EnvironmentImportMeta>
+  environmentImportOutputMap: Record<string, string>
 }
 
 export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
   return [
     {
       name: 'rsc:import-environment',
+      resolveId(source) {
+        // Mark manifest imports as external during build
+        // The actual file is generated in buildApp after all builds complete
+        if (
+          this.environment.mode === 'build' &&
+          source.endsWith(ENV_IMPORTS_MANIFEST_NAME)
+        ) {
+          return { id: './' + ENV_IMPORTS_MANIFEST_NAME, external: true }
+        }
+      },
       transform: {
         async handler(code, id) {
           if (!code.includes('import.meta.viteRsc.import')) return
@@ -93,16 +105,9 @@ export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
             if (this.environment.mode === 'dev') {
               replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolvedId)})`
             } else {
-              // Build: emit marker that will be resolved in renderChunk
-              replacement = JSON.stringify(
-                `__vite_rsc_import_env_start__:` +
-                  JSON.stringify({
-                    fromEnv: this.environment.name,
-                    toEnv: environmentName,
-                    entryName,
-                  }) +
-                  `:__vite_rsc_import_env_end__`,
-              )
+              // Build: emit manifest lookup with static import
+              // The manifest is generated in buildApp after all builds complete
+              replacement = `(await import(${JSON.stringify('./' + ENV_IMPORTS_MANIFEST_NAME)})).default[${JSON.stringify(resolvedId)}]()`
             }
 
             const [start, end] = match.indices![0]!
@@ -118,47 +123,15 @@ export function vitePluginImportEnvironment(manager: PluginManager): Plugin[] {
         },
       },
 
-      renderChunk(code, chunk) {
-        if (!code.includes('__vite_rsc_import_env')) return
-
-        const { config } = manager
-        const s = new MagicString(code)
-
-        for (const match of code.matchAll(
-          /[`'"]__vite_rsc_import_env_start__:([\s\S]*?):__vite_rsc_import_env_end__[`'"]/dg,
-        )) {
-          const markerString = evalValue(match[0])
-          const { fromEnv, toEnv, entryName } = JSON.parse(
-            markerString.slice(
-              '__vite_rsc_import_env_start__:'.length,
-              -':__vite_rsc_import_env_end__'.length,
-            ),
-          )
-
-          const targetFileName = `${entryName}.js`
-          const importPath = normalizeRelativePath(
-            path.relative(
-              path.join(
-                config.environments[fromEnv!]!.build.outDir,
-                chunk.fileName,
-                '..',
-              ),
-              path.join(
-                config.environments[toEnv!]!.build.outDir,
-                targetFileName,
-              ),
-            ),
-          )
-
-          const replacement = `(import(${JSON.stringify(importPath)}))`
-          const [start, end] = match.indices![0]!
-          s.overwrite(start, end, replacement)
-        }
-
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ hires: 'boundary' }),
+      generateBundle(_options, bundle) {
+        // Track output filenames for discovered environment imports
+        // This runs in both RSC and SSR builds to capture all outputs
+        for (const [fileName, chunk] of Object.entries(bundle)) {
+          if (chunk.type === 'chunk' && chunk.isEntry && chunk.facadeModuleId) {
+            const resolvedId = chunk.facadeModuleId
+            if (resolvedId in manager.environmentImportMetaMap) {
+              manager.environmentImportOutputMap[resolvedId] = fileName
+            }
           }
         }
       },
