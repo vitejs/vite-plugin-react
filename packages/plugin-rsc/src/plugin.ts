@@ -444,7 +444,6 @@ export default function vitePluginRsc(
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
-
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
 
