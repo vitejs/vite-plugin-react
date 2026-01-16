@@ -125,7 +125,11 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
-  environmentImportMetaMap: Record<string, EnvironmentImportMeta> = {}
+  // Keyed by [sourceEnv][resolvedId] to support same module imported from multiple environments
+  environmentImportMetaMap: Record<
+    string,
+    Record<string, EnvironmentImportMeta>
+  > = {}
 
   stabilize(): void {
     // sort for stable build
@@ -157,17 +161,10 @@ class RscPluginManager {
       return
     }
 
-    // Group imports by source environment
-    const bySourceEnv: Record<string, typeof this.environmentImportMetaMap> = {}
-    for (const [resolvedId, meta] of Object.entries(
+    // Write manifest to each source environment's output
+    for (const [sourceEnv, imports] of Object.entries(
       this.environmentImportMetaMap,
     )) {
-      bySourceEnv[meta.sourceEnv] ??= {}
-      bySourceEnv[meta.sourceEnv]![resolvedId] = meta
-    }
-
-    // Write manifest to each source environment's output
-    for (const [sourceEnv, imports] of Object.entries(bySourceEnv)) {
       const sourceOutDir = this.config.environments[sourceEnv]!.build.outDir
       const manifestPath = path.join(sourceOutDir, ENV_IMPORTS_MANIFEST_NAME)
 

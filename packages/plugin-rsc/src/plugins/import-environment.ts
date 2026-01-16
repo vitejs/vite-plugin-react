@@ -62,12 +62,20 @@ export function vitePluginImportEnvironment(
         // Emit discovered entries during build
         if (this.environment.mode !== 'build') return
 
-        for (const meta of Object.values(manager.environmentImportMetaMap)) {
-          if (meta.targetEnv === this.environment.name) {
-            this.emitFile({
-              type: 'chunk',
-              id: meta.resolvedId,
-            })
+        // Collect unique entries targeting this environment (may be imported from multiple sources)
+        const emitted = new Set<string>()
+        for (const imports of Object.values(manager.environmentImportMetaMap)) {
+          for (const meta of Object.values(imports)) {
+            if (
+              meta.targetEnv === this.environment.name &&
+              !emitted.has(meta.resolvedId)
+            ) {
+              emitted.add(meta.resolvedId)
+              this.emitFile({
+                type: 'chunk',
+                id: meta.resolvedId,
+              })
+            }
           }
         }
       },
@@ -124,11 +132,13 @@ export function vitePluginImportEnvironment(
               resolvedId = resolved.id
             }
 
-            // Track discovered entry (keyed by absolute path for generateBundle lookup)
-            manager.environmentImportMetaMap[resolvedId] = {
+            // Track discovered entry, keyed by [sourceEnv][resolvedId]
+            const sourceEnv = this.environment.name
+            manager.environmentImportMetaMap[sourceEnv] ??= {}
+            manager.environmentImportMetaMap[sourceEnv]![resolvedId] = {
               resolvedId,
               targetEnv: environmentName,
-              sourceEnv: this.environment.name,
+              sourceEnv,
               specifier,
             }
 
@@ -178,12 +188,17 @@ export function vitePluginImportEnvironment(
         if (this.environment.name === 'client') return
 
         // Track output filenames for discovered environment imports
-        // This runs in both RSC and SSR builds to capture all outputs
+        // Only set fileName when this bundle's environment matches the target
         for (const [fileName, chunk] of Object.entries(bundle)) {
           if (chunk.type === 'chunk' && chunk.isEntry && chunk.facadeModuleId) {
-            const meta = manager.environmentImportMetaMap[chunk.facadeModuleId]
-            if (meta) {
-              meta.fileName = fileName
+            const resolvedId = chunk.facadeModuleId
+            for (const imports of Object.values(
+              manager.environmentImportMetaMap,
+            )) {
+              const meta = imports[resolvedId]
+              if (meta && meta.targetEnv === this.environment.name) {
+                meta.fileName = fileName
+              }
             }
           }
         }
