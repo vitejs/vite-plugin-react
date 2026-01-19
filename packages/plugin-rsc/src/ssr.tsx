@@ -22,6 +22,9 @@ export type OnClientReference = (reference: {
 // Registered callback for client reference deps
 let onClientReference: OnClientReference | undefined
 
+// Cache for dev mode deps
+let devModeDepsCache: Record<string, ResolvedAssetDeps> | undefined
+
 /**
  * Register a callback to be notified when client reference dependencies are loaded.
  * Called during SSR when a client component is accessed.
@@ -47,7 +50,12 @@ function initialize(): void {
         const modCss = await import(
           /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })
         )
-        return wrapResourceProxy(mod, { js: [], css: modCss.default })
+        const deps: ResolvedAssetDeps = { js: [], css: modCss.default }
+        if (!devModeDepsCache) {
+          devModeDepsCache = {}
+        }
+        devModeDepsCache[id] = deps
+        return wrapResourceProxy(mod, deps)
       } else {
         const import_ = clientReferences.default[id]
         if (!import_) {
@@ -65,12 +73,14 @@ function initialize(): void {
     // Called EVERY time a module is requested (not memoized).
     // Notify framework callback for per-request asset collection.
     onLoad: (id) => {
-      if (!import.meta.env.__vite_rsc_build__) return
-      if (onClientReference) {
-        const deps = assetsManifest.clientReferenceDeps[id]
-        if (deps) {
-          onClientReference({ id, deps: { js: deps.js, css: deps.css } })
-        }
+      let deps: ResolvedAssetDeps | undefined
+      if (!import.meta.env.__vite_rsc_build__) {
+        deps = devModeDepsCache ? devModeDepsCache[id] : undefined
+      } else {
+        deps = assetsManifest.clientReferenceDeps[id]
+      }
+      if (onClientReference && deps) {
+        onClientReference({ id, deps: { js: deps.js, css: deps.css } })
       }
     },
   })
