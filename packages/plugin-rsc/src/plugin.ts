@@ -28,6 +28,12 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
+  ensureEnvironmentImportsEntryFallback,
+  vitePluginImportEnvironment,
+  writeEnvironmentImportsManifest,
+  type EnvironmentImportMeta,
+} from './plugins/import-environment'
+import {
   vitePluginResolvedIdProxy,
   withResolvedIdProxy,
 } from './plugins/resolved-id-proxy'
@@ -112,7 +118,7 @@ export type { RscPluginManager }
 class RscPluginManager {
   server!: ViteDevServer
   config!: ResolvedConfig
-  rscBundle!: Rollup.OutputBundle
+  bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
@@ -120,6 +126,16 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+  environmentImportMetaMap: Record<
+    string, // sourceEnv
+    Record<
+      string, // targetEnv
+      Record<
+        string, // resolvedId
+        EnvironmentImportMeta
+      >
+    >
+  > = {}
 
   stabilize(): void {
     // sort for stable build
@@ -144,6 +160,10 @@ class RscPluginManager {
       )
       fs.writeFileSync(manifestPath, assetsManifestCode)
     }
+  }
+
+  writeEnvironmentImportsManifest(): void {
+    writeEnvironmentImportsManifest(this)
   }
 }
 
@@ -238,6 +258,13 @@ export type RscPluginOptions = {
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
+
+  /**
+   * Controls whether CSS links use React's `precedence` attribute.
+   * @experimental
+   * @default true
+   */
+  cssLinkPrecedence?: boolean
 }
 
 export type PluginApi = {
@@ -351,28 +378,6 @@ export default function vitePluginRsc(
       builder.config.logger.info(colors.blue(msg))
     }
 
-    // no-ssr case
-    // rsc -> client -> rsc -> client
-    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-      manager.isScanBuild = true
-      builder.environments.rsc!.config.build.write = false
-      builder.environments.client!.config.build.write = false
-      logStep('[1/4] analyze client references...')
-      await builder.build(builder.environments.rsc!)
-      logStep('[2/4] analyze server references...')
-      await builder.build(builder.environments.client!)
-      manager.isScanBuild = false
-      builder.environments.rsc!.config.build.write = true
-      builder.environments.client!.config.build.write = true
-      logStep('[3/4] build rsc environment...')
-      await builder.build(builder.environments.rsc!)
-      manager.stabilize()
-      logStep('[4/4] build client environment...')
-      await builder.build(builder.environments.client!)
-      manager.writeAssetsManifest(['rsc'])
-      return
-    }
-
     // Check if RSC outDir is inside SSR outDir to avoid SSR build overwriting RSC output
     const rscOutDir = builder.environments.rsc!.config.build.outDir
     const ssrOutDir = builder.environments.ssr!.config.build.outDir
@@ -388,6 +393,7 @@ export default function vitePluginRsc(
     )
 
     // rsc -> ssr -> rsc -> client -> ssr
+    ensureEnvironmentImportsEntryFallback(builder.config)
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
@@ -426,6 +432,7 @@ export default function vitePluginRsc(
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
+    manager.writeEnvironmentImportsManifest()
   }
 
   let hasReactServerDomWebpack = false
@@ -1014,6 +1021,7 @@ export function createRpcClient(params) {
           const manifest: AssetsManifest = {
             bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
+            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
           }
           return `export default ${JSON.stringify(manifest, null, 2)}`
         }
@@ -1021,9 +1029,7 @@ export function createRpcClient(params) {
       // client build
       generateBundle(_options, bundle) {
         // copy assets from rsc build to client build
-        if (this.environment.name === 'rsc') {
-          manager.rscBundle = bundle
-        }
+        manager.bundles[this.environment.name] = bundle
 
         if (this.environment.name === 'client') {
           const filterAssets =
@@ -1033,7 +1039,7 @@ export function createRpcClient(params) {
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(manager.rscBundle)) {
+          for (const asset of Object.values(manager.bundles['rsc']!)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
               this.emitFile({
@@ -1045,7 +1051,7 @@ export function createRpcClient(params) {
           }
 
           const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(manager.rscBundle)
+          const rscAssetDeps = collectAssetDeps(manager.bundles['rsc']!)
           for (const [id, meta] of Object.entries(
             manager.serverResourcesMetaMap,
           )) {
@@ -1060,7 +1066,7 @@ export function createRpcClient(params) {
 
           const assetDeps = collectAssetDeps(bundle)
           const entry = Object.values(assetDeps).find(
-            (v) => v.chunk.name === 'index',
+            (v) => v.chunk.name === 'index' && v.chunk.isEntry,
           )
           assert(entry)
           const entryUrl = assetsURL(entry.chunk.fileName, manager)
@@ -1087,6 +1093,7 @@ export function createRpcClient(params) {
             bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
+            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
           }
         }
       },
@@ -1212,6 +1219,7 @@ import.meta.hot.on("rsc:update", () => {
       },
     ),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
+    ...vitePluginImportEnvironment(manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {
@@ -1981,6 +1989,7 @@ export type AssetsManifest = {
   bootstrapScriptContent: string | RuntimeAsset
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
+  cssLinkPrecedence?: boolean
 }
 
 export type AssetDeps = {
@@ -1992,6 +2001,7 @@ export type ResolvedAssetsManifest = {
   bootstrapScriptContent: string
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
+  cssLinkPrecedence?: boolean
 }
 
 export type ResolvedAssetDeps = {
@@ -2060,7 +2070,10 @@ function collectAssetDepsInner(
 //
 
 function vitePluginRscCss(
-  rscCssOptions: Pick<RscPluginOptions, 'rscCssTransform'> = {},
+  rscCssOptions: Pick<
+    RscPluginOptions,
+    'rscCssTransform' | 'cssLinkPrecedence'
+  > = {},
   manager: RscPluginManager,
 ): Plugin[] {
   function hasSpecialCssQuery(id: string): boolean {
@@ -2320,6 +2333,7 @@ function vitePluginRscCss(
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
               manager,
+              { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
             )
           } else {
             const key = manager.toRelativeId(importer)
@@ -2331,6 +2345,7 @@ function vitePluginRscCss(
                   key,
                 )}]`,
                 manager,
+                { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
               )}
             `
           }
@@ -2370,11 +2385,17 @@ export default function RemoveDuplicateServerCss() {
   ]
 }
 
-function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
+function generateResourcesCode(
+  depsCode: string,
+  manager: RscPluginManager,
+  options: { cssLinkPrecedence?: boolean } = {},
+) {
+  const usePrecedence = options.cssLinkPrecedence !== false
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
     RemoveDuplicateServerCss?: React.FC,
+    precedence?: string,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
@@ -2382,7 +2403,7 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
-            precedence: 'vite-rsc/importer-resources',
+            ...(precedence ? { precedence } : {}),
             href: href,
             'data-rsc-css-href': href,
           }),
@@ -2408,6 +2429,7 @@ export const Resources = (${ResourcesFn.toString()})(
   __vite_rsc_react__,
   ${depsCode},
   RemoveDuplicateServerCss,
+  ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
 );
 `
 }

@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-rsc",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "description": "React Server Components (RSC) support for Vite.",
   "keywords": [
     "react",
@@ -53,7 +53,7 @@
     "@playwright/test": "^1.57.0",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.8",
-    "@types/node": "^24.10.7",
+    "@types/node": "^24.10.9",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",

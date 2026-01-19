@@ -1,5 +1,5 @@
 {
-  "$schema": "https://www.unpkg.com/wrangler@4.19.1/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "vite-rsc-starter",
   "main": "./src/framework/entry.rsc.tsx",
   "workers_dev": true,
