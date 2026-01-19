@@ -29,7 +29,6 @@ import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   vitePluginImportAsset,
-  writeAssetImportsManifest,
   type AssetImportMeta,
 } from './plugins/import-asset'
 import {
@@ -176,18 +175,6 @@ class RscPluginManager {
 
   writeEnvironmentImportsManifest(): void {
     writeEnvironmentImportsManifest(this)
-  }
-
-  writeAssetImportsManifest(): void {
-    writeAssetImportsManifest(this)
-  }
-
-  assetsURL(url: string): string | RuntimeAsset {
-    return assetsURL(url, this)
-  }
-
-  serializeValueWithRuntime(value: any): string {
-    return serializeValueWithRuntime(value)
   }
 }
 
@@ -457,7 +444,6 @@ export default function vitePluginRsc(
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
     manager.writeEnvironmentImportsManifest()
-    manager.writeAssetImportsManifest()
   }
 
   let hasReactServerDomWebpack = false
@@ -1114,11 +1100,30 @@ export function createRpcClient(params) {
               `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
             )
           }
+          // Compute importAssets from assetImportMetaMap
+          const importAssets: Record<string, { url: string | RuntimeAsset }> =
+            {}
+          for (const metas of Object.values(manager.assetImportMetaMap)) {
+            for (const resolvedId of Object.keys(metas)) {
+              const chunk = Object.values(bundle).find(
+                (c) => c.type === 'chunk' && c.facadeModuleId === resolvedId,
+              )
+              if (chunk) {
+                const relativeId = manager.toRelativeId(resolvedId)
+                importAssets[relativeId] = {
+                  url: assetsURL(chunk.fileName, manager),
+                }
+              }
+            }
+          }
+
           manager.buildAssetsManifest = {
             bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
             cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+            importAssets:
+              Object.keys(importAssets).length > 0 ? importAssets : undefined,
           }
         }
       },
@@ -2016,6 +2021,7 @@ export type AssetsManifest = {
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
+  importAssets?: Record<string, { url: string | RuntimeAsset }>
 }
 
 export type AssetDeps = {
@@ -2028,6 +2034,7 @@ export type ResolvedAssetsManifest = {
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
+  importAssets?: Record<string, { url: string }>
 }
 
 export type ResolvedAssetDeps = {

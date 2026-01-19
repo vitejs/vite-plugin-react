@@ -1,18 +1,10 @@
 import assert from 'node:assert'
-import fs from 'node:fs'
 import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
 import { normalizePath, type Plugin } from 'vite'
 import type { RscPluginManager } from '../plugin'
-import { normalizeRelativePath } from './utils'
 import { evalValue } from './vite-utils'
-
-export const ASSET_IMPORTS_MANIFEST_NAME =
-  '__vite_rsc_asset_imports_manifest.js'
-
-const ASSET_IMPORTS_MANIFEST_PLACEHOLDER =
-  'virtual:vite-rsc/asset-imports-manifest'
 
 // Virtual module prefix for entry asset wrappers in dev mode
 const ASSET_ENTRY_VIRTUAL_PREFIX = 'virtual:vite-rsc/asset-entry/'
@@ -29,10 +21,6 @@ export function vitePluginImportAsset(manager: RscPluginManager): Plugin[] {
     {
       name: 'rsc:import-asset',
       resolveId(source) {
-        // Use placeholder as external, renderChunk will replace with correct relative path
-        if (source === ASSET_IMPORTS_MANIFEST_PLACEHOLDER) {
-          return { id: ASSET_IMPORTS_MANIFEST_PLACEHOLDER, external: true }
-        }
         // Handle virtual asset entry modules
         if (source.startsWith(ASSET_ENTRY_VIRTUAL_PREFIX)) {
           return '\0' + source
@@ -169,10 +157,10 @@ import.meta.hot.on("rsc:update", () => {
                 replacement = `Promise.resolve({ url: ${JSON.stringify(url)} })`
               }
             } else {
-              // Build: emit manifest lookup with static import
+              // Build: use existing assets manifest
               // Use relative ID for stable builds across different machines
               const relativeId = manager.toRelativeId(resolvedId)
-              replacement = `(await import(${JSON.stringify(ASSET_IMPORTS_MANIFEST_PLACEHOLDER)})).default[${JSON.stringify(relativeId)}]`
+              replacement = `(async () => (await import("virtual:vite-rsc/assets-manifest")).default.importAssets[${JSON.stringify(relativeId)}])()`
             }
 
             const [start, end] = match.indices![0]!
@@ -187,59 +175,6 @@ import.meta.hot.on("rsc:update", () => {
           }
         },
       },
-
-      renderChunk(code, chunk) {
-        if (code.includes(ASSET_IMPORTS_MANIFEST_PLACEHOLDER)) {
-          const replacement = normalizeRelativePath(
-            path.relative(
-              path.join(chunk.fileName, '..'),
-              ASSET_IMPORTS_MANIFEST_NAME,
-            ),
-          )
-          code = code.replaceAll(
-            ASSET_IMPORTS_MANIFEST_PLACEHOLDER,
-            () => replacement,
-          )
-          return { code }
-        }
-        return
-      },
     },
   ]
-}
-
-export function writeAssetImportsManifest(manager: RscPluginManager): void {
-  if (Object.keys(manager.assetImportMetaMap).length === 0) {
-    return
-  }
-
-  const clientBundle = manager.bundles['client']
-  if (!clientBundle) {
-    throw new Error(`[vite-rsc] missing client bundle for asset imports`)
-  }
-
-  // Write manifest to each source environment's output
-  for (const [sourceEnv, metas] of Object.entries(manager.assetImportMetaMap)) {
-    const sourceOutDir = manager.config.environments[sourceEnv]!.build.outDir
-    const manifestPath = path.join(sourceOutDir, ASSET_IMPORTS_MANIFEST_NAME)
-
-    let code = 'export default {\n'
-    for (const resolvedId of Object.keys(metas)) {
-      const chunk = Object.values(clientBundle).find(
-        (c) => c.type === 'chunk' && c.facadeModuleId === resolvedId,
-      )
-      if (!chunk) {
-        throw new Error(
-          `[vite-rsc] missing output for asset import: ${resolvedId}`,
-        )
-      }
-
-      const relativeId = manager.toRelativeId(resolvedId)
-      const url = manager.assetsURL(chunk.fileName)
-      code += `  ${JSON.stringify(relativeId)}: ${manager.serializeValueWithRuntime({ url })},\n`
-    }
-    code += '}\n'
-
-    fs.writeFileSync(manifestPath, code)
-  }
 }
