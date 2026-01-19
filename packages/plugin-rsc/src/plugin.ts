@@ -258,6 +258,13 @@ export type RscPluginOptions = {
     /** server chunk which includes a corresponding client reference proxy module */
     serverChunk: string
   }) => string | undefined
+
+  /**
+   * Controls whether CSS links use React's `precedence` attribute.
+   * @experimental
+   * @default true
+   */
+  cssLinkPrecedence?: boolean
 }
 
 export type PluginApi = {
@@ -1014,6 +1021,7 @@ export function createRpcClient(params) {
           const manifest: AssetsManifest = {
             bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
             clientReferenceDeps: {},
+            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
           }
           return `export default ${JSON.stringify(manifest, null, 2)}`
         }
@@ -1085,6 +1093,7 @@ export function createRpcClient(params) {
             bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
+            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
           }
         }
       },
@@ -1980,6 +1989,7 @@ export type AssetsManifest = {
   bootstrapScriptContent: string | RuntimeAsset
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
+  cssLinkPrecedence?: boolean
 }
 
 export type AssetDeps = {
@@ -1991,6 +2001,7 @@ export type ResolvedAssetsManifest = {
   bootstrapScriptContent: string
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
+  cssLinkPrecedence?: boolean
 }
 
 export type ResolvedAssetDeps = {
@@ -2059,7 +2070,10 @@ function collectAssetDepsInner(
 //
 
 function vitePluginRscCss(
-  rscCssOptions: Pick<RscPluginOptions, 'rscCssTransform'> = {},
+  rscCssOptions: Pick<
+    RscPluginOptions,
+    'rscCssTransform' | 'cssLinkPrecedence'
+  > = {},
   manager: RscPluginManager,
 ): Plugin[] {
   function hasSpecialCssQuery(id: string): boolean {
@@ -2319,6 +2333,7 @@ function vitePluginRscCss(
             return generateResourcesCode(
               serializeValueWithRuntime(deps),
               manager,
+              { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
             )
           } else {
             const key = manager.toRelativeId(importer)
@@ -2330,6 +2345,7 @@ function vitePluginRscCss(
                   key,
                 )}]`,
                 manager,
+                { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
               )}
             `
           }
@@ -2369,11 +2385,17 @@ export default function RemoveDuplicateServerCss() {
   ]
 }
 
-function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
+function generateResourcesCode(
+  depsCode: string,
+  manager: RscPluginManager,
+  options: { cssLinkPrecedence?: boolean } = {},
+) {
+  const usePrecedence = options.cssLinkPrecedence !== false
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
     RemoveDuplicateServerCss?: React.FC,
+    precedence?: string,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
@@ -2381,7 +2403,7 @@ function generateResourcesCode(depsCode: string, manager: RscPluginManager) {
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
-            precedence: 'vite-rsc/importer-resources',
+            ...(precedence ? { precedence } : {}),
             href: href,
             'data-rsc-css-href': href,
           }),
@@ -2407,6 +2429,7 @@ export const Resources = (${ResourcesFn.toString()})(
   __vite_rsc_react__,
   ${depsCode},
   RemoveDuplicateServerCss,
+  ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
 );
 `
 }
