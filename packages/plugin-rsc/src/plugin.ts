@@ -28,6 +28,11 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
+  ensureAssetImportsClientEntry,
+  vitePluginImportAsset,
+  type AssetImportMeta,
+} from './plugins/import-asset'
+import {
   ensureEnvironmentImportsEntryFallback,
   vitePluginImportEnvironment,
   writeEnvironmentImportsManifest,
@@ -134,6 +139,13 @@ class RscPluginManager {
         string, // resolvedId
         EnvironmentImportMeta
       >
+    >
+  > = {}
+  assetImportMetaMap: Record<
+    string, // sourceEnv
+    Record<
+      string, // resolvedId
+      AssetImportMeta
     >
   > = {}
 
@@ -394,6 +406,7 @@ export default function vitePluginRsc(
 
     // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
+    ensureAssetImportsClientEntry(builder.config)
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
@@ -1065,35 +1078,107 @@ export function createRpcClient(params) {
           }
 
           const assetDeps = collectAssetDeps(bundle)
-          const entry = Object.values(assetDeps).find(
-            (v) => v.chunk.name === 'index' && v.chunk.isEntry,
-          )
-          assert(entry)
-          const entryUrl = assetsURL(entry.chunk.fileName, manager)
-          const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
-              js: [],
-              css: [],
+
+          // Check if there are any importAsset entries with isEntry: true
+          const importAssetEntries: Array<{
+            resolvedId: string
+            chunk: Rollup.OutputChunk
+            deps: AssetDeps
+          }> = []
+          for (const metas of Object.values(manager.assetImportMetaMap)) {
+            for (const [resolvedId, meta] of Object.entries(metas)) {
+              if (meta.isEntry) {
+                const chunk = Object.values(bundle).find(
+                  (c): c is Rollup.OutputChunk =>
+                    c.type === 'chunk' && c.facadeModuleId === resolvedId,
+                )
+                if (chunk) {
+                  const chunkDeps = assetDeps[chunk.fileName]
+                  if (chunkDeps) {
+                    importAssetEntries.push({
+                      resolvedId,
+                      chunk,
+                      deps: chunkDeps.deps,
+                    })
+                  }
+                }
+              }
             }
-            clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-              mergeAssetDeps(deps, entry.deps),
-              manager,
-            )
           }
-          let bootstrapScriptContent: string | RuntimeAsset
-          if (typeof entryUrl === 'string') {
-            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+
+          // Compute importAssets from assetImportMetaMap
+          const importAssets: Record<string, { url: string | RuntimeAsset }> =
+            {}
+          for (const metas of Object.values(manager.assetImportMetaMap)) {
+            for (const resolvedId of Object.keys(metas)) {
+              const chunk = Object.values(bundle).find(
+                (c) => c.type === 'chunk' && c.facadeModuleId === resolvedId,
+              )
+              if (chunk) {
+                const relativeId = manager.toRelativeId(resolvedId)
+                importAssets[relativeId] = {
+                  url: assetsURL(chunk.fileName, manager),
+                }
+              }
+            }
+          }
+
+          let bootstrapScriptContent: string | RuntimeAsset = ''
+          const clientReferenceDeps: Record<string, AssetDeps> = {}
+
+          if (importAssetEntries.length > 0) {
+            // Use importAsset entries for merging deps into client references
+            // Merge all entry deps together
+            let entryDeps: AssetDeps = { js: [], css: [] }
+            for (const entry of importAssetEntries) {
+              entryDeps = mergeAssetDeps(entryDeps, entry.deps)
+            }
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+                js: [],
+                css: [],
+              }
+              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+                mergeAssetDeps(deps, entryDeps),
+                manager,
+              )
+            }
           } else {
-            bootstrapScriptContent = new RuntimeAsset(
-              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+            // Fall back to "index" entry convention
+            const entry = Object.values(assetDeps).find(
+              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
             )
+            assert(
+              entry,
+              `[vite-rsc] missing "index" entry. Use importAsset with { entry: true } or configure client entry.`,
+            )
+            const entryUrl = assetsURL(entry.chunk.fileName, manager)
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+                js: [],
+                css: [],
+              }
+              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+                mergeAssetDeps(deps, entry.deps),
+                manager,
+              )
+            }
+            if (typeof entryUrl === 'string') {
+              bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+            } else {
+              bootstrapScriptContent = new RuntimeAsset(
+                `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+              )
+            }
           }
+
           manager.buildAssetsManifest = {
             bootstrapScriptContent,
             clientReferenceDeps,
             serverResources,
             cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+            importAssets:
+              Object.keys(importAssets).length > 0 ? importAssets : undefined,
           }
         }
       },
@@ -1220,6 +1305,7 @@ import.meta.hot.on("rsc:update", () => {
     ),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginImportEnvironment(manager),
+    ...vitePluginImportAsset(manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {
@@ -1990,6 +2076,7 @@ export type AssetsManifest = {
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
+  importAssets?: Record<string, { url: string | RuntimeAsset }>
 }
 
 export type AssetDeps = {
@@ -2002,6 +2089,7 @@ export type ResolvedAssetsManifest = {
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
+  importAssets?: Record<string, { url: string }>
 }
 
 export type ResolvedAssetDeps = {

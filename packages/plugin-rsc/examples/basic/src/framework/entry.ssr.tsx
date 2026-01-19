@@ -28,8 +28,10 @@ export async function renderHTML(
   }
 
   // render html (traditional SSR)
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const asset = await import.meta.viteRsc.importAsset('./entry.browser.tsx', {
+    entry: true,
+  })
+  const bootstrapScriptContent = `import(${JSON.stringify(asset.url)})`
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
