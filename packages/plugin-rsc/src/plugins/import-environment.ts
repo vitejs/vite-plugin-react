@@ -216,9 +216,13 @@ export function writeEnvironmentImportsManifest(
       // Lookup fileName from bundle
       for (const [resolvedId, meta] of Object.entries(imports)) {
         const bundle = manager.bundles[meta.targetEnv]
-        const chunk = Object.values(bundle ?? {}).find(
-          (c) =>
-            c.type === 'chunk' && c.isEntry && c.facadeModuleId === resolvedId,
+        if (!bundle) {
+          throw new Error(
+            `[vite-rsc] missing bundle for environment import: ${meta.targetEnv}`,
+          )
+        }
+        const chunk = Object.values(bundle).find(
+          (c) => c.type === 'chunk' && c.facadeModuleId === resolvedId,
         )
         if (!chunk) {
           throw new Error(
