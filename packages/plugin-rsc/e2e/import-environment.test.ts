@@ -27,7 +27,7 @@ test.describe('viteRsc.import', () => {
         'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
           import baseConfig from './vite.config.base.ts'
-          baseConfig.environments.ssr.build.rollupOptions.input = {}
+          delete baseConfig.environments.ssr.build.rollupOptions.input;
           export default baseConfig;
         `,
       },
