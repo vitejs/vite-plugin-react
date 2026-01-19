@@ -2,18 +2,43 @@ import assert from 'node:assert'
 import path from 'node:path'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
-import { normalizePath, type Plugin } from 'vite'
+import { normalizePath, type Plugin, type ResolvedConfig } from 'vite'
 import type { RscPluginManager } from '../plugin'
+import { createVirtualPlugin, normalizeRollupOpitonsInput } from './utils'
 import { evalValue } from './vite-utils'
 
 // Virtual module prefix for entry asset wrappers in dev mode
 const ASSET_ENTRY_VIRTUAL_PREFIX = 'virtual:vite-rsc/asset-entry/'
+
+// Fallback entry for client environment when no other entries exist
+const ASSET_IMPORTS_CLIENT_ENTRY_FALLBACK =
+  'virtual:vite-rsc/asset-imports-client-entry-fallback'
 
 export type AssetImportMeta = {
   resolvedId: string
   sourceEnv: string
   specifier: string
   isEntry: boolean
+}
+
+// Ensure client environment has at least one entry since otherwise rollup build fails
+export function ensureAssetImportsClientEntry({
+  environments,
+}: ResolvedConfig): void {
+  const clientConfig = environments.client
+  if (!clientConfig) return
+
+  const input = normalizeRollupOpitonsInput(
+    clientConfig.build?.rollupOptions?.input,
+  )
+  if (Object.keys(input).length === 0) {
+    clientConfig.build = clientConfig.build || {}
+    clientConfig.build.rollupOptions = clientConfig.build.rollupOptions || {}
+    clientConfig.build.rollupOptions.input = {
+      __vite_rsc_asset_imports_client_entry_fallback:
+        ASSET_IMPORTS_CLIENT_ENTRY_FALLBACK,
+    }
+  }
 }
 
 export function vitePluginImportAsset(manager: RscPluginManager): Plugin[] {
@@ -176,5 +201,11 @@ import.meta.hot.on("rsc:update", () => {
         },
       },
     },
+    createVirtualPlugin(
+      ASSET_IMPORTS_CLIENT_ENTRY_FALLBACK.slice('virtual:'.length),
+      () => {
+        return `export default "__vite_rsc_asset_imports_client_entry_fallback";`
+      },
+    ),
   ]
 }
