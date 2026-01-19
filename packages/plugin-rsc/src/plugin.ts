@@ -1100,10 +1100,11 @@ export function createRpcClient(params) {
             const entry = Object.values(assetDeps).find(
               (v) => v.chunk.name === 'index' && v.chunk.isEntry,
             )
-            assert(
-              entry,
-              `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
-            )
+            if (!entry) {
+              throw new Error(
+                `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
+              )
+            }
             const entryDeps = assetsURLOfDeps(entry.deps, manager)
             for (const [key, deps] of Object.entries(clientReferenceDeps)) {
               clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
