@@ -27,6 +27,11 @@ export async function renderHTML(
     return React.use(payload).root
   }
 
+  const asset = await import.meta.viteRsc.importAsset('./entry.browser.tsx', {
+    entry: true,
+  })
+  console.log('[importAsset]', asset.url)
+
   // render html (traditional SSR)
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')

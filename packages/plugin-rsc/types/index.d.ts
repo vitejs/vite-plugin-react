@@ -27,6 +27,29 @@ declare global {
         specifier: string,
         options: { environment: string },
       ) => Promise<T>
+
+      /**
+       * Import a client asset from a server environment (SSR/RSC) and get its URL.
+       *
+       * This is useful for loading client-side scripts and obtaining their URLs
+       * for bootstrap scripts or other dynamic imports.
+       *
+       * @example
+       * ```ts
+       * const asset = await import.meta.viteRsc.importAsset('./entry.browser.tsx', { entry: true });
+       * const bootstrapScriptContent = `import(${JSON.stringify(asset.url)})`;
+       * ```
+       *
+       * @param specifier - Relative path to the client asset (e.g., './entry.browser.tsx')
+       * @param options - Options object
+       * @param options.entry - When true, marks this asset as an entry point for client deps merging.
+       *                        This replaces the "index" entry convention when using customClientEntry.
+       * @returns Promise resolving to an object containing the asset URL
+       */
+      importAsset: (
+        specifier: string,
+        options?: { entry?: boolean },
+      ) => Promise<{ url: string }>
     }
   }
 

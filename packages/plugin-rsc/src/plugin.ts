@@ -28,6 +28,11 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
+  vitePluginImportAsset,
+  writeAssetImportsManifest,
+  type AssetImportMeta,
+} from './plugins/import-asset'
+import {
   ensureEnvironmentImportsEntryFallback,
   vitePluginImportEnvironment,
   writeEnvironmentImportsManifest,
@@ -136,6 +141,13 @@ class RscPluginManager {
       >
     >
   > = {}
+  assetImportMetaMap: Record<
+    string, // sourceEnv
+    Record<
+      string, // resolvedId
+      AssetImportMeta
+    >
+  > = {}
 
   stabilize(): void {
     // sort for stable build
@@ -164,6 +176,18 @@ class RscPluginManager {
 
   writeEnvironmentImportsManifest(): void {
     writeEnvironmentImportsManifest(this)
+  }
+
+  writeAssetImportsManifest(): void {
+    writeAssetImportsManifest(this)
+  }
+
+  assetsURL(url: string): string | RuntimeAsset {
+    return assetsURL(url, this)
+  }
+
+  serializeValueWithRuntime(value: any): string {
+    return serializeValueWithRuntime(value)
   }
 }
 
@@ -433,6 +457,7 @@ export default function vitePluginRsc(
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
     manager.writeEnvironmentImportsManifest()
+    manager.writeAssetImportsManifest()
   }
 
   let hasReactServerDomWebpack = false
@@ -1220,6 +1245,7 @@ import.meta.hot.on("rsc:update", () => {
     ),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
     ...vitePluginImportEnvironment(manager),
+    ...vitePluginImportAsset(manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {
