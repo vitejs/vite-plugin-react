@@ -29,13 +29,13 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-beta.59",
+    "@rolldown/pluginutils": "1.0.0-beta.60",
     "@swc/core": "^1.15.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.10.7",
+    "@types/node": "^24.10.9",
     "@vitejs/react-common": "workspace:*",
     "fs-extra": "^11.3.3",
     "prettier": "^3.0.3",
