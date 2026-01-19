@@ -1080,38 +1080,35 @@ export function createRpcClient(params) {
           }
 
           const assetDeps = collectAssetDeps(bundle)
-          const clientReferenceDeps: Record<string, AssetDeps> = {}
           let bootstrapScriptContent: string | RuntimeAsset = ''
 
-          if (rscPluginOptions.customClientEntry) {
-            // When customClientEntry is enabled, don't require "index" entry
-            // and don't merge entry deps into client references
-            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
-                js: [],
-                css: [],
-              }
-              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-                deps,
-                manager,
-              )
+          const clientReferenceDeps: Record<string, AssetDeps> = {}
+          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+              js: [],
+              css: [],
             }
-          } else {
+            clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+              deps,
+              manager,
+            )
+          }
+
+          // When customClientEntry is enabled, don't require "index" entry
+          // and don't merge entry deps into client references
+          if (!rscPluginOptions.customClientEntry) {
             const entry = Object.values(assetDeps).find(
               (v) => v.chunk.name === 'index' && v.chunk.isEntry,
             )
-            assert(entry)
-            const entryUrl = assetsURL(entry.chunk.fileName, manager)
-            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
-                js: [],
-                css: [],
-              }
-              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-                mergeAssetDeps(deps, entry.deps),
-                manager,
-              )
+            assert(
+              entry,
+              `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
+            )
+            const entryDeps = assetsURLOfDeps(entry.deps, manager)
+            for (const [key, deps] of Object.entries(clientReferenceDeps)) {
+              clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
             }
+            const entryUrl = assetsURL(entry.chunk.fileName, manager)
             if (typeof entryUrl === 'string') {
               bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
             } else {
