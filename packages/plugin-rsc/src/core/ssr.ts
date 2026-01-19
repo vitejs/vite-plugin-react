@@ -8,6 +8,7 @@ export function setRequireModule(options: {
   load: (id: string) => unknown
   /**
    * Called EVERY time a module is requested
+   * @experimental
    */
   onLoad?: (id: string) => void
 }): void {

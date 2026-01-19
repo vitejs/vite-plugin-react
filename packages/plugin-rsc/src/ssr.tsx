@@ -12,24 +12,25 @@ export * from './react/ssr'
 /**
  * Callback type for client reference dependency notifications.
  * Called during SSR when a client component's dependencies are loaded.
+ * @experimental
  */
-export type OnClientReferenceDeps = (deps: {
-  js: readonly string[]
-  css: readonly string[]
+export type OnClientReference = (reference: {
+  id: string
+  deps: ResolvedAssetDeps
 }) => void
 
 // Registered callback for client reference deps
-let onClientReferenceDepsCallback: OnClientReferenceDeps | undefined
+let onClientReference: OnClientReference | undefined
 
 /**
  * Register a callback to be notified when client reference dependencies are loaded.
  * Called during SSR when a client component is accessed.
- *
+ * @experimental
  */
-export function setOnClientReferenceDeps(
-  callback: OnClientReferenceDeps | undefined,
+export function setOnClientReference(
+  callback: OnClientReference | undefined,
 ): void {
-  onClientReferenceDepsCallback = callback
+  onClientReference = callback
 }
 
 initialize()
@@ -65,10 +66,10 @@ function initialize(): void {
     // Notify framework callback for per-request asset collection.
     onLoad: (id) => {
       if (!import.meta.env.__vite_rsc_build__) return
-      if (onClientReferenceDepsCallback) {
+      if (onClientReference) {
         const deps = assetsManifest.clientReferenceDeps[id]
         if (deps) {
-          onClientReferenceDepsCallback({ js: deps.js, css: deps.css })
+          onClientReference({ id, deps: { js: deps.js, css: deps.css } })
         }
       }
     },
