@@ -241,6 +241,7 @@ export type RscPluginOptions = {
 
   /**
    * Controls whether CSS links use React's `precedence` attribute.
+   * @experimental
    * @default true
    */
   cssLinkPrecedence?: boolean
