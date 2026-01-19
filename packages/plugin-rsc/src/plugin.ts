@@ -371,29 +371,6 @@ export default function vitePluginRsc(
       builder.config.logger.info(colors.blue(msg))
     }
 
-    // no-ssr case
-    // rsc -> client -> rsc -> client
-    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-      manager.isScanBuild = true
-      builder.environments.rsc!.config.build.write = false
-      builder.environments.client!.config.build.write = false
-      logStep('[1/4] analyze client references...')
-      await builder.build(builder.environments.rsc!)
-      logStep('[2/4] analyze server references...')
-      await builder.build(builder.environments.client!)
-      manager.isScanBuild = false
-      builder.environments.rsc!.config.build.write = true
-      builder.environments.client!.config.build.write = true
-      logStep('[3/4] build rsc environment...')
-      await builder.build(builder.environments.rsc!)
-      manager.stabilize()
-      logStep('[4/4] build client environment...')
-      await builder.build(builder.environments.client!)
-      manager.writeAssetsManifest(['rsc'])
-      manager.writeEnvironmentImportsManifest()
-      return
-    }
-
     // Check if RSC outDir is inside SSR outDir to avoid SSR build overwriting RSC output
     const rscOutDir = builder.environments.rsc!.config.build.outDir
     const ssrOutDir = builder.environments.ssr!.config.build.outDir
