@@ -3,7 +3,7 @@ import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 
 test.describe('viteRsc.import', () => {
-  const root = 'examples/e2e/temp/vitersc-import'
+  const root = 'examples/e2e/temp/import-environment'
   test.beforeAll(async () => {
     await setupInlineFixture({
       src: 'examples/starter',
