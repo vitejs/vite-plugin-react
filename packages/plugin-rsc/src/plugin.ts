@@ -1078,30 +1078,34 @@ export function createRpcClient(params) {
           }
 
           const assetDeps = collectAssetDeps(bundle)
-          const entry = Object.values(assetDeps).find(
-            (v) => v.chunk.name === 'index' && v.chunk.isEntry,
-          )
-          assert(entry)
-          const entryUrl = assetsURL(entry.chunk.fileName, manager)
-          const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
-              js: [],
-              css: [],
+
+          // Check if there are any importAsset entries with isEntry: true
+          const importAssetEntries: Array<{
+            resolvedId: string
+            chunk: Rollup.OutputChunk
+            deps: AssetDeps
+          }> = []
+          for (const metas of Object.values(manager.assetImportMetaMap)) {
+            for (const [resolvedId, meta] of Object.entries(metas)) {
+              if (meta.isEntry) {
+                const chunk = Object.values(bundle).find(
+                  (c): c is Rollup.OutputChunk =>
+                    c.type === 'chunk' && c.facadeModuleId === resolvedId,
+                )
+                if (chunk) {
+                  const chunkDeps = assetDeps[chunk.fileName]
+                  if (chunkDeps) {
+                    importAssetEntries.push({
+                      resolvedId,
+                      chunk,
+                      deps: chunkDeps.deps,
+                    })
+                  }
+                }
+              }
             }
-            clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-              mergeAssetDeps(deps, entry.deps),
-              manager,
-            )
           }
-          let bootstrapScriptContent: string | RuntimeAsset
-          if (typeof entryUrl === 'string') {
-            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
-          } else {
-            bootstrapScriptContent = new RuntimeAsset(
-              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
-            )
-          }
+
           // Compute importAssets from assetImportMetaMap
           const importAssets: Record<string, { url: string | RuntimeAsset }> =
             {}
@@ -1116,6 +1120,55 @@ export function createRpcClient(params) {
                   url: assetsURL(chunk.fileName, manager),
                 }
               }
+            }
+          }
+
+          let bootstrapScriptContent: string | RuntimeAsset = ''
+          const clientReferenceDeps: Record<string, AssetDeps> = {}
+
+          if (importAssetEntries.length > 0) {
+            // Use importAsset entries for merging deps into client references
+            // Merge all entry deps together
+            let entryDeps: AssetDeps = { js: [], css: [] }
+            for (const entry of importAssetEntries) {
+              entryDeps = mergeAssetDeps(entryDeps, entry.deps)
+            }
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+                js: [],
+                css: [],
+              }
+              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+                mergeAssetDeps(deps, entryDeps),
+                manager,
+              )
+            }
+          } else {
+            // Fall back to "index" entry convention
+            const entry = Object.values(assetDeps).find(
+              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
+            )
+            assert(
+              entry,
+              `[vite-rsc] missing "index" entry. Use importAsset with { entry: true } or configure client entry.`,
+            )
+            const entryUrl = assetsURL(entry.chunk.fileName, manager)
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
+                js: [],
+                css: [],
+              }
+              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+                mergeAssetDeps(deps, entry.deps),
+                manager,
+              )
+            }
+            if (typeof entryUrl === 'string') {
+              bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+            } else {
+              bootstrapScriptContent = new RuntimeAsset(
+                `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+              )
             }
           }
 
