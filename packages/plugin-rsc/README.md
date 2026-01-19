@@ -245,6 +245,33 @@ ssrModule.renderHTML(...);
 export function renderHTML(...) {}
 ```
 
+#### `import.meta.viteRsc.import`
+
+- Type: `<T>(specifier: string, options: { environment: string }) => Promise<T>`
+
+A more ergonomic alternative to `loadModule`:
+
+1. No manual `rollupOptions.input` config needed - entries are auto-discovered
+2. Specifier matches the path in `typeof import(...)` type annotations
+
+**Comparison:**
+
+```ts
+// Before (loadModule) - requires vite.config.ts:
+// environments.ssr.build.rollupOptions.input = { index: './entry.ssr.tsx' }
+import.meta.viteRsc.loadModule<typeof import('./entry.ssr.tsx')>('ssr', 'index')
+
+// After (import) - no config needed, auto-discovered
+import.meta.viteRsc.import<typeof import('./entry.ssr.tsx')>(
+  './entry.ssr.tsx',
+  { environment: 'ssr' },
+)
+```
+
+During development, this works the same as `loadModule`, using the `__VITE_ENVIRONMENT_RUNNER_IMPORT__` function to import modules in the target environment.
+
+During production build, the plugin auto-discovers these imports and emits them as entries in the target environment. A manifest file (`__vite_rsc_env_imports_manifest.js`) is generated to map module specifiers to their output filenames.
+
 ### Available on `rsc` environment
 
 #### `import.meta.viteRsc.loadCss`
@@ -615,6 +642,13 @@ export function ServerComponent() {
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
+
+## Architecture Documentation
+
+For developers interested in the internal architecture:
+
+- **[docs/architecture.md](docs/architecture.md)** - Build pipeline, data flow, and key components
+- **[docs/bundler-comparison.md](docs/bundler-comparison.md)** - How different bundlers approach RSC
 
 ## Credits
 

@@ -28,6 +28,12 @@ import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
+  ensureEnvironmentImportsEntryFallback,
+  vitePluginImportEnvironment,
+  writeEnvironmentImportsManifest,
+  type EnvironmentImportMeta,
+} from './plugins/import-environment'
+import {
   vitePluginResolvedIdProxy,
   withResolvedIdProxy,
 } from './plugins/resolved-id-proxy'
@@ -112,7 +118,7 @@ export type { RscPluginManager }
 class RscPluginManager {
   server!: ViteDevServer
   config!: ResolvedConfig
-  rscBundle!: Rollup.OutputBundle
+  bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
@@ -120,6 +126,16 @@ class RscPluginManager {
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
+  environmentImportMetaMap: Record<
+    string, // sourceEnv
+    Record<
+      string, // targetEnv
+      Record<
+        string, // resolvedId
+        EnvironmentImportMeta
+      >
+    >
+  > = {}
 
   stabilize(): void {
     // sort for stable build
@@ -144,6 +160,10 @@ class RscPluginManager {
       )
       fs.writeFileSync(manifestPath, assetsManifestCode)
     }
+  }
+
+  writeEnvironmentImportsManifest(): void {
+    writeEnvironmentImportsManifest(this)
   }
 }
 
@@ -351,28 +371,6 @@ export default function vitePluginRsc(
       builder.config.logger.info(colors.blue(msg))
     }
 
-    // no-ssr case
-    // rsc -> client -> rsc -> client
-    if (!builder.environments.ssr?.config.build.rollupOptions.input) {
-      manager.isScanBuild = true
-      builder.environments.rsc!.config.build.write = false
-      builder.environments.client!.config.build.write = false
-      logStep('[1/4] analyze client references...')
-      await builder.build(builder.environments.rsc!)
-      logStep('[2/4] analyze server references...')
-      await builder.build(builder.environments.client!)
-      manager.isScanBuild = false
-      builder.environments.rsc!.config.build.write = true
-      builder.environments.client!.config.build.write = true
-      logStep('[3/4] build rsc environment...')
-      await builder.build(builder.environments.rsc!)
-      manager.stabilize()
-      logStep('[4/4] build client environment...')
-      await builder.build(builder.environments.client!)
-      manager.writeAssetsManifest(['rsc'])
-      return
-    }
-
     // Check if RSC outDir is inside SSR outDir to avoid SSR build overwriting RSC output
     const rscOutDir = builder.environments.rsc!.config.build.outDir
     const ssrOutDir = builder.environments.ssr!.config.build.outDir
@@ -388,6 +386,7 @@ export default function vitePluginRsc(
     )
 
     // rsc -> ssr -> rsc -> client -> ssr
+    ensureEnvironmentImportsEntryFallback(builder.config)
     manager.isScanBuild = true
     builder.environments.rsc!.config.build.write = false
     builder.environments.ssr!.config.build.write = false
@@ -426,6 +425,7 @@ export default function vitePluginRsc(
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
+    manager.writeEnvironmentImportsManifest()
   }
 
   let hasReactServerDomWebpack = false
@@ -1021,9 +1021,7 @@ export function createRpcClient(params) {
       // client build
       generateBundle(_options, bundle) {
         // copy assets from rsc build to client build
-        if (this.environment.name === 'rsc') {
-          manager.rscBundle = bundle
-        }
+        manager.bundles[this.environment.name] = bundle
 
         if (this.environment.name === 'client') {
           const filterAssets =
@@ -1033,7 +1031,7 @@ export function createRpcClient(params) {
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(manager.rscBundle)) {
+          for (const asset of Object.values(manager.bundles['rsc']!)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
               this.emitFile({
@@ -1045,7 +1043,7 @@ export function createRpcClient(params) {
           }
 
           const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(manager.rscBundle)
+          const rscAssetDeps = collectAssetDeps(manager.bundles['rsc']!)
           for (const [id, meta] of Object.entries(
             manager.serverResourcesMetaMap,
           )) {
@@ -1212,6 +1210,7 @@ import.meta.hot.on("rsc:update", () => {
       },
     ),
     ...vitePluginRscMinimal(rscPluginOptions, manager),
+    ...vitePluginImportEnvironment(manager),
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {

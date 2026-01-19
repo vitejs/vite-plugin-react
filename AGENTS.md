@@ -13,7 +13,7 @@ This monorepo contains multiple packages (see [README.md](README.md#packages) fo
 
 - `packages/plugin-react/` - Main React plugin with Babel
 - `packages/plugin-react-swc/` - SWC-based React plugin
-- `packages/plugin-rsc/` - React Server Components ([AI guidance](packages/plugin-rsc/AGENTS.md))
+- `packages/plugin-rsc/` - React Server Components ([AI guidance](packages/plugin-rsc/AGENTS.md), [architecture](packages/plugin-rsc/docs/architecture.md))
 - `packages/plugin-react-oxc/` - Deprecated (merged with plugin-react)
 
 ### Essential Setup Commands
