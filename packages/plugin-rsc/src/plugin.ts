@@ -265,6 +265,21 @@ export type RscPluginOptions = {
    * @default true
    */
   cssLinkPrecedence?: boolean
+
+  /**
+   * Opt out of the default "index" client entry convention.
+   * When enabled, the plugin will not:
+   * - Require an entry chunk named "index"
+   * - Automatically include client entry deps in each client reference's dependencies
+   *
+   * Note: `import.meta.viteRsc.loadBootstrapScriptContent` cannot be used with this option.
+   *
+   * Use this when you manually handle client entry setup and preloading.
+   *
+   * @experimental
+   * @default false
+   */
+  customClientEntry?: boolean
 }
 
 export type PluginApi = {
@@ -1065,11 +1080,8 @@ export function createRpcClient(params) {
           }
 
           const assetDeps = collectAssetDeps(bundle)
-          const entry = Object.values(assetDeps).find(
-            (v) => v.chunk.name === 'index' && v.chunk.isEntry,
-          )
-          assert(entry)
-          const entryUrl = assetsURL(entry.chunk.fileName, manager)
+          let bootstrapScriptContent: string | RuntimeAsset = ''
+
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
             const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
@@ -1077,18 +1089,36 @@ export function createRpcClient(params) {
               css: [],
             }
             clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-              mergeAssetDeps(deps, entry.deps),
+              deps,
               manager,
             )
           }
-          let bootstrapScriptContent: string | RuntimeAsset
-          if (typeof entryUrl === 'string') {
-            bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
-          } else {
-            bootstrapScriptContent = new RuntimeAsset(
-              `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+
+          // When customClientEntry is enabled, don't require "index" entry
+          // and don't merge entry deps into client references
+          if (!rscPluginOptions.customClientEntry) {
+            const entry = Object.values(assetDeps).find(
+              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
             )
+            if (!entry) {
+              throw new Error(
+                `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
+              )
+            }
+            const entryDeps = assetsURLOfDeps(entry.deps, manager)
+            for (const [key, deps] of Object.entries(clientReferenceDeps)) {
+              clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
+            }
+            const entryUrl = assetsURL(entry.chunk.fileName, manager)
+            if (typeof entryUrl === 'string') {
+              bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+            } else {
+              bootstrapScriptContent = new RuntimeAsset(
+                `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+              )
+            }
           }
+
           manager.buildAssetsManifest = {
             bootstrapScriptContent,
             clientReferenceDeps,
@@ -1135,6 +1165,10 @@ export default assetsManifest.bootstrapScriptContent;
           return
         }
 
+        assert(
+          !rscPluginOptions.customClientEntry,
+          `[vite-rsc] 'import.meta.viteRsc.loadBootstrapScriptContent' cannot be used with 'customClientEntry' option`,
+        )
         assert(this.environment.name !== 'client')
         const output = new MagicString(code)
 
