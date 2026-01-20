@@ -48,6 +48,9 @@ export function expectNoPageError(page: Page) {
   page.on('pageerror', (error) => {
     errors.push(error)
   })
+  page.on('console', (msg) => {
+    console.log(`[browser:${msg.type()}]`, msg.text())
+  })
   return {
     [Symbol.dispose]: () => {
       expect(errors).toEqual([])
