@@ -47,43 +47,34 @@ function initialize(): void {
         const modCss = await import(
           /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })
         )
-        return wrapResourceProxy(mod, { js: [], css: modCss.default })
+        return wrapResourceProxy(mod, id, { js: [], css: modCss.default })
       } else {
         const import_ = clientReferences.default[id]
         if (!import_) {
           throw new Error(`client reference not found '${id}'`)
         }
-        const deps = assetsManifest.clientReferenceDeps[id]
-        // kick off preload before initial async import, which is not sync-cached
-        if (deps) {
-          preloadDeps(deps)
+        const deps = assetsManifest.clientReferenceDeps[id] ?? {
+          js: [],
+          css: [],
         }
+        // kick off preload/notify before initial async import, which is not sync-cached
+        preloadDeps(deps)
+        onClientReference?.({ id, deps })
         const mod: any = await import_()
-        return wrapResourceProxy(mod, deps)
-      }
-    },
-    // Called EVERY time a module is requested (not memoized).
-    // Notify framework callback for per-request asset collection.
-    onLoad: (id) => {
-      if (!import.meta.env.__vite_rsc_build__) return
-      if (onClientReference) {
-        const deps = assetsManifest.clientReferenceDeps[id]
-        if (deps) {
-          onClientReference({ id, deps: { js: deps.js, css: deps.css } })
-        }
+        return wrapResourceProxy(mod, id, deps)
       }
     },
   })
 }
 
-// preload/preinit during getter access since `load` is cached on production
-function wrapResourceProxy(mod: any, deps?: ResolvedAssetDeps) {
+// preload/preinit during getter access since `load` is cached on production.
+// also notify `onClientReference` callback here since module export access is not memoized by React.
+function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
   return new Proxy(mod, {
     get(target, p, receiver) {
       if (p in mod) {
-        if (deps) {
-          preloadDeps(deps)
-        }
+        preloadDeps(deps)
+        onClientReference?.({ id, deps })
       }
       return Reflect.get(target, p, receiver)
     },
