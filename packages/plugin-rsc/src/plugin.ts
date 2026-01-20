@@ -45,7 +45,9 @@ import {
   parseReferenceValidationVirtual,
 } from './plugins/shared'
 import {
+  createBuildInputConfig,
   createVirtualPlugin,
+  getBuildOptionsInput,
   getEntrySource,
   hashString,
   normalizeRelativePath,
@@ -99,7 +101,7 @@ type ServerRerferenceMeta = {
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
-// dev-only wrapper virtual module of rollupOptions.input.index
+// dev-only wrapper virtual module of rollupOptions/rolldownOptions input.index
 const VIRTUAL_ENTRIES = {
   browser: 'virtual:vite-rsc/entry-browser',
 }
@@ -170,6 +172,7 @@ class RscPluginManager {
 export type RscPluginOptions = {
   /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
+   * (or `environments.(name).build.rolldownOptions.input.index` for Rolldown-based Vite)
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
@@ -504,11 +507,10 @@ export default function vitePluginRsc(
               build: {
                 outDir:
                   config.environments?.client?.build?.outDir ?? 'dist/client',
-                rollupOptions: {
-                  input: rscPluginOptions.entries?.client && {
+                ...(rscPluginOptions.entries?.client &&
+                  createBuildInputConfig({
                     index: rscPluginOptions.entries.client,
-                  },
-                },
+                  })),
               },
               optimizeDeps: {
                 include: [
@@ -522,11 +524,10 @@ export default function vitePluginRsc(
               build: {
                 outDir: config.environments?.ssr?.build?.outDir ?? 'dist/ssr',
                 copyPublicDir: false,
-                rollupOptions: {
-                  input: rscPluginOptions.entries?.ssr && {
+                ...(rscPluginOptions.entries?.ssr &&
+                  createBuildInputConfig({
                     index: rscPluginOptions.entries.ssr,
-                  },
-                },
+                  })),
               },
               resolve: {
                 noExternal,
@@ -549,11 +550,10 @@ export default function vitePluginRsc(
                 outDir: config.environments?.rsc?.build?.outDir ?? 'dist/rsc',
                 copyPublicDir: false,
                 emitAssets: true,
-                rollupOptions: {
-                  input: rscPluginOptions.entries?.rsc && {
+                ...(rscPluginOptions.entries?.rsc &&
+                  createBuildInputConfig({
                     index: rscPluginOptions.entries.rsc,
-                  },
-                },
+                  })),
               },
               resolve: {
                 conditions: ['react-server', ...defaultServerConditions],
@@ -874,7 +874,8 @@ export default function vitePluginRsc(
             const environment = manager.config.environments[environmentName]!
             const targetName =
               entryName ||
-              getFallbackRollupEntry(environment.build.rollupOptions.input).name
+              getFallbackRollupEntry(getBuildOptionsInput(environment.build))
+                .name
             replacement = JSON.stringify(
               `__vite_rsc_load_module_start__:` +
                 JSON.stringify({

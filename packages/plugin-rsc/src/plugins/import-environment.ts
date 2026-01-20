@@ -7,6 +7,8 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import type { RscPluginManager } from '../plugin'
 import {
   createVirtualPlugin,
+  getBuildOptionsInput,
+  createBuildInputConfig,
   normalizeRelativePath,
   normalizeRollupOpitonsInput,
 } from './utils'
@@ -24,21 +26,22 @@ export type EnvironmentImportMeta = {
   specifier: string
 }
 
-// ensure at least one entry since otherwise rollup build fails
+// ensure at least one entry since otherwise rollup/rolldown build fails
 export function ensureEnvironmentImportsEntryFallback({
   environments,
 }: ResolvedConfig): void {
   for (const [name, config] of Object.entries(environments)) {
     if (name === 'client') continue
     const input = normalizeRollupOpitonsInput(
-      config.build?.rollupOptions?.input,
+      getBuildOptionsInput(config.build),
     )
     if (Object.keys(input).length === 0) {
       config.build = config.build || {}
-      config.build.rollupOptions = config.build.rollupOptions || {}
-      config.build.rollupOptions.input = {
+      const fallbackInput = {
         __vite_rsc_env_imports_entry_fallback: ENV_IMPORTS_ENTRY_FALLBACK,
       }
+      const inputConfig = createBuildInputConfig(fallbackInput)
+      Object.assign(config.build, inputConfig)
     }
   }
 }

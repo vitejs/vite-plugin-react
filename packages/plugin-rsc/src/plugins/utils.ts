@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto'
 import path from 'node:path'
+import * as vite from 'vite'
 import {
   normalizePath,
   type Plugin,
   type ResolvedConfig,
   type Rollup,
 } from 'vite'
+
+const isRolldownVite = 'rolldownVersion' in vite
 
 export function sortObject<T extends object>(o: T) {
   return Object.fromEntries(
@@ -60,11 +63,43 @@ export function normalizeRelativePath(s: string): string {
   return s[0] === '.' ? s : './' + s
 }
 
+/**
+ * Get the build options input from either rolldownOptions (Vite 7+) or rollupOptions (Vite 6-)
+ */
+export function getBuildOptionsInput(
+  build: Pick<ResolvedConfig['build'], 'rollupOptions'> & {
+    rolldownOptions?: { input?: Rollup.InputOptions['input'] }
+  },
+): Rollup.InputOptions['input'] | undefined {
+  if (isRolldownVite) {
+    return build.rolldownOptions?.input ?? build.rollupOptions?.input
+  }
+  return build.rollupOptions?.input
+}
+
+/**
+ * Generate build config with input for both rollupOptions and rolldownOptions
+ * This ensures compatibility with both Rollup-based and Rolldown-based Vite versions
+ */
+export function createBuildInputConfig(
+  input: Rollup.InputOptions['input'],
+): Record<string, unknown> {
+  if (isRolldownVite) {
+    return {
+      rolldownOptions: { input },
+      rollupOptions: { input },
+    }
+  }
+  return {
+    rollupOptions: { input },
+  }
+}
+
 export function getEntrySource(
   config: Pick<ResolvedConfig, 'build'>,
   name?: string,
 ): string {
-  const input = config.build.rollupOptions.input
+  const input = getBuildOptionsInput(config.build)
   if (!name) {
     return getFallbackRollupEntry(input).source
   }
@@ -77,7 +112,7 @@ export function getEntrySource(
     return input[name]
   }
   throw new Error(
-    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
+    `[vite-rsc:getEntrySource] expected 'build.rollupOptions.input' or 'build.rolldownOptions.input' to be an object with a '${name}' property that is a string, but got ${JSON.stringify(input)}`,
   )
 }
 
