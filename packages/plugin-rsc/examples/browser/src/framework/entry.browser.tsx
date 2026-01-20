@@ -8,6 +8,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { loadEntryRsc } from '../../lib/runtime'
 import type { RscPayload } from './entry.rsc'
+import { polyfillReady } from './polyfill'
 
 async function fetchRsc(request: Request): Promise<Response> {
   const module = await loadEntryRsc()
@@ -15,6 +16,8 @@ async function fetchRsc(request: Request): Promise<Response> {
 }
 
 async function main() {
+  await polyfillReady
+
   // stash `setPayload` function to trigger re-rendering
   // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
   let setPayload: (v: RscPayload) => void

@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "web-streams-polyfill": "^4.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.8",

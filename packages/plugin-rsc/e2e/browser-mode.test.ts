@@ -2,10 +2,6 @@ import { expect, test, type Page } from '@playwright/test'
 import { useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 
-// Webkit fails by
-// > TypeError: ReadableByteStreamController is not implemented
-test.skip(({ browserName }) => browserName === 'webkit')
-
 test.describe('dev-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'dev' })
   defineStarterTest(f, 'browser-mode')
