@@ -1,7 +1,13 @@
 'use client'
 
 import React from 'react'
-import { testAction, testAction2, testActionState } from './action'
+import {
+  testAction,
+  testAction2,
+  testActionState,
+  testNonFormActionArgs,
+  testNonFormActionError,
+} from './action'
 
 export function TestActionFromClient() {
   return (
@@ -21,5 +27,39 @@ export function TestUseActionState() {
         test-useActionState: {state}
       </button>
     </form>
+  )
+}
+
+export function TestNonFormActionError() {
+  const [state, setState] = React.useState('?')
+  return (
+    <button
+      data-testid="non-form-action-error"
+      onClick={async () => {
+        try {
+          await testNonFormActionError()
+          setState('no-error')
+        } catch (e) {
+          setState(e instanceof Error ? e.message : 'unknown-error')
+        }
+      }}
+    >
+      non-form-action-error: {state}
+    </button>
+  )
+}
+
+export function TestNonFormActionArgs() {
+  const [state, setState] = React.useState('?')
+  return (
+    <button
+      data-testid="non-form-action-args"
+      onClick={async () => {
+        const result = await testNonFormActionArgs({ name: 'test', count: 42 })
+        setState(result)
+      }}
+    >
+      non-form-action-args: {state}
+    </button>
   )
 }

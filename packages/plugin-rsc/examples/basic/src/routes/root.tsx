@@ -10,6 +10,8 @@ import {
 import { TestServerActionError } from './action-error/server'
 import {
   TestActionFromClient,
+  TestNonFormActionArgs,
+  TestNonFormActionError,
   TestUseActionState,
 } from './action-from-client/client'
 import { TestActionStateServer } from './action-state/server'
@@ -95,6 +97,8 @@ export function Root(props: { url: URL }) {
         <TestSuspense url={props.url} />
         <TestActionFromClient />
         <TestUseActionState />
+        <TestNonFormActionError />
+        <TestNonFormActionArgs />
         <TestPayloadServer url={props.url} />
         <TestServerActionBindReset />
         <TestServerActionBindSimple />
