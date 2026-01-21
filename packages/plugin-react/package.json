@@ -61,5 +61,17 @@
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
+  },
+  "compatiblePackages": {
+    "schemaVersion": 1,
+    "rolldown": {
+      "type": "compatible",
+      "versions": "^1.0.0-beta.44",
+      "note": "You can use Rolldown's built-in feature directly."
+    },
+    "rollup": {
+      "type": "incompatible",
+      "reason": "Uses Rolldown-specific APIs or Vite-specific APIs"
+    }
   }
 }
