@@ -355,6 +355,26 @@ function defineTest(f: Fixture) {
     )
   }
 
+  test('non form action error @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('non-form-action-error')).toContainText('?')
+    await page.getByTestId('non-form-action-error').click()
+    await expect(page.getByTestId('non-form-action-error')).toContainText(
+      'non-form-action-error',
+    )
+  })
+
+  test('non form action args @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('non-form-action-args')).toContainText('?')
+    await page.getByTestId('non-form-action-args').click()
+    await expect(page.getByTestId('non-form-action-args')).toContainText(
+      'received: test-42',
+    )
+  })
+
   test('useActionState with jsx @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
