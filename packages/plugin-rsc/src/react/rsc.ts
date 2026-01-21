@@ -14,10 +14,18 @@ export { loadServerAction, setRequireModule } from '../core/rsc'
 export function renderToReadableStream<T>(
   data: T,
   options?: object,
+  extraOptions?: {
+    /**
+     * @internal
+     */
+    onClientReference?: (metadata: { id: string; name: string }) => void
+  },
 ): ReadableStream<Uint8Array> {
   return ReactServer.renderToReadableStream(
     data,
-    createClientManifest(),
+    createClientManifest({
+      onClientReference: extraOptions?.onClientReference,
+    }),
     options,
   )
 }

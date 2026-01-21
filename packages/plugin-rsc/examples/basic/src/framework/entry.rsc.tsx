@@ -79,7 +79,18 @@ async function handleRequest({
 
   const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
-  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
+  const debugClientReferences: unknown[] = []
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
+    onClientReference(metadata) {
+      debugClientReferences.push(metadata)
+    },
+  })
+
+  // test `onClientReference` callback
+  if (renderRequest.url.pathname === '/__test_onClientReference') {
+    await rscStream.pipeTo(new WritableStream({ write() {} }))
+    return Response.json(debugClientReferences)
+  }
 
   // Respond RSC stream without HTML rendering as decided by `RenderRequest`
   if (renderRequest.isRsc) {

@@ -237,6 +237,24 @@ function defineTest(f: Fixture) {
     expect(f.proc().stderr()).toBe('')
   })
 
+  test('onClientReference callback', async ({ page }) => {
+    const response = await page.request.get(f.url('__test_onClientReference'))
+    expect(response.ok()).toBe(true)
+    const data = await response.json()
+    expect(data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+          deps: expect.objectContaining({
+            js: expect.any(Array),
+            css: expect.any(Array),
+          }),
+        }),
+      ]),
+    )
+  })
+
   test('client component', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

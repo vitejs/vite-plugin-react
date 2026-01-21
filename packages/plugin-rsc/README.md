@@ -453,6 +453,28 @@ This module re-exports RSC runtime API provided by `react-server-dom/server.edge
 - `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
 - `encodeReply/createClientTemporaryReferenceSet`
 
+#### Vite-specific extension: `renderToReadableStream` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific extension to the standard React RSC API. The official `react-server-dom` does not provide this callback mechanism.
+
+`renderToReadableStream` API is extended with an optional third parameter with `onClientReference` callback.
+This is invoked whenever a client reference is used in RSC stream rendering.
+
+```ts
+function renderToReadableStream<T>(
+  data: T,
+  options?: object, // standard react-server-dom options (e.g. temporaryReferences, onError, etc.)
+  extraOptions?: {
+    onClientReference?: (metadata: {
+      id: string
+      name: string
+      deps: { js: string[]; css: string[] }
+    }) => void
+  },
+): ReadableStream<Uint8Array>
+```
+
 ### `@vitejs/plugin-rsc/ssr`
 
 This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
