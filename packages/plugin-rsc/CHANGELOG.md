@@ -1,3 +1,25 @@
+## <small>[0.5.15](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.14...plugin-rsc@0.5.15) (2026-01-21)</small>
+### Features
+
+* **plugin-rsc:** add `customClientEntry` option to opt out of "index" entry convention ([#1068](https://github.com/vitejs/vite-plugin-react/issues/1068)) ([8dc7e5f](https://github.com/vitejs/vite-plugin-react/commit/8dc7e5fa1191813bcfb9de1950a63ae289d10732))
+* **plugin-rsc:** add callback to be notified when client reference dependencies are loaded ([#1065](https://github.com/vitejs/vite-plugin-react/issues/1065)) ([c2549ce](https://github.com/vitejs/vite-plugin-react/commit/c2549cea3af8d5148ef5fc5702fe86a939a2a36b))
+* **plugin-rsc:** allow to control whether CSS links use React's `precedence` attribute ([#1064](https://github.com/vitejs/vite-plugin-react/issues/1064)) ([d143cd5](https://github.com/vitejs/vite-plugin-react/commit/d143cd565f9074a9895c0b6289276e16a2fffd55))
+* **rsc:** add `import.meta.viteRsc.import` API ([#1063](https://github.com/vitejs/vite-plugin-react/issues/1063)) ([b0e7a1f](https://github.com/vitejs/vite-plugin-react/commit/b0e7a1f363a61b5c7e929b431853a0eadf620585))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1066](https://github.com/vitejs/vite-plugin-react/issues/1066)) ([58dfb9d](https://github.com/vitejs/vite-plugin-react/commit/58dfb9d70f3d12db529c2e3da8e80ad36168cceb))
+* **plugin-rsc:** move `onClientReference` to `wrapResourceProxy` and fix dev  ([#1073](https://github.com/vitejs/vite-plugin-react/issues/1073)) ([f3963a7](https://github.com/vitejs/vite-plugin-react/commit/f3963a75106b0a50e0dd4cccc4cfb1dc463de9a4))
+
+### Miscellaneous Chores
+
+* add metadata for vite-plugin-registry ([#1078](https://github.com/vitejs/vite-plugin-react/issues/1078)) ([3d3dbc2](https://github.com/vitejs/vite-plugin-react/commit/3d3dbc2c1de09f1d2bd3ff3483415a73bdf61e96))
+* **rsc:** change starter server export to `export default { fetch }` ([#1077](https://github.com/vitejs/vite-plugin-react/issues/1077)) ([ff5c076](https://github.com/vitejs/vite-plugin-react/commit/ff5c07681d7da5875ec4d9f30b54c43bd1fc7cd7))
+
+### Tests
+
+* **plugin-rsc:** add rolldownOptions test coverage ([#1075](https://github.com/vitejs/vite-plugin-react/issues/1075)) ([8272e19](https://github.com/vitejs/vite-plugin-react/commit/8272e19cef6adbe60506fdbb67bb6f0c1fa9d9ce))
+
 ## <small>[0.5.14](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.13...plugin-rsc@0.5.14) (2026-01-16)</small>
 ### Bug Fixes
 
