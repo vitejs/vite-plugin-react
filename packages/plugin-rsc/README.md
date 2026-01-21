@@ -464,7 +464,9 @@ This is invoked whenever a client reference is used in RSC stream rendering.
 ```ts
 function renderToReadableStream<T>(
   data: T,
-  options?: object, // standard react-server-dom options (e.g. temporaryReferences, onError, etc.)
+  // standard options (e.g. temporaryReferences, onError, etc.)
+  options?: object,
+  // vite-specific options
   extraOptions?: {
     onClientReference?: (metadata: {
       id: string
