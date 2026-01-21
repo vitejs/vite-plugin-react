@@ -116,7 +116,12 @@ export function createServerDecodeClientManifest(): ModuleMap {
   )
 }
 
-export function createClientManifest(): BundlerConfig {
+export function createClientManifest(options?: {
+  /**
+   * @internal
+   */
+  onClientReference?: (metadata: { id: string; name: string }) => void
+}): BundlerConfig {
   const cacheTag = import.meta.env.DEV ? createReferenceCacheTag() : ''
 
   return new Proxy(
@@ -127,6 +132,7 @@ export function createClientManifest(): BundlerConfig {
         let [id, name] = $$id.split('#')
         tinyassert(id)
         tinyassert(name)
+        options?.onClientReference?.({ id, name })
         return {
           id: id + cacheTag,
           name,
