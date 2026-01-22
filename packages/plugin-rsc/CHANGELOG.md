@@ -1,3 +1,12 @@
+## <small>[0.5.16](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.15...plugin-rsc@0.5.16) (2026-01-22)</small>
+### Features
+
+* **plugin-rsc:** expose `onClientReference` callback in `renderToReadableStream` ([#1079](https://github.com/vitejs/vite-plugin-react/issues/1079)) ([454c742](https://github.com/vitejs/vite-plugin-react/commit/454c742154939391d2df513a5c7764b2af8ec573))
+
+### Tests
+
+* **plugin-rsc:** add non-form action server action tests ([#1080](https://github.com/vitejs/vite-plugin-react/issues/1080)) ([6976167](https://github.com/vitejs/vite-plugin-react/commit/69761670581e7e246ada819a94d7bdf51f352f5c))
+
 ## <small>[0.5.15](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.14...plugin-rsc@0.5.15) (2026-01-21)</small>
 ### Features
 
