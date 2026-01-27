@@ -1,3 +1,14 @@
+## <small>[0.5.17](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.16...plugin-rsc@0.5.17) (2026-01-27)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1083](https://github.com/vitejs/vite-plugin-react/issues/1083)) ([e327da4](https://github.com/vitejs/vite-plugin-react/commit/e327da491fcc0eb9e10b98d7dd674b8375cb0f4f))
+* **deps:** update react 19.2.4 ([#1084](https://github.com/vitejs/vite-plugin-react/issues/1084)) ([77f5e42](https://github.com/vitejs/vite-plugin-react/commit/77f5e429d49b53c4115581abccaa9f5405bdf079))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react to ^19.2.9 ([#1082](https://github.com/vitejs/vite-plugin-react/issues/1082)) ([8528e98](https://github.com/vitejs/vite-plugin-react/commit/8528e98bb94da1ba32f24d24966ccb89d6cfd006))
+* **plugin-rsc:** remove unused debug component ([#1081](https://github.com/vitejs/vite-plugin-react/issues/1081)) ([c408d21](https://github.com/vitejs/vite-plugin-react/commit/c408d21f3e3e53bafe5f6a5d219ed84ead81801d))
+
 ## <small>[0.5.16](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.15...plugin-rsc@0.5.16) (2026-01-22)</small>
 ### Features
 
