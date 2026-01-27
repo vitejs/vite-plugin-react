@@ -326,11 +326,27 @@ export function vitePluginRscMinimal(
       name: 'rsc:vite-client-raw-import',
       transform: {
         order: 'post',
-        handler(code) {
+        handler(code, id) {
           if (code.includes('__vite_rsc_raw_import__')) {
             // inject dynamic import last to avoid Vite adding `?import` query
             // to client references (and browser mode server references)
-            return code.replace('__vite_rsc_raw_import__', 'import')
+            const s = new MagicString(code)
+            const needle = '__vite_rsc_raw_import__'
+            let i = 0
+            while (true) {
+              const start = code.indexOf(needle, i)
+              if (start === -1) break
+              s.overwrite(start, start + needle.length, 'import')
+              i = start + needle.length
+            }
+            return {
+              code: s.toString(),
+              map: s.generateMap({
+                hires: 'boundary',
+                source: id,
+                includeContent: true,
+              }),
+            }
           }
         },
       },
@@ -1137,11 +1153,19 @@ export function createRpcClient(params) {
               BUILD_ASSETS_MANIFEST_NAME,
             ),
           )
-          code = code.replaceAll(
-            'virtual:vite-rsc/assets-manifest',
-            () => replacement,
-          )
-          return { code }
+          const s = new MagicString(code)
+          const needle = 'virtual:vite-rsc/assets-manifest'
+          let i = 0
+          while (true) {
+            const start = code.indexOf(needle, i)
+            if (start === -1) break
+            s.overwrite(start, start + needle.length, replacement)
+            i = start + needle.length
+          }
+          return {
+            code: s.toString(),
+            map: s.generateMap({ hires: 'boundary' }),
+          }
         }
         return
       },
@@ -1273,7 +1297,7 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
     {
       name: 'rsc:inject-async-local-storage',
       transform: {
-        handler(code) {
+        handler(code, id) {
           if (
             (this.environment.name === 'ssr' ||
               this.environment.name === 'rsc') &&
@@ -1282,13 +1306,21 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
             !code.includes('__viteRscAsyncHooks')
           ) {
             // for build, we cannot use `import` as it confuses rollup commonjs plugin.
-            return (
+            const s = new MagicString(code)
+            const prepend =
               (this.environment.mode === 'build' && !isRolldownVite
                 ? `const __viteRscAsyncHooks = require("node:async_hooks");`
                 : `import * as __viteRscAsyncHooks from "node:async_hooks";`) +
-              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
-              code
-            )
+              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;`
+            s.prepend(prepend)
+            return {
+              code: s.toString(),
+              map: s.generateMap({
+                hires: 'boundary',
+                source: id,
+                includeContent: true,
+              }),
+            }
           }
         },
       },
@@ -1760,8 +1792,18 @@ function vitePluginDefineEncryptionKey(
           const replacement = `import(${JSON.stringify(
             normalizedPath,
           )}).then(__m => __m.default)`
-          code = code.replaceAll(KEY_PLACEHOLDER, () => replacement)
-          return { code }
+          const s = new MagicString(code)
+          let i = 0
+          while (true) {
+            const start = code.indexOf(KEY_PLACEHOLDER, i)
+            if (start === -1) break
+            s.overwrite(start, start + KEY_PLACEHOLDER.length, replacement)
+            i = start + KEY_PLACEHOLDER.length
+          }
+          return {
+            code: s.toString(),
+            map: s.generateMap({ hires: 'boundary' }),
+          }
         }
       },
       writeBundle() {
