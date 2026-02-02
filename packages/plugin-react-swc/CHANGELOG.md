@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.2.3 (2026-02-02)
+
 ## 4.2.2 (2025-11-12)
 
 ### Update code to support newer `rolldown-vite` ([#978](https://github.com/vitejs/vite-plugin-react/pull/978))
