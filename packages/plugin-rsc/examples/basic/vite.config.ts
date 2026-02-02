@@ -260,6 +260,11 @@ export default { fetch: handler };
         include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],
       },
     },
+    rsc: {
+      resolve: {
+        noExternal: ['@vitejs/test-dep-cjs-events-extend'],
+      },
+    },
   },
 }) as any
 

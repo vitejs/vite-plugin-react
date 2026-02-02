@@ -21,6 +21,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
+    "@vitejs/test-dep-cjs-events-extend": "file:./test-dep/cjs-events-extend",
     "@vitejs/test-dep-client-in-server": "file:./test-dep/client-in-server",
     "@vitejs/test-dep-client-in-server2": "file:./test-dep/client-in-server2",
     "@vitejs/test-dep-css-in-server": "file:./test-dep/css-in-server",

@@ -20,6 +20,7 @@ import { TestAssetsServer } from './assets/server'
 import { TestBrowserOnly } from './browser-only/client'
 import { TestClientChunkServer } from './chunk/server'
 import { TestChunk2 } from './chunk2/server'
+import { TestCjsBuiltinInterop } from './cjs-builtin-interop/server'
 import { ClientCounter, Hydrated } from './client'
 import { TestClientError } from './client-error/client'
 import { TestCssQueries } from './css-queries/server'
@@ -123,6 +124,7 @@ export function Root(props: { url: URL }) {
         <TestClientChunkServer />
         <TestChunk2 />
         <TestUseId />
+        <TestCjsBuiltinInterop />
       </body>
     </html>
   )
