@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { createDebug } from '@hiogawa/utils'
+import { makeIdFiltersToMatchWithQuery } from '@rolldown/pluginutils'
 import * as esModuleLexer from 'es-module-lexer'
 import { parseAstAsync, type Plugin } from 'vite'
 import { findClosestPkgJsonPath } from 'vitefu'
@@ -19,7 +20,7 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       transform: {
         filter: {
-          id: /\.[cm]?js$/,
+          id: makeIdFiltersToMatchWithQuery(['**/node_modules/**']),
           code: /\b(require|exports)\b/,
         },
         async handler(code, id) {
