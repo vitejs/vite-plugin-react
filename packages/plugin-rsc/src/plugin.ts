@@ -2267,7 +2267,8 @@ function vitePluginRscCss(
     {
       name: 'rsc:rsc-css-export-transform',
       transform: {
-        filter: { id: /\.[tj]sx?$/ },
+        // TODO: filter
+        filter: {},
         async handler(code, id) {
           if (this.environment.name !== 'rsc') return
           const filter = getRscCssTransformFilter({ id, code })
