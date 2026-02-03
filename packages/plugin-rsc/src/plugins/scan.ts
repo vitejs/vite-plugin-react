@@ -14,10 +14,12 @@ export function scanBuildStripPlugin({
     name: 'rsc:scan-strip',
     apply: 'build',
     enforce: 'post',
-    async transform(code, _id, _options) {
-      if (!manager.isScanBuild) return
-      const output = await transformScanBuildStrip(code)
-      return { code: output, map: { mappings: '' } }
+    transform: {
+      async handler(code, _id, _options) {
+        if (!manager.isScanBuild) return
+        const output = await transformScanBuildStrip(code)
+        return { code: output, map: { mappings: '' } }
+      },
     },
   }
 }
