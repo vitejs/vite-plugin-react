@@ -1361,7 +1361,10 @@ function vitePluginUseClient(
     {
       name: 'rsc:use-client',
       transform: {
-        filter: { code: 'use client' },
+        // TODO: cannot use filter because handler has cleanup side effect
+        // (`delete manager.clientReferenceMetaMap[id]`) that must run
+        // even when directive is removed (HMR case)
+        // filter: { code: 'use client' },
         async handler(code, id) {
           if (this.environment.name !== serverEnvironmentName) return
           if (!code.includes('use client')) {
@@ -1848,7 +1851,10 @@ function vitePluginUseServer(
     {
       name: 'rsc:use-server',
       transform: {
-        filter: { code: 'use server' },
+        // TODO: cannot use filter because handler has cleanup side effect
+        // (`delete manager.serverReferenceMetaMap[id]`) that must run
+        // even when directive is removed (HMR case)
+        // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
             delete manager.serverReferenceMetaMap[id]
