@@ -44,7 +44,7 @@ if (true) {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let __filename = "/test.js"; let __dirname = "/";
       let exports = {}; const module = { exports };
-      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
+      function __cjs_interop__(m) {return m.__cjs_module_runner_transform || "default" in m && Object.keys(m).every((k) => k === "default" || m[k] === m.default[k]) ? m.default : m;}
       if (true) {
         module.exports = (__cjs_interop__(await import('./cjs/use-sync-external-store.production.js')));
       } else {
@@ -69,7 +69,7 @@ if (true) {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let __filename = "/test.js"; let __dirname = "/";
       let exports = {}; const module = { exports };
-      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
+      function __cjs_interop__(m) {return m.__cjs_module_runner_transform || "default" in m && Object.keys(m).every((k) => k === "default" || m[k] === m.default[k]) ? m.default : m;}
       const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("react"));
       const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("react-dom"));
       "production" !== process.env.NODE_ENV && (function() { 
@@ -100,7 +100,7 @@ function test() {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let __filename = "/test.js"; let __dirname = "/";
       let exports = {}; const module = { exports };
-      function __cjs_interop__(m) { return m.__cjs_module_runner_transform ? m.default : m; }
+      function __cjs_interop__(m) {return m.__cjs_module_runner_transform || "default" in m && Object.keys(m).every((k) => k === "default" || m[k] === m.default[k]) ? m.default : m;}
       const __cjs_to_esm_hoist_0 = __cjs_interop__(await import("te" + "st"));
       const __cjs_to_esm_hoist_1 = __cjs_interop__(await import("test"));
       const __cjs_to_esm_hoist_2 = __cjs_interop__(await import("test"));
@@ -196,6 +196,12 @@ function test() {
         },
         "depPrimitive": "[ok]",
         "dualLib": "ok",
+        "testExternalFalsyPrimitive": {
+          "ok": true,
+        },
+        "testNodeBuiltins": {
+          "nodeEventsOk": true,
+        },
       }
     `)
   })

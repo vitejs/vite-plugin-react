@@ -1523,6 +1523,14 @@ function defineTest(f: Fixture) {
     ).toHaveText('ok:browser')
   })
 
+  test('cjs builtin interop', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('cjs-builtin-interop')).toHaveText(
+      'cjs-builtin-interop: ok',
+    )
+  })
+
   test('use cache function', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

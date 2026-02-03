@@ -1,0 +1,10 @@
+{
+  "name": "@vitejs/test-dep-cjs-events-extend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "exports": "./index.js",
+  "peerDependencies": {
+    "react": "*"
+  }
+}
