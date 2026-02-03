@@ -1527,7 +1527,7 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await expect(page.getByTestId('cjs-builtin-interop')).toHaveText(
-      'cjs-builtin-interop: working',
+      'cjs-builtin-interop: ok',
     )
   })
 
