@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx-development": "^7.27.1",
-    "@types/react": "^19.2.9",
+    "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
