@@ -35,15 +35,17 @@ export function validateImportPlugin(): Plugin {
         return
       },
     },
-    load(id) {
-      if (id.startsWith('\0virtual:vite-rsc/validate-imports/invalid/')) {
-        // it should surface as build error but we make a runtime error just in case.
-        const source = id.slice(id.lastIndexOf('/') + 1)
-        return `throw new Error("invalid import of '${source}'")`
-      }
-      if (id.startsWith('\0virtual:vite-rsc/validate-imports/')) {
-        return `export {}`
-      }
+    load: {
+      handler(id) {
+        if (id.startsWith('\0virtual:vite-rsc/validate-imports/invalid/')) {
+          // it should surface as build error but we make a runtime error just in case.
+          const source = id.slice(id.lastIndexOf('/') + 1)
+          return `throw new Error("invalid import of '${source}'")`
+        }
+        if (id.startsWith('\0virtual:vite-rsc/validate-imports/')) {
+          return `export {}`
+        }
+      },
     },
     // for dev, use DevEnvironment.moduleGraph during post transform
     transform: {

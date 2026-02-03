@@ -49,11 +49,13 @@ export function vitePluginImportEnvironment(
   return [
     {
       name: 'rsc:import-environment',
-      resolveId(source) {
-        // Use placeholder as external, renderChunk will replace with correct relative path
-        if (source === ENV_IMPORTS_MANIFEST_PLACEHOLDER) {
-          return { id: ENV_IMPORTS_MANIFEST_PLACEHOLDER, external: true }
-        }
+      resolveId: {
+        handler(source) {
+          // Use placeholder as external, renderChunk will replace with correct relative path
+          if (source === ENV_IMPORTS_MANIFEST_PLACEHOLDER) {
+            return { id: ENV_IMPORTS_MANIFEST_PLACEHOLDER, external: true }
+          }
+        },
       },
       buildStart() {
         // Emit discovered entries during build

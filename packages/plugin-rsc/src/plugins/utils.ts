@@ -44,13 +44,17 @@ export function createVirtualPlugin(
   name = 'virtual:' + name
   return {
     name: `rsc:virtual-${name}`,
-    resolveId(source, _importer, _options) {
-      return source === name ? '\0' + name : undefined
+    resolveId: {
+      handler(source, _importer, _options) {
+        return source === name ? '\0' + name : undefined
+      },
     },
-    load(id, options) {
-      if (id === '\0' + name) {
-        return (load as Function).apply(this, [id, options])
-      }
+    load: {
+      handler(id, options) {
+        if (id === '\0' + name) {
+          return (load as Function).apply(this, [id, options])
+        }
+      },
     },
   }
 }

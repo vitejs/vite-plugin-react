@@ -847,56 +847,60 @@ export default function vitePluginRsc(
       // - (dev) rewriting to `server.environments[<env>].runner.import(<entry>)`
       // - (build) rewriting to external `import("../<env>/<entry>.js")`
       name: 'rsc:load-environment-module',
-      async transform(code) {
-        if (!code.includes('import.meta.viteRsc.loadModule')) return
-        const { server } = manager
-        const s = new MagicString(code)
-        for (const match of stripLiteral(code).matchAll(
-          /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
-        )) {
-          const [argStart, argEnd] = match.indices![1]!
-          const argCode = code.slice(argStart, argEnd).trim()
-          const [environmentName, entryName]: [string, string | undefined] =
-            evalValue(`[${argCode}]`)
-          let replacement: string
-          if (
-            this.environment.mode === 'dev' &&
-            rscPluginOptions.loadModuleDevProxy
-          ) {
-            replacement = `import("virtual:vite-rsc/rpc-client").then((module) => module.createRpcClient(${JSON.stringify({ environmentName, entryName })}))`
-          } else if (this.environment.mode === 'dev') {
-            const environment = server.environments[environmentName]!
-            const source = getEntrySource(environment.config, entryName)
-            const resolved = await environment.pluginContainer.resolveId(source)
-            assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
-            replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
-          } else {
-            const environment = manager.config.environments[environmentName]!
-            const targetName =
-              entryName ||
-              getFallbackRollupEntry(environment.build.rollupOptions.input).name
-            replacement = JSON.stringify(
-              `__vite_rsc_load_module_start__:` +
-                JSON.stringify({
-                  fromEnv: this.environment.name,
-                  toEnv: environmentName,
-                  // TODO: custom entyFileNames
-                  // we can probably use an intermediate file like "__vite_rsc_assets_manifest.js"
-                  // and generate during buildApp.
-                  targetFileName: `${targetName}.js`,
-                }) +
-                `:__vite_rsc_load_module_end__`,
-            )
+      transform: {
+        async handler(code) {
+          if (!code.includes('import.meta.viteRsc.loadModule')) return
+          const { server } = manager
+          const s = new MagicString(code)
+          for (const match of stripLiteral(code).matchAll(
+            /import\.meta\.viteRsc\.loadModule\(([\s\S]*?)\)/dg,
+          )) {
+            const [argStart, argEnd] = match.indices![1]!
+            const argCode = code.slice(argStart, argEnd).trim()
+            const [environmentName, entryName]: [string, string | undefined] =
+              evalValue(`[${argCode}]`)
+            let replacement: string
+            if (
+              this.environment.mode === 'dev' &&
+              rscPluginOptions.loadModuleDevProxy
+            ) {
+              replacement = `import("virtual:vite-rsc/rpc-client").then((module) => module.createRpcClient(${JSON.stringify({ environmentName, entryName })}))`
+            } else if (this.environment.mode === 'dev') {
+              const environment = server.environments[environmentName]!
+              const source = getEntrySource(environment.config, entryName)
+              const resolved =
+                await environment.pluginContainer.resolveId(source)
+              assert(resolved, `[vite-rsc] failed to resolve entry '${source}'`)
+              replacement = `globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__(${JSON.stringify(environmentName)}, ${JSON.stringify(resolved.id)})`
+            } else {
+              const environment = manager.config.environments[environmentName]!
+              const targetName =
+                entryName ||
+                getFallbackRollupEntry(environment.build.rollupOptions.input)
+                  .name
+              replacement = JSON.stringify(
+                `__vite_rsc_load_module_start__:` +
+                  JSON.stringify({
+                    fromEnv: this.environment.name,
+                    toEnv: environmentName,
+                    // TODO: custom entyFileNames
+                    // we can probably use an intermediate file like "__vite_rsc_assets_manifest.js"
+                    // and generate during buildApp.
+                    targetFileName: `${targetName}.js`,
+                  }) +
+                  `:__vite_rsc_load_module_end__`,
+              )
+            }
+            const [start, end] = match.indices![0]!
+            s.overwrite(start, end, replacement)
           }
-          const [start, end] = match.indices![0]!
-          s.overwrite(start, end, replacement)
-        }
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ hires: 'boundary' }),
+          if (s.hasChanged()) {
+            return {
+              code: s.toString(),
+              map: s.generateMap({ hires: 'boundary' }),
+            }
           }
-        }
+        },
       },
       renderChunk(code, chunk) {
         if (!code.includes('__vite_rsc_load_module')) return
@@ -991,18 +995,21 @@ export default function vitePluginRsc(
     },
     {
       name: 'rsc:virtual:vite-rsc/rpc-client',
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/rpc-client') {
-          return `\0${source}`
-        }
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/rpc-client') {
+            return `\0${source}`
+          }
+        },
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/rpc-client') {
-          const { server } = manager
-          const origin = server.resolvedUrls?.local[0]
-          assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/rpc-client') {
+            const { server } = manager
+            const origin = server.resolvedUrls?.local[0]
+            assert(origin, '[vite-rsc] no server for loadModuleDevProxy')
 
-          return `\
+            return `\
 import * as __vite_rsc_rpc from "@vitejs/plugin-rsc/utils/rpc";
 export function createRpcClient(params) {
   const endpoint =
@@ -1012,34 +1019,39 @@ export function createRpcClient(params) {
   return __vite_rsc_rpc.createRpcClient({ endpoint });
 }
           `
-        }
+          }
+        },
       },
     },
     {
       name: 'rsc:virtual:vite-rsc/assets-manifest',
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/assets-manifest') {
-          if (this.environment.mode === 'build') {
-            return { id: source, external: true }
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/assets-manifest') {
+            if (this.environment.mode === 'build') {
+              return { id: source, external: true }
+            }
+            return `\0` + source
           }
-          return `\0` + source
-        }
+        },
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/assets-manifest') {
-          assert(this.environment.name !== 'client')
-          assert(this.environment.mode === 'dev')
-          const entryUrl = assetsURL(
-            '@id/__x00__' + VIRTUAL_ENTRIES.browser,
-            manager,
-          )
-          const manifest: AssetsManifest = {
-            bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
-            clientReferenceDeps: {},
-            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/assets-manifest') {
+            assert(this.environment.name !== 'client')
+            assert(this.environment.mode === 'dev')
+            const entryUrl = assetsURL(
+              '@id/__x00__' + VIRTUAL_ENTRIES.browser,
+              manager,
+            )
+            const manifest: AssetsManifest = {
+              bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
+              clientReferenceDeps: {},
+              cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+            }
+            return `export default ${JSON.stringify(manifest, null, 2)}`
           }
-          return `export default ${JSON.stringify(manifest, null, 2)}`
-        }
+        },
       },
       // client build
       generateBundle(_options, bundle) {
@@ -1155,48 +1167,50 @@ export default assetsManifest.bootstrapScriptContent;
     }),
     {
       name: 'rsc:bootstrap-script-content',
-      async transform(code) {
-        if (
-          !code.includes('loadBootstrapScriptContent') ||
-          !/import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent/.test(
-            code,
-          )
-        ) {
-          return
-        }
-
-        assert(
-          !rscPluginOptions.customClientEntry,
-          `[vite-rsc] 'import.meta.viteRsc.loadBootstrapScriptContent' cannot be used with 'customClientEntry' option`,
-        )
-        assert(this.environment.name !== 'client')
-        const output = new MagicString(code)
-
-        for (const match of stripLiteral(code).matchAll(
-          /import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent\(([\s\S]*?)\)/dg,
-        )) {
-          const [argStart, argEnd] = match.indices![1]!
-          const argCode = code.slice(argStart, argEnd).trim()
-          const entryName = evalValue(argCode)
-          assert(
-            entryName,
-            `[vite-rsc] expected 'loadBootstrapScriptContent("index")' but got ${argCode}`,
-          )
-          let replacement: string = `Promise.resolve(__vite_rsc_assets_manifest.bootstrapScriptContent)`
-          const [start, end] = match.indices![0]!
-          output.overwrite(start, end, replacement)
-        }
-        if (output.hasChanged()) {
-          if (!code.includes('__vite_rsc_assets_manifest')) {
-            output.prepend(
-              `import __vite_rsc_assets_manifest from "virtual:vite-rsc/assets-manifest";`,
+      transform: {
+        async handler(code) {
+          if (
+            !code.includes('loadBootstrapScriptContent') ||
+            !/import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent/.test(
+              code,
             )
+          ) {
+            return
           }
-          return {
-            code: output.toString(),
-            map: output.generateMap({ hires: 'boundary' }),
+
+          assert(
+            !rscPluginOptions.customClientEntry,
+            `[vite-rsc] 'import.meta.viteRsc.loadBootstrapScriptContent' cannot be used with 'customClientEntry' option`,
+          )
+          assert(this.environment.name !== 'client')
+          const output = new MagicString(code)
+
+          for (const match of stripLiteral(code).matchAll(
+            /import\s*\.\s*meta\s*\.\s*viteRsc\s*\.\s*loadBootstrapScriptContent\(([\s\S]*?)\)/dg,
+          )) {
+            const [argStart, argEnd] = match.indices![1]!
+            const argCode = code.slice(argStart, argEnd).trim()
+            const entryName = evalValue(argCode)
+            assert(
+              entryName,
+              `[vite-rsc] expected 'loadBootstrapScriptContent("index")' but got ${argCode}`,
+            )
+            let replacement: string = `Promise.resolve(__vite_rsc_assets_manifest.bootstrapScriptContent)`
+            const [start, end] = match.indices![0]!
+            output.overwrite(start, end, replacement)
           }
-        }
+          if (output.hasChanged()) {
+            if (!code.includes('__vite_rsc_assets_manifest')) {
+              output.prepend(
+                `import __vite_rsc_assets_manifest from "virtual:vite-rsc/assets-manifest";`,
+              )
+            }
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
+          }
+        },
       },
     },
     createVirtualPlugin(
@@ -1335,207 +1349,219 @@ function vitePluginUseClient(
   return [
     {
       name: 'rsc:use-client',
-      async transform(code, id) {
-        if (this.environment.name !== serverEnvironmentName) return
-        if (!code.includes('use client')) {
-          delete manager.clientReferenceMetaMap[id]
-          return
-        }
-
-        const ast = await parseAstAsync(code)
-        if (!hasDirective(ast.body, 'use client')) {
-          delete manager.clientReferenceMetaMap[id]
-          return
-        }
-
-        if (code.includes('use server')) {
-          const directives = findDirectives(ast, 'use server')
-          if (directives.length > 0) {
-            this.error(
-              `'use server' directive is not allowed inside 'use client'`,
-              directives[0]?.start,
-            )
+      transform: {
+        async handler(code, id) {
+          if (this.environment.name !== serverEnvironmentName) return
+          if (!code.includes('use client')) {
+            delete manager.clientReferenceMetaMap[id]
+            return
           }
-        }
 
-        let importId: string
-        let referenceKey: string
-        const packageSource = packageSources.get(id)
-        if (
-          !packageSource &&
-          this.environment.mode === 'dev' &&
-          id.includes('/node_modules/')
-        ) {
-          // If non package source reached here (often with ?v=... query), this is a client boundary
-          // created by a package imported on server environment, which breaks the
-          // expectation on dependency optimizer on browser. Directly copying over
-          // "?v=<hash>" from client optimizer in client reference can make a hashed
-          // module stale, so we use another virtual module wrapper to delay such process.
-          debug(
-            `internal client reference created through a package imported in '${this.environment.name}' environment: ${id}`,
-          )
-          id = cleanUrl(id)
-          warnInoncistentClientOptimization(this, id)
-          importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
-          referenceKey = importId
-        } else if (packageSource) {
-          if (this.environment.mode === 'dev') {
-            importId = `/@id/__x00__virtual:vite-rsc/client-package-proxy/${packageSource}`
-            referenceKey = importId
-          } else {
-            importId = packageSource
-            referenceKey = hashString(packageSource)
+          const ast = await parseAstAsync(code)
+          if (!hasDirective(ast.body, 'use client')) {
+            delete manager.clientReferenceMetaMap[id]
+            return
           }
-        } else {
-          if (this.environment.mode === 'dev') {
-            importId = normalizeViteImportAnalysisUrl(
-              manager.server.environments[browserEnvironmentName]!,
-              id,
-            )
-            referenceKey = importId
-          } else {
-            importId = id
-            referenceKey = hashString(manager.toRelativeId(id))
-          }
-        }
 
-        const transformDirectiveProxyExport_ = withRollupError(
-          this,
-          transformDirectiveProxyExport,
-        )
-        const result = transformDirectiveProxyExport_(ast, {
-          directive: 'use client',
-          code,
-          keep: !!useClientPluginOptions.keepUseCientProxy,
-          runtime: (name, meta) => {
-            let proxyValue =
-              `() => { throw new Error("Unexpectedly client reference export '" + ` +
-              JSON.stringify(name) +
-              ` + "' is called on server") }`
-            if (meta?.value) {
-              proxyValue = `(${meta.value})`
+          if (code.includes('use server')) {
+            const directives = findDirectives(ast, 'use server')
+            if (directives.length > 0) {
+              this.error(
+                `'use server' directive is not allowed inside 'use client'`,
+                directives[0]?.start,
+              )
             }
-            return (
-              `$$ReactServer.registerClientReference(` +
-              `  ${proxyValue},` +
-              `  ${JSON.stringify(referenceKey)},` +
-              `  ${JSON.stringify(name)})`
+          }
+
+          let importId: string
+          let referenceKey: string
+          const packageSource = packageSources.get(id)
+          if (
+            !packageSource &&
+            this.environment.mode === 'dev' &&
+            id.includes('/node_modules/')
+          ) {
+            // If non package source reached here (often with ?v=... query), this is a client boundary
+            // created by a package imported on server environment, which breaks the
+            // expectation on dependency optimizer on browser. Directly copying over
+            // "?v=<hash>" from client optimizer in client reference can make a hashed
+            // module stale, so we use another virtual module wrapper to delay such process.
+            debug(
+              `internal client reference created through a package imported in '${this.environment.name}' environment: ${id}`,
             )
-          },
-        })
-        if (!result) return
-        const { output, exportNames } = result
-        manager.clientReferenceMetaMap[id] = {
-          importId,
-          referenceKey,
-          packageSource,
-          exportNames,
-          renderedExports: [],
-        }
-        const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
-        output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
-        return { code: output.toString(), map: { mappings: '' } }
+            id = cleanUrl(id)
+            warnInoncistentClientOptimization(this, id)
+            importId = `/@id/__x00__virtual:vite-rsc/client-in-server-package-proxy/${encodeURIComponent(id)}`
+            referenceKey = importId
+          } else if (packageSource) {
+            if (this.environment.mode === 'dev') {
+              importId = `/@id/__x00__virtual:vite-rsc/client-package-proxy/${packageSource}`
+              referenceKey = importId
+            } else {
+              importId = packageSource
+              referenceKey = hashString(packageSource)
+            }
+          } else {
+            if (this.environment.mode === 'dev') {
+              importId = normalizeViteImportAnalysisUrl(
+                manager.server.environments[browserEnvironmentName]!,
+                id,
+              )
+              referenceKey = importId
+            } else {
+              importId = id
+              referenceKey = hashString(manager.toRelativeId(id))
+            }
+          }
+
+          const transformDirectiveProxyExport_ = withRollupError(
+            this,
+            transformDirectiveProxyExport,
+          )
+          const result = transformDirectiveProxyExport_(ast, {
+            directive: 'use client',
+            code,
+            keep: !!useClientPluginOptions.keepUseCientProxy,
+            runtime: (name, meta) => {
+              let proxyValue =
+                `() => { throw new Error("Unexpectedly client reference export '" + ` +
+                JSON.stringify(name) +
+                ` + "' is called on server") }`
+              if (meta?.value) {
+                proxyValue = `(${meta.value})`
+              }
+              return (
+                `$$ReactServer.registerClientReference(` +
+                `  ${proxyValue},` +
+                `  ${JSON.stringify(referenceKey)},` +
+                `  ${JSON.stringify(name)})`
+              )
+            },
+          })
+          if (!result) return
+          const { output, exportNames } = result
+          manager.clientReferenceMetaMap[id] = {
+            importId,
+            referenceKey,
+            packageSource,
+            exportNames,
+            renderedExports: [],
+          }
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+          output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
+          return { code: output.toString(), map: { mappings: '' } }
+        },
       },
     },
     {
       name: 'rsc:use-client/build-references',
-      resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/client-references')) {
-          return '\0' + source
-        }
+      resolveId: {
+        handler(source) {
+          if (source.startsWith('virtual:vite-rsc/client-references')) {
+            return '\0' + source
+          }
+        },
       },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/client-references') {
-          // not used during dev
-          if (this.environment.mode === 'dev') {
-            return { code: `export default {}`, map: null }
-          }
-          // no custom chunking needed for scan
-          if (manager.isScanBuild) {
-            let code = ``
-            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-              code += `import ${JSON.stringify(withResolvedIdProxy(meta.importId))};\n`
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/client-references') {
+            // not used during dev
+            if (this.environment.mode === 'dev') {
+              return { code: `export default {}`, map: null }
             }
-            return { code, map: null }
-          }
-          let code = ''
-          // group client reference modules by `clientChunks` option
-          manager.clientReferenceGroups = {}
-          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            // no server chunk is associated when the entire "use client" module is tree-shaken
-            if (!meta.serverChunk) continue
-            let name =
-              useClientPluginOptions.clientChunks?.({
-                id: meta.importId,
-                normalizedId: manager.toRelativeId(meta.importId),
-                serverChunk: meta.serverChunk,
-              }) ?? meta.serverChunk
-            // ensure clean virtual id to avoid interfering with other plugins
-            name = cleanUrl(name.replaceAll('..', '__'))
-            const group = (manager.clientReferenceGroups[name] ??= [])
-            group.push(meta)
-            meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
-          }
-          debug('client-reference-groups', manager.clientReferenceGroups)
-          for (const [name, metas] of Object.entries(
-            manager.clientReferenceGroups,
-          )) {
-            const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
-            for (const meta of metas) {
-              code += `\
+            // no custom chunking needed for scan
+            if (manager.isScanBuild) {
+              let code = ``
+              for (const meta of Object.values(
+                manager.clientReferenceMetaMap,
+              )) {
+                code += `import ${JSON.stringify(withResolvedIdProxy(meta.importId))};\n`
+              }
+              return { code, map: null }
+            }
+            let code = ''
+            // group client reference modules by `clientChunks` option
+            manager.clientReferenceGroups = {}
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              // no server chunk is associated when the entire "use client" module is tree-shaken
+              if (!meta.serverChunk) continue
+              let name =
+                useClientPluginOptions.clientChunks?.({
+                  id: meta.importId,
+                  normalizedId: manager.toRelativeId(meta.importId),
+                  serverChunk: meta.serverChunk,
+                }) ?? meta.serverChunk
+              // ensure clean virtual id to avoid interfering with other plugins
+              name = cleanUrl(name.replaceAll('..', '__'))
+              const group = (manager.clientReferenceGroups[name] ??= [])
+              group.push(meta)
+              meta.groupChunkId = `\0virtual:vite-rsc/client-references/group/${name}`
+            }
+            debug('client-reference-groups', manager.clientReferenceGroups)
+            for (const [name, metas] of Object.entries(
+              manager.clientReferenceGroups,
+            )) {
+              const groupVirtual = `virtual:vite-rsc/client-references/group/${name}`
+              for (const meta of metas) {
+                code += `\
                 ${JSON.stringify(meta.referenceKey)}: async () => {
                   const m = await import(${JSON.stringify(groupVirtual)});
                   return m.export_${meta.referenceKey};
                 },
               `
+              }
             }
+            code = `export default {${code}};\n`
+            return { code, map: null }
           }
-          code = `export default {${code}};\n`
-          return { code, map: null }
-        }
-        // re-export client reference modules from each group
-        if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
-          const name = id.slice(
-            '\0virtual:vite-rsc/client-references/group/'.length,
-          )
-          const metas = manager.clientReferenceGroups[name]
-          assert(metas, `unknown client reference group: ${name}`)
-          let code = ``
-          for (const meta of metas) {
-            // pick only renderedExports to tree-shake unused client references
-            const exports = meta.renderedExports
-              .map((name) => `${name}: import_${meta.referenceKey}.${name},\n`)
-              .sort()
-              .join('')
-            code += `
+          // re-export client reference modules from each group
+          if (id.startsWith('\0virtual:vite-rsc/client-references/group/')) {
+            const name = id.slice(
+              '\0virtual:vite-rsc/client-references/group/'.length,
+            )
+            const metas = manager.clientReferenceGroups[name]
+            assert(metas, `unknown client reference group: ${name}`)
+            let code = ``
+            for (const meta of metas) {
+              // pick only renderedExports to tree-shake unused client references
+              const exports = meta.renderedExports
+                .map(
+                  (name) => `${name}: import_${meta.referenceKey}.${name},\n`,
+                )
+                .sort()
+                .join('')
+              code += `
               import * as import_${meta.referenceKey} from ${JSON.stringify(withResolvedIdProxy(meta.importId))};
               export const export_${meta.referenceKey} = {${exports}};
             `
+            }
+            return { code, map: null }
           }
-          return { code, map: null }
-        }
+        },
       },
     },
     {
       name: 'rsc:virtual-client-in-server-package',
-      async load(id) {
-        if (
-          id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
-        ) {
-          assert.equal(this.environment.mode, 'dev')
-          assert(this.environment.name !== serverEnvironmentName)
-          id = decodeURIComponent(
-            id.slice(
-              '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
-            ),
-          )
-          // TODO: avoid `export default undefined`
-          return `
+      load: {
+        async handler(id) {
+          if (
+            id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
+          ) {
+            assert.equal(this.environment.mode, 'dev')
+            assert(this.environment.name !== serverEnvironmentName)
+            id = decodeURIComponent(
+              id.slice(
+                '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
+              ),
+            )
+            // TODO: avoid `export default undefined`
+            return `
             export * from ${JSON.stringify(id)};
             import * as __all__ from ${JSON.stringify(id)};
             export default __all__.default;
           `
-        }
+          }
+        },
       },
     },
     {
@@ -1556,20 +1582,22 @@ function vitePluginUseClient(
           }
         },
       },
-      async load(id) {
-        if (id.startsWith('\0virtual:vite-rsc/client-package-proxy/')) {
-          assert(this.environment.mode === 'dev')
-          const source = id.slice(
-            '\0virtual:vite-rsc/client-package-proxy/'.length,
-          )
-          const meta = Object.values(manager.clientReferenceMetaMap).find(
-            (v) => v.packageSource === source,
-          )!
-          const exportNames = meta.exportNames
-          return `export {${exportNames.join(',')}} from ${JSON.stringify(
-            source,
-          )};\n`
-        }
+      load: {
+        async handler(id) {
+          if (id.startsWith('\0virtual:vite-rsc/client-package-proxy/')) {
+            assert(this.environment.mode === 'dev')
+            const source = id.slice(
+              '\0virtual:vite-rsc/client-package-proxy/'.length,
+            )
+            const meta = Object.values(manager.clientReferenceMetaMap).find(
+              (v) => v.packageSource === source,
+            )!
+            const exportNames = meta.exportNames
+            return `export {${exportNames.join(',')}} from ${JSON.stringify(
+              source,
+            )};\n`
+          }
+        },
       },
       generateBundle(_options, bundle) {
         if (manager.isScanBuild) return
@@ -1735,20 +1763,24 @@ function vitePluginDefineEncryptionKey(
             JSON.stringify(toBase64(await generateEncryptionKey()))
         }
       },
-      resolveId(source) {
-        if (source === 'virtual:vite-rsc/encryption-key') {
-          // encryption logic can be tree-shaken if action bind is not used.
-          return { id: '\0' + source, moduleSideEffects: false }
-        }
-      },
-      load(id) {
-        if (id === '\0virtual:vite-rsc/encryption-key') {
-          if (this.environment.mode === 'build') {
-            // during build, load key from an external file to make chunks stable.
-            return `export default () => ${KEY_PLACEHOLDER}`
+      resolveId: {
+        handler(source) {
+          if (source === 'virtual:vite-rsc/encryption-key') {
+            // encryption logic can be tree-shaken if action bind is not used.
+            return { id: '\0' + source, moduleSideEffects: false }
           }
-          return `export default () => (${defineEncryptionKey})`
-        }
+        },
+      },
+      load: {
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/encryption-key') {
+            if (this.environment.mode === 'build') {
+              // during build, load key from an external file to make chunks stable.
+              return `export default () => ${KEY_PLACEHOLDER}`
+            }
+            return `export default () => (${defineEncryptionKey})`
+          }
+        },
       },
       renderChunk(code, chunk) {
         if (code.includes(KEY_PLACEHOLDER)) {
@@ -1795,126 +1827,135 @@ function vitePluginUseServer(
   return [
     {
       name: 'rsc:use-server',
-      async transform(code, id) {
-        if (!code.includes('use server')) {
-          delete manager.serverReferenceMetaMap[id]
-          return
-        }
-        const ast = await parseAstAsync(code)
-
-        let normalizedId_: string | undefined
-        const getNormalizedId = () => {
-          if (!normalizedId_) {
-            if (
-              this.environment.mode === 'dev' &&
-              id.includes('/node_modules/')
-            ) {
-              // similar situation as `use client` (see `virtual:client-in-server-package-proxy`)
-              // but module runner has additional resolution step and it's not strict about
-              // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
-              debug(
-                `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
-              )
-              id = cleanUrl(id)
-            }
-            if (manager.config.command === 'build') {
-              normalizedId_ = hashString(manager.toRelativeId(id))
-            } else {
-              normalizedId_ = normalizeViteImportAnalysisUrl(
-                manager.server.environments[serverEnvironmentName]!,
-                id,
-              )
-            }
-          }
-          return normalizedId_
-        }
-
-        if (this.environment.name === serverEnvironmentName) {
-          const transformServerActionServer_ = withRollupError(
-            this,
-            transformServerActionServer,
-          )
-          const enableEncryption =
-            useServerPluginOptions.enableActionEncryption ?? true
-          const result = transformServerActionServer_(code, ast, {
-            runtime: (value, name) =>
-              `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
-                getNormalizedId(),
-              )}, ${JSON.stringify(name)})`,
-            rejectNonAsyncFunction: true,
-            encode: enableEncryption
-              ? (value) =>
-                  `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
-              : undefined,
-            decode: enableEncryption
-              ? (value) =>
-                  `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
-              : undefined,
-          })
-          const output = result.output
-          if (!result || !output.hasChanged()) {
+      transform: {
+        async handler(code, id) {
+          if (!code.includes('use server')) {
             delete manager.serverReferenceMetaMap[id]
             return
           }
-          manager.serverReferenceMetaMap[id] = {
-            importId: id,
-            referenceKey: getNormalizedId(),
-            exportNames: 'names' in result ? result.names : result.exportNames,
+          const ast = await parseAstAsync(code)
+
+          let normalizedId_: string | undefined
+          const getNormalizedId = () => {
+            if (!normalizedId_) {
+              if (
+                this.environment.mode === 'dev' &&
+                id.includes('/node_modules/')
+              ) {
+                // similar situation as `use client` (see `virtual:client-in-server-package-proxy`)
+                // but module runner has additional resolution step and it's not strict about
+                // module identity of `import(id)` like browser, so we simply strip queries such as `?v=`.
+                debug(
+                  `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
+                )
+                id = cleanUrl(id)
+              }
+              if (manager.config.command === 'build') {
+                normalizedId_ = hashString(manager.toRelativeId(id))
+              } else {
+                normalizedId_ = normalizeViteImportAnalysisUrl(
+                  manager.server.environments[serverEnvironmentName]!,
+                  id,
+                )
+              }
+            }
+            return normalizedId_
           }
-          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
-          output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
-          if (enableEncryption) {
-            const importSource = resolvePackage(
-              `${PKG_NAME}/utils/encryption-runtime`,
+
+          if (this.environment.name === serverEnvironmentName) {
+            const transformServerActionServer_ = withRollupError(
+              this,
+              transformServerActionServer,
             )
+            const enableEncryption =
+              useServerPluginOptions.enableActionEncryption ?? true
+            const result = transformServerActionServer_(code, ast, {
+              runtime: (value, name) =>
+                `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
+                  getNormalizedId(),
+                )}, ${JSON.stringify(name)})`,
+              rejectNonAsyncFunction: true,
+              encode: enableEncryption
+                ? (value) =>
+                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
+                : undefined,
+              decode: enableEncryption
+                ? (value) =>
+                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
+                : undefined,
+            })
+            const output = result.output
+            if (!result || !output.hasChanged()) {
+              delete manager.serverReferenceMetaMap[id]
+              return
+            }
+            manager.serverReferenceMetaMap[id] = {
+              importId: id,
+              referenceKey: getNormalizedId(),
+              exportNames:
+                'names' in result ? result.names : result.exportNames,
+            }
+            const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
             output.prepend(
-              `import * as __vite_rsc_encryption_runtime from ${JSON.stringify(importSource)};\n`,
+              `import * as $$ReactServer from "${importSource}";\n`,
             )
+            if (enableEncryption) {
+              const importSource = resolvePackage(
+                `${PKG_NAME}/utils/encryption-runtime`,
+              )
+              output.prepend(
+                `import * as __vite_rsc_encryption_runtime from ${JSON.stringify(importSource)};\n`,
+              )
+            }
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
+          } else {
+            if (!hasDirective(ast.body, 'use server')) {
+              delete manager.serverReferenceMetaMap[id]
+              return
+            }
+            const transformDirectiveProxyExport_ = withRollupError(
+              this,
+              transformDirectiveProxyExport,
+            )
+            const result = transformDirectiveProxyExport_(ast, {
+              code,
+              runtime: (name) =>
+                `$$ReactClient.createServerReference(` +
+                `${JSON.stringify(getNormalizedId() + '#' + name)},` +
+                `$$ReactClient.callServer, ` +
+                `undefined, ` +
+                (this.environment.mode === 'dev'
+                  ? `$$ReactClient.findSourceMapURL,`
+                  : 'undefined,') +
+                `${JSON.stringify(name)})`,
+              directive: 'use server',
+              rejectNonAsyncFunction: true,
+            })
+            if (!result) return
+            const output = result?.output
+            if (!output?.hasChanged()) return
+            manager.serverReferenceMetaMap[id] = {
+              importId: id,
+              referenceKey: getNormalizedId(),
+              exportNames: result.exportNames,
+            }
+            const name =
+              this.environment.name === browserEnvironmentName
+                ? 'browser'
+                : 'ssr'
+            const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
+            output.prepend(
+              `import * as $$ReactClient from "${importSource}";\n`,
+            )
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
           }
-          return {
-            code: output.toString(),
-            map: output.generateMap({ hires: 'boundary' }),
-          }
-        } else {
-          if (!hasDirective(ast.body, 'use server')) {
-            delete manager.serverReferenceMetaMap[id]
-            return
-          }
-          const transformDirectiveProxyExport_ = withRollupError(
-            this,
-            transformDirectiveProxyExport,
-          )
-          const result = transformDirectiveProxyExport_(ast, {
-            code,
-            runtime: (name) =>
-              `$$ReactClient.createServerReference(` +
-              `${JSON.stringify(getNormalizedId() + '#' + name)},` +
-              `$$ReactClient.callServer, ` +
-              `undefined, ` +
-              (this.environment.mode === 'dev'
-                ? `$$ReactClient.findSourceMapURL,`
-                : 'undefined,') +
-              `${JSON.stringify(name)})`,
-            directive: 'use server',
-            rejectNonAsyncFunction: true,
-          })
-          if (!result) return
-          const output = result?.output
-          if (!output?.hasChanged()) return
-          manager.serverReferenceMetaMap[id] = {
-            importId: id,
-            referenceKey: getNormalizedId(),
-            exportNames: result.exportNames,
-          }
-          const name =
-            this.environment.name === browserEnvironmentName ? 'browser' : 'ssr'
-          const importSource = resolvePackage(`${PKG_NAME}/react/${name}`)
-          output.prepend(`import * as $$ReactClient from "${importSource}";\n`)
-          return {
-            code: output.toString(),
-            map: output.generateMap({ hires: 'boundary' }),
-          }
-        }
+        },
       },
     },
     createVirtualPlugin('vite-rsc/server-references', function () {
@@ -2198,22 +2239,24 @@ function vitePluginRscCss(
   return [
     {
       name: 'rsc:rsc-css-export-transform',
-      async transform(code, id) {
-        if (this.environment.name !== 'rsc') return
-        const filter = getRscCssTransformFilter({ id, code })
-        if (!filter) return
-        const ast = await parseAstAsync(code)
-        const result = await transformRscCssExport({
-          ast,
-          code,
-          filter,
-        })
-        if (result) {
-          return {
-            code: result.output.toString(),
-            map: result.output.generateMap({ hires: 'boundary' }),
+      transform: {
+        async handler(code, id) {
+          if (this.environment.name !== 'rsc') return
+          const filter = getRscCssTransformFilter({ id, code })
+          if (!filter) return
+          const ast = await parseAstAsync(code)
+          const result = await transformRscCssExport({
+            ast,
+            code,
+            filter,
+          })
+          if (result) {
+            return {
+              code: result.output.toString(),
+              map: result.output.generateMap({ hires: 'boundary' }),
+            }
           }
-        }
+        },
       },
     },
     {
@@ -2241,31 +2284,35 @@ function vitePluginRscCss(
     },
     {
       name: 'rsc:css-virtual',
-      resolveId(source) {
-        if (source.startsWith('virtual:vite-rsc/css?')) {
-          return '\0' + source
-        }
+      resolveId: {
+        handler(source) {
+          if (source.startsWith('virtual:vite-rsc/css?')) {
+            return '\0' + source
+          }
+        },
       },
-      async load(id) {
-        const parsed = parseCssVirtual(id)
-        if (parsed?.type === 'ssr') {
-          id = parsed.id
-          const { server } = manager
-          const mod =
-            await server.environments.ssr.moduleGraph.getModuleByUrl(id)
-          if (!mod?.id || !mod?.file) {
-            return `export default []`
+      load: {
+        async handler(id) {
+          const parsed = parseCssVirtual(id)
+          if (parsed?.type === 'ssr') {
+            id = parsed.id
+            const { server } = manager
+            const mod =
+              await server.environments.ssr.moduleGraph.getModuleByUrl(id)
+            if (!mod?.id || !mod?.file) {
+              return `export default []`
+            }
+            const result = collectCss(server.environments.ssr, mod.id)
+            // invalidate virtual module on js file changes to reflect added/deleted css import
+            for (const file of [mod.file, ...result.visitedFiles]) {
+              this.addWatchFile(file)
+            }
+            const hrefs = result.hrefs.map((href) =>
+              assetsURL(href.slice(1), manager),
+            )
+            return `export default ${serializeValueWithRuntime(hrefs)}`
           }
-          const result = collectCss(server.environments.ssr, mod.id)
-          // invalidate virtual module on js file changes to reflect added/deleted css import
-          for (const file of [mod.file, ...result.visitedFiles]) {
-            this.addWatchFile(file)
-          }
-          const hrefs = result.hrefs.map((href) =>
-            assetsURL(href.slice(1), manager),
-          )
-          return `export default ${serializeValueWithRuntime(hrefs)}`
-        }
+        },
       },
     },
     {
@@ -2286,93 +2333,96 @@ function vitePluginRscCss(
           return original.apply(this, args as any)
         }
       },
-      async transform(code, id) {
-        if (!code.includes('import.meta.viteRsc.loadCss')) return
+      transform: {
+        async handler(code, id) {
+          if (!code.includes('import.meta.viteRsc.loadCss')) return
 
-        assert(this.environment.name === 'rsc')
-        const output = new MagicString(code)
-        let importAdded = false
+          assert(this.environment.name === 'rsc')
+          const output = new MagicString(code)
+          let importAdded = false
 
-        for (const match of stripLiteral(code).matchAll(
-          /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
-        )) {
-          const [start, end] = match.indices![0]!
-          const [argStart, argEnd] = match.indices![1]!
-          const argCode = code.slice(argStart, argEnd).trim()
-          let importer = id
-          if (argCode) {
-            const argValue = evalValue<string>(argCode)
-            const resolved = await this.resolve(argValue, id)
-            if (resolved) {
-              importer = resolved.id
-            } else {
-              this.warn(
-                `[vite-rsc] failed to transform 'import.meta.viteRsc.loadCss(${argCode})'`,
-              )
-              output.update(start, end, `null`)
-              continue
+          for (const match of stripLiteral(code).matchAll(
+            /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
+          )) {
+            const [start, end] = match.indices![0]!
+            const [argStart, argEnd] = match.indices![1]!
+            const argCode = code.slice(argStart, argEnd).trim()
+            let importer = id
+            if (argCode) {
+              const argValue = evalValue<string>(argCode)
+              const resolved = await this.resolve(argValue, id)
+              if (resolved) {
+                importer = resolved.id
+              } else {
+                this.warn(
+                  `[vite-rsc] failed to transform 'import.meta.viteRsc.loadCss(${argCode})'`,
+                )
+                output.update(start, end, `null`)
+                continue
+              }
             }
-          }
 
-          const importId = toCssVirtual({ id: importer, type: 'rsc' })
+            const importId = toCssVirtual({ id: importer, type: 'rsc' })
 
-          // use dynamic import during dev to delay crawling and discover css correctly.
-          let replacement: string
-          if (this.environment.mode === 'dev') {
-            replacement = `__vite_rsc_react__.createElement(async () => {
+            // use dynamic import during dev to delay crawling and discover css correctly.
+            let replacement: string
+            if (this.environment.mode === 'dev') {
+              replacement = `__vite_rsc_react__.createElement(async () => {
               const __m = await import(${JSON.stringify(importId)});
               return __vite_rsc_react__.createElement(__m.Resources);
             })`
-          } else {
-            const hash = hashString(importId)
-            if (
-              !importAdded &&
-              !code.includes(`__vite_rsc_importer_resources_${hash}`)
-            ) {
-              importAdded = true
-              output.prepend(
-                `import * as __vite_rsc_importer_resources_${hash} from ${JSON.stringify(
-                  importId,
-                )};`,
-              )
+            } else {
+              const hash = hashString(importId)
+              if (
+                !importAdded &&
+                !code.includes(`__vite_rsc_importer_resources_${hash}`)
+              ) {
+                importAdded = true
+                output.prepend(
+                  `import * as __vite_rsc_importer_resources_${hash} from ${JSON.stringify(
+                    importId,
+                  )};`,
+                )
+              }
+              replacement = `__vite_rsc_react__.createElement(__vite_rsc_importer_resources_${hash}.Resources)`
             }
-            replacement = `__vite_rsc_react__.createElement(__vite_rsc_importer_resources_${hash}.Resources)`
+            output.update(start, end, replacement)
           }
-          output.update(start, end, replacement)
-        }
 
-        if (output.hasChanged()) {
-          if (!code.includes('__vite_rsc_react__')) {
-            output.prepend(`import __vite_rsc_react__ from "react";`)
-          }
-          return {
-            code: output.toString(),
-            map: output.generateMap({ hires: 'boundary' }),
-          }
-        }
-      },
-      load(id) {
-        const { server } = manager
-        const parsed = parseCssVirtual(id)
-        if (parsed?.type === 'rsc') {
-          assert(this.environment.name === 'rsc')
-          const importer = parsed.id
-          if (this.environment.mode === 'dev') {
-            const result = collectCss(server.environments.rsc!, importer)
-            for (const file of [importer, ...result.visitedFiles]) {
-              this.addWatchFile(file)
+          if (output.hasChanged()) {
+            if (!code.includes('__vite_rsc_react__')) {
+              output.prepend(`import __vite_rsc_react__ from "react";`)
             }
-            const cssHrefs = result.hrefs.map((href) => href.slice(1))
-            const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
-            return generateResourcesCode(
-              serializeValueWithRuntime(deps),
-              manager,
-              { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
-            )
-          } else {
-            const key = manager.toRelativeId(importer)
-            manager.serverResourcesMetaMap[importer] = { key }
-            return `
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
+          }
+        },
+      },
+      load: {
+        handler(id) {
+          const { server } = manager
+          const parsed = parseCssVirtual(id)
+          if (parsed?.type === 'rsc') {
+            assert(this.environment.name === 'rsc')
+            const importer = parsed.id
+            if (this.environment.mode === 'dev') {
+              const result = collectCss(server.environments.rsc!, importer)
+              for (const file of [importer, ...result.visitedFiles]) {
+                this.addWatchFile(file)
+              }
+              const cssHrefs = result.hrefs.map((href) => href.slice(1))
+              const deps = assetsURLOfDeps({ css: cssHrefs, js: [] }, manager)
+              return generateResourcesCode(
+                serializeValueWithRuntime(deps),
+                manager,
+                { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
+              )
+            } else {
+              const key = manager.toRelativeId(importer)
+              manager.serverResourcesMetaMap[importer] = { key }
+              return `
               import __vite_rsc_assets_manifest__ from "virtual:vite-rsc/assets-manifest";
               ${generateResourcesCode(
                 `__vite_rsc_assets_manifest__.serverResources[${JSON.stringify(
@@ -2382,8 +2432,9 @@ function vitePluginRscCss(
                 { cssLinkPrecedence: rscCssOptions.cssLinkPrecedence },
               )}
             `
+            }
           }
-        }
+        },
       },
     },
     createVirtualPlugin(
