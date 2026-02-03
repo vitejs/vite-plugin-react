@@ -196,6 +196,9 @@ function test() {
         },
         "depPrimitive": "[ok]",
         "dualLib": "ok",
+        "testExternalFalsyPrimitive": {
+          "ok": true,
+        },
         "testNodeBuiltins": {
           "nodeEventsOk": true,
         },
