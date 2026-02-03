@@ -5,7 +5,9 @@ import depExports from './exports.cjs'
 import depFnRequire from './function-require.cjs'
 import depFn from './function.cjs'
 import cjsGlobals from './globals.cjs'
+import testNodeBuiltins from './node-builtins.cjs'
 import depPrimitive from './primitive.cjs'
+
 export {
   depDefault,
   depNamespace,
@@ -15,4 +17,5 @@ export {
   depFnRequire,
   dualLib,
   cjsGlobals,
+  testNodeBuiltins,
 }

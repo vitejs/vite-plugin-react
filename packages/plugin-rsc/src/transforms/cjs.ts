@@ -17,7 +17,15 @@ import { analyze } from 'periscopic'
 //    see [getESMFacade](https://github.com/nodejs/node/blob/f200685d9930404d610a52d9e06513bf0a821ed4/lib/internal/bootstrap/realm.js#L347-L360)
 //
 // This ensures we don't incorrectly unwrap .default on genuine ESM modules
-const CJS_INTEROP_HELPER = `function __cjs_interop__(m) { return m?.__cjs_module_runner_transform ? m.default : m?.default && Object.keys(m).every(k => k === "default" || m[k] === m.default[k] || m[k] === m.default) ? m.default : m; }`
+function __cjs_interop__(m: any) {
+  return m.__cjs_module_runner_transform ||
+    ('default' in m &&
+      Object.keys(m).every((k) => k === 'default' || m[k] === m.default[k]))
+    ? m.default
+    : m
+}
+
+const CJS_INTEROP_HELPER = __cjs_interop__.toString().replace(/\n\s*/g, '')
 
 export function transformCjsToEsm(
   code: string,
