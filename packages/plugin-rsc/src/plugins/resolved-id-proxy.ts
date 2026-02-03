@@ -1,3 +1,4 @@
+import { prefixRegex } from '@rolldown/pluginutils'
 import type { Plugin } from 'vite'
 
 // Resolved ID proxy plugin
@@ -130,7 +131,7 @@ export function vitePluginResolvedIdProxy(): Plugin {
   return {
     name: 'rsc:resolved-id-proxy',
     resolveId: {
-      // TODO: filter
+      filter: { id: prefixRegex(RESOLVED_ID_PROXY_PREFIX) },
       handler(source) {
         const originalId = fromResolvedIdProxy(source)
         if (originalId !== undefined) {

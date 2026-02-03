@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import path from 'node:path'
+import { exactRegex } from '@rolldown/pluginutils'
 import {
   normalizePath,
   type Plugin,
@@ -41,17 +42,22 @@ export function createVirtualPlugin(
   name: string,
   load: Plugin['load'],
 ): Plugin {
-  name = 'virtual:' + name
+  const virtualId = 'virtual:' + name
+  const resolvedId = '\0' + virtualId
   return {
     name: `rsc:virtual-${name}`,
     resolveId: {
-      handler(source, _importer, _options) {
-        return source === name ? '\0' + name : undefined
+      filter: { id: exactRegex(virtualId) },
+      handler(source) {
+        if (source === virtualId) {
+          return resolvedId
+        }
       },
     },
     load: {
+      filter: { id: exactRegex(resolvedId) },
       handler(id, options) {
-        if (id === '\0' + name) {
+        if (id === resolvedId) {
           return (load as Function).apply(this, [id, options])
         }
       },

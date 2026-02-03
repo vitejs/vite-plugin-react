@@ -18,6 +18,10 @@ export function cjsModuleRunnerPlugin(): Plugin[] {
       apply: 'serve',
       applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
       transform: {
+        filter: {
+          id: /\/node_modules\//,
+          code: /\b(require|exports)\b/,
+        },
         async handler(code, id) {
           if (
             id.includes('/node_modules/') &&

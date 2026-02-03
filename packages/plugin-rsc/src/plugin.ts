@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createDebug } from '@hiogawa/utils'
+import { exactRegex, prefixRegex } from '@rolldown/pluginutils'
 import * as esModuleLexer from 'es-module-lexer'
 import MagicString from 'magic-string'
 import { toNodeHandler } from 'srvx/node'
@@ -326,6 +327,7 @@ export function vitePluginRscMinimal(
       name: 'rsc:vite-client-raw-import',
       transform: {
         order: 'post',
+        filter: { code: '__vite_rsc_raw_import__' },
         handler(code) {
           if (code.includes('__vite_rsc_raw_import__')) {
             // inject dynamic import last to avoid Vite adding `?import` query
@@ -343,6 +345,7 @@ export function vitePluginRscMinimal(
       name: 'rsc:reference-validation',
       apply: 'serve',
       load: {
+        filter: { id: prefixRegex('\0virtual:vite-rsc/reference-validation?') },
         handler(id, _options) {
           if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
             const parsed = parseReferenceValidationVirtual(id)
@@ -824,6 +827,7 @@ export default function vitePluginRsc(
       name: 'rsc:react-server-dom-webpack-alias',
       resolveId: {
         order: 'pre',
+        filter: { id: prefixRegex(`${PKG_NAME}/vendor/react-server-dom/`) },
         async handler(source, importer, options) {
           if (
             hasReactServerDomWebpack &&
@@ -848,6 +852,7 @@ export default function vitePluginRsc(
       // - (build) rewriting to external `import("../<env>/<entry>.js")`
       name: 'rsc:load-environment-module',
       transform: {
+        filter: { code: 'import.meta.viteRsc.loadModule' },
         async handler(code) {
           if (!code.includes('import.meta.viteRsc.loadModule')) return
           const { server } = manager
@@ -996,6 +1001,7 @@ export default function vitePluginRsc(
     {
       name: 'rsc:virtual:vite-rsc/rpc-client',
       resolveId: {
+        filter: { id: exactRegex('virtual:vite-rsc/rpc-client') },
         handler(source) {
           if (source === 'virtual:vite-rsc/rpc-client') {
             return `\0${source}`
@@ -1003,6 +1009,7 @@ export default function vitePluginRsc(
         },
       },
       load: {
+        filter: { id: exactRegex('\0virtual:vite-rsc/rpc-client') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/rpc-client') {
             const { server } = manager
@@ -1026,6 +1033,7 @@ export function createRpcClient(params) {
     {
       name: 'rsc:virtual:vite-rsc/assets-manifest',
       resolveId: {
+        filter: { id: exactRegex('virtual:vite-rsc/assets-manifest') },
         handler(source) {
           if (source === 'virtual:vite-rsc/assets-manifest') {
             if (this.environment.mode === 'build') {
@@ -1036,6 +1044,7 @@ export function createRpcClient(params) {
         },
       },
       load: {
+        filter: { id: exactRegex('\0virtual:vite-rsc/assets-manifest') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/assets-manifest') {
             assert(this.environment.name !== 'client')
@@ -1168,6 +1177,7 @@ export default assetsManifest.bootstrapScriptContent;
     {
       name: 'rsc:bootstrap-script-content',
       transform: {
+        filter: { code: 'loadBootstrapScriptContent' },
         async handler(code) {
           if (
             !code.includes('loadBootstrapScriptContent') ||
@@ -1287,6 +1297,7 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
     {
       name: 'rsc:inject-async-local-storage',
       transform: {
+        filter: { code: 'typeof AsyncLocalStorage' },
         handler(code) {
           if (
             (this.environment.name === 'ssr' ||
@@ -1350,6 +1361,10 @@ function vitePluginUseClient(
     {
       name: 'rsc:use-client',
       transform: {
+        // TODO: cannot use filter because handler has cleanup side effect
+        // (`delete manager.clientReferenceMetaMap[id]`) that must run
+        // even when directive is removed (HMR case)
+        // filter: { code: 'use client' },
         async handler(code, id) {
           if (this.environment.name !== serverEnvironmentName) return
           if (!code.includes('use client')) {
@@ -1456,6 +1471,7 @@ function vitePluginUseClient(
     {
       name: 'rsc:use-client/build-references',
       resolveId: {
+        filter: { id: prefixRegex('virtual:vite-rsc/client-references') },
         handler(source) {
           if (source.startsWith('virtual:vite-rsc/client-references')) {
             return '\0' + source
@@ -1463,6 +1479,7 @@ function vitePluginUseClient(
         },
       },
       load: {
+        filter: { id: prefixRegex('\0virtual:vite-rsc/client-references') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/client-references') {
             // not used during dev
@@ -1543,6 +1560,9 @@ function vitePluginUseClient(
     {
       name: 'rsc:virtual-client-in-server-package',
       load: {
+        filter: {
+          id: prefixRegex('\0virtual:vite-rsc/client-in-server-package-proxy/'),
+        },
         async handler(id) {
           if (
             id.startsWith('\0virtual:vite-rsc/client-in-server-package-proxy/')
@@ -1583,6 +1603,7 @@ function vitePluginUseClient(
         },
       },
       load: {
+        filter: { id: prefixRegex('\0virtual:vite-rsc/client-package-proxy/') },
         async handler(id) {
           if (id.startsWith('\0virtual:vite-rsc/client-package-proxy/')) {
             assert(this.environment.mode === 'dev')
@@ -1764,6 +1785,7 @@ function vitePluginDefineEncryptionKey(
         }
       },
       resolveId: {
+        filter: { id: exactRegex('virtual:vite-rsc/encryption-key') },
         handler(source) {
           if (source === 'virtual:vite-rsc/encryption-key') {
             // encryption logic can be tree-shaken if action bind is not used.
@@ -1772,6 +1794,7 @@ function vitePluginDefineEncryptionKey(
         },
       },
       load: {
+        filter: { id: exactRegex('\0virtual:vite-rsc/encryption-key') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/encryption-key') {
             if (this.environment.mode === 'build') {
@@ -1828,6 +1851,10 @@ function vitePluginUseServer(
     {
       name: 'rsc:use-server',
       transform: {
+        // TODO: cannot use filter because handler has cleanup side effect
+        // (`delete manager.serverReferenceMetaMap[id]`) that must run
+        // even when directive is removed (HMR case)
+        // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
             delete manager.serverReferenceMetaMap[id]
@@ -2240,6 +2267,8 @@ function vitePluginRscCss(
     {
       name: 'rsc:rsc-css-export-transform',
       transform: {
+        // TODO:
+        // filter: {},
         async handler(code, id) {
           if (this.environment.name !== 'rsc') return
           const filter = getRscCssTransformFilter({ id, code })
@@ -2267,6 +2296,9 @@ function vitePluginRscCss(
       apply: 'serve',
       transform: {
         order: 'post',
+        filter: {
+          id: /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)(\?|$)/,
+        },
         handler(_code, id, _options) {
           if (
             this.environment.name === 'client' &&
@@ -2285,6 +2317,7 @@ function vitePluginRscCss(
     {
       name: 'rsc:css-virtual',
       resolveId: {
+        filter: { id: prefixRegex('virtual:vite-rsc/css?') },
         handler(source) {
           if (source.startsWith('virtual:vite-rsc/css?')) {
             return '\0' + source
@@ -2292,6 +2325,7 @@ function vitePluginRscCss(
         },
       },
       load: {
+        filter: { id: prefixRegex('\0virtual:vite-rsc/css?') },
         async handler(id) {
           const parsed = parseCssVirtual(id)
           if (parsed?.type === 'ssr') {
@@ -2334,6 +2368,7 @@ function vitePluginRscCss(
         }
       },
       transform: {
+        filter: { code: 'import.meta.viteRsc.loadCss' },
         async handler(code, id) {
           if (!code.includes('import.meta.viteRsc.loadCss')) return
 
@@ -2401,6 +2436,7 @@ function vitePluginRscCss(
         },
       },
       load: {
+        filter: { id: prefixRegex('\0virtual:vite-rsc/css?') },
         handler(id) {
           const { server } = manager
           const parsed = parseCssVirtual(id)

@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { prefixRegex } from '@rolldown/pluginutils'
 import type { DevEnvironment, Plugin, Rollup } from 'vite'
 
 // https://github.com/vercel/next.js/blob/90f564d376153fe0b5808eab7b83665ee5e08aaf/packages/next/src/build/webpack-config.ts#L1249-L1280
@@ -9,6 +10,7 @@ export function validateImportPlugin(): Plugin {
     name: 'rsc:validate-imports',
     resolveId: {
       order: 'pre',
+      filter: { id: /^(client-only|server-only)$/ },
       async handler(source, _importer, options) {
         // optimizer is not aware of server/client boudnary so skip
         if ('scan' in options && options.scan) {
@@ -36,6 +38,7 @@ export function validateImportPlugin(): Plugin {
       },
     },
     load: {
+      filter: { id: prefixRegex('\0virtual:vite-rsc/validate-imports/') },
       handler(id) {
         if (id.startsWith('\0virtual:vite-rsc/validate-imports/invalid/')) {
           // it should surface as build error but we make a runtime error just in case.
@@ -50,6 +53,9 @@ export function validateImportPlugin(): Plugin {
     // for dev, use DevEnvironment.moduleGraph during post transform
     transform: {
       order: 'post',
+      filter: {
+        id: prefixRegex('\0virtual:vite-rsc/validate-imports/invalid/'),
+      },
       async handler(_code, id) {
         if (this.environment.mode === 'dev') {
           if (id.startsWith(`\0virtual:vite-rsc/validate-imports/invalid/`)) {

@@ -39,6 +39,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
+    "@rolldown/pluginutils": "1.0.0-rc.2",
     "es-module-lexer": "^2.0.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",

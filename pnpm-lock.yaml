@@ -436,6 +436,9 @@ importers:
 
   packages/plugin-rsc:
     dependencies:
+      '@rolldown/pluginutils':
+        specifier: 1.0.0-rc.2
+        version: 1.0.0-rc.2
       es-module-lexer:
         specifier: ^2.0.0
         version: 2.0.0
