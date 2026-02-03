@@ -1,15 +1,10 @@
-const EventEmitter = require('events')
+const EventEmitter = require('node:events')
 
 class CustomEventEmitter extends EventEmitter {
   constructor() {
     super()
-    this.testValue = 'working'
-  }
-
-  getTestValue() {
-    // console.trace('getTestValue called');
-    return this.testValue
+    this.testValue = 'ok'
   }
 }
 
-module.exports = { CustomEventEmitter }
+module.exports.test = new CustomEventEmitter().testValue || 'ko'

@@ -536,7 +536,7 @@ importers:
         version: link:../..
       '@vitejs/test-dep-cjs-events-extend':
         specifier: file:./test-dep/cjs-events-extend
-        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend
+        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.4)
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.4)
@@ -2781,6 +2781,8 @@ packages:
 
   '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend, type: directory}
+    peerDependencies:
+      react: '*'
 
   '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/cjs, type: directory}
@@ -6278,7 +6280,9 @@ snapshots:
     transitivePeerDependencies:
       - conventional-commits-filter
 
-  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend': {}
+  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.4)':
+    dependencies:
+      react: 19.2.4
 
   '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.4)':
     dependencies:
