@@ -1,3 +1,21 @@
+## <small>[0.5.18](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.17...plugin-rsc@0.5.18) (2026-02-03)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1090](https://github.com/vitejs/vite-plugin-react/issues/1090)) ([99e480c](https://github.com/vitejs/vite-plugin-react/commit/99e480cf01323268b6f7d5e582ba1662728845d9))
+* **plugin-rsc:** cjs to esm interop helper doesn't handle native/external cjs import properly ([#1092](https://github.com/vitejs/vite-plugin-react/issues/1092)) ([a57f2dd](https://github.com/vitejs/vite-plugin-react/commit/a57f2dd3d2276371b2949dbe10fe21c148fa3e5d))
+
+### Performance Improvements
+
+* **plugin-rsc:** add hook filters ([#1094](https://github.com/vitejs/vite-plugin-react/issues/1094)) ([9b3bdde](https://github.com/vitejs/vite-plugin-react/commit/9b3bdde1eb6e11ddc3b564b119508dd632705f60))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react to ^19.2.10 ([#1088](https://github.com/vitejs/vite-plugin-react/issues/1088)) ([4a858ea](https://github.com/vitejs/vite-plugin-react/commit/4a858ea0539ec5a85cbf733287713730560ce268))
+
+### Code Refactoring
+
+* **plugin-rsc:** convert hooks to nested handler form ([#1093](https://github.com/vitejs/vite-plugin-react/issues/1093)) ([f7ea163](https://github.com/vitejs/vite-plugin-react/commit/f7ea1635b96c758fb4b1925ea679b633008c5e88))
+
 ## <small>[0.5.17](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.16...plugin-rsc@0.5.17) (2026-01-27)</small>
 ### Bug Fixes
 
