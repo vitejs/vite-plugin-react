@@ -1,0 +1,5 @@
+{
+  "name": "@vitejs/test-dep-cjs-falsy-primitive",
+  "private": true,
+  "main": "./index.cjs"
+}

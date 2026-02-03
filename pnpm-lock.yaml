@@ -488,6 +488,9 @@ importers:
       '@vitejs/test-dep-cjs-and-esm':
         specifier: ./test-dep/cjs-and-esm
         version: link:test-dep/cjs-and-esm
+      '@vitejs/test-dep-cjs-falsy-primitive':
+        specifier: ./test-dep/cjs-falsy-primitive
+        version: link:test-dep/cjs-falsy-primitive
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -531,6 +534,9 @@ importers:
       '@vitejs/plugin-rsc':
         specifier: latest
         version: link:../..
+      '@vitejs/test-dep-cjs-events-extend':
+        specifier: file:./test-dep/cjs-events-extend
+        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.4)
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.4)
@@ -2772,6 +2778,11 @@ packages:
 
   '@vitejs/release-scripts@1.6.0':
     resolution: {integrity: sha512-XV+w22Fvn+wqDtEkz8nQIJzvmRVSh90c2xvOO7cX9fkX8+39ZJpYRiXDIRJG1JRnF8khm1rHjulid+l+khc7TQ==}
+
+  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend':
+    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend, type: directory}
+    peerDependencies:
+      react: '*'
 
   '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/cjs, type: directory}
@@ -6268,6 +6279,10 @@ snapshots:
       semver: 7.7.3
     transitivePeerDependencies:
       - conventional-commits-filter
+
+  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.4)':
+    dependencies:
+      react: 19.2.4
 
   '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.4)':
     dependencies:
