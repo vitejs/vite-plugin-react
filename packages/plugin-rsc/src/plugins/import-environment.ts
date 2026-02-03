@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 import fs from 'node:fs'
 import path from 'node:path'
+import { exactRegex } from '@rolldown/pluginutils'
 import MagicString from 'magic-string'
 import { stripLiteral } from 'strip-literal'
 import type { Plugin, ResolvedConfig } from 'vite'
@@ -50,6 +51,7 @@ export function vitePluginImportEnvironment(
     {
       name: 'rsc:import-environment',
       resolveId: {
+        filter: { id: exactRegex(ENV_IMPORTS_MANIFEST_PLACEHOLDER) },
         handler(source) {
           // Use placeholder as external, renderChunk will replace with correct relative path
           if (source === ENV_IMPORTS_MANIFEST_PLACEHOLDER) {
@@ -80,6 +82,7 @@ export function vitePluginImportEnvironment(
         }
       },
       transform: {
+        filter: { code: 'import.meta.viteRsc.import' },
         async handler(code, id) {
           if (!code.includes('import.meta.viteRsc.import')) return
 
