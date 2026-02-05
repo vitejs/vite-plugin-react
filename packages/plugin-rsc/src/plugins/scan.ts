@@ -1,3 +1,4 @@
+import { exactRegex } from '@rolldown/pluginutils'
 import * as esModuleLexer from 'es-module-lexer'
 import { walk } from 'estree-walker'
 import { parseAstAsync, type Plugin } from 'vite'
@@ -15,6 +16,9 @@ export function scanBuildStripPlugin({
     apply: 'build',
     enforce: 'post',
     transform: {
+      filter: {
+        id: { exclude: exactRegex('\0rolldown/runtime.js') },
+      },
       async handler(code, _id, _options) {
         if (!manager.isScanBuild) return
         const output = await transformScanBuildStrip(code)
