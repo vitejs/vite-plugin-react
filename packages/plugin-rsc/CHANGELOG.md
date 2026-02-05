@@ -1,3 +1,12 @@
+## <small>[0.5.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.18...plugin-rsc@0.5.19) (2026-02-05)</small>
+### Bug Fixes
+
+* **plugin-rsc:** avoid stripping rolldown runtime during scan build ([#1096](https://github.com/vitejs/vite-plugin-react/issues/1096)) ([0cf67ac](https://github.com/vitejs/vite-plugin-react/commit/0cf67ac66b1b5673c6d4b5a259c5743f23302489))
+
+### Miscellaneous Chores
+
+* **plugin-rsc:** fix typo in server action transform module ([#1095](https://github.com/vitejs/vite-plugin-react/issues/1095)) ([ac101ea](https://github.com/vitejs/vite-plugin-react/commit/ac101ea49217eacbada80ed00f1e9f6f52824a74))
+
 ## <small>[0.5.18](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.17...plugin-rsc@0.5.18) (2026-02-03)</small>
 ### Bug Fixes
 
