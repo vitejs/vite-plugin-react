@@ -567,6 +567,7 @@ function canSkipBabel(
   return !(
     plugins.length ||
     babelOptions.presets.length ||
+    babelOptions.overrides.length ||
     babelOptions.configFile ||
     babelOptions.babelrc
   )
