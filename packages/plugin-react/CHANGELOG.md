@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Fix `canSkipBabel` not accounting for `babel.overrides` ([#XXXX](https://github.com/vitejs/vite-plugin-react/pull/XXXX))
+### Fix `canSkipBabel` not accounting for `babel.overrides` ([#1098](https://github.com/vitejs/vite-plugin-react/pull/1098))
 
 When configuring `babel.overrides` without top-level plugins or presets, Babel was incorrectly skipped. The `canSkipBabel` function now checks for `overrides.length` to ensure override configurations are processed.
 
