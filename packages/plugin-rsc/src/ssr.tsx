@@ -81,6 +81,25 @@ function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
   })
 }
 
+// Ensure serverResources CSS is registered before clientReferenceDeps CSS
+// so that React discovers the "importer-resources" precedence group first.
+// Without this, on the first request the client reference's `load()` can call
+// `preloadDeps()` before the RSC stream's `<Resources>` component renders,
+// causing "client-reference" to be discovered first and shared CSS URLs to be
+// deduplicated under the wrong precedence group.
+function preinitServerResources() {
+  if (!assetsManifest.serverResources) return
+  if (assetsManifest.cssLinkPrecedence === false) return
+  for (const resource of Object.values(assetsManifest.serverResources)) {
+    for (const href of resource.css) {
+      ReactDOM.preinit(href, {
+        as: 'style',
+        precedence: 'vite-rsc/importer-resources',
+      })
+    }
+  }
+}
+
 function preloadDeps(deps: ResolvedAssetDeps) {
   for (const href of deps.js) {
     ReactDOM.preloadModule(href, {
@@ -90,6 +109,8 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       crossOrigin: '',
     })
   }
+  // register serverResources precedence before client CSS
+  preinitServerResources()
   for (const href of deps.css) {
     ReactDOM.preinit(href, {
       as: 'style',
