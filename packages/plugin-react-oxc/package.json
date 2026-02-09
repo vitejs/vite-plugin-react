@@ -36,11 +36,11 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.2"
+    "@rolldown/pluginutils": "1.0.0-rc.3"
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
-    "tsdown": "^0.20.1",
+    "tsdown": "^0.20.3",
     "vite": "catalog:rolldown-vite"
   },
   "peerDependencies": {
