@@ -39,22 +39,22 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.2",
+    "@rolldown/pluginutils": "1.0.0-rc.3",
     "es-module-lexer": "^2.0.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
     "periscopic": "^4.0.2",
-    "srvx": "^0.10.1",
+    "srvx": "^0.11.2",
     "strip-literal": "^3.1.0",
     "turbo-stream": "^3.1.0",
     "vitefu": "^1.1.1"
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.58.1",
+    "@playwright/test": "^1.58.2",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.8",
-    "@types/node": "^24.10.9",
+    "@types/node": "^24.10.12",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",
@@ -65,7 +65,7 @@
     "react-dom": "^19.2.4",
     "react-server-dom-webpack": "^19.2.4",
     "tinyexec": "^1.0.2",
-    "tsdown": "^0.20.1"
+    "tsdown": "^0.20.3"
   },
   "peerDependencies": {
     "react": "*",
