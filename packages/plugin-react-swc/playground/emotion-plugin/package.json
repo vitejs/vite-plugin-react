@@ -14,10 +14,9 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@rollup/plugin-swc": "^0.4.0",
     "@swc/plugin-emotion": "^14.5.0",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "workspace:^"
+    "@vitejs/plugin-react-swc": "../../dist"
   }
 }

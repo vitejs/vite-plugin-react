@@ -22,7 +22,6 @@ onlyBuiltDependencies:
 
 overrides:
   '@types/estree': ^1.0.8
-  vite: 8.0.0-beta.14
 
 peerDependencyRules:
   ignoreMissing:

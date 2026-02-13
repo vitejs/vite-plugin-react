@@ -17,6 +17,6 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "@types/styled-components": "^5.1.36",
-    "@vitejs/plugin-react": "workspace:^"
+    "@vitejs/plugin-react-swc": "../../dist"
   }
 }
