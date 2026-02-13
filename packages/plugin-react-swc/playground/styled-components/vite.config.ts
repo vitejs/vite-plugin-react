@@ -1,6 +1,11 @@
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [react({ plugins: [['@swc/plugin-styled-components', {}]] })],
+  oxc: {
+    plugins: {
+      styledComponents: {},
+    },
+  },
+  plugins: [react()],
 })
