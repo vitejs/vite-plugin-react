@@ -187,31 +187,7 @@ Phase 2 (future major):
 3. `copyServerAssetsToClient` emits deprecation warning (once).
 4. `emitClientAsset` rejects non-asset emission in v1.
 
-## Action item: follow up with Vite core
+## Note on Vite metadata scope
 
-- Verify the stability/contract of `viteMetadata` on both chunks and assets across supported Vite backends/versions.
-- Ask whether asset-level metadata (`OutputAsset.viteMetadata`) is intended as public plugin API, or implementation detail.
-- If needed, propose a typing/docs improvement in Vite core so plugin authors can rely on this behavior safely.
-- Defer proposing an opt-in per-`emitFile` public-tag API for now, unless concrete ecosystem demand appears.
-
-### Vite 7 vs Vite 8 inconsistency notes
-
-Current workspace uses Vite 7 (`node_modules/vite/package.json` shows `7.3.1`), while local Vite main checkout is Vite 8 beta.
-
-- Vite 7 type surface (installed package):
-  - `node_modules/vite/types/metadata.d.ts` only exposes `ChunkMetadata` and augments `rollup.RenderedChunk` with `viteMetadata`.
-  - No `AssetMetadata` type and no `rollup.OutputAsset.viteMetadata` augmentation in that file.
-- Vite 8 type surface (local Vite repo):
-  - `~/code/others/vite/packages/vite/types/metadata.d.ts` defines both `AssetMetadata` and `ChunkMetadata`.
-  - It augments `rolldown.OutputAsset` (plus chunk types) with `viteMetadata`.
-- Practical effect for plugin authors:
-  - On Vite 7, reading `output.viteMetadata` on assets is a type error unless narrowed/cast.
-  - On Vite 8+ (rolldown typing), asset metadata access is typed.
-- Runtime ambiguity:
-  - Vite 7 runtime code does optional reads like `asset.viteMetadata?.importedAssets` in manifest generation (`node_modules/vite/dist/node/chunks/config.js`), but type declarations do not guarantee this.
-  - This creates a "runtime might have it, types may not" gap for downstream plugins.
-
-Recommendation when following up in Vite core:
-
-- clarify intended contract per major/version and backend (`rollup` vs `rolldown` typing)
-- either document asset `viteMetadata` as supported API in Vite 8+ only, or provide cross-version guidance/fallback expectations
+Final implementation intentionally relies only on `chunk.viteMetadata.importedCss/importedAssets`.
+This avoids depending on asset-level metadata contracts across Vite versions and backends.
