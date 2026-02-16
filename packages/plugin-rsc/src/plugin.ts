@@ -2161,19 +2161,11 @@ function collectAssetDepsInner(
 
 function collectPublicServerAssets(bundle: Rollup.OutputBundle) {
   const assets = new Set<string>()
-  const stack: string[] = []
-  type AssetWithMetadata = Rollup.OutputAsset & {
-    viteMetadata?: {
-      importedCss: Set<string>
-      importedAssets: Set<string>
-    }
-  }
 
   function add(fileName: string) {
     if (assets.has(fileName)) return
     if (bundle[fileName]?.type !== 'asset') return
     assets.add(fileName)
-    stack.push(fileName)
   }
 
   for (const output of Object.values(bundle)) {
@@ -2181,15 +2173,6 @@ function collectPublicServerAssets(bundle: Rollup.OutputBundle) {
       output.viteMetadata?.importedCss.forEach(add)
       output.viteMetadata?.importedAssets.forEach(add)
     }
-  }
-
-  while (stack.length > 0) {
-    const fileName = stack.pop()!
-    const output = bundle[fileName]
-    if (output?.type !== 'asset') continue
-    const asset = output as AssetWithMetadata
-    asset.viteMetadata?.importedCss.forEach(add)
-    asset.viteMetadata?.importedAssets.forEach(add)
   }
 
   return assets
