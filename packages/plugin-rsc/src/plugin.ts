@@ -188,9 +188,8 @@ export type RscPluginOptions = {
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
   /**
-   * This option allows customizing how client build copies assets from server build.
-   * By default, only server assets referenced by RSC chunks are copied
-   * (e.g. side-effect CSS and `?url` imports).
+   * @deprecated This option is a no-op and will be removed in a future major.
+   * Use explicit client-asset emission APIs instead.
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
@@ -1070,17 +1069,11 @@ export function createRpcClient(params) {
         if (this.environment.name === 'client') {
           const rscBundle = manager.bundles['rsc']!
           const defaultPublicAssets = collectPublicServerAssets(rscBundle)
-          const filterAssets =
-            rscPluginOptions.copyServerAssetsToClient ??
-            ((fileName: string) => defaultPublicAssets.has(fileName))
-          const rscBuildOptions = manager.config.environments.rsc!.build
-          const rscViteManifest =
-            typeof rscBuildOptions.manifest === 'string'
-              ? rscBuildOptions.manifest
-              : rscBuildOptions.manifest && '.vite/manifest.json'
           for (const asset of Object.values(rscBundle)) {
-            if (asset.fileName === rscViteManifest) continue
-            if (asset.type === 'asset' && filterAssets(asset.fileName)) {
+            if (
+              asset.type === 'asset' &&
+              defaultPublicAssets.has(asset.fileName)
+            ) {
               this.emitFile({
                 type: 'asset',
                 fileName: asset.fileName,

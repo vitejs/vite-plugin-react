@@ -16,7 +16,7 @@ Implemented on 2026-02-16.
 
 - Added `collectPublicServerAssets(bundle)` in `packages/plugin-rsc/src/plugin.ts`.
 - Updated `generateBundle` copy logic to use that set as the default filter.
-- Kept `copyServerAssetsToClient` as an explicit override (same signature/behavior).
+- `copyServerAssetsToClient` is now deprecated and treated as a no-op.
 - Updated `packages/plugin-rsc/examples/basic/vite.config.ts` to stop relying on option filtering for `__server_secret.txt`, so default behavior covers the security case.
 
 ## What we should copy by default
@@ -105,3 +105,91 @@ Add/adjust e2e checks in `packages/plugin-rsc/examples/basic` tests:
 Add a dedicated API for intentional server->client asset emission (conceptually similar to Astro's `emitClientAsset`).
 
 This is not required for the initial fix, but could improve composability for framework authors that legitimately need to publish custom artifacts.
+
+## Follow-up design: deprecate `copyServerAssetsToClient`, add experimental explicit API
+
+### Prior art from Astro (`~/code/others/astro`)
+
+Astro recently introduced `emitClientAsset` and uses it as an explicit opt-in path for SSR->client asset movement:
+
+- `packages/astro/src/assets/utils/assets.ts`
+  - `emitClientAsset(pluginContext, options)` calls `emitFile(options)` and tracks the returned handle.
+  - tracking is per-environment via `WeakMap<Environment, Set<string>>`.
+- `packages/astro/src/core/build/vite-plugin-ssr-assets.ts`
+  - `buildStart`: reset handle tracking for current env.
+  - `generateBundle`: resolve tracked handles to output filenames via `this.getFileName(handle)`.
+  - `writeBundle`: merge in manifest-derived CSS/assets as always-public assets.
+- `packages/integrations/markdoc/src/content-entry-type.ts`
+  - integration authors call `emitClientAsset(...)` only during build mode.
+
+This pattern maps well to RSC needs: explicit emit intent + deferred handle->filename resolution in bundling phase.
+
+### Proposed API shape for `@vitejs/plugin-rsc`
+
+Introduce an experimental helper export:
+
+```ts
+// e.g. @vitejs/plugin-rsc/assets (or root export behind `experimental` namespace)
+export function emitClientAsset(
+  pluginContext: Rollup.PluginContext,
+  options: Parameters<Rollup.PluginContext['emitFile']>[0],
+): string
+```
+
+Recommended runtime constraints:
+
+- allow only `options.type === "asset"` for v1 (throw otherwise)
+- require build mode (`!pluginContext.meta.watchMode`) for now
+- only collect when `pluginContext.environment.name === "rsc"`
+
+### Internal implementation idea in plugin-rsc
+
+1. Track explicit handles on the manager
+
+- Add `clientAssetHandlesByEnv: WeakMap<vite.Environment, Set<string>>` (or `Map<string, Set<string>>` keyed by env name) in shared state.
+- Expose internal helpers:
+  - `trackClientAssetHandle(environment, handle)`
+  - `resetClientAssetHandles(environment)`
+  - `resolveClientAssetFileNames(environment, pluginContext)`
+
+2. Lifecycle integration
+
+- `buildStart` (for each build env): reset handle set.
+- `generateBundle` (for each env): resolve tracked handles with `this.getFileName(handle)` and store resolved filenames in manager, e.g. `explicitClientAssetsByEnv[envName]`.
+
+3. Merge with current default copy policy
+
+- In client `generateBundle`, compute candidate copy set as:
+  - `collectPublicServerAssets(rscBundle)` (current safe default)
+  - union `explicitClientAssetsByEnv.rsc` (new explicit opt-in assets)
+- copy only this union by default.
+
+This gives a secure default while still supporting framework-specific artifacts intentionally emitted from RSC.
+
+### Deprecation plan for `copyServerAssetsToClient`
+
+Phase 1 (next minor):
+
+- keep option working, but mark `@deprecated` in type docs and README.
+- warn once at runtime when option is used:
+  - "`copyServerAssetsToClient` is deprecated; prefer experimental `emitClientAsset` for explicit opt-in assets."
+- behavior unchanged for compatibility.
+
+Phase 2 (future major):
+
+- remove option and rely on:
+  - safe metadata-based default
+  - explicit `emitClientAsset` for non-standard assets
+
+### Migration story
+
+- Before: framework/plugin used `copyServerAssetsToClient` to allow/deny by filename pattern.
+- After: framework/plugin emits only intended public artifacts via `emitClientAsset(this, { type: "asset", ... })` from `rsc` environment.
+- No change needed for normal CSS and `?url` imports; those continue to work via metadata collector.
+
+### Additional tests for this follow-up
+
+1. `emitClientAsset` from `rsc` causes asset to appear in client output.
+2. plain `emitFile({ type: "asset" })` from `rsc` is not copied by default.
+3. `copyServerAssetsToClient` emits deprecation warning (once).
+4. `emitClientAsset` rejects non-asset emission in v1.
