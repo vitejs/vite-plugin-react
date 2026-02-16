@@ -189,7 +189,6 @@ export type RscPluginOptions = {
 
   /**
    * @deprecated This option is a no-op and will be removed in a future major.
-   * Use explicit client-asset emission APIs instead.
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
@@ -1068,8 +1067,8 @@ export function createRpcClient(params) {
 
         if (this.environment.name === 'client') {
           const rscBundle = manager.bundles['rsc']!
-          const defaultPublicAssets = collectPublicServerAssets(rscBundle)
-          for (const fileName of defaultPublicAssets) {
+          const assets = collectPublicServerAssets(rscBundle)
+          for (const fileName of assets) {
             const asset = rscBundle[fileName]
             assert(asset?.type === 'asset')
             this.emitFile({
