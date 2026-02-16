@@ -1067,7 +1067,16 @@ export function createRpcClient(params) {
 
         if (this.environment.name === 'client') {
           const rscBundle = manager.bundles['rsc']!
-          const assets = collectPublicServerAssets(rscBundle)
+          const assets = new Set(
+            Object.values(rscBundle).flatMap((output) =>
+              output.type === 'chunk'
+                ? [
+                    ...(output.viteMetadata?.importedCss ?? []),
+                    ...(output.viteMetadata?.importedAssets ?? []),
+                  ]
+                : [],
+            ),
+          )
           for (const fileName of assets) {
             const asset = rscBundle[fileName]
             assert(asset?.type === 'asset')
@@ -2157,25 +2166,6 @@ function collectAssetDepsInner(
     js: [...visited],
     css: [...new Set(css)],
   }
-}
-
-function collectPublicServerAssets(bundle: Rollup.OutputBundle) {
-  const assets = new Set<string>()
-
-  function add(fileName: string) {
-    if (assets.has(fileName)) return
-    if (bundle[fileName]?.type !== 'asset') return
-    assets.add(fileName)
-  }
-
-  for (const output of Object.values(bundle)) {
-    if (output.type === 'chunk') {
-      output.viteMetadata?.importedCss.forEach(add)
-      output.viteMetadata?.importedAssets.forEach(add)
-    }
-  }
-
-  return assets
 }
 
 //
