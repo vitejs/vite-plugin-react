@@ -1069,17 +1069,14 @@ export function createRpcClient(params) {
         if (this.environment.name === 'client') {
           const rscBundle = manager.bundles['rsc']!
           const defaultPublicAssets = collectPublicServerAssets(rscBundle)
-          for (const asset of Object.values(rscBundle)) {
-            if (
-              asset.type === 'asset' &&
-              defaultPublicAssets.has(asset.fileName)
-            ) {
-              this.emitFile({
-                type: 'asset',
-                fileName: asset.fileName,
-                source: asset.source,
-              })
-            }
+          for (const fileName of defaultPublicAssets) {
+            const asset = rscBundle[fileName]
+            assert(asset?.type === 'asset')
+            this.emitFile({
+              type: 'asset',
+              fileName: asset.fileName,
+              source: asset.source,
+            })
           }
 
           const serverResources: Record<string, AssetDeps> = {}
