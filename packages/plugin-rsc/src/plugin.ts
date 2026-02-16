@@ -189,8 +189,8 @@ export type RscPluginOptions = {
 
   /**
    * This option allows customizing how client build copies assets from server build.
-   * By default, all assets are copied, but frameworks can establish server asset convention
-   * to tighten security using this option.
+   * By default, only server assets referenced by RSC chunks are copied
+   * (e.g. side-effect CSS and `?url` imports).
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
@@ -1068,14 +1068,17 @@ export function createRpcClient(params) {
         manager.bundles[this.environment.name] = bundle
 
         if (this.environment.name === 'client') {
+          const rscBundle = manager.bundles['rsc']!
+          const defaultPublicAssets = collectPublicServerAssets(rscBundle)
           const filterAssets =
-            rscPluginOptions.copyServerAssetsToClient ?? (() => true)
+            rscPluginOptions.copyServerAssetsToClient ??
+            ((fileName: string) => defaultPublicAssets.has(fileName))
           const rscBuildOptions = manager.config.environments.rsc!.build
           const rscViteManifest =
             typeof rscBuildOptions.manifest === 'string'
               ? rscBuildOptions.manifest
               : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(manager.bundles['rsc']!)) {
+          for (const asset of Object.values(rscBundle)) {
             if (asset.fileName === rscViteManifest) continue
             if (asset.type === 'asset' && filterAssets(asset.fileName)) {
               this.emitFile({
@@ -2165,6 +2168,42 @@ function collectAssetDepsInner(
     js: [...visited],
     css: [...new Set(css)],
   }
+}
+
+function collectPublicServerAssets(bundle: Rollup.OutputBundle) {
+  const assets = new Set<string>()
+  const stack: string[] = []
+  type AssetWithMetadata = Rollup.OutputAsset & {
+    viteMetadata?: {
+      importedCss: Set<string>
+      importedAssets: Set<string>
+    }
+  }
+
+  function add(fileName: string) {
+    if (assets.has(fileName)) return
+    if (bundle[fileName]?.type !== 'asset') return
+    assets.add(fileName)
+    stack.push(fileName)
+  }
+
+  for (const output of Object.values(bundle)) {
+    if (output.type === 'chunk') {
+      output.viteMetadata?.importedCss.forEach(add)
+      output.viteMetadata?.importedAssets.forEach(add)
+    }
+  }
+
+  while (stack.length > 0) {
+    const fileName = stack.pop()!
+    const output = bundle[fileName]
+    if (output?.type !== 'asset') continue
+    const asset = output as AssetWithMetadata
+    asset.viteMetadata?.importedCss.forEach(add)
+    asset.viteMetadata?.importedAssets.forEach(add)
+  }
+
+  return assets
 }
 
 //
