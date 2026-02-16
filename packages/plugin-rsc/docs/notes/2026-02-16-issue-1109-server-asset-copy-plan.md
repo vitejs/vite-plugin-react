@@ -10,14 +10,16 @@ That behavior is convenient, but unsafe as a default:
 - it relies on a coarse heuristic (`copyServerAssetsToClient ?? (() => true)`)
 - it already needs special-case exclusions (`.vite/manifest.json`), which is a smell
 
-## Implementation status
+## Implementation status (final)
 
-Implemented on 2026-02-16.
+Implemented on 2026-02-16 with follow-up refinements.
 
-- Added `collectPublicServerAssets(bundle)` in `packages/plugin-rsc/src/plugin.ts`.
-- Updated `generateBundle` copy logic to use that set as the default filter.
-- `copyServerAssetsToClient` is now deprecated and treated as a no-op.
-- Updated `packages/plugin-rsc/examples/basic/vite.config.ts` to stop relying on option filtering for `__server_secret.txt`, so default behavior covers the security case.
+- `generateBundle` in `packages/plugin-rsc/src/plugin.ts` now copies only assets referenced by RSC chunk metadata (`importedCss` + `importedAssets`).
+- The public-asset selection is inlined (no helper wrapper): `Object.values(rscBundle).flatMap(...)` -> `new Set(...)` -> emit by filename with `assert(asset?.type === 'asset')`.
+- `copyServerAssetsToClient` remains in `RscPluginOptions` but is deprecated and treated as a no-op.
+- Redundant manifest exclusion logic was removed; copied assets are strictly selected from chunk metadata.
+- `packages/plugin-rsc/examples/basic/vite.config.ts` no longer relies on `copyServerAssetsToClient` for `__server_secret.txt`.
+- `packages/plugin-rsc/README.md` now labels `copyServerAssetsToClient` as deprecated no-op.
 
 ## What we should copy by default
 
@@ -55,26 +57,19 @@ Current:
 
 - iterate all RSC assets and copy when `filterAssets(fileName)` passes
 
-Proposed:
+Implemented:
 
-- compute `defaultPublicAssets = collectPublicServerAssets(manager.bundles['rsc']!)`
-- default predicate is now `fileName => defaultPublicAssets.has(fileName)`
-- keep manifest exclusion guard (or make collector naturally exclude it)
+- compute `assets` from chunk metadata only:
+  - `Object.values(rscBundle).flatMap(output => output.type === 'chunk' ? [...importedCss, ...importedAssets] : [])`
+  - `new Set(...)` for dedupe
+- emit only those filenames from `rscBundle` with `assert(asset?.type === 'asset')`
+- no manifest special-case branch needed
 
-So the existing option remains backward-compatible as an escape hatch, but default becomes safe.
+### 3) `copyServerAssetsToClient` status
 
-### 3) Keep / slightly reshape `copyServerAssetsToClient`
-
-Minimal-change path:
-
-- keep current signature `(fileName: string) => boolean`
-- keep it as an override filter (if provided, it replaces default filter behavior)
-
-Cleaner composable path (future follow-up):
-
-- extend option context to include why an asset is selected
-  - e.g. `{ fileName, reason: 'chunk:importedCss' | 'chunk:importedAssets' }`
-- this lets frameworks opt-in extra categories intentionally without reimplementing internals
+- kept only for compatibility at type level
+- marked deprecated
+- runtime behavior is no-op (does not affect copy selection)
 
 ## Why this addresses #1109
 
@@ -86,7 +81,7 @@ Cleaner composable path (future follow-up):
 
 - Potentially breaking for setups that relied on accidental copying of unreferenced server assets.
 - This is acceptable for security-hardening behavior, but should be called out in changelog.
-- For migration, users can temporarily use `copyServerAssetsToClient` to opt back in selectively.
+- Existing `copyServerAssetsToClient` configurations no longer affect behavior.
 
 ## Test plan
 
@@ -96,7 +91,7 @@ Add/adjust e2e checks in `packages/plugin-rsc/examples/basic` tests:
 2. **RSC CSS**: CSS imported in server component is available in client output and links resolve.
 3. **RSC `?url`**: `import x from './foo.css?url'` (or image/font) from server component resolves to an existing client asset.
 4. **Transitive CSS assets**: font/image referenced from copied CSS is also copied.
-5. **Override path**: `copyServerAssetsToClient` can explicitly allow an otherwise skipped asset.
+5. **Deprecated option behavior**: `copyServerAssetsToClient` is accepted but has no effect.
 
 ## Optional follow-up (if we want Astro-like ergonomics)
 
