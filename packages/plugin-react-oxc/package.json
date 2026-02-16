@@ -36,7 +36,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.3"
+    "@rolldown/pluginutils": "1.0.0-rc.4"
   },
   "devDependencies": {
     "@vitejs/react-common": "workspace:*",
