@@ -188,9 +188,7 @@ export type RscPluginOptions = {
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
   /**
-   * This option allows customizing how client build copies assets from server build.
-   * By default, all assets are copied, but frameworks can establish server asset convention
-   * to tighten security using this option.
+   * @deprecated This option is a no-op and will be removed in a future major.
    */
   copyServerAssetsToClient?: (fileName: string) => boolean
 
@@ -1068,22 +1066,25 @@ export function createRpcClient(params) {
         manager.bundles[this.environment.name] = bundle
 
         if (this.environment.name === 'client') {
-          const filterAssets =
-            rscPluginOptions.copyServerAssetsToClient ?? (() => true)
-          const rscBuildOptions = manager.config.environments.rsc!.build
-          const rscViteManifest =
-            typeof rscBuildOptions.manifest === 'string'
-              ? rscBuildOptions.manifest
-              : rscBuildOptions.manifest && '.vite/manifest.json'
-          for (const asset of Object.values(manager.bundles['rsc']!)) {
-            if (asset.fileName === rscViteManifest) continue
-            if (asset.type === 'asset' && filterAssets(asset.fileName)) {
-              this.emitFile({
-                type: 'asset',
-                fileName: asset.fileName,
-                source: asset.source,
-              })
-            }
+          const rscBundle = manager.bundles['rsc']!
+          const assets = new Set(
+            Object.values(rscBundle).flatMap((output) =>
+              output.type === 'chunk'
+                ? [
+                    ...(output.viteMetadata?.importedCss ?? []),
+                    ...(output.viteMetadata?.importedAssets ?? []),
+                  ]
+                : [],
+            ),
+          )
+          for (const fileName of assets) {
+            const asset = rscBundle[fileName]
+            assert(asset?.type === 'asset')
+            this.emitFile({
+              type: 'asset',
+              fileName: asset.fileName,
+              source: asset.source,
+            })
           }
 
           const serverResources: Record<string, AssetDeps> = {}

@@ -28,8 +28,6 @@ export default defineConfig({
         ssr: './src/framework/entry.ssr.tsx',
         rsc: './src/framework/entry.rsc.tsx',
       },
-      copyServerAssetsToClient: (fileName) =>
-        fileName !== '__server_secret.txt',
       clientChunks(meta) {
         if (process.env.TEST_CUSTOM_CLIENT_CHUNKS) {
           if (meta.id.includes('/src/routes/chunk/')) {
