@@ -6,9 +6,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [
     react(),
-    rsc({
-      serverHandler: false,
-    }),
+    rsc(),
     cloudflare({
       viteEnvironment: {
         name: 'rsc',
