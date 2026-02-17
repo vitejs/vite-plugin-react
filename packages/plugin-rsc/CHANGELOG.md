@@ -1,3 +1,15 @@
+## <small>[0.5.20](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.19...plugin-rsc@0.5.20) (2026-02-17)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1103](https://github.com/vitejs/vite-plugin-react/issues/1103)) ([12ffadc](https://github.com/vitejs/vite-plugin-react/commit/12ffadcd9afdb19a703ffddb3d3cc961178066c4))
+* **deps:** update all non-major dependencies ([#1110](https://github.com/vitejs/vite-plugin-react/issues/1110)) ([829b2ca](https://github.com/vitejs/vite-plugin-react/commit/829b2ca2d69244c06ea6acf745b2089893dbe043))
+* **rsc:** copy only imported css and assets from rsc environemnt to client environment ([#1112](https://github.com/vitejs/vite-plugin-react/issues/1112)) ([a4572ab](https://github.com/vitejs/vite-plugin-react/commit/a4572abcbdde2a70befd7aa310283a341be9e800))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react to ^19.2.13 ([#1102](https://github.com/vitejs/vite-plugin-react/issues/1102)) ([a6e6502](https://github.com/vitejs/vite-plugin-react/commit/a6e65026547c63254983fe1f4d6211efdf1b7575))
+* **deps:** update dependency @types/react to ^19.2.14 ([#1108](https://github.com/vitejs/vite-plugin-react/issues/1108)) ([c35c18c](https://github.com/vitejs/vite-plugin-react/commit/c35c18c49b8013c5df8e537972509ae170e995df))
+
 ## <small>[0.5.19](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.18...plugin-rsc@0.5.19) (2026-02-05)</small>
 ### Bug Fixes
 
