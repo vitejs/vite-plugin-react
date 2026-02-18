@@ -2152,6 +2152,8 @@ function collectAssetDepsInner(
     assert(v, `Not found '${k}' in the bundle`)
     if (v.type === 'chunk') {
       css.push(...(v.viteMetadata?.importedCss ?? []))
+      // TODO: for client references, aggressively collect to surface css at client boundary for SSR.
+      v.dynamicImports
       for (const k2 of v.imports) {
         // server external imports is not in bundle
         if (k2 in bundle) {
