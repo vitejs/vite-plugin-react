@@ -29,7 +29,7 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.4",
+    "@rolldown/pluginutils": "1.0.0-rc.5",
     "@swc/core": "^1.15.11"
   },
   "devDependencies": {
