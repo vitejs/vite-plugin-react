@@ -452,8 +452,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       srvx:
-        specifier: ^0.11.7
-        version: 0.11.7
+        specifier: 0.11.4
+        version: 0.11.4
       strip-literal:
         specifier: ^3.1.0
         version: 3.1.0
@@ -4715,8 +4715,8 @@ packages:
   spdx-license-ids@3.0.21:
     resolution: {integrity: sha512-Bvg/8F5XephndSK3JffaRqdT+gyhfqIPwDHpX80tJrF8QQRYMo8sNMeaZ2Dp5+jhwKnUmIOyFFQfHRkjJm5nXg==}
 
-  srvx@0.11.7:
-    resolution: {integrity: sha512-p9qj9wkv/MqG1VoJpOsqXv1QcaVcYRk7ifsC6i3TEwDXFyugdhJN4J3KzQPZq2IJJ2ZCt7ASOB++85pEK38jRw==}
+  srvx@0.11.4:
+    resolution: {integrity: sha512-m/2p87bqWZ94xpRN06qNBwh0xq/D0dXajnvPDSHFqrTogxuTWYNP1UHz6Cf+oY7D+NPLY35TJAp4ESIKn0WArQ==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -8638,7 +8638,7 @@ snapshots:
 
   spdx-license-ids@3.0.21: {}
 
-  srvx@0.11.7: {}
+  srvx@0.11.4: {}
 
   stable-hash-x@0.2.0: {}
 

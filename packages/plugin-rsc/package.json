@@ -44,7 +44,7 @@
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
     "periscopic": "^4.0.2",
-    "srvx": "^0.11.7",
+    "srvx": "0.11.4",
     "strip-literal": "^3.1.0",
     "turbo-stream": "^3.1.0",
     "vitefu": "^1.1.1"
