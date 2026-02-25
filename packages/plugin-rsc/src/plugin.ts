@@ -542,7 +542,7 @@ export default function vitePluginRsc(
                   'react-dom/static.edge',
                   `${reactServerDomPackageName}/client.edge`,
                 ],
-                exclude: [PKG_NAME],
+                exclude: [PKG_NAME, ...noExternal],
               },
             },
             rsc: {
@@ -569,7 +569,7 @@ export default function vitePluginRsc(
                   `${reactServerDomPackageName}/server.edge`,
                   `${reactServerDomPackageName}/client.edge`,
                 ],
-                exclude: [PKG_NAME],
+                exclude: [PKG_NAME, ...noExternal],
               },
             },
           },
