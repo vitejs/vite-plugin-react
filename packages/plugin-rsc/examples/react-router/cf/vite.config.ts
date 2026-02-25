@@ -40,15 +40,5 @@ export default defineConfig({
         include: ['react-router', 'react-router/internal/react-server-client'],
       },
     },
-    ssr: {
-      optimizeDeps: {
-        exclude: ['react-router'],
-      },
-    },
-    rsc: {
-      optimizeDeps: {
-        exclude: ['react-router'],
-      },
-    },
   },
 })
