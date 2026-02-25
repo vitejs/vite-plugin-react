@@ -481,6 +481,20 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
+  const viteReactRefreshBundledDevModeResolveRuntime: Plugin = {
+    name: 'vite:react-refresh-fbm-resolve-runtime',
+    enforce: 'pre',
+    resolveId(id) {
+      if (skipFastRefresh || !isBundledDev || base === '/') return
+
+      const basePrefixedRuntimePublicPath =
+        base.slice(0, -1) + runtimePublicPath
+      if (id === basePrefixedRuntimePublicPath) {
+        return runtimePublicPath
+      }
+    },
+  }
+
   const dependencies = [
     'react',
     'react-dom',
@@ -541,6 +555,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     ...(isRolldownVite
       ? [viteRefreshWrapper, viteConfigPost, viteReactRefreshBundledDevMode]
       : []),
+    viteReactRefreshBundledDevModeResolveRuntime,
     viteReactRefresh,
     virtualPreamblePlugin({
       name: '@vitejs/plugin-react/preamble',
