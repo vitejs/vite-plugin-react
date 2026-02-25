@@ -486,6 +486,10 @@ export default function vitePluginRsc(
           PKG_NAME,
           ...result.ssr.noExternal.sort(),
         ]
+        const optimizeDepsExclude = noExternal.filter(
+          (pkg) =>
+            !['react', 'react-dom', 'react-server-dom-webpack'].includes(pkg),
+        )
         hasReactServerDomWebpack = result.ssr.noExternal.includes(
           'react-server-dom-webpack',
         )
@@ -542,7 +546,7 @@ export default function vitePluginRsc(
                   'react-dom/static.edge',
                   `${reactServerDomPackageName}/client.edge`,
                 ],
-                exclude: [PKG_NAME, ...noExternal],
+                exclude: [PKG_NAME, ...optimizeDepsExclude],
               },
             },
             rsc: {
@@ -569,7 +573,7 @@ export default function vitePluginRsc(
                   `${reactServerDomPackageName}/server.edge`,
                   `${reactServerDomPackageName}/client.edge`,
                 ],
-                exclude: [PKG_NAME, ...noExternal],
+                exclude: [PKG_NAME, ...optimizeDepsExclude],
               },
             },
           },
