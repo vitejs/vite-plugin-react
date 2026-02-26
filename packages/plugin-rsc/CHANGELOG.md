@@ -1,3 +1,13 @@
+## <small>[0.5.21](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.20...plugin-rsc@0.5.21) (2026-02-26)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1115](https://github.com/vitejs/vite-plugin-react/issues/1115)) ([377cfda](https://github.com/vitejs/vite-plugin-react/commit/377cfda1f14e076e096029ee50b7fa4c318a3ac0))
+* **rsc:** exclude react 3rd party libs from server optimizeDeps ([#1119](https://github.com/vitejs/vite-plugin-react/issues/1119)) ([580788d](https://github.com/vitejs/vite-plugin-react/commit/580788d6334538d27cede9667872212af9bed82c))
+
+### Miscellaneous Chores
+
+* **rsc:** update starter-cf-single to remove `serverHandler: false` ([#1113](https://github.com/vitejs/vite-plugin-react/issues/1113)) ([0a15886](https://github.com/vitejs/vite-plugin-react/commit/0a158860f75bb4152bc7fdf4bf487a138a1f7f71))
+
 ## <small>[0.5.20](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.19...plugin-rsc@0.5.20) (2026-02-17)</small>
 ### Bug Fixes
 
