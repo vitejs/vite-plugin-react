@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { runtimePublicPath } from '@vitejs/react-common'
 import { type Plugin, rolldown } from 'rolldown'
 import { expect, test } from 'vitest'
 import pluginReact, { type Options } from '../src/index.ts'
@@ -19,6 +20,34 @@ test('HMR related code should not be included when using rolldown with babel plu
 
   expect(output[0].code).toBeDefined()
   expect(output[0].code).not.toContain('import.meta.hot')
+})
+
+test('resolves base-prefixed refresh runtime id in bundledDev mode', () => {
+  const plugins = pluginReact()
+
+  const reactBabelPlugin = plugins.find(
+    (plugin) => plugin.name === 'vite:react-babel',
+  )
+  reactBabelPlugin?.configResolved?.({
+    base: '/ui/',
+    command: 'serve',
+    isProduction: false,
+    root: '/',
+    server: { hmr: true },
+    plugins: [],
+    experimental: { bundledDev: true },
+  } as any)
+
+  const reactRefreshResolvePlugin = plugins.find(
+    (plugin) => plugin.name === 'vite:react-refresh-fbm-resolve-runtime',
+  )
+  expect(reactRefreshResolvePlugin?.resolveId).toBeDefined()
+
+  const resolved = (reactRefreshResolvePlugin?.resolveId as any)(
+    '/ui' + runtimePublicPath,
+  )
+
+  expect(resolved).toBe(runtimePublicPath)
 })
 
 async function bundleWithRolldown(pluginReactOptions: Options = {}) {
