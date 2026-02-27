@@ -1,4 +1,3 @@
-import type { PluginItem as BabelPlugin } from '@babel/core'
 import babel from '@rolldown/plugin-babel'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -11,7 +10,7 @@ export default defineConfig({
     babel({
       exclude: [/\/node_modules\/(?!(\.pnpm\/)?test-package)/],
       plugins: [
-        ({ types: t }): BabelPlugin => ({
+        ({ types: t }) => ({
           name: 'test-replace-test-babel',
           visitor: {
             Identifier(path) {
