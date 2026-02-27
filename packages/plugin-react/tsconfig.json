@@ -10,6 +10,8 @@
     "sourceMap": true,
     "noEmit": true,
     "noUnusedLocals": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "rootDir": ".",
+    "skipLibCheck": true
   }
 }
