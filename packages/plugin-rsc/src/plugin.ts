@@ -1352,7 +1352,7 @@ function vitePluginUseClient(
     // path in metafile is relative to cwd
     // https://github.com/vitejs/vite/blob/dd96c2cd831ecba3874458b318ad4f0a7f173736/packages/vite/src/node/optimizer/index.ts#L644
     id = normalizePath(path.relative(process.cwd(), id))
-    if (optimizerMetadata?.ids.includes(id)) {
+    if (optimizerMetadata?.ids.map((id) => normalizePath(id)).includes(id)) {
       ctx.warn(
         `client component dependency is inconsistently optimized. ` +
           `It's recommended to add the dependency to 'optimizeDeps.exclude'.`,
