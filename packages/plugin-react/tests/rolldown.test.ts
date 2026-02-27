@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { type Plugin, rolldown } from 'rolldown'
 import { expect, test } from 'vitest'
-import pluginReact, { type Options } from '../src/index.ts'
+import pluginReact from '../src/index.ts'
 
 test('HMR related code should not be included when using rolldown', async () => {
   const { output } = await bundleWithRolldown()
@@ -10,18 +10,7 @@ test('HMR related code should not be included when using rolldown', async () => 
   expect(output[0].code).not.toContain('import.meta.hot')
 })
 
-test('HMR related code should not be included when using rolldown with babel plugin', async () => {
-  const { output } = await bundleWithRolldown({
-    babel: {
-      plugins: [['babel-plugin-react-compiler', {}]],
-    },
-  })
-
-  expect(output[0].code).toBeDefined()
-  expect(output[0].code).not.toContain('import.meta.hot')
-})
-
-async function bundleWithRolldown(pluginReactOptions: Options = {}) {
+async function bundleWithRolldown() {
   const ENTRY = '/entry.tsx'
   const files: Record<string, string> = {
     [ENTRY]: /* tsx */ `
@@ -41,7 +30,7 @@ async function bundleWithRolldown(pluginReactOptions: Options = {}) {
 
   const bundle = await rolldown({
     input: ENTRY,
-    plugins: [virtualFilesPlugin(files), pluginReact(pluginReactOptions)],
+    plugins: [virtualFilesPlugin(files), pluginReact()],
     external: [/^react(\/|$)/, /^react-dom(\/|$)/],
   })
   return await bundle.generate({ format: 'esm' })

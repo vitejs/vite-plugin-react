@@ -12,7 +12,9 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@babel/plugin-transform-react-jsx-development": "^7.27.1",
+    "@rolldown/plugin-babel": "^0.1.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",

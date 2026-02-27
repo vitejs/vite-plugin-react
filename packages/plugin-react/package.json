@@ -3,7 +3,6 @@
   "version": "5.1.4",
   "description": "The default Vite plugin for React projects",
   "keywords": [
-    "babel",
     "fast refresh",
     "react",
     "react-refresh",
@@ -30,6 +29,9 @@
     "types"
   ],
   "type": "module",
+  "imports": {
+    "#optionalTypes": "./types/optionalTypes.d.ts"
+  },
   "exports": {
     ".": "./dist/index.js",
     "./preamble": "./types/preamble.d.ts"
@@ -41,15 +43,13 @@
     "test-unit": "vitest run"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/plugin-transform-react-jsx-self": "^7.27.1",
-    "@babel/plugin-transform-react-jsx-source": "^7.27.1",
-    "@rolldown/pluginutils": "1.0.0-rc.5",
-    "@types/babel__core": "^7.20.5"
+    "@rolldown/pluginutils": "1.0.0-rc.5"
   },
   "devDependencies": {
+    "@babel/core": "8.0.0-rc.2",
+    "@rolldown/plugin-babel": "^0.1.6",
     "@vitejs/react-common": "workspace:*",
-    "babel-plugin-react-compiler": "19.1.0-rc.3",
+    "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "rolldown": "1.0.0-rc.5",
@@ -57,7 +57,17 @@
     "vite": "^8.0.0-beta.16"
   },
   "peerDependencies": {
+    "@rolldown/plugin-babel": "^0.1.6",
+    "babel-plugin-react-compiler": "^1.0.0",
     "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@rolldown/plugin-babel": {
+      "optional": true
+    },
+    "babel-plugin-react-compiler": {
+      "optional": true
+    }
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
