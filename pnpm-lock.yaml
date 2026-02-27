@@ -524,7 +524,7 @@ importers:
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.18
-        version: 4.1.18(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
+        version: 4.1.18(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -568,8 +568,8 @@ importers:
         specifier: ^4.1.18
         version: 4.1.18
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       wrangler:
         specifier: ^4.67.0
         version: 4.68.0
@@ -596,11 +596,11 @@ importers:
         specifier: latest
         version: link:../..
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       vite-dev-rpc:
         specifier: ^1.1.0
-        version: 1.1.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
+        version: 1.1.0(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
 
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
@@ -624,11 +624,11 @@ importers:
         specifier: latest
         version: link:../..
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       vite-dev-rpc:
         specifier: ^1.1.0
-        version: 1.1.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
+        version: 1.1.0(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
@@ -673,8 +673,8 @@ importers:
         specifier: latest
         version: link:../..
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
   packages/plugin-rsc/examples/react-router:
     dependencies:
@@ -690,13 +690,13 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.25.2
-        version: 1.25.4(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
+        version: 1.25.4(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.18)
       '@tailwindcss/vite':
         specifier: ^4.1.18
-        version: 4.1.18(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
+        version: 4.1.18(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -713,8 +713,8 @@ importers:
         specifier: ^4.1.18
         version: 4.1.18
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       wrangler:
         specifier: ^4.67.0
         version: 4.68.0
@@ -747,8 +747,8 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
   packages/plugin-rsc/examples/starter:
     dependencies:
@@ -775,8 +775,8 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
   packages/plugin-rsc/examples/starter-cf-single:
     dependencies:
@@ -789,7 +789,7 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.25.2
-        version: 1.25.4(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
+        version: 1.25.4(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -806,8 +806,8 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+        specifier: ^8.0.0-beta.16
+        version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       wrangler:
         specifier: ^4.67.0
         version: 4.68.0
@@ -5564,12 +5564,12 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260302.0
 
-  '@cloudflare/vite-plugin@1.25.4(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)':
+  '@cloudflare/vite-plugin@1.25.4(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)':
     dependencies:
       '@cloudflare/unenv-preset': 2.14.0(unenv@2.0.0-rc.24)(workerd@1.20260302.0)
       miniflare: 4.20260302.0
       unenv: 2.0.0-rc.24
-      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+      vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       wrangler: 4.68.0
       ws: 8.18.0
     transitivePeerDependencies:
@@ -6577,12 +6577,12 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.18
 
-  '@tailwindcss/vite@4.1.18(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))':
+  '@tailwindcss/vite@4.1.18(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
       '@tailwindcss/node': 4.1.18
       '@tailwindcss/oxide': 4.1.18
       tailwindcss: 4.1.18
-      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
+      vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
   '@tsconfig/strictest@2.0.8': {}
 
@@ -9133,21 +9133,11 @@ snapshots:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
-  vite-dev-rpc@1.1.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)):
-    dependencies:
-      birpc: 2.6.1
-      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
-      vite-hot-client: 2.1.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
-
   vite-dev-rpc@1.1.0(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)):
     dependencies:
       birpc: 2.6.1
       vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
       vite-hot-client: 2.1.0(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
-
-  vite-hot-client@2.1.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)):
-    dependencies:
-      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
 
   vite-hot-client@2.1.0(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)):
     dependencies:
