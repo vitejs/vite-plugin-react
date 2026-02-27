@@ -16,15 +16,11 @@
     "react-switch": "^7.1.0"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-pipeline-operator": "^7.28.6",
+    "@babel/core": "^7.29.0",
     "@emotion/babel-plugin": "^11.13.5",
+    "@rolldown/plugin-babel": "^0.1.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ]
   }
 }

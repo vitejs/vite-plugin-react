@@ -13,7 +13,9 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@babel/plugin-transform-react-jsx-development": "^7.27.1",
+    "@rolldown/plugin-babel": "^0.1.6",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "workspace:*",
