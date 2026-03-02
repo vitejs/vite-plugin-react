@@ -693,10 +693,10 @@ importers:
         version: 1.25.4(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
       '@tailwindcss/typography':
         specifier: ^0.5.19
-        version: 0.5.19(tailwindcss@4.2.1)
+        version: 0.5.19(tailwindcss@file:tailwindcss-4.2.1.tgz)
       '@tailwindcss/vite':
-        specifier: ^4.2.1
-        version: 4.2.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: file:../../../../tailwindcss-vite-4.2.1.tgz
+        version: file:tailwindcss-vite-4.2.1.tgz(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -710,8 +710,8 @@ importers:
         specifier: latest
         version: link:../..
       tailwindcss:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: file:../../../../tailwindcss-4.2.1.tgz
+        version: file:tailwindcss-4.2.1.tgz
       vite:
         specifier: ^8.0.0-beta.16
         version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
@@ -2807,13 +2807,9 @@ packages:
 
   '@tailwindcss/typography@0.5.19':
     resolution: {integrity: sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg==}
+    version: 0.5.19
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
-
-  '@tailwindcss/vite@4.2.1':
-    resolution: {integrity: sha512-TBf2sJjYeb28jD2U/OhwdW0bbOsxkWPwQ7SrqGf9sVcoYwZj7rkXljroBO9wKBut9XnmQLXanuDUeqQK0lGg/w==}
-    peerDependencies:
-      vite: ^5.2.0 || ^6 || ^7
 
   '@tailwindcss/vite@file:tailwindcss-vite-4.2.1.tgz':
     resolution: {integrity: sha512-jMSCDeV1X+1893GdvvrfK132Fwiay6u2OtSW/2cWWhgamcMa6wov5y/xBoVuy0y6ZFnIMJJYNWkzLSQvn09pXA==, tarball: file:tailwindcss-vite-4.2.1.tgz}
@@ -6590,17 +6586,10 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.1
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.1
 
-  '@tailwindcss/typography@0.5.19(tailwindcss@4.2.1)':
+  '@tailwindcss/typography@0.5.19(tailwindcss@file:tailwindcss-4.2.1.tgz)':
     dependencies:
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.2.1
-
-  '@tailwindcss/vite@4.2.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
-    dependencies:
-      '@tailwindcss/node': 4.2.1
-      '@tailwindcss/oxide': 4.2.1
-      tailwindcss: 4.2.1
-      vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
+      tailwindcss: file:tailwindcss-4.2.1.tgz
 
   '@tailwindcss/vite@file:tailwindcss-vite-4.2.1.tgz(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
