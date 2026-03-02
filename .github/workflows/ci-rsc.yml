@@ -35,18 +35,22 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.vite && format('(vite-{0})', matrix.vite) || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         browser: [chromium]
+        vite: ['']
         react_version: ['']
         include:
           - os: ubuntu-latest
             browser: firefox
           - os: macos-latest
             browser: webkit
+          - os: ubuntu-latest
+            browser: chromium
+            vite: 7
           - os: ubuntu-latest
             browser: chromium
             react_version: canary
@@ -71,6 +75,11 @@ jobs:
         env:
           REACT_VERSION: ${{ matrix.react_version }}
       - run: pnpm build
+      - name: install vite ${{ matrix.vite }}
+        if: ${{ matrix.vite }}
+        run: |
+          yq -i '.overrides.vite = "^${{ matrix.vite }}"' pnpm-workspace.yaml
+          pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
         shell: bash
         env:
@@ -82,7 +91,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.vite && format('-vite-{0}', matrix.vite) || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
           path: |
             packages/plugin-rsc/test-results
           if-no-files-found: ignore
