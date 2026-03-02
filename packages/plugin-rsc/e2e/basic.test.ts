@@ -1237,13 +1237,31 @@ function defineTest(f: Fixture) {
           logs.push(msg.text())
         }
       })
-      f.createEditor('src/routes/tailwind/unused.tsx').resave()
-      await page.waitForTimeout(200)
       f.createEditor('src/routes/tailwind/server.tsx').resave()
+      await expect
+        .poll(() => logs)
+        .toEqual([
+          expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),
+        ])
       await page.waitForTimeout(200)
       expect(logs).toEqual([
         expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),
       ])
+    })
+
+    // https://github.com/tailwindlabs/tailwindcss/pull/19745
+    test('tailwind force reloads on file changes outside of module graph', async ({
+      page,
+    }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      const reloaded = page.waitForEvent('framenavigated', {
+        predicate: (frame) =>
+          frame === page.mainFrame() && frame.url().startsWith(f.url()),
+      })
+      f.createEditor('src/routes/tailwind/unused.tsx').resave()
+      await reloaded
+      await waitForHydration(page)
     })
   })
 
