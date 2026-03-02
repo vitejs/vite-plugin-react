@@ -1,26 +1,15 @@
-import babel from '@rolldown/plugin-babel'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ['!**/node_modules/**'],
+    },
+  },
   plugins: [
     react({
       exclude: [/\/node_modules\/(?!(\.pnpm\/)?test-package)/],
-    }),
-    babel({
-      exclude: [/\/node_modules\/(?!(\.pnpm\/)?test-package)/],
-      plugins: [
-        ({ types: t }) => ({
-          name: 'test-replace-test-babel',
-          visitor: {
-            Identifier(path) {
-              if (path.node.name === 'TEST_BABEL') {
-                path.replaceWith(t.booleanLiteral(true))
-              }
-            },
-          },
-        }),
-      ],
     }),
   ],
   optimizeDeps: {
