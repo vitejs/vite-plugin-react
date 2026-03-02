@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Drop Vite 7 and below support ([#1124](https://github.com/vitejs/vite-plugin-react/pull/1124))
+
+Vite 7 and below are no longer supported. If you are using Vite 7, please upgrade to Vite 8.
+
 ## 5.1.4 (2026-02-10)
 
 ### Fix `canSkipBabel` not accounting for `babel.overrides` ([#1098](https://github.com/vitejs/vite-plugin-react/pull/1098))
