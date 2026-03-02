@@ -79,7 +79,7 @@ Under the hood, this simply updates the React Fash Refresh runtime URL from `/@r
 
 ## React Compiler
 
-React Compiler support is available via the exported `reactCompilerPreset` helper, which requires `@rolldown/plugin-babel` and `babel-plugin-react-compiler` as peer dependencies:
+[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) as peer dependencies:
 
 ```sh
 npm install -D @rolldown/plugin-babel babel-plugin-react-compiler
@@ -92,7 +92,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 
 export default defineConfig({
-  plugins: [react(), babel(reactCompilerPreset())],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
 })
 ```
 
@@ -102,7 +102,9 @@ The `reactCompilerPreset` accepts an optional options object with the following 
 - `target` — Set to `'17'` or `'18'` to target older React versions (uses `react-compiler-runtime` instead of `react/compiler-runtime`).
 
 ```js
-babel(reactCompilerPreset({ compilationMode: 'annotation' }))
+babel({
+  presets: [reactCompilerPreset({ compilationMode: 'annotation' })],
+})
 ```
 
 ## `@vitejs/plugin-react/preamble`
