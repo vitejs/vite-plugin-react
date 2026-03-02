@@ -20,12 +20,12 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.25.2",
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.2.1",
+    "@tailwindcss/vite": "file:../../../../tailwindcss-vite-4.2.1.tgz",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "file:../../../../tailwindcss-4.2.1.tgz",
     "vite": "^8.0.0-beta.16",
     "wrangler": "^4.67.0"
   }
