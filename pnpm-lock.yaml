@@ -523,8 +523,8 @@ importers:
         version: 19.2.4(react@19.2.4)
     devDependencies:
       '@tailwindcss/vite':
-        specifier: ^4.2.1
-        version: 4.2.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: file:../../../../tailwindcss-vite-4.2.1.tgz
+        version: file:tailwindcss-vite-4.2.1.tgz(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -565,8 +565,8 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       tailwindcss:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: file:../../../../tailwindcss-4.2.1.tgz
+        version: file:tailwindcss-4.2.1.tgz
       vite:
         specifier: ^8.0.0-beta.16
         version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
@@ -693,10 +693,10 @@ importers:
         version: 1.25.4(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))(workerd@1.20260302.0)(wrangler@4.68.0)
       '@tailwindcss/typography':
         specifier: ^0.5.19
-        version: 0.5.19(tailwindcss@4.2.1)
+        version: 0.5.19(tailwindcss@file:tailwindcss-4.2.1.tgz)
       '@tailwindcss/vite':
-        specifier: ^4.2.1
-        version: 4.2.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: file:../../../../tailwindcss-vite-4.2.1.tgz
+        version: file:tailwindcss-vite-4.2.1.tgz(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -710,8 +710,8 @@ importers:
         specifier: latest
         version: link:../..
       tailwindcss:
-        specifier: ^4.2.1
-        version: 4.2.1
+        specifier: file:../../../../tailwindcss-4.2.1.tgz
+        version: file:tailwindcss-4.2.1.tgz
       vite:
         specifier: ^8.0.0-beta.16
         version: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
@@ -2807,11 +2807,13 @@ packages:
 
   '@tailwindcss/typography@0.5.19':
     resolution: {integrity: sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg==}
+    version: 0.5.19
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tailwindcss/vite@4.2.1':
-    resolution: {integrity: sha512-TBf2sJjYeb28jD2U/OhwdW0bbOsxkWPwQ7SrqGf9sVcoYwZj7rkXljroBO9wKBut9XnmQLXanuDUeqQK0lGg/w==}
+  '@tailwindcss/vite@file:tailwindcss-vite-4.2.1.tgz':
+    resolution: {integrity: sha512-jMSCDeV1X+1893GdvvrfK132Fwiay6u2OtSW/2cWWhgamcMa6wov5y/xBoVuy0y6ZFnIMJJYNWkzLSQvn09pXA==, tarball: file:tailwindcss-vite-4.2.1.tgz}
+    version: 4.2.1
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
 
@@ -4901,6 +4903,10 @@ packages:
   tailwindcss@4.2.1:
     resolution: {integrity: sha512-/tBrSQ36vCleJkAOsy9kbNTgaxvGbyOamC30PRePTQe/o1MFwEKHQk4Cn7BNGaPtjp+PuUrByJehM1hgxfq4sw==}
 
+  tailwindcss@file:tailwindcss-4.2.1.tgz:
+    resolution: {integrity: sha512-wQ4Dn9fK4z/8K7NaAOlNtUZi0l6x/ZaiX2p4u7URV0fLEmIxJNVFnjfrtm0WVdmNErzyeMdlgRpj/DOf2KC/Lw==, tarball: file:tailwindcss-4.2.1.tgz}
+    version: 4.2.1
+
   tapable@2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
@@ -6580,12 +6586,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.1
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.1
 
-  '@tailwindcss/typography@0.5.19(tailwindcss@4.2.1)':
+  '@tailwindcss/typography@0.5.19(tailwindcss@file:tailwindcss-4.2.1.tgz)':
     dependencies:
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.2.1
+      tailwindcss: file:tailwindcss-4.2.1.tgz
 
-  '@tailwindcss/vite@4.2.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
+  '@tailwindcss/vite@file:tailwindcss-vite-4.2.1.tgz(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
       '@tailwindcss/node': 4.2.1
       '@tailwindcss/oxide': 4.2.1
@@ -8927,6 +8933,8 @@ snapshots:
   supports-preserve-symlinks-flag@1.0.0: {}
 
   tailwindcss@4.2.1: {}
+
+  tailwindcss@file:tailwindcss-4.2.1.tgz: {}
 
   tapable@2.2.1: {}
 
