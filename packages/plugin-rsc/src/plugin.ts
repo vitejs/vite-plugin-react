@@ -1714,7 +1714,7 @@ function customOptimizerMetadataPlugin({
       writeBundle(options) {
         assert(options.dir)
         const ids = [...this.getModuleIds()].map((id) =>
-          path.relative(process.cwd(), id),
+          normalizePath(path.relative(process.cwd(), id)),
         )
         const metadata: CustomOptimizerMetadata = { ids }
         setMetadata(metadata)

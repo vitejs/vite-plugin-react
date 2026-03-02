@@ -185,25 +185,21 @@ export async function setupIsolatedFixture(options: {
 
   // extract workspace overrides
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
-  const workspaceYaml = fs.readFileSync(
-    path.join(rootDir, 'pnpm-workspace.yaml'),
-    'utf-8',
+  const { stdout: overridesJson } = await x(
+    'pnpm',
+    ['config', 'get', 'overrides', '--json', '--location', 'project'],
+    { throwOnError: true, nodeOptions: { cwd: rootDir } },
   )
-  const overridesMatch = workspaceYaml.match(
-    /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
-  )
-  const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
-  const overrides = {
+  const workspaceOverrides: Record<string, string> = JSON.parse(overridesJson)
+  const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
+    ...workspaceOverrides,
     ...options.overrides,
   }
-  const tempWorkspaceYaml = `\
-${overridesSection}
-${Object.entries(overrides)
-  .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
-  .join('\n')}
-`
+  const tempWorkspaceYaml = `overrides:\n${Object.entries(overrides)
+    .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
+    .join('\n')}\n`
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
     tempWorkspaceYaml,

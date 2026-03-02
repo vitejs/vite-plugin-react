@@ -26,7 +26,8 @@
     "build": "pnpm -r --filter='./packages/*' run build",
     "dev": "pnpm -r --parallel --filter='./packages/*' run dev",
     "release": "node scripts/release.ts",
-    "ci-publish": "node scripts/publishCI.ts"
+    "ci-publish": "node scripts/publishCI.ts",
+    "override-vite7": "yq -i '.overrides.vite = \"^7\"' pnpm-workspace.yaml && yq -i '.overrides.\"@vitejs/plugin-react\" = \"^5\"' pnpm-workspace.yaml && yq -i '.packages += [\"!packages/plugin-react\"]' pnpm-workspace.yaml"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.3",
