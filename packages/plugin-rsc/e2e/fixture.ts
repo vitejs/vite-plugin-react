@@ -192,10 +192,14 @@ export async function setupIsolatedFixture(options: {
     /overrides:\s*([\s\S]*?)(?=\n\w|\n*$)/,
   )
   const overridesSection = overridesMatch ? overridesMatch[0] : 'overrides:'
-  const overrides = {
+  const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
-    '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
     ...options.overrides,
+  }
+  // Use local plugin-react unless the workspace already overrides it (e.g. vite7 compat test)
+  if (!overridesSection.includes('@vitejs/plugin-react')) {
+    overrides['@vitejs/plugin-react'] =
+      `file:${path.join(rootDir, 'packages/plugin-react')}`
   }
   const tempWorkspaceYaml = `\
 ${overridesSection}

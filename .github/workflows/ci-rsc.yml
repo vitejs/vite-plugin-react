@@ -79,6 +79,8 @@ jobs:
         if: ${{ matrix.vite }}
         run: |
           yq -i '.overrides.vite = "^${{ matrix.vite }}"' pnpm-workspace.yaml
+          yq -i '.overrides."@vitejs/plugin-react" = "^5"' pnpm-workspace.yaml
+          yq -i '.packages += ["!packages/plugin-react"]' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
       - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
         shell: bash
