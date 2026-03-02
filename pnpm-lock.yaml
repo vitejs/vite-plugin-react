@@ -94,8 +94,8 @@ importers:
         specifier: 8.0.0-rc.2
         version: 8.0.0-rc.2
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.5)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.5)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@vitejs/react-common':
         specifier: workspace:*
         version: link:../common
@@ -627,8 +627,8 @@ importers:
   packages/plugin-rsc/examples/e2e:
     devDependencies:
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
@@ -850,8 +850,8 @@ importers:
         specifier: ^7.29.0
         version: 7.29.0
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -884,8 +884,8 @@ importers:
         specifier: ^7.29.0
         version: 7.29.0
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^18.3.20
         version: 18.3.20
@@ -953,8 +953,8 @@ importers:
         specifier: ^7.29.0
         version: 7.29.0
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
@@ -1049,8 +1049,8 @@ importers:
         specifier: ^11.13.5
         version: 11.13.5
       '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        specifier: ^0.1.7
+        version: 0.1.7(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -2298,8 +2298,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rolldown/plugin-babel@0.1.6':
-    resolution: {integrity: sha512-HCBR/3yInWq57nkWm20GvdEThAJPgz9XUqVSQbGIyyTxq98bJvxXLrQOIIlh/44p6virlgEEn4gR66DN6pISYw==}
+  '@rolldown/plugin-babel@0.1.7':
+    resolution: {integrity: sha512-aalGnZ8MojdHteFvPGIK+VmhibseVlk825eGbpe8Bcq9sxz9vSnFlYcU1DRZmOM3XDKrDziXEtDYyn5ojLAb7Q==}
     engines: {node: '>=22.12.0 || ^24.0.0'}
     peerDependencies:
       '@babel/core': ^7.29.0 || ^8.0.0-rc.1
@@ -6114,7 +6114,7 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.0.0-rc.6':
     optional: true
 
-  '@rolldown/plugin-babel@0.1.6(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
+  '@rolldown/plugin-babel@0.1.7(@babel/core@7.29.0)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.29.0
       picomatch: 4.0.3
@@ -6122,7 +6122,7 @@ snapshots:
     optionalDependencies:
       vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
-  '@rolldown/plugin-babel@0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.5)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
+  '@rolldown/plugin-babel@0.1.7(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.5)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 8.0.0-rc.2
       picomatch: 4.0.3
@@ -6130,7 +6130,7 @@ snapshots:
     optionalDependencies:
       vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
 
-  '@rolldown/plugin-babel@0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
+  '@rolldown/plugin-babel@0.1.7(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 8.0.0-rc.2
       picomatch: 4.0.3

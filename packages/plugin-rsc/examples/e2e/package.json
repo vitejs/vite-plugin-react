@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@rolldown/plugin-babel": "^0.1.6",
+    "@rolldown/plugin-babel": "^0.1.7",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "babel-plugin-react-compiler": "^1.0.0",
