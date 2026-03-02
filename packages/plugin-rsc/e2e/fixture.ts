@@ -174,7 +174,6 @@ export async function setupIsolatedFixture(options: {
   src: string
   dest: string
   overrides?: Record<string, string>
-  files?: WriteFilesOptions
 }) {
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
@@ -205,11 +204,6 @@ export async function setupIsolatedFixture(options: {
     tempWorkspaceYaml,
   )
 
-  // write additional files
-  if (options.files) {
-    writeFiles(options.files, options.dest)
-  }
-
   // install
   await x('pnpm', ['i'], {
     throwOnError: true,
@@ -231,7 +225,10 @@ export async function setupIsolatedFixture(options: {
 export async function setupInlineFixture(options: {
   src: string
   dest: string
-  files?: WriteFilesOptions
+  files?: Record<
+    string,
+    string | { cp: string } | { edit: (s: string) => string }
+  >
 }) {
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.mkdirSync(options.dest, { recursive: true })
@@ -244,39 +241,30 @@ export async function setupInlineFixture(options: {
 
   // write additional files
   if (options.files) {
-    writeFiles(options.files, options.dest)
-  }
-}
+    for (let [filename, contents] of Object.entries(options.files)) {
+      const destFile = path.join(options.dest, filename)
+      fs.mkdirSync(path.dirname(destFile), { recursive: true })
 
-type WriteFilesOptions = Record<
-  string,
-  string | { cp: string } | { edit: (s: string) => string }
->
+      // custom command
+      if (typeof contents === 'object' && 'cp' in contents) {
+        const srcFile = path.join(options.dest, contents.cp)
+        fs.copyFileSync(srcFile, destFile)
+        continue
+      }
+      if (typeof contents === 'object' && 'edit' in contents) {
+        const editted = contents.edit(fs.readFileSync(destFile, 'utf-8'))
+        fs.writeFileSync(destFile, editted)
+        continue
+      }
 
-function writeFiles(files: WriteFilesOptions, dest: string) {
-  for (let [filename, contents] of Object.entries(files)) {
-    const destFile = path.join(dest, filename)
-    fs.mkdirSync(path.dirname(destFile), { recursive: true })
-
-    // custom command
-    if (typeof contents === 'object' && 'cp' in contents) {
-      const srcFile = path.join(dest, contents.cp)
-      fs.copyFileSync(srcFile, destFile)
-      continue
+      // write a new file
+      contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
+      const indent = contents.match(/^\s*/)?.[0] ?? ''
+      const strippedContents = contents
+        .split('\n')
+        .map((line) => line.replace(new RegExp(`^${indent}`), ''))
+        .join('\n')
+      fs.writeFileSync(destFile, strippedContents)
     }
-    if (typeof contents === 'object' && 'edit' in contents) {
-      const editted = contents.edit(fs.readFileSync(destFile, 'utf-8'))
-      fs.writeFileSync(destFile, editted)
-      continue
-    }
-
-    // write a new file
-    contents = contents.replace(/^\n*/, '').replace(/\s*$/, '\n')
-    const indent = contents.match(/^\s*/)?.[0] ?? ''
-    const strippedContents = contents
-      .split('\n')
-      .map((line) => line.replace(new RegExp(`^${indent}`), ''))
-      .join('\n')
-    fs.writeFileSync(destFile, strippedContents)
   }
 }

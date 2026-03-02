@@ -456,7 +456,7 @@ importers:
         version: 3.1.0
       vitefu:
         specifier: ^1.1.1
-        version: 1.1.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
+        version: 1.1.1(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1))
     devDependencies:
       '@hiogawa/utils':
         specifier: ^1.7.0
@@ -464,9 +464,6 @@ importers:
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
-      '@rolldown/plugin-babel':
-        specifier: ^0.1.6
-        version: 0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@tsconfig/strictest':
         specifier: ^2.0.8
         version: 2.0.8
@@ -491,9 +488,6 @@ importers:
       '@vitejs/test-dep-cjs-falsy-primitive':
         specifier: ./test-dep/cjs-falsy-primitive
         version: link:test-dep/cjs-falsy-primitive
-      babel-plugin-react-compiler:
-        specifier: ^1.0.0
-        version: 1.0.0
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -632,6 +626,9 @@ importers:
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
+      '@rolldown/plugin-babel':
+        specifier: ^0.1.6
+        version: 0.1.6(@babel/core@8.0.0-rc.2)(rolldown@1.0.0-rc.6)(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1))
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
@@ -639,8 +636,8 @@ importers:
         specifier: latest
         version: link:../..
       babel-plugin-react-compiler:
-        specifier: 19.1.0-rc.3
-        version: 19.1.0-rc.3
+        specifier: ^1.0.0
+        version: 1.0.0
       connect:
         specifier: ^3.7.0
         version: 3.7.0
@@ -8930,9 +8927,9 @@ snapshots:
       jiti: 2.6.1
       yaml: 2.8.1
 
-  vitefu@1.1.1(vite@8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)):
+  vitefu@1.1.1(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)):
     optionalDependencies:
-      vite: 8.0.0-beta.16(@types/node@24.10.13)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.1)
+      vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1)
 
   vitest@4.0.18(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.1):
     dependencies:

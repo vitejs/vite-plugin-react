@@ -1,24 +1,15 @@
-import { readFileSync } from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
 import { expect, test } from '@playwright/test'
-import { x } from 'tinyexec'
-import { setupIsolatedFixture, useFixture } from './fixture'
+import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 import { defineStarterTest } from './starter'
 
 test.describe(() => {
-  // use RUNNER_TEMP on Github Actions
-  // https://github.com/actions/toolkit/issues/518
-  const tmpRoot = path.join(
-    process.env['RUNNER_TEMP'] || os.tmpdir(),
-    'test-vite-rsc-react-compiler',
-  )
+  const root = 'examples/e2e/temp/react-compiler'
 
   test.beforeAll(async () => {
-    await setupIsolatedFixture({
+    await setupInlineFixture({
       src: 'examples/starter',
-      dest: tmpRoot,
+      dest: root,
       files: {
         'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
@@ -42,40 +33,10 @@ test.describe(() => {
         `,
       },
     })
-    {
-      const { version } = JSON.parse(
-        readFileSync(
-          new URL(
-            '../package.json',
-            import.meta.resolve('@rolldown/plugin-babel'),
-          ),
-          'utf-8',
-        ),
-      )
-      await x('pnpm', ['i', `@rolldown/plugin-babel@${version}`], {
-        throwOnError: true,
-        nodeOptions: {
-          cwd: tmpRoot,
-        },
-      })
-    }
-    {
-      const {
-        default: { version },
-      } = await import('babel-plugin-react-compiler/package.json', {
-        with: { type: 'json' },
-      })
-      await x('pnpm', ['i', `babel-plugin-react-compiler@${version}`], {
-        throwOnError: true,
-        nodeOptions: {
-          cwd: tmpRoot,
-        },
-      })
-    }
   })
 
   test.describe('dev-react-compiler', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'dev' })
+    const f = useFixture({ root, mode: 'dev' })
     defineStarterTest(f)
 
     test('verify react compiler', async ({ page }) => {
@@ -87,7 +48,7 @@ test.describe(() => {
   })
 
   test.describe('build-react-compiler', () => {
-    const f = useFixture({ root: tmpRoot, mode: 'build' })
+    const f = useFixture({ root, mode: 'build' })
     defineStarterTest(f)
   })
 })

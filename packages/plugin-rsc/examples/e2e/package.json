@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@rolldown/plugin-babel": "^0.1.6",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "babel-plugin-react-compiler": "19.1.0-rc.3",
+    "babel-plugin-react-compiler": "^1.0.0",
     "connect": "^3.7.0",
     "rsc-html-stream": "^0.0.7",
     "sirv": "^3.0.2"
