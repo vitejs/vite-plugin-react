@@ -1,25 +1,15 @@
-import type { PluginItem as BabelPlugin } from '@babel/core'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ['!**/node_modules/**'],
+    },
+  },
   plugins: [
     react({
       exclude: [/\/node_modules\/(?!(\.pnpm\/)?test-package)/],
-      babel: {
-        plugins: [
-          ({ types: t }): BabelPlugin => ({
-            name: 'test-replace-test-babel',
-            visitor: {
-              Identifier(path) {
-                if (path.node.name === 'TEST_BABEL') {
-                  path.replaceWith(t.booleanLiteral(true))
-                }
-              },
-            },
-          }),
-        ],
-      },
     }),
   ],
   optimizeDeps: {

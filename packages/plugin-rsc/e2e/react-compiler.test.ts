@@ -13,18 +13,25 @@ test.describe(() => {
       files: {
         'vite.config.base.ts': { cp: 'vite.config.ts' },
         'vite.config.ts': /* js */ `
+          import babel from '@rolldown/plugin-babel'
           import rsc from '@vitejs/plugin-rsc'
-          import react from '@vitejs/plugin-react'
-          import { defineConfig, mergeConfig } from 'vite'
+          import * as react from '@vitejs/plugin-react'
+          import { defineConfig, mergeConfig, version } from 'vite'
           import baseConfig from './vite.config.base.ts'
-          
+
           delete baseConfig.plugins
 
           const overrideConfig = defineConfig({
-            plugins: [
-              react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
-              rsc(),
-            ],
+            plugins: version.startsWith('7.')
+              ? [
+                  react.default({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+                  rsc()
+                ]
+              : [
+                  react.default(),
+                  babel({ presets: [react.reactCompilerPreset()] }),
+                  rsc(),
+                ],
           })
 
           export default mergeConfig(baseConfig, overrideConfig)
