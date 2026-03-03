@@ -43,7 +43,7 @@
     "test-unit": "vitest run"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.5"
+    "@rolldown/pluginutils": "1.0.0-rc.6"
   },
   "devDependencies": {
     "@babel/core": "8.0.0-rc.2",
@@ -52,7 +52,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "rolldown": "1.0.0-rc.5",
+    "rolldown": "1.0.0-rc.6",
     "tsdown": "^0.20.3",
     "vite": "^8.0.0-beta.16"
   },
