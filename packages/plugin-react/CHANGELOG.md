@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.0.0-beta.0 (2026-03-03)
+
 ### Remove Babel Related Features ([#1123](https://github.com/vitejs/vite-plugin-react/pull/1123))
 
 Vite 8+ can handle React Refresh Transform by Oxc and doesn't need Babel for it. With that, there are no transform applied that requires Babel. To reduce the installation size of this plugin, babel is no longer a dependency of this plugin and the related features are removed.
