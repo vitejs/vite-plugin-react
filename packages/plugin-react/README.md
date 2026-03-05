@@ -107,6 +107,19 @@ babel({
 })
 ```
 
+> [!TIP]
+>
+> `reactCompilerPreset` is only a convenient helper with a preconfigured filter. You can configure override the filters to fit your project structure or code. For example, if you know a large portion of your files are never React/hook-related or won't benefit from the React Compiler, you can aggressively exclude them via `rolldown.filter`:
+>
+> ```js
+> const myPreset = reactCompilerPreset()
+> myPreset.rolldown.filter.id.exclude = ['src/legacy/**', 'src/utils/**']
+>
+> babel({
+>   presets: [myPreset],
+> })
+> ```
+
 ## `@vitejs/plugin-react/preamble`
 
 The package provides `@vitejs/plugin-react/preamble` to initialize HMR runtime from client entrypoint for SSR applications which don't use [`transformIndexHtml` API](https://vite.dev/guide/api-javascript.html#vitedevserver). For example:
