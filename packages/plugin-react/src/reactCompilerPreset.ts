@@ -18,7 +18,7 @@ export const reactCompilerPreset = (
       code:
         options.compilationMode === 'annotation'
           ? /['"]use memo['"]/
-          : /\b[A-Z]|\buse/,
+          : /\b[A-Z]|\buse[A-Z0-9]/,
     },
     applyToEnvironmentHook: (env) => env.config.consumer === 'client',
     optimizeDeps: {
