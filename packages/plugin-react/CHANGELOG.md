@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 5.2.0 (2026-03-12)
+
 ### Add Vite 8 to peerDependencies range [#1143](https://github.com/vitejs/vite-plugin-react/pull/1143)
 
 This plugin is compatible with Vite 8.
