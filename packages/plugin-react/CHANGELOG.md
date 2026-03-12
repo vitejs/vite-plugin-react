@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.0.0 (2026-03-12)
+
 ## 6.0.0-beta.0 (2026-03-03)
 
 ### Remove Babel Related Features ([#1123](https://github.com/vitejs/vite-plugin-react/pull/1123))
