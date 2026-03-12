@@ -158,4 +158,4 @@ For React refresh to work correctly, your file should only export React componen
 
 If an incompatible change in exports is found, the module will be invalidated and HMR will propagate. To make it easier to export simple constants alongside your component, the module is only invalidated when their value changes.
 
-You can catch mistakes and get more detailed warning with this [eslint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh).
+You can catch mistakes and get more detailed warnings with this [ESLint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh), or the equivalent [Oxlint rule](https://oxc.rs/docs/guide/usage/linter/rules/react/only-export-components.html).
