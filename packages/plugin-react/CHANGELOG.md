@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add Vite 8 to peerDependencies range [#1143](https://github.com/vitejs/vite-plugin-react/pull/1143)
+
+This plugin is compatible with Vite 8.
+
 ## 5.1.4 (2026-02-10)
 
 ### Fix `canSkipBabel` not accounting for `babel.overrides` ([#1098](https://github.com/vitejs/vite-plugin-react/pull/1098))
