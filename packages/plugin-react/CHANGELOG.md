@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.0.1 (2026-03-13)
+
 ### Expand `@rolldown/plugin-babel` peer dep range ([#1146](https://github.com/vitejs/vite-plugin-react/pull/1146))
 
 Expanded `@rolldown/plugin-babel` peer dep range to include `^0.2.0`.
