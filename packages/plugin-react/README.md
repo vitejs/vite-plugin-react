@@ -79,10 +79,16 @@ Under the hood, this simply updates the React Fash Refresh runtime URL from `/@r
 
 ## React Compiler
 
-[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) as peer dependencies:
+[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
 
 ```sh
-npm install -D @rolldown/plugin-babel babel-plugin-react-compiler
+npm install -D @rolldown/plugin-babel @babel/core babel-plugin-react-compiler
+```
+
+If you are using TypeScript, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
+
+```sh
+npm install -D @types/babel__core
 ```
 
 ```js
