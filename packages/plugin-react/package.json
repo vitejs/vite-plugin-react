@@ -57,7 +57,7 @@
     "vite": "^8.0.0-beta.16"
   },
   "peerDependencies": {
-    "@rolldown/plugin-babel": "^0.1.7",
+    "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "vite": "^8.0.0"
   },
