@@ -78,6 +78,7 @@ export function setViteUrl(url: string): void {
 
 // #endregion
 
+// eslint-disable-next-line no-empty-pattern
 beforeAll(async ({}, suite) => {
   testPath = suite.file.filepath!
   testName = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
