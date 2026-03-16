@@ -18,6 +18,6 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
-    "vite": "^8.0.0-beta.16"
+    "vite": "^8.0.0"
   }
 }
