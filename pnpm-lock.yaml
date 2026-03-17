@@ -1102,6 +1102,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
 
+  playground/ssr-react-error-handling:
+    dependencies:
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+
   playground/tsconfig-jsx-preserve:
     dependencies:
       react:
