@@ -448,6 +448,164 @@ export async function kv() {
     `)
   })
 
+  // periscopic misclassifies block-scoped declarations inside a "use server"
+  // function body as outer-scope closure variables when the same name exists in
+  // an enclosing scope.  The hoist transform then injects a duplicate `const`
+  // declaration (from decryptActionBoundArgs) which causes a SyntaxError at
+  // runtime.
+  describe('local declaration shadows outer binding', () => {
+    it('const shadows outer variable', async () => {
+      // `cookies` is declared in the outer scope AND re-declared with const
+      // inside the server action. periscopic sees it as a closure ref, but it
+      // is NOT — the server action owns its own `cookies`.
+      const input = `
+function buildAction(config) {
+  const cookies = getCookies();
+
+  async function submitAction(formData) {
+    "use server";
+    const cookies = formData.get("value");
+    return doSomething(config, cookies);
+  }
+
+  return submitAction;
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function buildAction(config) {
+          const cookies = getCookies();
+
+          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, config);
+
+          return submitAction;
+        }
+
+        ;export async function $$hoist_0_submitAction(config, formData) {
+            "use server";
+            const cookies = formData.get("value");
+            return doSomething(config, cookies);
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+        "
+      `)
+    })
+
+    it('const shadows function parameter', async () => {
+      // the outer `cookies` binding comes from a function parameter, not a
+      // variable declaration — collectOuterNames must handle params too.
+      const input = `
+function buildAction(cookies) {
+  async function submitAction(formData) {
+    "use server";
+    const cookies = formData.get("value");
+    return cookies;
+  }
+
+  return submitAction;
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function buildAction(cookies) {
+          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction");
+
+          return submitAction;
+        }
+
+        ;export async function $$hoist_0_submitAction(formData) {
+            "use server";
+            const cookies = formData.get("value");
+            return cookies;
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+        "
+      `)
+    })
+
+    it('non-colliding closure variable is still bound', async () => {
+      // Regression guard: `config` is a genuine closure (not redeclared inside
+      // the action) and must still appear in bindVars after the fix.
+      // Covered more precisely by 'const shadows outer variable' above, but
+      // kept as an explicit intent marker.
+      const input = `
+function buildAction(config) {
+  const cookies = getCookies();
+
+  async function submitAction(formData) {
+    "use server";
+    const cookies = formData.get("value");
+    return doSomething(config, cookies);
+  }
+
+  return submitAction;
+}
+`
+      const result = await testTransform(input)
+      expect(result).toContain('.bind(null, config)')
+      expect(result).not.toContain('bind(null, cookies')
+    })
+
+    it('encode: local declaration not included in bound args', async () => {
+      // Same as above but with encode/decode — the encrypted bound-args payload
+      // must only include genuine closure vars, not locally-redeclared names.
+      const input = `
+function buildAction(config) {
+  const cookies = getCookies();
+
+  async function submitAction(formData) {
+    "use server";
+    const cookies = formData.get("value");
+    return doSomething(config, cookies);
+  }
+
+  return submitAction;
+}
+`
+      expect(await testTransform(input, { encode: true }))
+        .toMatchInlineSnapshot(`
+        "
+        function buildAction(config) {
+          const cookies = getCookies();
+
+          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, __enc([config]));
+
+          return submitAction;
+        }
+
+        ;export async function $$hoist_0_submitAction($$hoist_encoded, formData) {
+            const [config] = __dec($$hoist_encoded);
+        "use server";
+            const cookies = formData.get("value");
+            return doSomething(config, cookies);
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+        "
+      `)
+    })
+
+    it('destructured local declaration not included in bound args', async () => {
+      // `const { cookies } = ...` — the name comes from a destructuring pattern,
+      // not a plain Identifier declarator.  Must still be excluded from bindVars.
+      const input = `
+function buildAction(config) {
+  const cookies = getCookies();
+
+  async function submitAction(formData) {
+    "use server";
+    const { cookies } = parseForm(formData);
+    return doSomething(config, cookies);
+  }
+
+  return submitAction;
+}
+`
+      const result = await testTransform(input)
+      expect(result).toContain('.bind(null, config)')
+      expect(result).not.toContain('bind(null, cookies')
+    })
+  })
+
   it('no ending new line', async () => {
     const input = `\
 export async function test() {

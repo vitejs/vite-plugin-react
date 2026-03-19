@@ -1,5 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program, Literal } from 'estree'
+import type { Program, Literal, Pattern } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
@@ -82,11 +82,21 @@ export function transformHoistInlineDirective(
           'anonymous_server_function'
 
         // bind variables which are neither global nor in own scope
+        const localDecls = collectLocallyDeclaredNames(node.body)
         const bindVars = [...scope.references].filter((ref) => {
           // declared function itself is included as reference
           if (ref === declName) {
             return false
           }
+
+          // periscopic misclassifies block-scoped declarations inside a
+          // "use server" function body as closure references when the same
+          // name exists in an enclosing scope. Exclude any name that is
+          // actually declared within this function body.
+          if (localDecls.has(ref)) {
+            return false
+          }
+
           const owner = scope.find_owner(ref)
           return owner && owner !== scope && owner !== analyzed.scope
         })
@@ -189,4 +199,61 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
     },
   })
   return nodes
+}
+
+/**
+ * Collect all names declared within a function body, without crossing into
+ * nested function boundaries (which have their own scope).
+ *
+ * This guards against a periscopic limitation where block-scoped declarations
+ * (`const`/`let`) inside a `BlockStatement` are misclassified as references
+ * to outer-scope bindings.  Any name returned here must NOT be in `bindVars`.
+ */
+function collectLocallyDeclaredNames(
+  body: Program['body'][number],
+): Set<string> {
+  const names = new Set<string>()
+
+  function collectPattern(node: Pattern | null): void {
+    switch (node?.type) {
+      case 'Identifier':
+        names.add(node.name)
+        break
+      case 'AssignmentPattern':
+        return collectPattern(node.left)
+      case 'RestElement':
+        return collectPattern(node.argument)
+      case 'ArrayPattern':
+        for (const el of node.elements) {
+          collectPattern(el)
+        }
+        break
+      case 'ObjectPattern':
+        for (const prop of node.properties) {
+          collectPattern(
+            prop.type === 'RestElement' ? prop.argument : prop.value,
+          )
+        }
+    }
+  }
+
+  walk(body, {
+    enter(node) {
+      switch (node.type) {
+        case 'FunctionDeclaration':
+        case 'FunctionExpression':
+        case 'ClassDeclaration':
+          if (node.id) names.add(node.id.name)
+          return this.skip()
+        case 'ArrowFunctionExpression':
+          return this.skip()
+        case 'VariableDeclaration':
+          for (const decl of node.declarations) {
+            collectPattern(decl.id)
+          }
+      }
+    },
+  })
+
+  return names
 }
