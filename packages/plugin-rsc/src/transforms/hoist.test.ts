@@ -600,9 +600,24 @@ function buildAction(config) {
   return submitAction;
 }
 `
-      const result = await testTransform(input)
-      expect(result).toContain('.bind(null, config)')
-      expect(result).not.toContain('bind(null, cookies')
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function buildAction(config) {
+          const cookies = getCookies();
+
+          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, config);
+
+          return submitAction;
+        }
+
+        ;export async function $$hoist_0_submitAction(config, formData) {
+            "use server";
+            const { cookies } = parseForm(formData);
+            return doSomething(config, cookies);
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+        "
+      `)
     })
   })
 
