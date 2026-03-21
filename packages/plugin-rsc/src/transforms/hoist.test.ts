@@ -615,6 +615,7 @@ function outer() {
       `)
     })
 
+    // TODO: not working
     it('inner has own block then shadows', async () => {
       const input = `
 function outer() {
