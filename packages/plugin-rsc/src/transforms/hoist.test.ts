@@ -1,3 +1,5 @@
+import { walk } from 'estree-walker'
+import { analyze } from 'periscopic'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
@@ -597,9 +599,121 @@ export async function test() {
   })
 })
 
-// TODO: should report to upstream or looks for alternative
+// TODO: report upstream
 // https://github.com/Rich-Harris/periscopic/
-describe.skip('periscopic issues', () => {
-  // TODO: re-export
-  // TODO: shadowed variable in nested functions
+describe('periscopic behavior', () => {
+  it('re-export confuses scopes', async () => {
+    // periscopic bug: `export { x } from "y"` creates a block scope with `x`
+    // as a declaration, which shadows the real module-level import.
+    // `find_owner` then returns that intermediate scope instead of
+    // `analyzed.scope`, causing the hoist algorithm to misidentify `redirect`
+    // as a closure variable.  The workaround in hoist.ts strips re-exports
+    // before calling analyze.
+    const ast = await parseAstAsync(`
+export { redirect } from "react-router/rsc";
+import { redirect } from "react-router/rsc";
+
+export default () => {
+  const f = async () => {
+    "use server";
+    throw redirect();
+  };
+}
+`)
+    const { map, scope: root } = analyze(ast)
+    // find the arrow with "use server"
+    let serverScope: ReturnType<typeof analyze>['scope'] | undefined
+    walk(ast, {
+      enter(node) {
+        if (
+          node.type === 'ArrowFunctionExpression' &&
+          node.body.type === 'BlockStatement' &&
+          node.body.body.some(
+            (s: any) =>
+              s.type === 'ExpressionStatement' &&
+              s.expression.type === 'Literal' &&
+              s.expression.value === 'use server',
+          )
+        ) {
+          serverScope = map.get(node)
+        }
+      },
+    })
+    expect(serverScope).toBeDefined()
+    expect(serverScope!.references.has('redirect')).toBe(true)
+    // find_owner should return the root scope (where the import lives), but
+    // instead returns the synthetic block scope periscopic creates for the
+    // re-export — this is a periscopic bug.
+    const owner = serverScope!.find_owner('redirect')
+    expect(owner).not.toBe(root)
+    expect(owner).not.toBe(serverScope)
+  })
+
+  it('shadowed variable: find_owner misses child block scope', async () => {
+    // When a `const` inside a function body shadows an outer name, periscopic
+    // puts the declaration in the BlockStatement's scope (a child of the
+    // function scope).  `find_owner` walks *up* from the function scope, so it
+    // finds the outer declaration instead of the inner one.
+    //
+    // This is not a periscopic bug — it is correct scope modeling.  The hoist
+    // algorithm was using find_owner from the function scope, which cannot see
+    // declarations in child (block) scopes.
+    const ast = await parseAstAsync(`
+function outer() {
+  const cookies = getCookies();
+  async function inner(formData) {
+    "use server";
+    const cookies = formData.get("value");
+    return cookies;
+  }
+}
+`)
+    const { map, scope: root } = analyze(ast)
+    // find the inner function and its body block scope
+    let innerFnScope: ReturnType<typeof analyze>['scope'] | undefined
+    let innerBlockScope: ReturnType<typeof analyze>['scope'] | undefined
+    walk(ast, {
+      enter(node) {
+        if (
+          node.type === 'FunctionDeclaration' &&
+          (node as any).id?.name === 'inner'
+        ) {
+          innerFnScope = map.get(node)
+        }
+        if (
+          node.type === 'BlockStatement' &&
+          node.body.some(
+            (s: any) =>
+              s.type === 'ExpressionStatement' &&
+              s.expression.type === 'Literal' &&
+              s.expression.value === 'use server',
+          )
+        ) {
+          innerBlockScope = map.get(node)
+        }
+      },
+    })
+    expect(innerFnScope).toBeDefined()
+    expect(innerBlockScope).toBeDefined()
+
+    // periscopic correctly declares `cookies` in the block scope (child of function scope)
+    expect(innerBlockScope!.declarations.has('cookies')).toBe(true)
+    // the function scope does NOT have `cookies` — only `formData` (param)
+    expect(innerFnScope!.declarations.has('cookies')).toBe(false)
+    expect(innerFnScope!.declarations.has('formData')).toBe(true)
+
+    // `cookies` propagates up as a reference through all ancestor scopes
+    expect(innerFnScope!.references.has('cookies')).toBe(true)
+
+    // find_owner from function scope walks UP and finds the OUTER `cookies`,
+    // not the inner one (which is in a child block scope, unreachable by walking up)
+    const ownerFromFnScope = innerFnScope!.find_owner('cookies')
+    expect(ownerFromFnScope).not.toBe(innerFnScope)
+    expect(ownerFromFnScope).not.toBe(innerBlockScope)
+    expect(ownerFromFnScope).not.toBe(root)
+
+    // find_owner from block scope correctly finds the INNER `cookies`
+    const ownerFromBlockScope = innerBlockScope!.find_owner('cookies')
+    expect(ownerFromBlockScope).toBe(innerBlockScope)
+  })
 })
