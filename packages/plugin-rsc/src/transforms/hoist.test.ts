@@ -448,6 +448,196 @@ export async function kv() {
     `)
   })
 
+  describe('binding member expressions', () => {
+    it('member access only binds the member expression, not the root variable', async () => {
+      const input = `
+function MyForm({ config }) {
+  async function submitAction(formData) {
+    "use server";
+
+    const prefix = config.cookiePrefix; // ONLY member access, never bare config
+    console.log(config.cookiePrefix);
+    return config.cookiePrefix;
+  }
+
+  return "test";
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function MyForm({ config }) {
+          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, config.cookiePrefix);
+
+          return "test";
+        }
+
+        ;export async function $$hoist_0_submitAction($$bind_0_config_cookiePrefix, formData) {
+            "use server";
+
+            const prefix = $$bind_0_config_cookiePrefix; // ONLY member access, never bare config
+            console.log($$bind_0_config_cookiePrefix);
+            return $$bind_0_config_cookiePrefix;
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+        "
+      `)
+    })
+
+    it('multiple different props from same object are each bound separately', async () => {
+      const input = `
+function outer(config) {
+  async function action(formData) {
+    "use server";
+    return config.host + config.port;
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer(config) {
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config.host, config.port);
+        }
+
+        ;export async function $$hoist_0_action($$bind_0_config_host, $$bind_1_config_port, formData) {
+            "use server";
+            return $$bind_0_config_host + $$bind_1_config_port;
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('bare use of var falls back to binding the whole variable', async () => {
+      const input = `
+function outer(config) {
+  async function action(formData) {
+    "use server";
+    const prefix = config.cookiePrefix;
+    return doSomething(config);
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer(config) {
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config);
+        }
+
+        ;export async function $$hoist_0_action(config, formData) {
+            "use server";
+            const prefix = config.cookiePrefix;
+            return doSomething(config);
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('computed member access falls back to binding the whole variable', async () => {
+      const input = `
+function outer(config, key) {
+  async function action(formData) {
+    "use server";
+    return config[key];
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer(config, key) {
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, key, config);
+        }
+
+        ;export async function $$hoist_0_action(key, config, formData) {
+            "use server";
+            return config[key];
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('mixed vars: one member-only, one bare', async () => {
+      const input = `
+function outer(config, user) {
+  async function action(formData) {
+    "use server";
+    return config.cookiePrefix + user;
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer(config, user) {
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, user, config.cookiePrefix);
+        }
+
+        ;export async function $$hoist_0_action(user, $$bind_0_config_cookiePrefix, formData) {
+            "use server";
+            return $$bind_0_config_cookiePrefix + user;
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('multi-level member access binds the full chain', async () => {
+      const input = `
+function outer(config) {
+  async function action(formData) {
+    "use server";
+    return config.db.host;
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer(config) {
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config.db.host);
+        }
+
+        ;export async function $$hoist_0_action($$bind_0_config_db_host, formData) {
+            "use server";
+            return $$bind_0_config_db_host;
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('shadowed object with member access falls back to binding the whole variable', async () => {
+      const input = `
+        function outer(config) {
+          async function action(formData) {
+            "use server";
+            const oldHost = config.db.host;
+            if (condition) {
+              const config = { db: { host: "test" } }; // shadows outer config
+              return config.db.host; // should refer to inner config, not outer
+            }
+          }
+        }
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+                function outer(config) {
+                  const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config);
+                }
+
+        ;export async function $$hoist_0_action(config, formData) {
+                    "use server";
+                    const oldHost = config.db.host;
+                    if (condition) {
+                      const config = { db: { host: "test" } }; // shadows outer config
+                      return config.db.host; // should refer to inner config, not outer
+                    }
+                  };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+  })
+
   it('no ending new line', async () => {
     const input = `\
 export async function test() {

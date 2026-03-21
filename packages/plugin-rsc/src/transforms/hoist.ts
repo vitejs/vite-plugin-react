@@ -1,5 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program, Literal } from 'estree'
+import type { Program, Literal, Expression, Super } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { analyze } from 'periscopic'
@@ -90,8 +90,58 @@ export function transformHoistInlineDirective(
           const owner = scope.find_owner(ref)
           return owner && owner !== scope && owner !== analyzed.scope
         })
+          .flatMap((ref) => {
+            // extract the full expression used for a variable so that we can bind the whole
+            // expression accessor instead of the bare variable, which may not be serializable
+            // e.g. `config.cookiePrefix` instead of `config`, which may have non-serializable
+            // properties like a `config.get` function.
+            const exprs = new Set<string>()
+            let isBareVarUsed = false
+
+            walk(node.body, {
+              enter(inner, innerParent) {
+                const isLHSOfMemberExpr =
+                  innerParent?.type === 'MemberExpression' &&
+                  innerParent.object === inner &&
+                  !innerParent.computed
+
+                if (inner.type === 'Identifier' && inner.name === ref) {
+                  if (isLHSOfMemberExpr) return
+                  isBareVarUsed = true
+                } else if (
+                  inner.type === 'MemberExpression' &&
+                  !inner.computed &&
+                  !isLHSOfMemberExpr
+                ) {
+                  // walk down the object chain until we find the leaf identifier and check if it's the ref
+                  let root: Expression | Super = inner
+                  while (root.type === 'MemberExpression') root = root.object
+
+                  if (root.type === 'Identifier' && root.name === ref) {
+                    exprs.add(input.slice(inner.start, inner.end))
+                  }
+                }
+              },
+            })
+
+            if (isBareVarUsed || exprs.size === 0)
+              return [{ param: ref, arg: ref }]
+
+            return [...exprs.values()].map((expr, idx) => {
+              const param = `$$bind_${idx}_${expr.replace(/\./g, '_')}`
+              walk(node.body, {
+                enter(inner) {
+                  if (input.slice(inner.start, inner.end) === expr) {
+                    output.update(inner.start, inner.end, param)
+                  }
+                },
+              })
+              return { param, arg: expr }
+            })
+          })
+
         let newParams = [
-          ...bindVars,
+          ...bindVars.map((b) => b.param),
           ...node.params.map((n) => input.slice(n.start, n.end)),
         ].join(', ')
         if (bindVars.length > 0 && options.decode) {
@@ -101,7 +151,7 @@ export function transformHoistInlineDirective(
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
-            `const [${bindVars.join(',')}] = ${options.decode(
+            `const [${bindVars.map((b) => b.param).join(',')}] = ${options.decode(
               '$$hoist_encoded',
             )};\n`,
           )
@@ -132,8 +182,8 @@ export function transformHoistInlineDirective(
         })}`
         if (bindVars.length > 0) {
           const bindArgs = options.encode
-            ? options.encode('[' + bindVars.join(', ') + ']')
-            : bindVars.join(', ')
+            ? options.encode('[' + bindVars.map((b) => b.arg).join(', ') + ']')
+            : bindVars.map((b) => b.arg).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (declName) {
