@@ -24,9 +24,7 @@ async function handler(request: Request): Promise<Response> {
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
-  let temporaryReferences:
-    | ReturnType<typeof createTemporaryReferenceSet>
-    | undefined
+  let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
