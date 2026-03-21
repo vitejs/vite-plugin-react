@@ -1,8 +1,8 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program, Literal, Pattern } from 'estree'
+import type { Program, Literal } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { analyze } from 'periscopic'
+import { analyze, extract_names } from 'periscopic'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -214,29 +214,6 @@ function collectLocallyDeclaredNames(
 ): Set<string> {
   const names = new Set<string>()
 
-  function collectPattern(node: Pattern | null): void {
-    switch (node?.type) {
-      case 'Identifier':
-        names.add(node.name)
-        break
-      case 'AssignmentPattern':
-        return collectPattern(node.left)
-      case 'RestElement':
-        return collectPattern(node.argument)
-      case 'ArrayPattern':
-        for (const el of node.elements) {
-          collectPattern(el)
-        }
-        break
-      case 'ObjectPattern':
-        for (const prop of node.properties) {
-          collectPattern(
-            prop.type === 'RestElement' ? prop.argument : prop.value,
-          )
-        }
-    }
-  }
-
   walk(body, {
     enter(node) {
       switch (node.type) {
@@ -249,7 +226,9 @@ function collectLocallyDeclaredNames(
           return this.skip()
         case 'VariableDeclaration':
           for (const decl of node.declarations) {
-            collectPattern(decl.id)
+            for (const name of extract_names(decl.id)) {
+              names.add(name)
+            }
           }
       }
     },

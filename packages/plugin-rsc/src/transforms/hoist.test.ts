@@ -652,3 +652,10 @@ export async function test() {
     `)
   })
 })
+
+// TODO: should report to upstream or looks for alternative
+// https://github.com/Rich-Harris/periscopic/
+describe.skip('periscopic issues', () => {
+  // TODO: re-export
+  // TODO: shadowed variable in nested functions
+})
