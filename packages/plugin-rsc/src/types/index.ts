@@ -43,11 +43,9 @@ export interface RenderToReadableStreamOptions {
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
-  callServer?: CallServerCallback
   debugChannel?: { writable?: WritableStream; readable?: ReadableStream }
   endTime?: number
   environmentName?: string
-  findSourceMapURL?: (filename: string, environmentName: string) => string
   replayConsoleLogs?: boolean
   startTime?: number
   temporaryReferences?: ClientTemporaryReferenceSet
@@ -58,7 +56,6 @@ export interface CreateFromReadableStreamEdgeOptions {
   debugChannel?: { readable?: ReadableStream }
   endTime?: number
   environmentName?: string
-  findSourceMapURL?: (filename: string, environmentName: string) => string
   nonce?: string
   replayConsoleLogs?: boolean
   startTime?: number
