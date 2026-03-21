@@ -32,7 +32,7 @@ export function createFromFetch<T>(
 }
 
 export const encodeReply: (
-  v: unknown[],
+  v: unknown,
   options?: EncodeReplyOptions,
 ) => Promise<string | FormData> = ReactClient.encodeReply
 

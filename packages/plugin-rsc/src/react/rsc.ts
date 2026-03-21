@@ -70,7 +70,7 @@ export const registerServerReference: <T>(
 export function decodeReply(
   body: string | FormData,
   options?: DecodeReplyOptions,
-): Promise<unknown[]> {
+): Promise<unknown> {
   return ReactServer.decodeReply(body, createServerManifest(), options)
 }
 
@@ -89,7 +89,7 @@ export const createTemporaryReferenceSet: () => ServerTemporaryReferenceSet =
   ReactServer.createTemporaryReferenceSet
 
 export const encodeReply: (
-  v: unknown[],
+  v: unknown,
   options?: EncodeReplyOptions,
 ) => Promise<string | FormData> = ReactClient.encodeReply
 

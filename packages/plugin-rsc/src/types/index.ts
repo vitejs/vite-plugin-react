@@ -24,7 +24,10 @@ export interface ServerConsumerManifest {
   }
 }
 
-export type CallServerCallback = (id: string, args: unknown[]) => unknown
+export type CallServerCallback = (
+  id: string,
+  args: unknown[],
+) => Promise<unknown>
 
 // Best-effort latest RSC API types
 // https://github.com/wakujs/waku/blob/2ce74ee2381f6c0593b8246f33043434706889fe/packages/waku/src/lib/react-types.d.ts

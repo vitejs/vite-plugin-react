@@ -50,7 +50,7 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
       })
 
       // run the original function
-      const result = await fn(...decodedArgs)
+      const result = await fn(...(decodedArgs as any[]))
 
       // serialize result to a ReadableStream
       const stream = renderToReadableStream(result, {
