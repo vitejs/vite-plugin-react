@@ -82,14 +82,15 @@ export function transformHoistInlineDirective(
           'anonymous_server_function'
 
         // bind variables which are neither global nor in own scope
-        const bindVars = [...scope.references].filter((ref) => {
-          // declared function itself is included as reference
-          if (ref === declName) {
-            return false
-          }
-          const owner = scope.find_owner(ref)
-          return owner && owner !== scope && owner !== analyzed.scope
-        })
+        const bindVars = [...scope.references]
+          .filter((ref) => {
+            // declared function itself is included as reference
+            if (ref === declName) {
+              return false
+            }
+            const owner = scope.find_owner(ref)
+            return owner && owner !== scope && owner !== analyzed.scope
+          })
           .flatMap((ref) => {
             // extract the full expression used for a variable so that we can bind the whole
             // expression accessor instead of the bare variable, which may not be serializable
