@@ -43,6 +43,7 @@ export interface RenderToReadableStreamOptions {
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
+  callServer?: CallServerCallback
   debugChannel?: DebugChannel
   endTime?: number
   environmentName?: string
