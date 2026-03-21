@@ -11,8 +11,8 @@ import {
 import type {
   ClientTemporaryReferenceSet,
   CreateFromReadableStreamEdgeOptions,
-  DecodeReplyOptions,
-  EncodeReplyOptions,
+  DecodeReplyFunction,
+  EncodeReplyFunction,
   RenderToReadableStreamOptions,
   ServerTemporaryReferenceSet,
 } from '../types'
@@ -67,12 +67,8 @@ export const registerServerReference: <T>(
   name: string,
 ) => T = ReactServer.registerServerReference
 
-export function decodeReply(
-  body: string | FormData,
-  options?: DecodeReplyOptions,
-): Promise<unknown> {
-  return ReactServer.decodeReply(body, createServerManifest(), options)
-}
+export const decodeReply: DecodeReplyFunction = (body, options) =>
+  ReactServer.decodeReply(body, createServerManifest(), options)
 
 export function decodeAction(body: FormData): Promise<() => Promise<void>> {
   return ReactServer.decodeAction(body, createServerManifest())
@@ -88,10 +84,7 @@ export function decodeFormState(
 export const createTemporaryReferenceSet: () => ServerTemporaryReferenceSet =
   ReactServer.createTemporaryReferenceSet
 
-export const encodeReply: (
-  v: unknown,
-  options?: EncodeReplyOptions,
-) => Promise<string | FormData> = ReactClient.encodeReply
+export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
 export const createClientTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
   ReactClient.createTemporaryReferenceSet

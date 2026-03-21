@@ -4,7 +4,7 @@ import type {
   CallServerCallback,
   ClientTemporaryReferenceSet,
   CreateFromReadableStreamBrowserOptions,
-  EncodeReplyOptions,
+  EncodeReplyFunction,
 } from '../types'
 
 export { setRequireModule } from '../core/browser'
@@ -31,10 +31,7 @@ export function createFromFetch<T>(
   })
 }
 
-export const encodeReply: (
-  v: unknown,
-  options?: EncodeReplyOptions,
-) => Promise<string | FormData> = ReactClient.encodeReply
+export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
 export const createServerReference: (...args: any[]) => unknown =
   ReactClient.createServerReference

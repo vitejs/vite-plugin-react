@@ -78,6 +78,16 @@ export interface EncodeReplyOptions {
   signal?: AbortSignal
 }
 
+// TODO: technically encode/decodeReply can serialize non-array values
+export type EncodeReplyFunction = (
+  value: unknown[],
+  options?: EncodeReplyOptions,
+) => Promise<string | FormData>
+export type DecodeReplyFunction = (
+  body: string | FormData,
+  options?: DecodeReplyOptions,
+) => Promise<unknown[]>
+
 type DebugChannel = {
   readable?: ReadableStream<Uint8Array>
   writable?: WritableStream<Uint8Array>
