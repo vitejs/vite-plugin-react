@@ -39,15 +39,18 @@ export interface RenderToReadableStreamOptions {
   onPostpone?: (reason: string) => void
 }
 
-export interface CreateFromReadableStreamCsrOptions {
+export interface CreateFromReadableStreamBrowserOptions {
   callServer?: CallServerCallback
   debugChannel?: { writable?: WritableStream; readable?: ReadableStream }
   findSourceMapURL?: (filename: string, environmentName: string) => string
   temporaryReferences?: ClientTemporaryReferenceSet
 }
 
-export interface CreateFromReadableStreamSsrOptions {
+export interface CreateFromReadableStreamEdgeOptions {
   nonce?: string
+  environmentName?: string
+  replayConsoleLogs?: boolean
+  temporaryReferences?: ClientTemporaryReferenceSet
 }
 
 export interface DecodeReplyOptions {
@@ -58,5 +61,8 @@ export interface EncodeReplyOptions {
   temporaryReferences?: ClientTemporaryReferenceSet
 }
 
-export type ServerTemporaryReferenceSet = WeakMap<object, string>
-export type ClientTemporaryReferenceSet = Map<unknown, unknown>
+// TODO: for now keep them unknown
+// export type ServerTemporaryReferenceSet = WeakMap<object, string>
+// export type ClientTemporaryReferenceSet = Map<unknown, unknown>
+export type ServerTemporaryReferenceSet = unknown
+export type ClientTemporaryReferenceSet = unknown

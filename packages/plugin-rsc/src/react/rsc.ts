@@ -9,10 +9,12 @@ import {
   createServerManifest,
 } from '../core/rsc'
 import type {
-  CreateFromReadableStreamSsrOptions,
+  ClientTemporaryReferenceSet,
+  CreateFromReadableStreamEdgeOptions,
   DecodeReplyOptions,
   EncodeReplyOptions,
   RenderToReadableStreamOptions,
+  ServerTemporaryReferenceSet,
 } from '../types'
 
 export { loadServerAction, setRequireModule } from '../core/rsc'
@@ -38,7 +40,7 @@ export function renderToReadableStream<T>(
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
-  options: CreateFromReadableStreamSsrOptions = {},
+  options: CreateFromReadableStreamEdgeOptions = {},
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     serverConsumerManifest: {
@@ -83,7 +85,7 @@ export function decodeFormState(
   return ReactServer.decodeFormState(actionResult, body, createServerManifest())
 }
 
-export const createTemporaryReferenceSet: () => unknown =
+export const createTemporaryReferenceSet: () => ServerTemporaryReferenceSet =
   ReactServer.createTemporaryReferenceSet
 
 export const encodeReply: (
@@ -91,5 +93,5 @@ export const encodeReply: (
   options?: EncodeReplyOptions,
 ) => Promise<string | FormData> = ReactClient.encodeReply
 
-export const createClientTemporaryReferenceSet: () => unknown =
+export const createClientTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
   ReactClient.createTemporaryReferenceSet

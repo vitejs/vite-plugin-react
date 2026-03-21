@@ -15,7 +15,7 @@ export function fetchServer(request: Request) {
     createTemporaryReferenceSet,
     decodeAction,
     decodeFormState,
-    decodeReply,
+    decodeReply: decodeReply as any,
     loadServerAction,
     // The incoming request.
     request,
