@@ -583,12 +583,12 @@ function buildAction(config) {
 
     it('inner accessing both outer and own names', async () => {
       const input = `
-function buildAction() {
-  const cookies = getCookies();
+function outer() {
+  const cookies = 0;
   async function action() {
     "use server";
     if (condition) {
-      const cookies = localValue;  // block-scoped to the if
+      const cookies = 1;  // block-scoped to the if
       process(cookies);
     }
     return cookies;  // refers to OUTER cookies — needs binding
@@ -597,18 +597,50 @@ function buildAction() {
 `
       expect(await testTransform(input)).toMatchInlineSnapshot(`
         "
-        function buildAction() {
-          const cookies = getCookies();
+        function outer() {
+          const cookies = 0;
           const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, cookies);
         }
 
         ;export async function $$hoist_0_action(cookies) {
             "use server";
             if (condition) {
-              const cookies = localValue;  // block-scoped to the if
+              const cookies = 1;  // block-scoped to the if
               process(cookies);
             }
             return cookies;  // refers to OUTER cookies — needs binding
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+
+    it('inner has own block then shadows', async () => {
+      const input = `
+function outer() {
+  const cookie = 0;
+  async function action() {
+    "use server";
+    if (cond) {
+      const cookie = 1;
+      return cookie;  // refers to if-block's cookie
+    }
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function outer() {
+          const cookie = 0;
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, cookie);
+        }
+
+        ;export async function $$hoist_0_action(cookie) {
+            "use server";
+            if (cond) {
+              const cookie = 1;
+              return cookie;  // refers to if-block's cookie
+            }
           };
         /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
         "
