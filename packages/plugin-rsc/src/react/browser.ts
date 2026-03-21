@@ -1,12 +1,16 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser'
-import type { CallServerCallback } from '../types'
+import type {
+  CallServerCallback,
+  CreateFromReadableStreamCsrOptions,
+  EncodeReplyOptions,
+} from '../types'
 
 export { setRequireModule } from '../core/browser'
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
-  options: object = {},
+  options: CreateFromReadableStreamCsrOptions = {},
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     callServer,
@@ -17,7 +21,7 @@ export function createFromReadableStream<T>(
 
 export function createFromFetch<T>(
   promiseForResponse: Promise<Response>,
-  options: object = {},
+  options: CreateFromReadableStreamCsrOptions = {},
 ): Promise<T> {
   return ReactClient.createFromFetch(promiseForResponse, {
     callServer,
@@ -28,7 +32,7 @@ export function createFromFetch<T>(
 
 export const encodeReply: (
   v: unknown[],
-  options?: unknown,
+  options?: EncodeReplyOptions,
 ) => Promise<string | FormData> = ReactClient.encodeReply
 
 export const createServerReference: (...args: any[]) => unknown =
