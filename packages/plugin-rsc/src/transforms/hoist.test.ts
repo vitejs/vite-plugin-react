@@ -580,6 +580,75 @@ function buildAction(config) {
         "
       `)
     })
+
+    it('inner accessing both outer and own names', async () => {
+      const input = `
+function buildAction() {
+  const cookies = getCookies();
+  async function action() {
+    "use server";
+    if (condition) {
+      const cookies = localValue;  // block-scoped to the if
+      process(cookies);
+    }
+    return cookies;  // refers to OUTER cookies — needs binding
+  }
+}
+`
+      expect(await testTransform(input)).toMatchInlineSnapshot(`
+        "
+        function buildAction() {
+          const cookies = getCookies();
+          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, cookies);
+        }
+
+        ;export async function $$hoist_0_action(cookies) {
+            "use server";
+            if (condition) {
+              const cookies = localValue;  // block-scoped to the if
+              process(cookies);
+            }
+            return cookies;  // refers to OUTER cookies — needs binding
+          };
+        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+        "
+      `)
+    })
+  })
+
+  // TODO: is this supposed to work? probably yes
+  it('self-referencing function', async () => {
+    const input = `
+function Parent() {
+  const count = 0;
+
+  async function recurse(n) {
+    "use server";
+    if (n > 0) return recurse(n - 1);
+    return count;
+  }
+
+  return recurse;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Parent() {
+        const count = 0;
+
+        const recurse = /* #__PURE__ */ $$register($$hoist_0_recurse, "<id>", "$$hoist_0_recurse").bind(null, count, recurse);
+
+        return recurse;
+      }
+
+      ;export async function $$hoist_0_recurse(count, recurse, n) {
+          "use server";
+          if (n > 0) return recurse(n - 1);
+          return count;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_recurse, "name", { value: "recurse" });
+      "
+    `)
   })
 
   it('no ending new line', async () => {
