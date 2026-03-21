@@ -40,9 +40,7 @@ export interface RenderToReadableStreamOptions {
 }
 
 export interface CreateFromReadableStreamBrowserOptions {
-  callServer?: CallServerCallback
   debugChannel?: { writable?: WritableStream; readable?: ReadableStream }
-  findSourceMapURL?: (filename: string, environmentName: string) => string
   temporaryReferences?: ClientTemporaryReferenceSet
 }
 
