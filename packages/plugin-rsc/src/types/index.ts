@@ -31,7 +31,7 @@ export type CallServerCallback = (id: string, args: unknown[]) => unknown
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
 export interface RenderToReadableStreamOptions {
-  debugChannel?: { readable?: ReadableStream; writable?: WritableStream }
+  debugChannel?: DebugChannel
   environmentName?: string | (() => string)
   filterStackFrame?: (url: string, functionName: string) => boolean
   identifierPrefix?: string
@@ -43,7 +43,7 @@ export interface RenderToReadableStreamOptions {
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
-  debugChannel?: { writable?: WritableStream; readable?: ReadableStream }
+  debugChannel?: DebugChannel
   endTime?: number
   environmentName?: string
   replayConsoleLogs?: boolean
@@ -53,7 +53,7 @@ export interface CreateFromReadableStreamBrowserOptions {
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.js#L74-L87
 export interface CreateFromReadableStreamEdgeOptions {
-  debugChannel?: { readable?: ReadableStream }
+  debugChannel?: DebugChannel
   endTime?: number
   environmentName?: string
   nonce?: string
@@ -72,6 +72,11 @@ export interface DecodeReplyOptions {
 export interface EncodeReplyOptions {
   temporaryReferences?: ClientTemporaryReferenceSet
   signal?: AbortSignal
+}
+
+type DebugChannel = {
+  readable?: ReadableStream<Uint8Array>
+  writable?: WritableStream<Uint8Array>
 }
 
 // TODO: for now keep them unknown
