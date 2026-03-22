@@ -608,7 +608,6 @@ function outer() {
       `)
     })
 
-    // TODO: not working
     it('var at top of body shadows outer variable', async () => {
       // `var` is function-scoped, so `var cookies` at the top of the action body
       // correctly shadows the outer `cookies` — it must NOT be bound.
@@ -1025,7 +1024,6 @@ function outer(config) {
     })
   })
 
-  // TODO: is this supposed to work? probably yes
   it('self-referencing function', async () => {
     const input = `
 function Parent() {
