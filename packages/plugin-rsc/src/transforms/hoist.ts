@@ -1,8 +1,12 @@
-import { tinyassert } from '@hiogawa/utils'
 import type { Program, Literal } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { analyze } from 'periscopic'
+import {
+  analyze,
+  analyzeFunctionCaptures,
+  extractNames,
+  type FreeVarUsage,
+} from './analyze-node'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -37,18 +41,6 @@ export function transformHoistInlineDirective(
       ? exactRegex(options.directive)
       : options.directive
 
-  // re-export somehow confuses periscopic scopes so remove them before analysis
-  walk(ast, {
-    enter(node) {
-      if (node.type === 'ExportAllDeclaration') {
-        this.remove()
-      }
-      if (node.type === 'ExportNamedDeclaration' && !node.declaration) {
-        this.remove()
-      }
-    },
-  })
-
   const analyzed = analyze(ast)
   const names: string[] = []
 
@@ -71,8 +63,6 @@ export function transformHoistInlineDirective(
           )
         }
 
-        const scope = analyzed.map.get(node)
-        tinyassert(scope)
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
@@ -81,17 +71,28 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
+        const fnCaptures = analyzeFunctionCaptures(node, analyzed)
+
         // bind variables which are neither global nor in own scope
-        const bindVars = [...scope.references].filter((ref) => {
-          // declared function itself is included as reference
-          if (ref === declName) {
-            return false
-          }
-          const owner = scope.find_owner(ref)
-          return owner && owner !== scope && owner !== analyzed.scope
-        })
+        const bindVars = [...fnCaptures.captures.entries()].flatMap(
+          ([ref, usage]: [string, FreeVarUsage]) => {
+            if (usage.bare || usage.members.size === 0) {
+              return [{ param: ref, arg: ref }]
+            }
+
+            return [...usage.members.entries()].map(
+              ([pathKey, ranges], idx) => {
+                const param = `$$bind_${idx}_${pathKey.replace(/\./g, '_')}`
+                for (const { start, end, suffix } of ranges) {
+                  output.update(start, end, param + suffix)
+                }
+                return { param, arg: pathKey }
+              },
+            )
+          },
+        )
         let newParams = [
-          ...bindVars,
+          ...bindVars.map((b) => b.param),
           ...node.params.map((n) => input.slice(n.start, n.end)),
         ].join(', ')
         if (bindVars.length > 0 && options.decode) {
@@ -101,7 +102,7 @@ export function transformHoistInlineDirective(
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
-            `const [${bindVars.join(',')}] = ${options.decode(
+            `const [${bindVars.map((b) => b.param).join(',')}] = ${options.decode(
               '$$hoist_encoded',
             )};\n`,
           )
@@ -126,14 +127,28 @@ export function transformHoistInlineDirective(
         )
         output.move(node.start, node.end, input.length)
 
+        if (declName && fnCaptures.isSelfReferencing) {
+          const boundArgs =
+            bindVars.length === 0
+              ? ''
+              : options.decode
+                ? '$$hoist_encoded, '
+                : `${bindVars.map((v) => v.arg).join(', ')}, `
+          const directiveNode = node.body.body[0]!
+          output.appendLeft(
+            directiveNode.end,
+            `\nconst ${declName} = (...$$args) => ${newName}(${boundArgs}...$$args);`,
+          )
+        }
+
         // replace original declartion with action register + bind
         let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
           directiveMatch: match,
         })}`
         if (bindVars.length > 0) {
           const bindArgs = options.encode
-            ? options.encode('[' + bindVars.join(', ') + ']')
-            : bindVars.join(', ')
+            ? options.encode('[' + bindVars.map((b) => b.arg).join(', ') + ']')
+            : bindVars.map((b) => b.arg).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (declName) {

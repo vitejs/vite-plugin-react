@@ -1,6 +1,6 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { Program } from 'estree'
-import { extract_names } from 'periscopic'
+import { extractNames } from './analyze-node'
 
 export function hasDirective(
   body: Program['body'],
@@ -41,7 +41,7 @@ export function getExportNames(
            * export const foo = 1, bar = 2
            */
           for (const decl of node.declaration.declarations) {
-            exportNames.push(...extract_names(decl.id))
+            exportNames.push(...extractNames(decl.id))
           }
         } else {
           node.declaration satisfies never
