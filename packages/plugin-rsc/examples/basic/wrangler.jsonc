@@ -7,5 +7,5 @@
   },
   "workers_dev": true,
   "compatibility_date": "2025-10-01",
-  "compatibility_flags": ["nodejs_als"],
+  "compatibility_flags": ["nodejs_compat"],
 }

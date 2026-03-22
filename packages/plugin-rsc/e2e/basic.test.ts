@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import {
   type Page,
   type Response as PlaywrightResponse,
   expect,
   test,
 } from '@playwright/test'
+import { x } from 'tinyexec'
+import { normalizePath, type Rollup } from 'vite'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -13,13 +16,35 @@ import {
   testNoJs,
   waitForHydration,
 } from './helper'
-import { x } from 'tinyexec'
-import { normalizePath, type Rollup } from 'vite'
-import path from 'node:path'
 
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
+
+  test('validate findSourceMapURL - reject', async () => {
+    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
+    requestUrl.searchParams.set(
+      'filename',
+      new URL('../examples/basic/.env', import.meta.url).href,
+    )
+    requestUrl.searchParams.set('environmentName', 'Server')
+    const response = await fetch(requestUrl)
+    expect(response.status).toBe(404)
+  })
+
+  test('validate findSourceMapURL - pass', async () => {
+    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
+    requestUrl.searchParams.set(
+      'filename',
+      new URL('../examples/basic/package.json', import.meta.url).href,
+    )
+    requestUrl.searchParams.set('environmentName', 'Server')
+    const response = await fetch(requestUrl)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      version: 3,
+    })
+  })
 })
 
 test.describe('dev-initial', () => {
@@ -212,11 +237,36 @@ function defineTest(f: Fixture) {
     expect(f.proc().stderr()).toBe('')
   })
 
+  test('onClientReference callback', async ({ page }) => {
+    const response = await page.request.get(f.url('__test_onClientReference'))
+    expect(response.ok()).toBe(true)
+    const data = await response.json()
+    expect(data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+          deps: expect.objectContaining({
+            js: expect.any(Array),
+            css: expect.any(Array),
+          }),
+        }),
+      ]),
+    )
+  })
+
   test('client component', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
     await page.getByRole('button', { name: 'client-counter: 0' }).click()
     await page.getByRole('button', { name: 'client-counter: 1' }).click()
+  })
+
+  test('import environment', async ({ page }) => {
+    await page.goto(f.url())
+    await expect(page.getByTestId('import-environment')).toHaveText(
+      '[test-import-environment: test-ssr-module: test-rsc-module]',
+    )
   })
 
   test('server action @js', async ({ page }) => {
@@ -304,6 +354,26 @@ function defineTest(f: Fixture) {
       'test-useActionState: 2',
     )
   }
+
+  test('non form action error @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('non-form-action-error')).toContainText('?')
+    await page.getByTestId('non-form-action-error').click()
+    await expect(page.getByTestId('non-form-action-error')).toContainText(
+      'non-form-action-error',
+    )
+  })
+
+  test('non form action args @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('non-form-action-args')).toContainText('?')
+    await page.getByTestId('non-form-action-args').click()
+    await expect(page.getByTestId('non-form-action-args')).toContainText(
+      'received: test-42',
+    )
+  })
 
   test('useActionState with jsx @js', async ({ page }) => {
     await page.goto(f.url())
@@ -1020,6 +1090,85 @@ function defineTest(f: Fixture) {
     )
   })
 
+  // TODO: lazy component CSS is not yet fully supported
+  // https://github.com/vitejs/vite-plugin-react/issues/1057
+
+  // Case 1: client -> lazy client -> CSS
+  test('lazy css client to client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    // CSS is loaded after hydration via JS
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  testNoJs('lazy css client to client @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    // component is rendered correctly in SSR
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveText(
+      'lazy-css-client-to-client',
+    )
+    // but CSS is not included in SSR (FOUC)
+    await expect(page.locator('.test-lazy-css-client-to-client')).toHaveCSS(
+      'color',
+      'rgb(0, 0, 0)',
+    )
+  })
+
+  // Case 2: server -> lazy client with CSS
+  test('lazy css server to client @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  testNoJs('lazy css server to client @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveText(
+      'lazy-css-server-to-client',
+    )
+    // CSS is included in SSR
+    await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  // Case 3: server -> lazy server with CSS
+  test('lazy css server to server @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+      'lazy-css-server-to-server',
+    )
+    await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+  })
+
+  // suspense can fallback due to `viteRsc.loadCss` wrapper
+  // but streamed lazy server component html comes with css, so no FOUC.
+  // TODO: skipped for now since not reliable
+  testNoJs('lazy css server to server @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+    //   'loading',
+    // )
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveText(
+    //   'lazy-css-server-to-server',
+    // )
+    // await expect(page.locator('.test-lazy-css-server-to-server')).toHaveCSS(
+    //   'color',
+    //   'rgb(255, 165, 0)',
+    // )
+  })
+
   test('tailwind @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
@@ -1199,15 +1348,18 @@ function defineTest(f: Fixture) {
     expect(res?.status()).toBe(500)
   })
 
-  test('hydrate while streaming @js', async ({ page }) => {
-    // client is interactive before suspense is resolved
+  test('streaming @js', async ({ page }) => {
+    // suspense streaming works
     await page.goto(f.url('./?test-suspense=1000'), { waitUntil: 'commit' })
+    await expect(page.getByTestId('suspense')).toContainText(
+      'suspense-resolved',
+    )
+
+    // also client is interactive (hydrated) before suspense is resolved
+    await page.goto(f.url('./?test-suspense=100000'), { waitUntil: 'commit' })
     await waitForHydration(page)
     await expect(page.getByTestId('suspense')).toContainText(
       'suspense-fallback',
-    )
-    await expect(page.getByTestId('suspense')).toContainText(
-      'suspense-resolved',
     )
   })
 
@@ -1369,6 +1521,14 @@ function defineTest(f: Fixture) {
     await expect(
       page.getByTestId('transitive-use-sync-external-store-client'),
     ).toHaveText('ok:browser')
+  })
+
+  test('cjs builtin interop', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('cjs-builtin-interop')).toHaveText(
+      'cjs-builtin-interop: ok',
+    )
   })
 
   test('use cache function', async ({ page }) => {
@@ -1593,6 +1753,76 @@ function defineTest(f: Fixture) {
     await waitForHydration(page)
     await expect(page.getByTestId('test-tree-shake2')).toHaveText(
       'test-tree-shake2:lib-client1|lib-server1',
+    )
+  })
+
+  test('virtual module with use client', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    // Test that the virtual client component renders and works
+    await expect(page.getByTestId('test-virtual-client')).toHaveText(
+      'test-virtual-client: not-clicked',
+    )
+    await page.getByTestId('test-virtual-client').click()
+    await expect(page.getByTestId('test-virtual-client')).toHaveText(
+      'test-virtual-client: clicked',
+    )
+  })
+
+  test('virtual css module', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    // Server CSS (loaded via <link>)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-server-query')).toHaveCSS(
+      'color',
+      'rgb(50, 100, 150)',
+    )
+    // Exact-match: fails via <link> in dev (Vite limitation), works in build
+    await expect(page.locator('.test-virtual-style-server-exact')).toHaveCSS(
+      'color',
+      f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 100, 50)',
+    )
+
+    // Client CSS (loaded via JS import, HMR injects styles)
+    // Both patterns work because no ?direct is involved in JS imports
+    await expect(page.locator('.test-virtual-style-client-query')).toHaveCSS(
+      'color',
+      'rgb(50, 150, 100)',
+    )
+    await expect(page.locator('.test-virtual-style-client-exact')).toHaveCSS(
+      'color',
+      'rgb(200, 50, 100)',
+    )
+  })
+
+  testNoJs('virtual css module @nojs', async ({ page }) => {
+    await page.goto(f.url())
+
+    // Server CSS (loaded via <link>)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-server-query')).toHaveCSS(
+      'color',
+      'rgb(50, 100, 150)',
+    )
+    // Exact-match: fails via <link> in dev (Vite limitation)
+    await expect(page.locator('.test-virtual-style-server-exact')).toHaveCSS(
+      'color',
+      f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 100, 50)',
+    )
+
+    // Client CSS (loaded via <link> in noJS mode)
+    // Query-aware: works in both dev and build
+    await expect(page.locator('.test-virtual-style-client-query')).toHaveCSS(
+      'color',
+      'rgb(50, 150, 100)',
+    )
+    // Exact-match: fails via <link> in dev (Vite limitation)
+    await expect(page.locator('.test-virtual-style-client-exact')).toHaveCSS(
+      'color',
+      f.mode === 'dev' ? 'rgb(0, 0, 0)' : 'rgb(200, 50, 100)',
     )
   })
 }

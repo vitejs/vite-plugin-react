@@ -1,6 +1,6 @@
+import * as ReactDOM from 'react-dom'
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
-import * as ReactDOM from 'react-dom'
 import { setRequireModule } from './core/ssr'
 import type { ResolvedAssetDeps } from './plugin'
 import { toCssVirtual, toReferenceValidationVirtual } from './plugins/shared'
@@ -8,6 +8,30 @@ import { toCssVirtual, toReferenceValidationVirtual } from './plugins/shared'
 export { createServerConsumerManifest } from './core/ssr'
 
 export * from './react/ssr'
+
+/**
+ * Callback type for client reference dependency notifications.
+ * Called during SSR when a client component's dependencies are loaded.
+ * @experimental
+ */
+export type OnClientReference = (reference: {
+  id: string
+  deps: ResolvedAssetDeps
+}) => void
+
+// Registered callback for client reference deps
+let onClientReference: OnClientReference | undefined
+
+/**
+ * Register a callback to be notified when client reference dependencies are loaded.
+ * Called during SSR when a client component is accessed.
+ * @experimental
+ */
+export function setOnClientReference(
+  callback: OnClientReference | undefined,
+): void {
+  onClientReference = callback
+}
 
 initialize()
 
@@ -23,32 +47,34 @@ function initialize(): void {
         const modCss = await import(
           /* @vite-ignore */ '/@id/__x00__' + toCssVirtual({ id, type: 'ssr' })
         )
-        return wrapResourceProxy(mod, { js: [], css: modCss.default })
+        return wrapResourceProxy(mod, id, { js: [], css: modCss.default })
       } else {
         const import_ = clientReferences.default[id]
         if (!import_) {
           throw new Error(`client reference not found '${id}'`)
         }
-        const deps = assetsManifest.clientReferenceDeps[id]
-        // kick off preload before initial async import, which is not sync-cached
-        if (deps) {
-          preloadDeps(deps)
+        const deps = assetsManifest.clientReferenceDeps[id] ?? {
+          js: [],
+          css: [],
         }
+        // kick off preload/notify before initial async import, which is not sync-cached
+        preloadDeps(deps)
+        onClientReference?.({ id, deps })
         const mod: any = await import_()
-        return wrapResourceProxy(mod, deps)
+        return wrapResourceProxy(mod, id, deps)
       }
     },
   })
 }
 
-// preload/preinit during getter access since `load` is cached on production
-function wrapResourceProxy(mod: any, deps?: ResolvedAssetDeps) {
+// preload/preinit during getter access since `load` is cached on production.
+// also notify `onClientReference` callback here since module export access is not memoized by React.
+function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
   return new Proxy(mod, {
     get(target, p, receiver) {
       if (p in mod) {
-        if (deps) {
-          preloadDeps(deps)
-        }
+        preloadDeps(deps)
+        onClientReference?.({ id, deps })
       }
       return Reflect.get(target, p, receiver)
     },
@@ -67,7 +93,10 @@ function preloadDeps(deps: ResolvedAssetDeps) {
   for (const href of deps.css) {
     ReactDOM.preinit(href, {
       as: 'style',
-      precedence: 'vite-rsc/client-reference',
+      precedence:
+        assetsManifest.cssLinkPrecedence !== false
+          ? 'vite-rsc/client-reference'
+          : undefined,
     })
   }
 }

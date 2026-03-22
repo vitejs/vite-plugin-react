@@ -1,5 +1,5 @@
-import encryptionKeySource from 'virtual:vite-rsc/encryption-key'
 import { once } from '@hiogawa/utils'
+import encryptionKeySource from 'virtual:vite-rsc/encryption-key'
 import { createFromReadableStream, renderToReadableStream } from '../react/rsc'
 import {
   arrayToStream,

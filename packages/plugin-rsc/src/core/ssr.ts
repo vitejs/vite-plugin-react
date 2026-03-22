@@ -13,11 +13,7 @@ export function setRequireModule(options: {
   const requireModule = memoize((id: string) => {
     return options.load(removeReferenceCacheTag(id))
   })
-
-  const clientRequire = (id: string) => {
-    return requireModule(id)
-  }
-  ;(globalThis as any).__vite_rsc_client_require__ = clientRequire
+  ;(globalThis as any).__vite_rsc_client_require__ = requireModule
 
   setInternalRequire()
 }

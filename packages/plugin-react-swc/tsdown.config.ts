@@ -11,19 +11,19 @@ export default defineConfig({
   copy: [
     {
       from: 'node_modules/@vitejs/react-common/refresh-runtime.js',
-      to: 'dist/refresh-runtime.js',
+      to: 'dist',
     },
     {
       from: 'LICENSE',
-      to: 'dist/LICENSE',
+      to: 'dist',
     },
     {
       from: 'README.md',
-      to: 'dist/README.md',
+      to: 'dist',
     },
     {
       from: 'types',
-      to: 'dist/types',
+      to: 'dist',
     },
   ],
   onSuccess() {

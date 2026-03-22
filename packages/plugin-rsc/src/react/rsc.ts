@@ -8,23 +8,39 @@ import {
   createServerDecodeClientManifest,
   createServerManifest,
 } from '../core/rsc'
+import type {
+  ClientTemporaryReferenceSet,
+  CreateFromReadableStreamEdgeOptions,
+  DecodeReplyFunction,
+  EncodeReplyFunction,
+  RenderToReadableStreamOptions,
+  ServerTemporaryReferenceSet,
+} from '../types'
 
 export { loadServerAction, setRequireModule } from '../core/rsc'
 
 export function renderToReadableStream<T>(
   data: T,
-  options?: object,
+  options?: RenderToReadableStreamOptions,
+  extraOptions?: {
+    /**
+     * @internal
+     */
+    onClientReference?: (metadata: { id: string; name: string }) => void
+  },
 ): ReadableStream<Uint8Array> {
   return ReactServer.renderToReadableStream(
     data,
-    createClientManifest(),
+    createClientManifest({
+      onClientReference: extraOptions?.onClientReference,
+    }),
     options,
   )
 }
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
-  options: object = {},
+  options: CreateFromReadableStreamEdgeOptions = {},
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     serverConsumerManifest: {
@@ -51,12 +67,8 @@ export const registerServerReference: <T>(
   name: string,
 ) => T = ReactServer.registerServerReference
 
-export function decodeReply(
-  body: string | FormData,
-  options?: unknown,
-): Promise<unknown[]> {
-  return ReactServer.decodeReply(body, createServerManifest(), options)
-}
+export const decodeReply: DecodeReplyFunction = (body, options) =>
+  ReactServer.decodeReply(body, createServerManifest(), options)
 
 export function decodeAction(body: FormData): Promise<() => Promise<void>> {
   return ReactServer.decodeAction(body, createServerManifest())
@@ -69,13 +81,10 @@ export function decodeFormState(
   return ReactServer.decodeFormState(actionResult, body, createServerManifest())
 }
 
-export const createTemporaryReferenceSet: () => unknown =
+export const createTemporaryReferenceSet: () => ServerTemporaryReferenceSet =
   ReactServer.createTemporaryReferenceSet
 
-export const encodeReply: (
-  v: unknown[],
-  options?: unknown,
-) => Promise<string | FormData> = ReactClient.encodeReply
+export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
-export const createClientTemporaryReferenceSet: () => unknown =
+export const createClientTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
   ReactClient.createTemporaryReferenceSet

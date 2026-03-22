@@ -1,7 +1,7 @@
 import { cloudflare } from '@cloudflare/vite-plugin'
-import rsc from '@vitejs/plugin-rsc'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import rsc from '@vitejs/plugin-rsc'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
@@ -12,6 +12,16 @@ export default defineConfig({
   plugins: [
     // import("vite-plugin-inspect").then(m => m.default()),
     tailwindcss(),
+    {
+      // TODO: quick workaround for https://github.com/tailwindlabs/tailwindcss/pull/19670
+      name: 'fix-tailwind-full-reload',
+      configResolved(config) {
+        const plugin = config.plugins.find(
+          (p) => p.name === '@tailwindcss/vite:generate:serve',
+        )
+        delete plugin?.hotUpdate
+      },
+    },
     react(),
     rsc({
       entries: {
@@ -38,16 +48,6 @@ export default defineConfig({
     client: {
       optimizeDeps: {
         include: ['react-router', 'react-router/internal/react-server-client'],
-      },
-    },
-    ssr: {
-      optimizeDeps: {
-        exclude: ['react-router'],
-      },
-    },
-    rsc: {
-      optimizeDeps: {
-        exclude: ['react-router'],
       },
     },
   },

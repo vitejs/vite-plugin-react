@@ -25,3 +25,14 @@ export async function testAction2() {
 export async function testActionState(prev: number) {
   return prev + 1
 }
+
+export async function testNonFormActionError() {
+  throw new Error('non-form-action-error')
+}
+
+export async function testNonFormActionArgs(data: {
+  name: string
+  count: number
+}) {
+  return `received: ${data.name}-${data.count}`
+}

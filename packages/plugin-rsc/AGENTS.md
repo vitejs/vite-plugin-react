@@ -4,6 +4,8 @@ This document provides AI-agent-specific guidance for the React Server Component
 
 - **[README.md](README.md)** - Plugin overview, concepts, and examples
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development setup and testing guidelines
+- **[docs/architecture.md](docs/architecture.md)** - Build pipeline, data flow, and key components
+- **[docs/bundler-comparison.md](docs/bundler-comparison.md)** - How different bundlers approach RSC
 
 ## Quick Reference for AI Agents
 

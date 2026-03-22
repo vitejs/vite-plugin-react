@@ -1,3 +1,5 @@
+import '../styles.css'
+import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
 import React from 'react'
 import {
   TestServerActionBindAction,
@@ -8,46 +10,53 @@ import {
 import { TestServerActionError } from './action-error/server'
 import {
   TestActionFromClient,
+  TestNonFormActionArgs,
+  TestNonFormActionError,
   TestUseActionState,
 } from './action-from-client/client'
 import { TestActionStateServer } from './action-state/server'
 import { ServerCounter } from './action/server'
+import { TestAssetsServer } from './assets/server'
+import { TestBrowserOnly } from './browser-only/client'
+import { TestClientChunkServer } from './chunk/server'
+import { TestChunk2 } from './chunk2/server'
 import { ClientCounter, Hydrated } from './client'
+import { TestClientError } from './client-error/client'
+import { TestCssQueries } from './css-queries/server'
+import { TestCjsBuiltinInterop } from './deps/cjs-builtin-interop/server'
 import { TestClientInServer } from './deps/client-in-server/server'
 import { TestServerInClient } from './deps/server-in-client/client'
 import { TestServerInServer } from './deps/server-in-server/server'
+import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
 import { TestHmrClientDep } from './hmr-client-dep/client'
+import { TestHmrClientDep2 } from './hmr-client-dep2/client'
+import { TestHmrClientDep3 } from './hmr-client-dep3/server'
+import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
+import { TestHmrSharedClient } from './hmr-shared/client'
+import { TestHmrSharedServer } from './hmr-shared/server'
+import { TestHmrSwitchClient } from './hmr-switch/client'
+import { TestHmrSwitchServer } from './hmr-switch/server'
+import { TestHydrationMismatch } from './hydration-mismatch/server'
+import { TestImportEnvironment } from './import-environment/server'
+import { TestImportMetaGlob } from './import-meta-glob/server'
+import { TestLazyCssClientToClient } from './lazy-css/client-to-client'
+import { TestLazyCssServerToClient } from './lazy-css/server-to-client'
+import { TestLazyCssServerToServer } from './lazy-css/server-to-server'
 import { TestModuleInvalidationServer } from './module-invalidation/server'
 import { TestPayloadServer } from './payload/server'
+import { TestReactCache } from './react-cache/server'
 import { TestSerializationServer } from './serialization/server'
+import { TestServerError } from './server-error/server'
 import { TestCssClientNoSsr } from './style-client-no-ssr/server'
 import { TestStyleClient } from './style-client/client'
 import { TestStyleServer } from './style-server/server'
+import { TestTailwind } from './tailwind'
 import { TestTemporaryReference } from './temporary-reference/client'
-import { TestUseCache } from './use-cache/server'
-import { TestReactCache } from './react-cache/server'
-import { TestHydrationMismatch } from './hydration-mismatch/server'
-import { TestBrowserOnly } from './browser-only/client'
-import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
-import TestDepCssInServer from '@vitejs/test-dep-css-in-server/server'
-import { TestHmrSharedServer } from './hmr-shared/server'
-import { TestHmrSharedClient } from './hmr-shared/client'
-import { TestHmrSharedAtomic } from './hmr-shared/atomic/server'
-import { TestCssQueries } from './css-queries/server'
-import { TestImportMetaGlob } from './import-meta-glob/server'
-import { TestAssetsServer } from './assets/server'
-import { TestHmrSwitchServer } from './hmr-switch/server'
-import { TestHmrSwitchClient } from './hmr-switch/client'
 import { TestTreeShakeServer } from './tree-shake/server'
 import { TestTreeShake2 } from './tree-shake2/server'
-import { TestClientChunkServer } from './chunk/server'
-import { TestTailwind } from './tailwind'
-import { TestHmrClientDep2 } from './hmr-client-dep2/client'
-import { TestHmrClientDep3 } from './hmr-client-dep3/server'
-import { TestChunk2 } from './chunk2/server'
+import { TestUseCache } from './use-cache/server'
 import { TestUseId } from './use-id/server'
-import { TestClientError } from './client-error/client'
-import { TestServerError } from './server-error/server'
+import { TestVirtualModule } from './virtual-module/server'
 
 export function Root(props: { url: URL }) {
   return (
@@ -55,7 +64,6 @@ export function Root(props: { url: URL }) {
       <head>
         <meta charSet="utf-8" />
         <title>vite-rsc</title>
-        {import.meta.viteRsc.loadCss('/src/routes/root.tsx')}
       </head>
       <body className="flex flex-col gap-2 items-start p-2">
         <div>
@@ -70,6 +78,10 @@ export function Root(props: { url: URL }) {
         <TestTailwind />
         <TestDepCssInServer />
         <TestHydrationMismatch url={props.url} />
+        <TestVirtualModule />
+        <TestLazyCssClientToClient />
+        <TestLazyCssServerToClient />
+        <TestLazyCssServerToServer />
         <TestHmrClientDep url={{ search: props.url.search }} />
         <TestHmrClientDep2 url={{ search: props.url.search }} />
         <TestHmrClientDep3 />
@@ -86,6 +98,8 @@ export function Root(props: { url: URL }) {
         <TestSuspense url={props.url} />
         <TestActionFromClient />
         <TestUseActionState />
+        <TestNonFormActionError />
+        <TestNonFormActionArgs />
         <TestPayloadServer url={props.url} />
         <TestServerActionBindReset />
         <TestServerActionBindSimple />
@@ -103,12 +117,14 @@ export function Root(props: { url: URL }) {
         <TestReactCache url={props.url} />
         <TestCssQueries />
         <TestImportMetaGlob />
+        <TestImportEnvironment />
         <TestAssetsServer />
         <TestTreeShakeServer />
         <TestTreeShake2 />
         <TestClientChunkServer />
         <TestChunk2 />
         <TestUseId />
+        <TestCjsBuiltinInterop />
       </body>
     </html>
   )

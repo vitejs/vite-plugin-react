@@ -6,10 +6,9 @@ import {
   decodeAction,
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import type { ReactFormState } from 'react-dom/client'
 import type React from 'react'
+import type { ReactFormState } from 'react-dom/client'
 import { parseRenderRequest } from './request.tsx'
-import '../styles.css'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -80,7 +79,18 @@ async function handleRequest({
 
   const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
-  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
+  const debugClientReferences: unknown[] = []
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
+    onClientReference(metadata) {
+      debugClientReferences.push(metadata)
+    },
+  })
+
+  // test `onClientReference` callback
+  if (renderRequest.url.pathname === '/__test_onClientReference') {
+    await rscStream.pipeTo(new WritableStream({ write() {} }))
+    return Response.json(debugClientReferences)
+  }
 
   // Respond RSC stream without HTML rendering as decided by `RenderRequest`
   if (renderRequest.isRsc) {
@@ -125,8 +135,6 @@ async function handler(request: Request): Promise<Response> {
   const nonceMeta = nonce && <meta property="csp-nonce" nonce={nonce} />
   const root = (
     <>
-      {/* this `loadCss` only collects `styles.css` but not css inside dynamic import `root.tsx` */}
-      {import.meta.viteRsc.loadCss()}
       {nonceMeta}
       <Root url={url} />
     </>

@@ -2,8 +2,8 @@
 
 import './client.css'
 import { TestClientDep } from './client-dep'
-import styles from './client.module.css'
 import styleUrl from './client-url.css?url'
+import styles from './client.module.css'
 
 export function TestStyleClient() {
   return (

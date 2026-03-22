@@ -1,11 +1,11 @@
 // @ts-check
 import { builtinModules } from 'node:module'
 import eslint from '@eslint/js'
-import pluginN from 'eslint-plugin-n'
 import pluginImportX from 'eslint-plugin-import-x'
+import pluginN from 'eslint-plugin-n'
 import pluginRegExp from 'eslint-plugin-regexp'
-import tseslint from 'typescript-eslint'
 import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
@@ -103,17 +103,6 @@ export default tseslint.config(
         { allow: builtinModules.map((mod) => `node:${mod}`) },
       ],
       'import-x/no-duplicates': 'error',
-      'import-x/order': 'error',
-      'sort-imports': [
-        'error',
-        {
-          ignoreCase: false,
-          ignoreDeclarationSort: true,
-          ignoreMemberSort: false,
-          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-          allowSeparatedGroups: false,
-        },
-      ],
 
       'regexp/prefer-regexp-exec': 'error',
       'regexp/prefer-regexp-test': 'error',

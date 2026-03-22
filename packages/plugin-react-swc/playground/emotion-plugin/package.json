@@ -1,7 +1,7 @@
 {
   "name": "playground-emotion-plugin",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,12 +10,12 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@swc/plugin-emotion": "^14.0.1",
-    "@types/react": "^19.2.7",
+    "@swc/plugin-emotion": "^14.5.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "../../dist"
   }

@@ -2,7 +2,7 @@ name: Issue Close Require
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
 
 jobs:
   close-issues:
@@ -13,9 +13,9 @@ jobs:
       pull-requests: write # for actions-cool/issues-helper to update PRs
     steps:
       - name: need reproduction
-        uses: actions-cool/issues-helper@9861779a695cf1898bd984c727f685f351cfc372 # v3
+        uses: actions-cool/issues-helper@71b62d7da76e59ff7b193904feb6e77d4dbb2777 # v3
         with:
-          actions: "close-issues"
+          actions: 'close-issues'
           token: ${{ secrets.GITHUB_TOKEN }}
-          labels: "need reproduction"
+          labels: 'need reproduction'
           inactive-day: 3

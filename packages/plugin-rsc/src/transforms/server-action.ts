@@ -25,7 +25,7 @@ export function transformServerActionServer(
       output: MagicString
       names: string[]
     } {
-  // TODO: unify (generalize transformHoistInlineDirective to support top leve directive case)
+  // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (hasDirective(ast.body, 'use server')) {
     return transformWrapExport(input, ast, options)
   }

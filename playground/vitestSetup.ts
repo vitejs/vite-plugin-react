@@ -1,6 +1,7 @@
 import type * as http from 'node:http'
 import path, { dirname, resolve } from 'node:path'
 import fs from 'fs-extra'
+import type { Browser, Page } from 'playwright-chromium'
 import { chromium } from 'playwright-chromium'
 import type {
   ConfigEnv,
@@ -12,9 +13,6 @@ import type {
   UserConfig,
   ViteDevServer,
 } from 'vite'
-import type { Browser, Page } from 'playwright-chromium'
-import type { RunnerTestFile } from 'vitest'
-import { beforeAll, inject } from 'vitest'
 import {
   build,
   createBuilder,
@@ -23,6 +21,7 @@ import {
   mergeConfig,
   preview,
 } from 'vite'
+import { beforeAll, inject } from 'vitest'
 
 // #region env
 
@@ -79,10 +78,9 @@ export function setViteUrl(url: string): void {
 
 // #endregion
 
-beforeAll(async (s) => {
-  const suite = s as RunnerTestFile
-
-  testPath = suite.filepath!
+// eslint-disable-next-line no-empty-pattern
+beforeAll(async ({}, suite) => {
+  testPath = suite.file.filepath!
   testName = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
   testDir = dirname(testPath)
   if (testName) {
@@ -90,7 +88,7 @@ beforeAll(async (s) => {
   }
 
   // skip browser setup for non-playground tests
-  if (!suite.filepath.includes('playground')) {
+  if (!testPath.includes('playground')) {
     return
   }
 

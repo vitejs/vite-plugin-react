@@ -21,6 +21,8 @@ export default defineConfig({
     'src/utils/encryption-runtime.ts',
   ],
   format: ['esm'],
+  // TODO: specify explicitly
+  inlineOnly: false,
   fixedExtension: false,
   external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
   dts: {

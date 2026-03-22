@@ -1,0 +1,193 @@
+# Issue #1109 - Safer RSC server-asset copying
+
+## Problem statement
+
+`@vitejs/plugin-rsc` currently copies almost every emitted asset from the `rsc` build into the `client` build (`packages/plugin-rsc/src/plugin.ts`, around `generateBundle`).
+
+That behavior is convenient, but unsafe as a default:
+
+- it can expose server-only assets produced by framework/user plugins via `emitFile({ type: "asset" })`
+- it relies on a coarse heuristic (`copyServerAssetsToClient ?? (() => true)`)
+- it already needs special-case exclusions (`.vite/manifest.json`), which is a smell
+
+## Implementation status (final)
+
+Implemented on 2026-02-16 with follow-up refinements.
+
+- `generateBundle` in `packages/plugin-rsc/src/plugin.ts` now copies only assets referenced by RSC chunk metadata (`importedCss` + `importedAssets`).
+- The public-asset selection is inlined (no helper wrapper): `Object.values(rscBundle).flatMap(...)` -> `new Set(...)` -> emit by filename with `assert(asset?.type === 'asset')`.
+- `copyServerAssetsToClient` remains in `RscPluginOptions` but is deprecated and treated as a no-op.
+- Redundant manifest exclusion logic was removed; copied assets are strictly selected from chunk metadata.
+- `packages/plugin-rsc/examples/basic/vite.config.ts` no longer relies on `copyServerAssetsToClient` for `__server_secret.txt`.
+- `packages/plugin-rsc/README.md` now labels `copyServerAssetsToClient` as deprecated no-op.
+
+## What we should copy by default
+
+Copy only assets that are clearly public-by-construction from RSC code:
+
+1. side-effect CSS used by server components
+2. `?url` (and similar Vite asset URL) imports that flow into rendered markup
+3. transitive assets referenced by those assets (via chunk metadata, e.g. fonts/images from copied CSS)
+
+Do **not** copy arbitrary emitted assets that are not referenced from RSC chunk metadata.
+
+## Concrete implementation idea
+
+### 1) Add an explicit "public server assets" collector
+
+Introduce a helper in `packages/plugin-rsc/src/plugin.ts` (next to `collectAssetDeps*`) that traverses the `rsc` output bundle and returns a `Set<string>` of asset file names to copy.
+
+Suggested logic:
+
+- Walk all output chunks in the RSC bundle.
+- Collect roots from `chunk.viteMetadata`:
+  - `importedCss`
+  - `importedAssets`
+- (original idea) recursively walk collected assets via `asset.viteMetadata`
+- (updated implementation) rely only on chunk metadata (`chunk.viteMetadata.importedCss/importedAssets`) for cross-version consistency
+
+This follows Vite's own metadata contract (verified in `~/code/others/vite`):
+
+- `packages/vite/types/metadata.d.ts` defines `importedCss` and `importedAssets` on chunks/assets
+- Vite plugins populate these sets in asset/css transforms
+
+### 2) Change default copy behavior in `generateBundle`
+
+Current:
+
+- iterate all RSC assets and copy when `filterAssets(fileName)` passes
+
+Implemented:
+
+- compute `assets` from chunk metadata only:
+  - `Object.values(rscBundle).flatMap(output => output.type === 'chunk' ? [...importedCss, ...importedAssets] : [])`
+  - `new Set(...)` for dedupe
+- emit only those filenames from `rscBundle` with `assert(asset?.type === 'asset')`
+- no manifest special-case branch needed
+
+### 3) `copyServerAssetsToClient` status
+
+- kept only for compatibility at type level
+- marked deprecated
+- runtime behavior is no-op (does not affect copy selection)
+
+## Why this addresses #1109
+
+- server-only `emitFile` assets are no longer copied unless they are referenced by public RSC asset metadata
+- intended public assets (CSS and `?url`) continue to work
+- behavior aligns with issue intent: secure default + explicit opt-in for non-standard cases
+
+## Expected compatibility impact
+
+- Potentially breaking for setups that relied on accidental copying of unreferenced server assets.
+- This is acceptable for security-hardening behavior, but should be called out in changelog.
+- Existing `copyServerAssetsToClient` configurations no longer affect behavior.
+
+## Test plan
+
+Add/adjust e2e checks in `packages/plugin-rsc/examples/basic` tests:
+
+1. **Security baseline**: emitted `__server_secret.txt` from RSC is present in RSC output and absent in client output by default.
+2. **RSC CSS**: CSS imported in server component is available in client output and links resolve.
+3. **RSC `?url`**: `import x from './foo.css?url'` (or image/font) from server component resolves to an existing client asset.
+4. **Transitive CSS assets**: font/image referenced from copied CSS is also copied.
+5. **Deprecated option behavior**: `copyServerAssetsToClient` is accepted but has no effect.
+
+## Optional follow-up (if we want Astro-like ergonomics)
+
+Add a dedicated API for intentional server->client asset emission (conceptually similar to Astro's `emitClientAsset`).
+
+This is not required for the initial fix, but could improve composability for framework authors that legitimately need to publish custom artifacts.
+
+## Follow-up design: deprecate `copyServerAssetsToClient`, add experimental explicit API
+
+### Prior art from Astro (`~/code/others/astro`)
+
+Astro recently introduced `emitClientAsset` and uses it as an explicit opt-in path for SSR->client asset movement:
+
+- `packages/astro/src/assets/utils/assets.ts`
+  - `emitClientAsset(pluginContext, options)` calls `emitFile(options)` and tracks the returned handle.
+  - tracking is per-environment via `WeakMap<Environment, Set<string>>`.
+- `packages/astro/src/core/build/vite-plugin-ssr-assets.ts`
+  - `buildStart`: reset handle tracking for current env.
+  - `generateBundle`: resolve tracked handles to output filenames via `this.getFileName(handle)`.
+  - `writeBundle`: merge in manifest-derived CSS/assets as always-public assets.
+- `packages/integrations/markdoc/src/content-entry-type.ts`
+  - integration authors call `emitClientAsset(...)` only during build mode.
+
+This pattern maps well to RSC needs: explicit emit intent + deferred handle->filename resolution in bundling phase.
+
+### Proposed API shape for `@vitejs/plugin-rsc`
+
+Introduce an experimental helper export:
+
+```ts
+// e.g. @vitejs/plugin-rsc/assets (or root export behind `experimental` namespace)
+export function emitClientAsset(
+  pluginContext: Rollup.PluginContext,
+  options: Parameters<Rollup.PluginContext['emitFile']>[0],
+): string
+```
+
+Recommended runtime constraints:
+
+- allow only `options.type === "asset"` for v1 (throw otherwise)
+- require build mode (`!pluginContext.meta.watchMode`) for now
+- only collect when `pluginContext.environment.name === "rsc"`
+
+### Internal implementation idea in plugin-rsc
+
+1. Track explicit handles on the manager
+
+- Add `clientAssetHandlesByEnv: WeakMap<vite.Environment, Set<string>>` (or `Map<string, Set<string>>` keyed by env name) in shared state.
+- Expose internal helpers:
+  - `trackClientAssetHandle(environment, handle)`
+  - `resetClientAssetHandles(environment)`
+  - `resolveClientAssetFileNames(environment, pluginContext)`
+
+2. Lifecycle integration
+
+- `buildStart` (for each build env): reset handle set.
+- `generateBundle` (for each env): resolve tracked handles with `this.getFileName(handle)` and store resolved filenames in manager, e.g. `explicitClientAssetsByEnv[envName]`.
+
+3. Merge with current default copy policy
+
+- In client `generateBundle`, compute candidate copy set as:
+  - `collectPublicServerAssets(rscBundle)` (current safe default)
+  - union `explicitClientAssetsByEnv.rsc` (new explicit opt-in assets)
+- copy only this union by default.
+
+This gives a secure default while still supporting framework-specific artifacts intentionally emitted from RSC.
+
+### Deprecation plan for `copyServerAssetsToClient`
+
+Phase 1 (next minor):
+
+- keep option working, but mark `@deprecated` in type docs and README.
+- warn once at runtime when option is used:
+  - "`copyServerAssetsToClient` is deprecated; prefer experimental `emitClientAsset` for explicit opt-in assets."
+- behavior unchanged for compatibility.
+
+Phase 2 (future major):
+
+- remove option and rely on:
+  - safe metadata-based default
+  - explicit `emitClientAsset` for non-standard assets
+
+### Migration story
+
+- Before: framework/plugin used `copyServerAssetsToClient` to allow/deny by filename pattern.
+- After: framework/plugin emits only intended public artifacts via `emitClientAsset(this, { type: "asset", ... })` from `rsc` environment.
+- No change needed for normal CSS and `?url` imports; those continue to work via metadata collector.
+
+### Additional tests for this follow-up
+
+1. `emitClientAsset` from `rsc` causes asset to appear in client output.
+2. plain `emitFile({ type: "asset" })` from `rsc` is not copied by default.
+3. `copyServerAssetsToClient` emits deprecation warning (once).
+4. `emitClientAsset` rejects non-asset emission in v1.
+
+## Note on Vite metadata scope
+
+Final implementation intentionally relies only on `chunk.viteMetadata.importedCss/importedAssets`.
+This avoids depending on asset-level metadata contracts across Vite versions and backends.

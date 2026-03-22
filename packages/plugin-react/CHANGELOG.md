@@ -5,6 +5,76 @@
 ### Add Vite 8-beta to peerDependencies range [#1013](https://github.com/vitejs/vite-plugin-react/pull/1013)
 
 React plugins are compatible with Vite 8, this removes the warning when testing the beta.
+## 6.0.1 (2026-03-13)
+
+### Expand `@rolldown/plugin-babel` peer dep range ([#1146](https://github.com/vitejs/vite-plugin-react/pull/1146))
+
+Expanded `@rolldown/plugin-babel` peer dep range to include `^0.2.0`.
+
+## 6.0.0 (2026-03-12)
+
+## 6.0.0-beta.0 (2026-03-03)
+
+### Remove Babel Related Features ([#1123](https://github.com/vitejs/vite-plugin-react/pull/1123))
+
+Vite 8+ can handle React Refresh Transform by Oxc and doesn't need Babel for it. With that, there are no transform applied that requires Babel. To reduce the installation size of this plugin, babel is no longer a dependency of this plugin and the related features are removed.
+
+If you are using Babel, you can use `@rolldown/plugin-babel` together with this plugin:
+
+```diff
+ import { defineConfig } from 'vite'
+ import react from '@vitejs/plugin-react'
++import babel from '@rolldown/plugin-babel'
+
+ export default defineConfig({
+   plugins: [
+-     react({
+-       babel: {
+-         plugins: ['@babel/plugin-proposal-throw-expressions'],
+-       },
+-     }),
++     react(),
++     babel({
++       plugins: ['@babel/plugin-proposal-throw-expressions'],
++     }),
+   ]
+ })
+```
+
+For React compiler users, you can use `reactCompilerPreset` for easier setup with preconfigured filter to improve build performance:
+
+```diff
+ import { defineConfig } from 'vite'
+-import react from '@vitejs/plugin-react'
++import react, { reactCompilerPreset } from '@vitejs/plugin-react'
++import babel from '@rolldown/plugin-babel'
+
+ export default defineConfig({
+   plugins: [
+-    react({
+-      babel: {
+-        plugins: ['babel-plugin-react-compiler'],
+-      },
+-    }),
++    react(),
++    babel({
++      presets: [reactCompilerPreset()]
++    }),
+   ]
+ })
+```
+
+### Drop Vite 7 and below support ([#1124](https://github.com/vitejs/vite-plugin-react/pull/1124))
+
+Vite 7 and below are no longer supported. If you are using Vite 7, please upgrade to Vite 8.
+
+## 5.1.4 (2026-02-10)
+
+### Fix `canSkipBabel` not accounting for `babel.overrides` ([#1098](https://github.com/vitejs/vite-plugin-react/pull/1098))
+
+When configuring `babel.overrides` without top-level plugins or presets, Babel was incorrectly skipped. The `canSkipBabel` function now checks for `overrides.length` to ensure override configurations are processed.
+
+## 5.1.3 (2026-02-02)
 
 ## 5.1.2 (2025-12-08)
 

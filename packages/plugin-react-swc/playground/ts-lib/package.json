@@ -1,7 +1,7 @@
 {
   "name": "playground-ts-lib",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "@vitejs/test-dep-non-js": "file:./test-dep/non-js",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "../../dist"
   }
