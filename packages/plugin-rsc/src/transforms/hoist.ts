@@ -1,12 +1,7 @@
 import type { Program, Literal } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import {
-  analyze,
-  analyzeFunctionCaptures,
-  extractNames,
-  type FreeVarUsage,
-} from './analyze-node'
+import { analyze, analyzeFunctionCaptures } from './analyze-node'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -76,8 +71,8 @@ export function transformHoistInlineDirective(
 
         // bind variables which are neither global nor in own scope
         const bindVars = [...fnCaptures.captures.entries()].flatMap(
-          ([ref, usage]: [string, FreeVarUsage]) => {
-            if (usage.bare || usage.members.size === 0) {
+          ([ref, usage]) => {
+            if (usage.isUsedBare || usage.members.size === 0) {
               return [{ param: ref, arg: ref }]
             }
 
