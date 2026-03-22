@@ -189,7 +189,10 @@ export function analyzeFunctionCaptures(
   const captures = new Map<string, VariableUsage>()
   let isSelfReferencing = false
 
-  const fnName = fnNode.type === 'FunctionDeclaration' && fnNode.id.name
+  const fnName =
+    (fnNode.type === 'FunctionDeclaration' ||
+      fnNode.type === 'FunctionExpression') &&
+    fnNode.id?.name
   const fnParams = extractNames(fnNode.params)
 
   const fnDeclScope = programScope.map.get(fnNode)
@@ -197,75 +200,86 @@ export function analyzeFunctionCaptures(
   const fnScope = fnDeclScope ?? fnBodyScope ?? null
 
   let currentScope: Scope = fnBodyScope ?? programScope.scope
+
+  const enter = (node: Node, parent: Node | null) => {
+    const s = programScope.map.get(node)
+    if (s) currentScope = s
+
+    const isObjectOfNonComputedMember =
+      parent?.type === 'MemberExpression' &&
+      parent.object === node &&
+      !parent.computed
+    const isOutermostMemberExpr =
+      node.type === 'MemberExpression' &&
+      !node.computed &&
+      !isObjectOfNonComputedMember
+
+    let root: Node = node // e.g. `config` in `config.db.host`
+    while (root.type === 'MemberExpression') root = root.object
+
+    if (!isReference(root, parent)) return
+    const name = root.name
+
+    if (fnName && name === fnName) {
+      isSelfReferencing = true
+      return
+    }
+
+    if (fnParams.has(name)) return
+
+    const ownerScope = currentScope.findOwner(name)
+    if (
+      !ownerScope ||
+      ownerScope === programScope.scope ||
+      isInsideFunctionBody(ownerScope, fnScope, programScope.scope)
+    ) {
+      // either undeclared, declared inside the function body, or in the root scope
+      // not considered a capture for hoisting/binding purposes.
+      return
+    }
+
+    if (!captures.has(name)) {
+      captures.set(name, { isUsedBare: false, members: new Map() })
+    }
+    const usage = captures.get(name)!
+
+    if (isOutermostMemberExpr) {
+      if (usage.isUsedBare) return
+
+      const pathKey = memberExprToPathKey(node)
+      if (!usage.members.has(pathKey)) {
+        usage.members.set(pathKey, [])
+      }
+
+      usage.members
+        .get(pathKey)!
+        .push({ start: node.start, end: node.end, suffix: '' })
+    } else if (!isObjectOfNonComputedMember) {
+      usage.isUsedBare = true
+      // if a variable is used by itself, the entire variable must be bound instead
+      // of individual member paths, so we stop tracking them.
+      usage.members.clear()
+    }
+  }
+
+  const leave = (node: Node) => {
+    const s = programScope.map.get(node)
+    if (s?.parent) currentScope = s.parent
+  }
+
+  // walk the params to capture variables referenced in default values
+  currentScope = (fnDeclScope ?? fnBodyScope)?.parent ?? programScope.scope
+  for (const param of fnNode.params) {
+    walk(param, { enter, leave })
+  }
+
+  currentScope = fnBodyScope ?? programScope.scope
   walk(fnNode.body, {
     enter(node: Node, parent: Node | null) {
-      if (node !== fnNode.body) {
-        const s = programScope.map.get(node)
-        if (s) currentScope = s
-      }
-
-      const isObjectOfNonComputedMember =
-        parent?.type === 'MemberExpression' &&
-        parent.object === node &&
-        !parent.computed
-      const isOutermostMemberExpr =
-        node.type === 'MemberExpression' &&
-        !node.computed &&
-        !isObjectOfNonComputedMember
-
-      let root: Node = node // e.g. `config` in `config.db.host`
-      while (root.type === 'MemberExpression') root = root.object
-
-      if (!isReference(root, parent)) return
-      const name = root.name
-
-      if (fnName && name === fnName) {
-        isSelfReferencing = true
-        return
-      }
-
-      if (fnParams.has(name)) return
-
-      const ownerScope = currentScope.findOwner(name)
-      if (
-        !ownerScope ||
-        ownerScope === programScope.scope ||
-        isInsideFunctionBody(ownerScope, fnScope, programScope.scope)
-      ) {
-        // either undeclared, declared inside the function body, or in the root scope
-        // not considered a capture for hoisting/binding purposes.
-        return
-      }
-
-      if (!captures.has(name)) {
-        captures.set(name, { isUsedBare: false, members: new Map() })
-      }
-      const usage = captures.get(name)!
-
-      if (isOutermostMemberExpr) {
-        if (usage.isUsedBare) return
-
-        const pathKey = memberExprToPathKey(node)
-        if (!usage.members.has(pathKey)) {
-          usage.members.set(pathKey, [])
-        }
-
-        usage.members
-          .get(pathKey)!
-          .push({ start: node.start, end: node.end, suffix: '' })
-      } else if (!isObjectOfNonComputedMember) {
-        usage.isUsedBare = true
-        // if a variable is used by itself, the entire variable must be bound instead
-        // of individual member paths, so we stop tracking them.
-        usage.members.clear()
-      }
+      if (node !== fnNode.body) enter(node, parent)
     },
-
     leave(node: Node) {
-      if (node !== fnNode.body) {
-        const s = programScope.map.get(node)
-        if (s?.parent) currentScope = s.parent
-      }
+      if (node !== fnNode.body) leave(node)
     },
   })
 

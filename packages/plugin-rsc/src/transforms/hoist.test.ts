@@ -1104,17 +1104,17 @@ export async function test() {
 
   describe('fixes for periscopic bugs', () => {
     it('re-export of an import is not treated as a closure variable', async () => {
-    // periscopic bug: `export { redirect } from "y"` created a synthetic block
-    // scope with `redirect` as a declaration, shadowing the real module-level
-    // import.  `find_owner` returned that intermediate scope instead of the
-    // root scope, so the hoist algorithm mistakenly treated `redirect` as a
-    // closure variable and emitted `.bind(null, redirect)`.
-    //
-    // Our analyzer skips re-export declarations entirely — no synthetic scope,
-    // no spurious declaration — so `redirect` is correctly identified as a
-    // module-level import and emitted with no .bind() args.
-    expect(
-      await testTransform(`
+      // periscopic bug: `export { redirect } from "y"` created a synthetic block
+      // scope with `redirect` as a declaration, shadowing the real module-level
+      // import.  `find_owner` returned that intermediate scope instead of the
+      // root scope, so the hoist algorithm mistakenly treated `redirect` as a
+      // closure variable and emitted `.bind(null, redirect)`.
+      //
+      // Our analyzer skips re-export declarations entirely — no synthetic scope,
+      // no spurious declaration — so `redirect` is correctly identified as a
+      // module-level import and emitted with no .bind() args.
+      expect(
+        await testTransform(`
 export { redirect } from "react-router/rsc";
 import { redirect } from "react-router/rsc";
 
@@ -1125,7 +1125,7 @@ export default () => {
   };
 }
 `),
-    ).toMatchInlineSnapshot(`
+      ).toMatchInlineSnapshot(`
       "
       export { redirect } from "react-router/rsc";
       import { redirect } from "react-router/rsc";
@@ -1141,21 +1141,21 @@ export default () => {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_f, "name", { value: "f" });
       "
     `)
-  })
+    })
 
     it('const inside function body that shadows an outer name is not bound', async () => {
-    // periscopic bug: `const cookies` inside the function body is placed in the
-    // BlockStatement's scope (a child of the function scope).  The hoist
-    // algorithm called `find_owner` from the function scope, which walks *up*
-    // the scope chain and cannot see child block scopes — so it found the
-    // *outer* `cookies` and incorrectly emitted `.bind(null, cookies)`, causing
-    // a duplicate `const cookies` declaration at runtime (a SyntaxError).
-    //
-    // Our analyzer starts the owner lookup from the innermost scope at the
-    // point of each identifier use, so the inner `const cookies` correctly
-    // shadows the outer one and is not bound.
-    expect(
-      await testTransform(`
+      // periscopic bug: `const cookies` inside the function body is placed in the
+      // BlockStatement's scope (a child of the function scope).  The hoist
+      // algorithm called `find_owner` from the function scope, which walks *up*
+      // the scope chain and cannot see child block scopes — so it found the
+      // *outer* `cookies` and incorrectly emitted `.bind(null, cookies)`, causing
+      // a duplicate `const cookies` declaration at runtime (a SyntaxError).
+      //
+      // Our analyzer starts the owner lookup from the innermost scope at the
+      // point of each identifier use, so the inner `const cookies` correctly
+      // shadows the outer one and is not bound.
+      expect(
+        await testTransform(`
 function outer() {
   const cookies = getCookies();
   async function inner(formData) {
@@ -1165,7 +1165,7 @@ function outer() {
   }
 }
 `),
-    ).toMatchInlineSnapshot(`
+      ).toMatchInlineSnapshot(`
       "
       function outer() {
         const cookies = getCookies();
@@ -1180,6 +1180,173 @@ function outer() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_inner, "name", { value: "inner" });
       "
     `)
+    })
   })
-})
+
+  describe('additional scoping edge cases', () => {
+    it('for-of loop variable is not bound, but the iterable is', async () => {
+      // `item` is declared by the for-of statement itself (block-scoped to the
+      // loop) — it must not appear in .bind() args.  `outerList` is a free
+      // variable from the enclosing scope and must be bound.
+      expect(
+        await testTransform(`
+function outer(outerList) {
+  async function action() {
+    "use server";
+    for (const item of outerList) {
+      process(item);
+    }
+  }
+}
+`),
+      ).toMatchInlineSnapshot(`
+      "
+      function outer(outerList) {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, outerList);
+      }
+
+      ;export async function $$hoist_0_action(outerList) {
+          "use server";
+          for (const item of outerList) {
+            process(item);
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+    })
+
+    it('catch binding shadows outer name and is not bound', async () => {
+      // `err` is declared as a catch binding.  Even if an outer `err` exists,
+      // the catch binding shadows it inside the catch block — it must not be
+      // included in .bind() args.
+      expect(
+        await testTransform(`
+function outer(config, err) {
+  async function action() {
+    "use server";
+    try {
+      return config.value;
+    } catch (err) {
+      return err.message;
+    }
+  }
+}
+`),
+      ).toMatchInlineSnapshot(`
+      "
+      function outer(config, err) {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config.value);
+      }
+
+      ;export async function $$hoist_0_action($$bind_0_config_value) {
+          "use server";
+          try {
+            return $$bind_0_config_value;
+          } catch (err) {
+            return err.message;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+    })
+
+    it('named function expression self-reference gets an alias', async () => {
+      // `self` is declared in the named function expression's own scope —
+      // it is not a free variable and must not appear in .bind() args.
+      // However, the hoisted function is renamed to $$hoist_0_action, so
+      // the `self` reference inside the body would break.  Just like the
+      // FunctionDeclaration self-referencing case, an alias is emitted
+      // inside the hoisted function body so that `self` resolves correctly.
+      expect(
+        await testTransform(`
+function outer(count) {
+  const action = async function self(n) {
+    "use server";
+    if (n > 0) return self(n - 1);
+    return count;
+  };
+}
+`),
+      ).toMatchInlineSnapshot(`
+      "
+      function outer(count) {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, count);
+      }
+
+      ;export async function $$hoist_0_action(count, n) {
+          "use server";
+      const self = (...$$args) => $$hoist_0_action(count, ...$$args);
+          if (n > 0) return self(n - 1);
+          return count;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+    })
+
+    it('class declaration inside body is not bound', async () => {
+      // `Helper` is declared with `class` inside the action body — it belongs
+      // to the action itself and must not appear in .bind() args.
+      expect(
+        await testTransform(`
+function outer(config) {
+  async function action() {
+    "use server";
+    class Helper {
+      run() { return config.value; }
+    }
+    return new Helper().run();
+  }
+}
+`),
+      ).toMatchInlineSnapshot(`
+      "
+      function outer(config) {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, config.value);
+      }
+
+      ;export async function $$hoist_0_action($$bind_0_config_value) {
+          "use server";
+          class Helper {
+            run() { return $$bind_0_config_value; }
+          }
+          return new Helper().run();
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+    })
+
+    it('outer variable in destructured param default is bound', async () => {
+      // `outerDefault` is referenced as a default value inside a destructured
+      // parameter.  Parameter defaults are evaluated in the caller's scope, not
+      // the function's own scope, so `outerDefault` is a free variable that must
+      // be bound.  Without this fix the hoisted function would reference an
+      // undefined `outerDefault` at the module level.
+      expect(
+        await testTransform(`
+function outer(outerDefault) {
+  async function action({ x = outerDefault } = {}) {
+    "use server";
+    return x;
+  }
+}
+`),
+      ).toMatchInlineSnapshot(`
+      "
+      function outer(outerDefault) {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, outerDefault);
+      }
+
+      ;export async function $$hoist_0_action(outerDefault, { x = outerDefault } = {}) {
+          "use server";
+          return x;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+    })
+  })
 })

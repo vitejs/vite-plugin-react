@@ -64,6 +64,7 @@ export function transformHoistInlineDirective(
         }
 
         const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const exprName = node.type === 'FunctionExpression' && node.id?.name
         const originalName =
           declName ||
           (parent?.type === 'VariableDeclarator' &&
@@ -127,7 +128,8 @@ export function transformHoistInlineDirective(
         )
         output.move(node.start, node.end, input.length)
 
-        if (declName && fnCaptures.isSelfReferencing) {
+        if ((declName || exprName) && fnCaptures.isSelfReferencing) {
+          const aliasName = declName || exprName!
           const boundArgs =
             bindVars.length === 0
               ? ''
@@ -137,7 +139,7 @@ export function transformHoistInlineDirective(
           const directiveNode = node.body.body[0]!
           output.appendLeft(
             directiveNode.end,
-            `\nconst ${declName} = (...$$args) => ${newName}(${boundArgs}...$$args);`,
+            `\nconst ${aliasName} = (...$$args) => ${newName}(${boundArgs}...$$args);`,
           )
         }
 
