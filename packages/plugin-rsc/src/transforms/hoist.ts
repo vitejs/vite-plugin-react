@@ -102,10 +102,10 @@ export function transformHoistInlineDirective(
             ...node.params.map((n) => input.slice(n.start, n.end)),
           ].join(', ')
           output.appendLeft(
-            node.body.body[0]!.start,
-            `const [${bindVars.map((b) => b.param).join(',')}] = ${options.decode(
+            node.body.body[0]!.end,
+            `\nconst [${bindVars.map((b) => b.param).join(',')}] = ${options.decode(
               '$$hoist_encoded',
-            )};\n`,
+            )};`,
           )
         }
 

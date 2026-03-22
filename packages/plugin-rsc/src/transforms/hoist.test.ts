@@ -260,8 +260,8 @@ function Counter() {
       }
 
       ;export function $$hoist_0_anonymous_server_function($$hoist_encoded, formData) {
-            const [name] = __dec($$hoist_encoded);
-      "use server";
+            "use server";
+      const [name] = __dec($$hoist_encoded);
             count += Number(formData.get(name));
           };
       /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
@@ -325,15 +325,15 @@ function validator(action) {
       }
 
       ;export async function $$hoist_0_anonymous_server_function($$hoist_encoded, y) {
-          const [x] = __dec($$hoist_encoded);
-      "use server";
+          "use server";
+      const [x] = __dec($$hoist_encoded);
           return x + y;
         };
       /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
       ;export async function $$hoist_1_anonymous_server_function($$hoist_encoded, arg) {
-          const [action] = __dec($$hoist_encoded);
-      "use server";
+          "use server";
+      const [action] = __dec($$hoist_encoded);
           return action(arg);
         };
       /* #__PURE__ */ Object.defineProperty($$hoist_1_anonymous_server_function, "name", { value: "anonymous_server_function" });
@@ -486,24 +486,24 @@ function buildAction(config) {
       `)
       expect(await testTransform(input, { encode: true }))
         .toMatchInlineSnapshot(`
-        "
-        function buildAction(config) {
-          const cookies = getCookies();
+          "
+          function buildAction(config) {
+            const cookies = getCookies();
 
-          const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, __enc([config]));
+            const submitAction = /* #__PURE__ */ $$register($$hoist_0_submitAction, "<id>", "$$hoist_0_submitAction").bind(null, __enc([config]));
 
-          return submitAction;
-        }
+            return submitAction;
+          }
 
-        ;export async function $$hoist_0_submitAction($$hoist_encoded, formData) {
-            const [config] = __dec($$hoist_encoded);
-        "use server";
-            const cookies = formData.get("value");
-            return doSomething(config, cookies);
-          };
-        /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
-        "
-      `)
+          ;export async function $$hoist_0_submitAction($$hoist_encoded, formData) {
+              "use server";
+          const [config] = __dec($$hoist_encoded);
+              const cookies = formData.get("value");
+              return doSomething(config, cookies);
+            };
+          /* #__PURE__ */ Object.defineProperty($$hoist_0_submitAction, "name", { value: "submitAction" });
+          "
+        `)
     })
 
     it('const shadows function parameter', async () => {
@@ -1073,8 +1073,8 @@ function Parent() {
       }
 
       ;export async function $$hoist_0_recurse($$hoist_encoded, n) {
-          const [count] = __dec($$hoist_encoded);
-      "use server";
+          "use server";
+      const [count] = __dec($$hoist_encoded);
       const recurse = (...$$args) => $$hoist_0_recurse($$hoist_encoded, ...$$args);
           if (n > 0) return recurse(n - 1);
           return count;
