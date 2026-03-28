@@ -1,12 +1,17 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.browser'
-import type { CallServerCallback } from '../types'
+import type {
+  CallServerCallback,
+  ClientTemporaryReferenceSet,
+  CreateFromReadableStreamBrowserOptions,
+  EncodeReplyFunction,
+} from '../types'
 
 export { setRequireModule } from '../core/browser'
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
-  options: object = {},
+  options: CreateFromReadableStreamBrowserOptions = {},
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     callServer,
@@ -17,7 +22,7 @@ export function createFromReadableStream<T>(
 
 export function createFromFetch<T>(
   promiseForResponse: Promise<Response>,
-  options: object = {},
+  options: CreateFromReadableStreamBrowserOptions = {},
 ): Promise<T> {
   return ReactClient.createFromFetch(promiseForResponse, {
     callServer,
@@ -26,10 +31,7 @@ export function createFromFetch<T>(
   })
 }
 
-export const encodeReply: (
-  v: unknown[],
-  options?: unknown,
-) => Promise<string | FormData> = ReactClient.encodeReply
+export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
 export const createServerReference: (...args: any[]) => unknown =
   ReactClient.createServerReference
@@ -47,7 +49,7 @@ export function setServerCallback(fn: CallServerCallback): void {
 
 export type { CallServerCallback }
 
-export const createTemporaryReferenceSet: () => unknown =
+export const createTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
   ReactClient.createTemporaryReferenceSet
 
 export function findSourceMapURL(

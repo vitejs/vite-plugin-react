@@ -2,5 +2,8 @@
   "name": "test-package",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js"
+  "main": "index.jsx",
+  "peerDependencies": {
+    "react": "^19.2.4"
+  }
 }

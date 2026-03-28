@@ -1,4 +1,4 @@
-import test from '@vitejs/test-package'
+import TestPackage from '@vitejs/test-package'
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
         correctly.
       </p>
 
-      <p className="result">Result: {'' + test}</p>
+      <TestPackage />
     </div>
   )
 }

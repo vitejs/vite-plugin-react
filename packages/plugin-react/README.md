@@ -4,7 +4,6 @@ The default Vite plugin for React projects.
 
 - enable [Fast Refresh](https://www.npmjs.com/package/react-refresh) in development (requires react >= 16.9)
 - use the [automatic JSX runtime](https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
-- use custom Babel plugins/presets
 - small installation size
 
 ```js
@@ -68,46 +67,6 @@ By default, the plugin uses the [automatic JSX runtime](https://legacy.reactjs.o
 react({ jsxRuntime: 'classic' })
 ```
 
-### babel
-
-The `babel` option lets you add plugins, presets, and [other configuration](https://babeljs.io/docs/en/options) to the Babel transformation performed on each included file.
-
-```js
-react({
-  babel: {
-    presets: [...],
-    // Your plugins run before any built-in transform (eg: Fast Refresh)
-    plugins: [...],
-    // Use .babelrc files
-    babelrc: true,
-    // Use babel.config.js files
-    configFile: true,
-  }
-})
-```
-
-Note: When not using plugins, only esbuild is used for production builds, resulting in faster builds.
-
-#### Proposed syntax
-
-If you are using ES syntax that are still in proposal status (e.g. class properties), you can selectively enable them with the `babel.parserOpts.plugins` option:
-
-```js
-react({
-  babel: {
-    parserOpts: {
-      plugins: ['decorators-legacy'],
-    },
-  },
-})
-```
-
-This option does not enable _code transformation_. That is handled by esbuild.
-
-**Note:** TypeScript syntax is handled automatically.
-
-Here's the [complete list of Babel parser plugins](https://babeljs.io/docs/en/babel-parser#ecmascript-proposalshttpsgithubcombabelproposals).
-
 ### reactRefreshHost
 
 The `reactRefreshHost` option is only necessary in a module federation context. It enables HMR to work between a remote & host application. In your remote Vite config, you would add your host origin:
@@ -117,6 +76,55 @@ react({ reactRefreshHost: 'http://localhost:3000' })
 ```
 
 Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
+
+## React Compiler
+
+[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
+
+```sh
+npm install -D @rolldown/plugin-babel @babel/core babel-plugin-react-compiler
+```
+
+If you are using TypeScript, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
+
+```sh
+npm install -D @types/babel__core
+```
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
+
+export default defineConfig({
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
+})
+```
+
+The `reactCompilerPreset` accepts an optional options object with the following properties:
+
+- `compilationMode` — Set to `'annotation'` to only compile components annotated with `"use memo"`.
+- `target` — Set to `'17'` or `'18'` to target older React versions (uses `react-compiler-runtime` instead of `react/compiler-runtime`).
+
+```js
+babel({
+  presets: [reactCompilerPreset({ compilationMode: 'annotation' })],
+})
+```
+
+> [!TIP]
+>
+> `reactCompilerPreset` is only a convenient helper with a preconfigured filter. You can configure override the filters to fit your project structure or code. For example, if you know a large portion of your files are never React/hook-related or won't benefit from the React Compiler, you can aggressively exclude them via `rolldown.filter`:
+>
+> ```js
+> const myPreset = reactCompilerPreset()
+> myPreset.rolldown.filter.id.exclude = ['src/legacy/**', 'src/utils/**']
+>
+> babel({
+>   presets: [myPreset],
+> })
+> ```
 
 ## `@vitejs/plugin-react/preamble`
 
@@ -156,4 +164,4 @@ For React refresh to work correctly, your file should only export React componen
 
 If an incompatible change in exports is found, the module will be invalidated and HMR will propagate. To make it easier to export simple constants alongside your component, the module is only invalidated when their value changes.
 
-You can catch mistakes and get more detailed warning with this [eslint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh).
+You can catch mistakes and get more detailed warnings with this [ESLint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh), or the equivalent [Oxlint rule](https://oxc.rs/docs/guide/usage/linter/rules/react/only-export-components.html).
