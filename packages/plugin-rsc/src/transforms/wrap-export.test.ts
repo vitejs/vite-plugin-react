@@ -321,6 +321,7 @@ export default Page;
       `export default x`,
       `const y = x; export { y }`,
       `export const fn = x(() => {})`, // rejected by next.js
+      `export const testAction = actionClient.action(async () => { return { message: "Hello, world!" }; });`,
     ]
 
     const rejected = [
@@ -330,6 +331,8 @@ export default Page;
       `export const fn = () => {}`,
       `export const fn = x, fn2 = () => {}`,
       `export class Cls {}`,
+      `export const Cls = class {}`,
+      `export const Cls = class Foo {}`,
     ]
 
     async function toActual(input: string) {
