@@ -39,7 +39,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.9",
+    "@rolldown/pluginutils": "1.0.0-rc.10",
     "es-module-lexer": "^2.0.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
@@ -64,7 +64,7 @@
     "react-dom": "^19.2.4",
     "react-server-dom-webpack": "^19.2.4",
     "tinyexec": "^1.0.4",
-    "tsdown": "^0.21.3"
+    "tsdown": "^0.21.4"
   },
   "peerDependencies": {
     "react": "*",
