@@ -39,18 +39,18 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.10",
+    "@rolldown/pluginutils": "1.0.0-rc.12",
     "es-module-lexer": "^2.0.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
-    "srvx": "^0.11.12",
+    "srvx": "^0.11.13",
     "strip-literal": "^3.1.0",
     "turbo-stream": "^3.2.0",
     "vitefu": "^1.1.2"
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.0",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.8",
     "@types/node": "^24.12.0",
@@ -64,7 +64,7 @@
     "react-dom": "^19.2.4",
     "react-server-dom-webpack": "^19.2.4",
     "tinyexec": "^1.0.4",
-    "tsdown": "^0.21.4"
+    "tsdown": "^0.21.7"
   },
   "peerDependencies": {
     "react": "*",
