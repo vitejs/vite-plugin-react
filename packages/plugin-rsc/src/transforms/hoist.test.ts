@@ -1024,6 +1024,88 @@ function outer(config) {
     })
   })
 
+  it('self-referencing function called from nested function in body', async () => {
+    // `recurse` is called from inside a nested arrow, not directly from the
+    // server action body.  The alias must still be emitted so the inner arrow
+    // can call it — same as the direct self-reference case.
+    const input = `
+function Parent() {
+  const count = 0;
+
+  async function recurse(n) {
+    "use server";
+    const helper = () => recurse(n - 1);
+    return count + helper();
+  }
+
+  return recurse;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Parent() {
+        const count = 0;
+
+        const recurse = /* #__PURE__ */ $$register($$hoist_0_recurse, "<id>", "$$hoist_0_recurse").bind(null, count);
+
+        return recurse;
+      }
+
+      ;export async function $$hoist_0_recurse(count, n) {
+          "use server";
+      const recurse = (...$$args) => $$hoist_0_recurse(count, ...$$args);
+          const helper = () => recurse(n - 1);
+          return count + helper();
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_recurse, "name", { value: "recurse" });
+      "
+    `)
+  })
+
+  it('inner function expression shadowing the server action name is not treated as self-reference', async () => {
+    // A nested FunctionExpression inside the body happens to share the same
+    // name as the outer server action (`recurse`).  Its own scope declares
+    // `recurse`, so any use of that name inside the inner function — including
+    // a recursive call to itself — refers to the inner function, not the outer
+    // one.  isSelfReferencing must NOT be set, and no alias should be emitted
+    // in the hoisted body.
+    const input = `
+function Parent() {
+  const count = 0;
+
+  async function recurse(n) {
+    "use server";
+    const result = (function recurse(m) {
+      return m > 0 ? recurse(m - 1) : 0;  // calls inner recurse, not outer
+    })(n);
+    return count + result;
+  }
+
+  return recurse;
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Parent() {
+        const count = 0;
+
+        const recurse = /* #__PURE__ */ $$register($$hoist_0_recurse, "<id>", "$$hoist_0_recurse").bind(null, count);
+
+        return recurse;
+      }
+
+      ;export async function $$hoist_0_recurse(count, n) {
+          "use server";
+          const result = (function recurse(m) {
+            return m > 0 ? recurse(m - 1) : 0;  // calls inner recurse, not outer
+          })(n);
+          return count + result;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_recurse, "name", { value: "recurse" });
+      "
+    `)
+  })
+
   it('self-referencing function', async () => {
     const input = `
 function Parent() {
