@@ -1,4 +1,9 @@
-import type { Node, Function as FunctionNode, MemberExpression } from 'estree'
+import type {
+  Node,
+  Function as FunctionNode,
+  MemberExpression,
+  Identifier,
+} from 'estree'
 import { walk } from 'estree-walker'
 import { isReference } from './is-reference'
 
@@ -77,19 +82,32 @@ class Scope {
   }
 }
 
+export type NodeReference = {
+  node: MemberExpression | Identifier
+  parent: Node | null
+  rootIdentifier: Identifier
+  scope: Scope
+  /** Function node nesting at the point of the reference (outermost -> innermost) */
+  fnStack: FunctionNode[]
+}
+
 export type NodeAnalysis = {
   scope: Scope
   map: WeakMap<Node, Scope>
+  references: NodeReference[]
 }
 
 export function analyze(root: Node): NodeAnalysis {
   const map = new WeakMap<Node, Scope>()
   const rootScope = new Scope(null, false)
+  const references: NodeReference[] = []
 
   let scope = rootScope
 
+  const fnStack: FunctionNode[] = []
+
   walk(root, {
-    enter(node) {
+    enter(node, parent) {
       switch (node.type) {
         case 'ImportDeclaration':
           for (const spec of node.specifiers) {
@@ -121,6 +139,8 @@ export function analyze(root: Node): NodeAnalysis {
           for (const p of node.params) {
             for (const name of extractNames(p)) scope.declare(name)
           }
+
+          fnStack.push(node)
           break
         }
 
@@ -160,16 +180,58 @@ export function analyze(root: Node): NodeAnalysis {
           break
         }
       }
+
+      // we collect standalone identifiers, or the longest non-computed member
+      // chain from it (e.g. `config.db.host` instead of just `config`)
+      if (
+        (node.type === 'Identifier' &&
+          !isObjectOfNonComputedMember(node, parent)) ||
+        isOutermostMemberExpr(node, parent)
+      ) {
+        let rootNode: Node = node
+        while (rootNode.type === 'MemberExpression') rootNode = rootNode.object
+
+        // the function identifier nodes are declarations, not references, but
+        // `isReference` would consider them references because the identifier
+        // is technically used in the function body, so we exclude them here
+        const isFnIdentifier =
+          rootNode === node &&
+          (parent?.type === 'FunctionDeclaration' ||
+            parent?.type === 'FunctionExpression') &&
+          parent.id === node
+
+        if (
+          !isFnIdentifier &&
+          rootNode.type === 'Identifier' &&
+          isReference(rootNode, parent)
+        ) {
+          references.push({
+            node,
+            rootIdentifier: rootNode,
+            scope,
+            parent,
+            fnStack: [...fnStack],
+          })
+        }
+      }
     },
 
     leave(node: Node) {
       if (map.has(node) && scope.parent) {
         scope = scope.parent
       }
+
+      if (
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression'
+      ) {
+        fnStack.pop()
+      }
     },
   })
 
-  return { map, scope: rootScope }
+  return { map, scope: rootScope, references }
 }
 
 export type VariableUsage = {
@@ -199,35 +261,28 @@ export function analyzeFunctionCaptures(
   const fnBodyScope = programScope.map.get(fnNode.body)
   const fnScope = fnDeclScope ?? fnBodyScope ?? null
 
-  let currentScope: Scope = fnBodyScope ?? programScope.scope
+  for (const ref of programScope.references) {
+    // filter references so that we only consider those that are inside the
+    // function body, instead of re-walking it
+    if (!ref.fnStack.includes(fnNode)) continue
 
-  const enter = (node: Node, parent: Node | null) => {
-    const s = programScope.map.get(node)
-    if (s) currentScope = s
-
-    const isObjectOfNonComputedMember =
-      parent?.type === 'MemberExpression' &&
-      parent.object === node &&
-      !parent.computed
-    const isOutermostMemberExpr =
-      node.type === 'MemberExpression' &&
-      !node.computed &&
-      !isObjectOfNonComputedMember
-
-    let root: Node = node // e.g. `config` in `config.db.host`
-    while (root.type === 'MemberExpression') root = root.object
-
-    if (!isReference(root, parent)) return
-    const name = root.name
+    const name = ref.rootIdentifier.name
 
     if (fnName && name === fnName) {
-      isSelfReferencing = true
-      return
+      const fnNameOwnerScope =
+        fnNode.type === 'FunctionExpression'
+          ? (fnDeclScope ?? null)
+          : (fnDeclScope?.parent ?? null)
+
+      if (ref.scope.findOwner(fnName) === fnNameOwnerScope) {
+        isSelfReferencing = true
+      }
+      continue
     }
 
-    if (fnParams.has(name)) return
+    if (fnParams.has(name)) continue
 
-    const ownerScope = currentScope.findOwner(name)
+    const ownerScope = ref.scope.findOwner(name)
     if (
       !ownerScope ||
       ownerScope === programScope.scope ||
@@ -235,7 +290,7 @@ export function analyzeFunctionCaptures(
     ) {
       // either undeclared, declared inside the function body, or in the root scope
       // not considered a capture for hoisting/binding purposes.
-      return
+      continue
     }
 
     if (!captures.has(name)) {
@@ -243,45 +298,23 @@ export function analyzeFunctionCaptures(
     }
     const usage = captures.get(name)!
 
-    if (isOutermostMemberExpr) {
-      if (usage.isUsedBare) return
+    if (isOutermostMemberExpr(ref.node, ref.parent)) {
+      if (usage.isUsedBare) continue
 
-      const pathKey = memberExprToPathKey(node)
+      const pathKey = memberExprToPathKey(ref.node)
       if (!usage.members.has(pathKey)) {
         usage.members.set(pathKey, [])
       }
-
       usage.members
         .get(pathKey)!
-        .push({ start: node.start, end: node.end, suffix: '' })
-    } else if (!isObjectOfNonComputedMember) {
+        .push({ start: ref.node.start, end: ref.node.end, suffix: '' })
+    } else if (!isObjectOfNonComputedMember(ref.node, ref.parent)) {
       usage.isUsedBare = true
       // if a variable is used by itself, the entire variable must be bound instead
       // of individual member paths, so we stop tracking them.
       usage.members.clear()
     }
   }
-
-  const leave = (node: Node) => {
-    const s = programScope.map.get(node)
-    if (s?.parent) currentScope = s.parent
-  }
-
-  // walk the params to capture variables referenced in default values
-  currentScope = (fnDeclScope ?? fnBodyScope)?.parent ?? programScope.scope
-  for (const param of fnNode.params) {
-    walk(param, { enter, leave })
-  }
-
-  currentScope = fnBodyScope ?? programScope.scope
-  walk(fnNode.body, {
-    enter(node: Node, parent: Node | null) {
-      if (node !== fnNode.body) enter(node, parent)
-    },
-    leave(node: Node) {
-      if (node !== fnNode.body) leave(node)
-    },
-  })
 
   // de-duplicate captured member paths by prefix
   //
@@ -347,4 +380,23 @@ function isInsideFunctionBody(
     s = s.parent
   }
   return false
+}
+
+function isObjectOfNonComputedMember(node: Node, parent: Node | null): boolean {
+  return (
+    parent?.type === 'MemberExpression' &&
+    parent.object === node &&
+    !parent.computed
+  )
+}
+
+function isOutermostMemberExpr(
+  node: Node,
+  parent: Node | null,
+): node is MemberExpression {
+  return (
+    node.type === 'MemberExpression' &&
+    !node.computed &&
+    !isObjectOfNonComputedMember(node, parent)
+  )
 }
