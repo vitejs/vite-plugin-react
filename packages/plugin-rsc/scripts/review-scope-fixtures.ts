@@ -90,7 +90,7 @@ function fail(message: string): never {
 
 function collectFixtures(rootDir: string, filters: string[]): Fixture[] {
   return fs
-    .globSync('*.js', { cwd: rootDir })
+    .globSync('**/*.js', { cwd: rootDir })
     .map((relativePath): FixtureEntry => {
       const sourceFile = path.join(rootDir, relativePath)
       return {

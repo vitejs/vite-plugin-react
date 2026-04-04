@@ -8,7 +8,9 @@ import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 // - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
 
 describe('fixtures', () => {
-  const fixtures = import.meta.glob('./fixtures/scope/*.js', { query: 'raw' })
+  const fixtures = import.meta.glob('./fixtures/scope/**/*.js', {
+    query: 'raw',
+  })
   for (const [file, mod] of Object.entries(fixtures)) {
     it(path.basename(file), async () => {
       const input = ((await mod()) as any).default as string

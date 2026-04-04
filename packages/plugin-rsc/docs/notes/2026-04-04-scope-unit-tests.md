@@ -29,30 +29,30 @@ src/transforms/fixtures/scope/                     ← hand-crafted cases not co
 ```
 
 **`typescript-eslint/`** is copied from:
-`oxc/crates/oxc_semantic/tests/fixtures/typescript-eslint/`
+`https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/scope-manager/tests/fixtures`
 
-which in turn was copied from typescript-eslint's own scope-manager test suite. These
-inputs are authoritative: written by people who know the spec, with variable names like
-`unresolved` and `dontReference2` that encode the expected behavior in the code itself.
+These inputs are authoritative: written by people who know the spec, with variable names
+like `unresolved` and `dontReference2` that encode the expected behavior in the code itself.
 
-Copy the whole directory (all 269 files). TypeScript files are transpiled to JS in the
-test runner before being passed to `buildScopeTree` (see below).
+Historical note: `oxc` also mirrors this fixture corpus in
+`crates/oxc_semantic/tests/fixtures/typescript-eslint/`. The introducing commit there is
+`48724a0d44c7d10da97f3c0cb714890e965c4ab8` (`chore(semantic): copy tests from
+typescript-eslint’s scope-manager (#3990)`), which cites
+`https://github.com/typescript-eslint/typescript-eslint/tree/a5b652da1ebb09ecbca8f4b032bf05ebc0e03dc9/packages/scope-manager/tests/fixtures`.
+
+The checked-in subtree is **pre-transpiled JS**, not TS/TSX. The source of truth is the
+local `typescript-eslint` checkout. The reproducible import/update workflow lives in
+`packages/plugin-rsc/scripts/README.md`.
 
 #### Test runner
 
 ```ts
-import { transformWithEsbuild } from 'vite'
 import { parseAstAsync } from 'vite'
 
-// discover .js and .ts fixture files recursively
-for (const file of globSync('**/*.{js,ts}', { cwd: fixtureDir })) {
+// discover pre-transpiled .js fixture files recursively
+for (const file of globSync('**/*.js', { cwd: fixtureDir })) {
   it(file, async () => {
-    let input = readFileSync(path.join(fixtureDir, file), 'utf-8')
-    if (file.endsWith('.ts')) {
-      // strip TypeScript syntax; buildScopeTree only handles ESTree JS
-      const result = await transformWithEsbuild(input, file, { loader: 'ts' })
-      input = result.code
-    }
+    const input = readFileSync(path.join(fixtureDir, file), 'utf-8')
     const ast = await parseAstAsync(input)
     const scopeTree = buildScopeTree(ast)
     const snapshot = serializeScopeTree(ast, scopeTree)
