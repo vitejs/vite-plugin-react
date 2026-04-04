@@ -32,7 +32,7 @@ pnpm test -- scope.test.ts --update
 Notes:
 
 - The checked-in subtree is JS-only for stable fixture inputs in this repo.
-- The transpile step uses Vite's TS/TSX transform with
+- The transpile step uses TypeScript `transpileModule` with
   `experimentalDecorators: true` and `useDefineForClassFields: false`.
 - `oxc` also mirrors this corpus in
   `crates/oxc_semantic/tests/fixtures/typescript-eslint/`, but the canonical

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs as parseNodeArgs } from 'node:util'
-import { transformWithEsbuild } from 'vite'
+import ts from 'typescript'
 
 const defaultSourceDir =
   '/home/hiroshi/code/others/typescript-eslint/packages/scope-manager/tests/fixtures'
@@ -60,19 +60,30 @@ async function main(): Promise<void> {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 
     const input = fs.readFileSync(inputPath, 'utf8')
-    const loader = relativePath.endsWith('.tsx') ? 'tsx' : 'ts'
-    const result = await transformWithEsbuild(input, relativePath, {
-      loader,
-      target: 'esnext',
-      format: 'esm',
-      tsconfigRaw: {
-        compilerOptions: {
-          experimentalDecorators: true,
-          useDefineForClassFields: false,
-        },
+    const result = ts.transpileModule(input, {
+      fileName: relativePath,
+      compilerOptions: {
+        target: ts.ScriptTarget.ESNext,
+        module: ts.ModuleKind.ESNext,
+        jsx: ts.JsxEmit.Preserve,
+        experimentalDecorators: true,
+        useDefineForClassFields: false,
       },
+      reportDiagnostics: true,
+      transformers: undefined,
     })
-    fs.writeFileSync(outputPath, result.code)
+    if (result.diagnostics?.length) {
+      const message = ts.formatDiagnosticsWithColorAndContext(
+        result.diagnostics,
+        {
+          getCanonicalFileName: (fileName) => fileName,
+          getCurrentDirectory: () => packageDir,
+          getNewLine: () => '\n',
+        },
+      )
+      throw new Error(`Failed to transpile fixture ${relativePath}\n${message}`)
+    }
+    fs.writeFileSync(outputPath, result.outputText)
   }
 
   console.error(
