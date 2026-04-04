@@ -229,6 +229,16 @@ function buildScopeTree(ast: Program): ScopeTree {
   // A reference before its `var` declaration must still resolve to that local
   // binding, not to an outer one. Pass 1 collects all declarations first so
   // Pass 2 can resolve every reference against the complete scope picture.
+  //
+  // A single-pass alternative is possible: collect references as `{ scope, id }`
+  // pairs (Scope at visit time + Identifier node) during the walk, then in a
+  // post-walk loop call `scope.findOwner(id.name)` to populate
+  // `referenceToDeclaredScope` and `scopeToReferences` — by then all declarations
+  // are in the chain so `findOwner` sees the full picture. The returned `ScopeTree`
+  // shape would be identical; only when it gets filled changes (post-walk loop
+  // instead of a second full walk). The key constraint is that `findOwner` must be
+  // called post-walk, not inline during traversal. As long as that is internal to
+  // `buildScopeTree` and not leaked to callers, the API contract stays clean.
 
   // ── Pass 1: collect all declarations into scope nodes ───────────────────
   let current = moduleScope
