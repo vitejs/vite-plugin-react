@@ -1,0 +1,44 @@
+{
+  "type": "Program",
+  "declarations": [
+    "outer"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "Function:outer",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [
+            "inner",
+            "value"
+          ],
+          "references": [],
+          "children": [
+            {
+              "type": "Function:inner",
+              "declarations": [],
+              "references": [],
+              "children": [
+                {
+                  "type": "BlockStatement",
+                  "declarations": [],
+                  "references": [
+                    {
+                      "name": "value",
+                      "resolvedIn": "Program > Function:outer > BlockStatement"
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

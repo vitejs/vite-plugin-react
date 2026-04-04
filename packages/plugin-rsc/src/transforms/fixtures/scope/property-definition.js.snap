@@ -1,0 +1,14 @@
+{
+  "type": "Program",
+  "declarations": [
+    "C",
+    "val"
+  ],
+  "references": [
+    {
+      "name": "val",
+      "resolvedIn": "Program"
+    }
+  ],
+  "children": []
+}

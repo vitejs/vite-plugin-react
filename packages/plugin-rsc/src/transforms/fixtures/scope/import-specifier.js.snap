@@ -1,0 +1,17 @@
+{
+  "type": "Program",
+  "declarations": [
+    "bar"
+  ],
+  "references": [
+    {
+      "name": "foo",
+      "resolvedIn": null
+    },
+    {
+      "name": "bar",
+      "resolvedIn": "Program"
+    }
+  ],
+  "children": []
+}

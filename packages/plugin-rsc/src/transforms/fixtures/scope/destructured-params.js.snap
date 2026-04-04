@@ -1,0 +1,53 @@
+{
+  "type": "Program",
+  "declarations": [
+    "f"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "Function:f",
+      "declarations": [
+        "a",
+        "c",
+        "d",
+        "rest"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "resolvedIn": "Program > Function:f"
+        },
+        {
+          "name": "b",
+          "resolvedIn": null
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "resolvedIn": "Program > Function:f"
+            },
+            {
+              "name": "c",
+              "resolvedIn": "Program > Function:f"
+            },
+            {
+              "name": "d",
+              "resolvedIn": "Program > Function:f"
+            },
+            {
+              "name": "rest",
+              "resolvedIn": "Program > Function:f"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

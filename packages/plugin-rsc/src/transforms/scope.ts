@@ -13,7 +13,7 @@ import { extractNames } from './utils'
 // TODO: unit test
 // Replacement for periscopic to correctly handle variable shadowing
 
-class Scope {
+export class Scope {
   readonly declarations: Set<string> = new Set<string>()
 
   constructor(

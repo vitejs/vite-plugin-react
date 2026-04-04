@@ -1,0 +1,83 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [
+    {
+      "name": "outer",
+      "resolvedIn": null
+    }
+  ],
+  "children": [
+    {
+      "type": "ForStatement",
+      "declarations": [
+        "i"
+      ],
+      "references": [
+        {
+          "name": "i",
+          "resolvedIn": "Program > ForStatement"
+        },
+        {
+          "name": "i",
+          "resolvedIn": "Program > ForStatement"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "inner",
+              "resolvedIn": null
+            }
+          ],
+          "children": [
+            {
+              "type": "ForStatement",
+              "declarations": [
+                "j"
+              ],
+              "references": [
+                {
+                  "name": "j",
+                  "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                },
+                {
+                  "name": "j",
+                  "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                }
+              ],
+              "children": [
+                {
+                  "type": "BlockStatement",
+                  "declarations": [],
+                  "references": [
+                    {
+                      "name": "j",
+                      "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                    },
+                    {
+                      "name": "outer",
+                      "resolvedIn": null
+                    },
+                    {
+                      "name": "i",
+                      "resolvedIn": "Program > ForStatement"
+                    },
+                    {
+                      "name": "inner",
+                      "resolvedIn": null
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

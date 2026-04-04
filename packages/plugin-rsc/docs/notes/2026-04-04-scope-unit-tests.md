@@ -10,12 +10,9 @@ This is step 5 of the migration plan in `2026-04-04-hoist-variable-shadowing.md`
 
 ## Steps
 
-### 1. Extract `scope.ts` from `hoist.ts`
+### 1. Extract `scope.ts` from `hoist.ts` ✅
 
-- Move: `Scope`, `ScopeTree`, `buildScopeTree`, `getBindVars`, `getAncestorScopes`,
-  `isBindingIdentifier`, `patternContainsIdentifier`, `extractNames`, `extractIdentifiers`
-- Export at minimum: `buildScopeTree`, `getBindVars`, `ScopeTree`, `Scope`
-- `hoist.ts` imports from `./scope`
+Done. `src/transforms/scope.ts` exists; `hoist.ts` imports from it.
 
 ### 2. File-based fixture tests in `scope.test.ts`
 
@@ -126,8 +123,7 @@ function outer() {
 The `resolvedIn` label is a stable path string built from the scope-creating node types
 (and function names where available), not from internal numeric IDs.
 
-`getBindVars` for `action` can be shown separately in the fixture as a comment or in
-a parallel `.bindvars.snap` file — TBD.
+Note: `getBindVars` is a `hoist.ts` concern and is not tested here.
 
 #### Test categories (fixture files to create)
 

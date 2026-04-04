@@ -1,0 +1,37 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [],
+  "children": [
+    {
+      "type": "BlockStatement",
+      "declarations": [],
+      "references": [],
+      "children": []
+    },
+    {
+      "type": "CatchClause",
+      "declarations": [
+        "e"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "console",
+              "resolvedIn": null
+            },
+            {
+              "name": "e",
+              "resolvedIn": "Program > CatchClause"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

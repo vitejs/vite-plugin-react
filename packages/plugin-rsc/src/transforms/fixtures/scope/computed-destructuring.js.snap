@@ -1,0 +1,19 @@
+{
+  "type": "Program",
+  "declarations": [
+    "key",
+    "obj",
+    "val"
+  ],
+  "references": [
+    {
+      "name": "key",
+      "resolvedIn": "Program"
+    },
+    {
+      "name": "obj",
+      "resolvedIn": "Program"
+    }
+  ],
+  "children": []
+}

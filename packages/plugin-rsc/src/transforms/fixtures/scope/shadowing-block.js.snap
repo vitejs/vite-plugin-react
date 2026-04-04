@@ -1,0 +1,53 @@
+{
+  "type": "Program",
+  "declarations": [
+    "outer"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "Function:outer",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [
+            "action",
+            "value"
+          ],
+          "references": [],
+          "children": [
+            {
+              "type": "Function:action",
+              "declarations": [],
+              "references": [],
+              "children": [
+                {
+                  "type": "BlockStatement",
+                  "declarations": [],
+                  "references": [],
+                  "children": [
+                    {
+                      "type": "BlockStatement",
+                      "declarations": [
+                        "value"
+                      ],
+                      "references": [
+                        {
+                          "name": "value",
+                          "resolvedIn": "Program > Function:outer > BlockStatement > Function:action > BlockStatement > BlockStatement"
+                        }
+                      ],
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
