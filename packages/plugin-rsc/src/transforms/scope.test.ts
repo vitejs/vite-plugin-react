@@ -1,4 +1,3 @@
-import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import type { Node, Program } from 'estree'
 import { walk } from 'estree-walker'
@@ -6,23 +5,15 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
-// TODO: import.meta.glob
-const fixtureDir = new URL('./fixtures/scope', import.meta.url).pathname
-
-describe('buildScopeTree', () => {
-  const files = readdirSync(fixtureDir)
-    .filter((f) => f.endsWith('.js'))
-    .sort()
-
-  for (const file of files) {
-    it(file.replace('.js', ''), async () => {
-      const input = readFileSync(path.join(fixtureDir, file), 'utf-8')
+describe('fixtures', () => {
+  const fixtures = import.meta.glob('./fixtures/scope/*.js', { query: 'raw' })
+  for (const [file, mod] of Object.entries(fixtures)) {
+    it(path.basename(file), async () => {
+      const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
       const snapshot = serializeScopeTree(ast, scopeTree)
-      await expect(snapshot).toMatchFileSnapshot(
-        path.join(fixtureDir, file + '.snap'),
-      )
+      await expect(snapshot).toMatchFileSnapshot(file + '.snap')
     })
   }
 })
