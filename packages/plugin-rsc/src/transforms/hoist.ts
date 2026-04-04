@@ -222,21 +222,18 @@ type ScopeTree = {
 function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
-  const referenceToDeclaredScope = new WeakMap<Identifier, Scope>()
-  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
 
   // Inline resolution during the walk is wrong for `var`/function hoisting: a
   // reference that appears before its `var` declaration would resolve to an outer
   // binding rather than the locally-hoisted one.  The fix is to defer resolution
   // until after the walk, when all declarations are in the chain.  We collect
   // `{ id, visitScope }` pairs during the walk, then resolve them in a post-walk
-  // loop via `visitScope.findOwner(id.name)` — at that point the scope tree is
-  // complete and `findOwner` sees the correct picture.
+  // loop by scanning up from `visitScope` — at that point the scope tree is
+  // complete and the scan sees the correct picture.
 
   // ── Walk: collect declarations and raw reference pairs ───────────────────
   let current = moduleScope
   nodeScope.set(ast, moduleScope)
-  scopeToReferences.set(moduleScope, [])
 
   const rawRefs: Array<{ id: Identifier; visitScope: Scope }> = []
   const ancestors: Node[] = []
@@ -255,7 +252,6 @@ function buildScopeTree(ast: Program): ScopeTree {
         // This matches the JS spec: params have their own environment, the body has another.
         const scope = new Scope(current, true)
         nodeScope.set(node, scope)
-        scopeToReferences.set(scope, [])
         current = scope
         for (const param of node.params) {
           for (const name of extractNames(param)) {
@@ -274,12 +270,10 @@ function buildScopeTree(ast: Program): ScopeTree {
       ) {
         const scope = new Scope(current, false)
         nodeScope.set(node, scope)
-        scopeToReferences.set(scope, [])
         current = scope
       } else if (node.type === 'CatchClause') {
         const scope = new Scope(current, false)
         nodeScope.set(node, scope)
-        scopeToReferences.set(scope, [])
         current = scope
         if (node.param) {
           for (const name of extractNames(node.param)) {
@@ -310,11 +304,16 @@ function buildScopeTree(ast: Program): ScopeTree {
     leave(node) {
       ancestors.pop()
       const scope = nodeScope.get(node)
-      if (scope?.parent) current = scope.parent
+      if (scope?.parent) {
+        current = scope.parent
+      }
     },
   })
 
   // ── Post-walk fixup: resolve references against the complete scope tree ──
+  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
+  const referenceToDeclaredScope = new WeakMap<Identifier, Scope>()
+
   for (const { id, visitScope } of rawRefs) {
     let declScope: Scope | undefined = visitScope
     while (declScope && !declScope.declarations.has(id.name)) {
@@ -324,10 +323,13 @@ function buildScopeTree(ast: Program): ScopeTree {
       referenceToDeclaredScope.set(id, declScope)
     }
     // Propagate reference up through all ancestor scopes
-    let s: Scope | undefined = visitScope
-    while (s) {
-      scopeToReferences.get(s)?.push(id)
-      s = s.parent
+    let scope: Scope | undefined = visitScope
+    while (scope) {
+      if (!scopeToReferences.has(scope)) {
+        scopeToReferences.set(scope, [])
+      }
+      scopeToReferences.get(scope)!.push(id)
+      scope = scope.parent
     }
   }
 
