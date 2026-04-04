@@ -293,6 +293,15 @@ function buildScopeTree(ast: Program): ScopeTree {
       } else if (node.type === 'ClassDeclaration' && node.id) {
         current.declarations.add(node.id.name)
       }
+      // Collect reference identifiers for post-walk resolution.
+      // TODO:
+      // To extend to member-expression binding: instead of collecting just the
+      // Identifier, collect the outermost non-computed MemberExpression rooted at
+      // it (e.g. `x.y` in `x.y.z`) when one exists. The root
+      // Identifier is still used for `referenceToDeclaredScope`; the full node
+      // (Identifier | MemberExpression) goes into `scopeToReferences`. Then
+      // `getBindVars` inspects each entry — if it is a MemberExpression, extract
+      // the path key for binding instead of the bare name.
       if (
         node.type === 'Identifier' &&
         !isBindingIdentifier(
