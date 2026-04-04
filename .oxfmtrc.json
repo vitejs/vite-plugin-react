@@ -9,6 +9,7 @@
     "groups": [["builtin"], ["external"]]
   },
   "ignorePatterns": [
+    "*.snap.json",
     "packages/*/CHANGELOG.md",
     "playground-temp/",
     "dist/",

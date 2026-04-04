@@ -13,7 +13,7 @@ describe('fixtures', () => {
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
       const snapshot = serializeScopeTree(ast, scopeTree)
-      await expect(snapshot).toMatchFileSnapshot(file + '.snap')
+      await expect(snapshot).toMatchFileSnapshot(file + '.snap.json')
     })
   }
 })
