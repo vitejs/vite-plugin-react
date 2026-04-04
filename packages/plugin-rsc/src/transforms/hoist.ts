@@ -210,7 +210,7 @@ class Scope {
 
 type ScopeTree = {
   // each reference Identifier → the Scope that declared it (absent = module-level/global)
-  readonly referenceScope: WeakMap<Identifier, Scope>
+  readonly referenceToDeclaredScope: WeakMap<Identifier, Scope>
   // each function Scope → reference Identifiers accessed within its scope
   readonly scopeToReferences: WeakMap<Scope, Identifier[]>
   // scope-creating AST node → its Scope (the only entry point from AST into Scope)
@@ -221,7 +221,7 @@ type ScopeTree = {
 function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
-  const referenceScope = new WeakMap<Identifier, Scope>()
+  const referenceToDeclaredScope = new WeakMap<Identifier, Scope>()
 
   // Two passes are required: `var` and function declarations are hoisted to
   // the enclosing function scope regardless of where they appear in the source.
@@ -310,9 +310,9 @@ function buildScopeTree(ast: Program): ScopeTree {
         }
         // Record declaration scope
         if (declScope) {
-          referenceScope.set(node, declScope)
+          referenceToDeclaredScope.set(node, declScope)
         }
-        // Add to the direct references of the enclosing function scope
+        // Add to the direct references of the current scope
         scopeToReferences.get(current)!.push(node)
       }
     },
@@ -329,7 +329,7 @@ function buildScopeTree(ast: Program): ScopeTree {
   })
 
   return {
-    referenceScope,
+    referenceToDeclaredScope,
     scopeToReferences,
     nodeScope,
     moduleScope,
@@ -350,7 +350,7 @@ function getBindVars(
       references
         .filter((id) => id.name !== declName)
         .filter((id) => {
-          const scope = scopeTree.referenceScope.get(id)
+          const scope = scopeTree.referenceToDeclaredScope.get(id)
           return (
             scope !== undefined &&
             scope !== scopeTree.moduleScope &&
