@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { Node, Program } from 'estree'
+import type { Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
@@ -11,7 +11,7 @@ describe('fixtures', () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
-      const snapshot = serializeScopeTree(ast, scopeTree)
+      const snapshot = serializeScopeTree(scopeTree)
       await expect(snapshot).toMatchFileSnapshot(file + '.snap.json')
     })
   }
@@ -27,7 +27,7 @@ type SerializedScope = {
   children: SerializedScope[]
 }
 
-function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
+function serializeScopeTree(scopeTree: ScopeTree): string {
   const {
     nodeScope,
     referenceToDeclaredScope,
@@ -43,13 +43,13 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
   const scopeNodeMap = new Map<Scope, Node>()
   const siblingCount = new Map<Scope, Map<string, number>>()
 
-  scopeLabelMap.set(moduleScope, 'Program')
-  scopeChildrenMap.set(moduleScope, [])
-  scopeNodeMap.set(moduleScope, ast)
-
   for (const [node, scope] of nodeScope.entries()) {
     scopeNodeMap.set(scope, node)
-    const base = scopeNodeLabel(node)
+    scopeChildrenMap.set(scope, [])
+
+    const base = toScopeNodeLabel(node)
+    scopeLabelMap.set(scope, base)
+
     if (!scope.parent) {
       continue
     }
@@ -70,7 +70,6 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
       scopeChildrenMap.set(parent, [])
     }
     scopeChildrenMap.get(parent)!.push(scope)
-    scopeChildrenMap.set(scope, [])
   }
 
   // Stable path string for a scope, used as the resolvedIn value.
@@ -113,7 +112,7 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
   return JSON.stringify(buildNode(moduleScope), null, 2)
 }
 
-function scopeNodeLabel(node: Node): string {
+function toScopeNodeLabel(node: Node): string {
   switch (node.type) {
     case 'FunctionDeclaration':
       return `${node.type}:${node.id.name}`
