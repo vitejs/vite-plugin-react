@@ -820,4 +820,34 @@ function outer() {
       "
     `)
   })
+
+  // TODO: does next support this?
+  it('recursion', async () => {
+    const input = `\
+function outer() {
+  async function action() {
+    "use server";
+    if (false) {
+      return action();
+    }
+    return 0;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, action);
+      }
+
+      ;export async function $$hoist_0_action(action) {
+          "use server";
+          if (false) {
+            return action();
+          }
+          return 0;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
 })

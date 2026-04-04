@@ -74,7 +74,7 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
-        const bindVars = getBindVars(node, declName, scopeTree)
+        const bindVars = getBindVars(node, scopeTree)
         let newParams = [
           ...bindVars,
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -337,40 +337,26 @@ function buildScopeTree(ast: Program): ScopeTree {
   }
 }
 
-// TODO: review
-// getBindVars is pure data lookup — no walking, no string matching.
-function getBindVars(
-  fn: AnyFunctionNode,
-  declName: string | false,
-  scopeTree: ScopeTree,
-): string[] {
+function getBindVars(fn: AnyFunctionNode, scopeTree: ScopeTree): string[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
+  const ancestorScopes = getAncestorScopes(fnScope)
   const references = scopeTree.scopeToReferences.get(fnScope) ?? []
-  return [
-    ...new Set(
-      references
-        .filter((id) => id.name !== declName)
-        .filter((id) => {
-          const scope = scopeTree.referenceToDeclaredScope.get(id)
-          return (
-            scope &&
-            scope !== scopeTree.moduleScope &&
-            isStrictAncestor(scope, fnScope)
-          )
-        })
-        .map((id) => id.name),
-    ),
-  ]
+  // bind variables that are the ones declared in ancestor scopes but not module global scope
+  const bindReferences = references.filter((id) => {
+    const scope = scopeTree.referenceToDeclaredScope.get(id)
+    return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
+  })
+  return [...new Set(bindReferences.map((id) => id.name))]
 }
 
-// Is `candidate` a strict ancestor of `scope` in the parent chain?
-function isStrictAncestor(candidate: Scope, scope: Scope): boolean {
+function getAncestorScopes(scope: Scope): Set<Scope> {
+  const ancestors = new Set<Scope>()
   let curr = scope.parent
   while (curr) {
-    if (curr === candidate) return true
+    ancestors.add(curr)
     curr = curr.parent
   }
-  return false
+  return ancestors
 }
 
 // TODO: review
