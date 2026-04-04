@@ -62,7 +62,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
   let current = moduleScope
   nodeScope.set(ast, moduleScope)
 
-  const rawRefs: Array<{ id: Identifier; visitScope: Scope }> = []
+  const rawReferences: Array<{ id: Identifier; visitScope: Scope }> = []
   const ancestors: Node[] = []
 
   walk(ast, {
@@ -138,7 +138,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
           ancestors[ancestors.length - 3],
         )
       ) {
-        rawRefs.push({ id: node, visitScope: current })
+        rawReferences.push({ id: node, visitScope: current })
       }
     },
     leave(node) {
@@ -154,7 +154,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
   const scopeToReferences = new WeakMap<Scope, Identifier[]>()
   const referenceToDeclaredScope = new WeakMap<Identifier, Scope>()
 
-  for (const { id, visitScope } of rawRefs) {
+  for (const { id, visitScope } of rawReferences) {
     let declScope: Scope | undefined = visitScope
     while (declScope && !declScope.declarations.has(id.name)) {
       declScope = declScope.parent
