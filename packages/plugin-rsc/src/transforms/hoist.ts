@@ -176,6 +176,7 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
   return nodes
 }
 
+// TODO: unit test
 // ── Custom scope analysis (prototype) ─────────────────────────────────────────
 // Replacement for periscopic's analyze() to correctly handle variable shadowing.
 // See docs/notes/2026-04-04-hoist-variable-shadowing.md
@@ -352,7 +353,7 @@ function getBindVars(
         .filter((id) => {
           const scope = scopeTree.referenceToDeclaredScope.get(id)
           return (
-            scope !== undefined &&
+            scope &&
             scope !== scopeTree.moduleScope &&
             isStrictAncestor(scope, fnScope)
           )
