@@ -279,7 +279,9 @@ function buildScopeTree(ast: Program): ScopeTree {
     },
     leave(node) {
       const scope = nodeScope.get(node)
-      if (scope?.parent) current = scope.parent
+      if (scope?.parent) {
+        current = scope.parent
+      }
     },
   })
 
