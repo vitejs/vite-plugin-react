@@ -159,6 +159,161 @@ is expressed purely in terms of `Scope` and `Identifier` — no AST node types, 
 
 All the work is in `buildScopeTree` (one pass). `getBindVars` has no logic of its own.
 
+## Design Smell in the Current Prototype
+
+The current custom implementation fixed the shadowing bug, but its internal shape still
+has an avoidable smell:
+
+1. Pass 1 builds declarations and scopes.
+2. Pass 2 walks the whole AST again.
+3. Pass 2 decides whether each `Identifier` is a "real reference" with a generic syntax
+   classifier.
+
+That last step is the weak point. It re-derives AST-position meaning after the fact,
+which forces helper logic like `isBindingIdentifier` to know about many ESTree edge
+cases (`Property`, `MethodDefinition`, import/export specifiers, destructuring, etc.).
+As soon as the helper needs parent/grandparent context, the abstraction is already
+telling us it is too low-level.
+
+The problem is not "two passes" by itself. Two passes are fine if pass 1 establishes all
+declarations first and pass 2 resolves reads against that frozen scope data. The smell is
+"walk every `Identifier` in pass 2 and classify it generically".
+
+## Proposed New Shape
+
+Keep the good part:
+
+- pass 1 builds the scope tree and records declarations
+
+Replace the brittle part:
+
+- pass 2 should not walk every `Identifier`
+- pass 2 should walk only expression/reference-bearing child positions
+- pass 2 should resolve references immediately when visiting those positions
+
+In other words, instead of asking:
+
+> "given an arbitrary `Identifier`, is it a reference?"
+
+ask:
+
+> "for this AST node, which child nodes are read positions?"
+
+That moves the complexity from a global classifier to local per-node traversal rules,
+which is easier to reason about and matches how closure capture actually works.
+
+### Sketch
+
+```ts
+function buildScopeTree(ast: Program): ScopeTree {
+  // pass 1: create scopes, declare names, hoist `var`
+}
+
+function collectReferences(ast: Program, scopeTree: ScopeTree): void {
+  // pass 2: walk only read/reference positions
+  // for each Identifier read:
+  //   1. resolve owner scope
+  //   2. store identifier -> owner scope
+  //   3. append identifier to enclosing function scope's references
+}
+```
+
+`getBindVars` stays the same shape as the target design above: pure lookup over
+`scopeToReferences` and `identifierScope`.
+
+## Why This Is Simpler
+
+### No global identifier classifier
+
+We can delete the "is this arbitrary `Identifier` a binding?" helper entirely, or reduce
+it to a tiny internal helper if one case still wants it.
+
+### No grandparent hacks
+
+`Property` ambiguity goes away when traversal is explicit:
+
+- `ObjectExpression`
+  - visit `value`
+  - visit `key` only if `computed`
+- `ObjectPattern`
+  - do not treat the pattern as a read; it belongs to declaration handling
+
+So object literals and object patterns are separated structurally, not inferred from an
+identifier's ancestors.
+
+### Better fit for the actual question
+
+The hoist transform does not need a general-purpose "all identifiers in ESTree" oracle.
+It needs:
+
+- declarations, scoped correctly
+- reads inside the server function body
+- owner scope for each read
+
+That is a narrower and more maintainable target.
+
+## Concrete Pass-2 Rules
+
+Pass 2 should be a reference visitor over expression positions, not a blind AST scan.
+Representative rules:
+
+- `Identifier`
+  - record as a read only when reached through a read-position visitor
+- `MemberExpression`
+  - always visit `object`
+  - visit `property` only if `computed`
+- `Property` under `ObjectExpression`
+  - visit `value`
+  - visit `key` only if `computed`
+- `CallExpression` / `NewExpression`
+  - visit `callee`
+  - visit all args
+- `ReturnStatement`
+  - visit `argument`
+- `BinaryExpression`, `LogicalExpression`, `UnaryExpression`, `UpdateExpression`
+  - visit operand expressions
+- `ConditionalExpression`
+  - visit `test`, `consequent`, `alternate`
+- `AssignmentExpression`
+  - visit `right`
+  - visit `left` only when it contains computed member accesses that read values
+- `TemplateLiteral`
+  - visit all expressions
+- `TaggedTemplateExpression`
+  - visit `tag` and all template expressions
+- `AwaitExpression` / `YieldExpression`
+  - visit `argument`
+- `ClassBody`
+  - for `PropertyDefinition`, visit `value` and `key` only if `computed`
+  - for `MethodDefinition`, visit `key` only if `computed`; method body is handled by its
+    own function scope
+
+This is not a full ESTree spec list yet. It is the shape we want: explicit read
+positions, explicit declaration positions.
+
+## Migration Plan
+
+1. Keep the current `Scope` / `ScopeTree` data model.
+2. Leave pass 1 mostly as-is, since it already fixes the original shadowing bug.
+3. Replace the generic pass-2 `Identifier` walk with a dedicated reference visitor.
+4. Delete `isBindingIdentifier` once pass 2 no longer depends on it.
+5. Add focused tests for syntax that previously depended on classifier edge cases:
+   - class methods and fields
+   - object literal vs object pattern
+   - import/export specifiers
+   - destructured params
+   - computed keys
+
+## Decision
+
+Do not over-index on "one pass vs two passes". The better boundary is:
+
+- pass 1 answers "what names exist in which scopes?"
+- pass 2 answers "which reads occur, and what do they resolve to?"
+
+That split is coherent. The current prototype's problem is that pass 2 still asks a more
+primitive question than it really needs to.
+
 ## Reference Repos
 
 ### oxc-walker (`~/code/others/oxc-walker`)
@@ -176,6 +331,17 @@ subset whose owner is strictly between the action and the module root.
 **Compatibility:** targets oxc-parser which outputs ESTree — same as Vite 8's
 `parseAstAsync`. `walk()` accepts a pre-parsed AST directly.
 
+**Relevant helper:** `src/scope-tracker.ts:isBindingIdentifier`. Our local
+`isReferenceId` should stay aligned with its inverse. The concrete gaps found during the
+comparison were:
+
+- `MethodDefinition` and `PropertyDefinition`: non-computed keys are bindings, not
+  references
+- `ExportSpecifier`: `local` is a reference, `exported` is not
+
+The remaining differences (`RestElement`, `ArrayPattern`, import specifiers, explicit
+param handling) are currently harmless for `getBindVars`.
+
 ### Vite `ssrTransform.ts` (`~/code/others/vite/packages/vite/src/node/ssr/ssrTransform.ts`)
 
 Working ESTree + `estree-walker` scope implementation (lines ~456–760). Uses a live scope
@@ -186,4 +352,4 @@ design. `estree-walker` is already a dep of `plugin-rsc`.
 
 Dropped as a dep. `extract_identifiers` / `extract_names` copied directly into the
 codebase — small, correct, well-tested utilities for extracting binding names from
-destructuring patterns.
+destructuring patterns. Source: `src/index.js`.

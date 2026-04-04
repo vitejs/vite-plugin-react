@@ -282,9 +282,11 @@ function buildScopeTree(ast: Program): ScopeTree {
   // ── Pass 2: resolve each reference Identifier to its declaring Scope ────
   current = moduleScope
   const fnStack: Scope[] = [moduleScope]
+  const ancestors: Node[] = []
 
   walk(ast, {
     enter(node, parent) {
+      ancestors.push(node)
       const scope = nodeScope.get(node)
       if (scope) {
         current = scope
@@ -293,7 +295,11 @@ function buildScopeTree(ast: Program): ScopeTree {
 
       if (
         node.type === 'Identifier' &&
-        isReferenceId(node, parent ?? undefined)
+        !isBindingIdentifier(
+          node,
+          parent ?? undefined,
+          ancestors[ancestors.length - 3],
+        )
       ) {
         // Scan up from current scope to find where this name is declared
         let declaring: Scope | null = current
@@ -309,6 +315,7 @@ function buildScopeTree(ast: Program): ScopeTree {
       }
     },
     leave(node) {
+      ancestors.pop()
       const scope = nodeScope.get(node)
       if (scope?.parent) {
         current = scope.parent
@@ -355,40 +362,89 @@ function isStrictAncestor(candidate: Scope, scope: Scope): boolean {
   return false
 }
 
-function isReferenceId(node: Node, parent?: Node): boolean {
-  if (!parent) return true
+// Binding-position check aligned with oxc-walker's `isBindingIdentifier` in
+// `src/scope-tracker.ts`, with ESTree-specific handling for `ExportSpecifier`
+// because only `local` is a reference there.
+function isBindingIdentifier(
+  node: Identifier,
+  parent?: Node,
+  grandparent?: Node,
+): boolean {
+  if (!parent) return false
   switch (parent.type) {
     case 'VariableDeclarator':
-      return parent.id !== node
+      return patternContainsIdentifier(parent.id, node)
     case 'MemberExpression':
-      return parent.computed || parent.object === node
+      return parent.property === node && !parent.computed
     case 'Property':
-      return parent.computed || parent.value === node
+      return (
+        grandparent?.type === 'ObjectPattern' &&
+        (parent.computed ? parent.key === node : parent.value === node)
+      )
     case 'FunctionDeclaration':
     case 'FunctionExpression':
+      if (parent.id === node) return true
+      return parent.params.some((param) =>
+        patternContainsIdentifier(param, node),
+      )
+    case 'ArrowFunctionExpression':
+      return parent.params.some((param) =>
+        patternContainsIdentifier(param, node),
+      )
     case 'ClassDeclaration':
     case 'ClassExpression':
-      return parent.id !== node
+      return parent.id === node
+    case 'MethodDefinition':
+    case 'PropertyDefinition':
+      return parent.key === node && !parent.computed
+    case 'CatchClause':
+      return !!parent.param && patternContainsIdentifier(parent.param, node)
     case 'AssignmentPattern':
-      return parent.right === node
+      return patternContainsIdentifier(parent.left, node)
     case 'RestElement':
+      return patternContainsIdentifier(parent.argument, node)
     case 'ArrayPattern':
-      return false
+      return true
     case 'LabeledStatement':
     case 'BreakStatement':
     case 'ContinueStatement':
       return false
     case 'ImportSpecifier':
+      return parent.imported !== node
     case 'ImportDefaultSpecifier':
     case 'ImportNamespaceSpecifier':
+      return true
     case 'ExportSpecifier':
       return false
     default:
-      return true
+      return false
   }
 }
 
-// Copied from periscopic — extract binding names from a pattern node
+function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {
+  switch (pattern.type) {
+    case 'Identifier':
+      return pattern === target
+    case 'MemberExpression':
+      return pattern === target
+    case 'ObjectPattern':
+      return pattern.properties.some((prop) =>
+        prop.type === 'RestElement'
+          ? patternContainsIdentifier(prop.argument, target)
+          : patternContainsIdentifier(prop.value, target),
+      )
+    case 'ArrayPattern':
+      return pattern.elements.some(
+        (element) => element && patternContainsIdentifier(element, target),
+      )
+    case 'RestElement':
+      return patternContainsIdentifier(pattern.argument, target)
+    case 'AssignmentPattern':
+      return patternContainsIdentifier(pattern.left, target)
+  }
+}
+
+// Copied from periscopic `extract_names` / `extract_identifiers` in `src/index.js`.
 function extractNames(param: Pattern): string[] {
   const names: string[] = []
   extractIdentifiers(param, names)
