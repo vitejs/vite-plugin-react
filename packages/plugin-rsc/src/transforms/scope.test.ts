@@ -5,9 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
 // TODO:
-// - review fixture
-//   - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
-// - reuse hoist.test.ts input
+// - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob('./fixtures/scope/*.js', { query: 'raw' })
