@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { Node } from 'estree'
+import type { Identifier, Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
@@ -11,8 +11,10 @@ describe('fixtures', () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
-      const snapshot = serializeScopeTree(scopeTree)
-      await expect(snapshot).toMatchFileSnapshot(file + '.snap.json')
+      const serialized = serializeScopeTree(scopeTree)
+      await expect(JSON.stringify(serialized, null, 2)).toMatchFileSnapshot(
+        file + '.snap.json',
+      )
     })
   }
 })
@@ -27,7 +29,7 @@ type SerializedScope = {
   children: SerializedScope[]
 }
 
-function serializeScopeTree(scopeTree: ScopeTree): string {
+function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
   const {
     nodeScope,
     referenceToDeclaredScope,
@@ -72,19 +74,8 @@ function serializeScopeTree(scopeTree: ScopeTree): string {
     scopeChildrenMap.get(parent)!.push(scope)
   }
 
-  // Stable path string for a scope, used as the resolvedIn value.
-  function fullPath(scope: Scope): string {
-    const parts: string[] = []
-    let curr: Scope | undefined = scope
-    while (curr) {
-      parts.unshift(scopeLabelMap.get(curr) ?? '?')
-      curr = curr.parent
-    }
-    return parts.join(' > ')
-  }
-
   // Direct references for a scope = all propagated refs minus those in child scopes.
-  function directReferences(scope: Scope) {
+  function getDirectReferences(scope: Scope) {
     const allRefs = scopeToReferences.get(scope) ?? []
     const childRefSet = new Set(
       (scopeChildrenMap.get(scope) ?? []).flatMap(
@@ -94,22 +85,30 @@ function serializeScopeTree(scopeTree: ScopeTree): string {
     return allRefs.filter((id) => !childRefSet.has(id))
   }
 
-  function buildNode(scope: Scope): SerializedScope {
-    const refs = directReferences(scope)
+  function serializeReference(id: Identifier): string | null {
+    const declScope = referenceToDeclaredScope.get(id)
+    if (!declScope) {
+      return null
+    }
+    const paths = [declScope, ...declScope.getAncestorScopes()].reverse()
+    return paths.map((s) => scopeLabelMap.get(s)!).join(' > ')
+  }
+
+  function serializeScope(scope: Scope): SerializedScope {
     return {
       type: scopeLabelMap.get(scope)!,
       declarations: [...scope.declarations].sort(),
-      references: refs.map((id) => ({
+      references: getDirectReferences(scope).map((id) => ({
         name: id.name,
-        resolvedIn: referenceToDeclaredScope.has(id)
-          ? fullPath(referenceToDeclaredScope.get(id)!)
-          : null,
+        resolvedIn: serializeReference(id),
       })),
-      children: (scopeChildrenMap.get(scope) ?? []).map(buildNode),
+      children: scopeChildrenMap
+        .get(scope)!
+        .map((child) => serializeScope(child)),
     }
   }
 
-  return JSON.stringify(buildNode(moduleScope), null, 2)
+  return serializeScope(moduleScope)
 }
 
 function toScopeNodeLabel(node: Node): string {
