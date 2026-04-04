@@ -290,7 +290,9 @@ function buildScopeTree(ast: Program): ScopeTree {
       const scope = nodeScope.get(node)
       if (scope) {
         current = scope
-        if (isFunctionNode(node)) fnStack.push(scope)
+        if (isFunctionNode(node)) {
+          fnStack.push(scope)
+        }
       }
 
       if (
@@ -319,7 +321,9 @@ function buildScopeTree(ast: Program): ScopeTree {
       const scope = nodeScope.get(node)
       if (scope?.parent) {
         current = scope.parent
-        if (isFunctionNode(node)) fnStack.pop()
+        if (isFunctionNode(node)) {
+          fnStack.pop()
+        }
       }
     },
   })

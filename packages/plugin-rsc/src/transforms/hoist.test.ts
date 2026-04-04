@@ -729,4 +729,33 @@ function outer() {
       "
     `)
   })
+
+  it('deeper', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      return value;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          if (true) {
+            return value;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
 })
