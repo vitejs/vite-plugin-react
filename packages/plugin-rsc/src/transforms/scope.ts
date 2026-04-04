@@ -90,6 +90,15 @@ export function buildScopeTree(ast: Program): ScopeTree {
         if (node.type === 'FunctionExpression' && node.id) {
           scope.declarations.add(node.id.name)
         }
+      } else if (node.type === 'ClassDeclaration' && node.id) {
+        current.declarations.add(node.id.name)
+      } else if (node.type === 'ClassExpression' && node.id) {
+        // Named class expressions have an inner self-binding visible from the
+        // heritage clause and the class body, similar to named function expressions.
+        const scope = new Scope(current, false)
+        scope.declarations.add(node.id.name)
+        nodeScope.set(node, scope)
+        current = scope
       } else if (
         node.type === 'ForStatement' ||
         node.type === 'ForInStatement' ||
@@ -117,8 +126,6 @@ export function buildScopeTree(ast: Program): ScopeTree {
             target.declarations.add(name)
           }
         }
-      } else if (node.type === 'ClassDeclaration' && node.id) {
-        current.declarations.add(node.id.name)
       }
       // Collect reference identifiers for post-walk resolution.
       // TODO:

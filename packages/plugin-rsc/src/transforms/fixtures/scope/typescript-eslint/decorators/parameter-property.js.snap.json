@@ -304,27 +304,36 @@
       ]
     },
     {
-      "type": "FunctionExpression[3]",
+      "type": "ClassExpression:Foo",
       "declarations": [
-        "a",
-        "b"
+        "Foo"
       ],
       "references": [],
       "children": [
         {
-          "type": "BlockStatement",
-          "declarations": [],
-          "references": [
-            {
-              "name": "a",
-              "declaredAt": "Program > FunctionExpression[3]"
-            },
-            {
-              "name": "b",
-              "declaredAt": "Program > FunctionExpression[3]"
-            }
+          "type": "FunctionExpression",
+          "declarations": [
+            "a",
+            "b"
           ],
-          "children": []
+          "references": [],
+          "children": [
+            {
+              "type": "BlockStatement",
+              "declarations": [],
+              "references": [
+                {
+                  "name": "a",
+                  "declaredAt": "Program > ClassExpression:Foo > FunctionExpression"
+                },
+                {
+                  "name": "b",
+                  "declaredAt": "Program > ClassExpression:Foo > FunctionExpression"
+                }
+              ],
+              "children": []
+            }
+          ]
         }
       ]
     }

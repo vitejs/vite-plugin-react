@@ -239,6 +239,14 @@
           "children": []
         }
       ]
+    },
+    {
+      "type": "ClassExpression:Foo",
+      "declarations": [
+        "Foo"
+      ],
+      "references": [],
+      "children": []
     }
   ]
 }

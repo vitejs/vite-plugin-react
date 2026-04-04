@@ -3,11 +3,20 @@
   "declarations": [
     "A"
   ],
-  "references": [
+  "references": [],
+  "children": [
     {
-      "name": "A",
-      "declaredAt": "Program"
+      "type": "ClassExpression:A",
+      "declarations": [
+        "A"
+      ],
+      "references": [
+        {
+          "name": "A",
+          "declaredAt": "Program > ClassExpression:A"
+        }
+      ],
+      "children": []
     }
-  ],
-  "children": []
+  ]
 }

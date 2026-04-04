@@ -109,6 +109,10 @@ function toScopeNodeLabel(node: Node): string {
       return node.type + (node.id ? `:${node.id.name}` : '')
     case 'FunctionExpression':
       return node.type + (node.id ? `:${node.id.name}` : '')
+    case 'ClassDeclaration':
+      return node.type + (node.id ? `:${node.id.name}` : '')
+    case 'ClassExpression':
+      return node.type + (node.id ? `:${node.id.name}` : '')
     case 'ArrowFunctionExpression':
       return 'ArrowFunction'
     default:
