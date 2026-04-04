@@ -80,12 +80,24 @@ export function getExportNames(
   return { exportNames }
 }
 
-// Copied from periscopic `extract_names` / `extract_identifiers` in `src/index.js`.
+// Copied from periscopic `extract_names` / `extract_identifiers`
 export function extractNames(param: Pattern): string[] {
   return extractIdentifiers(param).map((n) => n.name)
 }
 
-// TODO: review
+// Copied from periscopic and intentionally broader than this repo's current
+// declaration-oriented use cases.
+//
+// ESTree's `Pattern` type also covers assignment targets, where
+// `MemberExpression` can appear (for example `({ x: obj.y } = value)`), so this
+// helper preserves periscopic's behavior of reducing `a.b.c` to the base
+// identifier `a`.
+//
+// In this repo, current callers use it only for declaration/binding positions
+// (`VariableDeclarator.id`, function params, catch params), where
+// `MemberExpression` should not appear for valid input. That branch is kept for
+// compatibility with the original helper rather than because current
+// declaration use cases require it.
 export function extractIdentifiers(
   param: Pattern,
   nodes: Identifier[] = [],
