@@ -243,7 +243,9 @@ function buildScopeTree(ast: Program): ScopeTree {
         current = scope
         // Params and body share one scope — the key fix over periscopic
         for (const param of node.params) {
-          for (const name of extractNames(param)) scope.declarations.add(name)
+          for (const name of extractNames(param)) {
+            scope.declarations.add(name)
+          }
         }
         if (node.type === 'FunctionExpression' && node.id) {
           scope.declarations.add(node.id.name)
@@ -260,14 +262,16 @@ function buildScopeTree(ast: Program): ScopeTree {
         nodeScope.set(node, scope)
         current = scope
         if (node.param) {
-          for (const name of extractNames(node.param))
+          for (const name of extractNames(node.param)) {
             scope.declarations.add(name)
+          }
         }
       } else if (node.type === 'VariableDeclaration') {
         const target = node.kind === 'var' ? current.nearestFunction() : current
         for (const decl of node.declarations) {
-          for (const name of extractNames(decl.id))
+          for (const name of extractNames(decl.id)) {
             target.declarations.add(name)
+          }
         }
       } else if (node.type === 'ClassDeclaration' && node.id) {
         current.declarations.add(node.id.name)
@@ -477,7 +481,9 @@ function extractIdentifiers(
       break
     case 'ArrayPattern':
       for (const el of param.elements) {
-        if (el) extractIdentifiers(el, nodes)
+        if (el) {
+          extractIdentifiers(el, nodes)
+        }
       }
       break
     case 'RestElement':
