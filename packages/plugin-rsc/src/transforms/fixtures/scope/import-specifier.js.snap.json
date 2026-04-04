@@ -6,11 +6,11 @@
   "references": [
     {
       "name": "foo",
-      "resolvedIn": null
+      "declaredAt": null
     },
     {
       "name": "bar",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     }
   ],
   "children": []

@@ -7,7 +7,7 @@
   "references": [
     {
       "name": "key",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     }
   ],
   "children": [

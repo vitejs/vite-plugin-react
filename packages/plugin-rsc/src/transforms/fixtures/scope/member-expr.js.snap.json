@@ -7,15 +7,15 @@
   "references": [
     {
       "name": "obj",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     },
     {
       "name": "obj",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     },
     {
       "name": "key",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     }
   ],
   "children": []

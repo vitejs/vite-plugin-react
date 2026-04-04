@@ -16,11 +16,11 @@
       "references": [
         {
           "name": "a",
-          "resolvedIn": "Program > FunctionDeclaration:f"
+          "declaredAt": "Program > FunctionDeclaration:f"
         },
         {
           "name": "b",
-          "resolvedIn": null
+          "declaredAt": null
         }
       ],
       "children": [
@@ -30,19 +30,19 @@
           "references": [
             {
               "name": "a",
-              "resolvedIn": "Program > FunctionDeclaration:f"
+              "declaredAt": "Program > FunctionDeclaration:f"
             },
             {
               "name": "c",
-              "resolvedIn": "Program > FunctionDeclaration:f"
+              "declaredAt": "Program > FunctionDeclaration:f"
             },
             {
               "name": "d",
-              "resolvedIn": "Program > FunctionDeclaration:f"
+              "declaredAt": "Program > FunctionDeclaration:f"
             },
             {
               "name": "rest",
-              "resolvedIn": "Program > FunctionDeclaration:f"
+              "declaredAt": "Program > FunctionDeclaration:f"
             }
           ],
           "children": []

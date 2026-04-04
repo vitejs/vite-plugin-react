@@ -18,7 +18,7 @@
           "references": [
             {
               "name": "self",
-              "resolvedIn": "Program > FunctionExpression:self"
+              "declaredAt": "Program > FunctionExpression:self"
             }
           ],
           "children": []

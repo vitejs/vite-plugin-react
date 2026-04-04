@@ -29,7 +29,7 @@
                   "references": [
                     {
                       "name": "value",
-                      "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
+                      "declaredAt": "Program > FunctionDeclaration:outer > BlockStatement"
                     }
                   ],
                   "children": []

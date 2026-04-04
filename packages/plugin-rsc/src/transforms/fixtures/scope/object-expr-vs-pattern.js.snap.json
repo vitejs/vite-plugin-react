@@ -9,19 +9,19 @@
   "references": [
     {
       "name": "key",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     },
     {
       "name": "val",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     },
     {
       "name": "key",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     },
     {
       "name": "obj",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     }
   ],
   "children": []

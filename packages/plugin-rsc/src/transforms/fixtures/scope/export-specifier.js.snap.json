@@ -6,7 +6,7 @@
   "references": [
     {
       "name": "foo",
-      "resolvedIn": "Program"
+      "declaredAt": "Program"
     }
   ],
   "children": []

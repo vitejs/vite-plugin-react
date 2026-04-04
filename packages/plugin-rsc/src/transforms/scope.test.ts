@@ -28,7 +28,7 @@ describe('fixtures', () => {
 type SerializedScope = {
   type: string
   declarations: string[]
-  references: Array<{ name: string; resolvedIn: string | null }>
+  references: { name: string; declaredAt: string | null }[]
   children: SerializedScope[]
 }
 
@@ -74,13 +74,13 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
     return allRefs.filter((id) => !childRefSet.has(id))
   }
 
-  function serializeReference(id: Identifier): string | null {
+  function serializeDeclaredPath(id: Identifier): string | null {
     const declScope = referenceToDeclaredScope.get(id)
     if (!declScope) {
       return null
     }
-    const paths = [declScope, ...declScope.getAncestorScopes()].reverse()
-    return paths.map((s) => scopeLabelMap.get(s)!).join(' > ')
+    const scopes = [declScope, ...declScope.getAncestorScopes()].reverse()
+    return scopes.map((s) => scopeLabelMap.get(s)!).join(' > ')
   }
 
   function serializeScope(scope: Scope): SerializedScope {
@@ -89,7 +89,7 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
       declarations: [...scope.declarations].sort(),
       references: getDirectReferences(scope).map((id) => ({
         name: id.name,
-        resolvedIn: serializeReference(id),
+        declaredAt: serializeDeclaredPath(id),
       })),
       children: scopeChildrenMap
         .get(scope)!

@@ -19,7 +19,7 @@
           "references": [
             {
               "name": "inner",
-              "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
+              "declaredAt": "Program > FunctionDeclaration:outer > BlockStatement"
             }
           ],
           "children": [
@@ -36,11 +36,11 @@
                   "references": [
                     {
                       "name": "x",
-                      "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
+                      "declaredAt": "Program > FunctionDeclaration:outer > BlockStatement"
                     },
                     {
                       "name": "y",
-                      "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement > FunctionDeclaration:inner > BlockStatement"
+                      "declaredAt": "Program > FunctionDeclaration:outer > BlockStatement > FunctionDeclaration:inner > BlockStatement"
                     }
                   ],
                   "children": []

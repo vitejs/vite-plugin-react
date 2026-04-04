@@ -22,11 +22,11 @@
           "references": [
             {
               "name": "console",
-              "resolvedIn": null
+              "declaredAt": null
             },
             {
               "name": "e",
-              "resolvedIn": "Program > CatchClause"
+              "declaredAt": "Program > CatchClause"
             }
           ],
           "children": []

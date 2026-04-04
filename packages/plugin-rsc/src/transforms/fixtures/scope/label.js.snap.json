@@ -4,7 +4,7 @@
   "references": [
     {
       "name": "outer",
-      "resolvedIn": null
+      "declaredAt": null
     }
   ],
   "children": [
@@ -16,11 +16,11 @@
       "references": [
         {
           "name": "i",
-          "resolvedIn": "Program > ForStatement"
+          "declaredAt": "Program > ForStatement"
         },
         {
           "name": "i",
-          "resolvedIn": "Program > ForStatement"
+          "declaredAt": "Program > ForStatement"
         }
       ],
       "children": [
@@ -30,7 +30,7 @@
           "references": [
             {
               "name": "inner",
-              "resolvedIn": null
+              "declaredAt": null
             }
           ],
           "children": [
@@ -42,11 +42,11 @@
               "references": [
                 {
                   "name": "j",
-                  "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                  "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
                 },
                 {
                   "name": "j",
-                  "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                  "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
                 }
               ],
               "children": [
@@ -56,19 +56,19 @@
                   "references": [
                     {
                       "name": "j",
-                      "resolvedIn": "Program > ForStatement > BlockStatement > ForStatement"
+                      "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
                     },
                     {
                       "name": "outer",
-                      "resolvedIn": null
+                      "declaredAt": null
                     },
                     {
                       "name": "i",
-                      "resolvedIn": "Program > ForStatement"
+                      "declaredAt": "Program > ForStatement"
                     },
                     {
                       "name": "inner",
-                      "resolvedIn": null
+                      "declaredAt": null
                     }
                   ],
                   "children": []

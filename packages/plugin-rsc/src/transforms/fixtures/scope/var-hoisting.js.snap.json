@@ -18,7 +18,7 @@
           "references": [
             {
               "name": "x",
-              "resolvedIn": "Program > FunctionDeclaration:f"
+              "declaredAt": "Program > FunctionDeclaration:f"
             }
           ],
           "children": [

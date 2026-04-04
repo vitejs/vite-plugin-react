@@ -24,11 +24,11 @@
               "references": [
                 {
                   "name": "x",
-                  "resolvedIn": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
+                  "declaredAt": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
                 },
                 {
                   "name": "y",
-                  "resolvedIn": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
+                  "declaredAt": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
                 }
               ],
               "children": []

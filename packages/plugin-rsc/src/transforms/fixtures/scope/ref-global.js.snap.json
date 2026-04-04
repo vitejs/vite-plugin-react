@@ -16,7 +16,7 @@
           "references": [
             {
               "name": "console",
-              "resolvedIn": null
+              "declaredAt": null
             }
           ],
           "children": []
