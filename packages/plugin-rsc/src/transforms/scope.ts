@@ -258,6 +258,13 @@ function isReferenceIdentifier(
     return false
   }
 
+  // Unlike Vite SSR, this walk sees rest-pattern identifiers directly here, so
+  // the binding position must be filtered in the classifier.
+  // rest element binding
+  if (parent.type === 'RestElement' && parent.argument === node) {
+    return false
+  }
+
   // member expression property
   if (
     parent.type === 'MemberExpression' &&

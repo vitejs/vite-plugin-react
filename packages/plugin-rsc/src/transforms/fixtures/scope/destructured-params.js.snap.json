@@ -13,12 +13,7 @@
         "d",
         "rest"
       ],
-      "references": [
-        {
-          "name": "rest",
-          "declaredAt": "Program > FunctionDeclaration:f"
-        }
-      ],
+      "references": [],
       "children": [
         {
           "type": "BlockStatement",
