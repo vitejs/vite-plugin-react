@@ -1,4 +1,3 @@
-import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
   Literal,
@@ -8,7 +7,6 @@ import type {
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { analyze } from 'periscopic'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -43,19 +41,7 @@ export function transformHoistInlineDirective(
       ? exactRegex(options.directive)
       : options.directive
 
-  // re-export somehow confuses periscopic scopes so remove them before analysis
-  walk(ast, {
-    enter(node) {
-      if (node.type === 'ExportAllDeclaration') {
-        this.remove()
-      }
-      if (node.type === 'ExportNamedDeclaration' && !node.declaration) {
-        this.remove()
-      }
-    },
-  })
-
-  const analyzed = analyze(ast)
+  const scopeTree = buildScopeTree(ast)
   const names: string[] = []
 
   walk(ast, {
@@ -77,8 +63,6 @@ export function transformHoistInlineDirective(
           )
         }
 
-        const scope = analyzed.map.get(node)
-        tinyassert(scope)
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
@@ -87,15 +71,7 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
-        // bind variables which are neither global nor in own scope
-        const bindVars = [...scope.references].filter((ref) => {
-          // declared function itself is included as reference
-          if (ref === declName) {
-            return false
-          }
-          const owner = scope.find_owner(ref)
-          return owner && owner !== scope && owner !== analyzed.scope
-        })
+        const bindVars = getBindVars(node, declName, scopeTree)
         let newParams = [
           ...bindVars,
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -214,32 +190,34 @@ function isFunctionNode(node: any): node is AnyFunctionNode {
   )
 }
 
-class OwnScope {
+class Scope {
   declarations = new Set<string>()
 
   constructor(
-    public readonly parent: OwnScope | null,
+    public readonly parent: Scope | null,
     public readonly isFunction: boolean,
   ) {}
 
-  findOwner(name: string): OwnScope | null {
+  findOwner(name: string): Scope | null {
     if (this.declarations.has(name)) return this
     return this.parent?.findOwner(name) ?? null
   }
 
-  nearestFunction(): OwnScope {
+  nearestFunction(): Scope {
     return this.isFunction ? this : this.parent!.nearestFunction()
   }
 }
 
+type ScopeTree = {
+  moduleScope: Scope
+  nodeToScope: WeakMap<object, Scope>
+}
+
 // First pass: walk the whole module and build a scope tree.
 // Returns the module-level scope and a map from scope-creating nodes to their scopes.
-function buildScopeTree(ast: Program): {
-  moduleScope: OwnScope
-  nodeToScope: WeakMap<object, OwnScope>
-} {
-  const moduleScope = new OwnScope(null, true)
-  const nodeToScope = new WeakMap<object, OwnScope>()
+function buildScopeTree(ast: Program): ScopeTree {
+  const moduleScope = new Scope(null, true)
+  const nodeToScope = new WeakMap<object, Scope>()
   nodeToScope.set(ast, moduleScope)
   let current = moduleScope
 
@@ -253,13 +231,13 @@ function buildScopeTree(ast: Program): {
         if (n.type === 'FunctionDeclaration' && n.id) {
           current.nearestFunction().declarations.add(n.id.name)
         }
-        const scope = new OwnScope(current, true)
+        const scope = new Scope(current, true)
         nodeToScope.set(node, scope)
         current = scope
         // Params belong to the function scope (not a separate block scope — this
         // is the key fix over periscopic which separates params from body)
         for (const param of n.params) {
-          for (const name of ownExtractNames(param)) {
+          for (const name of extractNames(param)) {
             scope.declarations.add(name)
           }
         }
@@ -270,22 +248,22 @@ function buildScopeTree(ast: Program): {
       } else if (n.type === 'BlockStatement' && !isFunctionNode(p)) {
         // Block scope — but skip the direct body BlockStatement of a function,
         // which is already covered by the function's own scope above
-        const scope = new OwnScope(current, false)
+        const scope = new Scope(current, false)
         nodeToScope.set(node, scope)
         current = scope
       } else if (n.type === 'CatchClause') {
-        const scope = new OwnScope(current, false)
+        const scope = new Scope(current, false)
         nodeToScope.set(node, scope)
         current = scope
         if (n.param) {
-          for (const name of ownExtractNames(n.param)) {
+          for (const name of extractNames(n.param)) {
             scope.declarations.add(name)
           }
         }
       } else if (n.type === 'VariableDeclaration') {
         const target = n.kind === 'var' ? current.nearestFunction() : current
         for (const decl of n.declarations) {
-          for (const name of ownExtractNames(decl.id)) {
+          for (const name of extractNames(decl.id)) {
             target.declarations.add(name)
           }
         }
@@ -306,11 +284,10 @@ function buildScopeTree(ast: Program): {
 
 // Second pass: walk the server function body and collect variables that resolve
 // to a scope strictly between the function and the module root (i.e. closures).
-function getOwnBindVars(
+function getBindVars(
   fn: AnyFunctionNode,
   declName: string | false,
-  moduleScope: OwnScope,
-  nodeToScope: WeakMap<object, OwnScope>,
+  { moduleScope, nodeToScope }: ScopeTree,
 ): string[] {
   const fnScope = nodeToScope.get(fn)!
   const result = new Set<string>()
@@ -352,9 +329,9 @@ function getOwnBindVars(
 
 // Is `owner` strictly between `fnScope` and `moduleScope` in the ancestor chain?
 function isIntermediateScope(
-  owner: OwnScope,
-  fnScope: OwnScope,
-  moduleScope: OwnScope,
+  owner: Scope,
+  fnScope: Scope,
+  moduleScope: Scope,
 ): boolean {
   if (owner === moduleScope) return false
   let curr = fnScope.parent
@@ -399,13 +376,13 @@ function isReferenceId(node: any, parent: any): boolean {
 }
 
 // Copied from periscopic — extract binding names from a pattern node
-function ownExtractNames(param: any): string[] {
+function extractNames(param: any): string[] {
   const names: string[] = []
-  ownExtractIdentifiers(param, names)
+  extractIdentifiers(param, names)
   return names
 }
 
-function ownExtractIdentifiers(param: any, names: string[]): void {
+function extractIdentifiers(param: any, names: string[]): void {
   switch (param.type) {
     case 'Identifier':
       names.push(param.name)
@@ -418,7 +395,7 @@ function ownExtractIdentifiers(param: any, names: string[]): void {
     }
     case 'ObjectPattern':
       for (const prop of param.properties) {
-        ownExtractIdentifiers(
+        extractIdentifiers(
           prop.type === 'RestElement' ? prop : prop.value,
           names,
         )
@@ -426,14 +403,14 @@ function ownExtractIdentifiers(param: any, names: string[]): void {
       break
     case 'ArrayPattern':
       for (const el of param.elements) {
-        if (el) ownExtractIdentifiers(el, names)
+        if (el) extractIdentifiers(el, names)
       }
       break
     case 'RestElement':
-      ownExtractIdentifiers(param.argument, names)
+      extractIdentifiers(param.argument, names)
       break
     case 'AssignmentPattern':
-      ownExtractIdentifiers(param.left, names)
+      extractIdentifiers(param.left, names)
       break
   }
 }

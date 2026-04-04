@@ -464,7 +464,7 @@ export async function test() {
     `)
   })
 
-  // TODO: should not bind
+  // ok: should not bind
   it('shadowing local if over local', async () => {
     const input = `\
 function outer() {
@@ -481,10 +481,10 @@ function outer() {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "function outer() {
         const value = 0;
-        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
       }
 
-      ;export async function $$hoist_0_action(value) {
+      ;export async function $$hoist_0_action() {
           "use server";
           if (true) {
             const value = 0;
@@ -496,7 +496,7 @@ function outer() {
     `)
   })
 
-  // TODO: should not bind
+  // ok: should not bind
   it('shadowing local body over local', async () => {
     const input = `\
 function outer() {
@@ -511,10 +511,10 @@ function outer() {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "function outer() {
         const value = 0;
-        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
       }
 
-      ;export async function $$hoist_0_action(value) {
+      ;export async function $$hoist_0_action() {
           "use server";
           const value = 0;
           return value;
@@ -524,7 +524,7 @@ function outer() {
     `)
   })
 
-  // TODO: should not bind.
+  // ok: should not bind
   it('shadowing local body and if over local', async () => {
     const input = `\
 function outer() {
@@ -543,10 +543,10 @@ function outer() {
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "function outer() {
         const value = 0;
-        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
       }
 
-      ;export async function $$hoist_0_action(value) {
+      ;export async function $$hoist_0_action() {
           "use server";
           if (true) {
             const value = 0;
@@ -660,7 +660,7 @@ function outer() {
     `)
   })
 
-  // TODO: should not bind
+  // ok: should not bind
   it('shadowing local over local over global', async () => {
     const input = `\
 const value = 0;
@@ -679,10 +679,10 @@ function outer() {
       "const value = 0;
       function outer() {
         const value = 0;
-        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
       }
 
-      ;export async function $$hoist_0_action(value) {
+      ;export async function $$hoist_0_action() {
           "use server";
           if (true) {
             const value = 1;
