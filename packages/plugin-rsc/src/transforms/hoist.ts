@@ -1,11 +1,12 @@
 import type {
   Program,
   Literal,
+  Identifier,
+  Node,
+  Pattern,
   FunctionDeclaration,
   FunctionExpression,
   ArrowFunctionExpression,
-  Pattern,
-  Node,
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -192,155 +193,166 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
   )
 }
 
+// Scope is an identity token with a parent link.
+// declarations is an internal build-time detail used only within buildScopeTree.
 class Scope {
-  declarations = new Set<string>()
+  readonly declarations = new Set<string>()
 
   constructor(
     public readonly parent: Scope | null,
-    public readonly isFunction: boolean,
+    private readonly isFunction: boolean,
   ) {}
 
   nearestFunction(): Scope {
     return this.isFunction ? this : this.parent!.nearestFunction()
   }
-
-  // Returns ordered chain from module root to this scope (inclusive)
-  chain(): Scope[] {
-    const result: Scope[] = []
-    let curr: Scope | null = this
-    while (curr) {
-      result.unshift(curr)
-      curr = curr.parent
-    }
-    return result
-  }
 }
 
 type ScopeTree = {
-  nodeToScope: WeakMap<Node, Scope>
+  // each reference Identifier → the Scope that declared it (absent = module-level/global)
+  readonly identifierScope: WeakMap<Identifier, Scope>
+  // each function Scope → direct reference Identifiers within its body (not nested fns)
+  readonly scopeToReferences: WeakMap<Scope, Identifier[]>
+  // scope-creating AST node → its Scope (the only entry point from AST into Scope)
+  readonly nodeScope: WeakMap<Node, Scope>
+  readonly moduleScope: Scope
 }
 
-// First pass: walk the whole module and build a scope tree.
-// Returns the module-level scope and a map from scope-creating nodes to their scopes.
 function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(null, true)
-  const nodeToScope = new WeakMap<Node, Scope>()
-  nodeToScope.set(ast, moduleScope)
+  const nodeScope = new WeakMap<Node, Scope>()
+  const identifierScope = new WeakMap<Identifier, Scope>()
+  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
+
+  nodeScope.set(ast, moduleScope)
+  scopeToReferences.set(moduleScope, [])
+
+  // ── Pass 1: collect all declarations into scope nodes ───────────────────
   let current = moduleScope
-  // note: moduleScope stored under ast so chain() can walk up to it
 
   walk(ast, {
     enter(node, parent) {
-      const n = node
-      const p = parent ?? undefined
-
-      if (isFunctionNode(n)) {
+      if (isFunctionNode(node)) {
         // Hoist function declaration name to the enclosing function scope
-        if (n.type === 'FunctionDeclaration' && n.id) {
-          current.nearestFunction().declarations.add(n.id.name)
+        if (node.type === 'FunctionDeclaration' && node.id) {
+          current.nearestFunction().declarations.add(node.id.name)
         }
         const scope = new Scope(current, true)
-        nodeToScope.set(node, scope)
+        nodeScope.set(node, scope)
+        scopeToReferences.set(scope, [])
         current = scope
-        // Params belong to the function scope (not a separate block scope — this
-        // is the key fix over periscopic which separates params from body)
-        for (const param of n.params) {
-          for (const name of extractNames(param)) {
-            scope.declarations.add(name)
-          }
+        // Params and body share one scope — the key fix over periscopic
+        for (const param of node.params) {
+          for (const name of extractNames(param)) scope.declarations.add(name)
         }
-        // FunctionExpression name is scoped to its own body
-        if (n.type === 'FunctionExpression' && n.id) {
-          scope.declarations.add(n.id.name)
+        if (node.type === 'FunctionExpression' && node.id) {
+          scope.declarations.add(node.id.name)
         }
-      } else if (n.type === 'BlockStatement' && !(p && isFunctionNode(p))) {
-        // Block scope — but skip the direct body BlockStatement of a function,
-        // which is already covered by the function's own scope above
+      } else if (
+        node.type === 'BlockStatement' &&
+        !(parent && isFunctionNode(parent))
+      ) {
         const scope = new Scope(current, false)
-        nodeToScope.set(node, scope)
+        nodeScope.set(node, scope)
         current = scope
-      } else if (n.type === 'CatchClause') {
+      } else if (node.type === 'CatchClause') {
         const scope = new Scope(current, false)
-        nodeToScope.set(node, scope)
+        nodeScope.set(node, scope)
         current = scope
-        if (n.param) {
-          for (const name of extractNames(n.param)) {
+        if (node.param) {
+          for (const name of extractNames(node.param))
             scope.declarations.add(name)
-          }
         }
-      } else if (n.type === 'VariableDeclaration') {
-        const target = n.kind === 'var' ? current.nearestFunction() : current
-        for (const decl of n.declarations) {
-          for (const name of extractNames(decl.id)) {
+      } else if (node.type === 'VariableDeclaration') {
+        const target = node.kind === 'var' ? current.nearestFunction() : current
+        for (const decl of node.declarations) {
+          for (const name of extractNames(decl.id))
             target.declarations.add(name)
-          }
         }
-      } else if (n.type === 'ClassDeclaration' && n.id) {
-        current.declarations.add(n.id.name)
+      } else if (node.type === 'ClassDeclaration' && node.id) {
+        current.declarations.add(node.id.name)
       }
     },
     leave(node) {
-      const scope = nodeToScope.get(node)
+      const scope = nodeScope.get(node)
+      if (scope?.parent) current = scope.parent
+    },
+  })
+
+  // ── Pass 2: resolve each reference Identifier to its declaring Scope ────
+  current = moduleScope
+  const fnStack: Scope[] = [moduleScope]
+
+  walk(ast, {
+    enter(node, parent) {
+      const scope = nodeScope.get(node)
+      if (scope) {
+        current = scope
+        if (isFunctionNode(node)) fnStack.push(scope)
+      }
+
+      if (
+        node.type === 'Identifier' &&
+        isReferenceId(node, parent ?? undefined)
+      ) {
+        // Scan up from current scope to find where this name is declared
+        let declaring: Scope | null = current
+        while (declaring && !declaring.declarations.has(node.name)) {
+          declaring = declaring.parent
+        }
+        // Record declaration scope (absent from map = module-level or undeclared)
+        if (declaring && declaring !== moduleScope) {
+          identifierScope.set(node, declaring)
+        }
+        // Add to the direct references of the enclosing function scope
+        scopeToReferences.get(fnStack[fnStack.length - 1]!)!.push(node)
+      }
+    },
+    leave(node) {
+      const scope = nodeScope.get(node)
       if (scope?.parent) {
         current = scope.parent
+        if (isFunctionNode(node)) fnStack.pop()
       }
     },
   })
 
-  return { nodeToScope }
+  return { identifierScope, scopeToReferences, nodeScope, moduleScope }
 }
 
-// Second pass: walk the server function body and collect variables that resolve
-// to a scope strictly between the function and the module root (i.e. closures).
+// getBindVars is pure data lookup — no walking, no string matching.
 function getBindVars(
   fn: AnyFunctionNode,
   declName: string | false,
-  { nodeToScope }: ScopeTree,
+  { identifierScope, scopeToReferences, nodeScope, moduleScope }: ScopeTree,
 ): string[] {
-  // Build an ordered stack from module root down to fn: [module, ..., outer, fn]
-  // stack[0] = module scope, stack[fnIndex] = fn's own scope
-  const stack = nodeToScope.get(fn)!.chain()
-  const fnIndex = stack.length - 1
-  const result = new Set<string>()
+  const fnScope = nodeScope.get(fn)!
+  const references = scopeToReferences.get(fnScope) ?? []
+  return [
+    ...new Set(
+      references
+        .filter((id) => id.name !== declName)
+        .filter((id) => {
+          const scope = identifierScope.get(id)
+          return (
+            scope !== undefined &&
+            scope !== moduleScope &&
+            isStrictAncestor(scope, fnScope)
+          )
+        })
+        .map((id) => id.name),
+    ),
+  ]
+}
 
-  walk(fn.body, {
-    enter(node, parent) {
-      const n = node
-      const p = parent ?? undefined
-
-      // Skip nested functions — they handle their own binding
-      if (isFunctionNode(n)) {
-        this.skip()
-        return
-      }
-
-      const scope = nodeToScope.get(node)
-      if (scope) stack.push(scope)
-
-      if (
-        n.type === 'Identifier' &&
-        n.name !== declName &&
-        isReferenceId(n, p)
-      ) {
-        // Scan stack top-down (innermost first) to find which scope owns this name
-        for (let i = stack.length - 1; i >= 0; i--) {
-          if (stack[i]!.declarations.has(n.name)) {
-            // Bind only if owner is strictly between fn and module root
-            // i === 0: module scope        → don't bind
-            // i < fnIndex: ancestor scope  → bind
-            // i >= fnIndex: own/inner scope → don't bind
-            if (i > 0 && i < fnIndex) result.add(n.name)
-            break
-          }
-        }
-      }
-    },
-    leave(node) {
-      if (nodeToScope.get(node)) stack.pop()
-    },
-  })
-
-  return [...result]
+// Is `candidate` a strict ancestor of `scope` in the parent chain?
+function isStrictAncestor(candidate: Scope, scope: Scope): boolean {
+  let curr = scope.parent
+  while (curr) {
+    if (curr === candidate) return true
+    curr = curr.parent
+  }
+  return false
 }
 
 function isReferenceId(node: Node, parent?: Node): boolean {
