@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:outer",
+      "type": "FunctionDeclaration:outer",
       "declarations": [],
       "references": [],
       "children": [
@@ -19,12 +19,12 @@
           "references": [
             {
               "name": "inner",
-              "resolvedIn": "Program > Function:outer > BlockStatement"
+              "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
             }
           ],
           "children": [
             {
-              "type": "Function:inner",
+              "type": "FunctionDeclaration:inner",
               "declarations": [],
               "references": [],
               "children": [
@@ -36,11 +36,11 @@
                   "references": [
                     {
                       "name": "x",
-                      "resolvedIn": "Program > Function:outer > BlockStatement"
+                      "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
                     },
                     {
                       "name": "y",
-                      "resolvedIn": "Program > Function:outer > BlockStatement > Function:inner > BlockStatement"
+                      "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement > FunctionDeclaration:inner > BlockStatement"
                     }
                   ],
                   "children": []

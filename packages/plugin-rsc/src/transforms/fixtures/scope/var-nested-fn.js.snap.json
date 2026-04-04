@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:outer",
+      "type": "FunctionDeclaration:outer",
       "declarations": [],
       "references": [],
       "children": [
@@ -23,7 +23,7 @@
           ],
           "children": [
             {
-              "type": "Function:inner",
+              "type": "FunctionDeclaration:inner",
               "declarations": [
                 "x"
               ],

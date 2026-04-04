@@ -109,11 +109,9 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
 function scopeNodeLabel(node: Node): string {
   switch (node.type) {
     case 'FunctionDeclaration':
-      return node.id ? `Function:${node.id.name}` : 'Function'
+      return `${node.type}:${node.id.name}`
     case 'FunctionExpression':
-      return node.id
-        ? `FunctionExpression:${node.id.name}`
-        : 'FunctionExpression'
+      return node.type + (node.id ? `:${node.id.name}` : '')
     case 'ArrowFunctionExpression':
       return 'ArrowFunction'
     default:

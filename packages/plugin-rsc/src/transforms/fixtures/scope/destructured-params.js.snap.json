@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:f",
+      "type": "FunctionDeclaration:f",
       "declarations": [
         "a",
         "c",
@@ -16,7 +16,7 @@
       "references": [
         {
           "name": "a",
-          "resolvedIn": "Program > Function:f"
+          "resolvedIn": "Program > FunctionDeclaration:f"
         },
         {
           "name": "b",
@@ -30,19 +30,19 @@
           "references": [
             {
               "name": "a",
-              "resolvedIn": "Program > Function:f"
+              "resolvedIn": "Program > FunctionDeclaration:f"
             },
             {
               "name": "c",
-              "resolvedIn": "Program > Function:f"
+              "resolvedIn": "Program > FunctionDeclaration:f"
             },
             {
               "name": "d",
-              "resolvedIn": "Program > Function:f"
+              "resolvedIn": "Program > FunctionDeclaration:f"
             },
             {
               "name": "rest",
-              "resolvedIn": "Program > Function:f"
+              "resolvedIn": "Program > FunctionDeclaration:f"
             }
           ],
           "children": []

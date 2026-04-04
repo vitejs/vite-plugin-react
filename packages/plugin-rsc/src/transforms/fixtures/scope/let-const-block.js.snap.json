@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:f",
+      "type": "FunctionDeclaration:f",
       "declarations": [],
       "references": [],
       "children": [
@@ -24,11 +24,11 @@
               "references": [
                 {
                   "name": "x",
-                  "resolvedIn": "Program > Function:f > BlockStatement > BlockStatement"
+                  "resolvedIn": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
                 },
                 {
                   "name": "y",
-                  "resolvedIn": "Program > Function:f > BlockStatement > BlockStatement"
+                  "resolvedIn": "Program > FunctionDeclaration:f > BlockStatement > BlockStatement"
                 }
               ],
               "children": []

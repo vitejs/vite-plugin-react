@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:outer",
+      "type": "FunctionDeclaration:outer",
       "declarations": [],
       "references": [],
       "children": [
@@ -18,12 +18,12 @@
           "references": [
             {
               "name": "foo",
-              "resolvedIn": "Program > Function:outer > BlockStatement"
+              "resolvedIn": "Program > FunctionDeclaration:outer > BlockStatement"
             }
           ],
           "children": [
             {
-              "type": "Function:foo",
+              "type": "FunctionDeclaration:foo",
               "declarations": [],
               "references": [],
               "children": [

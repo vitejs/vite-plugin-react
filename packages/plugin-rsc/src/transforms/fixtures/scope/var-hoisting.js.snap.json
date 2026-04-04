@@ -6,7 +6,7 @@
   "references": [],
   "children": [
     {
-      "type": "Function:f",
+      "type": "FunctionDeclaration:f",
       "declarations": [
         "x"
       ],
@@ -18,7 +18,7 @@
           "references": [
             {
               "name": "x",
-              "resolvedIn": "Program > Function:f"
+              "resolvedIn": "Program > FunctionDeclaration:f"
             }
           ],
           "children": [
