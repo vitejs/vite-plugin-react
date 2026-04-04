@@ -21,8 +21,8 @@ class Scope {
     private readonly isFunction: boolean,
   ) {}
 
-  nearestFunction(): Scope {
-    return this.isFunction ? this : this.parent!.nearestFunction()
+  nearestFunctionScope(): Scope {
+    return this.isFunction ? this : this.parent!.nearestFunctionScope()
   }
 }
 
@@ -101,7 +101,8 @@ export function buildScopeTree(ast: Program): ScopeTree {
           }
         }
       } else if (node.type === 'VariableDeclaration') {
-        const target = node.kind === 'var' ? current.nearestFunction() : current
+        const target =
+          node.kind === 'var' ? current.nearestFunctionScope() : current
         for (const decl of node.declarations) {
           for (const name of extractNames(decl.id)) {
             target.declarations.add(name)
