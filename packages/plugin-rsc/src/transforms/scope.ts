@@ -65,7 +65,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
   const ancestors: Node[] = []
 
   walk(ast, {
-    enter(node, parent) {
+    enter(node) {
       ancestors.push(node)
       if (node.type === 'ImportDeclaration') {
         for (const spec of node.specifiers) {
@@ -138,11 +138,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
       // the path key for binding instead of the bare name.
       if (
         node.type === 'Identifier' &&
-        isReferenceIdentifier(
-          node,
-          parent ?? undefined,
-          ancestors.slice(0, -1).reverse(),
-        )
+        isReferenceIdentifier(node, ancestors.slice(0, -1).reverse())
       ) {
         rawReferences.push({ id: node, visitScope: current })
       }
@@ -157,7 +153,9 @@ export function buildScopeTree(ast: Program): ScopeTree {
   })
 
   // ── Post-walk fixup: resolve references against the complete scope tree ──
-  const scopeToReferences = new Map<Scope, Identifier[]>()
+  const scopeToReferences = new Map<Scope, Identifier[]>(
+    [...nodeScope.values()].map((scope) => [scope, []]),
+  )
   const referenceToDeclaredScope = new Map<Identifier, Scope>()
 
   for (const { id, visitScope } of rawReferences) {
@@ -171,9 +169,6 @@ export function buildScopeTree(ast: Program): ScopeTree {
     // Propagate reference up through all ancestor scopes
     let scope: Scope | undefined = visitScope
     while (scope) {
-      if (!scopeToReferences.has(scope)) {
-        scopeToReferences.set(scope, [])
-      }
       scopeToReferences.get(scope)!.push(id)
       scope = scope.parent
     }
@@ -205,13 +200,9 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
 // adapted for this ESTree-only scope walk. This is easier to audit than a
 // negated binding check because many identifier positions are syntax-only names
 // rather than bindings or references.
-function isReferenceIdentifier(
-  node: Identifier,
-  parent?: Node,
-  parentStack: Node[] = [],
-): boolean {
+function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
+  const parent = parentStack[0]
   if (!parent) return true
-  const grandparent = parentStack[1]
 
   // declaration id
   if (
@@ -255,7 +246,7 @@ function isReferenceIdentifier(
   // object destructuring pattern
   if (
     parent.type === 'Property' &&
-    grandparent?.type === 'ObjectPattern' &&
+    parentStack[1]?.type === 'ObjectPattern' &&
     parent.value === node
   ) {
     return isInDestructuringAssignment(parentStack)
