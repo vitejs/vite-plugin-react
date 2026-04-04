@@ -875,7 +875,7 @@ function outer() {
     `)
   })
 
-  // TODO: does next support this?
+  // TODO: check next.js
   it('recursion', async () => {
     const input = `\
 function outer() {
@@ -928,6 +928,72 @@ function outer() {
           return val
         };
       /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // TODO: check next.js
+  it('assignment', async () => {
+    const input = `
+function Counter() {
+  let local = 0;
+
+  async function updateLocal() {
+    "use server";
+    local = 1;
+  }
+
+  return "something";
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Counter() {
+        let local = 0;
+
+        const updateLocal = /* #__PURE__ */ $$register($$hoist_0_updateLocal, "<id>", "$$hoist_0_updateLocal").bind(null, local);
+
+        return "something";
+      }
+
+      ;export async function $$hoist_0_updateLocal(local) {
+          "use server";
+          local = 1;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_updateLocal, "name", { value: "updateLocal" });
+      "
+    `)
+  })
+
+  // TODO
+  it('increment', async () => {
+    const input = `
+function Counter() {
+  let local = 0;
+
+  async function updateLocal() {
+    "use server";
+    local++;
+  }
+
+  return "something";
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Counter() {
+        let local = 0;
+
+        const updateLocal = /* #__PURE__ */ $$register($$hoist_0_updateLocal, "<id>", "$$hoist_0_updateLocal").bind(null, local);
+
+        return "something";
+      }
+
+      ;export async function $$hoist_0_updateLocal(local) {
+          "use server";
+          local++;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_updateLocal, "name", { value: "updateLocal" });
       "
     `)
   })

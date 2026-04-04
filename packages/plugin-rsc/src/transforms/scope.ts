@@ -134,7 +134,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
         isReferenceIdentifier(
           node,
           parent ?? undefined,
-          ancestors[ancestors.length - 3],
+          ancestors.slice(0, -1).reverse(),
         )
       ) {
         rawReferences.push({ id: node, visitScope: current })
@@ -201,9 +201,10 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
 function isReferenceIdentifier(
   node: Identifier,
   parent?: Node,
-  grandparent?: Node,
+  parentStack: Node[] = [],
 ): boolean {
   if (!parent) return true
+  const grandparent = parentStack[1]
 
   // declaration id
   if (
@@ -243,26 +244,32 @@ function isReferenceIdentifier(
   }
 
   // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
-  // so we use the ESTree grandparent shape directly to recognize object patterns.
+  // so we use the ESTree parent stack directly to recognize object patterns.
   // object destructuring pattern
   if (
     parent.type === 'Property' &&
     grandparent?.type === 'ObjectPattern' &&
     parent.value === node
   ) {
-    return false
+    return isInDestructuringAssignment(parentStack)
   }
 
-  // non-assignment array destructuring pattern
+  // array destructuring pattern
   if (parent.type === 'ArrayPattern') {
-    return false
+    return isInDestructuringAssignment(parentStack)
   }
 
-  // Unlike Vite SSR, this walk sees rest-pattern identifiers directly here, so
-  // the binding position must be filtered in the classifier.
-  // rest element binding
+  // Unlike Vite SSR, this walk sees rest-pattern identifiers directly here.
+  // Treat rest targets like other destructuring-assignment targets for consistency
+  // with plain assignment targets.
   if (parent.type === 'RestElement' && parent.argument === node) {
-    return false
+    return isInDestructuringAssignment(parentStack)
+  }
+
+  // parameter / pattern defaults bind on the left, but destructuring assignment
+  // targets are treated as references to stay coherent with plain assignment.
+  if (parent.type === 'AssignmentPattern' && parent.left === node) {
+    return isInDestructuringAssignment(parentStack)
   }
 
   // member expression property
@@ -305,6 +312,10 @@ function isReferenceIdentifier(
 
 function isStaticPropertyKey(node: Node, parent?: Node): boolean {
   return parent?.type === 'Property' && parent.key === node && !parent.computed
+}
+
+function isInDestructuringAssignment(parentStack: Node[]): boolean {
+  return parentStack.some((node) => node.type === 'AssignmentExpression')
 }
 
 function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {
