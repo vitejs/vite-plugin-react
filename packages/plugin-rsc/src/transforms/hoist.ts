@@ -388,13 +388,9 @@ function isBindingIdentifier(
     case 'MemberExpression':
       return parent.property === node && !parent.computed
     case 'Property':
-      // TODO: bug — computed destructuring `{ [expr]: b }` is backwards:
-      // expr is incorrectly treated as binding, b is incorrectly treated as reference.
-      // Fix: `grandparent?.type === 'ObjectPattern' && parent.value === node`
-      return (
-        grandparent?.type === 'ObjectPattern' &&
-        (parent.computed ? parent.key === node : parent.value === node)
-      )
+      // The value is always the binding in destructuring (both computed and non-computed).
+      // The key is never a binding — in computed form `{ [expr]: b }` it is a reference.
+      return grandparent?.type === 'ObjectPattern' && parent.value === node
     case 'FunctionDeclaration':
     case 'FunctionExpression':
       if (parent.id === node) return true
@@ -429,10 +425,7 @@ function isBindingIdentifier(
     case 'ImportNamespaceSpecifier':
       return true
     case 'ExportSpecifier':
-      // TODO: `local` is a reference, `exported` is not. Should be `parent.local !== node`.
-      // Functionally harmless for getBindVars (exports are module-level, filtered out),
-      // but semantically incorrect.
-      return false
+      return parent.local !== node
     default:
       return false
   }
