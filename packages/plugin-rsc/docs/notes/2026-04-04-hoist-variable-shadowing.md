@@ -157,7 +157,7 @@ type ScopeTree = {
 `nodeScope` is the only entry point from AST nodes into `Scope`. After that, everything
 is expressed purely in terms of `Scope` and `Identifier` — no AST node types, no strings.
 
-All the work is in `buildScopeTree` (one pass). `getBindVars` has no logic of its own.
+All the work is in `buildScopeTree` (two passes — see below). `getBindVars` has no logic of its own.
 
 ## Design Smell in the Current Prototype
 
@@ -175,8 +175,24 @@ cases (`Property`, `MethodDefinition`, import/export specifiers, destructuring, 
 As soon as the helper needs parent/grandparent context, the abstraction is already
 telling us it is too low-level.
 
-The problem is not "two passes" by itself. Two passes are fine if pass 1 establishes all
-declarations first and pass 2 resolves reads against that frozen scope data. The smell is
+Two passes are **inherently required** by JavaScript's hoisting semantics. A `var`
+declaration or function declaration may appear textually _after_ a reference to the same
+name in the same function:
+
+```js
+function action() {
+  console.log({ foo }) // reference — var foo not seen yet
+  {
+    var foo = 123 // hoisted to action's function scope
+  }
+}
+```
+
+A single-pass resolver would see `foo` before `var foo` is recorded, scan upward, and
+incorrectly attribute it to an outer binding. Pass 1 must collect all declarations first
+so that pass 2 can resolve every reference against the complete, frozen scope picture.
+
+The problem is not "two passes" by itself — that is correct and necessary. The smell is
 "walk every `Identifier` in pass 2 and classify it generically".
 
 ## Proposed New Shape

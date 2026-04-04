@@ -227,6 +227,12 @@ function buildScopeTree(ast: Program): ScopeTree {
   nodeScope.set(ast, moduleScope)
   scopeToReferences.set(moduleScope, [])
 
+  // Two passes are required: `var` and function declarations are hoisted to
+  // the enclosing function scope regardless of where they appear in the source.
+  // A reference before its `var` declaration must still resolve to that local
+  // binding, not to an outer one. Pass 1 collects all declarations first so
+  // Pass 2 can resolve every reference against the complete scope picture.
+
   // ── Pass 1: collect all declarations into scope nodes ───────────────────
   let current = moduleScope
 
