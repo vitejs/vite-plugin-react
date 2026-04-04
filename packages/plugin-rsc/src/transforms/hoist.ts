@@ -241,8 +241,11 @@ function buildScopeTree(ast: Program): ScopeTree {
   walk(ast, {
     enter(node, parent) {
       ancestors.push(node)
-      // TODO: handle importDeclaration (though they can be treated as global)
-      if (isFunctionNode(node)) {
+      if (node.type === 'ImportDeclaration') {
+        for (const spec of node.specifiers) {
+          current.declarations.add(spec.local.name)
+        }
+      } else if (isFunctionNode(node)) {
         // Declare the function name in the current scope (block or function).
         // In strict mode (ES modules), block-level function declarations are block-scoped.
         if (node.type === 'FunctionDeclaration' && node.id) {
