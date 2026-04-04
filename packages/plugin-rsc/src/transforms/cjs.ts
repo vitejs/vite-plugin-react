@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Program, Node } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { buildScopeTree } from './hoist'
+import { buildScopeTree } from './scope'
 
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.

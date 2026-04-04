@@ -85,6 +85,7 @@ export function extractNames(param: Pattern): string[] {
   return extractIdentifiers(param).map((n) => n.name)
 }
 
+// TODO: review
 export function extractIdentifiers(
   param: Pattern,
   nodes: Identifier[] = [],
