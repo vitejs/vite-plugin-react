@@ -5,6 +5,10 @@
   ],
   "references": [
     {
+      "name": "foo",
+      "declaredAt": null
+    },
+    {
       "name": "bar",
       "declaredAt": "Program"
     }

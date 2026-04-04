@@ -1,7 +1,12 @@
 {
   "type": "Program",
   "declarations": [],
-  "references": [],
+  "references": [
+    {
+      "name": "outer",
+      "declaredAt": null
+    }
+  ],
   "children": [
     {
       "type": "ForStatement",
@@ -22,7 +27,12 @@
         {
           "type": "BlockStatement",
           "declarations": [],
-          "references": [],
+          "references": [
+            {
+              "name": "inner",
+              "declaredAt": null
+            }
+          ],
           "children": [
             {
               "type": "ForStatement",
@@ -49,8 +59,16 @@
                       "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
                     },
                     {
+                      "name": "outer",
+                      "declaredAt": null
+                    },
+                    {
                       "name": "i",
                       "declaredAt": "Program > ForStatement"
+                    },
+                    {
+                      "name": "inner",
+                      "declaredAt": null
                     }
                   ],
                   "children": []
