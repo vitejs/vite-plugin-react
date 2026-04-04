@@ -6,6 +6,7 @@ import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
 // TODO:
 // - review fixture
+//   - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
 // - reuse hoist.test.ts input
 
 describe('fixtures', () => {
