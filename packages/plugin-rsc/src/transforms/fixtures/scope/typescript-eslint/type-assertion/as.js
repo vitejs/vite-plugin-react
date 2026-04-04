@@ -1,2 +1,2 @@
-const x = 1
-x
+const x = 1;
+x;

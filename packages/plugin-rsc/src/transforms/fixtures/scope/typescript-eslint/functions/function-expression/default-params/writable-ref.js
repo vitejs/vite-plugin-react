@@ -1,1 +1,1 @@
-let foo = function (a, b = 0) {}
+let foo = function (a, b = 0) { };

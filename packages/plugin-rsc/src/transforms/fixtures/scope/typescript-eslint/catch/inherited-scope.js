@@ -1,5 +1,6 @@
-const a = 1
+const a = 1;
 try {
-} catch (e) {
-  a
+}
+catch (e) {
+    a;
 }

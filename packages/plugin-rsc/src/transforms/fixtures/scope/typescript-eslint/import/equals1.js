@@ -1,3 +1,3 @@
 //// @sourceType = module
-foo
-export {}
+foo;
+export {};

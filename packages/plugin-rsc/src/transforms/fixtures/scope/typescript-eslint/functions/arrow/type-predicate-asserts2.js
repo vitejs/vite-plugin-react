@@ -1,1 +1,1 @@
-const foo = (arg) => {}
+const foo = (arg) => { };

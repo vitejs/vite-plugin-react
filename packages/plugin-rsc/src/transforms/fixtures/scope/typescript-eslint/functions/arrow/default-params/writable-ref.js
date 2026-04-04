@@ -1,1 +1,1 @@
-let foo = (a, b = 0) => {}
+let foo = (a, b = 0) => { };

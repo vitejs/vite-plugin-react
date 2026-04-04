@@ -1,1 +1,1 @@
-const x = { y: { z: 1 } }
+const x = { y: { z: 1 } };

@@ -1,3 +1,3 @@
 //// @sourceType = module
-const v = 1
-export { v as x }
+const v = 1;
+export { v as x };

@@ -1,1 +1,1 @@
-let x
+let x;

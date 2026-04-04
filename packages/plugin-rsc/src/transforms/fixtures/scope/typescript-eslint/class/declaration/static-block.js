@@ -1,3 +1,3 @@
 class A {
-  static {}
+    static { }
 }

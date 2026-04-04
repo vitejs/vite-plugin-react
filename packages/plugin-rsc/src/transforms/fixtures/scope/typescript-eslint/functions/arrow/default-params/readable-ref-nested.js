@@ -1,6 +1,4 @@
-let a
-let foo = (
-  b = function () {
-    return a
-  },
-) => {}
+let a;
+let foo = (b = function () {
+    return a;
+}) => { };

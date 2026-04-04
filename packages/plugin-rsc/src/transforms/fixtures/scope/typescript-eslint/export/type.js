@@ -1,3 +1,3 @@
 //// @sourceType = module
-const T = 1 // unreferenced
-export {}
+const T = 1; // unreferenced
+export {};

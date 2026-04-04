@@ -1,7 +1,8 @@
-class Foo {}
-class Bar {
-  constructor() {
-    this.foo = Foo
-  }
+class Foo {
 }
-new Bar()
+class Bar {
+    constructor() {
+        this.foo = (Foo);
+    }
+}
+new Bar();

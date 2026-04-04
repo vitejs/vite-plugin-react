@@ -1,2 +1,4 @@
-class A {}
-class B extends A {}
+class A {
+}
+class B extends A {
+}

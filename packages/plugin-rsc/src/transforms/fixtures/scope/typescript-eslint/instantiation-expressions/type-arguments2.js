@@ -1,4 +1,4 @@
 function makeBox(value) {
-  return { value }
+    return { value };
 }
-const makeStringBox = makeBox
+const makeStringBox = (makeBox);

@@ -1,3 +1,3 @@
 //// @sourceType = module
-function top() {}
-top()
+function top() { }
+top();

@@ -1,2 +1,2 @@
-import { jsx as _jsx } from 'react/jsx-runtime'
-_jsx(Foo, {})
+import { jsx as _jsx } from "react/jsx-runtime";
+_jsx(Foo, {});

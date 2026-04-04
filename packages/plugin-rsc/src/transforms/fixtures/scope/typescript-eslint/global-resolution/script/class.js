@@ -1,3 +1,4 @@
 //// @sourceType = script
-class Foo {}
-new Foo()
+class Foo {
+}
+new Foo();

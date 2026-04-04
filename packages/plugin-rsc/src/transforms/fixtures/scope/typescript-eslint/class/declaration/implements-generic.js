@@ -1,1 +1,2 @@
-class B {}
+class B {
+}

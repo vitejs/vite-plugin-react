@@ -1,3 +1,3 @@
 const foo = function (arg) {
-  return typeof arg === 'string'
-}
+    return typeof arg === 'string';
+};

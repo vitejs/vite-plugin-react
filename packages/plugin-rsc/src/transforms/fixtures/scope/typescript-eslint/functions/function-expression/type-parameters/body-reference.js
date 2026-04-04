@@ -1,3 +1,3 @@
 const foo = function () {
-  let x
-}
+    let x;
+};

@@ -1,2 +1,2 @@
-const a = 0
-function foo(b = a) {}
+const a = 0;
+function foo(b = a) { }

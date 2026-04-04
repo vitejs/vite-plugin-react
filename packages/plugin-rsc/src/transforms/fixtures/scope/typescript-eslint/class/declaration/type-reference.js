@@ -1,2 +1,3 @@
-class A {}
-const v = A
+class A {
+}
+const v = A;

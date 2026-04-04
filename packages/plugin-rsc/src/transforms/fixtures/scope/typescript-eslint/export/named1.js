@@ -1,2 +1,2 @@
 //// @sourceType = module
-export const x = 1
+export const x = 1;

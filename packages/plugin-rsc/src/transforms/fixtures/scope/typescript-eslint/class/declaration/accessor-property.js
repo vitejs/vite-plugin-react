@@ -1,8 +1,8 @@
-const x = 1
+const x = 1;
 class A {
-  constructor() {
-    this.prop1 = 1
-    this.prop2 = x
-  }
+    constructor() {
+        this.prop1 = 1;
+        this.prop2 = x;
+    }
 }
-const unresolved = prop1
+const unresolved = prop1;

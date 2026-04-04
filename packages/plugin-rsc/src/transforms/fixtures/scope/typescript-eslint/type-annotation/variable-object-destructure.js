@@ -1,1 +1,1 @@
-const { x } = {}
+const { x } = {};

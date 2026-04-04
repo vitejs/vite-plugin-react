@@ -1,3 +1,3 @@
 //// @sourceType = script
-var top = () => {}
-top()
+var top = () => { };
+top();

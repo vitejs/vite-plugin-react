@@ -1,3 +1,3 @@
 //// @sourceType = script
-let top = () => {}
-top()
+let top = () => { };
+top();

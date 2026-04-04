@@ -1,3 +1,3 @@
 //// @sourceType = module
-const top = () => {}
-top()
+const top = () => { };
+top();

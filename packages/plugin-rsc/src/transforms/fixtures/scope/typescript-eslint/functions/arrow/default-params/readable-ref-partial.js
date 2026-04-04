@@ -1,2 +1,2 @@
-let a
-let foo = (b = a.c) => {}
+let a;
+let foo = (b = a.c) => { };

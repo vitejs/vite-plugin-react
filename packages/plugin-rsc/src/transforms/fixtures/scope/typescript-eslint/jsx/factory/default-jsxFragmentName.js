@@ -1,4 +1,4 @@
+import { Fragment as _Fragment, jsx as _jsx } from "react/jsx-runtime";
 //// @sourceType = 'module'
-import React from 'react'
-import { Fragment as _Fragment, jsx as _jsx } from 'react/jsx-runtime'
-_jsx(_Fragment, {})
+import React from 'react';
+_jsx(_Fragment, {});

@@ -1,3 +1,3 @@
 //// @sourceType = module
-const unresolved = T
-export {}
+const unresolved = T;
+export {};

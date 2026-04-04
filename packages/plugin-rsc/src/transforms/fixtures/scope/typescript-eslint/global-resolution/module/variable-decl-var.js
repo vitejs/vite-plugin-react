@@ -1,3 +1,3 @@
 //// @sourceType = module
-var top = () => {}
-top()
+var top = () => { };
+top();

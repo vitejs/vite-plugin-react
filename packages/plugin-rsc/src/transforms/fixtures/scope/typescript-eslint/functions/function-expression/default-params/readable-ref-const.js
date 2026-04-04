@@ -1,2 +1,2 @@
-const a = 0
-let foo = function (b = a) {}
+const a = 0;
+let foo = function (b = a) { };

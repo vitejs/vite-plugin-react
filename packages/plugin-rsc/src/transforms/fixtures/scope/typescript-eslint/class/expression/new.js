@@ -1,2 +1,3 @@
-const A = class {}
-new A()
+const A = class {
+};
+new A();

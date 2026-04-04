@@ -1,3 +1,3 @@
 function foo() {
-  let x
+    let x;
 }

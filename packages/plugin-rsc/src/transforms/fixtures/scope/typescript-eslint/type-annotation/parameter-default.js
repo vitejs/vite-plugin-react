@@ -1,1 +1,1 @@
-function foo(a = 1) {}
+function foo(a = 1) { }

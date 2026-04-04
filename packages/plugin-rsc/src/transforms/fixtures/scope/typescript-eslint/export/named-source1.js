@@ -1,2 +1,2 @@
 //// @sourceType = module
-export { x } from 'foo'
+export { x } from 'foo';

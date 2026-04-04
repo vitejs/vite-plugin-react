@@ -1,2 +1,2 @@
-let a
-let foo = function (b = a) {}
+let a;
+let foo = function (b = a) { };

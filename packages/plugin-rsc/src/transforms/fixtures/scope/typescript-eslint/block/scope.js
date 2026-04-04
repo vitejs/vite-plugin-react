@@ -1,6 +1,6 @@
 {
-  let i = 20
-  let j = 1
-  i
+    let i = 20;
+    let j = 1;
+    i;
 }
-j
+j;

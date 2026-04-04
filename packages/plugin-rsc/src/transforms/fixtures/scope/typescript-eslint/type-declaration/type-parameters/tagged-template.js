@@ -1,2 +1,2 @@
-function div(arg) {}
-const StyledPayment = div``
+function div(arg) { }
+const StyledPayment = div ``;

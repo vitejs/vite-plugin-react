@@ -1,4 +1,4 @@
 function foo(y) {
-  return { y }
+    return { y };
 }
-export {}
+export {};

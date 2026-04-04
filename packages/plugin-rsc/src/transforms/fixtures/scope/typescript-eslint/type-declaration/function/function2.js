@@ -1,1 +1,1 @@
-const arg = 1
+const arg = 1;

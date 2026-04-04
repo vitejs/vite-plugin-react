@@ -1,6 +1,6 @@
-function f() {}
+function f() { }
 class A {
-  static {
-    f()
-  }
+    static {
+        f();
+    }
 }

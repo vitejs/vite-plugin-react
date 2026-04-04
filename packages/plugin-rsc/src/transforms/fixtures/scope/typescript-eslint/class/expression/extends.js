@@ -1,2 +1,4 @@
-class A {}
-const B = class extends A {}
+class A {
+}
+const B = class extends A {
+};

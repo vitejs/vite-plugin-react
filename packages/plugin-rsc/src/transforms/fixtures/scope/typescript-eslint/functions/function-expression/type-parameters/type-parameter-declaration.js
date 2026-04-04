@@ -1,1 +1,1 @@
-const foo = function () {}
+const foo = function () { };

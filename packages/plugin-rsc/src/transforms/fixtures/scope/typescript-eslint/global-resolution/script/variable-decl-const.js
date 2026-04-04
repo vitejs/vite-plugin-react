@@ -1,3 +1,3 @@
 //// @sourceType = script
-const top = () => {}
-top()
+const top = () => { };
+top();

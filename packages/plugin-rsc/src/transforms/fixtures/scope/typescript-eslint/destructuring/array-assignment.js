@@ -1,3 +1,3 @@
-const obj = {}
-let b, c
-;[obj.a, b, [c]] = []
+const obj = {};
+let b, c;
+[obj.a, b, [c]] = [];

@@ -1,3 +1,3 @@
 function foo(a, b) {
-  a
+    a;
 }

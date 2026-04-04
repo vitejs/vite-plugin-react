@@ -1,2 +1,2 @@
-const T = 1
-export { T }
+const T = 1;
+export { T };

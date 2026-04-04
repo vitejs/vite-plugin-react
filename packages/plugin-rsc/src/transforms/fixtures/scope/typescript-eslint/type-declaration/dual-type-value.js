@@ -1,2 +1,2 @@
-const dual = 1
-const reference2 = dual
+const dual = 1;
+const reference2 = dual;

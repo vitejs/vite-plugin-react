@@ -1,2 +1,2 @@
 //// @sourceType = module
-export default function f() {}
+export default function f() { }

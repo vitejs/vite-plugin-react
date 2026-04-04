@@ -1,3 +1,3 @@
 //// @sourceType = script
-function top() {}
-top()
+function top() { }
+top();

@@ -1,4 +1,4 @@
-const parentScoped = 1
+const parentScoped = 1;
 const foo = function () {
-  parentScoped + 1
-}
+    parentScoped + 1;
+};

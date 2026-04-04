@@ -1,3 +1,3 @@
 //// @sourceType = module
-import v from 'foo'
-v
+import v from 'foo';
+v;

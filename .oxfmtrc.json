@@ -10,6 +10,7 @@
   },
   "ignorePatterns": [
     "*.snap.json",
+    "typescript-eslint/",
     "packages/*/CHANGELOG.md",
     "playground-temp/",
     "dist/",
