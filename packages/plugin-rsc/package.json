@@ -30,6 +30,7 @@
   },
   "scripts": {
     "test": "vitest",
+    "review-scope-fixtures": "node ./scripts/review-scope-fixtures.mjs",
     "test-e2e": "playwright test --project=chromium",
     "test-e2e-ci": "playwright test",
     "tsc": "tsc -b ./tsconfig.json ./e2e/tsconfig.json ./examples/*/tsconfig.json",
