@@ -210,7 +210,7 @@ class Scope {
 
 type ScopeTree = {
   // each reference Identifier → the Scope that declared it (absent = module-level/global)
-  readonly identifierScope: WeakMap<Identifier, Scope>
+  readonly referenceScope: WeakMap<Identifier, Scope>
   // each function Scope → direct reference Identifiers within its body (not nested fns)
   readonly scopeToReferences: WeakMap<Scope, Identifier[]>
   // scope-creating AST node → its Scope (the only entry point from AST into Scope)
@@ -221,7 +221,7 @@ type ScopeTree = {
 function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
-  const identifierScope = new WeakMap<Identifier, Scope>()
+  const referenceScope = new WeakMap<Identifier, Scope>()
   const scopeToReferences = new WeakMap<Scope, Identifier[]>()
 
   nodeScope.set(ast, moduleScope)
@@ -308,7 +308,7 @@ function buildScopeTree(ast: Program): ScopeTree {
         }
         // Record declaration scope (absent from map = module-level or undeclared)
         if (declaring && declaring !== moduleScope) {
-          identifierScope.set(node, declaring)
+          referenceScope.set(node, declaring)
         }
         // Add to the direct references of the enclosing function scope
         scopeToReferences.get(fnStack[fnStack.length - 1]!)!.push(node)
@@ -324,14 +324,14 @@ function buildScopeTree(ast: Program): ScopeTree {
     },
   })
 
-  return { identifierScope, scopeToReferences, nodeScope, moduleScope }
+  return { referenceScope, scopeToReferences, nodeScope, moduleScope }
 }
 
 // getBindVars is pure data lookup — no walking, no string matching.
 function getBindVars(
   fn: AnyFunctionNode,
   declName: string | false,
-  { identifierScope, scopeToReferences, nodeScope, moduleScope }: ScopeTree,
+  { referenceScope, scopeToReferences, nodeScope, moduleScope }: ScopeTree,
 ): string[] {
   const fnScope = nodeScope.get(fn)!
   const references = scopeToReferences.get(fnScope) ?? []
@@ -340,7 +340,7 @@ function getBindVars(
       references
         .filter((id) => id.name !== declName)
         .filter((id) => {
-          const scope = identifierScope.get(id)
+          const scope = referenceScope.get(id)
           return (
             scope !== undefined &&
             scope !== moduleScope &&
@@ -446,15 +446,17 @@ function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {
 
 // Copied from periscopic `extract_names` / `extract_identifiers` in `src/index.js`.
 function extractNames(param: Pattern): string[] {
-  const names: string[] = []
-  extractIdentifiers(param, names)
-  return names
+  const nodes = extractIdentifiers(param)
+  return nodes.map((n) => n.name)
 }
 
-function extractIdentifiers(param: Pattern, names: string[]): void {
+function extractIdentifiers(
+  param: Pattern,
+  nodes: Identifier[] = [],
+): Identifier[] {
   switch (param.type) {
     case 'Identifier':
-      names.push(param.name)
+      nodes.push(param)
       break
     case 'MemberExpression': {
       // TODO: review
@@ -462,27 +464,28 @@ function extractIdentifiers(param: Pattern, names: string[]): void {
       while (obj.type === 'MemberExpression') {
         obj = obj.object
       }
-      names.push(obj.name)
+      nodes.push(obj)
       break
     }
     case 'ObjectPattern':
       for (const prop of param.properties) {
         extractIdentifiers(
           prop.type === 'RestElement' ? prop : prop.value,
-          names,
+          nodes,
         )
       }
       break
     case 'ArrayPattern':
       for (const el of param.elements) {
-        if (el) extractIdentifiers(el, names)
+        if (el) extractIdentifiers(el, nodes)
       }
       break
     case 'RestElement':
-      extractIdentifiers(param.argument, names)
+      extractIdentifiers(param.argument, nodes)
       break
     case 'AssignmentPattern':
-      extractIdentifiers(param.left, names)
+      extractIdentifiers(param.left, nodes)
       break
   }
+  return nodes
 }
