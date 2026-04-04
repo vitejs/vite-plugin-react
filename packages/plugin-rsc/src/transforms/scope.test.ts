@@ -19,7 +19,6 @@ describe('fixtures', () => {
   }
 })
 
-// TODO: review
 // ── Serializer ────────────────────────────────────────────────────────────────
 
 type SerializedScope = {
@@ -37,50 +36,36 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
     moduleScope,
   } = scopeTree
 
-  // TODO: class DefaultMap helper
   // Build scope → label and scope → direct children.
   // Labels are disambiguated per parent (e.g. BlockStatement[2] for the second sibling).
   const scopeLabelMap = new Map<Scope, string>()
-  const scopeChildrenMap = new Map<Scope, Scope[]>()
-  const scopeNodeMap = new Map<Scope, Node>()
-  const siblingCount = new Map<Scope, Map<string, number>>()
+  const scopeChildrenMap = new DefaultMap<Scope, Scope[]>(() => [])
+  const siblingCount = new DefaultMap<Scope, DefaultMap<string, number>>(
+    () => new DefaultMap(() => 0),
+  )
 
   for (const [node, scope] of nodeScope.entries()) {
-    scopeNodeMap.set(scope, node)
-    scopeChildrenMap.set(scope, [])
-
     const base = toScopeNodeLabel(node)
     scopeLabelMap.set(scope, base)
-
+    scopeChildrenMap.set(scope, [])
     if (!scope.parent) {
       continue
     }
-
     const parent = scope.parent
-
-    if (!siblingCount.has(parent)) {
-      siblingCount.set(parent, new Map())
-    }
-    const counts = siblingCount.get(parent)!
-    const n = (counts.get(base) ?? 0) + 1
+    const counts = siblingCount.get(parent)
+    const n = counts.get(base) + 1
     counts.set(base, n)
-
     scopeLabelMap.set(scope, n === 1 ? base : `${base}[${n}]`)
-    scopeNodeMap.set(scope, node)
-
-    if (!scopeChildrenMap.has(parent)) {
-      scopeChildrenMap.set(parent, [])
-    }
-    scopeChildrenMap.get(parent)!.push(scope)
+    scopeChildrenMap.get(parent).push(scope)
   }
 
   // Direct references for a scope = all propagated refs minus those in child scopes.
   function getDirectReferences(scope: Scope) {
     const allRefs = scopeToReferences.get(scope) ?? []
     const childRefSet = new Set(
-      (scopeChildrenMap.get(scope) ?? []).flatMap(
-        (c) => scopeToReferences.get(c) ?? [],
-      ),
+      scopeChildrenMap
+        .get(scope)
+        .flatMap((c) => scopeToReferences.get(c) ?? []),
     )
     return allRefs.filter((id) => !childRefSet.has(id))
   }
@@ -121,5 +106,21 @@ function toScopeNodeLabel(node: Node): string {
       return 'ArrowFunction'
     default:
       return node.type
+  }
+}
+
+class DefaultMap<K, V> extends Map<K, V> {
+  constructor(private readonly init: (key: K) => V) {
+    super()
+  }
+
+  override get(key: K): V {
+    let value = super.get(key)
+    if (value !== undefined) {
+      return value
+    }
+    value = this.init(key)
+    this.set(key, value)
+    return value
   }
 }
