@@ -1,11 +1,12 @@
 {
   "type": "Program",
   "declarations": [
-    "bar"
+    "key",
+    "obj"
   ],
   "references": [
     {
-      "name": "bar",
+      "name": "key",
       "declaredAt": "Program"
     }
   ],

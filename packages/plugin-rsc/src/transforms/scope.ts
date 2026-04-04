@@ -62,6 +62,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
   nodeScope.set(ast, moduleScope)
 
   const rawReferences: Array<{ id: Identifier; visitScope: Scope }> = []
+  const seenReferences = new Set<Identifier>()
   const ancestors: Node[] = []
 
   walk(ast, {
@@ -131,12 +132,14 @@ export function buildScopeTree(ast: Program): ScopeTree {
       // the path key for binding instead of the bare name.
       if (
         node.type === 'Identifier' &&
+        !seenReferences.has(node) &&
         !isBindingIdentifier(
           node,
           parent ?? undefined,
           ancestors[ancestors.length - 3],
         )
       ) {
+        seenReferences.add(node)
         rawReferences.push({ id: node, visitScope: current })
       }
     },
@@ -209,9 +212,17 @@ function isBindingIdentifier(
     case 'MemberExpression':
       return parent.property === node && !parent.computed
     case 'Property':
-      // The value is always the binding in destructuring (both computed and non-computed).
-      // The key is never a binding — in computed form `{ [expr]: b }` it is a reference.
-      return grandparent?.type === 'ObjectPattern' && parent.value === node
+      if (grandparent?.type === 'ObjectPattern') {
+        // In destructuring, the value side is always a binding pattern.
+        // Non-computed keys are syntax-only property names, while computed keys are references.
+        if (parent.value === node) return true
+        return parent.key === node && !parent.computed
+      }
+      if (grandparent?.type === 'ObjectExpression') {
+        // In object literals, non-computed keys are syntax-only property names.
+        return parent.key === node && !parent.computed
+      }
+      return false
     case 'FunctionDeclaration':
     case 'FunctionExpression':
       if (parent.id === node) return true
@@ -239,9 +250,9 @@ function isBindingIdentifier(
     case 'LabeledStatement':
     case 'BreakStatement':
     case 'ContinueStatement':
-      return false
+      return true
     case 'ImportSpecifier':
-      return parent.imported !== node
+      return true
     case 'ImportDefaultSpecifier':
     case 'ImportNamespaceSpecifier':
       return true
