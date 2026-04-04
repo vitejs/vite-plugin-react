@@ -211,7 +211,7 @@ class Scope {
 type ScopeTree = {
   // each reference Identifier → the Scope that declared it (absent = module-level/global)
   readonly referenceScope: WeakMap<Identifier, Scope>
-  // each function Scope → direct reference Identifiers within its body (not nested fns)
+  // each function Scope → reference Identifiers accessed within its scope
   readonly scopeToReferences: WeakMap<Scope, Identifier[]>
   // scope-creating AST node → its Scope (the only entry point from AST into Scope)
   readonly nodeScope: WeakMap<Node, Scope>
@@ -222,10 +222,6 @@ function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
   const referenceScope = new WeakMap<Identifier, Scope>()
-  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
-
-  nodeScope.set(ast, moduleScope)
-  scopeToReferences.set(moduleScope, [])
 
   // Two passes are required: `var` and function declarations are hoisted to
   // the enclosing function scope regardless of where they appear in the source.
@@ -235,9 +231,11 @@ function buildScopeTree(ast: Program): ScopeTree {
 
   // ── Pass 1: collect all declarations into scope nodes ───────────────────
   let current = moduleScope
+  nodeScope.set(ast, moduleScope)
 
   walk(ast, {
     enter(node) {
+      // TODO: handle importDeclaration (though they can be treated as global)
       if (isFunctionNode(node)) {
         // Hoist function declaration name to the enclosing function scope
         if (node.type === 'FunctionDeclaration' && node.id) {
@@ -245,7 +243,6 @@ function buildScopeTree(ast: Program): ScopeTree {
         }
         const scope = new Scope(current, true)
         nodeScope.set(node, scope)
-        scopeToReferences.set(scope, [])
         current = scope
         for (const param of node.params) {
           for (const name of extractNames(param)) {
@@ -286,9 +283,8 @@ function buildScopeTree(ast: Program): ScopeTree {
   })
 
   // ── Pass 2: resolve each reference Identifier to its declaring Scope ────
-  current = moduleScope
-  const fnStack: Scope[] = [moduleScope]
   const ancestors: Node[] = []
+  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
 
   walk(ast, {
     enter(node, parent) {
@@ -296,9 +292,7 @@ function buildScopeTree(ast: Program): ScopeTree {
       const scope = nodeScope.get(node)
       if (scope) {
         current = scope
-        if (isFunctionNode(node)) {
-          fnStack.push(scope)
-        }
+        scopeToReferences.set(current, [])
       }
 
       if (
@@ -310,31 +304,36 @@ function buildScopeTree(ast: Program): ScopeTree {
         )
       ) {
         // Scan up from current scope to find where this name is declared
-        let declaring: Scope | undefined = current
-        while (declaring && !declaring.declarations.has(node.name)) {
-          declaring = declaring.parent
+        let declScope: Scope | undefined = current
+        while (declScope && !declScope.declarations.has(node.name)) {
+          declScope = declScope.parent
         }
-        // Record declaration scope (absent from map = module-level or undeclared)
-        if (declaring && declaring !== moduleScope) {
-          referenceScope.set(node, declaring)
+        // Record declaration scope
+        if (declScope) {
+          referenceScope.set(node, declScope)
         }
         // Add to the direct references of the enclosing function scope
-        scopeToReferences.get(fnStack[fnStack.length - 1]!)!.push(node)
+        scopeToReferences.get(current)!.push(node)
       }
     },
     leave(node) {
       ancestors.pop()
       const scope = nodeScope.get(node)
       if (scope?.parent) {
+        // propagate references to parent scope
+        const references = scopeToReferences.get(current)!
+        scopeToReferences.get(scope.parent)!.push(...references)
         current = scope.parent
-        if (isFunctionNode(node)) {
-          fnStack.pop()
-        }
       }
     },
   })
 
-  return { referenceScope, scopeToReferences, nodeScope, moduleScope }
+  return {
+    referenceScope,
+    scopeToReferences,
+    nodeScope,
+    moduleScope,
+  }
 }
 
 // TODO: review
