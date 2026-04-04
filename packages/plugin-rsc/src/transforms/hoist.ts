@@ -199,7 +199,7 @@ class Scope {
   readonly declarations = new Set<string>()
 
   constructor(
-    public readonly parent: Scope | null,
+    public readonly parent: Scope | undefined,
     private readonly isFunction: boolean,
   ) {}
 
@@ -219,7 +219,7 @@ type ScopeTree = {
 }
 
 function buildScopeTree(ast: Program): ScopeTree {
-  const moduleScope = new Scope(null, true)
+  const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
   const identifierScope = new WeakMap<Identifier, Scope>()
   const scopeToReferences = new WeakMap<Scope, Identifier[]>()
@@ -302,7 +302,7 @@ function buildScopeTree(ast: Program): ScopeTree {
         )
       ) {
         // Scan up from current scope to find where this name is declared
-        let declaring: Scope | null = current
+        let declaring: Scope | undefined = current
         while (declaring && !declaring.declarations.has(node.name)) {
           declaring = declaring.parent
         }
