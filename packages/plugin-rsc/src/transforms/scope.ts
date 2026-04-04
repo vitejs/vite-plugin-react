@@ -21,8 +21,18 @@ class Scope {
     private readonly isFunction: boolean,
   ) {}
 
-  nearestFunctionScope(): Scope {
-    return this.isFunction ? this : this.parent!.nearestFunctionScope()
+  getNearestFunctionScope(): Scope {
+    return this.isFunction ? this : this.parent!.getNearestFunctionScope()
+  }
+
+  getAncestorScopes(): Set<Scope> {
+    const ancestors = new Set<Scope>()
+    let curr = this.parent
+    while (curr) {
+      ancestors.add(curr)
+      curr = curr.parent
+    }
+    return ancestors
   }
 }
 
@@ -102,7 +112,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
         }
       } else if (node.type === 'VariableDeclaration') {
         const target =
-          node.kind === 'var' ? current.nearestFunctionScope() : current
+          node.kind === 'var' ? current.getNearestFunctionScope() : current
         for (const decl of node.declarations) {
           for (const name of extractNames(decl.id)) {
             target.declarations.add(name)
@@ -182,16 +192,6 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
     node.type === 'FunctionExpression' ||
     node.type === 'ArrowFunctionExpression'
   )
-}
-
-export function getAncestorScopes(scope: Scope): Set<Scope> {
-  const ancestors = new Set<Scope>()
-  let curr = scope.parent
-  while (curr) {
-    ancestors.add(curr)
-    curr = curr.parent
-  }
-  return ancestors
 }
 
 // TODO: review

@@ -1,7 +1,7 @@
 import type { Program, Literal, Node } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { buildScopeTree, getAncestorScopes, type ScopeTree } from './scope'
+import { buildScopeTree, type ScopeTree } from './scope'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -170,7 +170,7 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
 
 function getBindVars(fn: Node, scopeTree: ScopeTree): string[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
-  const ancestorScopes = getAncestorScopes(fnScope)
+  const ancestorScopes = fnScope.getAncestorScopes()
   const references = scopeTree.scopeToReferences.get(fnScope) ?? []
   // bind variables that are the ones declared in ancestor scopes but not module global scope
   const bindReferences = references.filter((id) => {
