@@ -30,6 +30,7 @@
   },
   "scripts": {
     "test": "vitest",
+    "extract-hoist-scope-fixtures": "node ./scripts/extract-hoist-scope-fixtures.ts",
     "review-scope-fixtures": "node ./scripts/review-scope-fixtures.ts",
     "test-e2e": "playwright test --project=chromium",
     "test-e2e-ci": "playwright test",
