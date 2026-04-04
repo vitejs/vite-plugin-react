@@ -4,6 +4,10 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
+// TODO:
+// - review fixture
+// - reuse hoist.test.ts input
+
 describe('fixtures', () => {
   const fixtures = import.meta.glob('./fixtures/scope/*.js', { query: 'raw' })
   for (const [file, mod] of Object.entries(fixtures)) {
