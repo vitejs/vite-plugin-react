@@ -442,9 +442,6 @@ importers:
       magic-string:
         specifier: ^0.30.21
         version: 0.30.21
-      periscopic:
-        specifier: ^4.0.2
-        version: 4.0.2
       srvx:
         specifier: ^0.11.13
         version: 0.11.13
@@ -3989,9 +3986,6 @@ packages:
   periscopic@3.1.0:
     resolution: {integrity: sha512-vKiQ8RRtkl9P+r/+oefh25C3fhybptkHKCZSPlcXiJux2tJF55GnEj3BVn4A5gKfq9NWWXXrxkHBwVPUfH0opw==}
 
-  periscopic@4.0.2:
-    resolution: {integrity: sha512-sqpQDUy8vgB7ycLkendSKS6HnVz1Rneoc3Rc+ZBUCe2pbqlVuCC5vF52l0NJ1aiMg/r1qfYF9/myz8CZeI2rjA==}
-
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -4814,9 +4808,6 @@ packages:
 
   youch@4.1.0-beta.10:
     resolution: {integrity: sha512-rLfVLB4FgQneDr0dv1oddCVZmKjcJ6yX6mS4pU82Mq/Dt9a3cLZQ62pDBL4AUO+uVrCvtWz3ZFUL2HFAFJ/BXQ==}
-
-  zimmerframe@1.1.2:
-    resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -7628,12 +7619,6 @@ snapshots:
       estree-walker: 3.0.3
       is-reference: 3.0.2
 
-  periscopic@4.0.2:
-    dependencies:
-      '@types/estree': 1.0.8
-      is-reference: 3.0.2
-      zimmerframe: 1.1.2
-
   picocolors@1.1.1: {}
 
   picomatch@4.0.3: {}
@@ -8426,7 +8411,5 @@ snapshots:
       '@speed-highlight/core': 1.2.7
       cookie: 1.0.2
       youch-core: 0.3.3
-
-  zimmerframe@1.1.2: {}
 
   zwitch@2.0.4: {}

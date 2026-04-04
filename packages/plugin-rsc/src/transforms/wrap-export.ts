@@ -1,7 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
-import { extract_names } from 'periscopic'
+import { extractNames } from './utils'
 
 type ExportMeta = {
   declName?: string
@@ -131,7 +131,7 @@ export function transformWrapExport(
             )
           }
           const names = node.declaration.declarations.flatMap((decl) =>
-            extract_names(decl.id),
+            extractNames(decl.id),
           )
           // treat only simple single decl as function
           let isFunction = false

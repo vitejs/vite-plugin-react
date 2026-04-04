@@ -1,6 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
-import { extract_names } from 'periscopic'
+import type { Identifier, Pattern, Program } from 'estree'
 
 export function hasDirective(
   body: Program['body'],
@@ -41,7 +40,7 @@ export function getExportNames(
            * export const foo = 1, bar = 2
            */
           for (const decl of node.declaration.declarations) {
-            exportNames.push(...extract_names(decl.id))
+            exportNames.push(...extractNames(decl.id))
           }
         } else {
           node.declaration satisfies never
@@ -79,4 +78,48 @@ export function getExportNames(
   }
 
   return { exportNames }
+}
+
+// Copied from periscopic `extract_names` / `extract_identifiers` in `src/index.js`.
+export function extractNames(param: Pattern): string[] {
+  return extractIdentifiers(param).map((n) => n.name)
+}
+
+export function extractIdentifiers(
+  param: Pattern,
+  nodes: Identifier[] = [],
+): Identifier[] {
+  switch (param.type) {
+    case 'Identifier':
+      nodes.push(param)
+      break
+    case 'MemberExpression': {
+      let obj = param as any
+      while (obj.type === 'MemberExpression') {
+        obj = obj.object
+      }
+      nodes.push(obj)
+      break
+    }
+    case 'ObjectPattern':
+      for (const prop of param.properties) {
+        extractIdentifiers(
+          prop.type === 'RestElement' ? prop : prop.value,
+          nodes,
+        )
+      }
+      break
+    case 'ArrayPattern':
+      for (const el of param.elements) {
+        if (el) extractIdentifiers(el, nodes)
+      }
+      break
+    case 'RestElement':
+      extractIdentifiers(param.argument, nodes)
+      break
+    case 'AssignmentPattern':
+      extractIdentifiers(param.left, nodes)
+      break
+  }
+  return nodes
 }

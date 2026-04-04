@@ -10,6 +10,7 @@ import type {
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import { extractNames } from './utils'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -177,8 +178,8 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
 }
 
 // TODO: unit test
-// ── Custom scope analysis (prototype) ─────────────────────────────────────────
-// Replacement for periscopic's analyze() to correctly handle variable shadowing.
+// ── Custom scope analysis ─────────────────────────────────────────
+// Replacement for periscopic's analyze() to correctly handle variable shadowing
 // See docs/notes/2026-04-04-hoist-variable-shadowing.md
 
 type AnyFunctionNode =
@@ -197,7 +198,7 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
 // Scope is an identity token with a parent link.
 // declarations is an internal build-time detail used only within buildScopeTree.
 class Scope {
-  readonly declarations = new Set<string>()
+  readonly declarations: Set<string> = new Set<string>()
 
   constructor(
     public readonly parent: Scope | undefined,
@@ -219,7 +220,7 @@ type ScopeTree = {
   readonly moduleScope: Scope
 }
 
-function buildScopeTree(ast: Program): ScopeTree {
+export function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
   const nodeScope = new WeakMap<Node, Scope>()
 
@@ -455,52 +456,4 @@ function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {
     case 'AssignmentPattern':
       return patternContainsIdentifier(pattern.left, target)
   }
-}
-
-// Copied from periscopic `extract_names` / `extract_identifiers` in `src/index.js`.
-function extractNames(param: Pattern): string[] {
-  const nodes = extractIdentifiers(param)
-  return nodes.map((n) => n.name)
-}
-
-// TODO: review
-function extractIdentifiers(
-  param: Pattern,
-  nodes: Identifier[] = [],
-): Identifier[] {
-  switch (param.type) {
-    case 'Identifier':
-      nodes.push(param)
-      break
-    case 'MemberExpression': {
-      let obj = param as any
-      while (obj.type === 'MemberExpression') {
-        obj = obj.object
-      }
-      nodes.push(obj)
-      break
-    }
-    case 'ObjectPattern':
-      for (const prop of param.properties) {
-        extractIdentifiers(
-          prop.type === 'RestElement' ? prop : prop.value,
-          nodes,
-        )
-      }
-      break
-    case 'ArrayPattern':
-      for (const el of param.elements) {
-        if (el) {
-          extractIdentifiers(el, nodes)
-        }
-      }
-      break
-    case 'RestElement':
-      extractIdentifiers(param.argument, nodes)
-      break
-    case 'AssignmentPattern':
-      extractIdentifiers(param.left, nodes)
-      break
-  }
-  return nodes
 }
