@@ -1,6 +1,5 @@
 import path from 'node:path'
 import type { Node, Program } from 'estree'
-import { walk } from 'estree-walker'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
@@ -36,52 +35,60 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
     moduleScope,
   } = scopeTree
 
+  // TODO: class DefaultMap helper
   // Build scope → label and scope → direct children.
   // Labels are disambiguated per parent (e.g. BlockStatement[2] for the second sibling).
-  const scopeLabel = new Map<Scope, string>()
-  const scopeChildren = new Map<Scope, Scope[]>()
+  const scopeLabelMap = new Map<Scope, string>()
+  const scopeChildrenMap = new Map<Scope, Scope[]>()
+  const scopeNodeMap = new Map<Scope, Node>()
   const siblingCount = new Map<Scope, Map<string, number>>()
 
-  scopeLabel.set(moduleScope, 'Program')
-  scopeChildren.set(moduleScope, [])
+  scopeLabelMap.set(moduleScope, 'Program')
+  scopeChildrenMap.set(moduleScope, [])
+  scopeNodeMap.set(moduleScope, ast)
 
-  walk(ast as Node, {
-    enter(node) {
-      const scope = nodeScope.get(node)
-      if (!scope || scope === moduleScope) return
+  for (const [node, scope] of nodeScope.entries()) {
+    scopeNodeMap.set(scope, node)
+    const base = scopeNodeLabel(node)
+    if (!scope.parent) {
+      continue
+    }
 
-      const parent = scope.parent!
-      const base = scopeNodeLabel(node)
+    const parent = scope.parent
 
-      if (!siblingCount.has(parent)) siblingCount.set(parent, new Map())
-      const counts = siblingCount.get(parent)!
-      const n = (counts.get(base) ?? 0) + 1
-      counts.set(base, n)
+    if (!siblingCount.has(parent)) {
+      siblingCount.set(parent, new Map())
+    }
+    const counts = siblingCount.get(parent)!
+    const n = (counts.get(base) ?? 0) + 1
+    counts.set(base, n)
 
-      scopeLabel.set(scope, n === 1 ? base : `${base}[${n}]`)
+    scopeLabelMap.set(scope, n === 1 ? base : `${base}[${n}]`)
+    scopeNodeMap.set(scope, node)
 
-      if (!scopeChildren.has(parent)) scopeChildren.set(parent, [])
-      scopeChildren.get(parent)!.push(scope)
-      scopeChildren.set(scope, [])
-    },
-  })
+    if (!scopeChildrenMap.has(parent)) {
+      scopeChildrenMap.set(parent, [])
+    }
+    scopeChildrenMap.get(parent)!.push(scope)
+    scopeChildrenMap.set(scope, [])
+  }
 
   // Stable path string for a scope, used as the resolvedIn value.
   function fullPath(scope: Scope): string {
     const parts: string[] = []
     let curr: Scope | undefined = scope
     while (curr) {
-      parts.unshift(scopeLabel.get(curr) ?? '?')
+      parts.unshift(scopeLabelMap.get(curr) ?? '?')
       curr = curr.parent
     }
     return parts.join(' > ')
   }
 
   // Direct references for a scope = all propagated refs minus those in child scopes.
-  function directRefs(scope: Scope) {
+  function directReferences(scope: Scope) {
     const allRefs = scopeToReferences.get(scope) ?? []
     const childRefSet = new Set(
-      (scopeChildren.get(scope) ?? []).flatMap(
+      (scopeChildrenMap.get(scope) ?? []).flatMap(
         (c) => scopeToReferences.get(c) ?? [],
       ),
     )
@@ -89,9 +96,9 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
   }
 
   function buildNode(scope: Scope): SerializedScope {
-    const refs = directRefs(scope)
+    const refs = directReferences(scope)
     return {
-      type: scopeLabel.get(scope)!,
+      type: scopeLabelMap.get(scope)!,
       declarations: [...scope.declarations].sort(),
       references: refs.map((id) => ({
         name: id.name,
@@ -99,7 +106,7 @@ function serializeScopeTree(ast: Program, scopeTree: ScopeTree): string {
           ? fullPath(referenceToDeclaredScope.get(id)!)
           : null,
       })),
-      children: (scopeChildren.get(scope) ?? []).map(buildNode),
+      children: (scopeChildrenMap.get(scope) ?? []).map(buildNode),
     }
   }
 
