@@ -38,17 +38,17 @@ export class Scope {
 
 export type ScopeTree = {
   // each reference Identifier → the Scope that declared it (absent = module-level/global)
-  readonly referenceToDeclaredScope: WeakMap<Identifier, Scope>
+  readonly referenceToDeclaredScope: Map<Identifier, Scope>
   // each function Scope → reference Identifiers accessed within its scope
-  readonly scopeToReferences: WeakMap<Scope, Identifier[]>
+  readonly scopeToReferences: Map<Scope, Identifier[]>
   // scope-creating AST node → its Scope (the only entry point from AST into Scope)
-  readonly nodeScope: WeakMap<Node, Scope>
+  readonly nodeScope: Map<Node, Scope>
   readonly moduleScope: Scope
 }
 
 export function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(undefined, true)
-  const nodeScope = new WeakMap<Node, Scope>()
+  const nodeScope = new Map<Node, Scope>()
 
   // Inline resolution during the walk is wrong for `var`/function hoisting: a
   // reference that appears before its `var` declaration would resolve to an outer
@@ -151,8 +151,8 @@ export function buildScopeTree(ast: Program): ScopeTree {
   })
 
   // ── Post-walk fixup: resolve references against the complete scope tree ──
-  const scopeToReferences = new WeakMap<Scope, Identifier[]>()
-  const referenceToDeclaredScope = new WeakMap<Identifier, Scope>()
+  const scopeToReferences = new Map<Scope, Identifier[]>()
+  const referenceToDeclaredScope = new Map<Identifier, Scope>()
 
   for (const { id, visitScope } of rawReferences) {
     let declScope: Scope | undefined = visitScope

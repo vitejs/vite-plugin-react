@@ -3,8 +3,8 @@
 ## Goal
 
 Extract the custom scope analysis from `hoist.ts` into `src/transforms/scope.ts` and add
-a comprehensive `scope.test.ts` that tests `buildScopeTree` (and `getBindVars`) directly,
-independent of the hoist transform.
+a comprehensive `scope.test.ts` that tests `buildScopeTree` directly, independent of the
+hoist transform.
 
 This is step 5 of the migration plan in `2026-04-04-hoist-variable-shadowing.md`.
 
@@ -16,41 +16,48 @@ Done. `src/transforms/scope.ts` exists; `hoist.ts` imports from it.
 
 ### 2. File-based fixture tests in `scope.test.ts`
 
-Inspired by `oxc_semantic`'s approach: each fixture is a JS input file paired with a
-snapshot file that captures a human-readable visualization of the scope tree.
+Modelled after `oxc_semantic`'s approach: fixture input files paired with snapshot files
+capturing a human-readable visualization of the scope tree.
 
-#### Directory layout
+#### Fixture sources
+
+Two fixture directories:
 
 ```
-src/transforms/fixtures/scope/
-  var-hoisting.js
-  var-hoisting.snap
-  shadowing-block.js
-  shadowing-block.snap
-  export-specifier.js
-  export-specifier.snap
-  ...
+src/transforms/fixtures/scope/typescript-eslint/   ← copied from oxc_semantic's fixtures
+src/transforms/fixtures/scope/                     ← hand-crafted cases not covered above
 ```
 
-#### Test runner (auto-discovery)
+**`typescript-eslint/`** is copied from:
+`oxc/crates/oxc_semantic/tests/fixtures/typescript-eslint/`
+
+which in turn was copied from typescript-eslint's own scope-manager test suite. These
+inputs are authoritative: written by people who know the spec, with variable names like
+`unresolved` and `dontReference2` that encode the expected behavior in the code itself.
+
+Copy the whole directory (all 269 files). TypeScript files are transpiled to JS in the
+test runner before being passed to `buildScopeTree` (see below).
+
+#### Test runner
 
 ```ts
-import { readdirSync } from 'node:fs'
-import path from 'node:path'
+import { transformWithEsbuild } from 'vite'
 import { parseAstAsync } from 'vite'
-import { expect, it } from 'vitest'
-import { buildScopeTree } from './scope'
 
-const fixtureDir = path.join(import.meta.dirname, 'fixtures/scope')
-
-for (const file of readdirSync(fixtureDir).filter((f) => f.endsWith('.js'))) {
-  it(file.replace('.js', ''), async () => {
-    const input = readFileSync(path.join(fixtureDir, file), 'utf-8')
+// discover .js and .ts fixture files recursively
+for (const file of globSync('**/*.{js,ts}', { cwd: fixtureDir })) {
+  it(file, async () => {
+    let input = readFileSync(path.join(fixtureDir, file), 'utf-8')
+    if (file.endsWith('.ts')) {
+      // strip TypeScript syntax; buildScopeTree only handles ESTree JS
+      const result = await transformWithEsbuild(input, file, { loader: 'ts' })
+      input = result.code
+    }
     const ast = await parseAstAsync(input)
     const scopeTree = buildScopeTree(ast)
     const snapshot = serializeScopeTree(ast, scopeTree)
     await expect(snapshot).toMatchFileSnapshot(
-      path.join(fixtureDir, file.replace('.js', '.snap')),
+      path.join(fixtureDir, file + '.snap'),
     )
   })
 }
@@ -58,16 +65,16 @@ for (const file of readdirSync(fixtureDir).filter((f) => f.endsWith('.js'))) {
 
 #### Snapshot format
 
-Scope-tree-centric, analogous to `oxc_semantic`'s readable JSON. Each scope node lists
-its declarations and the references resolved within it. References show the name and
-which scope they resolve to (using a stable label derived from the scope-creating node).
+Scope-tree-centric JSON. Each scope node lists its declarations and the direct
+references resolved within it. References show the name and which scope they resolve
+to via a stable path label (not numeric IDs).
 
 Example — `shadowing-block.js`:
 
 ```js
 function outer() {
   const value = 0
-  async function action() {
+  function action() {
     if (true) {
       const value = 1
       return value
@@ -76,7 +83,7 @@ function outer() {
 }
 ```
 
-`shadowing-block.snap`:
+`shadowing-block.js.snap`:
 
 ```json
 {
@@ -86,29 +93,36 @@ function outer() {
   "children": [
     {
       "type": "Function:outer",
-      "declarations": ["value"],
+      "declarations": [],
       "references": [],
       "children": [
         {
-          "type": "Function:action",
-          "declarations": [],
+          "type": "BlockStatement",
+          "declarations": ["value"],
           "references": [],
           "children": [
             {
-              "type": "BlockStatement",
+              "type": "Function:action",
               "declarations": [],
               "references": [],
               "children": [
                 {
                   "type": "BlockStatement",
-                  "declarations": ["value"],
-                  "references": [
+                  "declarations": [],
+                  "references": [],
+                  "children": [
                     {
-                      "name": "value",
-                      "resolvedIn": "Function:action>BlockStatement>BlockStatement"
+                      "type": "BlockStatement",
+                      "declarations": ["value"],
+                      "references": [
+                        {
+                          "name": "value",
+                          "resolvedIn": "Program > Function:outer > BlockStatement > Function:action > BlockStatement > BlockStatement"
+                        }
+                      ],
+                      "children": []
                     }
-                  ],
-                  "children": []
+                  ]
                 }
               ]
             }
@@ -120,51 +134,15 @@ function outer() {
 }
 ```
 
-The `resolvedIn` label is a stable path string built from the scope-creating node types
-(and function names where available), not from internal numeric IDs.
+The `resolvedIn` path is built from scope-creating node labels (function names where
+available), disambiguated with `[2]` suffixes for same-type siblings.
+`null` means the identifier is global (not declared anywhere in the file).
 
-Note: `getBindVars` is a `hoist.ts` concern and is not tested here.
+#### Hand-crafted fixtures (gaps not covered by typescript-eslint set)
 
-#### Test categories (fixture files to create)
-
-**Scope structure**
-
-- `module-scope.js` — module scope has no parent; top-level fn parent is moduleScope
-
-**Declaration placement**
-
-- `let-const-block.js` — `let`/`const` stays in block scope
-- `var-hoisting.js` — `var` in nested block hoists to nearest function scope
-- `var-nested-fn.js` — `var` in nested function stays in that fn, not outer
-- `fn-decl-hoisting.js` — function declaration name hoists to enclosing fn scope
-- `fn-expr-name.js` — function expression name (`function self(){}`) is in its own scope
-- `destructured-params.js` — plain/rest/destructured params are in function scope
-- `catch-param.js` — catch param is in catch scope
-- `class-decl.js` — class declaration name in current scope
-
-**Reference resolution**
-
-- `ref-module-local.js` — ref to module-level `const` maps to moduleScope
-- `ref-outer-fn.js` — ref to outer function's local maps to outer fn scope
-- `ref-same-fn.js` — ref to same-function local maps to fn own scope
-- `shadowing-block.js` — ref shadowed in nested block resolves to inner scope
-- `ref-var-hoisted.js` — ref to `var` declared later in same fn maps to fn scope
-- `ref-global.js` — ref to global (`console`) absent from `referenceToDeclaredScope`
-
-**`isBindingIdentifier` edge cases — highest priority**
-
-- `member-expr.js` — `obj.prop`: `prop` NOT a ref; `obj[expr]`: `expr` IS a ref
-- `object-expr-vs-pattern.js` — `{key: val}` in expr vs `const {key: val} = obj`
-- `computed-destructuring.js` — `const {[expr]: val} = obj`: `expr` IS a ref
 - `export-specifier.js` — `export {foo as bar}`: `foo` IS resolved, `bar` is NOT
-- `import-specifier.js` — `import {foo as bar}`: `bar` is binding, `foo` is not a ref
-- `method-definition.js` — non-computed method key NOT a ref; computed key IS
-- `property-definition.js` — `class C { field = val }`: `field` NOT a ref, `val` IS
 - `label.js` — label in `break`/`continue` NOT a ref
-
-**`scopeToReferences` propagation**
-
-- `propagation.js` — function scope accumulates refs from nested blocks and inner fns
+- `shadowing-block.js` — the motivating bug from the migration notes
 
 ### 3. Verify `hoist.test.ts` still passes after the extraction
 
