@@ -36,11 +36,11 @@ export class Scope {
 }
 
 export type ScopeTree = {
-  // each reference Identifier → the Scope that declared it (absent = module-level/global)
+  // each reference Identifier → the Scope that declared it (absent = undeclared i.e. assume global)
   readonly referenceToDeclaredScope: Map<Identifier, Scope>
   // each function Scope → reference Identifiers accessed within its scope
   readonly scopeToReferences: Map<Scope, Identifier[]>
-  // scope-creating AST node → its Scope (the only entry point from AST into Scope)
+  // scope-creating AST node → its Scope
   readonly nodeScope: Map<Node, Scope>
   readonly moduleScope: Scope
 }
