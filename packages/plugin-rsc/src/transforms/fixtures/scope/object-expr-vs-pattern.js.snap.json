@@ -8,15 +8,7 @@
   ],
   "references": [
     {
-      "name": "key",
-      "declaredAt": "Program"
-    },
-    {
       "name": "val",
-      "declaredAt": "Program"
-    },
-    {
-      "name": "key",
       "declaredAt": "Program"
     },
     {

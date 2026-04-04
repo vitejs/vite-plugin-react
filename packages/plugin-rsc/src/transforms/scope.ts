@@ -131,7 +131,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
       // the path key for binding instead of the bare name.
       if (
         node.type === 'Identifier' &&
-        !isBindingIdentifier(
+        isReferenceIdentifier(
           node,
           parent ?? undefined,
           ancestors[ancestors.length - 3],
@@ -193,63 +193,107 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
   )
 }
 
-// TODO: review
-// Binding-position check aligned with oxc-walker's `isBindingIdentifier` in
-// `src/scope-tracker.ts`, with ESTree-specific handling for `ExportSpecifier`
-// because only `local` is a reference there.
-function isBindingIdentifier(
+// Positive reference classifier modeled after Vite SSR's `isRefIdentifier`,
+// adapted for this ESTree-only scope walk. This is easier to audit than a
+// negated binding check because many identifier positions are syntax-only names
+// rather than bindings or references.
+function isReferenceIdentifier(
   node: Identifier,
   parent?: Node,
   grandparent?: Node,
 ): boolean {
-  if (!parent) return false
-  switch (parent.type) {
-    case 'VariableDeclarator':
-      return patternContainsIdentifier(parent.id, node)
-    case 'MemberExpression':
-      return parent.property === node && !parent.computed
-    case 'Property':
-      // The value is always the binding in destructuring (both computed and non-computed).
-      // The key is never a binding — in computed form `{ [expr]: b }` it is a reference.
-      return grandparent?.type === 'ObjectPattern' && parent.value === node
-    case 'FunctionDeclaration':
-    case 'FunctionExpression':
-      if (parent.id === node) return true
-      return parent.params.some((param) =>
-        patternContainsIdentifier(param, node),
-      )
-    case 'ArrowFunctionExpression':
-      return parent.params.some((param) =>
-        patternContainsIdentifier(param, node),
-      )
-    case 'ClassDeclaration':
-    case 'ClassExpression':
-      return parent.id === node
-    case 'MethodDefinition':
-    case 'PropertyDefinition':
-      return parent.key === node && !parent.computed
-    case 'CatchClause':
-      return !!parent.param && patternContainsIdentifier(parent.param, node)
-    case 'AssignmentPattern':
-      return patternContainsIdentifier(parent.left, node)
-    case 'RestElement':
-      return patternContainsIdentifier(parent.argument, node)
-    case 'ArrayPattern':
-      return true
-    case 'LabeledStatement':
-    case 'BreakStatement':
-    case 'ContinueStatement':
-      return false
-    case 'ImportSpecifier':
-      return parent.imported !== node
-    case 'ImportDefaultSpecifier':
-    case 'ImportNamespaceSpecifier':
-      return true
-    case 'ExportSpecifier':
-      return parent.local !== node
-    default:
-      return false
+  if (!parent) return true
+
+  // declaration id
+  if (
+    parent.type === 'CatchClause' ||
+    ((parent.type === 'VariableDeclarator' ||
+      parent.type === 'ClassDeclaration' ||
+      parent.type === 'ClassExpression') &&
+      parent.id === node)
+  ) {
+    return false
   }
+
+  if (isFunctionNode(parent)) {
+    // function declaration/expression id
+    if ('id' in parent && parent.id === node) {
+      return false
+    }
+    // params list
+    if (parent.params.some((param) => patternContainsIdentifier(param, node))) {
+      return false
+    }
+  }
+
+  // class method / class field name
+  if (
+    (parent.type === 'MethodDefinition' ||
+      parent.type === 'PropertyDefinition') &&
+    parent.key === node &&
+    !parent.computed
+  ) {
+    return false
+  }
+
+  // property key
+  if (isStaticPropertyKey(node, parent)) {
+    return false
+  }
+
+  // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
+  // so we use the ESTree grandparent shape directly to recognize object patterns.
+  // object destructuring pattern
+  if (
+    parent.type === 'Property' &&
+    grandparent?.type === 'ObjectPattern' &&
+    parent.value === node
+  ) {
+    return false
+  }
+
+  // non-assignment array destructuring pattern
+  if (parent.type === 'ArrayPattern') {
+    return false
+  }
+
+  // member expression property
+  if (
+    parent.type === 'MemberExpression' &&
+    parent.property === node &&
+    !parent.computed
+  ) {
+    return false
+  }
+
+  // Unlike Vite SSR, this walk does not skip ImportDeclaration up front, so
+  // import specifier syntax has to be filtered here as well.
+  // import/export specifier syntax names
+  if (
+    parent.type === 'ImportSpecifier' ||
+    parent.type === 'ImportDefaultSpecifier' ||
+    parent.type === 'ImportNamespaceSpecifier' ||
+    parent.type === 'ExportSpecifier'
+  ) {
+    return parent.local === node
+  }
+
+  // Explicitly handled here because these labels showed up as false positives in
+  // the scope fixtures; Vite SSR's helper does not need this branch.
+  // label identifiers
+  if (
+    parent.type === 'LabeledStatement' ||
+    parent.type === 'BreakStatement' ||
+    parent.type === 'ContinueStatement'
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function isStaticPropertyKey(node: Node, parent?: Node): boolean {
+  return parent?.type === 'Property' && parent.key === node && !parent.computed
 }
 
 function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {

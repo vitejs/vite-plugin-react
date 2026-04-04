@@ -15,12 +15,8 @@
       ],
       "references": [
         {
-          "name": "a",
+          "name": "rest",
           "declaredAt": "Program > FunctionDeclaration:f"
-        },
-        {
-          "name": "b",
-          "declaredAt": null
         }
       ],
       "children": [
