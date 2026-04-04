@@ -104,21 +104,60 @@ The structural flaw remains — it works for the current test cases because
 
 ## Target Design
 
-The correct fix is **reference-position resolution**: for each `Identifier` node
-encountered in a reference position during the AST walk, determine which scope owns it
-**at the point it appears** using the live scope stack at that moment.
+Frame the problem as:
 
-This is fundamentally different from name-based lookup:
+> Given `references: Identifier[]` (all reference-position identifiers inside a `use
+server` function body), and a way to look up the declaring `Scope` for each one, bind
+> exactly those whose declaring scope is neither the module root nor inside the function
+> body itself.
 
-- When you enter a block that declares `value`, you push that scope onto the stack
-- When you encounter a reference to `value`, you check the stack top-down
-- Shadowing is handled naturally by stack order — inner declarations are found first
-- No post-hoc name string matching detached from traversal position
+With this framing `getBindVars` is pure data lookup — no walk, no stack, no string
+matching:
 
-Concretely: the scope stack itself during the walk IS the resolution context. Each
-identifier reference is resolved inline, not by querying a pre-built map with a string.
-`declarations: Set<string>` + `findOwner(string)` should be replaced with a stack where
-each frame knows which identifiers it introduces, resolved per occurrence.
+```ts
+const fnScope = scopeTree.nodeScope.get(fn)!
+const references = scopeTree.scopeToReferences.get(fnScope) ?? []
+const bindVars = [
+  ...new Set(
+    references
+      .filter((id) => id.name !== declName)
+      .filter((id) => {
+        const scope = scopeTree.identifierScope.get(id)
+        return (
+          scope !== undefined &&
+          scope !== scopeTree.moduleScope &&
+          isStrictAncestor(scope, fnScope)
+        ) // scope is in outer fn, not inside
+      })
+      .map((id) => id.name),
+  ),
+]
+```
+
+### Target types
+
+```ts
+type Scope = {
+  readonly parent: Scope | null
+  // no declarations, no methods — purely an identity token with a parent link
+}
+
+type ScopeTree = {
+  // each reference Identifier → the Scope that declared it (undefined = module-level)
+  readonly identifierScope: WeakMap<Identifier, Scope>
+  // each Scope → the direct reference Identifiers whose enclosing function scope is this
+  // (inverse of identifierScope, keyed by scope rather than by function node)
+  readonly scopeToReferences: WeakMap<Scope, Identifier[]>
+  // scope-creating AST node → its Scope (bridge from AST into Scope world)
+  readonly nodeScope: WeakMap<Node, Scope>
+  readonly moduleScope: Scope
+}
+```
+
+`nodeScope` is the only entry point from AST nodes into `Scope`. After that, everything
+is expressed purely in terms of `Scope` and `Identifier` — no AST node types, no strings.
+
+All the work is in `buildScopeTree` (one pass). `getBindVars` has no logic of its own.
 
 ## Reference Repos
 
