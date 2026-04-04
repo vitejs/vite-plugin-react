@@ -4,6 +4,8 @@ import type {
   FunctionDeclaration,
   FunctionExpression,
   ArrowFunctionExpression,
+  Pattern,
+  Node,
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -182,7 +184,7 @@ type AnyFunctionNode =
   | FunctionExpression
   | ArrowFunctionExpression
 
-function isFunctionNode(node: any): node is AnyFunctionNode {
+function isFunctionNode(node: Node): node is AnyFunctionNode {
   return (
     node.type === 'FunctionDeclaration' ||
     node.type === 'FunctionExpression' ||
@@ -215,22 +217,22 @@ class Scope {
 }
 
 type ScopeTree = {
-  nodeToScope: WeakMap<object, Scope>
+  nodeToScope: WeakMap<Node, Scope>
 }
 
 // First pass: walk the whole module and build a scope tree.
 // Returns the module-level scope and a map from scope-creating nodes to their scopes.
 function buildScopeTree(ast: Program): ScopeTree {
   const moduleScope = new Scope(null, true)
-  const nodeToScope = new WeakMap<object, Scope>()
+  const nodeToScope = new WeakMap<Node, Scope>()
   nodeToScope.set(ast, moduleScope)
   let current = moduleScope
   // note: moduleScope stored under ast so chain() can walk up to it
 
   walk(ast, {
     enter(node, parent) {
-      const n = node as any
-      const p = parent as any
+      const n = node
+      const p = parent ?? undefined
 
       if (isFunctionNode(n)) {
         // Hoist function declaration name to the enclosing function scope
@@ -251,7 +253,7 @@ function buildScopeTree(ast: Program): ScopeTree {
         if (n.type === 'FunctionExpression' && n.id) {
           scope.declarations.add(n.id.name)
         }
-      } else if (n.type === 'BlockStatement' && !isFunctionNode(p)) {
+      } else if (n.type === 'BlockStatement' && !(p && isFunctionNode(p))) {
         // Block scope — but skip the direct body BlockStatement of a function,
         // which is already covered by the function's own scope above
         const scope = new Scope(current, false)
@@ -301,10 +303,10 @@ function getBindVars(
   const fnIndex = stack.length - 1
   const result = new Set<string>()
 
-  walk(fn.body as any, {
+  walk(fn.body, {
     enter(node, parent) {
-      const n = node as any
-      const p = parent as any
+      const n = node
+      const p = parent ?? undefined
 
       // Skip nested functions — they handle their own binding
       if (isFunctionNode(n)) {
@@ -341,7 +343,7 @@ function getBindVars(
   return [...result]
 }
 
-function isReferenceId(node: any, parent: any): boolean {
+function isReferenceId(node: Node, parent?: Node): boolean {
   if (!parent) return true
   switch (parent.type) {
     case 'VariableDeclarator':
@@ -375,20 +377,23 @@ function isReferenceId(node: any, parent: any): boolean {
 }
 
 // Copied from periscopic — extract binding names from a pattern node
-function extractNames(param: any): string[] {
+function extractNames(param: Pattern): string[] {
   const names: string[] = []
   extractIdentifiers(param, names)
   return names
 }
 
-function extractIdentifiers(param: any, names: string[]): void {
+function extractIdentifiers(param: Pattern, names: string[]): void {
   switch (param.type) {
     case 'Identifier':
       names.push(param.name)
       break
     case 'MemberExpression': {
-      let obj = param
-      while (obj.type === 'MemberExpression') obj = obj.object
+      // TODO: review
+      let obj = param as any
+      while (obj.type === 'MemberExpression') {
+        obj = obj.object
+      }
       names.push(obj.name)
       break
     }
