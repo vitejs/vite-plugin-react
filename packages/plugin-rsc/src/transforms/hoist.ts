@@ -231,7 +231,7 @@ function buildScopeTree(ast: Program): ScopeTree {
   let current = moduleScope
 
   walk(ast, {
-    enter(node, parent) {
+    enter(node) {
       if (isFunctionNode(node)) {
         // Hoist function declaration name to the enclosing function scope
         if (node.type === 'FunctionDeclaration' && node.id) {
@@ -241,7 +241,6 @@ function buildScopeTree(ast: Program): ScopeTree {
         nodeScope.set(node, scope)
         scopeToReferences.set(scope, [])
         current = scope
-        // Params and body share one scope — the key fix over periscopic
         for (const param of node.params) {
           for (const name of extractNames(param)) {
             scope.declarations.add(name)
@@ -250,10 +249,7 @@ function buildScopeTree(ast: Program): ScopeTree {
         if (node.type === 'FunctionExpression' && node.id) {
           scope.declarations.add(node.id.name)
         }
-      } else if (
-        node.type === 'BlockStatement' &&
-        !(parent && isFunctionNode(parent))
-      ) {
+      } else if (node.type === 'BlockStatement') {
         const scope = new Scope(current, false)
         nodeScope.set(node, scope)
         current = scope
