@@ -337,23 +337,24 @@ function buildScopeTree(ast: Program): ScopeTree {
   return { referenceScope, scopeToReferences, nodeScope, moduleScope }
 }
 
+// TODO: review
 // getBindVars is pure data lookup — no walking, no string matching.
 function getBindVars(
   fn: AnyFunctionNode,
   declName: string | false,
-  { referenceScope, scopeToReferences, nodeScope, moduleScope }: ScopeTree,
+  scopeTree: ScopeTree,
 ): string[] {
-  const fnScope = nodeScope.get(fn)!
-  const references = scopeToReferences.get(fnScope) ?? []
+  const fnScope = scopeTree.nodeScope.get(fn)!
+  const references = scopeTree.scopeToReferences.get(fnScope) ?? []
   return [
     ...new Set(
       references
         .filter((id) => id.name !== declName)
         .filter((id) => {
-          const scope = referenceScope.get(id)
+          const scope = scopeTree.referenceScope.get(id)
           return (
             scope !== undefined &&
-            scope !== moduleScope &&
+            scope !== scopeTree.moduleScope &&
             isStrictAncestor(scope, fnScope)
           )
         })
@@ -372,6 +373,7 @@ function isStrictAncestor(candidate: Scope, scope: Scope): boolean {
   return false
 }
 
+// TODO: review
 // Binding-position check aligned with oxc-walker's `isBindingIdentifier` in
 // `src/scope-tracker.ts`, with ESTree-specific handling for `ExportSpecifier`
 // because only `local` is a reference there.
@@ -460,6 +462,7 @@ function extractNames(param: Pattern): string[] {
   return nodes.map((n) => n.name)
 }
 
+// TODO: review
 function extractIdentifiers(
   param: Pattern,
   nodes: Identifier[] = [],
@@ -469,7 +472,6 @@ function extractIdentifiers(
       nodes.push(param)
       break
     case 'MemberExpression': {
-      // TODO: review
       let obj = param as any
       while (obj.type === 'MemberExpression') {
         obj = obj.object
