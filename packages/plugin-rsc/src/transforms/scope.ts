@@ -10,7 +10,6 @@ import type {
 import { walk } from 'estree-walker'
 import { extractNames } from './utils'
 
-// TODO: unit test
 // Replacement for periscopic to correctly handle variable shadowing
 
 export class Scope {
