@@ -465,7 +465,7 @@ export async function test() {
   })
 
   // TODO: should not bind
-  it('shadowing local over local', async () => {
+  it('shadowing local if over local', async () => {
     const input = `\
 function outer() {
   const value = 0;
@@ -490,6 +490,70 @@ function outer() {
             const value = 0;
             return value;
           }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // TODO: should not bind
+  it('shadowing local body over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    const value = 0;
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          const value = 0;
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // TODO: should not bind.
+  it('shadowing local body and if over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 0;
+      return value;
+    }
+    const value = 0;
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          if (true) {
+            const value = 0;
+            return value;
+          }
+          const value = 0;
+          return value;
         };
       /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
       "
