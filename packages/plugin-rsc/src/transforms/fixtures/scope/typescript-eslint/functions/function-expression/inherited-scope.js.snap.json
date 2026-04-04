@@ -1,0 +1,28 @@
+{
+  "type": "Program",
+  "declarations": [
+    "foo",
+    "parentScoped"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "parentScoped",
+              "declaredAt": "Program"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

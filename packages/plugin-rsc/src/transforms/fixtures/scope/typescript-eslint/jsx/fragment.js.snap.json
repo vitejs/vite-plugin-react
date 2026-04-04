@@ -1,0 +1,18 @@
+{
+  "type": "Program",
+  "declarations": [
+    "_Fragment",
+    "_jsx"
+  ],
+  "references": [
+    {
+      "name": "_jsx",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "_Fragment",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": []
+}

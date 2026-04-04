@@ -1,0 +1,1 @@
+const arg = 1

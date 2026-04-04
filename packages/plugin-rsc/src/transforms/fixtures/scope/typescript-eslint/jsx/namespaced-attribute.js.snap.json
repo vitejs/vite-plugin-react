@@ -1,0 +1,54 @@
+{
+  "type": "Program",
+  "declarations": [
+    "Foo",
+    "React",
+    "_jsx",
+    "x",
+    "y"
+  ],
+  "references": [
+    {
+      "name": "_jsx",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "Foo",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "_jsx",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "Foo",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionDeclaration:Foo",
+      "declarations": [
+        "props"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "_jsx",
+              "declaredAt": "Program"
+            },
+            {
+              "name": "props",
+              "declaredAt": "Program > FunctionDeclaration:Foo"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

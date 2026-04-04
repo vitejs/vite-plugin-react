@@ -65,7 +65,7 @@ async function main(): Promise<void> {
       compilerOptions: {
         target: ts.ScriptTarget.ESNext,
         module: ts.ModuleKind.ESNext,
-        jsx: ts.JsxEmit.Preserve,
+        jsx: ts.JsxEmit.ReactJSX,
         experimentalDecorators: true,
         useDefineForClassFields: false,
       },

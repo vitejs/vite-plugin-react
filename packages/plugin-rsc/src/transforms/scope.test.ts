@@ -104,7 +104,9 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
 function toScopeNodeLabel(node: Node): string {
   switch (node.type) {
     case 'FunctionDeclaration':
-      return `${node.type}:${node.id.name}`
+      // ESTree typing says `id` is present here, but the parser can still produce
+      // `export default function () {}` as a FunctionDeclaration with `id: null`.
+      return node.type + (node.id ? `:${node.id.name}` : '')
     case 'FunctionExpression':
       return node.type + (node.id ? `:${node.id.name}` : '')
     case 'ArrowFunctionExpression':

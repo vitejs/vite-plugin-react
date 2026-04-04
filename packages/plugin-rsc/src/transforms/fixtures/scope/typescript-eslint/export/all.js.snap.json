@@ -1,0 +1,11 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [
+    {
+      "name": "bar",
+      "declaredAt": null
+    }
+  ],
+  "children": []
+}

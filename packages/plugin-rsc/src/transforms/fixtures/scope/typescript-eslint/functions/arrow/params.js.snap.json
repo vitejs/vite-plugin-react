@@ -1,0 +1,50 @@
+{
+  "type": "Program",
+  "declarations": [
+    "outer",
+    "unresolved"
+  ],
+  "references": [
+    {
+      "name": "g",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "ArrowFunction",
+      "declarations": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "declaredAt": "Program > ArrowFunction"
+        },
+        {
+          "name": "outer",
+          "declaredAt": "Program"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "declaredAt": "Program > ArrowFunction"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
