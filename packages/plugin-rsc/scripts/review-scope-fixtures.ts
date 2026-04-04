@@ -2,13 +2,24 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs as parseNodeArgs } from 'node:util'
 
+type Fixture = {
+  sourceFile: string
+  snapshotFile: string
+  relativePath: string
+  fixtureName: string
+  source: string
+  snapshot: string
+}
+
+type FixtureEntry = Omit<Fixture, 'source' | 'snapshot'>
+
 const scriptDir = path.dirname(new URL(import.meta.url).pathname)
 const packageDir = path.resolve(scriptDir, '..')
 const fixtureDir = path.join(packageDir, 'src/transforms/fixtures/scope')
 
 main()
 
-function main() {
+function main(): void {
   const { values, positionals } = parseNodeArgs({
     args: process.argv.slice(2),
     allowPositionals: true,
@@ -53,7 +64,7 @@ function main() {
   }
 }
 
-function printHelp() {
+function printHelp(): void {
   console.log(`Usage: review-scope-fixtures [filters...] [options]
 
 Build a Markdown review packet for scope fixtures.
@@ -72,16 +83,16 @@ Examples:
 `)
 }
 
-function fail(message) {
+function fail(message: string): never {
   console.error(message)
   process.exit(1)
 }
 
-function collectFixtures(rootDir, filters) {
-  return walk(rootDir)
-    .filter((file) => file.endsWith('.js'))
-    .map((sourceFile) => {
-      const relativePath = path.relative(rootDir, sourceFile)
+function collectFixtures(rootDir: string, filters: string[]): Fixture[] {
+  return fs
+    .globSync('*.js', { cwd: rootDir })
+    .map((relativePath): FixtureEntry => {
+      const sourceFile = path.join(rootDir, relativePath)
       return {
         sourceFile,
         snapshotFile: sourceFile + '.snap.json',
@@ -90,7 +101,7 @@ function collectFixtures(rootDir, filters) {
       }
     })
     .filter((entry) => matchesFilters(entry, filters))
-    .map((entry) => {
+    .map((entry): Fixture => {
       if (!fs.existsSync(entry.snapshotFile)) {
         fail(
           `Missing snapshot for ${entry.relativePath}: ${path.relative(packageDir, entry.snapshotFile)}`,
@@ -98,27 +109,13 @@ function collectFixtures(rootDir, filters) {
       }
 
       const source = fs.readFileSync(entry.sourceFile, 'utf8').trimEnd()
-      const snapshot = formatJson(fs.readFileSync(entry.snapshotFile, 'utf8'))
+      const snapshot = fs.readFileSync(entry.snapshotFile, 'utf8')
       return { ...entry, source, snapshot }
     })
     .sort((a, b) => a.relativePath.localeCompare(b.relativePath))
 }
 
-function walk(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-  const files = []
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...walk(fullPath))
-    } else if (entry.isFile()) {
-      files.push(fullPath)
-    }
-  }
-  return files
-}
-
-function matchesFilters(entry, filters) {
+function matchesFilters(entry: FixtureEntry, filters: string[]): boolean {
   if (filters.length === 0) {
     return true
   }
@@ -131,11 +128,7 @@ function matchesFilters(entry, filters) {
   })
 }
 
-function formatJson(text) {
-  return JSON.stringify(JSON.parse(text), null, 2)
-}
-
-function renderMarkdown(fixtures, filters) {
+function renderMarkdown(fixtures: Fixture[], filters: string[]): string {
   const lines = [
     '# Scope Fixture Review',
     '',
