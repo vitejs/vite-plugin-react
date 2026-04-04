@@ -7,10 +7,6 @@
     {
       "name": "bar",
       "declaredAt": "Program"
-    },
-    {
-      "name": "bar",
-      "declaredAt": "Program"
     }
   ],
   "children": []

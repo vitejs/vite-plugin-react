@@ -280,9 +280,12 @@ function isReferenceIdentifier(
   if (
     parent.type === 'ImportSpecifier' ||
     parent.type === 'ImportDefaultSpecifier' ||
-    parent.type === 'ImportNamespaceSpecifier' ||
-    parent.type === 'ExportSpecifier'
+    parent.type === 'ImportNamespaceSpecifier'
   ) {
+    return false
+  }
+
+  if (parent.type === 'ExportSpecifier') {
     return parent.local === node
   }
 
