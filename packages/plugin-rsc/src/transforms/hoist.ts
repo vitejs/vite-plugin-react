@@ -255,9 +255,15 @@ function buildScopeTree(ast: Program): ScopeTree {
         if (node.type === 'FunctionExpression' && node.id) {
           scope.declarations.add(node.id.name)
         }
-        // TODO: ForStatement, ForInStatement, ForOfStatement, SwitchStatement also create
-        // block scopes for their init/left variables. Add them here for a complete general
-        // scope tracker.
+      } else if (
+        node.type === 'ForStatement' ||
+        node.type === 'ForInStatement' ||
+        node.type === 'ForOfStatement' ||
+        node.type === 'SwitchStatement'
+      ) {
+        const scope = new Scope(current, false)
+        nodeScope.set(node, scope)
+        current = scope
       } else if (node.type === 'BlockStatement') {
         const scope = new Scope(current, false)
         nodeScope.set(node, scope)
