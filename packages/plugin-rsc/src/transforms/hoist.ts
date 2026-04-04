@@ -242,6 +242,8 @@ function buildScopeTree(ast: Program): ScopeTree {
         if (node.type === 'FunctionDeclaration' && node.id) {
           current.nearestFunction().declarations.add(node.id.name)
         }
+        // Param scope is separate from the body scope (BlockStatement below creates its own).
+        // This matches the JS spec: params have their own environment, the body has another.
         const scope = new Scope(current, true)
         nodeScope.set(node, scope)
         current = scope
@@ -253,6 +255,9 @@ function buildScopeTree(ast: Program): ScopeTree {
         if (node.type === 'FunctionExpression' && node.id) {
           scope.declarations.add(node.id.name)
         }
+        // TODO: ForStatement, ForInStatement, ForOfStatement, SwitchStatement also create
+        // block scopes for their init/left variables. Add them here for a complete general
+        // scope tracker.
       } else if (node.type === 'BlockStatement') {
         const scope = new Scope(current, false)
         nodeScope.set(node, scope)
@@ -377,6 +382,9 @@ function isBindingIdentifier(
     case 'MemberExpression':
       return parent.property === node && !parent.computed
     case 'Property':
+      // TODO: bug — computed destructuring `{ [expr]: b }` is backwards:
+      // expr is incorrectly treated as binding, b is incorrectly treated as reference.
+      // Fix: `grandparent?.type === 'ObjectPattern' && parent.value === node`
       return (
         grandparent?.type === 'ObjectPattern' &&
         (parent.computed ? parent.key === node : parent.value === node)
@@ -415,6 +423,9 @@ function isBindingIdentifier(
     case 'ImportNamespaceSpecifier':
       return true
     case 'ExportSpecifier':
+      // TODO: `local` is a reference, `exported` is not. Should be `parent.local !== node`.
+      // Functionally harmless for getBindVars (exports are module-level, filtered out),
+      // but semantically incorrect.
       return false
     default:
       return false
