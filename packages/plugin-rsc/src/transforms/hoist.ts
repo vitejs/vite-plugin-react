@@ -238,9 +238,10 @@ function buildScopeTree(ast: Program): ScopeTree {
     enter(node) {
       // TODO: handle importDeclaration (though they can be treated as global)
       if (isFunctionNode(node)) {
-        // Hoist function declaration name to the enclosing function scope
+        // Declare the function name in the current scope (block or function).
+        // In strict mode (ES modules), block-level function declarations are block-scoped.
         if (node.type === 'FunctionDeclaration' && node.id) {
-          current.nearestFunction().declarations.add(node.id.name)
+          current.declarations.add(node.id.name)
         }
         // Param scope is separate from the body scope (BlockStatement below creates its own).
         // This matches the JS spec: params have their own environment, the body has another.
