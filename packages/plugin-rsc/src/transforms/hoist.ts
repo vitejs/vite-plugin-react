@@ -198,18 +198,23 @@ class Scope {
     public readonly isFunction: boolean,
   ) {}
 
-  findOwner(name: string): Scope | null {
-    if (this.declarations.has(name)) return this
-    return this.parent?.findOwner(name) ?? null
-  }
-
   nearestFunction(): Scope {
     return this.isFunction ? this : this.parent!.nearestFunction()
+  }
+
+  // Returns ordered chain from module root to this scope (inclusive)
+  chain(): Scope[] {
+    const result: Scope[] = []
+    let curr: Scope | null = this
+    while (curr) {
+      result.unshift(curr)
+      curr = curr.parent
+    }
+    return result
   }
 }
 
 type ScopeTree = {
-  moduleScope: Scope
   nodeToScope: WeakMap<object, Scope>
 }
 
@@ -220,6 +225,7 @@ function buildScopeTree(ast: Program): ScopeTree {
   const nodeToScope = new WeakMap<object, Scope>()
   nodeToScope.set(ast, moduleScope)
   let current = moduleScope
+  // note: moduleScope stored under ast so chain() can walk up to it
 
   walk(ast, {
     enter(node, parent) {
@@ -273,13 +279,13 @@ function buildScopeTree(ast: Program): ScopeTree {
     },
     leave(node) {
       const scope = nodeToScope.get(node)
-      if (scope && node !== ast) {
-        current = scope.parent!
+      if (scope?.parent) {
+        current = scope.parent
       }
     },
   })
 
-  return { moduleScope, nodeToScope }
+  return { nodeToScope }
 }
 
 // Second pass: walk the server function body and collect variables that resolve
@@ -287,11 +293,13 @@ function buildScopeTree(ast: Program): ScopeTree {
 function getBindVars(
   fn: AnyFunctionNode,
   declName: string | false,
-  { moduleScope, nodeToScope }: ScopeTree,
+  { nodeToScope }: ScopeTree,
 ): string[] {
-  const fnScope = nodeToScope.get(fn)!
+  // Build an ordered stack from module root down to fn: [module, ..., outer, fn]
+  // stack[0] = module scope, stack[fnIndex] = fn's own scope
+  const stack = nodeToScope.get(fn)!.chain()
+  const fnIndex = stack.length - 1
   const result = new Set<string>()
-  let current = fnScope
 
   walk(fn.body as any, {
     enter(node, parent) {
@@ -305,41 +313,32 @@ function getBindVars(
       }
 
       const scope = nodeToScope.get(node)
-      if (scope) current = scope
+      if (scope) stack.push(scope)
 
       if (
         n.type === 'Identifier' &&
         n.name !== declName &&
         isReferenceId(n, p)
       ) {
-        const owner = current.findOwner(n.name)
-        if (owner && isIntermediateScope(owner, fnScope, moduleScope)) {
-          result.add(n.name)
+        // Scan stack top-down (innermost first) to find which scope owns this name
+        for (let i = stack.length - 1; i >= 0; i--) {
+          if (stack[i]!.declarations.has(n.name)) {
+            // Bind only if owner is strictly between fn and module root
+            // i === 0: module scope        → don't bind
+            // i < fnIndex: ancestor scope  → bind
+            // i >= fnIndex: own/inner scope → don't bind
+            if (i > 0 && i < fnIndex) result.add(n.name)
+            break
+          }
         }
       }
     },
     leave(node) {
-      const scope = nodeToScope.get(node)
-      if (scope) current = scope.parent ?? fnScope
+      if (nodeToScope.get(node)) stack.pop()
     },
   })
 
   return [...result]
-}
-
-// Is `owner` strictly between `fnScope` and `moduleScope` in the ancestor chain?
-function isIntermediateScope(
-  owner: Scope,
-  fnScope: Scope,
-  moduleScope: Scope,
-): boolean {
-  if (owner === moduleScope) return false
-  let curr = fnScope.parent
-  while (curr) {
-    if (curr === owner) return true
-    curr = curr.parent
-  }
-  return false
 }
 
 function isReferenceId(node: any, parent: any): boolean {
