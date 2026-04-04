@@ -50,3 +50,80 @@ node ./scripts/review-scope-fixtures.ts | code -
 node ./scripts/review-scope-fixtures.ts shadowing import | code -
 node ./scripts/review-scope-fixtures.ts var-hoisting --output /tmp/scope-review.md
 ```
+
+## Review Workflow
+
+The imported `typescript-eslint` corpus is too large to review file-by-file in one pass.
+The practical workflow is:
+
+1. Regenerate the pre-transpiled JS fixture subtree.
+
+```bash
+cd packages/plugin-rsc
+node ./scripts/import-typescript-eslint-scope-fixtures.ts
+pnpm test -- scope.test.ts --update
+```
+
+2. Build review packets for targeted categories instead of the entire corpus.
+
+```bash
+cd packages/plugin-rsc
+node ./scripts/review-scope-fixtures.ts typescript-eslint/destructuring --output /tmp/destructuring.md
+node ./scripts/review-scope-fixtures.ts typescript-eslint/import typescript-eslint/export --output /tmp/module-syntax.md
+node ./scripts/review-scope-fixtures.ts typescript-eslint/class typescript-eslint/jsx --output /tmp/class-jsx.md
+```
+
+3. Sample by category, not exhaustively.
+
+Recommended categories:
+
+- `destructuring/`
+- `import/`
+- `export/`
+- `catch/`
+- `functions/`
+- `class/`
+- `jsx/`
+- `decorators/`
+
+4. Review in parallel.
+
+When using subagents, split the audit by independent category groups and ask each
+subagent to report only suspicious cases. A good split is:
+
+- `destructuring/`, `import/`, `export/`, `catch/`
+- `class/`, `decorators/`, `jsx/`
+- `functions/`, `global-resolution/`, `block/`, `call-expression/`, `member-expression/`, `new-expression/`, `implicit/`
+
+Each reviewer should compare:
+
+- original intent of the upstream fixture category
+- transpiled JS fixture content
+- generated `*.snap.json`
+
+and report only:
+
+- likely scope-analysis bugs
+- fixtures whose TS -> JS lowering destroyed the original signal
+
+5. Prefer findings-driven follow-up.
+
+High-value follow-up is not “review every imported file”, but:
+
+- fix concrete scope-analysis bugs exposed by imported fixtures
+- document or prune low-signal imported fixtures whose semantics are erased by transpilation
+
+## Current Caveats
+
+The import is intentionally JS-only, but some TS-specific fixtures lose value after
+transpilation. Known weak-signal areas:
+
+- `decorators/`: helper injection like `__decorate` / `__param` can dominate the snapshot
+- some `jsx/factory/` cases: JSX pragma semantics collapse to `_jsx(...)` runtime helper calls
+- some `functions/arrow/` TS-only cases: type predicates, `asserts`, and type parameters can erase to identical JS
+
+Known likely real bug discovered during sampling:
+
+- `typescript-eslint/class/expression/self-reference-super.js`
+  `const A = class A extends A {}` appears to resolve `extends A` to the outer
+  `const A` instead of the inner class name
