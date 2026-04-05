@@ -266,10 +266,6 @@ function antichainDedupe(paths: BindPath[]): BindPath[] {
   return retained
 }
 
-function synthesizeMemberAccess(root: string, segments: string[]): string {
-  return root + segments.map((segment) => `.${segment}`).join('')
-}
-
 // Build a nested object literal string from an antichain of member paths.
 // e.g. [["api", "key"], ["user", "name"]]
 //   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
@@ -302,4 +298,8 @@ function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
   }
 
   return serialize(trie)
+}
+
+function synthesizeMemberAccess(root: string, segments: string[]): string {
+  return root + segments.map((segment) => `.${segment}`).join('')
 }
