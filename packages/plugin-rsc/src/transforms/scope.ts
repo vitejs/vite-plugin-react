@@ -229,21 +229,16 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     }
   }
 
-  // class method / class field name
-  // disregard the `foo` in `class { foo() {} }` or `class { foo = bar }`,
-  // but keep it in `class { [foo]() {} }` or `class { [foo] = bar }`
+  // property key / class method / class field name
+  // disregard the `foo` in `{ foo: bar }`, `class { foo() {} }` or `class { foo = bar }`,
+  // but keep it in `{ [foo]: bar }``, `class { [foo]() {} }` or `class { [foo] = bar }`.
   if (
     (parent.type === 'MethodDefinition' ||
-      parent.type === 'PropertyDefinition') &&
+      parent.type === 'PropertyDefinition' ||
+      parent.type === 'Property') &&
     parent.key === node &&
     !parent.computed
   ) {
-    return false
-  }
-
-  // property key
-  // disregard the `foo` in `{ foo: bar }`, but keep it in `{ [foo]: bar }`
-  if (isStaticPropertyKey(node, parent)) {
     return false
   }
 
@@ -321,10 +316,6 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   }
 
   return true
-}
-
-function isStaticPropertyKey(node: Node, parent?: Node): boolean {
-  return parent?.type === 'Property' && parent.key === node && !parent.computed
 }
 
 function isInDestructuringAssignment(parentStack: Node[]): boolean {
