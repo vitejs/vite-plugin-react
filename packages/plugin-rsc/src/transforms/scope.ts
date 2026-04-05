@@ -158,6 +158,10 @@ export function buildScopeTree(ast: Program): ScopeTree {
   const referenceToDeclaredScope = new Map<Identifier, Scope>()
 
   for (const { id, visitScope } of rawReferences) {
+    // TODO: default param expressions should not resolve to `var` declarations
+    // from the same function body. We currently start lookup at `visitScope`,
+    // so `function f(x = y) { var y }` incorrectly resolves `y` to `f`'s own
+    // function scope instead of continuing to the parent scope.
     let declScope: Scope | undefined = visitScope
     while (declScope && !declScope.declarations.has(id.name)) {
       declScope = declScope.parent
