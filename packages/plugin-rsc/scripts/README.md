@@ -6,10 +6,12 @@ Regenerates the checked-in pre-transpiled JS fixture subtree at
 `src/transforms/fixtures/scope/typescript-eslint/` from a local
 `typescript-eslint` checkout.
 
-Default source:
+Source resolution order:
 
 ```bash
-/home/hiroshi/code/others/typescript-eslint/packages/scope-manager/tests/fixtures
+1. --source /path/to/typescript-eslint/packages/scope-manager/tests/fixtures
+2. TYPESCRIPT_ESLINT_SCOPE_FIXTURES_DIR
+3. ../typescript-eslint/packages/scope-manager/tests/fixtures
 ```
 
 Usage:
@@ -26,6 +28,15 @@ Override the source directory when needed:
 cd packages/plugin-rsc
 node ./scripts/import-typescript-eslint-scope-fixtures.ts \
   --source /path/to/typescript-eslint/packages/scope-manager/tests/fixtures
+pnpm test -- scope.test.ts --update
+```
+
+Or set an environment variable:
+
+```bash
+cd packages/plugin-rsc
+TYPESCRIPT_ESLINT_SCOPE_FIXTURES_DIR=/path/to/typescript-eslint/packages/scope-manager/tests/fixtures \
+  node ./scripts/import-typescript-eslint-scope-fixtures.ts
 pnpm test -- scope.test.ts --update
 ```
 

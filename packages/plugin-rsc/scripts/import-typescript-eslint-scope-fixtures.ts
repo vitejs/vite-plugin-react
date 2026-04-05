@@ -3,11 +3,20 @@ import path from 'node:path'
 import { parseArgs as parseNodeArgs } from 'node:util'
 import ts from 'typescript'
 
-const defaultSourceDir =
-  '/home/hiroshi/code/others/typescript-eslint/packages/scope-manager/tests/fixtures'
-
 const scriptDir = path.dirname(new URL(import.meta.url).pathname)
 const packageDir = path.resolve(scriptDir, '..')
+const repoRoot = path.resolve(packageDir, '..', '..')
+const siblingSourceHint =
+  '../typescript-eslint/packages/scope-manager/tests/fixtures'
+const siblingSourceDir = path.resolve(
+  repoRoot,
+  '..',
+  'typescript-eslint',
+  'packages',
+  'scope-manager',
+  'tests',
+  'fixtures',
+)
 const outputDir = path.join(
   packageDir,
   'src/transforms/fixtures/scope/typescript-eslint',
@@ -39,11 +48,12 @@ async function main(): Promise<void> {
     return
   }
 
-  const sourceDir = values.source ?? defaultSourceDir
-  if (!fs.existsSync(sourceDir)) {
+  const sourceDir = resolveSourceDir(values.source)
+  if (!sourceDir) {
     throw new Error(
-      `Fixture source directory does not exist: ${sourceDir}\n` +
-        'Pass --source <dir> to point at a local typescript-eslint scope-manager fixture checkout.',
+      'Fixture source directory is not configured.\n' +
+        'Pass --source <dir>, set TYPESCRIPT_ESLINT_SCOPE_FIXTURES_DIR, or place a sibling\n' +
+        `typescript-eslint checkout at ${siblingSourceHint}`,
     )
   }
 
@@ -91,6 +101,16 @@ async function main(): Promise<void> {
   )
 }
 
+function resolveSourceDir(cliSourceDir?: string): string | undefined {
+  const candidates = [
+    cliSourceDir,
+    process.env['TYPESCRIPT_ESLINT_SCOPE_FIXTURES_DIR'],
+    siblingSourceDir,
+  ].filter((value): value is string => Boolean(value))
+
+  return candidates.find((candidate) => fs.existsSync(candidate))
+}
+
 function printHelp(): void {
   console.log(`Usage: import-typescript-eslint-scope-fixtures [options]
 
@@ -101,8 +121,10 @@ Options:
   -s, --source <dir>  Source fixture directory
   -h, --help          Show this help
 
-Default source:
-  ${defaultSourceDir}
+Source resolution order:
+  1. --source <dir>
+  2. TYPESCRIPT_ESLINT_SCOPE_FIXTURES_DIR
+  3. sibling checkout at ${siblingSourceHint}
 
 After import, regenerate snapshots with:
   cd packages/plugin-rsc && pnpm test -- scope.test.ts --update
