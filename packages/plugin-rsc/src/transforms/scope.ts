@@ -198,7 +198,6 @@ function isFunctionNode(node: Node): node is AnyFunctionNode {
   )
 }
 
-// TODO: review slop
 // Positive reference classifier modeled after Vite SSR's `isRefIdentifier`,
 // adapted for this ESTree-only scope walk. This is easier to audit than a
 // negated binding check because many identifier positions are syntax-only names
