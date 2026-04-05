@@ -1,7 +1,32 @@
+import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
+
+describe('fixtures', () => {
+  const fixtures = import.meta.glob(
+    ['./fixtures/hoist/**/*.js', '!**/*.snap.js'],
+    {
+      query: 'raw',
+    },
+  )
+  for (const [file, mod] of Object.entries(fixtures)) {
+    it(path.basename(file), async () => {
+      const input = ((await mod()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const result = transformHoistInlineDirective(input, ast, {
+        runtime: (value, name) =>
+          `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+        directive: 'use server',
+      })
+      const snaphsot = result.output.hasChanged()
+        ? result.output.toString()
+        : '/* NO CHANGE */'
+      await expect(snaphsot).toMatchFileSnapshot(file + '.snap.js')
+    })
+  }
+})
 
 describe(transformHoistInlineDirective, () => {
   async function testTransform(
@@ -1004,32 +1029,5 @@ function Counter() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_updateLocal, "name", { value: "updateLocal" });
       "
     `)
-  })
-
-  describe('member-chain binding', () => {
-    it('binds partial object for member path access', async () => {
-      const input = `\
-function outer() {
-  const x = {}
-  async function action() {
-    "use server"
-    return x.y.z
-  }
-}
-`
-      expect(await testTransform(input)).toMatchInlineSnapshot(`
-        "function outer() {
-          const x = {}
-          const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, { y: { z: x.y.z } });
-        }
-
-        ;export async function $$hoist_0_action(x) {
-            "use server"
-            return x.y.z
-          };
-        /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
-        "
-      `)
-    })
   })
 })
