@@ -368,11 +368,13 @@ function getOutermostBindableReference(
 
   for (let i = 0; i < parentStack.length; i++) {
     const parent = parentStack[i]!
-    if (
-      parent.type === 'MemberExpression' &&
-      !parent.computed &&
-      parent.object === current
-    ) {
+    if (parent.type === 'MemberExpression' && parent.object === current) {
+      // Unsupported member hops should conservatively stop at the last safe
+      // prefix rather than synthesizing a deeper partial object with different
+      // semantics.
+      if (parent.computed || parent.optional) {
+        break
+      }
       current = parent
     } else {
       // Callee trimming: if we accumulated a member chain and it sits in callee position,
