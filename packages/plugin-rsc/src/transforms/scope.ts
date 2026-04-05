@@ -205,6 +205,7 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   if (!parent) return true
 
   // declaration id
+  // disregard the `x` in `let x = y`, `class X {}`, or `catch (x) {}`
   if (
     parent.type === 'CatchClause' ||
     ((parent.type === 'VariableDeclarator' ||
@@ -217,16 +218,21 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
 
   if (isFunctionNode(parent)) {
     // function declaration/expression id
+    // disregard the `f` in `function f() {}` or `(function f() {})`
     if ('id' in parent && parent.id === node) {
       return false
     }
+
     // params list
+    // disregard the `x` in `function f(x) {}` and nested binding patterns
     if (parent.params.some((param) => patternContainsIdentifier(param, node))) {
       return false
     }
   }
 
   // class method / class field name
+  // disregard the `foo` in `class { foo() {} }` or `class { foo = bar }`,
+  // but keep it in `class { [foo]() {} }` or `class { [foo] = bar }`
   if (
     (parent.type === 'MethodDefinition' ||
       parent.type === 'PropertyDefinition') &&
@@ -237,13 +243,15 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   }
 
   // property key
+  // disregard the `foo` in `{ foo: bar }`, but keep it in `{ [foo]: bar }`
   if (isStaticPropertyKey(node, parent)) {
     return false
   }
 
   // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
   // so we use the ESTree parent stack directly to recognize object patterns.
-  // object destructuring pattern
+  // disregard the `bar` in `({ foo: bar } = obj)`, but keep it as a binding in
+  // `const { foo: bar } = obj`
   if (
     parent.type === 'Property' &&
     parentStack[1]?.type === 'ObjectPattern' &&
@@ -253,24 +261,27 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   }
 
   // array destructuring pattern
+  // disregard the `x` in `[x] = value`, but keep it as a binding in
+  // `const [x] = value`
   if (parent.type === 'ArrayPattern') {
     return isInDestructuringAssignment(parentStack)
   }
 
   // Unlike Vite SSR, this walk sees rest-pattern identifiers directly here.
-  // Treat rest targets like other destructuring-assignment targets for consistency
-  // with plain assignment targets.
+  // Disregard the `rest` in `({ ...rest } = value)` or `[...rest] = value`,
+  // but keep it as a binding in declarations or params.
   if (parent.type === 'RestElement' && parent.argument === node) {
     return isInDestructuringAssignment(parentStack)
   }
 
-  // parameter / pattern defaults bind on the left, but destructuring assignment
-  // targets are treated as references to stay coherent with plain assignment.
+  // disregard the `x` in `({ x = y } = obj)` or `([x = y] = arr)`, but keep it
+  // as a binding in `function f(x = y) {}` or `const { x = y } = obj`
   if (parent.type === 'AssignmentPattern' && parent.left === node) {
     return isInDestructuringAssignment(parentStack)
   }
 
   // member expression property
+  // disregard the `bar` in `foo.bar`, but keep it in `foo[bar]`
   if (
     parent.type === 'MemberExpression' &&
     parent.property === node &&
@@ -282,6 +293,8 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   // Unlike Vite SSR, this walk does not skip ImportDeclaration up front, so
   // import specifier syntax has to be filtered here as well.
   // import/export specifier syntax names
+  // disregard the `foo`/`bar` in `import foo from 'x'`, `import * as foo from 'x'`,
+  // or `import { foo as bar } from 'x'`
   if (
     parent.type === 'ImportSpecifier' ||
     parent.type === 'ImportDefaultSpecifier' ||
@@ -290,6 +303,7 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     return false
   }
 
+  // disregard the `bar` in `export { foo as bar }`, but keep the local `foo`
   if (parent.type === 'ExportSpecifier') {
     return parent.local === node
   }
@@ -297,6 +311,8 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   // Explicitly handled here because these labels showed up as false positives in
   // the scope fixtures; Vite SSR's helper does not need this branch.
   // label identifiers
+  // disregard the `label` in `label: for (;;) {}`, `break label`, or
+  // `continue label`
   if (
     parent.type === 'LabeledStatement' ||
     parent.type === 'BreakStatement' ||
