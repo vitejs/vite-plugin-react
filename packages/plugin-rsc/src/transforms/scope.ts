@@ -2,7 +2,6 @@ import type {
   Program,
   Identifier,
   Node,
-  Pattern,
   FunctionDeclaration,
   FunctionExpression,
   ArrowFunctionExpression,
@@ -224,8 +223,8 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     }
 
     // params list
-    // disregard the `x` in `function f(x) {}` and nested binding patterns
-    if (parent.params.some((param) => patternContainsIdentifier(param, node))) {
+    // disregard the `x` in `function f(x) {}`
+    if (parent.params.includes(node)) {
       return false
     }
   }
@@ -330,27 +329,4 @@ function isStaticPropertyKey(node: Node, parent?: Node): boolean {
 
 function isInDestructuringAssignment(parentStack: Node[]): boolean {
   return parentStack.some((node) => node.type === 'AssignmentExpression')
-}
-
-function patternContainsIdentifier(pattern: Pattern, target: Node): boolean {
-  switch (pattern.type) {
-    case 'Identifier':
-      return pattern === target
-    case 'MemberExpression':
-      return pattern === target
-    case 'ObjectPattern':
-      return pattern.properties.some((prop) =>
-        prop.type === 'RestElement'
-          ? patternContainsIdentifier(prop.argument, target)
-          : patternContainsIdentifier(prop.value, target),
-      )
-    case 'ArrayPattern':
-      return pattern.elements.some(
-        (element) => element && patternContainsIdentifier(element, target),
-      )
-    case 'RestElement':
-      return patternContainsIdentifier(pattern.argument, target)
-    case 'AssignmentPattern':
-      return patternContainsIdentifier(pattern.left, target)
-  }
 }
