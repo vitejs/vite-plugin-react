@@ -1,6 +1,7 @@
 import type {
   Program,
   Identifier,
+  MemberExpression,
   Node,
   FunctionDeclaration,
   FunctionExpression,
@@ -42,6 +43,10 @@ export type ScopeTree = {
   // scope-creating AST node → its Scope
   readonly nodeScope: Map<Node, Scope>
   readonly moduleScope: Scope
+  // each reference Identifier → outermost non-computed MemberExpression rooted at it, or the
+  // Identifier itself when no such chain exists. Callee position trims the final segment so the
+  // receiver is captured rather than the method property.
+  readonly referenceToNode: Map<Identifier, Identifier | MemberExpression>
 }
 
 export function buildScopeTree(ast: Program): ScopeTree {
@@ -60,7 +65,11 @@ export function buildScopeTree(ast: Program): ScopeTree {
   let current = moduleScope
   nodeScope.set(ast, moduleScope)
 
-  const rawReferences: Array<{ id: Identifier; visitScope: Scope }> = []
+  const rawReferences: Array<{
+    id: Identifier
+    visitScope: Scope
+    bindableNode: Identifier | MemberExpression
+  }> = []
   const ancestors: Node[] = []
 
   walk(ast, {
@@ -139,7 +148,9 @@ export function buildScopeTree(ast: Program): ScopeTree {
         node.type === 'Identifier' &&
         isReferenceIdentifier(node, ancestors.slice(0, -1).reverse())
       ) {
-        rawReferences.push({ id: node, visitScope: current })
+        const parentStack = ancestors.slice(0, -1).reverse()
+        const bindableNode = getOutermostBindableReference(node, parentStack)
+        rawReferences.push({ id: node, visitScope: current, bindableNode })
       }
     },
     leave(node) {
@@ -156,8 +167,10 @@ export function buildScopeTree(ast: Program): ScopeTree {
     [...nodeScope.values()].map((scope) => [scope, []]),
   )
   const referenceToDeclaredScope = new Map<Identifier, Scope>()
+  const referenceToNode = new Map<Identifier, Identifier | MemberExpression>()
 
-  for (const { id, visitScope } of rawReferences) {
+  for (const { id, visitScope, bindableNode } of rawReferences) {
+    referenceToNode.set(id, bindableNode)
     // TODO: default param expressions should not resolve to `var` declarations
     // from the same function body. We currently start lookup at `visitScope`,
     // so `function f(x = y) { var y }` incorrectly resolves `y` to `f`'s own
@@ -182,7 +195,47 @@ export function buildScopeTree(ast: Program): ScopeTree {
     scopeToReferences,
     nodeScope,
     moduleScope,
+    referenceToNode,
   }
+}
+
+// Walk up the parent stack collecting non-computed MemberExpression ancestors where the
+// current node is the object. Stops at computed access, call boundaries, or any other node.
+// In callee position, trims the final segment so we capture the receiver, not the method.
+function getOutermostBindableReference(
+  id: Identifier,
+  parentStack: Node[], // [direct parent, grandparent, ...]
+): Identifier | MemberExpression {
+  let current: Identifier | MemberExpression = id
+
+  for (let i = 0; i < parentStack.length; i++) {
+    const parent = parentStack[i]!
+    if (
+      parent.type === 'MemberExpression' &&
+      !parent.computed &&
+      parent.object === current
+    ) {
+      current = parent
+    } else {
+      // Callee trimming: if we accumulated a member chain and it sits in callee position,
+      // drop the last segment and capture the receiver instead of the method property.
+      if (
+        current !== id &&
+        current.type === 'MemberExpression' &&
+        parent.type === 'CallExpression' &&
+        parent.callee === current
+      ) {
+        const receiver = current.object
+        current =
+          receiver.type === 'Identifier' || receiver.type === 'MemberExpression'
+            ? receiver
+            : id
+      }
+      break
+    }
+  }
+
+  return current
 }
 
 type AnyFunctionNode =

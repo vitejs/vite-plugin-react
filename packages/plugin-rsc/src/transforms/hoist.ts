@@ -1,4 +1,4 @@
-import type { Program, Literal, Node } from 'estree'
+import type { Program, Literal, Node, MemberExpression } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree, type ScopeTree } from './scope'
@@ -66,9 +66,9 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
-        const bindVars = getBindVars(node, scopeTree)
+        const bindVars = getBindVars(node, scopeTree, input)
         let newParams = [
-          ...bindVars,
+          ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
         ].join(', ')
         if (bindVars.length > 0 && options.decode) {
@@ -78,7 +78,7 @@ export function transformHoistInlineDirective(
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
-            `const [${bindVars.join(',')}] = ${options.decode(
+            `const [${bindVars.map((b) => b.root).join(',')}] = ${options.decode(
               '$$hoist_encoded',
             )};\n`,
           )
@@ -109,8 +109,8 @@ export function transformHoistInlineDirective(
         })}`
         if (bindVars.length > 0) {
           const bindArgs = options.encode
-            ? options.encode('[' + bindVars.join(', ') + ']')
-            : bindVars.join(', ')
+            ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
+            : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (declName) {
@@ -168,14 +168,134 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
   return nodes
 }
 
-function getBindVars(fn: Node, scopeTree: ScopeTree): string[] {
+type BindVar = {
+  root: string // hoisted function param name (root identifier name)
+  expr: string // bind expression at the call site (root name or synthesized partial object)
+}
+
+function getBindVars(fn: Node, scopeTree: ScopeTree, input: string): BindVar[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
   const ancestorScopes = fnScope.getAncestorScopes()
   const references = scopeTree.scopeToReferences.get(fnScope) ?? []
-  // bind variables that are the ones declared in ancestor scopes but not module global scope
+
+  // Same filtering as before: declared in an ancestor scope, not module scope
   const bindReferences = references.filter((id) => {
     const scope = scopeTree.referenceToDeclaredScope.get(id)
     return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
   })
-  return [...new Set(bindReferences.map((id) => id.name))]
+
+  // Group by root name. For each root, track whether the root itself is used
+  // bare (direct identifier access) or only via member paths.
+  type PathEntry = { key: string; srcExpr: string }
+  const byRoot = new Map<
+    string,
+    { bare: boolean; paths: Map<string, string> }
+  >()
+
+  for (const id of bindReferences) {
+    const name = id.name
+    if (!byRoot.has(name)) {
+      byRoot.set(name, { bare: false, paths: new Map() })
+    }
+    const entry = byRoot.get(name)!
+    if (entry.bare) continue
+
+    const node = scopeTree.referenceToNode.get(id)!
+    if (node.type === 'Identifier') {
+      entry.bare = true
+      entry.paths.clear()
+    } else {
+      const pathKey = getMemberPathKey(node).split('.').slice(1).join('.')
+      if (!entry.paths.has(pathKey)) {
+        entry.paths.set(pathKey, input.slice(node.start, node.end))
+      }
+    }
+  }
+
+  const result: BindVar[] = []
+  for (const [rootName, { bare, paths }] of byRoot) {
+    if (bare || paths.size === 0) {
+      result.push({ root: rootName, expr: rootName })
+      continue
+    }
+
+    // Antichain dedupe: discard any path that is prefixed by a shorter retained path
+    const pathEntries: PathEntry[] = [...paths.entries()].map(
+      ([key, srcExpr]) => ({
+        key,
+        srcExpr,
+      }),
+    )
+    const retained = antichainDedupe(pathEntries)
+
+    result.push({ root: rootName, expr: synthesizePartialObject(retained) })
+  }
+
+  return result
+}
+
+// Extract the dot-joined path key from a MemberExpression, e.g. "config.api.key"
+function getMemberPathKey(node: MemberExpression): string {
+  const parts: string[] = []
+  let current: Node = node
+  while (current.type === 'MemberExpression') {
+    if (current.property.type === 'Identifier') {
+      parts.unshift(current.property.name)
+    }
+    current = current.object
+  }
+  if (current.type === 'Identifier') {
+    parts.unshift(current.name)
+  }
+  return parts.join('.')
+}
+
+// Retain only paths that are not prefixed by a shorter path in the set.
+function antichainDedupe(
+  paths: Array<{ key: string; srcExpr: string }>,
+): Array<{ key: string; srcExpr: string }> {
+  const sorted = [...paths].sort((a, b) => a.key.length - b.key.length)
+  const retained: typeof sorted = []
+  for (const path of sorted) {
+    const covered = retained.some(
+      (r) => path.key === r.key || path.key.startsWith(r.key + '.'),
+    )
+    if (!covered) retained.push(path)
+  }
+  return retained
+}
+
+// Build a nested object literal string from an antichain of (pathKey, srcExpr) pairs.
+// e.g. [["api.key", "config.api.key"], ["user.name", "config.user.name"]]
+//   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
+function synthesizePartialObject(
+  paths: Array<{ key: string; srcExpr: string }>,
+): string {
+  type TrieNode = { value?: string; children: Map<string, TrieNode> }
+  const root: TrieNode = { children: new Map() }
+
+  for (const { key, srcExpr } of paths) {
+    const segments = key.split('.')
+    let node = root
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i]!
+      if (!node.children.has(seg)) {
+        node.children.set(seg, { children: new Map() })
+      }
+      node = node.children.get(seg)!
+      if (i === segments.length - 1) {
+        node.value = srcExpr
+      }
+    }
+  }
+
+  function serialize(node: TrieNode): string {
+    if (node.value !== undefined) return node.value
+    const entries = [...node.children.entries()]
+      .map(([k, child]) => `${k}: ${serialize(child)}`)
+      .join(', ')
+    return `{ ${entries} }`
+  }
+
+  return serialize(root)
 }
