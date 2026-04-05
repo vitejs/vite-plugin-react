@@ -188,7 +188,7 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   const ancestorScopes = fnScope.getAncestorScopes()
   const references = scopeTree.scopeToReferences.get(fnScope) ?? []
 
-  // Same filtering as before: declared in an ancestor scope, not module scope
+  // bind references that are declared in an ancestor scope, but not module scope nor global
   const bindReferences = references.filter((id) => {
     const scope = scopeTree.referenceToDeclaredScope.get(id)
     return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
@@ -264,7 +264,9 @@ function antichainDedupe(paths: BindPath[]): BindPath[] {
     const covered = retained.some(
       (r) => path.key === r.key || path.key.startsWith(r.key + '.'),
     )
-    if (!covered) retained.push(path)
+    if (!covered) {
+      retained.push(path)
+    }
   }
   return retained
 }
@@ -300,9 +302,9 @@ function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
     return `{ ${entries} }`
   }
 
-  return serialize(trie)
-}
+  function synthesizeMemberAccess(root: string, segments: string[]): string {
+    return root + segments.map((segment) => `.${segment}`).join('')
+  }
 
-function synthesizeMemberAccess(root: string, segments: string[]): string {
-  return root + segments.map((segment) => `.${segment}`).join('')
+  return serialize(trie)
 }
