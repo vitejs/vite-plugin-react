@@ -105,20 +105,18 @@ A server action function parameter that is never referenced in the body is still
 
 ## Comparison table
 
-> TODO — fill in once individual documents are complete.
-
-|                        | periscopic        | vite-ssr         | eslint-scope                | babel-traverse | oxc_semantic | oxc-walker   | next.js | typescript-eslint           | **ours**                |
-| ---------------------- | ----------------- | ---------------- | --------------------------- | -------------- | ------------ | ------------ | ------- | --------------------------- | ----------------------- |
-| AST format             | ESTree            | ESTree           | ESTree                      | Babel AST      | oxc AST      | ESTree (oxc) | ?       | TSESTree                    | ESTree                  |
-| Language               | JS                | TS               | JS                          | JS             | Rust         | TS           | ?       | TS                          | TS                      |
-| Variable object        | no                | no               | yes                         | yes (Binding)  | yes (Symbol) | no           | ?       | yes                         | no                      |
-| Read/write flag        | no                | no               | yes                         | yes            | yes          | no           | ?       | yes                         | no                      |
-| Resolution timing      | single-pass (bug) | two-pass         | close-time                  | close-time     | ?            | two-pass     | ?       | close-time                  | post-walk               |
-| Refs aggregated upward | no                | no               | no (through[])              | no             | no           | no           | ?       | no (through[])              | yes (scopeToReferences) |
-| `var` hoisting         | buggy             | yes              | yes                         | yes            | yes          | yes          | ?       | yes                         | yes                     |
-| Named fn-expr scope    | name in fn scope  | name in fn scope | FunctionExpressionNameScope | ?              | ?            | ?            | ?       | FunctionExpressionNameScope | name in fn scope        |
-| Class scope            | none              | named-expr only  | ClassScope (always)         | ?              | ?            | ?            | ?       | ClassScope (always)         | named-expr only         |
-| TypeScript support     | no                | no               | no                          | yes            | yes          | partial      | ?       | yes                         | no                      |
+|                        | periscopic        | vite-ssr         | eslint-scope                | babel-traverse      | oxc_semantic         | oxc-walker            | next.js           | typescript-eslint           | **ours**                |
+| ---------------------- | ----------------- | ---------------- | --------------------------- | ------------------- | -------------------- | --------------------- | ----------------- | --------------------------- | ----------------------- |
+| AST format             | ESTree            | ESTree           | ESTree                      | Babel AST           | oxc AST              | ESTree (oxc)          | SWC AST           | TSESTree                    | ESTree                  |
+| Language               | JS                | TS               | JS                          | JS                  | Rust                 | TS                    | Rust              | TS                          | TS                      |
+| Variable object        | no                | no               | yes                         | yes (Binding)       | yes (Symbol, SoA)    | no                    | no                | yes                         | no                      |
+| Read/write flag        | no                | no               | yes                         | yes                 | yes (ReferenceFlags) | no                    | no                | yes                         | no                      |
+| Resolution timing      | single-pass (bug) | two-pass         | close-time                  | close-time (lazy)   | post-walk            | two-pass              | two-phase flat    | close-time                  | post-walk               |
+| Refs aggregated upward | no                | no               | no (through[])              | no                  | no                   | no                    | no                | no (through[])              | yes (scopeToReferences) |
+| `var` hoisting         | buggy             | yes              | yes                         | yes                 | yes                  | no (documented gap)   | implicit (SWC)    | yes                         | yes                     |
+| Named fn-expr scope    | name in fn scope  | name in fn scope | FunctionExpressionNameScope | name in fn scope    | name in fn scope     | two scopes (outer+fn) | N/A (SWC hygiene) | FunctionExpressionNameScope | name in fn scope        |
+| Class scope            | none              | named-expr only  | ClassScope (always)         | ClassScope (always) | ClassScope (always)  | scope for name only   | not modeled       | ClassScope (always)         | named-expr only         |
+| TypeScript support     | no                | no               | no                          | yes (Babel plugins) | yes                  | partial               | yes (SWC)         | yes                         | no                      |
 
 ## Related notes
 
