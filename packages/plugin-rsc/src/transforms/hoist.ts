@@ -66,7 +66,7 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
-        const bindVars = getBindVars(node, scopeTree, input)
+        const bindVars = getBindVars(node, scopeTree)
         let newParams = [
           ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -175,7 +175,12 @@ type BindVar = {
   expr: string // bind expression at the call site (root name or synthesized partial object)
 }
 
-function getBindVars(fn: Node, scopeTree: ScopeTree, input: string): BindVar[] {
+type BindPath = {
+  key: string
+  segments: string[]
+}
+
+function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
   const ancestorScopes = fnScope.getAncestorScopes()
   const references = scopeTree.scopeToReferences.get(fnScope) ?? []
@@ -188,10 +193,9 @@ function getBindVars(fn: Node, scopeTree: ScopeTree, input: string): BindVar[] {
 
   // Group by root name. For each root, track whether the root itself is used
   // bare (direct identifier access) or only via member paths.
-  type PathEntry = { key: string; srcExpr: string }
   const byRoot = new Map<
     string,
-    { bare: boolean; paths: Map<string, string> }
+    { bare: boolean; paths: Map<string, BindPath> }
   >()
 
   for (const id of bindReferences) {
@@ -207,9 +211,9 @@ function getBindVars(fn: Node, scopeTree: ScopeTree, input: string): BindVar[] {
       entry.bare = true
       entry.paths.clear()
     } else {
-      const pathKey = getMemberPathKey(node).split('.').slice(1).join('.')
-      if (!entry.paths.has(pathKey)) {
-        entry.paths.set(pathKey, input.slice(node.start, node.end))
+      const path = memberExpressionToPath(node)
+      if (!entry.paths.has(path.key)) {
+        entry.paths.set(path.key, path)
       }
     }
   }
@@ -222,40 +226,35 @@ function getBindVars(fn: Node, scopeTree: ScopeTree, input: string): BindVar[] {
     }
 
     // Antichain dedupe: discard any path that is prefixed by a shorter retained path
-    const pathEntries: PathEntry[] = [...paths.entries()].map(
-      ([key, srcExpr]) => ({
-        key,
-        srcExpr,
-      }),
-    )
+    const pathEntries = [...paths.values()]
     const retained = antichainDedupe(pathEntries)
 
-    result.push({ root: rootName, expr: synthesizePartialObject(retained) })
+    result.push({
+      root: rootName,
+      expr: synthesizePartialObject(rootName, retained),
+    })
   }
 
   return result
 }
 
-// Extract the dot-joined path key from a MemberExpression, e.g. "config.api.key"
-function getMemberPathKey(node: MemberExpression): string {
-  const parts: string[] = []
+function memberExpressionToPath(node: MemberExpression): BindPath {
+  const segments: string[] = []
   let current: Node = node
   while (current.type === 'MemberExpression') {
     if (current.property.type === 'Identifier') {
-      parts.unshift(current.property.name)
+      segments.unshift(current.property.name)
     }
     current = current.object
   }
-  if (current.type === 'Identifier') {
-    parts.unshift(current.name)
+  return {
+    key: segments.join('.'),
+    segments,
   }
-  return parts.join('.')
 }
 
 // Retain only paths that are not prefixed by a shorter path in the set.
-function antichainDedupe(
-  paths: Array<{ key: string; srcExpr: string }>,
-): Array<{ key: string; srcExpr: string }> {
+function antichainDedupe(paths: BindPath[]): BindPath[] {
   const sorted = [...paths].sort((a, b) => a.key.length - b.key.length)
   const retained: typeof sorted = []
   for (const path of sorted) {
@@ -267,37 +266,40 @@ function antichainDedupe(
   return retained
 }
 
-// Build a nested object literal string from an antichain of (pathKey, srcExpr) pairs.
-// e.g. [["api.key", "config.api.key"], ["user.name", "config.user.name"]]
-//   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
-function synthesizePartialObject(
-  paths: Array<{ key: string; srcExpr: string }>,
-): string {
-  type TrieNode = { value?: string; children: Map<string, TrieNode> }
-  const root: TrieNode = { children: new Map() }
+function synthesizeMemberAccess(root: string, segments: string[]): string {
+  return root + segments.map((segment) => `.${segment}`).join('')
+}
 
-  for (const { key, srcExpr } of paths) {
-    const segments = key.split('.')
-    let node = root
-    for (let i = 0; i < segments.length; i++) {
-      const seg = segments[i]!
+// Build a nested object literal string from an antichain of member paths.
+// e.g. [["api", "key"], ["user", "name"]]
+//   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
+function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
+  type TrieNode = { value?: string[]; children: Map<string, TrieNode> }
+  const trie: TrieNode = { children: new Map() }
+
+  for (const path of paths) {
+    let node = trie
+    for (let i = 0; i < path.segments.length; i++) {
+      const seg = path.segments[i]!
       if (!node.children.has(seg)) {
         node.children.set(seg, { children: new Map() })
       }
       node = node.children.get(seg)!
-      if (i === segments.length - 1) {
-        node.value = srcExpr
+      if (i === path.segments.length - 1) {
+        node.value = path.segments
       }
     }
   }
 
   function serialize(node: TrieNode): string {
-    if (node.value !== undefined) return node.value
+    if (node.value !== undefined) {
+      return synthesizeMemberAccess(rootName, node.value)
+    }
     const entries = [...node.children.entries()]
       .map(([k, child]) => `${k}: ${serialize(child)}`)
       .join(', ')
     return `{ ${entries} }`
   }
 
-  return serialize(root)
+  return serialize(trie)
 }
