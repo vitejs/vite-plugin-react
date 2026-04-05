@@ -252,6 +252,12 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     return false
   }
 
+  // meta property
+  // disregard the `import`/`meta` in `import.meta`
+  if (parent.type === 'MetaProperty') {
+    return false
+  }
+
   // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
   // so we use the ESTree parent stack directly to recognize object patterns.
   // disregard the `bar` in `const { foo: bar } = obj`, but keep it as a
