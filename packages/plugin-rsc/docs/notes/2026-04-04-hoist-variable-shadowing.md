@@ -91,18 +91,110 @@ Two layered problems:
    that owns it — you can only ask "does ANY declaration of this name live outside?" not
    "does THIS specific reference resolve outside?". Shadowing is invisible.
 
-## Interim Fix (current state)
+## Current State
 
-Replaced periscopic's `analyze()` with a custom `buildScopeTree` + `getBindVars` that
-correctly unifies function params and body into one scope. This fixes the param-scope
-anchor problem and makes all TODO tests pass.
+Periscopic is gone. `hoist.ts` now uses a custom `buildScopeTree` + `getBindVars`
+pipeline that records concrete reference identifiers and resolves each one to its
+declaring `Scope`.
 
-However, this is still the same **name-based design**: `Scope` holds
-`declarations: Set<string>`, and `findOwner(name: string)` walks up the chain by name.
-The structural flaw remains — it works for the current test cases because
-`buildScopeTree` now anchors correctly, but the abstraction is still wrong in principle.
+This fixed the original shadowing bug. The current `ScopeTree` shape is:
 
-## Target Design
+```ts
+type ScopeTree = {
+  readonly referenceToDeclaredScope: Map<Identifier, Scope>
+  readonly scopeToReferences: Map<Scope, Identifier[]>
+  readonly nodeScope: Map<Node, Scope>
+  readonly moduleScope: Scope
+}
+```
+
+This is no longer the old periscopic-style name-only design. Resolution is per
+identifier occurrence, not `findOwner(name: string)`.
+
+What is still true:
+
+- declarations are still stored as `Set<string>` on each `Scope`
+- reference collection still walks every `Identifier` and classifies it with
+  `isReferenceIdentifier(...)`
+- the implementation still has known edge cases, notably default-parameter
+  resolution against hoisted `var` declarations in the same function body
+
+## Current Algorithm
+
+`buildScopeTree` is a two-phase algorithm:
+
+1. Walk the AST once to create scopes, collect declarations, and record raw
+   `{ id, visitScope }` reference candidates.
+2. After the walk, resolve each recorded identifier by scanning upward from
+   `visitScope`, then propagate that identifier to `scopeToReferences` for the
+   visit scope and all ancestors.
+
+This is why the original shadowing bug is fixed now: resolution is per identifier
+occurrence, and it happens only after all hoisted declarations are known.
+
+The main implementation trade-off is elsewhere: phase 1 still records candidates by
+walking every `Identifier` and asking `isReferenceIdentifier(...)` whether that syntax
+position is a real read.
+
+## Current Limits
+
+The remaining problems are no longer the original periscopic ones.
+
+### 1. Generic identifier classification is still brittle
+
+The current implementation fixes the shadowing bug, but pass 1 still asks a low-level
+question:
+
+> given an arbitrary `Identifier`, is it a reference?
+
+That forces `isReferenceIdentifier` to know about many ESTree edge cases:
+
+- `Property`, `MethodDefinition`, `PropertyDefinition`
+- import/export specifiers
+- destructuring vs object literals
+- parameter defaults
+- `import.meta`
+- labels
+
+As soon as the helper needs parent/grandparent context, the abstraction is already
+showing strain.
+
+### 2. Some scope/visibility edge cases still need explicit fixups
+
+The current code has at least one confirmed semantic gap:
+
+- default parameter expressions incorrectly resolve to hoisted `var` declarations in the
+  same function body (`param-default-var-hoisting.js`)
+
+There are also lower-priority modeling gaps noted elsewhere:
+
+- unconditional `for` / `for-in` / `for-of` scopes
+- no `StaticBlock` scope
+
+## Why Two Phases Still Make Sense
+
+Two phases are still the right high-level structure because JavaScript hoisting requires
+resolution against a complete scope picture.
+
+Example:
+
+```js
+function action() {
+  console.log({ foo })
+  {
+    var foo = 123
+  }
+}
+```
+
+If lookup happened eagerly, `foo` would be seen before the hoisted declaration was
+registered and could be misresolved to an outer scope. Deferring resolution until after
+declaration collection avoids that class of bug.
+
+So the problem is not "two passes". The problem is specifically that the current first
+pass still discovers reads by blind identifier classification.
+
+## Practical Direction
 
 Frame the problem as:
 
@@ -122,7 +214,7 @@ const bindVars = [
     references
       .filter((id) => id.name !== declName)
       .filter((id) => {
-        const scope = scopeTree.identifierScope.get(id)
+        const scope = scopeTree.referenceToDeclaredScope.get(id)
         return (
           scope !== undefined &&
           scope !== scopeTree.moduleScope &&
@@ -134,89 +226,39 @@ const bindVars = [
 ]
 ```
 
-### Target types
-
-```ts
-type Scope = {
-  readonly parent: Scope | null
-  // no declarations, no methods — purely an identity token with a parent link
-}
-
-type ScopeTree = {
-  // each reference Identifier → the Scope that declared it (undefined = module-level)
-  readonly identifierScope: WeakMap<Identifier, Scope>
-  // each Scope → the direct reference Identifiers whose enclosing function scope is this
-  // (inverse of identifierScope, keyed by scope rather than by function node)
-  readonly scopeToReferences: WeakMap<Scope, Identifier[]>
-  // scope-creating AST node → its Scope (bridge from AST into Scope world)
-  readonly nodeScope: WeakMap<Node, Scope>
-  readonly moduleScope: Scope
-}
-```
-
-`nodeScope` is the only entry point from AST nodes into `Scope`. After that, everything
-is expressed purely in terms of `Scope` and `Identifier` — no AST node types, no strings.
-
-All the work is in `buildScopeTree` (two passes — see below). `getBindVars` has no logic of its own.
-
-## Design Smell in the Current Prototype
-
-The current custom implementation fixed the shadowing bug, but its internal shape still
-has an avoidable smell:
-
-1. Pass 1 builds declarations and scopes.
-2. Pass 2 walks the whole AST again.
-3. Pass 2 decides whether each `Identifier` is a "real reference" with a generic syntax
-   classifier.
-
-That last step is the weak point. It re-derives AST-position meaning after the fact,
-which forces helper logic like `isBindingIdentifier` to know about many ESTree edge
-cases (`Property`, `MethodDefinition`, import/export specifiers, destructuring, etc.).
-As soon as the helper needs parent/grandparent context, the abstraction is already
-telling us it is too low-level.
-
-Two passes are **inherently required** by JavaScript's hoisting semantics. A `var`
-declaration or function declaration may appear textually _after_ a reference to the same
-name in the same function:
-
-```js
-function action() {
-  console.log({ foo }) // reference — var foo not seen yet
-  {
-    var foo = 123 // hoisted to action's function scope
-  }
-}
-```
-
-A single-pass resolver would see `foo` before `var foo` is recorded, scan upward, and
-incorrectly attribute it to an outer binding. Pass 1 must collect all declarations first
-so that pass 2 can resolve every reference against the complete, frozen scope picture.
-
-The problem is not "two passes" by itself — that is correct and necessary. The smell is
-"walk every `Identifier` in pass 2 and classify it generically".
-
-## Proposed New Shape
+This uses the current `ScopeTree` shape shown above. `nodeScope` is the entry point from
+AST nodes into `Scope`; after that, `getBindVars` can stay as pure lookup over
+`referenceToDeclaredScope` and `scopeToReferences`.
 
 Keep the good part:
 
-- pass 1 builds the scope tree and records declarations
+- declarations are collected before resolution
+- references are resolved per identifier occurrence, not by name string
 
-Replace the brittle part:
+The practical maintenance goal is:
 
-- pass 2 should not walk every `Identifier`
-- pass 2 should walk only expression/reference-bearing child positions
-- pass 2 should resolve references immediately when visiting those positions
+- keep the current two-phase `buildScopeTree` shape
+- keep `isReferenceIdentifier` close to Vite SSR's `isRefIdentifier`
+- document local divergences explicitly when ESTree-walker / fixture coverage requires them
+- add fixtures for concrete edge cases instead of jumping to a larger architectural rewrite
 
-In other words, instead of asking:
+This keeps the implementation easy to compare against a well-known upstream reference,
+which is currently more valuable than pursuing a larger refactor.
+
+## Alternative, Probably Overkill
+
+An alternative design would avoid the global identifier classifier entirely.
+
+Instead of asking:
 
 > "given an arbitrary `Identifier`, is it a reference?"
 
-ask:
+it would ask:
 
 > "for this AST node, which child nodes are read positions?"
 
-That moves the complexity from a global classifier to local per-node traversal rules,
-which is easier to reason about and matches how closure capture actually works.
+That may be cleaner in the abstract, but it is a meaningfully larger refactor and is
+not the recommended next step right now.
 
 ### Sketch
 
@@ -234,10 +276,10 @@ function collectReferences(ast: Program, scopeTree: ScopeTree): void {
 }
 ```
 
-`getBindVars` stays the same shape as the target design above: pure lookup over
-`scopeToReferences` and `identifierScope`.
+`getBindVars` would stay the same shape as the current design above: pure lookup over
+`scopeToReferences` and `referenceToDeclaredScope`.
 
-## Why This Is Simpler
+## Why This Might Be Simpler
 
 ### No global identifier classifier
 
@@ -268,7 +310,7 @@ It needs:
 
 That is a narrower and more maintainable target.
 
-## Concrete Pass-2 Rules
+## If We Ever Do It
 
 Pass 2 should be a reference visitor over expression positions, not a blind AST scan.
 Representative rules:
@@ -307,19 +349,6 @@ Representative rules:
 This is not a full ESTree spec list yet. It is the shape we want: explicit read
 positions, explicit declaration positions.
 
-## Migration Plan
-
-1. Keep the current `Scope` / `ScopeTree` data model.
-2. Leave pass 1 mostly as-is, since it already fixes the original shadowing bug.
-3. Replace the generic pass-2 `Identifier` walk with a dedicated reference visitor.
-4. Delete `isBindingIdentifier` once pass 2 no longer depends on it.
-5. Add focused tests for syntax that previously depended on classifier edge cases:
-   - class methods and fields
-   - object literal vs object pattern
-   - import/export specifiers
-   - destructured params
-   - computed keys
-
 ## Decision
 
 Do not over-index on "one pass vs two passes". The better boundary is:
@@ -327,8 +356,14 @@ Do not over-index on "one pass vs two passes". The better boundary is:
 - pass 1 answers "what names exist in which scopes?"
 - pass 2 answers "which reads occur, and what do they resolve to?"
 
-That split is coherent. The current prototype's problem is that pass 2 still asks a more
-primitive question than it really needs to.
+That split is coherent. The current implementation's weak point is not the existence of
+two phases, but the number of syntax edge cases handled by `isReferenceIdentifier`.
+
+For now, the preferred approach is pragmatic:
+
+- stay aligned with Vite SSR's reference classifier where possible
+- make local divergences explicit in comments and fixtures
+- fix concrete semantic bugs without expanding the design surface unnecessarily
 
 ## Reference Repos
 
@@ -348,7 +383,7 @@ subset whose owner is strictly between the action and the module root.
 `parseAstAsync`. `walk()` accepts a pre-parsed AST directly.
 
 **Relevant helper:** `src/scope-tracker.ts:isBindingIdentifier`. Our local
-`isReferenceId` should stay aligned with its inverse. The concrete gaps found during the
+`isReferenceIdentifier` should stay aligned with its inverse. The concrete gaps found during the
 comparison were:
 
 - `MethodDefinition` and `PropertyDefinition`: non-computed keys are bindings, not

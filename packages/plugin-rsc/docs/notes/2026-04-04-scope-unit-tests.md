@@ -83,7 +83,7 @@ function outer() {
 }
 ```
 
-`shadowing-block.js.snap`:
+`shadowing-block.js.snap.json`:
 
 ```json
 {
@@ -92,7 +92,7 @@ function outer() {
   "references": [],
   "children": [
     {
-      "type": "Function:outer",
+      "type": "FunctionDeclaration:outer",
       "declarations": [],
       "references": [],
       "children": [
@@ -102,7 +102,7 @@ function outer() {
           "references": [],
           "children": [
             {
-              "type": "Function:action",
+              "type": "FunctionDeclaration:action",
               "declarations": [],
               "references": [],
               "children": [
@@ -117,7 +117,7 @@ function outer() {
                       "references": [
                         {
                           "name": "value",
-                          "resolvedIn": "Program > Function:outer > BlockStatement > Function:action > BlockStatement > BlockStatement"
+                          "declaredAt": "Program > FunctionDeclaration:outer > BlockStatement > FunctionDeclaration:action > BlockStatement > BlockStatement"
                         }
                       ],
                       "children": []
@@ -134,7 +134,7 @@ function outer() {
 }
 ```
 
-The `resolvedIn` path is built from scope-creating node labels (function names where
+The `declaredAt` path is built from scope-creating node labels (function names where
 available), disambiguated with `[2]` suffixes for same-type siblings.
 `null` means the identifier is global (not declared anywhere in the file).
 
@@ -143,11 +143,14 @@ available), disambiguated with `[2]` suffixes for same-type siblings.
 - `export-specifier.js` — `export {foo as bar}`: `foo` IS resolved, `bar` is NOT
 - `label.js` — label in `break`/`continue` NOT a ref
 - `shadowing-block.js` — the motivating bug from the migration notes
+- `import-meta.js` — `import` / `meta` in `import.meta` are NOT refs
+- `param-default-var-hoisting.js` — documents the current default-param + hoisted-`var`
+  misresolution as a known gap
 
 ### 3. Verify `hoist.test.ts` still passes after the extraction
 
 ## Non-goals
 
 - Do not change behaviour of `buildScopeTree` in this task.
-- Do not implement the pass-2 refactor (replacing `isBindingIdentifier` with explicit
+- Do not implement the pass-2 refactor (replacing `isReferenceIdentifier` with explicit
   reference visitor) — that is a separate follow-up described in the migration plan.
