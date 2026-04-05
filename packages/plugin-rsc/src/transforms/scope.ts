@@ -258,8 +258,8 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   // reference in `({ foo: bar } = obj)`
   if (
     parent.type === 'Property' &&
-    parentStack[1]?.type === 'ObjectPattern' &&
-    parent.value === node
+    parent.value === node &&
+    parentStack[1]?.type === 'ObjectPattern'
   ) {
     return isInDestructuringAssignment(parentStack)
   }
@@ -278,6 +278,9 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     return isInDestructuringAssignment(parentStack)
   }
 
+  // Unlike Vite SSR, this walk classifies pattern/default nodes here instead of
+  // relying on `handlePattern`, `setIsNodeInPattern`, and the separate param
+  // traversal to classify them during traversal.
   // disregard the `x` in `function f(x = y) {}` or `const { x = y } = obj`,
   // but keep it as a reference in `({ x = y } = obj)` or `([x = y] = arr)`
   if (parent.type === 'AssignmentPattern' && parent.left === node) {
