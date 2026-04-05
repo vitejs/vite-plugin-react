@@ -68,9 +68,9 @@ export function buildScopeTree(ast: Program): ScopeTree {
   const rawReferences: Array<{
     id: Identifier
     visitScope: Scope
-    bindableNode: Identifier | MemberExpression
   }> = []
   const ancestors: Node[] = []
+  const referenceToNode = new Map<Identifier, Identifier | MemberExpression>()
 
   walk(ast, {
     enter(node) {
@@ -136,21 +136,15 @@ export function buildScopeTree(ast: Program): ScopeTree {
         }
       }
       // Collect reference identifiers for post-walk resolution.
-      // TODO:
-      // To extend to member-expression binding: instead of collecting just the
-      // Identifier, collect the outermost non-computed MemberExpression rooted at
-      // it (e.g. `x.y` in `x.y.z`) when one exists. The root
-      // Identifier is still used for `referenceToDeclaredScope`; the full node
-      // (Identifier | MemberExpression) goes into `scopeToReferences`. Then
-      // `getBindVars` inspects each entry — if it is a MemberExpression, extract
-      // the path key for binding instead of the bare name.
+      // Additionally track member chain for hoist binding.
       if (
         node.type === 'Identifier' &&
         isReferenceIdentifier(node, ancestors.slice(0, -1).reverse())
       ) {
         const parentStack = ancestors.slice(0, -1).reverse()
         const bindableNode = getOutermostBindableReference(node, parentStack)
-        rawReferences.push({ id: node, visitScope: current, bindableNode })
+        referenceToNode.set(node, bindableNode)
+        rawReferences.push({ id: node, visitScope: current })
       }
     },
     leave(node) {
@@ -167,10 +161,8 @@ export function buildScopeTree(ast: Program): ScopeTree {
     [...nodeScope.values()].map((scope) => [scope, []]),
   )
   const referenceToDeclaredScope = new Map<Identifier, Scope>()
-  const referenceToNode = new Map<Identifier, Identifier | MemberExpression>()
 
-  for (const { id, visitScope, bindableNode } of rawReferences) {
-    referenceToNode.set(id, bindableNode)
+  for (const { id, visitScope } of rawReferences) {
     // TODO: default param expressions should not resolve to `var` declarations
     // from the same function body. We currently start lookup at `visitScope`,
     // so `function f(x = y) { var y }` incorrectly resolves `y` to `f`'s own
@@ -197,45 +189,6 @@ export function buildScopeTree(ast: Program): ScopeTree {
     moduleScope,
     referenceToNode,
   }
-}
-
-// Walk up the parent stack collecting non-computed MemberExpression ancestors where the
-// current node is the object. Stops at computed access, call boundaries, or any other node.
-// In callee position, trims the final segment so we capture the receiver, not the method.
-function getOutermostBindableReference(
-  id: Identifier,
-  parentStack: Node[], // [direct parent, grandparent, ...]
-): Identifier | MemberExpression {
-  let current: Identifier | MemberExpression = id
-
-  for (let i = 0; i < parentStack.length; i++) {
-    const parent = parentStack[i]!
-    if (
-      parent.type === 'MemberExpression' &&
-      !parent.computed &&
-      parent.object === current
-    ) {
-      current = parent
-    } else {
-      // Callee trimming: if we accumulated a member chain and it sits in callee position,
-      // drop the last segment and capture the receiver instead of the method property.
-      if (
-        current !== id &&
-        current.type === 'MemberExpression' &&
-        parent.type === 'CallExpression' &&
-        parent.callee === current
-      ) {
-        const receiver = current.object
-        current =
-          receiver.type === 'Identifier' || receiver.type === 'MemberExpression'
-            ? receiver
-            : id
-      }
-      break
-    }
-  }
-
-  return current
 }
 
 type AnyFunctionNode =
@@ -401,4 +354,43 @@ function isInDestructuringAssignment(parentStack: Node[]): boolean {
   // The distinction only appears higher in the ancestor chain, where assignment
   // targets are owned by an `AssignmentExpression`.
   return parentStack.some((node) => node.type === 'AssignmentExpression')
+}
+
+// Walk up the parent stack collecting non-computed MemberExpression ancestors where the
+// current node is the object. Stops at computed access, call boundaries, or any other node.
+// In callee position, trims the final segment so we capture the receiver, not the method.
+function getOutermostBindableReference(
+  id: Identifier,
+  parentStack: Node[], // [direct parent, grandparent, ...]
+): Identifier | MemberExpression {
+  let current: Identifier | MemberExpression = id
+
+  for (let i = 0; i < parentStack.length; i++) {
+    const parent = parentStack[i]!
+    if (
+      parent.type === 'MemberExpression' &&
+      !parent.computed &&
+      parent.object === current
+    ) {
+      current = parent
+    } else {
+      // Callee trimming: if we accumulated a member chain and it sits in callee position,
+      // drop the last segment and capture the receiver instead of the method property.
+      if (
+        current !== id &&
+        current.type === 'MemberExpression' &&
+        parent.type === 'CallExpression' &&
+        parent.callee === current
+      ) {
+        const receiver = current.object
+        current =
+          receiver.type === 'Identifier' || receiver.type === 'MemberExpression'
+            ? receiver
+            : id
+      }
+      break
+    }
+  }
+
+  return current
 }
