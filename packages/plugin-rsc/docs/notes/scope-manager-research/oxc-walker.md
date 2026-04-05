@@ -1,7 +1,7 @@
 # scope.ts vs oxc-walker: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/oxc-walker/src/scope-tracker.ts`
+**Prior art:** [github.com/oxc-project/oxc-walker](https://github.com/oxc-project/oxc-walker) — `src/scope-tracker.ts`
 
 oxc-walker is a small TS utility that pairs an AST walker with an optional `ScopeTracker`. It is the most directly comparable prior art to our implementation in terms of scope (pun intended) — both are lightweight, ESTree-compatible, and purpose-built rather than general-purpose compiler infrastructure.
 

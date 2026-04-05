@@ -1,7 +1,7 @@
 # scope.ts vs typescript-eslint scope-manager: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/typescript-eslint/packages/scope-manager/`
+**Prior art:** [github.com/typescript-eslint/typescript-eslint](https://github.com/typescript-eslint/typescript-eslint) — `packages/scope-manager/`
 
 ---
 
@@ -82,7 +82,7 @@ outer scope
        └─ FunctionScope            ← contains: params, var declarations
 ```
 
-Source: [`FunctionExpressionNameScope.ts`](~/code/others/typescript-eslint/packages/scope-manager/src/scope/FunctionExpressionNameScope.ts)
+Source: [`FunctionExpressionNameScope.ts`](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/scope-manager/src/scope/FunctionExpressionNameScope.ts)
 
 Our implementation adds the function expression name directly into the function scope:
 
@@ -108,7 +108,7 @@ outer scope   ← Foo defined here (for declarations)
   └─ ClassScope  ← Foo defined here again (inner self-reference for heritage + body)
 ```
 
-Source: [`ClassVisitor.ts#L50-L63`](~/code/others/typescript-eslint/packages/scope-manager/src/referencer/ClassVisitor.ts#L50)
+Source: [`ClassVisitor.ts#L50-L63`](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/scope-manager/src/referencer/ClassVisitor.ts#L50)
 
 Our implementation only creates a scope for **named class expressions** (the self-binding case), not for class declarations or anonymous class expressions:
 
@@ -140,7 +140,7 @@ Source: [scope.ts#L51-L57](../../../src/transforms/scope.ts#L51)
 2. When a scope closes, it calls `close(scopeManager)` which tries to resolve each ref.
 3. Unresolved refs are pushed to `through[]` and delegated to the upper scope via `delegateToUpperScope()`.
 
-Source: [`ScopeBase.ts#close`](~/code/others/typescript-eslint/packages/scope-manager/src/scope/ScopeBase.ts)
+Source: [`ScopeBase.ts#close`](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/scope-manager/src/scope/ScopeBase.ts)
 
 Both strategies resolve at "scope exit" time (when all local declarations are visible), so they handle hoisting correctly. The difference is organizational: ours is a single post-walk pass; typescript-eslint resolves incrementally per scope.
 

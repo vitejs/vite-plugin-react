@@ -1,7 +1,7 @@
 # scope.ts vs Vite SSR transform: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/vite/packages/vite/src/node/ssr/ssrTransform.ts` (~L456–776)
+**Prior art:** [github.com/vitejs/vite](https://github.com/vitejs/vite) — `packages/vite/src/node/ssr/ssrTransform.ts` (~L456–776)
 
 ---
 

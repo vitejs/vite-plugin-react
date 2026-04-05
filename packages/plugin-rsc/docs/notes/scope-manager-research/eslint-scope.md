@@ -1,7 +1,7 @@
 # scope.ts vs eslint-scope: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/eslint-js/packages/eslint-scope/`
+**Prior art:** [github.com/eslint/js](https://github.com/eslint/js) — `packages/eslint-scope/`
 
 eslint-scope is the original ECMA-262 scope analyzer for ESTree ASTs that typescript-eslint was built on top of. The interface it defines (`ScopeManager`, `Scope`, `Variable`, `Reference`) became the standard that all subsequent JS scope tools reference.
 

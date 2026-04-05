@@ -1,7 +1,7 @@
 # scope.ts vs Next.js server action transform: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs`
+**Prior art:** [github.com/vercel/next.js](https://github.com/vercel/next.js) — `crates/next-custom-transforms/src/transforms/server_actions.rs`
 
 ---
 

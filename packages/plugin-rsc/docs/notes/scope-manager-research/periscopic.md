@@ -1,7 +1,7 @@
 # scope.ts vs periscopic: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/periscopic/src/index.js`
+**Prior art:** [github.com/Rich-Harris/periscopic](https://github.com/Rich-Harris/periscopic) — `src/index.js`
 
 ---
 

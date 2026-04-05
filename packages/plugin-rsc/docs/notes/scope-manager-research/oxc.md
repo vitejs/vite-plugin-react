@@ -1,7 +1,7 @@
 # scope.ts vs oxc_semantic: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/oxc/crates/oxc_semantic/src/` (Rust)
+**Prior art:** [github.com/oxc-project/oxc](https://github.com/oxc-project/oxc) — `crates/oxc_semantic/src/` (Rust)
 
 oxc_semantic is the full semantic analysis pass of the oxc compiler — the heaviest implementation in this survey. It is designed as production compiler infrastructure, not a library for external callers.
 

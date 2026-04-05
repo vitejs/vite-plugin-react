@@ -1,7 +1,7 @@
 # scope.ts vs Babel traverse Scope: comparison
 
 **Our impl:** [src/transforms/scope.ts](../../../src/transforms/scope.ts)
-**Prior art:** `~/code/others/babel/packages/babel-traverse/src/scope/`
+**Prior art:** [github.com/babel/babel](https://github.com/babel/babel) — `packages/babel-traverse/src/scope/`
 
 Babel's `Scope` is the most feature-rich JS-side scope implementation in this survey. It is tightly coupled to `NodePath` (Babel's AST cursor with parent tracking), which enables capabilities like AST mutation, identifier renaming, and constant-violation tracking that a read-only scope analyzer cannot provide.
 
