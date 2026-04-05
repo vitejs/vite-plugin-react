@@ -242,6 +242,16 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
     return false
   }
 
+  // member expression property
+  // disregard the `bar` in `foo.bar`, but keep it in `foo[bar]`
+  if (
+    parent.type === 'MemberExpression' &&
+    parent.property === node &&
+    !parent.computed
+  ) {
+    return false
+  }
+
   // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
   // so we use the ESTree parent stack directly to recognize object patterns.
   // disregard the `bar` in `({ foo: bar } = obj)`, but keep it as a binding in
@@ -272,16 +282,6 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   // as a binding in `function f(x = y) {}` or `const { x = y } = obj`
   if (parent.type === 'AssignmentPattern' && parent.left === node) {
     return isInDestructuringAssignment(parentStack)
-  }
-
-  // member expression property
-  // disregard the `bar` in `foo.bar`, but keep it in `foo[bar]`
-  if (
-    parent.type === 'MemberExpression' &&
-    parent.property === node &&
-    !parent.computed
-  ) {
-    return false
   }
 
   // Unlike Vite SSR, this walk does not skip ImportDeclaration up front, so
