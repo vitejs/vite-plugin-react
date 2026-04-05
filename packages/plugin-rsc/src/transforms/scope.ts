@@ -65,10 +65,7 @@ export function buildScopeTree(ast: Program): ScopeTree {
   let current = moduleScope
   nodeScope.set(ast, moduleScope)
 
-  const rawReferences: Array<{
-    id: Identifier
-    visitScope: Scope
-  }> = []
+  const rawReferences: Array<{ id: Identifier; visitScope: Scope }> = []
   const ancestors: Node[] = []
   const referenceToNode = new Map<Identifier, Identifier | MemberExpression>()
 
