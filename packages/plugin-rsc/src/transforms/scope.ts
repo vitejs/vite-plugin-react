@@ -354,8 +354,6 @@ function isInDestructuringAssignment(parentStack: Node[]): boolean {
 }
 
 // TODO: review slop
-// TODO: handle computed access
-// TODO: handle optional chain
 // Walk up the parent stack collecting non-computed MemberExpression ancestors where the
 // current node is the object. Stops at computed access, call boundaries, or any other node.
 // In callee position, trims the final segment so we capture the receiver, not the method.
@@ -363,6 +361,9 @@ function getOutermostBindableReference(
   id: Identifier,
   parentStack: Node[], // [direct parent, grandparent, ...]
 ): Identifier | MemberExpression {
+  // TODO: This currently accumulates only plain non-computed member chains.
+  // Supporting optional chaining or computed access would require preserving
+  // richer access metadata than `MemberExpression` + identifier-name segments.
   let current: Identifier | MemberExpression = id
 
   for (let i = 0; i < parentStack.length; i++) {

@@ -176,6 +176,9 @@ type BindVar = {
 }
 
 type BindPath = {
+  // TODO: This currently models only plain non-computed member chains like
+  // `x.y.z`. Supporting optional chaining or computed access would require
+  // richer per-segment metadata and corresponding codegen changes.
   key: string
   segments: string[]
 }
