@@ -254,8 +254,8 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
 
   // Unlike Vite SSR, this walk does not pre-mark pattern nodes in a WeakSet,
   // so we use the ESTree parent stack directly to recognize object patterns.
-  // disregard the `bar` in `({ foo: bar } = obj)`, but keep it as a binding in
-  // `const { foo: bar } = obj`
+  // disregard the `bar` in `const { foo: bar } = obj`, but keep it as a
+  // reference in `({ foo: bar } = obj)`
   if (
     parent.type === 'Property' &&
     parentStack[1]?.type === 'ObjectPattern' &&
@@ -265,21 +265,21 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
   }
 
   // array destructuring pattern
-  // disregard the `x` in `[x] = value`, but keep it as a binding in
-  // `const [x] = value`
+  // disregard the `x` in `const [x] = value`, but keep it as a reference in
+  // `([x] = value)`
   if (parent.type === 'ArrayPattern') {
     return isInDestructuringAssignment(parentStack)
   }
 
   // Unlike Vite SSR, this walk sees rest-pattern identifiers directly here.
-  // Disregard the `rest` in `({ ...rest } = value)` or `[...rest] = value`,
-  // but keep it as a binding in declarations or params.
+  // disregard the `rest` in declarations or params, but keep it as a reference
+  // in `({ ...rest } = value)` or `([...rest] = value)`
   if (parent.type === 'RestElement' && parent.argument === node) {
     return isInDestructuringAssignment(parentStack)
   }
 
-  // disregard the `x` in `({ x = y } = obj)` or `([x = y] = arr)`, but keep it
-  // as a binding in `function f(x = y) {}` or `const { x = y } = obj`
+  // disregard the `x` in `function f(x = y) {}` or `const { x = y } = obj`,
+  // but keep it as a reference in `({ x = y } = obj)` or `([x = y] = arr)`
   if (parent.type === 'AssignmentPattern' && parent.left === node) {
     return isInDestructuringAssignment(parentStack)
   }
@@ -319,5 +319,21 @@ function isReferenceIdentifier(node: Identifier, parentStack: Node[]): boolean {
 }
 
 function isInDestructuringAssignment(parentStack: Node[]): boolean {
+  // `ObjectPattern` / `ArrayPattern` alone is ambiguous: the same immediate
+  // parent shape appears in declarations, params, and assignment targets.
+  //
+  // Treat as references:
+  // - `x` in `[x] = value`
+  // - `x` in `({ x } = value)`
+  // - `x` in `({ a: [x] } = value)`
+  //
+  // Do not treat as references:
+  // - `x` in `const [x] = value`
+  // - `x` in `const { x } = value`
+  // - `x` in `function f([x]) {}`
+  // - `x` in `function f({ x }) {}`
+  //
+  // The distinction only appears higher in the ancestor chain, where assignment
+  // targets are owned by an `AssignmentExpression`.
   return parentStack.some((node) => node.type === 'AssignmentExpression')
 }
