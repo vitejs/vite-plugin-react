@@ -356,6 +356,9 @@ function isInDestructuringAssignment(parentStack: Node[]): boolean {
   return parentStack.some((node) => node.type === 'AssignmentExpression')
 }
 
+// TODO: review slop
+// TODO: handle computed access
+// TODO: handle optional chain
 // Walk up the parent stack collecting non-computed MemberExpression ancestors where the
 // current node is the object. Stops at computed access, call boundaries, or any other node.
 // In callee position, trims the final segment so we capture the receiver, not the method.
