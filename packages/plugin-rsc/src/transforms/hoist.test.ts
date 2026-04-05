@@ -875,7 +875,11 @@ function outer() {
     `)
   })
 
-  // TODO: check next.js
+  // TODO: follow up if this edge case matters.
+  // Next.js's closure-collection logic suggests recursive self-reference is also
+  // treated as a captured outer name, but we didn't find a direct fixture proving the
+  // final emitted shape. Our current output self-binds `action`, which is suspicious
+  // enough to leave as an intentionally-unverified edge case.
   it('recursion', async () => {
     const input = `\
 function outer() {
@@ -932,7 +936,9 @@ function outer() {
     `)
   })
 
-  // TODO: check next.js
+  // Edge case: writing to a captured local only mutates the hoisted action's bound
+  // parameter copy, not the original outer binding. Next.js appears to have the same
+  // effective behavior, although via `$$ACTION_ARG_n` rewriting instead of plain params.
   it('assignment', async () => {
     const input = `
 function Counter() {
@@ -965,7 +971,9 @@ function Counter() {
     `)
   })
 
-  // TODO
+  // Same framing as plain assignment above: mutating a captured local is local to the
+  // hoisted invocation copy. This is probably an unintended edge case rather than a
+  // behavior worth matching exactly.
   it('increment', async () => {
     const input = `
 function Counter() {
