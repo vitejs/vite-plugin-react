@@ -1,3 +1,4 @@
+import { tinyassert } from '@hiogawa/utils'
 import type { Program, Literal, Node, MemberExpression } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -203,21 +204,25 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
 
   for (const id of bindReferences) {
     const name = id.name
-    if (!byRoot.has(name)) {
-      byRoot.set(name, { bare: false, paths: new Map() })
-    }
-    const entry = byRoot.get(name)!
-    if (entry.bare) continue
-
     const node = scopeTree.referenceToNode.get(id)!
+    let entry = byRoot.get(name)
+    if (!entry) {
+      entry = { bare: false, paths: new Map() }
+      byRoot.set(name, entry)
+    }
+
     if (node.type === 'Identifier') {
       entry.bare = true
       entry.paths.clear()
-    } else {
-      const path = memberExpressionToPath(node)
-      if (!entry.paths.has(path.key)) {
-        entry.paths.set(path.key, path)
-      }
+      continue
+    }
+    if (entry.bare) {
+      continue
+    }
+
+    const path = memberExpressionToPath(node)
+    if (!entry.paths.has(path.key)) {
+      entry.paths.set(path.key, path)
     }
   }
 
@@ -245,9 +250,8 @@ function memberExpressionToPath(node: MemberExpression): BindPath {
   const segments: string[] = []
   let current: Node = node
   while (current.type === 'MemberExpression') {
-    if (current.property.type === 'Identifier') {
-      segments.unshift(current.property.name)
-    }
+    tinyassert(current.property.type === 'Identifier')
+    segments.unshift(current.property.name)
     current = current.object
   }
   return {
@@ -259,12 +263,12 @@ function memberExpressionToPath(node: MemberExpression): BindPath {
 // Retain only paths that are not prefixed by a shorter path in the set.
 function antichainDedupe(paths: BindPath[]): BindPath[] {
   const sorted = [...paths].sort((a, b) => a.key.length - b.key.length)
-  const retained: typeof sorted = []
+  const retained: BindPath[] = []
   for (const path of sorted) {
-    const covered = retained.some(
+    const hasRetainedPrefix = retained.some(
       (r) => path.key === r.key || path.key.startsWith(r.key + '.'),
     )
-    if (!covered) {
+    if (!hasRetainedPrefix) {
       retained.push(path)
     }
   }
