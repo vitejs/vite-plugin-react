@@ -32,12 +32,12 @@ test.runIf(isServe)('should hmr', async () => {
 test('should update button style', async () => {
   function getButtonBorderStyle() {
     return page.evaluate(() => {
-      return window.getComputedStyle(document.querySelector('button')).border
+      return window.getComputedStyle(document.querySelector('button')!).border
     })
   }
 
   await page.evaluate(() => {
-    return document.querySelector('button').style
+    return document.querySelector('button')!.style
   })
 
   expect(await getButtonBorderStyle()).toMatch('2px solid rgb(0, 0, 0)')
