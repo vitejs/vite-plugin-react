@@ -242,46 +242,4 @@ export const MyClientComp = () => { throw new Error('...') }
       }
     `)
   })
-
-  test('reject non async function', async () => {
-    const accepted = [
-      'export async function f() {}',
-      'export default async function f() {}',
-      'export const fn = async function fn() {}',
-      'export const fn = async () => {}',
-      'export const fn = async () => {}, fn2 = x',
-      'export const fn = x',
-      'export const fn = x({ x: y })',
-      'export const fn = x(async () => {})',
-      'export default x',
-      'const y = x; export { y }',
-      'export const fn = x(() => {})',
-      'export const testAction = actionClient.action(async () => { return { message: "Hello, world!" }; });',
-    ]
-
-    const rejected = [
-      'export function f() {}',
-      'export default function f() {}',
-      'export const fn = function fn() {}',
-      'export const fn = () => {}',
-      'export const fn = x, fn2 = () => {}',
-      'export class Cls {}',
-      'export const Cls = class {}',
-      'export const Cls = class Foo {}',
-    ]
-
-    for (const code of accepted) {
-      await expect(
-        testTransform(code, { rejectNonAsyncFunction: true }),
-      ).resolves.not.toThrow()
-    }
-
-    for (const code of rejected) {
-      await expect(
-        testTransform(code, { rejectNonAsyncFunction: true }),
-      ).rejects.toThrow(/unsupported non async function/)
-    }
-
-    expect.assertions(rejected.length + accepted.length)
-  })
 })

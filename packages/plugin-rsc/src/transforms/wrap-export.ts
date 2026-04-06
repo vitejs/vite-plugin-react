@@ -1,12 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
-import type {
-  MaybeNamedClassDeclaration,
-  MaybeNamedFunctionDeclaration,
-  Node,
-  Program,
-} from 'estree'
+import type { Program } from 'estree'
 import MagicString from 'magic-string'
-import { extractNames } from './utils'
+import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
   declName?: string
@@ -24,25 +19,6 @@ export type TransformWrapExportOptions = {
   ignoreExportAllDeclaration?: boolean
   rejectNonAsyncFunction?: boolean
   filter?: TransformWrapExportFilter
-}
-
-export function validateNonAsyncFunction(
-  opts: { rejectNonAsyncFunction?: boolean },
-  node: Node | MaybeNamedFunctionDeclaration | MaybeNamedClassDeclaration,
-): void {
-  if (!opts.rejectNonAsyncFunction) return
-  if (
-    node.type === 'ClassDeclaration' ||
-    node.type === 'ClassExpression' ||
-    ((node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression' ||
-      node.type === 'ArrowFunctionExpression') &&
-      !node.async)
-  ) {
-    throw Object.assign(new Error(`unsupported non async function`), {
-      pos: node.start,
-    })
-  }
 }
 
 export function transformWrapExport(

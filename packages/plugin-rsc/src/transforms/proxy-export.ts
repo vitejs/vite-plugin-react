@@ -1,8 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
-import { extractNames, hasDirective } from './utils'
-import { validateNonAsyncFunction } from './wrap-export'
+import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
 
 export type TransformProxyExportOptions = {
   /** Required for source map and `keep` options */
