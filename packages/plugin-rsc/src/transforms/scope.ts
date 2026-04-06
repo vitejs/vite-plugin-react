@@ -1,3 +1,4 @@
+import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
   Identifier,
@@ -353,7 +354,6 @@ function isInDestructuringAssignment(parentStack: Node[]): boolean {
   return parentStack.some((node) => node.type === 'AssignmentExpression')
 }
 
-// TODO: review slop
 // Walk up the parent stack collecting non-computed MemberExpression ancestors where the
 // current node is the object. Stops at computed access, call boundaries, or any other node.
 // In callee position, trims the final segment so we capture the receiver, not the method.
@@ -379,16 +379,15 @@ function getOutermostBindableReference(
       // Callee trimming: if we accumulated a member chain and it sits in callee position,
       // drop the last segment and capture the receiver instead of the method property.
       if (
-        current !== id &&
-        current.type === 'MemberExpression' &&
         parent.type === 'CallExpression' &&
-        parent.callee === current
+        parent.callee === current &&
+        current.type === 'MemberExpression'
       ) {
-        const receiver = current.object
-        current =
-          receiver.type === 'Identifier' || receiver.type === 'MemberExpression'
-            ? receiver
-            : id
+        tinyassert(
+          current.object.type === 'Identifier' ||
+            current.object.type === 'MemberExpression',
+        )
+        current = current.object
       }
       break
     }
