@@ -20,10 +20,10 @@ describe('fixtures', () => {
           `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
         directive: 'use server',
       })
-      const snaphsot = result.output.hasChanged()
+      const snapshot = result.output.hasChanged()
         ? result.output.toString()
         : '/* NO CHANGE */'
-      await expect(snaphsot).toMatchFileSnapshot(file + '.snap.js')
+      await expect(snapshot).toMatchFileSnapshot(file + '.snap.js')
     })
   }
 })

@@ -102,7 +102,7 @@ function serializeScopeTree(
       return node.name
     }
     // <unknown>/computed/optional shouldn't show up
-    // since they aren't colelcted as reference node yet.
+    // since they aren't collected as reference node yet.
     const object =
       node.object.type === 'Identifier' ||
       node.object.type === 'MemberExpression'
