@@ -1,6 +1,8 @@
 {
   "type": "Program",
   "declarations": [
+    "a",
+    "fn",
     "x"
   ],
   "references": [
@@ -8,6 +10,16 @@
       "name": "x",
       "declaredAt": "Program",
       "referenceNode": "x.y"
+    },
+    {
+      "name": "a",
+      "declaredAt": "Program",
+      "referenceNode": "a"
+    },
+    {
+      "name": "fn",
+      "declaredAt": "Program",
+      "referenceNode": "fn"
     }
   ],
   "children": []
