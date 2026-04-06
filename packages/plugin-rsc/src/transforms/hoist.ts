@@ -234,12 +234,9 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
       result.push({ root, expr: root })
       continue
     }
-
-    // Antichain dedupe: discard any path that is prefixed by a shorter retained path
-    const retained = dedupeByPrefixPath(entry.paths)
     result.push({
       root,
-      expr: synthesizePartialObject(root, retained),
+      expr: synthesizePartialObject(root, entry.paths),
     })
   }
 
@@ -264,69 +261,55 @@ function memberExpressionToPath(node: MemberExpression): BindPath {
   }
 }
 
-// Retain only paths that are not prefixed by a shorter path in the set.
+// Build a nested object literal string from member paths, deduping prefixes
+// during trie construction.
 // e.g.
-// [x.y, x.y.z, x.w] -> [x.y, x.w]
-// [x.y.z, x.y.z.w] -> [x.y.z]
-function dedupeByPrefixPath(paths: BindPath[]): BindPath[] {
-  const sorted = [...paths].sort(
-    (a, b) => a.segments.length - b.segments.length,
-  )
-  const retained: BindPath[] = []
-  for (const path of sorted) {
-    const isPrefix = retained.some((r) =>
-      isPathPrefix(r.segments, path.segments),
-    )
-    if (!isPrefix) {
-      retained.push(path)
-    }
-  }
-  return retained
-}
-
-function isPathPrefix(prefix: string[], path: string[]): boolean {
-  return (
-    prefix.length <= path.length &&
-    prefix.every((segment, i) => path[i] === segment)
-  )
-}
-
-// TODO: review slop
-// Build a nested object literal string from an antichain of member paths.
-// e.g.
-// [a, x.y, x.w, s.t] =>
+// [a, x.y, x.y.z, x.w, s.t] =>
 // { a: root.a, x: { y: root.x.y, w: root.x.w }, s: { t: root.s.t } }
-function synthesizePartialObject(root: string, paths: BindPath[]): string {
-  type TrieNode = { value?: string[]; children: Map<string, TrieNode> }
-  const trie: TrieNode = { children: new Map() }
+function synthesizePartialObject(root: string, bindPaths: BindPath[]): string {
+  type TrieNode = Map<string, TrieNode>
+  const trie = new Map<string, TrieNode>()
 
+  const paths = dedupeByPrefix(bindPaths.map((p) => p.segments))
   for (const path of paths) {
     let node = trie
-    for (let i = 0; i < path.segments.length; i++) {
-      const seg = path.segments[i]!
-      if (!node.children.has(seg)) {
-        node.children.set(seg, { children: new Map() })
+    for (let i = 0; i < path.length; i++) {
+      const segment = path[i]!
+      let child = node.get(segment)
+      if (!child) {
+        child = new Map()
+        node.set(segment, child)
       }
-      node = node.children.get(seg)!
-      if (i === path.segments.length - 1) {
-        node.value = path.segments
-      }
+      node = child
     }
   }
 
-  function serialize(node: TrieNode): string {
-    if (node.value !== undefined) {
-      return synthesizeMemberAccess(root, node.value)
+  function serialize(node: TrieNode, segments: string[]): string {
+    if (node.size === 0) {
+      return root + segments.map((segment) => `.${segment}`).join('')
     }
-    const entries = [...node.children.entries()]
-      .map(([k, child]) => `${k}: ${serialize(child)}`)
+    const entries = [...node.entries()]
+      .map(([k, child]) => `${k}: ${serialize(child, [...segments, k])}`)
       .join(', ')
     return `{ ${entries} }`
   }
 
-  function synthesizeMemberAccess(root: string, segments: string[]): string {
-    return root + segments.map((segment) => `.${segment}`).join('')
-  }
+  return serialize(trie, [])
+}
 
-  return serialize(trie)
+// e.g.
+// [x.y, x.y.z, x.w] -> [x.y, x.w]
+// [x.y.z, x.y.z.w] -> [x.y.z]
+function dedupeByPrefix(paths: string[][]): string[][] {
+  const sorted = [...paths].sort((a, b) => a.length - b.length)
+  const result: string[][] = []
+  for (const path of sorted) {
+    const isPrefix = result.some((existingPath) =>
+      existingPath.every((segment, i) => segment === path[i]),
+    )
+    if (!isPrefix) {
+      result.push(path)
+    }
+  }
+  return result
 }
