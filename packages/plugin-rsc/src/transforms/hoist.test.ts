@@ -6,24 +6,36 @@ import { debugSourceMap } from './test-utils'
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob(
-    ['./fixtures/hoist/**/*.js', '!**/*.snap.js'],
+    ['./fixtures/hoist/**/*.js', '!**/*.snap.*'],
     {
       query: 'raw',
     },
   )
+
+  async function transformFixture(
+    input: string,
+    options?: { encode?: boolean },
+  ) {
+    const ast = await parseAstAsync(input)
+    const { output } = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      encode: options?.encode ? (v) => `__enc(${v})` : undefined,
+      decode: options?.encode ? (v) => `__dec(${v})` : undefined,
+    })
+    return output.hasChanged() ? output.toString() : '/* NO CHANGE */'
+  }
+
   for (const [file, mod] of Object.entries(fixtures)) {
     it(path.basename(file), async () => {
       const input = ((await mod()) as any).default as string
-      const ast = await parseAstAsync(input)
-      const result = transformHoistInlineDirective(input, ast, {
-        runtime: (value, name) =>
-          `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
-        directive: 'use server',
-      })
-      const snapshot = result.output.hasChanged()
-        ? result.output.toString()
-        : '/* NO CHANGE */'
-      await expect(snapshot).toMatchFileSnapshot(file + '.snap.js')
+      await expect
+        .soft(await transformFixture(input))
+        .toMatchFileSnapshot(file + '.snap.js')
+      await expect
+        .soft(await transformFixture(input, { encode: true }))
+        .toMatchFileSnapshot(file + '.snap.encode.js')
     })
   }
 })
