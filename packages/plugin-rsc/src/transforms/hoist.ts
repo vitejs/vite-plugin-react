@@ -238,7 +238,7 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
     }
 
     // Antichain dedupe: discard any path that is prefixed by a shorter retained path
-    const retained = antichainDedupe(entry.paths)
+    const retained = dedupeByPrefixPath(entry.paths)
     result.push({
       root,
       expr: synthesizePartialObject(root, retained),
@@ -270,18 +270,27 @@ function memberExpressionToPath(node: MemberExpression): BindPath {
 // e.g.
 // [x.y, x.y.z, x.w] -> [x.y, x.w]
 // [x.y.z, x.y.z.w] -> [x.y.z]
-function antichainDedupe(paths: BindPath[]): BindPath[] {
-  const sorted = [...paths].sort((a, b) => a.key.length - b.key.length)
+function dedupeByPrefixPath(paths: BindPath[]): BindPath[] {
+  const sorted = [...paths].sort(
+    (a, b) => a.segments.length - b.segments.length,
+  )
   const retained: BindPath[] = []
   for (const path of sorted) {
-    const hasRetainedPrefix = retained.some(
-      (r) => path.key === r.key || path.key.startsWith(r.key + '.'),
+    const isPrefix = retained.some((r) =>
+      isPathPrefix(r.segments, path.segments),
     )
-    if (!hasRetainedPrefix) {
+    if (!isPrefix) {
       retained.push(path)
     }
   }
   return retained
+}
+
+function isPathPrefix(prefix: string[], path: string[]): boolean {
+  return (
+    prefix.length <= path.length &&
+    prefix.every((segment, i) => path[i] === segment)
+  )
 }
 
 // TODO: review slop
