@@ -289,12 +289,24 @@ function synthesizePartialObject(root: string, bindPaths: BindPath[]): string {
       return root + segments.map((segment) => `.${segment}`).join('')
     }
     const entries = [...node.entries()]
-      .map(([k, child]) => `${k}: ${serialize(child, [...segments, k])}`)
+      .map(
+        ([k, child]) =>
+          `${serializeObjectKey(k)}: ${serialize(child, [...segments, k])}`,
+      )
       .join(', ')
     return `{ ${entries} }`
   }
 
   return serialize(trie, [])
+}
+
+function serializeObjectKey(key: string): string {
+  // ECMAScript object literals treat `__proto__: value` specially: when the
+  // property name is non-computed and equals "__proto__", evaluation performs
+  // [[SetPrototypeOf]] instead of creating a normal own data property. Emit a
+  // computed key here so synthesized partial objects preserve the original
+  // member-path shape rather than mutating the new object's prototype.
+  return key === '__proto__' ? `[${JSON.stringify(key)}]` : key
 }
 
 // e.g.
