@@ -2,6 +2,7 @@
   "type": "Program",
   "declarations": [
     "a",
+    "t",
     "x"
   ],
   "references": [
@@ -14,6 +15,11 @@
       "name": "a",
       "declaredAt": "Program",
       "referenceNode": "a.b"
+    },
+    {
+      "name": "t",
+      "declaredAt": "Program",
+      "referenceNode": "t"
     }
   ],
   "children": []
