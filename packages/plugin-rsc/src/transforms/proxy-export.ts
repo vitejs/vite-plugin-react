@@ -1,7 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
-import { extractNames, hasDirective } from './utils'
+import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
 
 export type TransformProxyExportOptions = {
   /** Required for source map and `keep` options */
@@ -58,14 +58,6 @@ export function transformProxyExport(
     output.update(node.start, node.end, newCode)
   }
 
-  function validateNonAsyncFunction(node: Node, ok?: boolean) {
-    if (options.rejectNonAsyncFunction && !ok) {
-      throw Object.assign(new Error(`unsupported non async function`), {
-        pos: node.start,
-      })
-    }
-  }
-
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
@@ -76,24 +68,15 @@ export function transformProxyExport(
           /**
            * export function foo() {}
            */
-          validateNonAsyncFunction(
-            node,
-            node.declaration.type === 'FunctionDeclaration' &&
-              node.declaration.async,
-          )
+          validateNonAsyncFunction(options, node.declaration)
           createExport(node, [node.declaration.id.name])
         } else if (node.declaration.type === 'VariableDeclaration') {
           /**
            * export const foo = 1, bar = 2
            */
-          validateNonAsyncFunction(
-            node,
-            node.declaration.declarations.every(
-              (decl) =>
-                decl.init?.type === 'ArrowFunctionExpression' &&
-                decl.init.async,
-            ),
-          )
+          for (const decl of node.declaration.declarations) {
+            if (decl.init) validateNonAsyncFunction(options, decl.init)
+          }
           if (options.keep && options.code) {
             if (node.declaration.declarations.length === 1) {
               const decl = node.declaration.declarations[0]!
@@ -148,12 +131,7 @@ export function transformProxyExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(
-        node,
-        node.declaration.type === 'Identifier' ||
-          (node.declaration.type === 'FunctionDeclaration' &&
-            node.declaration.async),
-      )
+      validateNonAsyncFunction(options, node.declaration)
       createExport(node, ['default'])
       continue
     }
