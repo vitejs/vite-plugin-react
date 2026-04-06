@@ -1,3 +1,39 @@
+## <small>[0.5.22](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.21...plugin-rsc@0.5.22) (2026-04-06)</small>
+### ⚠ BREAKING CHANGES
+
+* **react:** remove babel (#1123)
+* **react:** drop Vite 7 and below support (#1124)
+
+### Features
+
+* **react:** remove babel ([#1123](https://github.com/vitejs/vite-plugin-react/issues/1123)) ([ac16acc](https://github.com/vitejs/vite-plugin-react/commit/ac16acc03798aa5f1cb8dc766106b2c34eaeb06c))
+* **rsc:** bind accessed member expression value for `use server` closure ([#1172](https://github.com/vitejs/vite-plugin-react/issues/1172)) ([2c4b500](https://github.com/vitejs/vite-plugin-react/commit/2c4b500679dd77a8dca1c4a63a59c88d2cdb7516))
+* **rsc:** provide types for RSC API options ([#1154](https://github.com/vitejs/vite-plugin-react/issues/1154)) ([e74a199](https://github.com/vitejs/vite-plugin-react/commit/e74a199ce1dd6b8818950cc81ca31e21e7a92f38))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1127](https://github.com/vitejs/vite-plugin-react/issues/1127)) ([f01b30c](https://github.com/vitejs/vite-plugin-react/commit/f01b30cd09ea3bf758993aaa29fda7f588f76ab9))
+* **deps:** update all non-major dependencies ([#1140](https://github.com/vitejs/vite-plugin-react/issues/1140)) ([f812135](https://github.com/vitejs/vite-plugin-react/commit/f812135f84907947406cab5913b6d868685db585))
+* **deps:** update all non-major dependencies ([#1149](https://github.com/vitejs/vite-plugin-react/issues/1149)) ([87e505b](https://github.com/vitejs/vite-plugin-react/commit/87e505bedaa60bf3f061cb0d4ecd0cdc550b5567))
+* **deps:** update all non-major dependencies ([#1159](https://github.com/vitejs/vite-plugin-react/issues/1159)) ([10d4c7f](https://github.com/vitejs/vite-plugin-react/commit/10d4c7f890b7f0da65b96a93a984841eedddbdc2))
+* **deps:** update all non-major dependencies ([#1168](https://github.com/vitejs/vite-plugin-react/issues/1168)) ([c8fc4c6](https://github.com/vitejs/vite-plugin-react/commit/c8fc4c682d1c1716d385a28629025f0bbc5fdb3d))
+* **deps:** update all non-major dependencies ([#1173](https://github.com/vitejs/vite-plugin-react/issues/1173)) ([9bfb1a7](https://github.com/vitejs/vite-plugin-react/commit/9bfb1a7b48d7f21fc51d002c630026b1dad21acc))
+* **rsc:** align export async function checks ([#1169](https://github.com/vitejs/vite-plugin-react/issues/1169)) ([14d8889](https://github.com/vitejs/vite-plugin-react/commit/14d8889ee8f4fca9ebea9b27a2e909c5de07e485))
+* **rsc:** handle shadowing for `use server` variable binding ([#1170](https://github.com/vitejs/vite-plugin-react/issues/1170)) ([623eadf](https://github.com/vitejs/vite-plugin-react/commit/623eadfa7f90dfe152a9240c483d8542d189c292))
+
+### Miscellaneous Chores
+
+* **deps:** update tailwindcss with rsc hmr workaround ([#1130](https://github.com/vitejs/vite-plugin-react/issues/1130)) ([93acc26](https://github.com/vitejs/vite-plugin-react/commit/93acc26bed6933e9b8780531a291588fb5b99e54))
+* **rsc:** switch Cloudflare examples from `nodejs_als` to `nodejs_compat` ([#1131](https://github.com/vitejs/vite-plugin-react/issues/1131)) ([e40dbec](https://github.com/vitejs/vite-plugin-react/commit/e40dbec41bb26760532482324ccc2beb286dc1c5))
+
+### Code Refactoring
+
+* **react:** drop Vite 7 and below support ([#1124](https://github.com/vitejs/vite-plugin-react/issues/1124)) ([65dfa6c](https://github.com/vitejs/vite-plugin-react/commit/65dfa6cbf5aa3bd2d2bc17a1f315f6215bbeff0e))
+
+### Tests
+
+* **rsc:** add e2e test for custom root via CLI argument ([#1134](https://github.com/vitejs/vite-plugin-react/issues/1134)) ([28665e1](https://github.com/vitejs/vite-plugin-react/commit/28665e1885ae1cf3b2c1094a0368cc5ebc0abb2f))
+
 ## <small>[0.5.21](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.20...plugin-rsc@0.5.21) (2026-02-26)</small>
 ### Bug Fixes
 
