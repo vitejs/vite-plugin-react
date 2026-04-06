@@ -366,8 +366,7 @@ function getOutermostBindableReference(
   // richer access metadata than `MemberExpression` + identifier-name segments.
   let current: Identifier | MemberExpression = id
 
-  for (let i = 0; i < parentStack.length; i++) {
-    const parent = parentStack[i]!
+  for (const parent of parentStack) {
     if (parent.type === 'MemberExpression' && parent.object === current) {
       // Unsupported member hops should conservatively stop at the last safe
       // prefix rather than synthesizing a deeper partial object with different
