@@ -7,8 +7,6 @@ import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 // TODO:
 // - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
 
-const bindableReferenceSnapshotFixtures = new Set<string>([])
-
 describe('fixtures', () => {
   const fixtures = import.meta.glob('./fixtures/scope/**/*.js', {
     query: 'raw',
@@ -18,7 +16,7 @@ describe('fixtures', () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
-      const showReferenceNode = bindableReferenceSnapshotFixtures.has(file)
+      const showReferenceNode = file.includes('/scope/reference-node/')
       const serialized = serializeScopeTree(scopeTree, { showReferenceNode })
       await expect(
         JSON.stringify(serialized, null, 2) + '\n',
@@ -39,7 +37,7 @@ type SerializedScope = {
 type SerializedReference = {
   name: string
   declaredAt: string | null
-  bindsAs?: string
+  referenceNode?: string
 }
 
 function serializeScopeTree(
@@ -99,6 +97,21 @@ function serializeScopeTree(
     return scopes.map((s) => scopeLabelMap.get(s)!).join(' > ')
   }
 
+  function serializeReferenceNode(node: Identifier | MemberExpression): string {
+    if (node.type === 'Identifier') {
+      return node.name
+    }
+    // TODO: recurse
+    const object =
+      node.object.type === 'Identifier' ||
+      node.object.type === 'MemberExpression'
+        ? serializeReferenceNode(node.object)
+        : '<unsupported>'
+    const property =
+      node.property.type === 'Identifier' ? node.property.name : '<computed>'
+    return node.computed ? `${object}[${property}]` : `${object}.${property}`
+  }
+
   function serializeScope(scope: Scope): SerializedScope {
     return {
       type: scopeLabelMap.get(scope)!,
@@ -109,8 +122,8 @@ function serializeScopeTree(
           declaredAt: serializeDeclaredPath(id),
         }
         if (options?.showReferenceNode) {
-          reference.bindsAs = serializeBindableNode(
-            referenceToNode.get(id) ?? id,
+          reference.referenceNode = serializeReferenceNode(
+            referenceToNode.get(id)!,
           )
         }
         return reference
@@ -141,23 +154,6 @@ function toScopeNodeLabel(node: Node): string {
     default:
       return node.type
   }
-}
-
-function serializeBindableNode(node: Identifier | MemberExpression): string {
-  if (node.type === 'Identifier') {
-    return node.name
-  }
-  return serializeMemberExpression(node)
-}
-
-function serializeMemberExpression(node: MemberExpression): string {
-  const object =
-    node.object.type === 'Identifier' || node.object.type === 'MemberExpression'
-      ? serializeBindableNode(node.object)
-      : '<unsupported>'
-  const property =
-    node.property.type === 'Identifier' ? node.property.name : '<computed>'
-  return node.computed ? `${object}[${property}]` : `${object}.${property}`
 }
 
 class DefaultMap<K, V> extends Map<K, V> {
