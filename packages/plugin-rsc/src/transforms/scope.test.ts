@@ -1,11 +1,13 @@
 import path from 'node:path'
-import type { Identifier, Node } from 'estree'
+import type { Identifier, MemberExpression, Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
 // TODO:
 // - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
+
+const bindableReferenceSnapshotFixtures = new Set<string>([])
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob('./fixtures/scope/**/*.js', {
@@ -16,7 +18,8 @@ describe('fixtures', () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
-      const serialized = serializeScopeTree(scopeTree)
+      const showReferenceNode = bindableReferenceSnapshotFixtures.has(file)
+      const serialized = serializeScopeTree(scopeTree, { showReferenceNode })
       await expect(
         JSON.stringify(serialized, null, 2) + '\n',
       ).toMatchFileSnapshot(file + '.snap.json')
@@ -29,14 +32,26 @@ describe('fixtures', () => {
 type SerializedScope = {
   type: string
   declarations: string[]
-  references: { name: string; declaredAt: string | null }[]
+  references: SerializedReference[]
   children: SerializedScope[]
 }
 
-function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
+type SerializedReference = {
+  name: string
+  declaredAt: string | null
+  bindsAs?: string
+}
+
+function serializeScopeTree(
+  scopeTree: ScopeTree,
+  options?: {
+    showReferenceNode?: boolean
+  },
+): SerializedScope {
   const {
     nodeScope,
     referenceToDeclaredScope,
+    referenceToNode,
     scopeToReferences,
     moduleScope,
   } = scopeTree
@@ -88,10 +103,18 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
     return {
       type: scopeLabelMap.get(scope)!,
       declarations: [...scope.declarations].sort(),
-      references: getDirectReferences(scope).map((id) => ({
-        name: id.name,
-        declaredAt: serializeDeclaredPath(id),
-      })),
+      references: getDirectReferences(scope).map((id) => {
+        const reference: SerializedReference = {
+          name: id.name,
+          declaredAt: serializeDeclaredPath(id),
+        }
+        if (options?.showReferenceNode) {
+          reference.bindsAs = serializeBindableNode(
+            referenceToNode.get(id) ?? id,
+          )
+        }
+        return reference
+      }),
       children: scopeChildrenMap
         .get(scope)!
         .map((child) => serializeScope(child)),
@@ -118,6 +141,23 @@ function toScopeNodeLabel(node: Node): string {
     default:
       return node.type
   }
+}
+
+function serializeBindableNode(node: Identifier | MemberExpression): string {
+  if (node.type === 'Identifier') {
+    return node.name
+  }
+  return serializeMemberExpression(node)
+}
+
+function serializeMemberExpression(node: MemberExpression): string {
+  const object =
+    node.object.type === 'Identifier' || node.object.type === 'MemberExpression'
+      ? serializeBindableNode(node.object)
+      : '<unsupported>'
+  const property =
+    node.property.type === 'Identifier' ? node.property.name : '<computed>'
+  return node.computed ? `${object}[${property}]` : `${object}.${property}`
 }
 
 class DefaultMap<K, V> extends Map<K, V> {
