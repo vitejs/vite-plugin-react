@@ -5,12 +5,10 @@
     "target": "es2023",
     "module": "preserve",
     "moduleResolution": "bundler",
-    "strict": true,
     "declaration": true,
     "sourceMap": true,
     "noEmit": true,
     "noUnusedLocals": true,
-    "esModuleInterop": true,
     "rootDir": ".",
     "skipLibCheck": true
   }

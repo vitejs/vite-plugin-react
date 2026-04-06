@@ -7,14 +7,12 @@
     "jsx": "react-jsx",
     "types": ["vite/client"],
     "noEmit": true,
-    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
 
     /* Linting */
-    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,

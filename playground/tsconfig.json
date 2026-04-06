@@ -6,8 +6,6 @@
     "module": "preserve",
     "outDir": "dist",
     "allowJs": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "noEmit": true,
