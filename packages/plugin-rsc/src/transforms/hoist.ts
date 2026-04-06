@@ -182,8 +182,6 @@ type BindPath = {
   segments: string[]
 }
 
-type BindRoot = { kind: 'bare' } | { kind: 'paths'; paths: BindPath[] }
-
 function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
   const ancestorScopes = fnScope.getAncestorScopes()
@@ -197,6 +195,8 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
 
   // Group by root name. For each root, track whether the root itself is used
   // bare (direct identifier access) or only via member paths.
+  type BindRoot = { kind: 'bare' } | { kind: 'paths'; paths: BindPath[] }
+
   const byRoot = new DefaultMap<string, BindRoot>(() => ({
     kind: 'paths',
     paths: [],
@@ -216,10 +216,9 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
     }
 
     const path = memberExpressionToPath(node)
-    if (entry.paths.some((existing) => existing.key === path.key)) {
-      continue
+    if (!entry.paths.some((existing) => existing.key === path.key)) {
+      entry.paths.push(path)
     }
-    entry.paths.push(path)
   }
 
   const result: BindVar[] = []
