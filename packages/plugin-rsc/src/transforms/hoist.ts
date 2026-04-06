@@ -175,8 +175,6 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
   return nodes
 }
 
-// TODO: review slop
-
 type BindVar = {
   root: string // hoisted function param name (root identifier name)
   expr: string // bind expression at the call site (root name or synthesized partial object)
@@ -295,9 +293,10 @@ function isPathPrefix(prefix: string[], path: string[]): boolean {
 
 // TODO: review slop
 // Build a nested object literal string from an antichain of member paths.
-// e.g. [["api", "key"], ["user", "name"]]
-//   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
-function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
+// e.g.
+// [a, x.y, x.w, s.t] =>
+// { a: root.a, x: { y: root.x.y, w: root.x.w }, s: { t: root.s.t } }
+function synthesizePartialObject(root: string, paths: BindPath[]): string {
   type TrieNode = { value?: string[]; children: Map<string, TrieNode> }
   const trie: TrieNode = { children: new Map() }
 
@@ -317,7 +316,7 @@ function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
 
   function serialize(node: TrieNode): string {
     if (node.value !== undefined) {
-      return synthesizeMemberAccess(rootName, node.value)
+      return synthesizeMemberAccess(root, node.value)
     }
     const entries = [...node.children.entries()]
       .map(([k, child]) => `${k}: ${serialize(child)}`)
