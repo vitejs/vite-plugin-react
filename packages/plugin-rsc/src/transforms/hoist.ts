@@ -195,26 +195,25 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
     return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
   })
 
-  // Group by referenced identifier name. For each root, track whether the root itself is used
+  // Group by referenced identifier name (root).
+  // For each root, track whether the root itself is used
   // bare (direct identifier access) or only via member paths.
   type IdentifierAccess =
     | { kind: 'bare' }
     | { kind: 'paths'; paths: BindPath[] }
 
-  const IdentifierAccessMap = new DefaultMap<string, IdentifierAccess>(() => ({
-    kind: 'paths',
-    paths: [],
-  }))
+  const accessMap: Record<string, IdentifierAccess> = {}
 
   for (const id of bindReferences) {
     const name = id.name
     const node = scopeTree.referenceToNode.get(id)!
     if (node.type === 'Identifier') {
-      IdentifierAccessMap.set(name, { kind: 'bare' })
+      accessMap[name] = { kind: 'bare' }
       continue
     }
 
-    const entry = IdentifierAccessMap.get(name)
+    accessMap[name] ??= { kind: 'paths', paths: [] }
+    const entry = accessMap[name]
     if (entry.kind === 'paths') {
       const path = memberExpressionToPath(node)
       if (!entry.paths.some((existing) => existing.key === path.key)) {
@@ -224,22 +223,17 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   }
 
   const result: BindVar[] = []
-  for (const [rootName, entry] of IdentifierAccessMap) {
+  for (const [root, entry] of Object.entries(accessMap)) {
     if (entry.kind === 'bare') {
-      result.push({ root: rootName, expr: rootName })
-      continue
-    }
-    if (entry.paths.length === 0) {
-      result.push({ root: rootName, expr: rootName })
+      result.push({ root, expr: root })
       continue
     }
 
     // Antichain dedupe: discard any path that is prefixed by a shorter retained path
     const retained = antichainDedupe(entry.paths)
-
     result.push({
-      root: rootName,
-      expr: synthesizePartialObject(rootName, retained),
+      root,
+      expr: synthesizePartialObject(root, retained),
     })
   }
 
@@ -311,20 +305,4 @@ function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
   }
 
   return serialize(trie)
-}
-
-class DefaultMap<K, V> extends Map<K, V> {
-  constructor(private readonly init: (key: K) => V) {
-    super()
-  }
-
-  override get(key: K): V {
-    let value = super.get(key)
-    if (value !== undefined) {
-      return value
-    }
-    value = this.init(key)
-    this.set(key, value)
-    return value
-  }
 }
