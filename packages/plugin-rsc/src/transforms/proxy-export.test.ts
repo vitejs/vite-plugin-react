@@ -4,10 +4,7 @@ import { transformProxyExport } from './proxy-export'
 import { debugSourceMap } from './test-utils'
 import { transformWrapExport } from './wrap-export'
 
-async function testTransform(
-  input: string,
-  options?: { keep?: boolean; rejectNonAsyncFunction?: boolean },
-) {
+async function testTransform(input: string, options?: { keep?: boolean }) {
   const ast = await parseAstAsync(input)
   const result = transformProxyExport(ast, {
     code: input,
