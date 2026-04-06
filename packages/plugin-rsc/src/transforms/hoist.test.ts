@@ -24,7 +24,13 @@ describe('fixtures', () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
     })
-    return output.hasChanged() ? output.toString() : '/* NO CHANGE */'
+    if (!output.hasChanged()) {
+      return '/* NO CHANGE */'
+    }
+    const transformed = output.toString()
+    // verify transform produces valid js
+    await parseAstAsync(transformed)
+    return transformed
   }
 
   for (const [file, mod] of Object.entries(fixtures)) {
@@ -69,7 +75,9 @@ describe(transformHoistInlineDirective, () => {
     if (process.env['DEBUG_SOURCEMAP']) {
       await debugSourceMap(output)
     }
-    return output.toString()
+    const transformed = output.toString()
+    await parseAstAsync(transformed)
+    return transformed
   }
 
   async function testTransformNames(input: string) {
