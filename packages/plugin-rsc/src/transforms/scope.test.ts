@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { Identifier, Node } from 'estree'
+import type { Identifier, MemberExpression, Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
@@ -16,7 +16,8 @@ describe('fixtures', () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
       const scopeTree = buildScopeTree(ast)
-      const serialized = serializeScopeTree(scopeTree)
+      const showReferenceNode = file.includes('/scope/reference-node/')
+      const serialized = serializeScopeTree(scopeTree, { showReferenceNode })
       await expect(
         JSON.stringify(serialized, null, 2) + '\n',
       ).toMatchFileSnapshot(file + '.snap.json')
@@ -29,14 +30,26 @@ describe('fixtures', () => {
 type SerializedScope = {
   type: string
   declarations: string[]
-  references: { name: string; declaredAt: string | null }[]
+  references: SerializedReference[]
   children: SerializedScope[]
 }
 
-function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
+type SerializedReference = {
+  name: string
+  declaredAt: string | null
+  referenceNode?: string
+}
+
+function serializeScopeTree(
+  scopeTree: ScopeTree,
+  options?: {
+    showReferenceNode?: boolean
+  },
+): SerializedScope {
   const {
     nodeScope,
     referenceToDeclaredScope,
+    referenceToNode,
     scopeToReferences,
     moduleScope,
   } = scopeTree
@@ -84,14 +97,41 @@ function serializeScopeTree(scopeTree: ScopeTree): SerializedScope {
     return scopes.map((s) => scopeLabelMap.get(s)!).join(' > ')
   }
 
+  function serializeReferenceNode(node: Identifier | MemberExpression): string {
+    if (node.type === 'Identifier') {
+      return node.name
+    }
+    // <unknown>/computed/optional shouldn't show up
+    // since they aren't collected as reference node yet.
+    const object =
+      node.object.type === 'Identifier' ||
+      node.object.type === 'MemberExpression'
+        ? serializeReferenceNode(node.object)
+        : '<unknown>'
+    const property =
+      node.property.type === 'Identifier' ? node.property.name : '<unknown>'
+    const suffix = node.computed
+      ? `${node.optional ? '?.' : ''}[${property}]`
+      : `${node.optional ? '?.' : '.'}${property}`
+    return object + suffix
+  }
+
   function serializeScope(scope: Scope): SerializedScope {
     return {
       type: scopeLabelMap.get(scope)!,
       declarations: [...scope.declarations].sort(),
-      references: getDirectReferences(scope).map((id) => ({
-        name: id.name,
-        declaredAt: serializeDeclaredPath(id),
-      })),
+      references: getDirectReferences(scope).map((id) => {
+        const reference: SerializedReference = {
+          name: id.name,
+          declaredAt: serializeDeclaredPath(id),
+        }
+        if (options?.showReferenceNode) {
+          reference.referenceNode = serializeReferenceNode(
+            referenceToNode.get(id)!,
+          )
+        }
+        return reference
+      }),
       children: scopeChildrenMap
         .get(scope)!
         .map((child) => serializeScope(child)),

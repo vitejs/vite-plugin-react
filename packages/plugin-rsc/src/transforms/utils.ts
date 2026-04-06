@@ -1,5 +1,6 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Identifier, Pattern, Program } from 'estree'
+import type { ExportDefaultDeclaration } from 'estree'
+import type { Identifier, Node, Pattern, Program } from 'estree'
 
 export function hasDirective(
   body: Program['body'],
@@ -135,4 +136,24 @@ export function extractIdentifiers(
       break
   }
   return nodes
+}
+
+export function validateNonAsyncFunction(
+  opts: { rejectNonAsyncFunction?: boolean },
+  // export default function/class can be unnamed
+  node: Node | ExportDefaultDeclaration['declaration'],
+): void {
+  if (!opts.rejectNonAsyncFunction) return
+  if (
+    node.type === 'ClassDeclaration' ||
+    node.type === 'ClassExpression' ||
+    ((node.type === 'FunctionDeclaration' ||
+      node.type === 'FunctionExpression' ||
+      node.type === 'ArrowFunctionExpression') &&
+      !node.async)
+  ) {
+    throw Object.assign(new Error(`unsupported non async function`), {
+      pos: node.start,
+    })
+  }
 }
