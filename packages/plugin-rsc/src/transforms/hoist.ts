@@ -195,11 +195,13 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
     return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
   })
 
-  // Group by root name. For each root, track whether the root itself is used
+  // Group by referenced identifier name. For each root, track whether the root itself is used
   // bare (direct identifier access) or only via member paths.
-  type BindRoot = { kind: 'bare' } | { kind: 'paths'; paths: BindPath[] }
+  type IdentifierAccess =
+    | { kind: 'bare' }
+    | { kind: 'paths'; paths: BindPath[] }
 
-  const byRoot = new DefaultMap<string, BindRoot>(() => ({
+  const IdentifierAccessMap = new DefaultMap<string, IdentifierAccess>(() => ({
     kind: 'paths',
     paths: [],
   }))
@@ -207,24 +209,22 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   for (const id of bindReferences) {
     const name = id.name
     const node = scopeTree.referenceToNode.get(id)!
-    let entry = byRoot.get(name)
-
     if (node.type === 'Identifier') {
-      byRoot.set(name, { kind: 'bare' })
-      continue
-    }
-    if (entry.kind === 'bare') {
+      IdentifierAccessMap.set(name, { kind: 'bare' })
       continue
     }
 
-    const path = memberExpressionToPath(node)
-    if (!entry.paths.some((existing) => existing.key === path.key)) {
-      entry.paths.push(path)
+    const entry = IdentifierAccessMap.get(name)
+    if (entry.kind === 'paths') {
+      const path = memberExpressionToPath(node)
+      if (!entry.paths.some((existing) => existing.key === path.key)) {
+        entry.paths.push(path)
+      }
     }
   }
 
   const result: BindVar[] = []
-  for (const [rootName, entry] of byRoot) {
+  for (const [rootName, entry] of IdentifierAccessMap) {
     if (entry.kind === 'bare') {
       result.push({ root: rootName, expr: rootName })
       continue
