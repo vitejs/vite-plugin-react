@@ -1,0 +1,34 @@
+{
+  "type": "Program",
+  "declarations": [
+    "A",
+    "unresolved",
+    "x"
+  ],
+  "references": [
+    {
+      "name": "prop1",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "x",
+              "declaredAt": "Program"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

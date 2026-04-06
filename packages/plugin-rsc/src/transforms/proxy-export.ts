@@ -1,8 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
-import { extract_names } from 'periscopic'
-import { hasDirective } from './utils'
+import { extractNames, hasDirective } from './utils'
 import { validateNonAsyncFunction } from './wrap-export'
 
 export type TransformProxyExportOptions = {
@@ -96,7 +95,7 @@ export function transformProxyExport(
             }
           }
           const names = node.declaration.declarations.flatMap((decl) =>
-            extract_names(decl.id),
+            extractNames(decl.id),
           )
           createExport(node, names)
         } else {

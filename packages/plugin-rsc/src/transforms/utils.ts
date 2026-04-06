@@ -1,6 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
-import { extract_names } from 'periscopic'
+import type { Identifier, Pattern, Program } from 'estree'
 
 export function hasDirective(
   body: Program['body'],
@@ -41,7 +40,7 @@ export function getExportNames(
            * export const foo = 1, bar = 2
            */
           for (const decl of node.declaration.declarations) {
-            exportNames.push(...extract_names(decl.id))
+            exportNames.push(...extractNames(decl.id))
           }
         } else {
           node.declaration satisfies never
@@ -79,4 +78,61 @@ export function getExportNames(
   }
 
   return { exportNames }
+}
+
+// Copied from periscopic `extract_names` / `extract_identifiers`
+export function extractNames(param: Pattern): string[] {
+  return extractIdentifiers(param).map((n) => n.name)
+}
+
+// Copied from periscopic and intentionally broader than this repo's current
+// declaration-oriented use cases.
+//
+// ESTree's `Pattern` type also covers assignment targets, where
+// `MemberExpression` can appear (for example `({ x: obj.y } = value)`), so this
+// helper preserves periscopic's behavior of reducing `a.b.c` to the base
+// identifier `a`.
+//
+// In this repo, current callers use it only for declaration/binding positions
+// (`VariableDeclarator.id`, function params, catch params), where
+// `MemberExpression` should not appear for valid input. That branch is kept for
+// compatibility with the original helper rather than because current
+// declaration use cases require it.
+export function extractIdentifiers(
+  param: Pattern,
+  nodes: Identifier[] = [],
+): Identifier[] {
+  switch (param.type) {
+    case 'Identifier':
+      nodes.push(param)
+      break
+    case 'MemberExpression': {
+      let obj = param as any
+      while (obj.type === 'MemberExpression') {
+        obj = obj.object
+      }
+      nodes.push(obj)
+      break
+    }
+    case 'ObjectPattern':
+      for (const prop of param.properties) {
+        extractIdentifiers(
+          prop.type === 'RestElement' ? prop : prop.value,
+          nodes,
+        )
+      }
+      break
+    case 'ArrayPattern':
+      for (const el of param.elements) {
+        if (el) extractIdentifiers(el, nodes)
+      }
+      break
+    case 'RestElement':
+      extractIdentifiers(param.argument, nodes)
+      break
+    case 'AssignmentPattern':
+      extractIdentifiers(param.left, nodes)
+      break
+  }
+  return nodes
 }

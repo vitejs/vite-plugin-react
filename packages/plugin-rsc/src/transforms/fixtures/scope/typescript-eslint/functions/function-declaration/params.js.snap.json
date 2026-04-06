@@ -1,0 +1,51 @@
+{
+  "type": "Program",
+  "declarations": [
+    "foo",
+    "outer",
+    "unresolved"
+  ],
+  "references": [
+    {
+      "name": "g",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionDeclaration:foo",
+      "declarations": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "declaredAt": "Program > FunctionDeclaration:foo"
+        },
+        {
+          "name": "outer",
+          "declaredAt": "Program"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "declaredAt": "Program > FunctionDeclaration:foo"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

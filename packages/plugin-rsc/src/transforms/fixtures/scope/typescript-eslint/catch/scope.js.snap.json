@@ -1,0 +1,47 @@
+{
+  "type": "Program",
+  "declarations": [
+    "dontReference2",
+    "unresolved"
+  ],
+  "references": [
+    {
+      "name": "e",
+      "declaredAt": null
+    },
+    {
+      "name": "a",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "BlockStatement",
+      "declarations": [],
+      "references": [],
+      "children": []
+    },
+    {
+      "type": "CatchClause",
+      "declarations": [
+        "e"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [
+            "a"
+          ],
+          "references": [
+            {
+              "name": "e",
+              "declaredAt": "Program > CatchClause"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

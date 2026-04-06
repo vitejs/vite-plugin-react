@@ -1,0 +1,50 @@
+{
+  "type": "Program",
+  "declarations": [
+    "A",
+    "unresolved1",
+    "unresolved2"
+  ],
+  "references": [
+    {
+      "name": "f",
+      "declaredAt": null
+    },
+    {
+      "name": "method",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "declaredAt": "Program > FunctionExpression"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "declaredAt": "Program > FunctionExpression"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

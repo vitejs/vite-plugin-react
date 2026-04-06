@@ -1,0 +1,37 @@
+{
+  "type": "Program",
+  "declarations": [
+    "foo",
+    "unresolved"
+  ],
+  "references": [
+    {
+      "name": "j",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [
+        "j"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [
+            "i"
+          ],
+          "references": [
+            {
+              "name": "i",
+              "declaredAt": "Program > FunctionExpression > BlockStatement"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

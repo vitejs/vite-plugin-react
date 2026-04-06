@@ -1,0 +1,74 @@
+{
+  "type": "Program",
+  "declarations": [
+    "A",
+    "outer",
+    "unresovled"
+  ],
+  "references": [
+    {
+      "name": "e",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "declaredAt": "Program > FunctionExpression"
+        },
+        {
+          "name": "outer",
+          "declaredAt": "Program"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "b",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "c",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "d",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "e",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "f",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "a",
+              "declaredAt": "Program > FunctionExpression"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

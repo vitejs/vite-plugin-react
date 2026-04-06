@@ -1,0 +1,36 @@
+{
+  "type": "Program",
+  "declarations": [
+    "C"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "ClassExpression:Self",
+      "declarations": [
+        "Self"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "FunctionExpression",
+          "declarations": [],
+          "references": [],
+          "children": [
+            {
+              "type": "BlockStatement",
+              "declarations": [],
+              "references": [
+                {
+                  "name": "Self",
+                  "declaredAt": "Program > ClassExpression:Self"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

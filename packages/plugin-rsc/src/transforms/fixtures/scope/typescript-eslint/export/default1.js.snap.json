@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "declarations": [
+    "f"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionDeclaration:f",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
