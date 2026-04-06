@@ -101,15 +101,26 @@ function serializeScopeTree(
     if (node.type === 'Identifier') {
       return node.name
     }
-    // TODO: recurse
-    const object =
+    // <unknown> shouldn't show up since they aren't colelcted as reference node yet.
+    let object =
       node.object.type === 'Identifier' ||
       node.object.type === 'MemberExpression'
         ? serializeReferenceNode(node.object)
-        : '<unsupported>'
-    const property =
-      node.property.type === 'Identifier' ? node.property.name : '<computed>'
-    return node.computed ? `${object}[${property}]` : `${object}.${property}`
+        : '<unknown>'
+    let property =
+      node.property.type === 'Identifier' ? node.property.name : '<unknown>'
+    if (node.computed) {
+      property = `[${property}]`
+      if (node.optional) {
+        property = '?.' + property
+      }
+    } else {
+      property = '.' + property
+      if (node.optional) {
+        property = '?' + property
+      }
+    }
+    return object + property
   }
 
   function serializeScope(scope: Scope): SerializedScope {
