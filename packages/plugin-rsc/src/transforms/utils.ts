@@ -136,3 +136,19 @@ export function extractIdentifiers(
   }
   return nodes
 }
+
+export class DefaultMap<K, V> extends Map<K, V> {
+  constructor(private readonly init: (key: K) => V) {
+    super()
+  }
+
+  override get(key: K): V {
+    let value = super.get(key)
+    if (value !== undefined) {
+      return value
+    }
+    value = this.init(key)
+    this.set(key, value)
+    return value
+  }
+}

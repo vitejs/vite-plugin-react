@@ -3,6 +3,7 @@ import type { Identifier, MemberExpression, Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
+import { DefaultMap } from './utils'
 
 // TODO:
 // - use single markdown as snaphsot? (cf. review-scope-fixtures.ts)
@@ -157,21 +158,5 @@ function toScopeNodeLabel(node: Node): string {
       return 'ArrowFunction'
     default:
       return node.type
-  }
-}
-
-class DefaultMap<K, V> extends Map<K, V> {
-  constructor(private readonly init: (key: K) => V) {
-    super()
-  }
-
-  override get(key: K): V {
-    let value = super.get(key)
-    if (value !== undefined) {
-      return value
-    }
-    value = this.init(key)
-    this.set(key, value)
-    return value
   }
 }
