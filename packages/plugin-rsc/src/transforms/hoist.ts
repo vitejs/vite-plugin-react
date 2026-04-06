@@ -1,5 +1,11 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program, Literal, Node, MemberExpression } from 'estree'
+import type {
+  Program,
+  Literal,
+  Node,
+  MemberExpression,
+  Identifier,
+} from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree, type ScopeTree } from './scope'
@@ -176,6 +182,8 @@ type BindVar = {
   expr: string // bind expression at the call site (root name or synthesized partial object)
 }
 
+// e.g.
+// x.y.z -> { key: "y.z", segments: ["y", "z"] }
 type BindPath = {
   // TODO: This currently models only plain non-computed member chains like
   // `x.y.z`. Supporting optional chaining or computed access would require
@@ -242,10 +250,14 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
 
 function memberExpressionToPath(node: MemberExpression): BindPath {
   const segments: string[] = []
-  let current: Node = node
+  let current: Identifier | MemberExpression = node
   while (current.type === 'MemberExpression') {
     tinyassert(current.property.type === 'Identifier')
     segments.unshift(current.property.name)
+    tinyassert(
+      current.object.type === 'Identifier' ||
+        current.object.type === 'MemberExpression',
+    )
     current = current.object
   }
   return {
@@ -255,6 +267,9 @@ function memberExpressionToPath(node: MemberExpression): BindPath {
 }
 
 // Retain only paths that are not prefixed by a shorter path in the set.
+// e.g.
+// [x.y, x.y.z, x.w] -> [x.y, x.w]
+// [x.y.z, x.y.z.w] -> [x.y.z]
 function antichainDedupe(paths: BindPath[]): BindPath[] {
   const sorted = [...paths].sort((a, b) => a.key.length - b.key.length)
   const retained: BindPath[] = []
@@ -269,6 +284,7 @@ function antichainDedupe(paths: BindPath[]): BindPath[] {
   return retained
 }
 
+// TODO: review slop
 // Build a nested object literal string from an antichain of member paths.
 // e.g. [["api", "key"], ["user", "name"]]
 //   → "{ api: { key: config.api.key }, user: { name: config.user.name } }"
