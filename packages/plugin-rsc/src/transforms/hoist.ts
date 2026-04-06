@@ -169,6 +169,8 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
   return nodes
 }
 
+// TODO: review slop
+
 type BindVar = {
   root: string // hoisted function param name (root identifier name)
   expr: string // bind expression at the call site (root name or synthesized partial object)
