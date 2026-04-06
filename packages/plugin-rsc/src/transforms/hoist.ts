@@ -169,8 +169,6 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
   return nodes
 }
 
-// TODO: review slop
-
 type BindVar = {
   root: string // hoisted function param name (root identifier name)
   expr: string // bind expression at the call site (root name or synthesized partial object)
@@ -183,6 +181,8 @@ type BindPath = {
   key: string
   segments: string[]
 }
+
+type BindRoot = { kind: 'bare' } | { kind: 'paths'; paths: BindPath[] }
 
 function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
   const fnScope = scopeTree.nodeScope.get(fn)!
@@ -197,45 +197,44 @@ function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
 
   // Group by root name. For each root, track whether the root itself is used
   // bare (direct identifier access) or only via member paths.
-  const byRoot = new Map<
-    string,
-    { bare: boolean; paths: Map<string, BindPath> }
-  >()
+  const byRoot = new DefaultMap<string, BindRoot>(() => ({
+    kind: 'paths',
+    paths: [],
+  }))
 
   for (const id of bindReferences) {
     const name = id.name
     const node = scopeTree.referenceToNode.get(id)!
     let entry = byRoot.get(name)
-    if (!entry) {
-      entry = { bare: false, paths: new Map() }
-      byRoot.set(name, entry)
-    }
 
     if (node.type === 'Identifier') {
-      entry.bare = true
-      entry.paths.clear()
+      byRoot.set(name, { kind: 'bare' })
       continue
     }
-    if (entry.bare) {
+    if (entry.kind === 'bare') {
       continue
     }
 
     const path = memberExpressionToPath(node)
-    if (!entry.paths.has(path.key)) {
-      entry.paths.set(path.key, path)
+    if (entry.paths.some((existing) => existing.key === path.key)) {
+      continue
     }
+    entry.paths.push(path)
   }
 
   const result: BindVar[] = []
-  for (const [rootName, { bare, paths }] of byRoot) {
-    if (bare || paths.size === 0) {
+  for (const [rootName, entry] of byRoot) {
+    if (entry.kind === 'bare') {
+      result.push({ root: rootName, expr: rootName })
+      continue
+    }
+    if (entry.paths.length === 0) {
       result.push({ root: rootName, expr: rootName })
       continue
     }
 
     // Antichain dedupe: discard any path that is prefixed by a shorter retained path
-    const pathEntries = [...paths.values()]
-    const retained = antichainDedupe(pathEntries)
+    const retained = antichainDedupe(entry.paths)
 
     result.push({
       root: rootName,
@@ -311,4 +310,20 @@ function synthesizePartialObject(rootName: string, paths: BindPath[]): string {
   }
 
   return serialize(trie)
+}
+
+class DefaultMap<K, V> extends Map<K, V> {
+  constructor(private readonly init: (key: K) => V) {
+    super()
+  }
+
+  override get(key: K): V {
+    let value = super.get(key)
+    if (value !== undefined) {
+      return value
+    }
+    value = this.init(key)
+    this.set(key, value)
+    return value
+  }
 }
