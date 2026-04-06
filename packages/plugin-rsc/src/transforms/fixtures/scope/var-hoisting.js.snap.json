@@ -1,0 +1,36 @@
+{
+  "type": "Program",
+  "declarations": [
+    "f"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionDeclaration:f",
+      "declarations": [
+        "x"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "x",
+              "declaredAt": "Program > FunctionDeclaration:f"
+            }
+          ],
+          "children": [
+            {
+              "type": "BlockStatement",
+              "declarations": [],
+              "references": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

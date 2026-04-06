@@ -1,0 +1,238 @@
+{
+  "type": "Program",
+  "declarations": [
+    "Foo",
+    "__decorate"
+  ],
+  "references": [
+    {
+      "name": "Foo",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "__decorate",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "deco",
+      "declaredAt": null
+    },
+    {
+      "name": "Foo",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [
+        "c",
+        "d",
+        "decorators",
+        "desc",
+        "i",
+        "key",
+        "r",
+        "target"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "arguments",
+              "declaredAt": null
+            },
+            {
+              "name": "c",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "target",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "desc",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "desc",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "Object",
+              "declaredAt": null
+            },
+            {
+              "name": "target",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "key",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "desc",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "Reflect",
+              "declaredAt": null
+            },
+            {
+              "name": "Reflect",
+              "declaredAt": null
+            },
+            {
+              "name": "r",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "Reflect",
+              "declaredAt": null
+            },
+            {
+              "name": "decorators",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "target",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "key",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "desc",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "c",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "r",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "Object",
+              "declaredAt": null
+            },
+            {
+              "name": "target",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "key",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "r",
+              "declaredAt": "Program > FunctionExpression"
+            },
+            {
+              "name": "r",
+              "declaredAt": "Program > FunctionExpression"
+            }
+          ],
+          "children": [
+            {
+              "type": "ForStatement",
+              "declarations": [],
+              "references": [
+                {
+                  "name": "decorators",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "i",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "i",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "d",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "decorators",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "i",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "r",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "c",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "d",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "r",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "c",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "d",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "target",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "key",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "r",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "d",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "target",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "key",
+                  "declaredAt": "Program > FunctionExpression"
+                },
+                {
+                  "name": "r",
+                  "declaredAt": "Program > FunctionExpression"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ClassExpression:Foo",
+      "declarations": [
+        "Foo"
+      ],
+      "references": [],
+      "children": []
+    }
+  ]
+}

@@ -1,8 +1,7 @@
-import { tinyassert } from '@hiogawa/utils'
-import type { Program, Literal } from 'estree'
+import type { Program, Literal, Node } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { analyze } from 'periscopic'
+import { buildScopeTree, type ScopeTree } from './scope'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -37,19 +36,7 @@ export function transformHoistInlineDirective(
       ? exactRegex(options.directive)
       : options.directive
 
-  // re-export somehow confuses periscopic scopes so remove them before analysis
-  walk(ast, {
-    enter(node) {
-      if (node.type === 'ExportAllDeclaration') {
-        this.remove()
-      }
-      if (node.type === 'ExportNamedDeclaration' && !node.declaration) {
-        this.remove()
-      }
-    },
-  })
-
-  const analyzed = analyze(ast)
+  const scopeTree = buildScopeTree(ast)
   const names: string[] = []
 
   walk(ast, {
@@ -71,8 +58,6 @@ export function transformHoistInlineDirective(
           )
         }
 
-        const scope = analyzed.map.get(node)
-        tinyassert(scope)
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
@@ -81,15 +66,7 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
-        // bind variables which are neither global nor in own scope
-        const bindVars = [...scope.references].filter((ref) => {
-          // declared function itself is included as reference
-          if (ref === declName) {
-            return false
-          }
-          const owner = scope.find_owner(ref)
-          return owner && owner !== scope && owner !== analyzed.scope
-        })
+        const bindVars = getBindVars(node, scopeTree)
         let newParams = [
           ...bindVars,
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -189,4 +166,16 @@ export function findDirectives(ast: Program, directive: string): Literal[] {
     },
   })
   return nodes
+}
+
+function getBindVars(fn: Node, scopeTree: ScopeTree): string[] {
+  const fnScope = scopeTree.nodeScope.get(fn)!
+  const ancestorScopes = fnScope.getAncestorScopes()
+  const references = scopeTree.scopeToReferences.get(fnScope) ?? []
+  // bind variables that are the ones declared in ancestor scopes but not module global scope
+  const bindReferences = references.filter((id) => {
+    const scope = scopeTree.referenceToDeclaredScope.get(id)
+    return scope && scope !== scopeTree.moduleScope && ancestorScopes.has(scope)
+  })
+  return [...new Set(bindReferences.map((id) => id.name))]
 }

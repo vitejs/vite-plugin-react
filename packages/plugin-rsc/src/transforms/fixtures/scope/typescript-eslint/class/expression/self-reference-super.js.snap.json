@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "declarations": [
+    "A"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "ClassExpression:A",
+      "declarations": [
+        "A"
+      ],
+      "references": [
+        {
+          "name": "A",
+          "declaredAt": "Program > ClassExpression:A"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

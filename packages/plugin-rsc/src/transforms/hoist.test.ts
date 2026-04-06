@@ -463,4 +463,538 @@ export async function test() {
       "
     `)
   })
+
+  // ok: should not bind
+  it('shadowing local if over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 0;
+      return value;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          if (true) {
+            const value = 0;
+            return value;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should not bind
+  it('shadowing local body over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    const value = 0;
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          const value = 0;
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should not bind
+  it('shadowing local body and if over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 0;
+      return value;
+    }
+    const value = 0;
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          if (true) {
+            const value = 0;
+            return value;
+          }
+          const value = 0;
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should bind
+  it('shadowing partial local over local', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 1;
+      return value;
+    }
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          if (true) {
+            const value = 1;
+            return value;
+          }
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should not bind
+  it('shadowing local over global', async () => {
+    const input = `\
+const value = 0;
+function outer() {
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 1;
+      return value;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const value = 0;
+      function outer() {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          if (true) {
+            const value = 1;
+            return value;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should not bind
+  it('shadowing partial local over global', async () => {
+    const input = `\
+const value = 0;
+function outer() {
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 1;
+      return value;
+    }
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const value = 0;
+      function outer() {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          if (true) {
+            const value = 1;
+            return value;
+          }
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should not bind
+  it('shadowing local over local over global', async () => {
+    const input = `\
+const value = 0;
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 1;
+      return value;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const value = 0;
+      function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          if (true) {
+            const value = 1;
+            return value;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // ok: should bind
+  it('shadowing partial local over local over global', async () => {
+    const input = `\
+const value = 0;
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      const value = 1;
+      return value;
+    }
+    return value;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "const value = 0;
+      function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          if (true) {
+            const value = 1;
+            return value;
+          }
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('deeper', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    if (true) {
+      return value;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          if (true) {
+            return value;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('var hoisting', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    console.log({ value })
+    var value = 1;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          console.log({ value })
+          var value = 1;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('var hoisting block', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    console.log({ value })
+    {
+      var value = 1;
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          console.log({ value })
+          {
+            var value = 1;
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('function hoisting', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    console.log({ value })
+    function value() {}
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action");
+      }
+
+      ;export async function $$hoist_0_action() {
+          "use server";
+          console.log({ value })
+          function value() {}
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('function hoisting block', async () => {
+    const input = `\
+function outer() {
+  const value = 0;
+  async function action() {
+    "use server";
+    console.log({ value })
+    {
+      function value() {}
+    }
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const value = 0;
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value);
+      }
+
+      ;export async function $$hoist_0_action(value) {
+          "use server";
+          console.log({ value })
+          {
+            function value() {}
+          }
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // TODO: check next.js
+  it('recursion', async () => {
+    const input = `\
+function outer() {
+  async function action() {
+    "use server";
+    if (false) {
+      return action();
+    }
+    return 0;
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, action);
+      }
+
+      ;export async function $$hoist_0_action(action) {
+          "use server";
+          if (false) {
+            return action();
+          }
+          return 0;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  it('computed destructuring key in body', async () => {
+    const input = `\
+function outer() {
+  const key = 'value'
+  async function action(data) {
+    "use server";
+    const { [key]: val } = data
+    return val
+  }
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function outer() {
+        const key = 'value'
+        const action = /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, key);
+      }
+
+      ;export async function $$hoist_0_action(key, data) {
+          "use server";
+          const { [key]: val } = data
+          return val
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
+      "
+    `)
+  })
+
+  // TODO: check next.js
+  it('assignment', async () => {
+    const input = `
+function Counter() {
+  let local = 0;
+
+  async function updateLocal() {
+    "use server";
+    local = 1;
+  }
+
+  return "something";
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Counter() {
+        let local = 0;
+
+        const updateLocal = /* #__PURE__ */ $$register($$hoist_0_updateLocal, "<id>", "$$hoist_0_updateLocal").bind(null, local);
+
+        return "something";
+      }
+
+      ;export async function $$hoist_0_updateLocal(local) {
+          "use server";
+          local = 1;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_updateLocal, "name", { value: "updateLocal" });
+      "
+    `)
+  })
+
+  // TODO
+  it('increment', async () => {
+    const input = `
+function Counter() {
+  let local = 0;
+
+  async function updateLocal() {
+    "use server";
+    local++;
+  }
+
+  return "something";
+}
+`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "
+      function Counter() {
+        let local = 0;
+
+        const updateLocal = /* #__PURE__ */ $$register($$hoist_0_updateLocal, "<id>", "$$hoist_0_updateLocal").bind(null, local);
+
+        return "something";
+      }
+
+      ;export async function $$hoist_0_updateLocal(local) {
+          "use server";
+          local++;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_updateLocal, "name", { value: "updateLocal" });
+      "
+    `)
+  })
 })

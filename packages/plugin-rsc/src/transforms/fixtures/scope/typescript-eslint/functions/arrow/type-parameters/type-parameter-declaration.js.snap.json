@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "declarations": [
+    "foo"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "ArrowFunction",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

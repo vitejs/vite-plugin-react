@@ -1,0 +1,32 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [],
+  "children": [
+    {
+      "type": "BlockStatement",
+      "declarations": [],
+      "references": [],
+      "children": []
+    },
+    {
+      "type": "CatchClause",
+      "declarations": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
