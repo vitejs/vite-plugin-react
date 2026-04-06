@@ -11,6 +11,6 @@
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"]
+    "lib": ["ESNext", "DOM"]
   }
 }

@@ -2,7 +2,7 @@
   "include": ["src"],
   "compilerOptions": {
     "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext", "DOM"],
     "target": "ESNext",
     "jsx": "react-jsx",
     "types": ["vite/client"],
