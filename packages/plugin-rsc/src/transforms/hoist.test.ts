@@ -1,7 +1,50 @@
+import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
+
+describe('fixtures', () => {
+  const fixtures = import.meta.glob(
+    ['./fixtures/hoist/**/*.js', '!**/*.snap.*'],
+    {
+      query: 'raw',
+    },
+  )
+
+  async function transformFixture(
+    input: string,
+    options?: { encode?: boolean },
+  ) {
+    const ast = await parseAstAsync(input)
+    const { output } = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      encode: options?.encode ? (v) => `__enc(${v})` : undefined,
+      decode: options?.encode ? (v) => `__dec(${v})` : undefined,
+    })
+    if (!output.hasChanged()) {
+      return '/* NO CHANGE */'
+    }
+    const transformed = output.toString()
+    // verify transform produces valid js
+    await parseAstAsync(transformed)
+    return transformed
+  }
+
+  for (const [file, mod] of Object.entries(fixtures)) {
+    it(path.basename(file), async () => {
+      const input = ((await mod()) as any).default as string
+      await expect
+        .soft(await transformFixture(input))
+        .toMatchFileSnapshot(file + '.snap.js')
+      await expect
+        .soft(await transformFixture(input, { encode: true }))
+        .toMatchFileSnapshot(file + '.snap.encode.js')
+    })
+  }
+})
 
 describe(transformHoistInlineDirective, () => {
   async function testTransform(
@@ -32,7 +75,9 @@ describe(transformHoistInlineDirective, () => {
     if (process.env['DEBUG_SOURCEMAP']) {
       await debugSourceMap(output)
     }
-    return output.toString()
+    const transformed = output.toString()
+    await parseAstAsync(transformed)
+    return transformed
   }
 
   async function testTransformNames(input: string) {

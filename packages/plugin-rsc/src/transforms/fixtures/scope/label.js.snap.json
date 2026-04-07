@@ -1,0 +1,65 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [],
+  "children": [
+    {
+      "type": "ForStatement",
+      "declarations": [
+        "i"
+      ],
+      "references": [
+        {
+          "name": "i",
+          "declaredAt": "Program > ForStatement"
+        },
+        {
+          "name": "i",
+          "declaredAt": "Program > ForStatement"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": [
+            {
+              "type": "ForStatement",
+              "declarations": [
+                "j"
+              ],
+              "references": [
+                {
+                  "name": "j",
+                  "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
+                },
+                {
+                  "name": "j",
+                  "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
+                }
+              ],
+              "children": [
+                {
+                  "type": "BlockStatement",
+                  "declarations": [],
+                  "references": [
+                    {
+                      "name": "j",
+                      "declaredAt": "Program > ForStatement > BlockStatement > ForStatement"
+                    },
+                    {
+                      "name": "i",
+                      "declaredAt": "Program > ForStatement"
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

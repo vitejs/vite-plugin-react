@@ -14,6 +14,7 @@ export const reactCompilerPreset = (
   }),
   rolldown: {
     filter: {
+      // should be lax than https://github.com/facebook/react/blob/9c0323e2cf9be543d6eaa44419598af56922603f/compiler/packages/babel-plugin-react-compiler/src/Entrypoint/Program.ts#L842-L863
       code:
         options.compilationMode === 'annotation'
           ? /['"]use memo['"]/

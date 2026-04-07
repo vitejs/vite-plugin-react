@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "declarations": [
+    "Foo"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

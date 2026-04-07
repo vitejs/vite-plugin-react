@@ -1,0 +1,29 @@
+{
+  "type": "Program",
+  "declarations": [
+    "f"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionExpression:self",
+      "declarations": [
+        "self"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "self",
+              "declaredAt": "Program > FunctionExpression:self"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

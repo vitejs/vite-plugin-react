@@ -1,7 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Node, Program } from 'estree'
+import type { Program } from 'estree'
 import MagicString from 'magic-string'
-import { extract_names } from 'periscopic'
+import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
   declName?: string
@@ -83,21 +83,6 @@ export function transformWrapExport(
     )
   }
 
-  function validateNonAsyncFunction(node: Node) {
-    if (!options.rejectNonAsyncFunction) return
-    if (
-      node.type === 'ClassDeclaration' ||
-      ((node.type === 'FunctionDeclaration' ||
-        node.type === 'FunctionExpression' ||
-        node.type === 'ArrowFunctionExpression') &&
-        !node.async)
-    ) {
-      throw Object.assign(new Error(`unsupported non async function`), {
-        pos: node.start,
-      })
-    }
-  }
-
   for (const node of ast.body) {
     // named exports
     if (node.type === 'ExportNamedDeclaration') {
@@ -109,7 +94,7 @@ export function transformWrapExport(
           /**
            * export function foo() {}
            */
-          validateNonAsyncFunction(node.declaration)
+          validateNonAsyncFunction(options, node.declaration)
           const name = node.declaration.id.name
           wrapSimple(node.start, node.declaration.start, [
             { name, meta: { isFunction: true, declName: name } },
@@ -120,7 +105,7 @@ export function transformWrapExport(
            */
           for (const decl of node.declaration.declarations) {
             if (decl.init) {
-              validateNonAsyncFunction(decl.init)
+              validateNonAsyncFunction(options, decl.init)
             }
           }
           if (node.declaration.kind === 'const') {
@@ -131,7 +116,7 @@ export function transformWrapExport(
             )
           }
           const names = node.declaration.declarations.flatMap((decl) =>
-            extract_names(decl.id),
+            extractNames(decl.id),
           )
           // treat only simple single decl as function
           let isFunction = false
@@ -203,7 +188,7 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(node.declaration as Node)
+      validateNonAsyncFunction(options, node.declaration)
       let localName: string
       let isFunction = false
       let declName: string | undefined

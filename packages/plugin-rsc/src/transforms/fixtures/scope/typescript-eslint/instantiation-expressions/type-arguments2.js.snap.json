@@ -1,0 +1,35 @@
+{
+  "type": "Program",
+  "declarations": [
+    "makeBox",
+    "makeStringBox"
+  ],
+  "references": [
+    {
+      "name": "makeBox",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionDeclaration:makeBox",
+      "declarations": [
+        "value"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "value",
+              "declaredAt": "Program > FunctionDeclaration:makeBox"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

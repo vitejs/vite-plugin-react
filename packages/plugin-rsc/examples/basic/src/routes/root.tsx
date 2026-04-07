@@ -6,6 +6,7 @@ import {
   TestServerActionBindClient,
   TestServerActionBindReset,
   TestServerActionBindSimple,
+  TestServerActionBindMember,
 } from './action-bind/server'
 import { TestServerActionError } from './action-error/server'
 import {
@@ -105,6 +106,7 @@ export function Root(props: { url: URL }) {
         <TestServerActionBindSimple />
         <TestServerActionBindClient />
         <TestServerActionBindAction />
+        <TestServerActionBindMember />
         <TestSerializationServer />
         <TestClientInServer />
         <TestServerInServer />

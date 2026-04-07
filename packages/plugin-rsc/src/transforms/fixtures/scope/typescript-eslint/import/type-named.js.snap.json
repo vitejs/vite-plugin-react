@@ -1,0 +1,13 @@
+{
+  "type": "Program",
+  "declarations": [
+    "unresolved"
+  ],
+  "references": [
+    {
+      "name": "T",
+      "declaredAt": null
+    }
+  ],
+  "children": []
+}

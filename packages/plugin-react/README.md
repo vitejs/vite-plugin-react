@@ -79,10 +79,16 @@ Under the hood, this simply updates the React Fash Refresh runtime URL from `/@r
 
 ## React Compiler
 
-[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) as peer dependencies:
+[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
 
 ```sh
-npm install -D @rolldown/plugin-babel babel-plugin-react-compiler
+npm install -D @rolldown/plugin-babel @babel/core babel-plugin-react-compiler
+```
+
+If you are using TypeScript, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
+
+```sh
+npm install -D @types/babel__core
 ```
 
 ```js
@@ -106,6 +112,19 @@ babel({
   presets: [reactCompilerPreset({ compilationMode: 'annotation' })],
 })
 ```
+
+> [!TIP]
+>
+> `reactCompilerPreset` is only a convenient helper with a preconfigured filter. You can configure override the filters to fit your project structure or code. For example, if you know a large portion of your files are never React/hook-related or won't benefit from the React Compiler, you can aggressively exclude them via `rolldown.filter`:
+>
+> ```js
+> const myPreset = reactCompilerPreset()
+> myPreset.rolldown.filter.id.exclude = ['src/legacy/**', 'src/utils/**']
+>
+> babel({
+>   presets: [myPreset],
+> })
+> ```
 
 ## `@vitejs/plugin-react/preamble`
 
@@ -145,4 +164,4 @@ For React refresh to work correctly, your file should only export React componen
 
 If an incompatible change in exports is found, the module will be invalidated and HMR will propagate. To make it easier to export simple constants alongside your component, the module is only invalidated when their value changes.
 
-You can catch mistakes and get more detailed warning with this [eslint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh).
+You can catch mistakes and get more detailed warnings with this [ESLint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh), or the equivalent [Oxlint rule](https://oxc.rs/docs/guide/usage/linter/rules/react/only-export-components.html).

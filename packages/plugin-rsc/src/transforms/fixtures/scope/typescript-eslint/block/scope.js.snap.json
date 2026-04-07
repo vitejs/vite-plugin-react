@@ -1,0 +1,26 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [
+    {
+      "name": "j",
+      "declaredAt": null
+    }
+  ],
+  "children": [
+    {
+      "type": "BlockStatement",
+      "declarations": [
+        "i",
+        "j"
+      ],
+      "references": [
+        {
+          "name": "i",
+          "declaredAt": "Program > BlockStatement"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

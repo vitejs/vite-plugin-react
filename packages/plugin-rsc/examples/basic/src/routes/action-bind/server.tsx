@@ -10,6 +10,7 @@ export function TestServerActionBindReset() {
       action={async () => {
         'use server'
         testServerActionBindSimpleState = '[?]'
+        testServerActionBindMemberState = '[?]'
         testServerActionBindActionState = '[?]'
         testServerActionBindClientState++
       }}
@@ -90,6 +91,31 @@ export function TestServerActionBindAction() {
       <button type="submit">test-server-action-bind-action</button>
       <span data-testid="test-server-action-bind-action">
         {testServerActionBindActionState}
+      </span>
+    </form>
+  )
+}
+
+let testServerActionBindMemberState = '[?]'
+
+export function TestServerActionBindMember() {
+  const x = {
+    y: {
+      z: 1234,
+    },
+    invalid: () => {},
+  }
+
+  return (
+    <form
+      action={async () => {
+        'use server'
+        testServerActionBindMemberState = JSON.stringify(x.y.z === 1234)
+      }}
+    >
+      <button type="submit">test-server-action-bind-member</button>
+      <span data-testid="test-server-action-bind-member">
+        {testServerActionBindMemberState}
       </span>
     </form>
   )

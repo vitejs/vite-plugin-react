@@ -1,0 +1,20 @@
+{
+  "type": "Program",
+  "declarations": [],
+  "references": [],
+  "children": [
+    {
+      "type": "ArrowFunction",
+      "declarations": [
+        "a"
+      ],
+      "references": [
+        {
+          "name": "a",
+          "declaredAt": "Program > ArrowFunction"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

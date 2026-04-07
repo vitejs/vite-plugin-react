@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": ["src", "*.ts", "types"],
+  "include": ["src", "*.ts", "types", "scripts"],
   "compilerOptions": {
     "noPropertyAccessFromIndexSignature": false,
     "noImplicitReturns": false,
