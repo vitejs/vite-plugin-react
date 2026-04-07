@@ -1404,6 +1404,33 @@ function defineTest(f: Fixture) {
       .click()
   }
 
+  test('action bind member @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await using _ = await expectNoReload(page)
+    await testActionBindMember(page)
+  })
+
+  testNoJs('action bind member @nojs', async ({ page }) => {
+    await page.goto(f.url())
+    await testActionBindMember(page)
+  })
+
+  async function testActionBindMember(page: Page) {
+    await expect(page.getByTestId('test-server-action-bind-member')).toHaveText(
+      '[?]',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-member' })
+      .click()
+    await expect(page.getByTestId('test-server-action-bind-member')).toHaveText(
+      'true',
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-bind-reset' })
+      .click()
+  }
+
   test('action bind client @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

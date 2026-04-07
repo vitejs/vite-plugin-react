@@ -1,0 +1,39 @@
+{
+  "type": "Program",
+  "declarations": [
+    "f"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionDeclaration:f",
+      "declarations": [
+        "a",
+        "b"
+      ],
+      "references": [
+        {
+          "name": "ext",
+          "declaredAt": null
+        },
+        {
+          "name": "a",
+          "declaredAt": "Program > FunctionDeclaration:f"
+        }
+      ],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "b",
+              "declaredAt": "Program > FunctionDeclaration:f"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

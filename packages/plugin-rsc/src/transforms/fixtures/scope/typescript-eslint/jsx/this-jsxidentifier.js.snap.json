@@ -1,0 +1,65 @@
+{
+  "type": "Program",
+  "declarations": [
+    "Foo",
+    "_jsx"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "FunctionExpression",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": [
+            {
+              "type": "ArrowFunction",
+              "declarations": [],
+              "references": [
+                {
+                  "name": "_jsx",
+                  "declaredAt": "Program"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FunctionExpression[2]",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "_jsx",
+              "declaredAt": "Program"
+            },
+            {
+              "name": "_jsx",
+              "declaredAt": "Program"
+            },
+            {
+              "name": "Div",
+              "declaredAt": null
+            },
+            {
+              "name": "_jsx",
+              "declaredAt": "Program"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

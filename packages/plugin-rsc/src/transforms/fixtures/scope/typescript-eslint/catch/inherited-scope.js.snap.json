@@ -1,0 +1,35 @@
+{
+  "type": "Program",
+  "declarations": [
+    "a"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "BlockStatement",
+      "declarations": [],
+      "references": [],
+      "children": []
+    },
+    {
+      "type": "CatchClause",
+      "declarations": [
+        "e"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [
+            {
+              "name": "a",
+              "declaredAt": "Program"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

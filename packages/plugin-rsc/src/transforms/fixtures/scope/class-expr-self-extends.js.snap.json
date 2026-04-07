@@ -1,0 +1,22 @@
+{
+  "type": "Program",
+  "declarations": [
+    "C"
+  ],
+  "references": [],
+  "children": [
+    {
+      "type": "ClassExpression:Self",
+      "declarations": [
+        "Self"
+      ],
+      "references": [
+        {
+          "name": "Self",
+          "declaredAt": "Program > ClassExpression:Self"
+        }
+      ],
+      "children": []
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "Program",
+  "declarations": [
+    "StyledPayment",
+    "div"
+  ],
+  "references": [
+    {
+      "name": "div",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionDeclaration:div",
+      "declarations": [
+        "arg"
+      ],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}
