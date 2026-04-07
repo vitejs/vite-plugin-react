@@ -6,8 +6,24 @@ describe('defaultCodeFilter', () => {
     directive: ['"use memo";', true],
 
     'component declaration': ['function App() { return <></> }', true],
+    'component declaration with types': [
+      'function App(): Type { return <></> }',
+      true,
+    ],
     'component arrow expression': [
       'const MyComponent = () => { return <></> }',
+      true,
+    ],
+    'component arrow expression with types (1)': [
+      'const MyComponent = (): Type => { return <></> }',
+      true,
+    ],
+    'component arrow expression with types (2)': [
+      'const MyComponent: Type = () => { return <></> }',
+      true,
+    ],
+    'component arrow expression with types (3)': [
+      'const MyComponent: SomeComplexType<Generic, number> = () => { return <></> }',
       true,
     ],
     'component arrow expressions': [
@@ -22,6 +38,18 @@ describe('defaultCodeFilter', () => {
       'const MyComponent = function() { return <></> }',
       true,
     ],
+    'component function expression with types (1)': [
+      'const MyComponent = function(): Type { return <></> }',
+      true,
+    ],
+    'component function expression with types (2)': [
+      'const MyComponent: Type = function() { return <></> }',
+      true,
+    ],
+    'component function expression with types (3)': [
+      'const MyComponent: SomeComplexType<Generic, number> = function() { return <></> }',
+      true,
+    ],
     'component function expression (let)': [
       'let MyComponent = function() { return <></> }',
       true,
@@ -32,6 +60,10 @@ describe('defaultCodeFilter', () => {
     ],
     'exported component declaration': [
       'export default function Page() { return <></> }',
+      true,
+    ],
+    'exported component declaration with types': [
+      'export default function Page(): Type { return <></> }',
       true,
     ],
     'component assignment': [
