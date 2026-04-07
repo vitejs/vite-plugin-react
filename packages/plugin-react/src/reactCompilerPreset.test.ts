@@ -46,7 +46,11 @@ describe('defaultCodeFilter', () => {
       'let MyComponent; ({ MyComponent = function() { return <></> } }) = {}',
       true,
     ],
-    'component property': [
+    'component property function expression': [
+      'const components = { MyComponent: function() { return <></> } }',
+      true,
+    ],
+    'component property arrow function expression': [
       'const components = { MyComponent: () => <></> }',
       true,
     ],
@@ -118,6 +122,8 @@ export default memo(() => {
     'non assignments (2)': ['[useState][0]()', false],
     'non assignments (3)': ['useState;s()', false],
     'non assignments (4)': ['useState,s()', false],
+    'object without methods (1)': ['const obj = { useState: 1 }', false],
+    'object without methods (2)': ['const obj = { Foo: 1 }', false],
   }
 
   for (const [name, [code, expected]] of Object.entries(cases)) {
