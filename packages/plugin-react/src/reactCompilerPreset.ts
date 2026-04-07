@@ -4,7 +4,7 @@ import type {
 } from '#optionalTypes'
 
 export const defaultCodeFilter =
-  /forwardRef|memo|function\s+(?:[A-Z]|use[A-Z0-9])|(?:[A-Z]|use[A-Z0-9])\S*\s*[:=(]/
+  /forwardRef|memo|function\s+(?:[A-Z]|use[A-Z0-9])|(?:[A-Z]|use[A-Z0-9])[^\s:=(){}[\],;]*\s*[:=(]/
 
 export const reactCompilerPreset = (
   options: Pick<

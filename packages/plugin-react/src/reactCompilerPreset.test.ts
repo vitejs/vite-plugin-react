@@ -114,6 +114,10 @@ export default memo(() => {
     'simple variable': ['const foo = 1', false],
     'lowercase function': ['function bar() {}', false],
     'lowercase arrow function': ['let baz = () => {}', false],
+    'non assignments (1)': ['(0,useState)()', false],
+    'non assignments (2)': ['[useState][0]()', false],
+    'non assignments (3)': ['useState;s()', false],
+    'non assignments (4)': ['useState,s()', false],
   }
 
   for (const [name, [code, expected]] of Object.entries(cases)) {
