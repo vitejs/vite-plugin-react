@@ -39,7 +39,7 @@ function rgbToHex(rgb: string): string {
 
 async function toEl(el: string | ElementHandle): Promise<ElementHandle> {
   if (typeof el === 'string') {
-    return await page.$(el)
+    return (await page.$(el))!
   }
   return el
 }
@@ -117,14 +117,9 @@ async function untilBrowserLog(
   target?: string | RegExp | Array<string | RegExp>,
   expectOrder = true,
 ): Promise<string[]> {
-  let resolve: () => void
-  let reject: (reason: any) => void
-  const promise = new Promise<void>((_resolve, _reject) => {
-    resolve = _resolve
-    reject = _reject
-  })
+  const { promise, resolve, reject } = promiseWithResolvers<void>()
 
-  const logs = []
+  const logs: string[] = []
 
   try {
     const isMatch = (matcher: string | RegExp) => (text: string) =>
@@ -139,6 +134,9 @@ async function untilBrowserLog(
         const remainingTargets = [...target]
         processMsg = (text: string) => {
           const nextTarget = remainingTargets.shift()
+          if (!nextTarget) {
+            expect.fail('Received more logs than expected. Extra log: ' + text)
+          }
           expect(text).toMatch(nextTarget)
           return remainingTargets.length === 0
         }
@@ -184,6 +182,22 @@ async function untilBrowserLog(
 const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g
 export function escapeRegex(str: string): string {
   return str.replace(escapeRegexRE, '\\$&')
+}
+
+// TODO: Replace with Promise.withResolvers when bumping to Node 22
+export interface PromiseWithResolvers<T> {
+  promise: Promise<T>
+  resolve: (value: T | PromiseLike<T>) => void
+  reject: (reason?: any) => void
+}
+export function promiseWithResolvers<T>(): PromiseWithResolvers<T> {
+  let resolve: any
+  let reject: any
+  const promise = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve
+    reject = _reject
+  })
+  return { promise, resolve, reject }
 }
 
 /**

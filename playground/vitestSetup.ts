@@ -81,9 +81,10 @@ export function setViteUrl(url: string): void {
 // eslint-disable-next-line no-empty-pattern
 beforeAll(async ({}, suite) => {
   testPath = suite.file.filepath!
-  testName = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
+  const playgroundDir = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]
   testDir = dirname(testPath)
-  if (testName) {
+  if (playgroundDir) {
+    testName = playgroundDir
     testDir = path.resolve(workspaceRoot, 'playground-temp', testName)
   }
 
@@ -231,7 +232,7 @@ export async function startDefaultServe(): Promise<void> {
     const config = await loadConfig({ command: 'serve', mode: 'development' })
     viteServer = server = await (await createServer(config)).listen()
     viteTestUrl = stripTrailingSlashIfNeeded(
-      server.resolvedUrls.local[0],
+      server.resolvedUrls!.local[0],
       server.config.base,
     )
     await page.goto(viteTestUrl)
@@ -277,7 +278,7 @@ export async function startDefaultServe(): Promise<void> {
     // prevent preview change NODE_ENV
     process.env.NODE_ENV = _nodeEnv
     viteTestUrl = stripTrailingSlashIfNeeded(
-      previewServer.resolvedUrls.local[0],
+      previewServer.resolvedUrls!.local[0],
       previewServer.config.base,
     )
     await page.goto(viteTestUrl)

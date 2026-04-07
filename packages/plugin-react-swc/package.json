@@ -40,7 +40,7 @@
     "fs-extra": "^11.3.4",
     "prettier": "^3.0.3",
     "tsdown": "^0.21.7",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "peerDependencies": {
     "vite": "^4 || ^5 || ^6 || ^7 || ^8"
