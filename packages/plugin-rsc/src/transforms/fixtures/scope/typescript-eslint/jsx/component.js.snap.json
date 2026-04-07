@@ -1,0 +1,32 @@
+{
+  "type": "Program",
+  "declarations": [
+    "Foo",
+    "_jsx"
+  ],
+  "references": [
+    {
+      "name": "_jsx",
+      "declaredAt": "Program"
+    },
+    {
+      "name": "Foo",
+      "declaredAt": "Program"
+    }
+  ],
+  "children": [
+    {
+      "type": "FunctionDeclaration:Foo",
+      "declarations": [],
+      "references": [],
+      "children": [
+        {
+          "type": "BlockStatement",
+          "declarations": [],
+          "references": [],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

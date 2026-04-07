@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Program, Node } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { analyze } from 'periscopic'
+import { buildScopeTree } from './scope'
 
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.
@@ -33,7 +33,7 @@ export function transformCjsToEsm(
   options: { id: string },
 ): { output: MagicString } {
   const output = new MagicString(code)
-  const analyzed = analyze(ast)
+  const scopeTree = buildScopeTree(ast)
 
   const parentNodes: Node[] = []
   const hoistedCodes: string[] = []
@@ -58,8 +58,8 @@ export function transformCjsToEsm(
             isTopLevel = false
           }
           // skip locally declared `require`
-          const scope = analyzed.map.get(parent)
-          if (scope && scope.declarations.has('require')) {
+          const scope = scopeTree.nodeScope.get(parent)
+          if (scope?.declarations.has('require')) {
             return
           }
         }
