@@ -3,6 +3,9 @@ import type {
   RolldownBabelPreset,
 } from '#optionalTypes'
 
+export const defaultCodeFilter =
+  /forwardRef|memo|function\s+(?:[A-Z]|use[A-Z0-9])|(?:[A-Z]|use[A-Z0-9])\S*\s*[:=(]/
+
 export const reactCompilerPreset = (
   options: Pick<
     ReactCompilerBabelPluginOptions,
@@ -18,7 +21,7 @@ export const reactCompilerPreset = (
       code:
         options.compilationMode === 'annotation'
           ? /['"]use memo['"]/
-          : /\b[A-Z]|\buse[A-Z0-9]/,
+          : defaultCodeFilter,
     },
     applyToEnvironmentHook: (env) => env.config.consumer === 'client',
     optimizeDeps: {
