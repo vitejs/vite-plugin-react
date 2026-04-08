@@ -4300,7 +4300,7 @@ packages:
   test-package@file:playground/include-node-modules/test-package:
     resolution: {directory: playground/include-node-modules/test-package, type: directory}
     peerDependencies:
-      react: ^19.2.4
+      react: ^19.2.5
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
