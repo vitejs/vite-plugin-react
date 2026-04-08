@@ -6,12 +6,7 @@ const nextH2RE = /^## /gm
 
 release({
   repo: 'vite-plugin-react',
-  packages: [
-    'plugin-react',
-    'plugin-react-swc',
-    'plugin-react-oxc',
-    'plugin-rsc',
-  ],
+  packages: ['plugin-react', 'plugin-react-swc', 'plugin-rsc'],
   getPkgDir(pkg) {
     if (pkg === 'plugin-react-swc') {
       return `packages/${pkg}/dist`
