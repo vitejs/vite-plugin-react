@@ -1,3 +1,18 @@
+## <small>[0.5.23](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.22...plugin-rsc@0.5.23) (2026-04-08)</small>
+### Bug Fixes
+
+* **deps:** update react 19.2.5 ([#1181](https://github.com/vitejs/vite-plugin-react/issues/1181)) ([4b9c890](https://github.com/vitejs/vite-plugin-react/commit/4b9c890cdb21078ac45a86873b24f7e8613b8526))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency typescript to v6 ([#1174](https://github.com/vitejs/vite-plugin-react/issues/1174)) ([a180385](https://github.com/vitejs/vite-plugin-react/commit/a180385d9aae372052b3f1626e9cc0fbedb64616))
+* **rsc:** fix misleading changelog ([#1177](https://github.com/vitejs/vite-plugin-react/issues/1177)) ([8bd768c](https://github.com/vitejs/vite-plugin-react/commit/8bd768c6c5d7b0370b2778c3d1653375058e4ba0))
+
+### Tests
+
+* **rsc:** add hoist fixture coverage ([#1175](https://github.com/vitejs/vite-plugin-react/issues/1175)) ([4468e46](https://github.com/vitejs/vite-plugin-react/commit/4468e4639e145b985eb132343539846c331ebb7b))
+* **rsc:** e2e for server action closure member binding ([#1178](https://github.com/vitejs/vite-plugin-react/issues/1178)) ([7ebccc5](https://github.com/vitejs/vite-plugin-react/commit/7ebccc598483679f5e9c125729d2b1aa046de489))
+
 ## <small>[0.5.22](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.21...plugin-rsc@0.5.22) (2026-04-06)</small>
 
 ### Features
