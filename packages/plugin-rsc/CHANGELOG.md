@@ -1,3 +1,9 @@
+## <small>[0.5.24](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.23...plugin-rsc@0.5.24) (2026-04-13)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1184](https://github.com/vitejs/vite-plugin-react/issues/1184)) ([02cff2a](https://github.com/vitejs/vite-plugin-react/commit/02cff2a0cf5c7e9792b1612baa380228f5e4d3c1))
+* **rsc:** preserve `*` for generators ([#1183](https://github.com/vitejs/vite-plugin-react/issues/1183)) ([0df3060](https://github.com/vitejs/vite-plugin-react/commit/0df3060cf611ef8d0e45ce003652c2b80dc46174))
+
 ## <small>[0.5.23](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.22...plugin-rsc@0.5.23) (2026-04-08)</small>
 ### Bug Fixes
 
