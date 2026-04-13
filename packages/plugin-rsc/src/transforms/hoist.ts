@@ -100,7 +100,7 @@ export function transformHoistInlineDirective(
           node.body.start,
           `\n;${options.noExport ? '' : 'export '}${
             node.async ? 'async ' : ''
-          }function ${newName}(${newParams}) `,
+          }function${node.generator ? '*' : ''} ${newName}(${newParams}) `,
         )
         output.appendLeft(
           node.end,
