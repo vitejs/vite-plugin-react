@@ -9,7 +9,8 @@ import { TestNestedRscInner } from './inner'
 // whose module lives only in the `rsc` environment is rendered through
 // a nested Flight stream and embedded back into the outer tree.
 export function TestNestedRsc() {
-  const stream = renderToReadableStream(<TestNestedRscInner />)
-  const deserialized = createFromReadableStream<React.ReactNode>(stream)
+  const original = <TestNestedRscInner />
+  const stream = renderToReadableStream(original)
+  const deserialized = createFromReadableStream<typeof original>(stream)
   return <div>test-nested-rsc:{deserialized}</div>
 }
