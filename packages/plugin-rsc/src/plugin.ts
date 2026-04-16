@@ -1065,93 +1065,117 @@ export function createRpcClient(params) {
         },
       },
       // client build
-      generateBundle(_options, bundle) {
-        // copy assets from rsc build to client build
-        manager.bundles[this.environment.name] = bundle
+      generateBundle: {
+        // run after vite's css plugin emits the consolidated stylesheet
+        // (relevant when `build.cssCodeSplit: false`).
+        order: 'post',
+        handler(_options, bundle) {
+          // copy assets from rsc build to client build
+          manager.bundles[this.environment.name] = bundle
 
-        if (this.environment.name === 'client') {
-          const rscBundle = manager.bundles['rsc']!
-          const assets = new Set(
-            Object.values(rscBundle).flatMap((output) =>
-              output.type === 'chunk'
-                ? [
-                    ...(output.viteMetadata?.importedCss ?? []),
-                    ...(output.viteMetadata?.importedAssets ?? []),
-                  ]
-                : [],
-            ),
-          )
-          for (const fileName of assets) {
-            const asset = rscBundle[fileName]
-            assert(asset?.type === 'asset')
-            this.emitFile({
-              type: 'asset',
-              fileName: asset.fileName,
-              source: asset.source,
-            })
-          }
+          if (this.environment.name === 'client') {
+            const rscBundle = manager.bundles['rsc']!
+            const assets = new Set(
+              Object.values(rscBundle).flatMap((output) =>
+                output.type === 'chunk'
+                  ? [
+                      ...(output.viteMetadata?.importedCss ?? []),
+                      ...(output.viteMetadata?.importedAssets ?? []),
+                    ]
+                  : [],
+              ),
+            )
+            // when the rsc environment has `cssCodeSplit: false`, Vite emits a
+            // single bundled CSS asset and chunks carry no `importedCss` metadata.
+            // Pick the bundled CSS asset(s) directly so they get copied and
+            // referenced by server resources.
+            const rscCssCodeSplit =
+              manager.config.environments.rsc?.build.cssCodeSplit
+            const rscBundledCssFileNames =
+              rscCssCodeSplit === false
+                ? collectBundledCssAssetFileNames(rscBundle)
+                : []
+            for (const fileName of rscBundledCssFileNames) {
+              assets.add(fileName)
+            }
+            for (const fileName of assets) {
+              const asset = rscBundle[fileName]
+              assert(asset?.type === 'asset')
+              this.emitFile({
+                type: 'asset',
+                fileName: asset.fileName,
+                source: asset.source,
+              })
+            }
 
-          const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(manager.bundles['rsc']!)
-          for (const [id, meta] of Object.entries(
-            manager.serverResourcesMetaMap,
-          )) {
-            serverResources[meta.key] = assetsURLOfDeps(
-              {
+            const serverResources: Record<string, AssetDeps> = {}
+            const rscAssetDeps = collectAssetDeps(manager.bundles['rsc']!)
+            for (const [id, meta] of Object.entries(
+              manager.serverResourcesMetaMap,
+            )) {
+              const cssDeps = new Set(rscAssetDeps[id]?.deps.css ?? [])
+              if (rscCssCodeSplit === false) {
+                for (const fileName of rscBundledCssFileNames) {
+                  cssDeps.add(fileName)
+                }
+              }
+              serverResources[meta.key] = assetsURLOfDeps(
+                {
+                  js: [],
+                  css: [...cssDeps],
+                },
+                manager,
+              )
+            }
+
+            const assetDeps = collectAssetDeps(bundle)
+            let bootstrapScriptContent: string | RuntimeAsset = ''
+
+            const clientReferenceDeps: Record<string, AssetDeps> = {}
+            for (const meta of Object.values(manager.clientReferenceMetaMap)) {
+              const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
                 js: [],
-                css: rscAssetDeps[id]?.deps.css ?? [],
-              },
-              manager,
-            )
-          }
-
-          const assetDeps = collectAssetDeps(bundle)
-          let bootstrapScriptContent: string | RuntimeAsset = ''
-
-          const clientReferenceDeps: Record<string, AssetDeps> = {}
-          for (const meta of Object.values(manager.clientReferenceMetaMap)) {
-            const deps: AssetDeps = assetDeps[meta.groupChunkId!]?.deps ?? {
-              js: [],
-              css: [],
-            }
-            clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
-              deps,
-              manager,
-            )
-          }
-
-          // When customClientEntry is enabled, don't require "index" entry
-          // and don't merge entry deps into client references
-          if (!rscPluginOptions.customClientEntry) {
-            const entry = Object.values(assetDeps).find(
-              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
-            )
-            if (!entry) {
-              throw new Error(
-                `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
+                css: [],
+              }
+              clientReferenceDeps[meta.referenceKey] = assetsURLOfDeps(
+                deps,
+                manager,
               )
             }
-            const entryDeps = assetsURLOfDeps(entry.deps, manager)
-            for (const [key, deps] of Object.entries(clientReferenceDeps)) {
-              clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
-            }
-            const entryUrl = assetsURL(entry.chunk.fileName, manager)
-            if (typeof entryUrl === 'string') {
-              bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
-            } else {
-              bootstrapScriptContent = new RuntimeAsset(
-                `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
-              )
-            }
-          }
 
-          manager.buildAssetsManifest = {
-            bootstrapScriptContent,
-            clientReferenceDeps,
-            serverResources,
-            cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+            // When customClientEntry is enabled, don't require "index" entry
+            // and don't merge entry deps into client references
+            if (!rscPluginOptions.customClientEntry) {
+              const entry = Object.values(assetDeps).find(
+                (v) => v.chunk.name === 'index' && v.chunk.isEntry,
+              )
+              if (!entry) {
+                throw new Error(
+                  `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
+                )
+              }
+              const entryDeps = assetsURLOfDeps(entry.deps, manager)
+              for (const [key, deps] of Object.entries(clientReferenceDeps)) {
+                clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
+              }
+              const entryUrl = assetsURL(entry.chunk.fileName, manager)
+              if (typeof entryUrl === 'string') {
+                bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
+              } else {
+                bootstrapScriptContent = new RuntimeAsset(
+                  `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
+                )
+              }
+            }
+
+            manager.buildAssetsManifest = {
+              bootstrapScriptContent,
+              clientReferenceDeps,
+              serverResources,
+              cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
+            }
           }
-        }
+        },
       },
       // non-client builds can load assets manifest as external
       renderChunk(code, chunk) {
@@ -2170,6 +2194,18 @@ function collectAssetDepsInner(
     js: [...visited],
     css: [...new Set(css)],
   }
+}
+
+function collectBundledCssAssetFileNames(
+  bundle: Rollup.OutputBundle,
+): string[] {
+  return Object.values(bundle)
+    .filter(
+      (output): output is Rollup.OutputAsset =>
+        output.type === 'asset' &&
+        output.originalFileNames?.includes('style.css'),
+    )
+    .map((output) => output.fileName)
 }
 
 //
