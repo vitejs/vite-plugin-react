@@ -2,36 +2,26 @@ import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
 import { expectNoReload, waitForHydration } from './helper'
 
-// Reproduces an HMR bug affecting server components whose modules live
-// exclusively in the `rsc` environment and are rendered through a nested
-// Flight stream (`renderToReadableStream` + `createFromReadableStream`),
-// the pattern used by frameworks like TanStack Start's `createServerFn` +
+// Verifies CSS HMR for server components whose modules live exclusively
+// in the `rsc` environment and are rendered through a nested Flight
+// stream (`renderToReadableStream` + `createFromReadableStream`) — the
+// pattern used by frameworks like TanStack Start's `createServerFn` +
 // `renderServerComponent`.
 //
 // The fixture sets `cssLinkPrecedence: false` (matching TanStack Start's
-// config) so plugin-rsc's emitted `<link>` has no `precedence` attribute,
-// disabling React 19's resource-manager dedup/swap path that would
-// otherwise paper over the underlying bugs.
+// config) so plugin-rsc's emitted `<link>` has no `precedence` attribute
+// and React 19's resource-manager dedup/swap path is not in play. This
+// is the configuration where the underlying CSS-HMR issues surface;
+// under the default (`true`) path Vite's client CSS HMR + Float
+// dedup papers over them.
 //
-// Expected failures on current `main` (both tied to plugin-rsc's dev-mode
-// CSS pipeline):
-//   1. `normalizeViteImportAnalysisUrl` gates the `?t=<HMRTimestamp>`
-//      cache-buster on `environment.config.consumer === 'client'`, so
-//      CSS hrefs emitted into the Flight stream from the `rsc` env
-//      (consumer: 'server') never get cache-busted.
-//   2. `hotUpdate` in plugin-rsc does not invalidate importers of a
-//      changed CSS file in the `rsc` module graph, so the derived
-//      `\0virtual:vite-rsc/css?type=rsc&id=…` virtual keeps emitting
-//      the same stale href on re-render.
-//
-// The test edits the CSS file twice in the same dev session (change
-// color, then revert). This matters because the reporter's proposed
-// two-line patch fixes the **first** CSS edit after dev-server start
-// but not subsequent edits in the same session — the `?t=` fix lands
-// once, the virtual's `load` re-runs once (via some transitive Vite
-// invalidation), and then on the second CSS change `mod.importers` no
-// longer carries what's needed to re-invalidate the virtual. Asserting
-// after the revert catches that the fix is incomplete.
+// The test performs a round-trip edit (change color, then revert) in the
+// same dev session. The revert is load-bearing: a naive fix can make the
+// first edit land while leaving every subsequent edit silently stuck on
+// the previous value (Vite's client CSS HMR hangs its `Promise.all` when
+// it races React's reconciliation of the RSC-owned `<link>`, which
+// blocks every later WebSocket message including the next `rsc:update`).
+// Asserting after the revert catches that regression class.
 
 test.describe('nested-rsc-css-hmr', () => {
   const f = useFixture({
