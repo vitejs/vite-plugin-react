@@ -50,4 +50,81 @@ test.describe('nested-rsc-css-hmr', () => {
       'rgb(255, 165, 0)',
     )
   })
+
+  // Verifies that *removing* a CSS rule (not just changing its value) takes
+  // effect across HMR edits. Because plugin-rsc's HMR fix appends a
+  // `?t=<ts>` cache-buster to the emitted `<link href>` on every RSC
+  // re-render, each edit produces a `<link>` with a new href. This test
+  // asserts two things that a value-only edit can't catch:
+  //
+  // 1. The previous `<link>` is actually unmounted by React on each edit
+  //    (no DOM accumulation). If old `<link>` nodes lingered — as happens
+  //    when React 19 Float manages them by precedence and dedupes by href
+  //    rather than by intent — a deleted property would still cascade from
+  //    the stale stylesheet and the change would be silently lost.
+  // 2. Commenting out the `color` rule actually falls back to the UA
+  //    default (`rgb(0, 0, 0)`), which exercises the unmount path end to
+  //    end (browser drops the old sheet, no rule applies anymore).
+  //
+  // The link-count assertion uses `[data-rsc-css-href]` so it only counts
+  // RSC-emitted stylesheets for `inner.css` and ignores other links Vite
+  // or React may inject (HMR client style tags, preload hints, etc).
+  //
+  // Note: in this fixture two `<link>`s for `inner.css` exist on initial
+  // load — one from the outer Root tree's `collectCss`, one from the
+  // nested Flight stream's own `collectCss`. The accumulation bug we want
+  // to catch is "count grows per edit" (yak-style), so we capture the
+  // initial count and assert it stays equal across edits — not that it
+  // equals 1.
+  test('round-trip with property removal does not leave stale link', async ({
+    page,
+  }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.locator('.test-nested-rsc-inner')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+
+    const innerLinks = page.locator(
+      'link[rel="stylesheet"][data-rsc-css-href*="inner.css"]',
+    )
+    const initialLinkCount = await innerLinks.count()
+    expect(initialLinkCount).toBeGreaterThan(0)
+
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/nested-rsc/inner.css')
+
+    // Edit 1: change value
+    editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+    await expect(page.locator('.test-nested-rsc-inner')).toHaveCSS(
+      'color',
+      'rgb(0, 165, 255)',
+    )
+    await expect(innerLinks).toHaveCount(initialLinkCount)
+
+    // Edit 2: remove the rule — color must fall back to the inherited
+    // value (`:root { color: #213547 }` from `index.css`, light scheme =
+    // rgb(33, 53, 71)). If any old `<link>` for `inner.css` were still
+    // attached, the cascade would keep the blue.
+    editor.edit((s) =>
+      s.replaceAll(
+        'color: rgb(0, 165, 255);',
+        '/* color: rgb(0, 165, 255); */',
+      ),
+    )
+    await expect(page.locator('.test-nested-rsc-inner')).toHaveCSS(
+      'color',
+      'rgb(33, 53, 71)',
+    )
+    await expect(innerLinks).toHaveCount(initialLinkCount)
+
+    // Edit 3: revert — back to original orange.
+    editor.reset()
+    await expect(page.locator('.test-nested-rsc-inner')).toHaveCSS(
+      'color',
+      'rgb(255, 165, 0)',
+    )
+    await expect(innerLinks).toHaveCount(initialLinkCount)
+  })
 })
