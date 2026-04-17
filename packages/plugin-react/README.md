@@ -107,6 +107,8 @@ The `reactCompilerPreset` accepts an optional options object with the following 
 - `compilationMode` — Set to `'annotation'` to only compile components annotated with `"use memo"`.
 - `target` — Set to `'17'` or `'18'` to target older React versions (uses `react-compiler-runtime` instead of `react/compiler-runtime`).
 
+Additional options can be found in the [documentation](https://react.dev/reference/react-compiler/configuration).
+
 ```js
 babel({
   presets: [reactCompilerPreset({ compilationMode: 'annotation' })],
