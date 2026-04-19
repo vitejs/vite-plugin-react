@@ -723,50 +723,41 @@ export default function vitePluginRsc(
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
-            // With the default (`cssLinkPrecedence: true`) setup Vite's default
-            // client CSS HMR handles the swap already
+            // Default (cssLinkPrecedence: true) — Vite's client CSS HMR
+            // already handles the swap
             if (rscPluginOptions.cssLinkPrecedence !== false) return
 
-            // Only relevant when this CSS is reachable from the RSC
-            // module graph — otherwise Vite's default CSS HMR applies
+            // Only relevant when CSS is reachable from the RSC graph —
+            // otherwise Vite's default client CSS HMR applies
             const rscMod =
               ctx.server.environments.rsc?.moduleGraph.getModuleById(ctx.file)
             if (!rscMod) return
 
-            // If the CSS also has a client-side JS importer, Vite's
-            // default client CSS HMR is still needed to update the
-            // non-RSC usages — only skip it when the CSS is RSC-only
-            const hasClientJsImporter = ctx.modules.some((mod) =>
-              [...mod.importers].some((imp) => imp.id && !isCSSRequest(imp.id)),
-            )
-            if (hasClientJsImporter) return
-
-            // Skip Vite's default client CSS HMR for RSC-only CSS. The
-            // RSC-side `rsc:update` event drives a Flight refetch that
-            // brings a fresh `?t=<timestamp>` href, which is enough.
+            // Drop the CSS-typed module (e.g. `?direct`) — it drives Vite's
+            // default <link> swap (find matching <link> by path, cloneNode,
+            // rewrite href with `?t=<timestamp>`) which picks up the
+            // RSC-rendered <link data-rsc-css-href> as its target
+            // RSC does its own swap (rsc:update -> Flight refetch, reconciled
+            // in place by the `css:<href>` key), so letting both run against
+            // the same <link> causes mid-render attribute mutations and
+            // later HMR edits silently drop
             //
-            // Why skipping matters: with `cssLinkPrecedence: false` the
-            // emitted `<link>` is React-owned (Float won't manage it
-            // without precedence). Vite's client CSS HMR clones that
-            // `<link>`, appends the clone, and awaits its `load`/`error`
-            // event inside a `Promise.all`. React's RSC re-render
-            // unmounts the original before the clone's event fires, the
-            // Promise never resolves, and every subsequent WebSocket
-            // message (including the next edit's `rsc:update`) queues
-            // forever behind the hung promise. The first edit in a
-            // session appears to work via Vite's `<style>` injection;
-            // every later edit is silently ignored.
-            return []
+            // Keep the JS-typed wrapper (the .css file served as JS when
+            // imported from JS) so Vite still emits its js-update, which
+            // re-runs updateStyle(id, content) against <style data-vite-dev-id>
+            // Without it, removing a rule (e.g. text-transform: uppercase)
+            // leaves the stale rule live on <style> and the cascade still
+            // wins over the refreshed <link>
+            return ctx.modules.filter((mod) => mod.type !== 'css')
           } else if (this.environment.name === 'rsc') {
-            // Walk up the importer chain from the changed CSS and
-            // invalidate every derived `\0virtual:vite-rsc/css?type=rsc&...`
-            // module we encounter. Those virtuals are what emit `<link
-            // rel="stylesheet">` into the Flight stream via `collectCss` ->
-            // `normalizeViteImportAnalysisUrl`. Without invalidating them,
-            // the next render uses the cached transform with the pre-edit
-            // href. We intentionally do NOT invalidate the JS importers
-            // themselves (inner.tsx, server.tsx, ...) — those are fine to
-            // keep; only the derived CSS virtual needs to be recomputed.
+            // Walk importers of the changed CSS and invalidate every derived
+            // `\0virtual:vite-rsc/css?type=rsc&...` module — those emit
+            // <link rel="stylesheet"> into the Flight stream via collectCss +
+            // normalizeViteImportAnalysisUrl
+            // Without invalidation the next render reuses the cached transform
+            // with the pre-edit href
+            // JS importers (inner.tsx, server.tsx, ...) are left alone — only
+            // the derived CSS virtual needs recomputing
             const visited = new Set<string>()
             const walk = (mod: EnvironmentModuleNode) => {
               if (!mod.id || visited.has(mod.id)) return
@@ -2277,15 +2268,13 @@ function vitePluginRscCss(
 
     recurse(entryId)
 
-    // When `cssLinkPrecedence: false`, React 19 Float won't manage the
-    // emitted `<link>` as a resource and Vite's client-side CSS HMR can't
-    // rely on href-pathname-match swapping (see hotUpdate comment above).
-    // To make the browser pick up updated CSS after an HMR edit we need to
-    // include the HMR timestamp in the emitted href. Under the default
-    // (`cssLinkPrecedence: true`) path we deliberately leave the href bare
-    // so Vite's client CSS HMR can find and swap the `<link>` in-place —
-    // that's what matches behavior before this fix and keeps the basic
-    // `css hmr server` path working with Float dedup.
+    // cssLinkPrecedence: false — without `precedence` React leaves the
+    // <link> as a regular DOM element (no auto-dedupe / resource handling)
+    // and Vite's client CSS HMR can't swap it by href-pathname match either
+    // (see hotUpdate above), so bake the HMR timestamp into the href and
+    // let the RSC-side Flight refetch drive the swap
+    // Default (true) leaves the href bare so Vite's client CSS HMR can swap
+    // the <link> in place — matches pre-fix behavior
     const usePrecedence = rscCssOptions?.cssLinkPrecedence !== false
     const hrefs = [...cssIds].map((id) => {
       let url = normalizeViteImportAnalysisUrl(environment, id)

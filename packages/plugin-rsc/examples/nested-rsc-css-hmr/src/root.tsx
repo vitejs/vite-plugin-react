@@ -4,6 +4,8 @@ import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
 import { TestNestedRsc } from './nested-rsc/server.tsx'
+import { SharedGraphCard } from './shared-graph/card.tsx'
+import { SharedGraphClientTracker } from './shared-graph/client-tracker.tsx'
 
 export function Root(props: { url: URL }) {
   return (
@@ -47,6 +49,10 @@ function App(props: { url: URL }) {
       <div className="card">Request URL: {props.url?.href}</div>
       <div className="card">
         <TestNestedRsc />
+      </div>
+      <div className="card">
+        <SharedGraphCard />
+        <SharedGraphClientTracker />
       </div>
       <ul className="read-the-docs">
         <li>
