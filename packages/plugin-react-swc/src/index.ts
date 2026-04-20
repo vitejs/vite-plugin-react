@@ -74,6 +74,8 @@ type Options = {
   disableOxcRecommendation?: boolean
 }
 
+const usingRolldown = 'rolldownVersion' in vite
+
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = true
   let viteCacheRoot: string | undefined
@@ -118,21 +120,27 @@ const react = (_options?: Options): Plugin[] => {
     {
       name: 'vite:react-swc',
       apply: 'serve',
-      config: () => ({
-        esbuild: false,
-        // NOTE: oxc option only exists in rolldown-vite
-        oxc: false,
-        optimizeDeps: {
-          include: [`${options.jsxImportSource}/jsx-dev-runtime`],
-          ...('rolldownVersion' in vite
-            ? {
-                rolldownOptions: {
-                  transform: { jsx: { runtime: 'automatic' } },
-                },
-              }
-            : { esbuildOptions: { jsx: 'automatic' } }),
-        },
-      }),
+      config: () => {
+        if (usingRolldown) {
+          return {
+            oxc: false,
+            optimizeDeps: {
+              include: [`${options.jsxImportSource}/jsx-dev-runtime`],
+              rolldownOptions: {
+                transform: { jsx: { runtime: 'automatic' } },
+              },
+            },
+          }
+        } else {
+          return {
+            esbuild: false,
+            optimizeDeps: {
+              include: [`${options.jsxImportSource}/jsx-dev-runtime`],
+              esbuildOptions: { jsx: 'automatic' },
+            },
+          }
+        }
+      },
       configResolved(config) {
         viteCacheRoot = config.cacheDir
         hmrDisabled = config.server.hmr === false
@@ -150,7 +158,7 @@ const react = (_options?: Options): Plugin[] => {
         }
 
         if (
-          'rolldownVersion' in vite &&
+          usingRolldown &&
           !options.plugins &&
           !options.useAtYourOwnRisk_mutateSwcOptions &&
           !options.disableOxcRecommendation
@@ -204,7 +212,7 @@ const react = (_options?: Options): Plugin[] => {
       ? {
           name: 'vite:react-swc',
           apply: 'build',
-          enforce: 'pre', // Run before esbuild
+          enforce: 'pre', // Run before esbuild/oxc
           config: (userConfig) => ({
             build: silenceUseClientWarning(userConfig),
           }),
@@ -227,16 +235,30 @@ const react = (_options?: Options): Plugin[] => {
       : {
           name: 'vite:react-swc',
           apply: 'build',
-          config: (userConfig) => ({
-            build: silenceUseClientWarning(userConfig),
-            esbuild: {
-              jsx: 'automatic',
-              jsxImportSource: options.jsxImportSource,
-              tsconfigRaw: {
-                compilerOptions: { useDefineForClassFields: true },
-              },
-            },
-          }),
+          config: (userConfig) => {
+            if (usingRolldown) {
+              return {
+                build: silenceUseClientWarning(userConfig),
+                oxc: {
+                  jsx: {
+                    runtime: 'automatic',
+                    importSource: options.jsxImportSource,
+                  },
+                },
+              }
+            } else {
+              return {
+                build: silenceUseClientWarning(userConfig),
+                esbuild: {
+                  jsx: 'automatic',
+                  jsxImportSource: options.jsxImportSource,
+                  tsconfigRaw: {
+                    compilerOptions: { useDefineForClassFields: true },
+                  },
+                },
+              }
+            }
+          },
           configResolved(config) {
             viteCacheRoot = config.cacheDir
           },
