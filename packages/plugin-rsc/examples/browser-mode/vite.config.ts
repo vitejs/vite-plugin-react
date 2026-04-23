@@ -149,7 +149,9 @@ function rscBrowserModePlugin(): Plugin[] {
         const reactServer = builder.environments.client!
         const reactClient = builder.environments['react_client']!
         manager.isScanBuild = true
-        reactServer.config.build.write = false
+        // TOOD: cannot do write = false since vite 8.0.9
+        // https://github.com/vitejs/vite/issues/22305
+        // reactServer.config.build.write = false
         await builder.build(reactServer)
         manager.isScanBuild = false
         reactServer.config.build.write = true
