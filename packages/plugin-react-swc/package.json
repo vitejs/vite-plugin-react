@@ -29,7 +29,7 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.15",
+    "@rolldown/pluginutils": "1.0.0-rc.17",
     "@swc/core": "^1.15.11"
   },
   "devDependencies": {
@@ -39,8 +39,8 @@
     "@vitejs/react-common": "workspace:*",
     "fs-extra": "^11.3.4",
     "prettier": "^3.0.3",
-    "tsdown": "^0.21.7",
-    "typescript": "^6.0.2"
+    "tsdown": "^0.21.10",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "vite": "^4 || ^5 || ^6 || ^7 || ^8"
