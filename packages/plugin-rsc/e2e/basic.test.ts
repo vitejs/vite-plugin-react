@@ -7,6 +7,7 @@ import {
   expect,
   test,
 } from '@playwright/test'
+import React from 'react'
 import { x } from 'tinyexec'
 import { normalizePath, type Rollup } from 'vite'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
@@ -1276,6 +1277,12 @@ function defineTest(f: Fixture) {
     if (f.mode === 'dev') {
       await expect(page.getByTestId('action-error-boundary')).toContainText(
         '(Error: boom!)',
+      )
+    } else if (/canary|experimental/.test(React.version)) {
+      // this is now minified on main
+      // https://github.com/facebook/react/pull/36277
+      await expect(page.getByTestId('action-error-boundary')).toContainText(
+        '(Error: Minified React error #441',
       )
     } else {
       await expect(page.getByTestId('action-error-boundary')).toContainText(

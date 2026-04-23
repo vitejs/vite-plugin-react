@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6.0.0
+      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6.0.0
+      - uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -68,9 +68,7 @@ jobs:
       - name: install react
         if: ${{ matrix.react_version }}
         run: |
-          sed -i "/^overrides:/a\  react: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-dom: \"$REACT_VERSION\"" pnpm-workspace.yaml
-          sed -i "/^overrides:/a\  react-server-dom-webpack: \"$REACT_VERSION\"" pnpm-workspace.yaml
+          ./scripts/override-react.sh "$REACT_VERSION"
           pnpm i --no-frozen-lockfile
         env:
           REACT_VERSION: ${{ matrix.react_version }}
