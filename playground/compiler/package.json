@@ -13,11 +13,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@rolldown/plugin-babel": "^0.2.2",
+    "@rolldown/plugin-babel": "^0.2.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   }
 }

@@ -23,7 +23,9 @@ export default defineConfig({
       // Scan
       manager.isScanBuild = true
       builder.environments.rsc!.config.build.write = false
-      builder.environments.client!.config.build.write = false
+      // TOOD: cannot do write = false since vite 8.0.9
+      // https://github.com/vitejs/vite/issues/22305
+      // builder.environments.client!.config.build.write = false
       await builder.build(builder.environments.rsc!)
       await builder.build(builder.environments.client!)
       builder.environments.rsc!.config.build.write = true

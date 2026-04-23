@@ -16,7 +16,7 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
@@ -30,9 +30,9 @@
     "@vitejs/test-dep-transitive-cjs": "file:./test-dep/transitive-cjs",
     "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
     "rsc-html-stream": "^0.0.7",
-    "tailwindcss": "^4.2.2",
-    "vite": "^8.0.8",
-    "wrangler": "^4.81.1"
+    "tailwindcss": "^4.2.4",
+    "vite": "^8.0.10",
+    "wrangler": "^4.84.1"
   },
   "stackblitz": {
     "installDependencies": false,
