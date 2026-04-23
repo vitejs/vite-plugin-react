@@ -47,7 +47,7 @@
     "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.1",
-    "vite": "^8.0.8",
+    "vite": "^8.0.9",
     "vite-plugin-inspect": "^11.3.3",
     "vitest": "^4.1.4"
   },
