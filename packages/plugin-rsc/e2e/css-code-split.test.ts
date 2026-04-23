@@ -23,7 +23,8 @@ test.describe('cssCodeSplit-false', () => {
 
           export default mergeConfig(baseConfig, overrideConfig)
         `,
-        // test server css module
+        // test server css module too
+        // (starter example already tests normal server css)
         'src/server-only.module.css': /* css */ `
           .serverOnly {
             color: rgb(123, 45, 67);
