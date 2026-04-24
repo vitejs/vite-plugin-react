@@ -758,22 +758,22 @@ export default function vitePluginRsc(
             // with the pre-edit href
             // JS importers (inner.tsx, server.tsx, ...) are left alone — only
             // the derived CSS virtual needs recomputing
-            const visited = new Set<string>()
-            const walk = (mod: EnvironmentModuleNode) => {
-              if (!mod.id || visited.has(mod.id)) return
-              visited.add(mod.id)
-              if (mod.id.startsWith('\0virtual:vite-rsc/css?')) {
-                this.environment.moduleGraph.invalidateModule(mod)
-              }
-              for (const imp of mod.importers) {
-                walk(imp)
-              }
-            }
-            for (const mod of ctx.modules) {
-              for (const imp of mod.importers) {
-                walk(imp)
-              }
-            }
+            // const visited = new Set<string>()
+            // const walk = (mod: EnvironmentModuleNode) => {
+            //   if (!mod.id || visited.has(mod.id)) return
+            //   visited.add(mod.id)
+            //   if (mod.id.startsWith('\0virtual:vite-rsc/css?')) {
+            //     this.environment.moduleGraph.invalidateModule(mod)
+            //   }
+            //   for (const imp of mod.importers) {
+            //     walk(imp)
+            //   }
+            // }
+            // for (const mod of ctx.modules) {
+            //   for (const imp of mod.importers) {
+            //     walk(imp)
+            //   }
+            // }
           }
         }
 
@@ -2291,6 +2291,9 @@ function vitePluginRscCss(
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
           if (isCSSRequest(next.id)) {
+            if (next.file) {
+              visitedFiles.add(next.file)
+            }
             if (hasSpecialCssQuery(next.id)) {
               continue
             }
