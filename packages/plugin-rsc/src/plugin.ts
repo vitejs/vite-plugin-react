@@ -2229,6 +2229,9 @@ function vitePluginRscCss(
     const visitedFiles = new Set<string>()
 
     function recurse(id: string) {
+      if (id.startsWith('\0virtual:vite-rsc/css?')) {
+        return
+      }
       if (visited.has(id)) {
         return
       }
@@ -2243,6 +2246,15 @@ function vitePluginRscCss(
             if (hasSpecialCssQuery(next.id)) {
               continue
             }
+            // TODO:
+            // - without visitedFiles.add, commenting out `styles-server/server.tsx`'s `server.css` works
+            // - but with this, server.css still gets visited after commented out why
+            if (next.file) {
+              visitedFiles.add(next.file)
+            }
+            // if (next.id.includes("/style-server/server.css")) {
+            //   console.log({ entryId, importer: mod?.id, css: next.id })
+            // }
             cssIds.add(next.id)
           } else {
             recurse(next.id)
@@ -2486,6 +2498,10 @@ function vitePluginRscCss(
             const importer = parsed.id
             if (this.environment.mode === 'dev') {
               const result = collectCss(server.environments.rsc!, importer)
+              //  console.log({ id: importer, result })
+              // if (importer.includes("style-server")) {
+              //   console.log({ importer, result })
+              // }
               for (const file of [importer, ...result.visitedFiles]) {
                 this.addWatchFile(file)
               }
