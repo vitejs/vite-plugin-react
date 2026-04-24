@@ -2280,7 +2280,7 @@ function vitePluginRscCss(
     const visitedFiles = new Set<string>()
 
     function recurse(id: string) {
-      if (visited.has(id)) {
+      if (visited.has(id) || parseCssVirtual(id)) {
         return
       }
       visited.add(id)
