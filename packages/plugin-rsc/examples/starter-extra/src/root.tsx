@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import { getServerCounter, updateServerCounter } from './action.tsx'
 import reactLogo from './assets/react.svg'
 import { ClientCounter } from './client.tsx'
+import { ServerCssModule } from './features/css/server-css-module.tsx'
 
 export function Root(props: { url: URL }) {
   return (
@@ -44,6 +45,9 @@ function App(props: { url: URL }) {
         </form>
       </div>
       <div className="card">Request URL: {props.url?.href}</div>
+      <div className="card">
+        <ServerCssModule />
+      </div>
       <ul className="read-the-docs">
         <li>
           Edit <code>src/client.tsx</code> to test client HMR.
