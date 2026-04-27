@@ -123,6 +123,31 @@ export function defineStarterTest(
     await expect(page.locator('.card').nth(0)).toHaveCSS('padding-left', '16px')
   })
 
+  test('css hmr', async ({ page }) => {
+    test.skip(
+      f.mode === 'build' ||
+        variant === 'dev-production' ||
+        variant === 'browser-mode',
+    )
+
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const card = page.locator('.card').nth(0)
+
+    await using _ = await expectNoReload(page)
+    const editor = f.createEditor('src/index.css')
+    editor.edit((s) =>
+      s.replace(
+        '.card {\n  padding: 1rem;',
+        `.card {\n  padding: 1rem; background-color: rgb(255, 0, 200);`,
+      ),
+    )
+    await expect(card).toHaveCSS('background-color', 'rgb(255, 0, 200)')
+
+    editor.reset()
+    await expect(card).not.toHaveCSS('background-color', 'rgb(255, 0, 200)')
+  })
+
   test.describe(() => {
     test.skip(variant === 'no-ssr' || variant === 'browser-mode')
 
