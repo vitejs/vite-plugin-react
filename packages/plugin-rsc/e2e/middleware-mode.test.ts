@@ -7,7 +7,7 @@ test.describe(() => {
 
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
     })
   })

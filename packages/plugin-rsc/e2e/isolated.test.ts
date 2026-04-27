@@ -15,7 +15,7 @@ test.describe(() => {
     'test-vite-rsc',
   )
   test.beforeAll(async () => {
-    await setupIsolatedFixture({ src: 'examples/starter', dest: tmpRoot })
+    await setupIsolatedFixture({ src: 'examples/starter-extra', dest: tmpRoot })
   })
 
   test.describe('dev-isolated', () => {
@@ -42,7 +42,7 @@ test.describe('vite 6', () => {
   )
   test.beforeAll(async () => {
     await setupIsolatedFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: tmpRoot,
       overrides: {
         vite: '^6',
@@ -68,7 +68,7 @@ test.describe('react-server-dom-webpack', () => {
   )
   test.beforeAll(async () => {
     await setupIsolatedFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: tmpRoot,
     })
     const {

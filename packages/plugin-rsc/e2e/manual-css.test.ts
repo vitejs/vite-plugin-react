@@ -10,7 +10,7 @@ test.describe('manual-css', () => {
 
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
       files: {
         // Disable auto CSS injection

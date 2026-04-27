@@ -9,7 +9,7 @@ test.describe(() => {
 
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
       files: {
         'vite.config.base.ts': { cp: 'vite.config.ts' },
