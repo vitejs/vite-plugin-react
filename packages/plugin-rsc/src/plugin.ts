@@ -722,7 +722,20 @@ export default function vitePluginRsc(
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
-            return
+            const cssLinkPrecedence = rscPluginOptions.cssLinkPrecedence ?? true
+            if (cssLinkPrecedence) return
+
+            // Without stylesheet precedence, React owns swapping stylesheet link
+            // for server css hmr by reconciling new link with <link href="...?t=..." >,
+            // so we filter out `css` type to prevent triggering Vite's `css-update` hmr,
+            // which tries to swap the same link.
+            // we keep `js` type hmr to trigger hmr for css side effect import on client environment
+            // (though probably css imported both client and server don't behave well.)
+            const rscMod =
+              ctx.server.environments.rsc?.moduleGraph.getModuleById(ctx.file)
+            if (rscMod) {
+              return ctx.modules.filter((mod) => mod.type !== 'css')
+            }
           }
         }
 
@@ -2229,7 +2242,7 @@ function vitePluginRscCss(
     const visitedFiles = new Set<string>()
 
     function recurse(id: string) {
-      if (visited.has(id)) {
+      if (visited.has(id) || parseCssVirtual(id)) {
         return
       }
       visited.add(id)
@@ -2240,6 +2253,9 @@ function vitePluginRscCss(
       for (const next of mod?.importedModules ?? []) {
         if (next.id) {
           if (isCSSRequest(next.id)) {
+            if (next.file) {
+              visitedFiles.add(next.file)
+            }
             if (hasSpecialCssQuery(next.id)) {
               continue
             }
@@ -2253,9 +2269,32 @@ function vitePluginRscCss(
 
     recurse(entryId)
 
-    // this doesn't include ?t= query so that RSC <link /> won't keep adding styles.
+    // CSS links emitted from RSC participate in two different HMR strategies.
+    //
+    // cssLinkPrecedence: true (default)
+    //   React treats <link precedence="..."> as a stylesheet resource. Keep the
+    //   RSC-rendered href stable here and let Vite's normal client `css-update`
+    //   handle edits for the `.css?direct` module. Vite finds the existing
+    //   stylesheet link by pathname, clones it, rewrites the clone to
+    //   `?t=<timestamp>`, then removes the previous link after the new one
+    //   loads. https://github.com/vitejs/vite/blob/a19003516951a3710aab0f2646d78c48b2e5d2ad/packages/vite/src/client/client.ts#L234-L235
+    //   React does not re-insert that original stable-href resource on
+    //   later RSC renders, so the Vite-owned timestamped link remains the live
+    //   stylesheet. This is why RSC must not inject its own timestamp in
+    //   precedence mode: doing so makes React see every edit as a new resource
+    //   and append more stylesheet links.
+    //
+    // cssLinkPrecedence: false
+    //   React reconciles <link> like a normal DOM element. In this mode RSC owns
+    //   the link swap: on CSS HMR, the RSC refetch re-renders this resource list
+    //   with `?t=<lastHMRTimestamp>`.
+    //   In this mode, we prevent Vite from swapping the same style
+    //   by filtering out `css-update` hmr in our `rsc` plugin's `hotUpdate` hook above.
+    const cssLinkPrecedence = rscCssOptions?.cssLinkPrecedence ?? true
     const hrefs = [...cssIds].map((id) =>
-      normalizeViteImportAnalysisUrl(environment, id),
+      normalizeViteImportAnalysisUrl(environment, id, {
+        injectHMRTimestamp: !cssLinkPrecedence,
+      }),
     )
     return { ids: [...cssIds], hrefs, visitedFiles: [...visitedFiles] }
   }
