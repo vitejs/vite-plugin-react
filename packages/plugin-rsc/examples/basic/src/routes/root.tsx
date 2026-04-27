@@ -51,6 +51,7 @@ import { TestServerError } from './server-error/server'
 import { TestCssClientNoSsr } from './style-client-no-ssr/server'
 import { TestStyleClient } from './style-client/client'
 import { TestStyleServer } from './style-server/server'
+import { TestStyleShared } from './style-shared/server'
 import { TestTailwind } from './tailwind'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestTreeShakeServer } from './tree-shake/server'
@@ -75,6 +76,7 @@ export function Root(props: { url: URL }) {
         <ServerCounter />
         <TestStyleClient />
         <TestStyleServer />
+        <TestStyleShared />
         <TestCssClientNoSsr url={props.url} />
         <TestTailwind />
         <TestDepCssInServer />
