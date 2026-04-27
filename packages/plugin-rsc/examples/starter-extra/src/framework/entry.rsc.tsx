@@ -10,11 +10,22 @@ import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
 
+// The schema of payload which is serialized into RSC stream on rsc environment
+// and deserialized on ssr/client environments.
 export type RscPayload = {
+  // this demo renders/serializes/deserizlies entire root html element
+  // but this mechanism can be changed to render/fetch different parts of components
+  // based on your own route conventions.
   root: React.ReactNode
+  // server action return value of non-progressive enhancement case
   returnValue?: { ok: boolean; data: unknown }
+  // server action form state (e.g. useActionState) of progressive enhancement case
   formState?: ReactFormState
 }
+
+// the plugin by default assumes `rsc` entry having default export of request handler.
+// however, how server entries are executed can be customized by registering own server handler.
+export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
@@ -66,7 +77,11 @@ async function handler(request: Request): Promise<Response> {
   // we render RSC stream after handling server function request
   // so that new render reflects updated state from server function call
   // to achieve single round trip to mutate and fetch from server.
-  const rscPayload: RscPayload = { root: <Root />, formState, returnValue }
+  const rscPayload: RscPayload = {
+    root: <Root url={renderRequest.url} />,
+    formState,
+    returnValue,
+  }
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
@@ -80,21 +95,26 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const { renderHTML } = await import.meta.viteRsc.loadModule<
+  // Delegate to SSR environment for html rendering.
+  // The plugin provides `loadModule` helper to allow loading SSR environment entry module
+  // in RSC environment. however this can be customized by implementing own runtime communication
+  // e.g. `@cloudflare/vite-plugin`'s service binding.
+  const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
-  return await renderHTML(rscStream, {
-    request,
+  const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
     // allow quick simulation of javascript disabled browser
     debugNojs: renderRequest.url.searchParams.has('__nojs'),
   })
-}
 
-export default {
-  fetch(request: Request) {
-    return handler(request)
-  },
+  // respond html
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
+    headers: {
+      'Content-type': 'text/html',
+    },
+  })
 }
 
 if (import.meta.hot) {

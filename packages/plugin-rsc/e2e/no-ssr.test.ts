@@ -6,12 +6,12 @@ import { defineStarterTest } from './starter'
 
 test.describe('dev-no-ssr', () => {
   const f = useFixture({ root: 'examples/no-ssr', mode: 'dev' })
-  defineStarterTest(f, 'no-ssr')
+  defineStarterTest(f, { variant: 'no-ssr' })
 })
 
 test.describe('build-no-ssr', () => {
   const f = useFixture({ root: 'examples/no-ssr', mode: 'build' })
-  defineStarterTest(f, 'no-ssr')
+  defineStarterTest(f, { variant: 'no-ssr' })
 
   test('no ssr build', () => {
     expect(fs.existsSync(path.join(f.root, 'dist/ssr'))).toBe(false)

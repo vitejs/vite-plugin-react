@@ -8,7 +8,7 @@ test.describe('validate imports', () => {
     const root = 'examples/e2e/temp/validate-imports'
     test.beforeAll(async () => {
       await setupInlineFixture({
-        src: 'examples/starter',
+        src: 'examples/starter-extra',
         dest: root,
         files: {
           'src/client.tsx': /* tsx */ `
@@ -64,7 +64,7 @@ test.describe('validate imports', () => {
     const root = 'examples/e2e/temp/validate-server-only'
     test.beforeAll(async () => {
       await setupInlineFixture({
-        src: 'examples/starter',
+        src: 'examples/starter-extra',
         dest: root,
         files: {
           'src/client.tsx': /* tsx */ `
@@ -115,7 +115,7 @@ test.describe('validate imports', () => {
     const root = 'examples/e2e/temp/validate-client-only'
     test.beforeAll(async () => {
       await setupInlineFixture({
-        src: 'examples/starter',
+        src: 'examples/starter-extra',
         dest: root,
         files: {
           'src/client.tsx': /* tsx */ `

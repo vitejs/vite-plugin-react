@@ -9,7 +9,7 @@ test.describe('rolldownOptions', () => {
   const root = 'examples/e2e/temp/rolldown-options'
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
       files: {
         'vite.config.ts': {

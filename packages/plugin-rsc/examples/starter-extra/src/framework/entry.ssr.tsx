@@ -5,24 +5,21 @@ import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
 
-export type RenderHTML = typeof renderHTML
-
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
-  options?: {
-    request: Request
+  options: {
     formState?: ReactFormState
     nonce?: string
     debugNojs?: boolean
   },
-): Promise<Response> {
+): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
   // duplicate one RSC stream into two.
   // - one for SSR (ReactClient.createFromReadableStream below)
   // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee()
 
   // deserialize RSC stream back to React VDOM
-  let payload: Promise<RscPayload>
+  let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
     // deserialization needs to be kicked off inside ReactDOMServer context
     // for ReactDomServer preinit/preloading to work
@@ -65,6 +62,7 @@ export async function renderHTML(
   let responseStream: ReadableStream<Uint8Array> = htmlStream
   if (!options?.debugNojs) {
     // initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
@@ -72,5 +70,5 @@ export async function renderHTML(
     )
   }
 
-  return new Response(responseStream, { status })
+  return { stream: responseStream, status }
 }

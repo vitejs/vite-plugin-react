@@ -750,7 +750,7 @@ importers:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@24.12.2)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
 
-  packages/plugin-rsc/examples/starter-cf-single:
+  packages/plugin-rsc/examples/starter-extra:
     dependencies:
       react:
         specifier: ^19.2.5

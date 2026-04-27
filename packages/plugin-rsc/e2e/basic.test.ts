@@ -1021,6 +1021,16 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 165, 255)',
       )
+      editor.edit((s) =>
+        s.replaceAll(
+          'color: rgb(0, 165, 255);',
+          '/* color: rgb(0, 165, 255); */',
+        ),
+      )
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       editor.reset()
       await expect(page.getByTestId('css-module-client')).toHaveCSS(
         'color',
@@ -1038,11 +1048,79 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 165, 255)',
       )
+      editor.edit((s) =>
+        s.replaceAll(
+          'color: rgb(0, 165, 255);',
+          '/* color: rgb(0, 165, 255); */',
+        ),
+      )
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       editor.reset()
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
       )
+    })
+
+    test('css shared hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const server = page.getByTestId('style-shared-server')
+      const client = page.getByTestId('style-shared-client')
+      await expect(server).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(client).toHaveCSS('color', 'rgb(255, 165, 0)')
+
+      const editor = f.createEditor('src/routes/style-shared/shared.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(server).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(client).toHaveCSS('color', 'rgb(0, 165, 255)')
+
+      // TODO: cover rule removal. After a prior server CSS HMR update, shared
+      // CSS can keep a stale client-side style rule here.
+      // editor.edit((s) =>
+      //   s.replaceAll(
+      //     'color: rgb(0, 165, 255);',
+      //     '/* color: rgb(0, 165, 255); */',
+      //   ),
+      // )
+      // await expect(server).toHaveCSS('color', 'rgb(0, 0, 0)')
+      // await expect(client).toHaveCSS('color', 'rgb(0, 0, 0)')
+
+      // editor.reset()
+      // await expect(server).toHaveCSS('color', 'rgb(255, 165, 0)')
+      // await expect(client).toHaveCSS('color', 'rgb(255, 165, 0)')
+    })
+
+    test('css module shared hmr', async ({ page }) => {
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+      const serverCard = page.getByTestId('css-module-shared-server')
+      const clientCard = page.getByTestId('css-module-shared-client')
+      await expect(serverCard).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')
+
+      const editor = f.createEditor('src/routes/style-shared/shared.module.css')
+      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await expect(serverCard).toHaveCSS('color', 'rgb(0, 165, 255)')
+      await expect(clientCard).toHaveCSS('color', 'rgb(0, 165, 255)')
+
+      editor.edit((s) =>
+        s.replaceAll(
+          'color: rgb(0, 165, 255);',
+          '/* color: rgb(0, 165, 255); */',
+        ),
+      )
+      await expect(serverCard).toHaveCSS('color', 'rgb(0, 0, 0)')
+      await expect(clientCard).toHaveCSS('color', 'rgb(0, 0, 0)')
+
+      editor.reset()
+      await expect(serverCard).toHaveCSS('color', 'rgb(255, 165, 0)')
+      await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')
     })
 
     test('css url client hmr', async ({ page }) => {

@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-starter-cf-single",
+  "name": "@vitejs/plugin-rsc-examples-starter-extra",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -8,7 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "release": "wrangler deploy"
+    "cf:dev": "vite --config vite.cf.config.ts",
+    "cf:build": "vite build --config vite.cf.config.ts",
+    "cf:preview": "vite preview --config vite.cf.config.ts",
+    "cf:release": "wrangler deploy"
   },
   "dependencies": {
     "react": "^19.2.5",

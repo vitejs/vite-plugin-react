@@ -41,7 +41,6 @@ class ErrorBoundary extends React.Component<{
 
 // https://github.com/vercel/next.js/blob/677c9b372faef680d17e9ba224743f44e1107661/packages/next/src/build/webpack/loaders/next-app-loader.ts#L73
 // https://github.com/vercel/next.js/blob/677c9b372faef680d17e9ba224743f44e1107661/packages/next/src/client/components/error-boundary.tsx#L145
-// https://github.com/vercel/next.js/blob/473ae4b70dd781cc8b2620c95766f827296e689a/packages/next/src/client/components/builtin/global-error.tsx
 function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
   return (
     <html>
@@ -50,20 +49,17 @@ function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
       </head>
       <body
         style={{
-          fontFamily:
-            'system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji"',
           height: '100vh',
-          margin: 0,
           display: 'flex',
           flexDirection: 'column',
           placeContent: 'center',
           placeItems: 'center',
           fontSize: '16px',
           fontWeight: 400,
-          lineHeight: '28px',
+          lineHeight: '24px',
         }}
       >
-        <div>Caught an unexpected error</div>
+        <p>Caught an unexpected error</p>
         <pre>
           Error:{' '}
           {import.meta.env.DEV && 'message' in props.error

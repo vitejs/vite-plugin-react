@@ -6,7 +6,7 @@ test.describe('viteRsc.import', () => {
   const root = 'examples/e2e/temp/import-environment'
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
       files: {
         'src/framework/entry.rsc.tsx': {

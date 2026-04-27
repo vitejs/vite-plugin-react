@@ -7,7 +7,7 @@ test.describe('invalid directives', () => {
     const root = 'examples/e2e/temp/use-server-in-use-client'
     test.beforeAll(async () => {
       await setupInlineFixture({
-        src: 'examples/starter',
+        src: 'examples/starter-extra',
         dest: root,
         files: {
           'src/client.tsx': /* tsx */ `

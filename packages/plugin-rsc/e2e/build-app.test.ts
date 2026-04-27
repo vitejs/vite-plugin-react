@@ -7,7 +7,7 @@ test.describe('buildApp hook', () => {
   const root = 'examples/e2e/temp/buildApp'
   test.beforeAll(async () => {
     await setupInlineFixture({
-      src: 'examples/starter',
+      src: 'examples/starter-extra',
       dest: root,
       files: {
         'vite.config.base.ts': { cp: 'vite.config.ts' },

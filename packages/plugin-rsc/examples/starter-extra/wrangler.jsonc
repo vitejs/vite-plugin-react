@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "vite-rsc-starter",
+  "name": "vite-rsc-starter-extra",
   "main": "./src/framework/entry.rsc.tsx",
   "workers_dev": true,
   "compatibility_date": "2025-10-01",
