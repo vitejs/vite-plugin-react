@@ -1021,7 +1021,16 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 165, 255)',
       )
-      // TODO: cover rule removal like `css module shared hmr`.
+      editor.edit((s) =>
+        s.replaceAll(
+          'color: rgb(0, 165, 255);',
+          '/* color: rgb(0, 165, 255); */',
+        ),
+      )
+      await expect(page.getByTestId('css-module-client')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       editor.reset()
       await expect(page.getByTestId('css-module-client')).toHaveCSS(
         'color',
@@ -1039,7 +1048,16 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 165, 255)',
       )
-      // TODO: cover rule removal like `css module shared hmr`.
+      editor.edit((s) =>
+        s.replaceAll(
+          'color: rgb(0, 165, 255);',
+          '/* color: rgb(0, 165, 255); */',
+        ),
+      )
+      await expect(page.getByTestId('css-module-server')).toHaveCSS(
+        'color',
+        'rgb(0, 0, 0)',
+      )
       editor.reset()
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
@@ -1061,6 +1079,7 @@ function defineTest(f: Fixture) {
       await expect(server).toHaveCSS('color', 'rgb(0, 165, 255)')
       await expect(client).toHaveCSS('color', 'rgb(0, 165, 255)')
 
+      // TODO: flaky?
       editor.edit((s) =>
         s.replaceAll(
           'color: rgb(0, 165, 255);',
