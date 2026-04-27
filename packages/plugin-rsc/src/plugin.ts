@@ -2282,24 +2282,33 @@ function vitePluginRscCss(
 
     recurse(entryId)
 
-    // cssLinkPrecedence: false — without `precedence` React leaves the
-    // <link> as a regular DOM element (no auto-dedupe / resource handling)
-    // and Vite's client CSS HMR can't swap it by href-pathname match either
-    // (see hotUpdate above), so bake the HMR timestamp into the href and
-    // let the RSC-side Flight refetch drive the swap
-    // Default (true) leaves the href bare so Vite's client CSS HMR can swap
-    // the <link> in place — matches pre-fix behavior
-    const usePrecedence = rscCssOptions?.cssLinkPrecedence !== false
-    const hrefs = [...cssIds].map((id) => {
-      let url = normalizeViteImportAnalysisUrl(environment, id)
-      if (!usePrecedence && environment.config.consumer !== 'client') {
-        const mod = environment.moduleGraph.getModuleById(id)
-        if (mod && mod.lastHMRTimestamp > 0) {
-          url = injectQuery(url, `t=${mod.lastHMRTimestamp}`)
-        }
-      }
-      return url
-    })
+    // CSS links emitted from RSC participate in two different HMR strategies.
+    //
+    // cssLinkPrecedence: true (default)
+    //   React treats <link precedence="..."> as a stylesheet resource. Keep the
+    //   RSC-rendered href stable here and let Vite's normal client `css-update`
+    //   handle edits for the `.css?direct` module. Vite finds the existing
+    //   stylesheet link by pathname, clones it, rewrites the clone to
+    //   `?t=<timestamp>`, then removes the previous link after the new one
+    //   loads. https://github.com/vitejs/vite/blob/a19003516951a3710aab0f2646d78c48b2e5d2ad/packages/vite/src/client/client.ts#L234-L235
+    //   React does not re-insert that original stable-href resource on
+    //   later RSC renders, so the Vite-owned timestamped link remains the live
+    //   stylesheet. This is why RSC must not inject its own timestamp in
+    //   precedence mode: doing so makes React see every edit as a new resource
+    //   and append more stylesheet links.
+    //
+    // cssLinkPrecedence: false
+    //   React reconciles <link> like a normal DOM element. In this mode RSC owns
+    //   the link swap: on CSS HMR, the RSC refetch re-renders this resource list
+    //   with `?t=<lastHMRTimestamp>`.
+    //   In this mode, we prevent Vite from swapping the same style
+    //   by filtering out `css-update` hmr in our `rsc` plugin's `hotUpdate` hook above.
+    const cssLinkPrecedence = rscCssOptions?.cssLinkPrecedence ?? true
+    const hrefs = [...cssIds].map((id) =>
+      normalizeViteImportAnalysisUrl(environment, id, {
+        injectHMRTimestamp: !cssLinkPrecedence,
+      }),
+    )
     return { ids: [...cssIds], hrefs, visitedFiles: [...visitedFiles] }
   }
 

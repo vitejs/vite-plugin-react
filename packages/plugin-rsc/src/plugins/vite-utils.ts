@@ -113,11 +113,12 @@ export function normalizeResolvedIdToUrl(
 export function normalizeViteImportAnalysisUrl(
   environment: DevEnvironment,
   id: string,
+  options?: { injectHMRTimestamp?: boolean },
 ): string {
   let url = normalizeResolvedIdToUrl(environment, id, { id })
 
   // https://github.com/vitejs/vite/blob/c18ce868c4d70873406e9f7d1b2d0a03264d2168/packages/vite/src/node/plugins/importAnalysis.ts#L416
-  if (environment.config.consumer === 'client') {
+  if (options?.injectHMRTimestamp || environment.config.consumer === 'client') {
     const mod = environment.moduleGraph.getModuleById(id)
     if (mod && mod.lastHMRTimestamp > 0) {
       url = injectQuery(url, `t=${mod.lastHMRTimestamp}`)
