@@ -749,31 +749,6 @@ export default function vitePluginRsc(
             // leaves the stale rule live on <style> and the cascade still
             // wins over the refreshed <link>
             return ctx.modules.filter((mod) => mod.type !== 'css')
-          } else if (this.environment.name === 'rsc') {
-            // Walk importers of the changed CSS and invalidate every derived
-            // `\0virtual:vite-rsc/css?type=rsc&...` module — those emit
-            // <link rel="stylesheet"> into the Flight stream via collectCss +
-            // normalizeViteImportAnalysisUrl
-            // Without invalidation the next render reuses the cached transform
-            // with the pre-edit href
-            // JS importers (inner.tsx, server.tsx, ...) are left alone — only
-            // the derived CSS virtual needs recomputing
-            // const visited = new Set<string>()
-            // const walk = (mod: EnvironmentModuleNode) => {
-            //   if (!mod.id || visited.has(mod.id)) return
-            //   visited.add(mod.id)
-            //   if (mod.id.startsWith('\0virtual:vite-rsc/css?')) {
-            //     this.environment.moduleGraph.invalidateModule(mod)
-            //   }
-            //   for (const imp of mod.importers) {
-            //     walk(imp)
-            //   }
-            // }
-            // for (const mod of ctx.modules) {
-            //   for (const imp of mod.importers) {
-            //     walk(imp)
-            //   }
-            // }
           }
         }
 
