@@ -83,6 +83,10 @@ async function main() {
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', (e) => {
       console.log('[vite-rsc:update]', e.file)
+      // TODO: ignore early/stale updates before BrowserRoot's effect installs
+      // `setPayload`. Dev E2E can interleave a websocket event from a previous
+      // edit with a newly loaded page and fail with "setPayload is not a
+      // function" while fetching this payload.
       fetchRscPayload()
     })
   }
