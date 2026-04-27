@@ -8,13 +8,13 @@ test.skip(({ browserName }) => browserName === 'webkit')
 
 test.describe('dev-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'dev' })
-  defineStarterTest(f, 'browser-mode')
+  defineStarterTest(f, { variant: 'browser-mode' })
   defineBrowserModeTest(f)
 })
 
 test.describe('build-browser-mode', () => {
   const f = useFixture({ root: 'examples/browser-mode', mode: 'build' })
-  defineStarterTest(f, 'browser-mode')
+  defineStarterTest(f, { variant: 'browser-mode' })
   defineBrowserModeTest(f)
 })
 

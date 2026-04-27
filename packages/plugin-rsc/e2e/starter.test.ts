@@ -69,7 +69,7 @@ test.describe('dev-production', () => {
       env: { NODE_ENV: 'production' },
     },
   })
-  defineStarterTest(f, 'dev-production')
+  defineStarterTest(f, { variant: 'dev-production' })
 
   test('verify production', async ({ page }) => {
     await page.goto(f.url())

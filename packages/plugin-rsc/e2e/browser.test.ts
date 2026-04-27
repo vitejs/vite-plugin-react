@@ -8,10 +8,10 @@ test.skip(({ browserName }) => browserName === 'webkit')
 
 test.describe('dev-browser', () => {
   const f = useFixture({ root: 'examples/browser', mode: 'dev' })
-  defineStarterTest(f, 'no-ssr')
+  defineStarterTest(f, { variant: 'no-ssr' })
 })
 
 test.describe('build-browser', () => {
   const f = useFixture({ root: 'examples/browser', mode: 'build' })
-  defineStarterTest(f, 'no-ssr')
+  defineStarterTest(f, { variant: 'no-ssr' })
 })

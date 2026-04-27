@@ -9,8 +9,9 @@ import {
 
 export function defineStarterTest(
   f: Fixture,
-  variant?: 'no-ssr' | 'dev-production' | 'browser-mode',
+  options?: { variant?: 'no-ssr' | 'dev-production' | 'browser-mode' },
 ) {
+  const variant = options?.variant
   const waitForHydration: typeof waitForHydration_ = (page) =>
     waitForHydration_(
       page,
