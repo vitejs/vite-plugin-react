@@ -1,3 +1,18 @@
+## <small>[0.5.25](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.24...plugin-rsc@0.5.25) (2026-04-27)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1196](https://github.com/vitejs/vite-plugin-react/issues/1196)) ([323ccd7](https://github.com/vitejs/vite-plugin-react/commit/323ccd72576be636b50baa7d9ce816cc94d5991e))
+* **rsc:** fix server css hmr with `cssLinkPrecedence: false` ([#1188](https://github.com/vitejs/vite-plugin-react/issues/1188)) ([f4647c4](https://github.com/vitejs/vite-plugin-react/commit/f4647c49afbb9247b2526c90efef7465ba74094f))
+* **rsc:** include bundled server CSS when cssCodeSplit is false ([#1192](https://github.com/vitejs/vite-plugin-react/issues/1192)) ([2845b9f](https://github.com/vitejs/vite-plugin-react/commit/2845b9ff024c0958f30b923f9fef3920f731ecd8))
+
+### Miscellaneous Chores
+
+* **deps:** update vite 8.0.10 ([#1198](https://github.com/vitejs/vite-plugin-react/issues/1198)) ([a7506e1](https://github.com/vitejs/vite-plugin-react/commit/a7506e105df00cdadc58c0aecc4512d8cfdd9765))
+
+### Tests
+
+* assert new minified error message on react canary ([#1199](https://github.com/vitejs/vite-plugin-react/issues/1199)) ([cbac17c](https://github.com/vitejs/vite-plugin-react/commit/cbac17c265b0c3755c0cec89746629e066ad484c))
+
 ## <small>[0.5.24](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.23...plugin-rsc@0.5.24) (2026-04-13)</small>
 ### Bug Fixes
 
