@@ -723,32 +723,20 @@ export default function vitePluginRsc(
       async hotUpdate(ctx) {
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
-            // Default (cssLinkPrecedence: true) — Vite's client CSS HMR
-            // already handles the swap
-            if (rscPluginOptions.cssLinkPrecedence !== false) return
+            const cssLinkPrecedence = rscPluginOptions.cssLinkPrecedence ?? true
+            if (cssLinkPrecedence) return
 
-            // Only relevant when CSS is reachable from the RSC graph —
-            // otherwise Vite's default client CSS HMR applies
+            // Without stylesheet precedence, React owns swapping stylesheet link
+            // for server css hmr by reconciling new link with <link href="...?t=..." >,
+            // so we filter out `css` type to prevent triggering Vite's `css-update` hmr,
+            // which tries to swap the same link.
+            // we keep `js` type hmr to trigger hmr for css side effect import on client environment
+            // (though probably css imported both client and server don't behave well.)
             const rscMod =
               ctx.server.environments.rsc?.moduleGraph.getModuleById(ctx.file)
-            if (!rscMod) return
-
-            // Drop the CSS-typed module (e.g. `?direct`) — it drives Vite's
-            // default <link> swap (find matching <link> by path, cloneNode,
-            // rewrite href with `?t=<timestamp>`) which picks up the
-            // RSC-rendered <link data-rsc-css-href> as its target
-            // RSC does its own swap (rsc:update -> Flight refetch, reconciled
-            // in place by the `css:<href>` key), so letting both run against
-            // the same <link> causes mid-render attribute mutations and
-            // later HMR edits silently drop
-            //
-            // Keep the JS-typed wrapper (the .css file served as JS when
-            // imported from JS) so Vite still emits its js-update, which
-            // re-runs updateStyle(id, content) against <style data-vite-dev-id>
-            // Without it, removing a rule (e.g. text-transform: uppercase)
-            // leaves the stale rule live on <style> and the cascade still
-            // wins over the refreshed <link>
-            return ctx.modules.filter((mod) => mod.type !== 'css')
+            if (rscMod) {
+              return ctx.modules.filter((mod) => mod.type !== 'css')
+            }
           }
         }
 
