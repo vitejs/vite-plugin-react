@@ -60,7 +60,6 @@ import {
   cleanUrl,
   directRequestRE,
   evalValue,
-  injectQuery,
   normalizeViteImportAnalysisUrl,
   prepareError,
 } from './plugins/vite-utils'
