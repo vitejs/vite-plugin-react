@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@rolldown/pluginutils": "1.0.0-rc.17",
-    "es-module-lexer": "^2.0.0",
+    "es-module-lexer": "^2.1.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
     "srvx": "^0.11.15",
