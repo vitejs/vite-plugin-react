@@ -793,6 +793,19 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
 
+  playground/bundled-dev-base-path:
+    dependencies:
+      react:
+        specifier: ^19.2.5
+        version: 19.2.5
+      react-dom:
+        specifier: ^19.2.5
+        version: 19.2.5(react@19.2.5)
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+
   playground/class-components:
     dependencies:
       react:

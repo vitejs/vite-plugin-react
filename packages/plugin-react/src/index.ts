@@ -172,7 +172,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             {
               tag: 'script',
               attrs: { type: 'module' },
-              children: getPreambleCode(base),
+              // In bundled dev mode, Rolldown resolves module specifiers at build
+              // time without URL-level base stripping, so we must use '/' instead
+              // of config.base to match the resolveId hook for '/@react-refresh'.
+              children: getPreambleCode('/'),
             },
           ]
       },
