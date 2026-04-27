@@ -750,7 +750,7 @@ importers:
         specifier: ^8.0.10
         version: 8.0.10(@types/node@24.12.2)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
 
-  packages/plugin-rsc/examples/starter-cf-single:
+  packages/plugin-rsc/examples/starter-extra:
     dependencies:
       react:
         specifier: ^19.2.5
@@ -783,34 +783,6 @@ importers:
       wrangler:
         specifier: ^4.84.1
         version: 4.84.1
-
-  packages/plugin-rsc/examples/starter-extra:
-    dependencies:
-      react:
-        specifier: ^19.2.5
-        version: 19.2.5
-      react-dom:
-        specifier: ^19.2.5
-        version: 19.2.5(react@19.2.5)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.14
-        version: 19.2.14
-      '@types/react-dom':
-        specifier: ^19.2.3
-        version: 19.2.3(@types/react@19.2.14)
-      '@vitejs/plugin-react':
-        specifier: latest
-        version: link:../../../plugin-react
-      '@vitejs/plugin-rsc':
-        specifier: latest
-        version: link:../..
-      rsc-html-stream:
-        specifier: ^0.0.7
-        version: 0.0.7
-      vite:
-        specifier: ^8.0.10
-        version: 8.0.10(@types/node@24.12.2)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
 
   playground:
     devDependencies:
