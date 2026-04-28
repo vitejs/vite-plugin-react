@@ -90,7 +90,6 @@ async function convertVendorToEsm(vendorDir: string) {
           'stream',
           'async_hooks',
         ],
-        define: { 'process.env.NODE_ENV': '"production"' },
         sourcemap: false,
         logLevel: 'silent',
       })
