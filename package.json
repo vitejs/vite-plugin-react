@@ -30,11 +30,11 @@
     "override-vite7": "yq -i '.overrides.vite = \"^7\"' pnpm-workspace.yaml && yq -i '.overrides.\"@vitejs/plugin-react\" = \"^5\"' pnpm-workspace.yaml && yq -i '.packages += [\"!packages/plugin-react\"]' pnpm-workspace.yaml"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.12.2",
     "@vitejs/release-scripts": "^1.7.0",
-    "eslint": "^9.39.4",
+    "eslint": "^10.3.0",
     "eslint-plugin-import-x": "^4.16.2",
     "eslint-plugin-n": "^17.24.0",
     "eslint-plugin-regexp": "^3.1.0",
