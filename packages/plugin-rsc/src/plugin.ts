@@ -60,6 +60,7 @@ import {
   cleanUrl,
   directRequestRE,
   evalValue,
+  FS_PREFIX,
   normalizeViteImportAnalysisUrl,
   prepareError,
 } from './plugins/vite-utils'
@@ -1628,10 +1629,11 @@ function vitePluginUseClient(
                 '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
               ),
             )
+            const url = path.posix.join(FS_PREFIX, id)
             // TODO: avoid `export default undefined`
             return `
-            export * from ${JSON.stringify(id)};
-            import * as __all__ from ${JSON.stringify(id)};
+            export * from ${JSON.stringify(url)};
+            import * as __all__ from ${JSON.stringify(url)};
             export default __all__.default;
           `
           }
