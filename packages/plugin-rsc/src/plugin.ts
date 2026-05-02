@@ -27,6 +27,7 @@ import {
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { deriveBareSpecifier } from './plugins/derive-bare-specifier'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ensureEnvironmentImportsEntryFallback,
@@ -60,6 +61,7 @@ import {
   cleanUrl,
   directRequestRE,
   evalValue,
+  FS_PREFIX,
   normalizeViteImportAnalysisUrl,
   prepareError,
 } from './plugins/vite-utils'
@@ -1628,10 +1630,11 @@ function vitePluginUseClient(
                 '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
               ),
             )
+            const url = path.posix.join(FS_PREFIX, id)
             // TODO: avoid `export default undefined`
             return `
-            export * from ${JSON.stringify(id)};
-            import * as __all__ from ${JSON.stringify(id)};
+            export * from ${JSON.stringify(url)};
+            import * as __all__ from ${JSON.stringify(url)};
             export default __all__.default;
           `
           }
@@ -1643,17 +1646,44 @@ function vitePluginUseClient(
       resolveId: {
         order: 'pre',
         async handler(source, importer, options) {
-          if (
-            this.environment.name === serverEnvironmentName &&
-            bareImportRE.test(source) &&
-            !(source === 'client-only' || source === 'server-only')
-          ) {
+          if (this.environment.name !== serverEnvironmentName) return
+          if (source === 'client-only' || source === 'server-only') return
+
+          // Bare-specifier import: stash directly. The `source` itself is the
+          // bare specifier we want to use in the proxy.
+          if (bareImportRE.test(source)) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
               packageSources.set(resolved.id, source)
               return resolved
             }
+            return
           }
+
+          // Non-bare (relative or absolute) import resolving into node_modules:
+          // derive the package's own bare specifier from package.json + exports
+          // so that the working `client-package-proxy` branch handles it the
+          // same as a bare-specifier import. Without this, internal relative
+          // imports between files of the same package fall into the broken
+          // `client-in-server-package-proxy` fallback, which generates absolute
+          // filesystem paths in proxy modules.
+          const resolved = await this.resolve(source, importer, options)
+          if (!resolved || !resolved.id.includes('/node_modules/')) return
+          if (packageSources.has(resolved.id)) return resolved
+
+          const cleanedId = cleanUrl(resolved.id)
+          const derivedSpec = deriveBareSpecifier(cleanedId)
+          if (!derivedSpec) return resolved
+
+          // Round-trip the derived specifier through the resolver: only trust
+          // it if it resolves back to the same file. Defends against bugs in
+          // the reverse-exports walker and against environments where the
+          // package's own bare specifier doesn't resolve symmetrically.
+          const verify = await this.resolve(derivedSpec, importer, options)
+          if (verify && cleanUrl(verify.id) === cleanedId) {
+            packageSources.set(resolved.id, derivedSpec)
+          }
+          return resolved
         },
       },
       load: {
