@@ -1615,10 +1615,18 @@ function vitePluginUseClient(
                 '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
               ),
             )
+            // Route absolute paths through `/@fs/` so import-analysis resolves
+            // them correctly even when the dependency optimizer doesn't rewrite
+            // the import to a `?v=<hash>` URL (e.g. when reached via a relative
+            // import from another package file).
+            const url = normalizeViteImportAnalysisUrl(
+              this.environment as DevEnvironment,
+              id,
+            )
             // TODO: avoid `export default undefined`
             return `
-            export * from ${JSON.stringify(id)};
-            import * as __all__ from ${JSON.stringify(id)};
+            export * from ${JSON.stringify(url)};
+            import * as __all__ from ${JSON.stringify(url)};
             export default __all__.default;
           `
           }
