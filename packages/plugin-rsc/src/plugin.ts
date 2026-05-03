@@ -57,12 +57,12 @@ import {
 } from './plugins/utils'
 import { validateImportPlugin } from './plugins/validate-import'
 import {
+  FS_PREFIX,
   cleanUrl,
   directRequestRE,
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
-  wrapId,
 } from './plugins/vite-utils'
 import {
   type TransformWrapExportFilter,
@@ -1616,12 +1616,12 @@ function vitePluginUseClient(
                 '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
               ),
             )
-            // Wrap the absolute path with `/@id/` so import-analysis treats
-            // it as an already-resolved id and bypasses the deps optimizer.
-            // Going through the optimizer would re-normalize the URL and
-            // (depending on filesystem layout) emit a bare absolute path
-            // that import-analysis then misresolves as root-relative.
-            const url = wrapId(id)
+            // Always emit `/@fs/<abs-path>` so import-analysis resolves the
+            // module directly from disk. Without this, when this proxy is
+            // reached via a relative import (so the optimizer doesn't rewrite
+            // it to a `?v=<hash>` URL), import-analysis would treat the raw
+            // absolute path as a root-relative URL and look up the wrong file.
+            const url = path.posix.join(FS_PREFIX, id)
             // TODO: avoid `export default undefined`
             return `
             export * from ${JSON.stringify(url)};
