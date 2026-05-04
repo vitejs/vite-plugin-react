@@ -43,16 +43,16 @@
     "test-unit": "vitest run"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.17"
+    "@rolldown/pluginutils": "1.0.0-rc.18"
   },
   "devDependencies": {
-    "@babel/core": "8.0.0-rc.3",
+    "@babel/core": "8.0.0-rc.4",
     "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "rolldown": "1.0.0-rc.17",
+    "rolldown": "1.0.0-rc.18",
     "tsdown": "^0.21.10",
     "vite": "^8.0.10"
   },
