@@ -1,3 +1,13 @@
+## <small>[0.5.26](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.25...plugin-rsc@0.5.26) (2026-05-07)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1201](https://github.com/vitejs/vite-plugin-react/issues/1201)) ([152e549](https://github.com/vitejs/vite-plugin-react/commit/152e549ec91b838b4eaa3cecaa8471f8ae42c0ec))
+* **deps:** update all non-major dependencies ([#1209](https://github.com/vitejs/vite-plugin-react/issues/1209)) ([a4296ad](https://github.com/vitejs/vite-plugin-react/commit/a4296ad2995a8d493528b8d5450a1209de2943cb))
+* **deps:** update react 19.2.6 ([#1211](https://github.com/vitejs/vite-plugin-react/issues/1211)) ([8fa9619](https://github.com/vitejs/vite-plugin-react/commit/8fa9619e1b1f51b079f4c1df6bcf076dcafc5aed))
+
+### Tests
+
+* **rsc:** add starter-extra and enhance css tests ([#1202](https://github.com/vitejs/vite-plugin-react/issues/1202)) ([bb42093](https://github.com/vitejs/vite-plugin-react/commit/bb420932a4bc1d75ce174f134617880ef851daad))
 ## <small>[0.5.25](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.24...plugin-rsc@0.5.25) (2026-04-27)</small>
 ### Bug Fixes
 
