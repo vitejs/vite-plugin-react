@@ -111,6 +111,18 @@ function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
 }
 
+function filterBareResolvable(packages: string[], root: string): string[] {
+  const userRequire = createRequire(path.join(root, 'package.json'))
+  return packages.filter((name) => {
+    try {
+      userRequire.resolve(name)
+      return true
+    } catch {
+      return false
+    }
+  })
+}
+
 export type { RscPluginManager }
 
 /**
@@ -517,8 +529,15 @@ export default function vitePluginRsc(
               },
               optimizeDeps: {
                 include: [
+                  'react',
+                  'react-dom',
+                  'react/jsx-runtime',
+                  'react/jsx-dev-runtime',
                   'react-dom/client',
                   `${reactServerDomPackageName}/client.browser`,
+                  // Without these, the client optimizer re-scans on first
+                  // request, drifting `?v=` hashes and duplicating React.
+                  ...filterBareResolvable(result.ssr.noExternal, process.cwd()),
                 ],
                 exclude: [PKG_NAME],
               },
