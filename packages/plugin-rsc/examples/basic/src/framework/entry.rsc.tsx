@@ -128,6 +128,12 @@ async function handleRequest({
 async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
 
+  if (url.pathname === '/__test_compatibility_manifest') {
+    const { default: compatibilityManifest } =
+      await import('virtual:vite-rsc/compatibility-manifest')
+    return Response.json(compatibilityManifest)
+  }
+
   const { Root } = await import('../routes/root.tsx')
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
   // https://vite.dev/guide/features.html#content-security-policy-csp

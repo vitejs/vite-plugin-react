@@ -442,6 +442,46 @@ export default defineConfig({
 })
 ```
 
+### Framework compatibility manifest
+
+Frameworks can import `virtual:vite-rsc/compatibility-manifest` from the RSC or
+SSR environment to access compiler-owned deployment compatibility metadata. This
+is intended for deployment skew protection: a framework can include
+`compatibilityManifest.compatibilityVersion` in RSC responses and trigger a
+document reload when a later RSC request comes from an incompatible client.
+
+```js
+import compatibilityManifest from 'virtual:vite-rsc/compatibility-manifest'
+
+export function getRscResponseMetadata() {
+  return {
+    compatibilityVersion: compatibilityManifest.compatibilityVersion,
+  }
+}
+```
+
+The manifest includes the Vite base path, RSC runtime package versions, a hash
+of the final assets manifest, final output bundle hashes, client reference keys
+with rendered exports, server reference keys with exported functions, and a hash
+of the server-action encryption key when action closure encryption is actually
+emitted.
+
+Frameworks with a custom build pipeline can use `getPluginApi(config).manager`
+after the real RSC and client builds have completed:
+
+```js
+import { getPluginApi } from '@vitejs/plugin-rsc'
+
+const manager = getPluginApi(config).manager
+const manifest = manager.finalizeCompatibilityManifest()
+const version = manifest.compatibilityVersion
+```
+
+`manager.getCompatibilityManifest()` and `manager.getCompatibilityVersion()`
+throw during production builds until the manifest has been finalized. This
+prevents scan builds or incomplete custom pipelines from accidentally emitting a
+partial compatibility version.
+
 ## RSC runtime (react-server-dom) API
 
 ### `@vitejs/plugin-rsc/rsc`

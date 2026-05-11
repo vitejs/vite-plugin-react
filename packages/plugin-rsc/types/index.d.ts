@@ -1,3 +1,5 @@
+/// <reference path="./virtual.d.ts" />
+
 declare global {
   interface ImportMeta {
     readonly viteRsc: {

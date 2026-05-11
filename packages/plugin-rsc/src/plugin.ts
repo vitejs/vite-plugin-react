@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -77,6 +78,15 @@ import { createRpcServer } from './utils/rpc'
 const isRolldownVite = 'rolldownVersion' in vite
 
 const BUILD_ASSETS_MANIFEST_NAME = '__vite_rsc_assets_manifest.js'
+const BUILD_COMPATIBILITY_MANIFEST_NAME = '__vite_rsc_compatibility_manifest.js'
+
+const COMPATIBILITY_RUNTIME_PACKAGES = [
+  '@vitejs/plugin-rsc',
+  'react',
+  'react-dom',
+  'react-server-dom-webpack',
+  'vite',
+]
 
 type ClientReferenceMeta = {
   importId: string
@@ -95,6 +105,27 @@ type ServerRerferenceMeta = {
   referenceKey: string
   // TODO: tree shake unused server functions
   exportNames: string[]
+}
+
+export type RscCompatibilityManifest = {
+  version: 1
+  compatibilityVersion: string
+  base: string
+  runtime: Record<string, string>
+  assetsManifestHash: string
+  bundles: Record<string, string>
+  clientReferences: Array<{
+    id: string
+    referenceKey: string
+    packageSource?: string
+    renderedExports: string[]
+  }>
+  serverReferences: Array<{
+    id: string
+    referenceKey: string
+    exportNames: string[]
+  }>
+  serverActionEncryptionKeyHash?: string
 }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
@@ -121,11 +152,13 @@ class RscPluginManager {
   config!: ResolvedConfig
   bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
+  buildCompatibilityManifest: RscCompatibilityManifest | undefined
   isScanBuild: boolean = false
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
   serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
+  serverActionEncryptionKeyHash: string | undefined
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -165,6 +198,229 @@ class RscPluginManager {
 
   writeEnvironmentImportsManifest(): void {
     writeEnvironmentImportsManifest(this)
+  }
+
+  finalizeCompatibilityManifest(): RscCompatibilityManifest {
+    if (this.isScanBuild) {
+      throw new Error(
+        `[vite-rsc] compatibility manifest cannot be finalized during a scan build`,
+      )
+    }
+    if (!this.buildAssetsManifest) {
+      throw new Error(
+        `[vite-rsc] compatibility manifest requires the final assets manifest. ` +
+          `Run the client build before calling 'manager.finalizeCompatibilityManifest()'.`,
+      )
+    }
+    if (!this.bundles.client || !this.bundles.rsc) {
+      throw new Error(
+        `[vite-rsc] compatibility manifest requires final client and rsc bundles. ` +
+          `Run the real client and rsc builds before calling 'manager.finalizeCompatibilityManifest()'.`,
+      )
+    }
+    this.buildCompatibilityManifest = createCompatibilityManifest(this, {
+      assetsManifestHash: hashCompatibilityObject(this.buildAssetsManifest),
+      bundles: hashCompatibilityBundles(this.bundles),
+    })
+    return this.buildCompatibilityManifest
+  }
+
+  writeCompatibilityManifest(environmentNames: string[]): void {
+    const compatibilityManifestCode = `export default ${JSON.stringify(
+      this.getCompatibilityManifest(),
+      null,
+      2,
+    )}`
+    for (const name of environmentNames) {
+      const manifestPath = path.join(
+        this.config.environments[name]!.build.outDir,
+        BUILD_COMPATIBILITY_MANIFEST_NAME,
+      )
+      fs.writeFileSync(manifestPath, compatibilityManifestCode)
+    }
+  }
+
+  getCompatibilityManifest(): RscCompatibilityManifest {
+    if (this.config.command !== 'build') {
+      return createCompatibilityManifest(this, {
+        assetsManifestHash: 'dev',
+        bundles: {},
+      })
+    }
+    if (!this.buildCompatibilityManifest) {
+      throw new Error(
+        `[vite-rsc] compatibility manifest is not ready. ` +
+          `Call 'manager.finalizeCompatibilityManifest()' after the final client build, ` +
+          `or import 'virtual:vite-rsc/compatibility-manifest' at runtime.`,
+      )
+    }
+    return this.buildCompatibilityManifest
+  }
+
+  getCompatibilityVersion(): string {
+    return this.getCompatibilityManifest().compatibilityVersion
+  }
+
+  toCompatibilityId(id: string): string {
+    return normalizePath(path.isAbsolute(id) ? this.toRelativeId(id) : id)
+  }
+}
+
+type RscCompatibilityManifestPayload = Omit<
+  RscCompatibilityManifest,
+  'compatibilityVersion'
+>
+
+function createCompatibilityManifest(
+  manager: RscPluginManager,
+  {
+    assetsManifestHash,
+    bundles,
+  }: {
+    assetsManifestHash: string
+    bundles: Record<string, string>
+  },
+): RscCompatibilityManifest {
+  const payload: RscCompatibilityManifestPayload = {
+    version: 1,
+    base: manager.config.base,
+    runtime: Object.fromEntries(
+      COMPATIBILITY_RUNTIME_PACKAGES.map((packageName) => [
+        packageName,
+        getPackageVersion(packageName),
+      ]),
+    ),
+    assetsManifestHash,
+    bundles,
+    clientReferences: Object.values(manager.clientReferenceMetaMap)
+      .map((meta) => ({
+        id: manager.toCompatibilityId(meta.importId),
+        referenceKey: meta.referenceKey,
+        packageSource: meta.packageSource,
+        renderedExports: [...meta.renderedExports].sort(),
+      }))
+      .sort(compareClientCompatibilityReferences),
+    serverReferences: Object.values(manager.serverReferenceMetaMap)
+      .map((meta) => ({
+        id: manager.toCompatibilityId(meta.importId),
+        referenceKey: meta.referenceKey,
+        exportNames: [...meta.exportNames].sort(),
+      }))
+      .sort(compareServerCompatibilityReferences),
+  }
+  if (manager.serverActionEncryptionKeyHash) {
+    payload.serverActionEncryptionKeyHash =
+      manager.serverActionEncryptionKeyHash
+  }
+  const compatibilityVersion = hashCompatibilityObject(payload)
+  return {
+    version: payload.version,
+    compatibilityVersion,
+    base: payload.base,
+    runtime: payload.runtime,
+    assetsManifestHash: payload.assetsManifestHash,
+    bundles: payload.bundles,
+    clientReferences: payload.clientReferences,
+    serverReferences: payload.serverReferences,
+    ...(payload.serverActionEncryptionKeyHash
+      ? {
+          serverActionEncryptionKeyHash: payload.serverActionEncryptionKeyHash,
+        }
+      : {}),
+  }
+}
+
+function compareClientCompatibilityReferences(
+  a: RscCompatibilityManifest['clientReferences'][number],
+  b: RscCompatibilityManifest['clientReferences'][number],
+): number {
+  return (
+    a.referenceKey.localeCompare(b.referenceKey) ||
+    a.id.localeCompare(b.id) ||
+    (a.packageSource ?? '').localeCompare(b.packageSource ?? '')
+  )
+}
+
+function compareServerCompatibilityReferences(
+  a: RscCompatibilityManifest['serverReferences'][number],
+  b: RscCompatibilityManifest['serverReferences'][number],
+): number {
+  return (
+    a.referenceKey.localeCompare(b.referenceKey) || a.id.localeCompare(b.id)
+  )
+}
+
+function hashCompatibilityValue(value: string | Uint8Array): string {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+function hashCompatibilityObject(value: unknown): string {
+  return hashCompatibilityValue(
+    JSON.stringify(normalizeCompatibilityValue(value)),
+  )
+}
+
+function normalizeCompatibilityValue(value: unknown): unknown {
+  if (value instanceof RuntimeAsset) {
+    return { runtime: value.runtime }
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeCompatibilityValue(item))
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([, child]) => child !== undefined)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, child]) => [key, normalizeCompatibilityValue(child)]),
+    )
+  }
+  return value
+}
+
+function hashCompatibilityBundles(
+  bundles: Record<string, Rollup.OutputBundle>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(bundles)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, bundle]) => [name, hashCompatibilityBundle(bundle)]),
+  )
+}
+
+function hashCompatibilityBundle(bundle: Rollup.OutputBundle): string {
+  return hashCompatibilityObject(
+    Object.values(bundle)
+      .filter((output) => !output.fileName.endsWith('.map'))
+      .map((output) => {
+        if (output.type === 'chunk') {
+          return {
+            type: output.type,
+            fileName: output.fileName,
+            codeHash: hashCompatibilityValue(output.code),
+          }
+        }
+        return {
+          type: output.type,
+          fileName: output.fileName,
+          sourceHash: hashCompatibilityValue(
+            typeof output.source === 'string' ? output.source : output.source,
+          ),
+        }
+      })
+      .sort((a, b) => a.fileName.localeCompare(b.fileName)),
+  )
+}
+
+function getPackageVersion(packageName: string): string {
+  try {
+    const packageJsonPath = require.resolve(`${packageName}/package.json`)
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+    return typeof packageJson.version === 'string'
+      ? packageJson.version
+      : 'unknown'
+  } catch {
+    return 'unknown'
   }
 }
 
@@ -338,7 +594,7 @@ export function vitePluginRscMinimal(
     ...vitePluginRscCore(),
     ...vitePluginUseClient(rscPluginOptions, manager),
     ...vitePluginUseServer(rscPluginOptions, manager),
-    ...vitePluginDefineEncryptionKey(rscPluginOptions),
+    ...vitePluginDefineEncryptionKey(rscPluginOptions, manager),
     {
       name: 'rsc:reference-validation',
       apply: 'serve',
@@ -448,6 +704,8 @@ export default function vitePluginRsc(
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
+    manager.finalizeCompatibilityManifest()
+    manager.writeCompatibilityManifest(['ssr', 'rsc'])
     manager.writeEnvironmentImportsManifest()
   }
 
@@ -1221,6 +1479,53 @@ export function createRpcClient(params) {
         return
       },
     },
+    {
+      name: 'rsc:virtual:vite-rsc/compatibility-manifest',
+      resolveId: {
+        filter: { id: exactRegex('virtual:vite-rsc/compatibility-manifest') },
+        handler(source) {
+          if (source === 'virtual:vite-rsc/compatibility-manifest') {
+            if (this.environment.mode === 'build') {
+              return { id: source, external: true }
+            }
+            return `\0` + source
+          }
+        },
+      },
+      load: {
+        filter: {
+          id: exactRegex('\0virtual:vite-rsc/compatibility-manifest'),
+        },
+        handler(id) {
+          if (id === '\0virtual:vite-rsc/compatibility-manifest') {
+            assert(this.environment.name !== 'client')
+            assert(this.environment.mode === 'dev')
+            return `export default ${JSON.stringify(
+              manager.getCompatibilityManifest(),
+              null,
+              2,
+            )}`
+          }
+        },
+      },
+      renderChunk(code, chunk) {
+        if (code.includes('virtual:vite-rsc/compatibility-manifest')) {
+          assert(this.environment.name !== 'client')
+          const replacement = normalizeRelativePath(
+            path.relative(
+              path.join(chunk.fileName, '..'),
+              BUILD_COMPATIBILITY_MANIFEST_NAME,
+            ),
+          )
+          code = code.replaceAll(
+            'virtual:vite-rsc/compatibility-manifest',
+            () => replacement,
+          )
+          return { code }
+        }
+        return
+      },
+    },
     createVirtualPlugin('vite-rsc/bootstrap-script-content', function () {
       assert(this.environment.name !== 'client')
       return `\
@@ -1820,6 +2125,7 @@ function vitePluginDefineEncryptionKey(
     RscPluginOptions,
     'defineEncryptionKey' | 'environment'
   >,
+  manager: RscPluginManager,
 ): Plugin[] {
   let defineEncryptionKey: string
   let emitEncryptionKey = false
@@ -1833,6 +2139,7 @@ function vitePluginDefineEncryptionKey(
       name: 'rsc:encryption-key',
       async configEnvironment(name, _config, env) {
         if (name === serverEnvironmentName && !env.isPreview) {
+          manager.serverActionEncryptionKeyHash = undefined
           defineEncryptionKey =
             useServerPluginOptions.defineEncryptionKey ??
             JSON.stringify(toBase64(await generateEncryptionKey()))
@@ -1863,6 +2170,8 @@ function vitePluginDefineEncryptionKey(
         if (code.includes(KEY_PLACEHOLDER)) {
           assert.equal(this.environment.name, serverEnvironmentName)
           emitEncryptionKey = true
+          manager.serverActionEncryptionKeyHash =
+            hashCompatibilityValue(defineEncryptionKey)
           const normalizedPath = normalizeRelativePath(
             path.relative(path.join(chunk.fileName, '..'), KEY_FILE),
           )

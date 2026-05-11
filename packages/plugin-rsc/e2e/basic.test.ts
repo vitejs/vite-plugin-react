@@ -18,6 +18,20 @@ import {
   waitForHydration,
 } from './helper'
 
+function readCompatibilityManifest(f: Fixture, environmentName: string) {
+  return JSON.parse(
+    readFileSync(
+      path.join(
+        f.root,
+        'dist',
+        environmentName,
+        '__vite_rsc_compatibility_manifest.js',
+      ),
+      'utf-8',
+    ).slice('export default '.length),
+  )
+}
+
 test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
@@ -427,6 +441,58 @@ function defineTest(f: Fixture) {
       const deps =
         manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
+    })
+
+    test('compatibility manifest', async ({ page }) => {
+      const response = await page.request.get(
+        f.url('__test_compatibility_manifest'),
+      )
+      expect(response.ok()).toBe(true)
+      const runtimeManifest = await response.json()
+      const rscManifest = readCompatibilityManifest(f, 'rsc')
+      const ssrManifest = readCompatibilityManifest(f, 'ssr')
+
+      expect(runtimeManifest).toEqual(rscManifest)
+      expect(ssrManifest).toEqual(rscManifest)
+      expect(rscManifest).toMatchObject({
+        version: 1,
+        compatibilityVersion: expect.stringMatching(/^[a-f0-9]{64}$/),
+        base: '/',
+        runtime: expect.objectContaining({
+          '@vitejs/plugin-rsc': expect.any(String),
+          react: expect.any(String),
+          'react-dom': expect.any(String),
+          vite: expect.any(String),
+        }),
+        assetsManifestHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        bundles: {
+          client: expect.stringMatching(/^[a-f0-9]{64}$/),
+          rsc: expect.stringMatching(/^[a-f0-9]{64}$/),
+          ssr: expect.stringMatching(/^[a-f0-9]{64}$/),
+        },
+        clientReferences: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'src/routes/client.tsx',
+            renderedExports: expect.arrayContaining([
+              'ClientCounter',
+              'Hydrated',
+            ]),
+          }),
+        ]),
+        serverReferences: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'src/routes/action/action.tsx',
+            exportNames: expect.arrayContaining([
+              'changeServerCounter',
+              'getServerCounter',
+              'resetServerCounter',
+            ]),
+          }),
+        ]),
+      })
+      expect(rscManifest.compatibilityVersion).not.toBe(
+        rscManifest.assetsManifestHash,
+      )
     })
   })
 
