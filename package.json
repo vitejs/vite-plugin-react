@@ -32,22 +32,22 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.3",
     "@vitejs/release-scripts": "^1.7.0",
     "eslint": "^9.39.4",
     "eslint-plugin-import-x": "^4.16.2",
     "eslint-plugin-n": "^17.24.0",
     "eslint-plugin-regexp": "^3.1.0",
-    "fs-extra": "^11.3.4",
+    "fs-extra": "^11.3.5",
     "globals": "^17.6.0",
     "lint-staged": "^16.4.0",
-    "oxfmt": "^0.47.0",
+    "oxfmt": "^0.48.0",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.59.1",
     "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.10",
+    "vite": "^8.0.11",
     "vite-plugin-inspect": "^11.3.3",
     "vitest": "^4.1.5"
   },
@@ -71,5 +71,5 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.4"
 }

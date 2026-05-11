@@ -29,17 +29,17 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0-rc.18",
+    "@rolldown/pluginutils": "1.0.0",
     "@swc/core": "^1.15.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.3",
     "@vitejs/react-common": "workspace:*",
-    "fs-extra": "^11.3.4",
+    "fs-extra": "^11.3.5",
     "prettier": "^3.0.3",
-    "tsdown": "^0.21.10",
+    "tsdown": "^0.22.0",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
