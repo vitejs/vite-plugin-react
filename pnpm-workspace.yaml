@@ -17,7 +17,7 @@ onlyBuiltDependencies:
   - workerd
 
 overrides:
-  '@types/estree': ^1.0.8
+  '@types/estree': ^1.0.9
 
 peerDependencyRules:
   ignoreMissing:
