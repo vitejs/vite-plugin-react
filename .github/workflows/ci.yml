@@ -29,13 +29,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node_version: [20, 22, 24]
+        node_version: [22, 24, 26]
         include:
           # Active LTS + other OS
           - os: macos-latest
-            node_version: 22
+            node_version: 24
           - os: windows-latest
-            node_version: 22
+            node_version: 24
       fail-fast: false
 
     name: 'Build&Test: node-${{ matrix.node_version }}, ${{ matrix.os }}'
@@ -96,7 +96,7 @@ jobs:
     if: github.repository == 'vitejs/vite-plugin-react'
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    name: 'Lint: node-20, ubuntu-latest'
+    name: 'Lint: node-24, ubuntu-latest'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -105,10 +105,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
 
-      - name: Set node version to 20
+      - name: Set node version to 24
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install deps
         run: pnpm install

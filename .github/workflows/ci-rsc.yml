@@ -28,7 +28,7 @@ jobs:
       - uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
       - run: pnpm i
       - run: pnpm build
       - run: pnpm -C packages/plugin-rsc tsc
@@ -63,7 +63,7 @@ jobs:
       - uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
       - run: pnpm i
       - name: install react
         if: ${{ matrix.react_version }}
