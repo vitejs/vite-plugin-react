@@ -43,7 +43,7 @@
     "test-unit": "vitest run"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "1.0.0"
+    "@rolldown/pluginutils": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "8.0.0-rc.4",
@@ -52,7 +52,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "rolldown": "1.0.0",
+    "rolldown": "^1.0.0",
     "tsdown": "^0.22.0",
     "vite": "^8.0.11"
   },
@@ -76,7 +76,7 @@
     "schemaVersion": 1,
     "rolldown": {
       "type": "compatible",
-      "versions": "^1.0.0-beta.44",
+      "versions": "^1.0.0",
       "note": "You can use Rolldown's built-in feature directly."
     },
     "rollup": {

@@ -75,13 +75,13 @@ importers:
   packages/common:
     dependencies:
       '@rolldown/pluginutils':
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0
 
   packages/plugin-react:
     dependencies:
       '@rolldown/pluginutils':
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0
     devDependencies:
       '@babel/core':
@@ -103,7 +103,7 @@ importers:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
       rolldown:
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0
       tsdown:
         specifier: ^0.22.0
@@ -115,7 +115,7 @@ importers:
   packages/plugin-react-swc:
     dependencies:
       '@rolldown/pluginutils':
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0
       '@swc/core':
         specifier: ^1.15.11
@@ -409,7 +409,7 @@ importers:
   packages/plugin-rsc:
     dependencies:
       '@rolldown/pluginutils':
-        specifier: 1.0.0
+        specifier: ^1.0.0
         version: 1.0.0
       es-module-lexer:
         specifier: ^2.1.0
