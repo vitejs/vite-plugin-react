@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Don't apply React Refresh wrapper for non JSX files [#1226](https://github.com/vitejs/vite-plugin-react/pull/1226)
+
+Fixes [#1225](https://github.com/vitejs/vite-plugin-react/issues/1225).
+
 ## 4.3.1 (2026-05-14)
 
 ### Avoid `esbuild` warnings with Vite 8 [#1195](https://github.com/vitejs/vite-plugin-react/pull/1195)
