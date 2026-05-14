@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.1 (2026-05-14)
+
 ### Avoid `esbuild` warnings with Vite 8 [#1195](https://github.com/vitejs/vite-plugin-react/pull/1195)
 
 Fixes [#1187](https://github.com/vitejs/vite-plugin-react/issues/1187).
