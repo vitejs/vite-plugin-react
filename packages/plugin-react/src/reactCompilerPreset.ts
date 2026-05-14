@@ -4,10 +4,7 @@ import type {
 } from '#optionalTypes'
 
 export const reactCompilerPreset = (
-  options: Pick<
-    ReactCompilerBabelPluginOptions,
-    'compilationMode' | 'target'
-  > = {},
+  options: ReactCompilerBabelPluginOptions = {},
 ): RolldownBabelPreset => ({
   preset: () => ({
     plugins: [['babel-plugin-react-compiler', options]],
