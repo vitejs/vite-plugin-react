@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 6.0.2 (2026-05-14)
+
+### Allow all options in reactCompilerPreset ([#1189](https://github.com/vitejs/vite-plugin-react/pull/1189))
+
+This is a type only change. Only `compilationMode` and `target` options were available for `reactCompilerPreset`.
+
 ## 6.0.1 (2026-03-13)
 
 ### Expand `@rolldown/plugin-babel` peer dep range ([#1146](https://github.com/vitejs/vite-plugin-react/pull/1146))
