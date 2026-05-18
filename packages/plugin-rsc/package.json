@@ -39,7 +39,7 @@
     "prepack": "tsdown"
   },
   "dependencies": {
-    "@rolldown/pluginutils": "^1.0.0",
+    "@rolldown/pluginutils": "^1.0.1",
     "es-module-lexer": "^2.1.0",
     "estree-walker": "^3.0.3",
     "magic-string": "^0.30.21",
@@ -50,10 +50,10 @@
   },
   "devDependencies": {
     "@hiogawa/utils": "^1.7.0",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.9",
-    "@types/node": "^24.12.3",
+    "@types/node": "^24.12.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "workspace:*",
