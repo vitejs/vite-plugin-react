@@ -33,7 +33,7 @@
     "@swc/core": "^1.15.11"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.59.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.12.4",
     "@vitejs/react-common": "workspace:*",
