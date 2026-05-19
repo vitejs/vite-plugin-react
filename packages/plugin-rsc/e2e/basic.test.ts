@@ -1062,6 +1062,7 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 0, 0)',
       )
+      await page.waitForTimeout(100)
       editor.reset()
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
@@ -1122,6 +1123,7 @@ function defineTest(f: Fixture) {
       await expect(serverCard).toHaveCSS('color', 'rgb(0, 0, 0)')
       await expect(clientCard).toHaveCSS('color', 'rgb(0, 0, 0)')
 
+      await page.waitForTimeout(100)
       editor.reset()
       await expect(serverCard).toHaveCSS('color', 'rgb(255, 165, 0)')
       await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')
