@@ -1031,6 +1031,10 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 0, 0)',
       )
+      // wait longer for multiple edits
+      // resetting too fast seems to miss hmr update for fast machine
+      // (ubuntu / chromium on CI since playwright 1.60.0)
+      await page.waitForTimeout(100)
       editor.reset()
       await expect(page.getByTestId('css-module-client')).toHaveCSS(
         'color',
@@ -1058,6 +1062,7 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 0, 0)',
       )
+      await page.waitForTimeout(100)
       editor.reset()
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
@@ -1118,6 +1123,7 @@ function defineTest(f: Fixture) {
       await expect(serverCard).toHaveCSS('color', 'rgb(0, 0, 0)')
       await expect(clientCard).toHaveCSS('color', 'rgb(0, 0, 0)')
 
+      await page.waitForTimeout(100)
       editor.reset()
       await expect(serverCard).toHaveCSS('color', 'rgb(255, 165, 0)')
       await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')

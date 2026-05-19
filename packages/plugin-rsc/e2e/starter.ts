@@ -145,6 +145,7 @@ export function defineStarterTest(
     )
     await expect(card).toHaveCSS('background-color', 'rgb(255, 0, 200)')
 
+    await page.waitForTimeout(100)
     editor.reset()
     await expect(card).not.toHaveCSS('background-color', 'rgb(255, 0, 200)')
   })
