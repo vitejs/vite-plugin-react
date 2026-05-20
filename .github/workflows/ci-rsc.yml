@@ -24,9 +24,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
       - run: pnpm i
@@ -59,9 +59,9 @@ jobs:
             react_version: experimental
       fail-fast: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
       - run: pnpm i
@@ -88,7 +88,7 @@ jobs:
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.vite && format('-vite-{0}', matrix.vite) || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
