@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -55,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Publish package
-        run: npm i -g npm@^11.5.2 && pnpm run ci-publish ${{ github.ref_name }}
+        run: npm i -g npm@^11.5.2 && pnpm run ci-publish "$GITHUB_REF_NAME"
 
       - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName != 'plugin-rsc'
         uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
