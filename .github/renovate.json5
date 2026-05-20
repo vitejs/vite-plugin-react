@@ -29,7 +29,6 @@
     {
       matchDepTypes: ['action'],
       pinDigests: true,
-      matchPackageNames: ['!actions/{/,}**', '!github/{/,}**'],
     },
     {
       groupName: 'react-related dependencies',
