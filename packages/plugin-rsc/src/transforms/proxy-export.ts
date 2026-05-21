@@ -116,13 +116,17 @@ export function transformProxyExport(
     }
 
     /**
+     * export * as ns from './foo'
      * export * from './foo'
      */
-    if (
-      !options.ignoreExportAllDeclaration &&
-      node.type === 'ExportAllDeclaration'
-    ) {
-      throw new Error('unsupported ExportAllDeclaration')
+    if (node.type === 'ExportAllDeclaration') {
+      if (node.exported?.type === 'Identifier') {
+        createExport(node, [node.exported.name])
+        continue
+      }
+      if (!options.ignoreExportAllDeclaration) {
+        throw new Error('unsupported ExportAllDeclaration')
+      }
     }
 
     /**

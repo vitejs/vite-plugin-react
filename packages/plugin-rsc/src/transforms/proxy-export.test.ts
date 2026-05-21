@@ -4,7 +4,10 @@ import { transformProxyExport } from './proxy-export'
 import { debugSourceMap } from './test-utils'
 import { transformWrapExport } from './wrap-export'
 
-async function testTransform(input: string, options?: { keep?: boolean }) {
+async function testTransform(
+  input: string,
+  options?: { keep?: boolean; ignoreExportAllDeclaration?: boolean },
+) {
   const ast = await parseAstAsync(input)
   const result = transformProxyExport(ast, {
     code: input,
@@ -192,6 +195,54 @@ export { x as y }
       ",
       }
     `)
+  })
+
+  test('re-export namespace', async () => {
+    const input = `export * as all from "./dep"`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      {
+        "exportNames": [
+          "all",
+        ],
+        "output": "export const all = /* #__PURE__ */ $$proxy("<id>", "all");
+      ",
+      }
+    `)
+  })
+
+  test('re-export all (resolved)', async () => {
+    // when caller resolves names ahead of time, the source is rewritten so
+    // the transform never sees a bare `export *`.
+    const input = `export { x, y } from "./dep"`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      {
+        "exportNames": [
+          "x",
+          "y",
+        ],
+        "output": "export const x = /* #__PURE__ */ $$proxy("<id>", "x");
+      export const y = /* #__PURE__ */ $$proxy("<id>", "y");
+      ",
+      }
+    `)
+  })
+
+  test('re-export all (ignoreExportAllDeclaration)', async () => {
+    const input = `export * from "./dep"`
+    expect(await testTransform(input, { ignoreExportAllDeclaration: true }))
+      .toMatchInlineSnapshot(`
+      {
+        "exportNames": [],
+        "output": "",
+      }
+    `)
+  })
+
+  test('re-export all (unresolved throws)', async () => {
+    const input = `export * from "./dep"`
+    await expect(testTransform(input)).rejects.toThrow(
+      'unsupported ExportAllDeclaration',
+    )
   })
 
   test('keep', async () => {

@@ -29,6 +29,7 @@ import { TestClientInServer } from './deps/client-in-server/server'
 import { TestServerInClient } from './deps/server-in-client/client'
 import { TestServerInServer } from './deps/server-in-server/server'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
+import { TestExportAll } from './export-all/server'
 import { TestHmrClientDep } from './hmr-client-dep/client'
 import { TestHmrClientDep2 } from './hmr-client-dep2/client'
 import { TestHmrClientDep3 } from './hmr-client-dep3/server'
@@ -125,6 +126,7 @@ export function Root(props: { url: URL }) {
         <TestAssetsServer />
         <TestTreeShakeServer />
         <TestTreeShake2 />
+        <TestExportAll />
         <TestClientChunkServer />
         <TestChunk2 />
         <TestUseId />

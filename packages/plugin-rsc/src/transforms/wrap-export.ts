@@ -168,18 +168,25 @@ export function transformWrapExport(
     }
 
     /**
+     * export * as ns from './foo'
      * export * from './foo'
      */
     // vue sfc uses ExportAllDeclaration to re-export setup script.
     // for now we just give an option to not throw for this case.
     // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
-    if (
-      !options.ignoreExportAllDeclaration &&
-      node.type === 'ExportAllDeclaration'
-    ) {
-      throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
-        pos: node.start,
-      })
+    if (node.type === 'ExportAllDeclaration') {
+      if (node.exported?.type === 'Identifier') {
+        tinyassert(node.source.type === 'Literal')
+        const exportedName = node.exported.name
+        const localName = `$$import_${exportedName}`
+        output.remove(node.start, node.end)
+        toAppend.push(`import * as ${localName} from ${node.source.raw}`)
+        wrapExport(localName, exportedName)
+      } else if (!options.ignoreExportAllDeclaration) {
+        throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
+          pos: node.start,
+        })
+      }
     }
 
     /**
