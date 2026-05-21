@@ -23,7 +23,6 @@ import {
   isCSSRequest,
   normalizePath,
   parseAstAsync,
-  transformWithOxc,
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
@@ -1377,6 +1376,30 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
   ]
 }
 
+// Strip TS/JSX so `parseAstAsync` can read the result. Prefer oxc when
+// available (Vite 8+); fall back to esbuild for older Vite versions.
+async function transformSourceForExportScan(
+  code: string,
+  filename: string,
+): Promise<string | undefined> {
+  const v = vite as Partial<{
+    transformWithOxc: (
+      code: string,
+      filename: string,
+      options?: { sourcemap?: boolean },
+    ) => Promise<{ code: string }>
+    transformWithEsbuild: (
+      code: string,
+      filename: string,
+      options?: { sourcemap?: boolean },
+    ) => Promise<{ code: string }>
+  }>
+  const transform = v.transformWithOxc ?? v.transformWithEsbuild
+  if (!transform) return undefined
+  const result = await transform(code, filename, { sourcemap: false })
+  return result.code
+}
+
 // Recursively collect the named exports of a module (following `export * from`
 // chains), so that the RSC `use client`/`use server` proxy transforms can
 // expand bare `export *` re-exports into explicit named re-exports before
@@ -1393,16 +1416,13 @@ async function collectExportNames(
   // `this.load`'s ModuleInfo.code is build-only. In dev mode, the dev
   // environment's `transformRequest` returns module-runner-specific output
   // (e.g. `__vite_ssr_exportName__("X", ...)` instead of `export ... from`),
-  // which the AST walk below can't read. Use a plain oxc pass on the source
-  // instead so we get standard ESM exports to walk.
+  // which the AST walk below can't read. Use a plain TS/JSX-aware transform
+  // on the source instead so we get standard ESM exports to walk.
   let moduleCode: string | undefined
   try {
     if (ctx.environment.mode === 'dev') {
       const raw = await fs.promises.readFile(resolvedId, 'utf-8')
-      const result = await transformWithOxc(raw, resolvedId, {
-        sourcemap: false,
-      })
-      moduleCode = result.code
+      moduleCode = await transformSourceForExportScan(raw, resolvedId)
     } else {
       const moduleInfo = await ctx.load({ id: resolvedId })
       moduleCode = moduleInfo.code ?? undefined
