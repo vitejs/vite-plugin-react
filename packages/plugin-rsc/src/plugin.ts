@@ -1413,20 +1413,16 @@ async function collectExportNames(
   if (seen.has(resolvedId)) return []
   seen.add(resolvedId)
 
-  // `this.load`'s ModuleInfo.code is build-only. In dev mode, the dev
-  // environment's `transformRequest` returns module-runner-specific output
-  // (e.g. `__vite_ssr_exportName__("X", ...)` instead of `export ... from`),
-  // which the AST walk below can't read. Use a plain TS/JSX-aware transform
-  // on the source instead so we get standard ESM exports to walk.
+  // Read the source from disk and strip TS/JSX so the AST walk below sees
+  // standard ESM exports. We don't go through `this.load` /
+  // `transformRequest` here — in dev they return module-runner output
+  // (`__vite_ssr_exportName__(...)`) the walker can't read, and on build
+  // there's no practical benefit over reading the source directly for the
+  // simple TS/JSX modules we care about.
   let moduleCode: string | undefined
   try {
-    if (ctx.environment.mode === 'dev') {
-      const raw = await fs.promises.readFile(resolvedId, 'utf-8')
-      moduleCode = await transformSourceForExportScan(raw, resolvedId)
-    } else {
-      const moduleInfo = await ctx.load({ id: resolvedId })
-      moduleCode = moduleInfo.code ?? undefined
-    }
+    const raw = await fs.promises.readFile(resolvedId, 'utf-8')
+    moduleCode = await transformSourceForExportScan(raw, resolvedId)
   } catch {
     return []
   }
