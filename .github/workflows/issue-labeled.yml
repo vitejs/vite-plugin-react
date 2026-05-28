@@ -9,92 +9,42 @@ jobs:
     if: github.repository == 'vitejs/vite-plugin-react'
     runs-on: ubuntu-latest
     permissions:
+      contents: read # to check out the repo for local actions
       issues: write # to comment on and update issues
       pull-requests: write # to update PR labels
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: main
+
       - name: contribution welcome
         if: github.event.label.name == 'contribution welcome' || github.event.label.name == 'help wanted'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          BODY: |
-            Hello @${{ github.event.issue.user.login }}. We like your proposal/feedback and would appreciate a contribution via a Pull Request by you or another community member. We thank you in advance for your contribution and are looking forward to reviewing it!
-          LABELS: pending triage, need reproduction
+        uses: ./.github/actions/issues-helper
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue_number = Number(process.env.ISSUE_NUMBER)
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number,
-              body: process.env.BODY,
-            })
-
-            for (const name of process.env.LABELS.split(',').map(label => label.trim())) {
-              try {
-                await github.rest.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number,
-                  name,
-                })
-              } catch (error) {
-                if (error.status !== 404) throw error
-              }
-            }
+          actions: create-comment, remove-labels
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Hello @${{ github.event.issue.user.login }}. We like your proposal/feedback and would appreciate a contribution via a Pull Request by you or another community member. We thank you in advance for your contribution and are looking forward to reviewing it!
+          labels: pending triage, need reproduction
 
       - name: remove pending
         if: (github.event.label.name == 'enhancement' || contains(github.event.label.description, '(priority)')) && contains(github.event.issue.labels.*.name, 'pending triage')
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          LABELS: pending triage
+        uses: ./.github/actions/issues-helper
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue_number = Number(process.env.ISSUE_NUMBER)
-            for (const name of process.env.LABELS.split(',').map(label => label.trim())) {
-              try {
-                await github.rest.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number,
-                  name,
-                })
-              } catch (error) {
-                if (error.status !== 404) throw error
-              }
-            }
+          actions: remove-labels
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          labels: pending triage
 
       - name: need reproduction
         if: github.event.label.name == 'need reproduction'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        env:
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          BODY: |
-            Hello @${{ github.event.issue.user.login }}. Please provide a [minimal reproduction](https://stackoverflow.com/help/minimal-reproducible-example) using a GitHub repository or [StackBlitz](https://vite.new). Issues marked with `need reproduction` will be closed if they have no activity within 3 days.
-          LABELS: pending triage
+        uses: ./.github/actions/issues-helper
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue_number = Number(process.env.ISSUE_NUMBER)
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number,
-              body: process.env.BODY,
-            })
-
-            for (const name of process.env.LABELS.split(',').map(label => label.trim())) {
-              try {
-                await github.rest.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number,
-                  name,
-                })
-              } catch (error) {
-                if (error.status !== 404) throw error
-              }
-            }
+          actions: create-comment, remove-labels
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Hello @${{ github.event.issue.user.login }}. Please provide a [minimal reproduction](https://stackoverflow.com/help/minimal-reproducible-example) using a GitHub repository or [StackBlitz](https://vite.new). Issues marked with `need reproduction` will be closed if they have no activity within 3 days.
+          labels: pending triage
