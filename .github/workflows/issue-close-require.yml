@@ -9,13 +9,56 @@ jobs:
     if: github.repository == 'vitejs/vite-plugin-react'
     runs-on: ubuntu-latest
     permissions:
-      issues: write # for actions-cool/issues-helper to update issues
-      pull-requests: write # for actions-cool/issues-helper to update PRs
+      issues: write # to close stale issues
+      pull-requests: write # to close stale PRs
     steps:
       - name: need reproduction
-        uses: actions-cool/issues-helper@200c78641dbf33838311e5a1e0c31bbdb92d7cf0 # v3
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          LABELS: need reproduction
+          INACTIVE_DAY: 3
         with:
-          actions: 'close-issues'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          labels: 'need reproduction'
-          inactive-day: 3
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = process.env.LABELS
+            const inactiveDay = Number(process.env.INACTIVE_DAY)
+            const cutoff = new Date(Date.now() - inactiveDay * 24 * 60 * 60 * 1000)
+            const labelSet = new Set(labels.split(',').map(label => label.trim()))
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels,
+              per_page: 100,
+            })
+
+            let closed = 0
+            for (const issue of issues) {
+              if (new Date(issue.updated_at) > cutoff) continue
+
+              const events = await github.paginate(github.rest.issues.listEvents, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                per_page: 100,
+              })
+              const labeledAt = events
+                .filter(event => event.event === 'labeled' && labelSet.has(event.label?.name))
+                .at(-1)?.created_at
+
+              if (!labeledAt || new Date(labeledAt) > cutoff) continue
+
+              console.log(`Closing #${issue.number}, labeled at ${labeledAt}, updated at ${issue.updated_at}`)
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+              })
+              closed++
+            }
+
+            if (closed === 0) {
+              console.log(`No stale items with label "${labels}" found`)
+            }
