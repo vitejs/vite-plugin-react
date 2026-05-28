@@ -1,18 +1,18 @@
 name: Issues Helper
-description: Add labels, create comments, or close stale issues by label.
+description: Create comments or close stale issues by label.
 inputs:
   actions:
     required: true
-    description: One of `add-labels`, `create-comment`, `close-issues`.
+    description: One of `create-comment`, `close-issues`.
   token:
     required: true
     description: GitHub token.
   issue-number:
     required: false
-    description: Issue or PR number. Required for `add-labels` and `create-comment`.
+    description: Issue number. Required for `create-comment`.
   labels:
     required: false
-    description: Comma-separated label names. Required for `add-labels` and `close-issues`.
+    description: Comma-separated label names. Required for `close-issues`.
   body:
     required: false
     description: Comment body. Required for `create-comment`.
@@ -23,23 +23,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Add labels
-      if: inputs.actions == 'add-labels'
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-      env:
-        INPUT_ISSUE_NUMBER: ${{ inputs.issue-number }}
-        INPUT_LABELS: ${{ inputs.labels }}
-      with:
-        github-token: ${{ inputs.token }}
-        script: |
-          const labels = process.env.INPUT_LABELS.split(',').map(label => label.trim()).filter(Boolean)
-          await github.rest.issues.addLabels({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: Number(process.env.INPUT_ISSUE_NUMBER),
-            labels,
-          })
-
     - name: Create comment
       if: inputs.actions == 'create-comment'
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
