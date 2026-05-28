@@ -80,6 +80,7 @@ runs:
 
           let closed = 0
           for (const issue of issues) {
+            if (issue.pull_request) continue
             if (new Date(issue.updated_at) > cutoff) continue
 
             const events = await github.paginate(github.rest.issues.listEvents, {
