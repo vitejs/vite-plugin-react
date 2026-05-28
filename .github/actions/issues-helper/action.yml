@@ -1,0 +1,93 @@
+name: Issues Helper
+description: Create comments or close stale issues by label.
+inputs:
+  actions:
+    required: true
+    description: One of `create-comment`, `close-issues`.
+  token:
+    required: true
+    description: GitHub token.
+  issue-number:
+    required: false
+    description: Issue number. Required for `create-comment`.
+  labels:
+    required: false
+    description: Comma-separated label names. Required for `close-issues`.
+  body:
+    required: false
+    description: Comment body. Required for `create-comment`.
+  inactive-day:
+    required: false
+    description: Close issues whose matching label was added at least this many days ago and have had no activity since then. Required for `close-issues`.
+
+runs:
+  using: composite
+  steps:
+    - name: Create comment
+      if: inputs.actions == 'create-comment'
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        INPUT_ISSUE_NUMBER: ${{ inputs.issue-number }}
+        INPUT_BODY: ${{ inputs.body }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: Number(process.env.INPUT_ISSUE_NUMBER),
+            body: process.env.INPUT_BODY,
+          })
+
+    - name: Close stale issues
+      if: inputs.actions == 'close-issues'
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        INPUT_LABELS: ${{ inputs.labels }}
+        INPUT_INACTIVE_DAY: ${{ inputs.inactive-day }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          const labels = process.env.INPUT_LABELS
+          const inactiveDay = Number(process.env.INPUT_INACTIVE_DAY)
+          const cutoff = new Date(Date.now() - inactiveDay * 24 * 60 * 60 * 1000)
+          const labelSet = new Set(labels.split(',').map(label => label.trim()).filter(Boolean))
+
+          const issues = await github.paginate(github.rest.issues.listForRepo, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels,
+            per_page: 100,
+          })
+
+          let closed = 0
+          for (const issue of issues) {
+            if (issue.pull_request) continue
+            if (new Date(issue.updated_at) > cutoff) continue
+
+            const events = await github.paginate(github.rest.issues.listEvents, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              per_page: 100,
+            })
+            const labeledAt = events
+              .filter(event => event.event === 'labeled' && labelSet.has(event.label?.name))
+              .at(-1)?.created_at
+
+            if (!labeledAt || new Date(labeledAt) > cutoff) continue
+
+            console.log(`Closing #${issue.number}, labeled at ${labeledAt}, updated at ${issue.updated_at}`)
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              state: 'closed',
+            })
+            closed++
+          }
+
+          if (closed === 0) {
+            console.log(`No stale items with label "${labels}" found`)
+          }
