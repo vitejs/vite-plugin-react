@@ -3,7 +3,7 @@ description: Add labels, create comments, or close stale issues by label.
 inputs:
   actions:
     required: true
-    description: 'Comma-separated list of actions: `add-labels`, `create-comment`, `close-issues`.'
+    description: One of `add-labels`, `create-comment`, `close-issues`.
   token:
     required: true
     description: GitHub token.
@@ -24,7 +24,7 @@ runs:
   using: composite
   steps:
     - name: Add labels
-      if: contains(inputs.actions, 'add-labels')
+      if: inputs.actions == 'add-labels'
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         INPUT_ISSUE_NUMBER: ${{ inputs.issue-number }}
@@ -41,7 +41,7 @@ runs:
           })
 
     - name: Create comment
-      if: contains(inputs.actions, 'create-comment')
+      if: inputs.actions == 'create-comment'
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         INPUT_ISSUE_NUMBER: ${{ inputs.issue-number }}
@@ -57,7 +57,7 @@ runs:
           })
 
     - name: Close stale issues
-      if: contains(inputs.actions, 'close-issues')
+      if: inputs.actions == 'close-issues'
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         INPUT_LABELS: ${{ inputs.labels }}
