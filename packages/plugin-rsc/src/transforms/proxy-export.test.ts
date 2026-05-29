@@ -171,6 +171,14 @@ export { x as y }
     `)
   })
 
+  test('export string name throws', async () => {
+    const input = `
+const x = 0;
+export { x as "my thing" }
+`
+    await expect(testTransform(input)).rejects.toThrow()
+  })
+
   test('re-export simple', async () => {
     const input = `export { x } from "./dep"`
     expect(await testTransform(input)).toMatchInlineSnapshot(`
