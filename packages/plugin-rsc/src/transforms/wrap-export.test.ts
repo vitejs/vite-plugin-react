@@ -183,7 +183,9 @@ export { x as y }
 const x = 0;
 export { x as "my thing" }
 `
-    await expect(testTransform(input)).rejects.toThrow()
+    await expect(testTransform(input)).rejects.toThrow(
+      'unsupported string literal export name',
+    )
   })
 
   test('re-export simple', async () => {
