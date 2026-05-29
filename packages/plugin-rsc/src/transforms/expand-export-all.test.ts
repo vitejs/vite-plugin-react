@@ -20,6 +20,9 @@ describe('fixtures', () => {
         return path.join(path.dirname(importer), source)
       },
       load: async (id) => {
+        if (!fs.existsSync(id)) {
+          throw new Error(`failed to load ${JSON.stringify(path.basename(id))}`)
+        }
         const code = fs.readFileSync(id, 'utf-8')
         return parseAstAsync(code)
       },
