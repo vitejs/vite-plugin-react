@@ -1874,6 +1874,14 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('export *', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('test-export-all')).toHaveText(
+      'test-export-all:export-all-a|export-all-b|export-all-named',
+    )
+  })
+
   test('virtual module with use client', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
