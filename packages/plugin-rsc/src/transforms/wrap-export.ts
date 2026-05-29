@@ -172,8 +172,8 @@ export function transformWrapExport(
     }
 
     /**
-     * export * from './foo'
      * export * as ns from './foo'
+     * export * from './foo'
      */
     // vue sfc uses ExportAllDeclaration to re-export setup script.
     // for now we just give an option to not throw for this case.
