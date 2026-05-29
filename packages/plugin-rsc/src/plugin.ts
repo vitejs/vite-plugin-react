@@ -1418,7 +1418,7 @@ function createExpandExportAllOptions(
       const raw = await fs.promises.readFile(id, 'utf-8')
       const code = await transformSourceForExportScan(raw, id)
       if (!code) return
-      return { code, ast: await parseAstAsync(code) }
+      return parseAstAsync(code)
     },
   }
 }

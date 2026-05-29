@@ -5,7 +5,7 @@ import { extractNames } from './utils'
 type TransformExpandExportAllOptions = {
   importer: string
   resolve: (source: string, importer: string) => Promise<string | undefined>
-  load: (id: string) => Promise<{ code: string; ast: Program } | undefined>
+  load: (id: string) => Promise<Program | undefined>
 }
 
 export async function transformExpandExportAll(
@@ -49,16 +49,16 @@ async function collectExportNames(
   if (seen.has(resolvedId)) return []
   seen.add(resolvedId)
 
-  let loaded: { code: string; ast: Program } | undefined
+  let ast: Program | undefined
   try {
-    loaded = await options.load(resolvedId)
+    ast = await options.load(resolvedId)
   } catch {
     return []
   }
-  if (!loaded) return []
+  if (!ast) return []
 
   const names: string[] = []
-  for (const node of loaded.ast.body) {
+  for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
         if (
