@@ -46,9 +46,22 @@ ${(e as Error).message}
   for (const [file, mod] of Object.entries(fixtures)) {
     it(path.basename(path.dirname(file)), async () => {
       const input = ((await mod()) as any).default as string
-      await expect(
-        await transformFixture(input, path.join(import.meta.dirname, file)),
-      ).toMatchFileSnapshot(file + '.snap.js')
+      let output: string
+      try {
+        output = await transformFixture(
+          input,
+          path.join(import.meta.dirname, file),
+        )
+      } catch (e) {
+        output = `\
+/* ERROR
+
+${(e as Error).message}
+
+*/
+`
+      }
+      await expect(output).toMatchFileSnapshot(file + '.snap.js')
     })
   }
 })

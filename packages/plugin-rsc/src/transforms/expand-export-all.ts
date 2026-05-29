@@ -5,7 +5,7 @@ import { extractNames } from './utils'
 type TransformExpandExportAllOptions = {
   importer: string
   resolve: (source: string, importer: string) => Promise<string | undefined>
-  load: (id: string) => Promise<Program | undefined>
+  load: (id: string) => Promise<Program>
 }
 
 export async function transformExpandExportAll(
@@ -26,7 +26,12 @@ export async function transformExpandExportAll(
     const source = node.source.value as string
     const resolved = await options.resolve(source, options.importer)
     if (!resolved) {
-      continue
+      throw Object.assign(
+        new Error(
+          `failed to resolve export-all source ${JSON.stringify(source)}`,
+        ),
+        { pos: node.start },
+      )
     }
     const names = await collectExportNames(resolved, options, new Set())
     if (names.length === 0) {
@@ -55,13 +60,7 @@ async function collectExportNames(
   if (seen.has(resolvedId)) return []
   seen.add(resolvedId)
 
-  let ast: Program | undefined
-  try {
-    ast = await options.load(resolvedId)
-  } catch {
-    return []
-  }
-  if (!ast) return []
+  const ast = await options.load(resolvedId)
 
   const names: string[] = []
   for (const node of ast.body) {
@@ -95,9 +94,17 @@ async function collectExportNames(
           node.source.value as string,
           resolvedId,
         )
-        if (subResolved) {
-          names.push(...(await collectExportNames(subResolved, options, seen)))
+        if (!subResolved) {
+          throw Object.assign(
+            new Error(
+              `failed to resolve export-all source ${JSON.stringify(
+                node.source.value,
+              )}`,
+            ),
+            { pos: node.start },
+          )
         }
+        names.push(...(await collectExportNames(subResolved, options, seen)))
       }
     }
   }

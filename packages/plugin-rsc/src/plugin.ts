@@ -1381,7 +1381,7 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
 async function transformSourceForExportScan(
   code: string,
   filename: string,
-): Promise<string | undefined> {
+): Promise<string> {
   const v = vite as Partial<{
     transformWithOxc: (
       code: string,
@@ -1395,7 +1395,9 @@ async function transformSourceForExportScan(
     ) => Promise<{ code: string }>
   }>
   const transform = v.transformWithOxc ?? v.transformWithEsbuild
-  if (!transform) return undefined
+  if (!transform) {
+    throw new Error('transformWithOxc or transformWithEsbuild is required')
+  }
   const result = await transform(code, filename, { sourcemap: false })
   return result.code
 }
@@ -1417,7 +1419,6 @@ function createExpandExportAllOptions(
       // simple TS/JSX modules we care about.
       const raw = await fs.promises.readFile(id, 'utf-8')
       const code = await transformSourceForExportScan(raw, id)
-      if (!code) return
       return parseAstAsync(code)
     },
   }
