@@ -65,9 +65,9 @@ import {
 } from './plugins/vite-utils'
 import {
   type TransformWrapExportFilter,
-  extractNames,
   hasDirective,
   transformDirectiveProxyExport,
+  transformExpandExportAll,
   transformServerActionServer,
   transformWrapExport,
   findDirectives,
@@ -1400,117 +1400,26 @@ async function transformSourceForExportScan(
   return result.code
 }
 
-// Recursively collect the named exports of a module (following `export * from`
-// chains), so that the RSC `use client`/`use server` proxy transforms can
-// expand bare `export *` re-exports into explicit named re-exports before
-// proxy generation. The pure proxy transform cannot do this on its own because
-// the names live in another file.
-async function collectExportNames(
+function createExpandExportAllOptions(
   ctx: Rollup.TransformPluginContext,
-  resolvedId: string,
-  seen: Set<string>,
-): Promise<string[]> {
-  if (seen.has(resolvedId)) return []
-  seen.add(resolvedId)
-
-  // Read the source from disk and strip TS/JSX so the AST walk below sees
-  // standard ESM exports. We don't go through `this.load` /
-  // `transformRequest` here — in dev they return module-runner output
-  // (`__vite_ssr_exportName__(...)`) the walker can't read, and on build
-  // there's no practical benefit over reading the source directly for the
-  // simple TS/JSX modules we care about.
-  let moduleCode: string | undefined
-  try {
-    const raw = await fs.promises.readFile(resolvedId, 'utf-8')
-    moduleCode = await transformSourceForExportScan(raw, resolvedId)
-  } catch {
-    return []
+  importer: string,
+) {
+  return {
+    importer,
+    resolve: async (source: string, importer: string) =>
+      (await ctx.resolve(source, importer))?.id,
+    load: async (id: string) => {
+      // Read the source from disk and strip TS/JSX so the AST walk sees
+      // standard ESM exports. We don't go through `this.load` /
+      // `transformRequest` here — in dev they return module-runner output
+      // (`__vite_ssr_exportName__(...)`) the walker can't read, and on build
+      // there's no practical benefit over reading the source directly for the
+      // simple TS/JSX modules we care about.
+      const raw = await fs.promises.readFile(id, 'utf-8')
+      return transformSourceForExportScan(raw, id)
+    },
+    parse: parseAstAsync,
   }
-  if (!moduleCode) return []
-
-  let ast: Awaited<ReturnType<typeof parseAstAsync>>
-  try {
-    ast = await parseAstAsync(moduleCode)
-  } catch {
-    return []
-  }
-
-  const names: string[] = []
-  for (const node of ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
-        ) {
-          if (node.declaration.id) names.push(node.declaration.id.name)
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          for (const decl of node.declaration.declarations) {
-            names.push(...extractNames(decl.id))
-          }
-        }
-      } else {
-        for (const spec of node.specifiers) {
-          if (
-            spec.exported.type === 'Identifier' &&
-            spec.exported.name !== 'default'
-          ) {
-            names.push(spec.exported.name)
-          }
-        }
-      }
-    } else if (node.type === 'ExportAllDeclaration') {
-      if (node.exported?.type === 'Identifier') {
-        names.push(node.exported.name)
-      } else if (node.source) {
-        const subResolved = await ctx.resolve(
-          node.source.value as string,
-          resolvedId,
-        )
-        if (subResolved) {
-          names.push(...(await collectExportNames(ctx, subResolved.id, seen)))
-        }
-      }
-    }
-  }
-  return names
-}
-
-async function expandExportAllDeclarations(
-  ctx: Rollup.TransformPluginContext,
-  ast: Awaited<ReturnType<typeof parseAstAsync>>,
-  code: string,
-  id: string,
-): Promise<{
-  code: string
-  ast: Awaited<ReturnType<typeof parseAstAsync>>
-} | null> {
-  const targets = ast.body.filter(
-    (n) => n.type === 'ExportAllDeclaration' && !n.exported,
-  )
-  if (targets.length === 0) return null
-
-  const output = new MagicString(code)
-  for (const node of targets) {
-    if (node.type !== 'ExportAllDeclaration') continue
-    const source = node.source.value as string
-    const resolved = await ctx.resolve(source, id)
-    if (!resolved) continue
-    const names = await collectExportNames(ctx, resolved.id, new Set())
-    if (names.length === 0) {
-      output.remove(node.start, node.end)
-    } else {
-      output.update(
-        node.start,
-        node.end,
-        `export { ${names.join(', ')} } from ${JSON.stringify(source)};`,
-      )
-    }
-  }
-  if (!output.hasChanged()) return null
-  const newCode = output.toString()
-  const newAst = await parseAstAsync(newCode)
-  return { code: newCode, ast: newAst }
 }
 
 function vitePluginUseClient(
@@ -1580,11 +1489,10 @@ function vitePluginUseClient(
             }
           }
 
-          const expanded = await expandExportAllDeclarations(
-            this,
-            ast,
+          const expanded = await transformExpandExportAll(
             code,
-            id,
+            ast,
+            createExpandExportAllOptions(this, id),
           )
           if (expanded) {
             code = expanded.code
@@ -2065,11 +1973,10 @@ function vitePluginUseServer(
           }
           let ast = await parseAstAsync(code)
           if (hasDirective(ast.body, 'use server')) {
-            const expanded = await expandExportAllDeclarations(
-              this,
-              ast,
+            const expanded = await transformExpandExportAll(
               code,
-              id,
+              ast,
+              createExpandExportAllOptions(this, id),
             )
             if (expanded) {
               code = expanded.code
