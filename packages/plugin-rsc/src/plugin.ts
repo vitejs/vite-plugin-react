@@ -1376,32 +1376,6 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
   ]
 }
 
-// Strip TS/JSX so `parseAstAsync` can read the result. Prefer oxc when
-// available (Vite 8+); fall back to esbuild for older Vite versions.
-async function transformSourceForExportScan(
-  code: string,
-  filename: string,
-): Promise<string> {
-  const v = vite as Partial<{
-    transformWithOxc: (
-      code: string,
-      filename: string,
-      options?: { sourcemap?: boolean },
-    ) => Promise<{ code: string }>
-    transformWithEsbuild: (
-      code: string,
-      filename: string,
-      options?: { sourcemap?: boolean },
-    ) => Promise<{ code: string }>
-  }>
-  const transform = v.transformWithOxc ?? v.transformWithEsbuild
-  if (!transform) {
-    throw new Error('transformWithOxc or transformWithEsbuild is required')
-  }
-  const result = await transform(code, filename, { sourcemap: false })
-  return result.code
-}
-
 function createExpandExportAllOptions(
   ctx: Rollup.TransformPluginContext,
   importer: string,
@@ -1418,8 +1392,9 @@ function createExpandExportAllOptions(
       // there's no practical benefit over reading the source directly for the
       // simple TS/JSX modules we care about.
       const raw = await fs.promises.readFile(id, 'utf-8')
-      const code = await transformSourceForExportScan(raw, id)
-      return parseAstAsync(code)
+      const transform = vite.transformWithOxc ?? vite.transformWithEsbuild
+      const result = await transform(raw, id, { sourcemap: false })
+      return parseAstAsync(result.code)
     },
   }
 }
