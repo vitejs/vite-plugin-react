@@ -17,13 +17,17 @@ export async function transformExpandExportAll(
     (n): n is ExportAllDeclaration =>
       n.type === 'ExportAllDeclaration' && !n.exported,
   )
-  if (targets.length === 0) return
+  if (targets.length === 0) {
+    return
+  }
 
   const output = new MagicString(code)
   for (const node of targets) {
     const source = node.source.value as string
     const resolved = await options.resolve(source, options.importer)
-    if (!resolved) continue
+    if (!resolved) {
+      continue
+    }
     const names = await collectExportNames(resolved, options, new Set())
     if (names.length === 0) {
       output.remove(node.start, node.end)
@@ -35,7 +39,9 @@ export async function transformExpandExportAll(
       )
     }
   }
-  if (!output.hasChanged()) return
+  if (!output.hasChanged()) {
+    return
+  }
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
   // their follow-up proxy/wrap transform maps.
   return { code: output.toString() }
