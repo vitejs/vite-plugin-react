@@ -1416,9 +1416,10 @@ function createExpandExportAllOptions(
       // there's no practical benefit over reading the source directly for the
       // simple TS/JSX modules we care about.
       const raw = await fs.promises.readFile(id, 'utf-8')
-      return transformSourceForExportScan(raw, id)
+      const code = await transformSourceForExportScan(raw, id)
+      if (!code) return
+      return { code, ast: await parseAstAsync(code) }
     },
-    parse: parseAstAsync,
   }
 }
 
@@ -1496,7 +1497,7 @@ function vitePluginUseClient(
           )
           if (expanded) {
             code = expanded.code
-            ast = expanded.ast
+            ast = await parseAstAsync(code)
           }
 
           let importId: string
@@ -1980,7 +1981,7 @@ function vitePluginUseServer(
             )
             if (expanded) {
               code = expanded.code
-              ast = expanded.ast
+              ast = await parseAstAsync(code)
             }
           }
 

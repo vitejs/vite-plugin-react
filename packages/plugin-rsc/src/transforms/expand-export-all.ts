@@ -5,15 +5,14 @@ import { extractNames } from './utils'
 type TransformExpandExportAllOptions = {
   importer: string
   resolve: (source: string, importer: string) => Promise<string | undefined>
-  load: (id: string) => Promise<string | undefined>
-  parse: (code: string) => Promise<Program>
+  load: (id: string) => Promise<{ code: string; ast: Program } | undefined>
 }
 
 export async function transformExpandExportAll(
   code: string,
   ast: Program,
   options: TransformExpandExportAllOptions,
-): Promise<{ code: string; ast: Program } | undefined> {
+): Promise<{ code: string } | undefined> {
   const targets = ast.body.filter(
     (n): n is ExportAllDeclaration =>
       n.type === 'ExportAllDeclaration' && !n.exported,
@@ -37,9 +36,9 @@ export async function transformExpandExportAll(
     }
   }
   if (!output.hasChanged()) return
-  const newCode = output.toString()
-  const newAst = await options.parse(newCode)
-  return { code: newCode, ast: newAst }
+  // TODO: return a sourcemap so callers can compose this pre-rewrite with
+  // their follow-up proxy/wrap transform maps.
+  return { code: output.toString() }
 }
 
 async function collectExportNames(
@@ -50,23 +49,16 @@ async function collectExportNames(
   if (seen.has(resolvedId)) return []
   seen.add(resolvedId)
 
-  let moduleCode: string | undefined
+  let loaded: { code: string; ast: Program } | undefined
   try {
-    moduleCode = await options.load(resolvedId)
+    loaded = await options.load(resolvedId)
   } catch {
     return []
   }
-  if (!moduleCode) return []
-
-  let ast: Program
-  try {
-    ast = await options.parse(moduleCode)
-  } catch {
-    return []
-  }
+  if (!loaded) return []
 
   const names: string[] = []
-  for (const node of ast.body) {
+  for (const node of loaded.ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
         if (

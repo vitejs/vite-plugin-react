@@ -17,8 +17,10 @@ describe('fixtures', () => {
       importer,
       resolve: async (source, importer) =>
         path.join(path.dirname(importer), source),
-      load: async (id) => fs.readFileSync(id, 'utf-8'),
-      parse: parseAstAsync,
+      load: async (id) => {
+        const code = fs.readFileSync(id, 'utf-8')
+        return { code, ast: await parseAstAsync(code) }
+      },
     })
     if (!result) {
       return '/* NO CHANGE */'
