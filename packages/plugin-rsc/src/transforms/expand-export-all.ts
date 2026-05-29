@@ -9,6 +9,39 @@ type TransformExpandExportAllOptions = {
   parse: (code: string) => Promise<Program>
 }
 
+export async function transformExpandExportAll(
+  code: string,
+  ast: Program,
+  options: TransformExpandExportAllOptions,
+): Promise<{ code: string; ast: Program } | undefined> {
+  const targets = ast.body.filter(
+    (n): n is ExportAllDeclaration =>
+      n.type === 'ExportAllDeclaration' && !n.exported,
+  )
+  if (targets.length === 0) return
+
+  const output = new MagicString(code)
+  for (const node of targets) {
+    const source = node.source.value as string
+    const resolved = await options.resolve(source, options.importer)
+    if (!resolved) continue
+    const names = await collectExportNames(resolved, options, new Set())
+    if (names.length === 0) {
+      output.remove(node.start, node.end)
+    } else {
+      output.update(
+        node.start,
+        node.end,
+        `export { ${names.join(', ')} } from ${JSON.stringify(source)};`,
+      )
+    }
+  }
+  if (!output.hasChanged()) return
+  const newCode = output.toString()
+  const newAst = await options.parse(newCode)
+  return { code: newCode, ast: newAst }
+}
+
 async function collectExportNames(
   resolvedId: string,
   options: TransformExpandExportAllOptions,
@@ -71,37 +104,4 @@ async function collectExportNames(
     }
   }
   return names
-}
-
-export async function transformExpandExportAll(
-  code: string,
-  ast: Program,
-  options: TransformExpandExportAllOptions,
-): Promise<{ code: string; ast: Program } | undefined> {
-  const targets = ast.body.filter(
-    (n): n is ExportAllDeclaration =>
-      n.type === 'ExportAllDeclaration' && !n.exported,
-  )
-  if (targets.length === 0) return
-
-  const output = new MagicString(code)
-  for (const node of targets) {
-    const source = node.source.value as string
-    const resolved = await options.resolve(source, options.importer)
-    if (!resolved) continue
-    const names = await collectExportNames(resolved, options, new Set())
-    if (names.length === 0) {
-      output.remove(node.start, node.end)
-    } else {
-      output.update(
-        node.start,
-        node.end,
-        `export { ${names.join(', ')} } from ${JSON.stringify(source)};`,
-      )
-    }
-  }
-  if (!output.hasChanged()) return
-  const newCode = output.toString()
-  const newAst = await options.parse(newCode)
-  return { code: newCode, ast: newAst }
 }
