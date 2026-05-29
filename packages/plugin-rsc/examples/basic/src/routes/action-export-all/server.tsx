@@ -9,7 +9,7 @@ export function TestActionExportAll() {
     <>
       <form action={incrementExportAllServerValue}>
         <button data-testid="test-action-export-all-server">
-          server-to-server: {readExportAllServerValue()}
+          export-all-server-to-server: {readExportAllServerValue()}
         </button>
       </form>
       <TestActionExportAllClient />

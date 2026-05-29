@@ -13,7 +13,7 @@ export function TestActionExportAllClient() {
         setResult(await getExportAllClientValue())
       }}
     >
-      server-to-client: {result}
+      export-all-server-to-client: {result}
     </button>
   )
 }
