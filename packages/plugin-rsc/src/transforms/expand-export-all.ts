@@ -10,38 +10,46 @@ export type TransformExpandExportAllOptions = {
   load: (id: string) => Promise<Program>
 }
 
+type StarExportSource = {
+  node: ExportAllDeclaration
+  source: string
+  names: string[]
+}
+
+type ModuleExportScan = {
+  explicitNames: Set<string>
+  starSources: StarExportSource[]
+}
+
+type StarRewritePlan = {
+  node: ExportAllDeclaration
+  source: string
+  names: string[]
+}
+
 export async function transformExpandExportAll(
   options: TransformExpandExportAllOptions,
 ): Promise<{ code: string } | undefined> {
   const { code, ast } = options
-  const targets = ast.body.filter(
+  const bareStars = ast.body.filter(
     (n): n is ExportAllDeclaration =>
       n.type === 'ExportAllDeclaration' && !n.exported,
   )
-  if (targets.length === 0) {
+  if (bareStars.length === 0) {
     return
   }
 
+  const scan = await scanCurrentModule(bareStars, options)
+  const plan = buildStarRewritePlan(scan)
   const output = new MagicString(code)
-  for (const node of targets) {
-    const source = node.source.value as string
-    const resolved = await options.resolve(source, options.importer)
-    if (!resolved) {
-      throw Object.assign(
-        new Error(
-          `failed to resolve export-all source ${JSON.stringify(source)}`,
-        ),
-        { pos: node.start },
-      )
-    }
-    const names = await collectExportNames(resolved, options, new Set())
-    if (names.length === 0) {
-      output.remove(node.start, node.end)
+  for (const item of plan) {
+    if (item.names.length === 0) {
+      output.remove(item.node.start, item.node.end)
     } else {
       output.update(
-        node.start,
-        node.end,
-        `export { ${names.join(', ')} } from ${JSON.stringify(source)};`,
+        item.node.start,
+        item.node.end,
+        `export { ${item.names.join(', ')} } from ${JSON.stringify(item.source)};`,
       )
     }
   }
@@ -51,6 +59,82 @@ export async function transformExpandExportAll(
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
   // their follow-up proxy/wrap transform maps.
   return { code: output.toString() }
+}
+
+async function scanCurrentModule(
+  bareStars: ExportAllDeclaration[],
+  options: TransformExpandExportAllOptions,
+): Promise<ModuleExportScan> {
+  const explicitNames = new Set<string>()
+  const starSources: StarExportSource[] = []
+
+  for (const node of options.ast.body) {
+    if (node.type === 'ExportNamedDeclaration') {
+      if (node.declaration) {
+        if (
+          node.declaration.type === 'FunctionDeclaration' ||
+          node.declaration.type === 'ClassDeclaration'
+        ) {
+          if (node.declaration.id) explicitNames.add(node.declaration.id.name)
+        } else if (node.declaration.type === 'VariableDeclaration') {
+          for (const decl of node.declaration.declarations) {
+            for (const name of extractNames(decl.id)) {
+              explicitNames.add(name)
+            }
+          }
+        }
+      } else {
+        for (const spec of node.specifiers) {
+          if (spec.exported.type === 'Identifier') {
+            explicitNames.add(spec.exported.name)
+          }
+        }
+      }
+    } else if (node.type === 'ExportDefaultDeclaration') {
+      explicitNames.add('default')
+    } else if (node.type === 'ExportAllDeclaration' && node.exported) {
+      if (node.exported.type === 'Identifier') {
+        explicitNames.add(node.exported.name)
+      }
+    }
+  }
+
+  for (const node of bareStars) {
+    const source = node.source.value as string
+    const resolved = await resolveExportAllSource(
+      source,
+      options.importer,
+      node,
+      options,
+    )
+    starSources.push({
+      node,
+      source,
+      names: await collectExportNames(resolved, options, new Set()),
+    })
+  }
+
+  return { explicitNames, starSources }
+}
+
+function buildStarRewritePlan(scan: ModuleExportScan): StarRewritePlan[] {
+  const starNameCounts = new Map<string, number>()
+  for (const source of scan.starSources) {
+    for (const name of new Set(source.names)) {
+      starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
+    }
+  }
+
+  return scan.starSources.map((source) => ({
+    node: source.node,
+    source: source.source,
+    names: source.names.filter(
+      (name) =>
+        name !== 'default' &&
+        !scan.explicitNames.has(name) &&
+        starNameCounts.get(name) === 1,
+    ),
+  }))
 }
 
 async function collectExportNames(
@@ -91,23 +175,33 @@ async function collectExportNames(
       if (node.exported?.type === 'Identifier') {
         names.push(node.exported.name)
       } else if (node.source) {
-        const subResolved = await options.resolve(
+        const subResolved = await resolveExportAllSource(
           node.source.value as string,
           resolvedId,
+          node,
+          options,
         )
-        if (!subResolved) {
-          throw Object.assign(
-            new Error(
-              `failed to resolve export-all source ${JSON.stringify(
-                node.source.value,
-              )}`,
-            ),
-            { pos: node.start },
-          )
-        }
         names.push(...(await collectExportNames(subResolved, options, seen)))
       }
     }
   }
   return names
+}
+
+async function resolveExportAllSource(
+  source: string,
+  importer: string,
+  node: ExportAllDeclaration,
+  options: TransformExpandExportAllOptions,
+): Promise<string> {
+  const resolved = await options.resolve(source, importer)
+  if (!resolved) {
+    throw Object.assign(
+      new Error(
+        `failed to resolve export-all source ${JSON.stringify(source)}`,
+      ),
+      { pos: node.start },
+    )
+  }
+  return resolved
 }
