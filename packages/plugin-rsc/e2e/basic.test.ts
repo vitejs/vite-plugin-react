@@ -376,6 +376,27 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('use server export * @js', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    await expect(page.getByTestId('test-action-export-all-server')).toHaveText(
+      'server-to-server: 0',
+    )
+    await page.getByTestId('test-action-export-all-server').click()
+    await expect(page.getByTestId('test-action-export-all-server')).toHaveText(
+      'server-to-server: 1',
+    )
+
+    await expect(page.getByTestId('test-action-export-all-client')).toHaveText(
+      'server-to-client: ?',
+    )
+    await page.getByTestId('test-action-export-all-client').click()
+    await expect(page.getByTestId('test-action-export-all-client')).toHaveText(
+      'server-to-client: export-all-client',
+    )
+  })
+
   test('useActionState with jsx @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)

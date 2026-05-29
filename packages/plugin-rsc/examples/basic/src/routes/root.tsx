@@ -9,6 +9,7 @@ import {
   TestServerActionBindMember,
 } from './action-bind/server'
 import { TestServerActionError } from './action-error/server'
+import { TestActionExportAll } from './action-export-all/server'
 import {
   TestActionFromClient,
   TestNonFormActionArgs,
@@ -101,6 +102,7 @@ export function Root(props: { url: URL }) {
         <TestReplayConsoleLogs url={props.url} />
         <TestSuspense url={props.url} />
         <TestActionFromClient />
+        <TestActionExportAll />
         <TestUseActionState />
         <TestNonFormActionError />
         <TestNonFormActionArgs />
