@@ -25,7 +25,7 @@ describe('fixtures', () => {
       },
     })
     if (!result) {
-      return '/* NO CHANGE */'
+      return '/* NO CHANGE */\n'
     }
     try {
       await parseAstAsync(result.code)
