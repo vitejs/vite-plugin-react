@@ -13,7 +13,9 @@ describe('fixtures', () => {
   )
   async function transformFixture(input: string, importer: string) {
     const ast = await parseAstAsync(input)
-    const result = await transformExpandExportAll(input, ast, {
+    const result = await transformExpandExportAll({
+      code: input,
+      ast,
       importer,
       resolve: async (source, importer) => {
         if (importer.includes('/bad-resolve/')) return

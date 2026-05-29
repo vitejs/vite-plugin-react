@@ -2,17 +2,18 @@ import type { ExportAllDeclaration, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames } from './utils'
 
-type TransformExpandExportAllOptions = {
+export type TransformExpandExportAllOptions = {
+  code: string
+  ast: Program
   importer: string
   resolve: (source: string, importer: string) => Promise<string | undefined>
   load: (id: string) => Promise<Program>
 }
 
 export async function transformExpandExportAll(
-  code: string,
-  ast: Program,
   options: TransformExpandExportAllOptions,
 ): Promise<{ code: string } | undefined> {
+  const { code, ast } = options
   const targets = ast.body.filter(
     (n): n is ExportAllDeclaration =>
       n.type === 'ExportAllDeclaration' && !n.exported,

@@ -71,6 +71,7 @@ import {
   transformServerActionServer,
   transformWrapExport,
   findDirectives,
+  type TransformExpandExportAllOptions,
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
@@ -1376,15 +1377,14 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
   ]
 }
 
-function createExpandExportAllOptions(
+function createTransformExpandExportAllContext(
   ctx: Rollup.TransformPluginContext,
-  importer: string,
-) {
+): Pick<TransformExpandExportAllOptions, 'resolve' | 'load'> {
   return {
-    importer,
-    resolve: async (source: string, importer: string) =>
-      (await ctx.resolve(source, importer))?.id,
-    load: async (id: string) => {
+    resolve: async (source, importer) => {
+      return (await ctx.resolve(source, importer))?.id
+    },
+    load: async (id) => {
       // Read the source from disk and strip TS/JSX so the AST walk sees
       // standard ESM exports. We don't go through `this.load` /
       // `transformRequest` here — in dev they return module-runner output
@@ -1466,11 +1466,12 @@ function vitePluginUseClient(
             }
           }
 
-          const expanded = await transformExpandExportAll(
+          const expanded = await transformExpandExportAll({
             code,
             ast,
-            createExpandExportAllOptions(this, id),
-          )
+            importer: id,
+            ...createTransformExpandExportAllContext(this),
+          })
           if (expanded) {
             code = expanded.code
             ast = await parseAstAsync(code)
@@ -1950,11 +1951,12 @@ function vitePluginUseServer(
           }
           let ast = await parseAstAsync(code)
           if (hasDirective(ast.body, 'use server')) {
-            const expanded = await transformExpandExportAll(
+            const expanded = await transformExpandExportAll({
               code,
               ast,
-              createExpandExportAllOptions(this, id),
-            )
+              importer: id,
+              ...createTransformExpandExportAllContext(this),
+            })
             if (expanded) {
               code = expanded.code
               ast = await parseAstAsync(code)
