@@ -15,8 +15,10 @@ describe('fixtures', () => {
     const ast = await parseAstAsync(input)
     const result = await transformExpandExportAll(input, ast, {
       importer,
-      resolve: async (source, importer) =>
-        path.join(path.dirname(importer), source),
+      resolve: async (source, importer) => {
+        if (importer.includes('/bad-resolve/')) return
+        return path.join(path.dirname(importer), source)
+      },
       load: async (id) => {
         const code = fs.readFileSync(id, 'utf-8')
         return parseAstAsync(code)
@@ -25,7 +27,11 @@ describe('fixtures', () => {
     if (!result) {
       return '/* NO CHANGE */'
     }
-    await parseAstAsync(result.code)
+    try {
+      await parseAstAsync(result.code)
+    } catch (e) {
+      return `${result.code}\n\n/* PARSE ERROR: ${(e as Error).message} */`
+    }
     return result.code
   }
 
