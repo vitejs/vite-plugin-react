@@ -30,7 +30,14 @@ describe('fixtures', () => {
     try {
       await parseAstAsync(result.code)
     } catch (e) {
-      return `${result.code}\n\n/* PARSE ERROR: ${(e as Error).message} */`
+      return `\
+${result.code}
+
+/* PARSE ERROR
+
+${(e as Error).message}
+
+*/`
     }
     return result.code
   }
