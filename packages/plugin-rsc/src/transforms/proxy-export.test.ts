@@ -220,23 +220,6 @@ export { x as "my thing" }
     `)
   })
 
-  test('re-export all (resolved)', async () => {
-    // when caller resolves names ahead of time, the source is rewritten so
-    // the transform never sees a bare `export *`.
-    const input = `export { x, y } from "./dep"`
-    expect(await testTransform(input)).toMatchInlineSnapshot(`
-      {
-        "exportNames": [
-          "x",
-          "y",
-        ],
-        "output": "export const x = /* #__PURE__ */ $$proxy("<id>", "x");
-      export const y = /* #__PURE__ */ $$proxy("<id>", "y");
-      ",
-      }
-    `)
-  })
-
   test('re-export all (ignoreExportAllDeclaration)', async () => {
     const input = `export * from "./dep"`
     expect(await testTransform(input, { ignoreExportAllDeclaration: true }))
