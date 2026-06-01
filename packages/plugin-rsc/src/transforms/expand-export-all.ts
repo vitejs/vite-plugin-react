@@ -61,9 +61,6 @@ export async function transformExpandExportAll(
     const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.source)};`
     output.update(item.node.start, item.node.end, newExport)
   }
-  if (!output.hasChanged()) {
-    return
-  }
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
   // their follow-up proxy/wrap transform maps.
   return { code: output.toString() }
