@@ -167,6 +167,8 @@ function collectExplicitExportNames(ast: Program): Set<string> {
 // rewrite for each direct `export *`. Ambiguity from child modules is preserved
 // so a parent does not accidentally make an invalid name explicit.
 function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
+  // find multiple re-exported names through "export *"
+  // and treat as ambiguous
   const starNameCounts = new Map<string, number>()
   for (const source of scan.starSources) {
     for (const name of source.scan.names) {
@@ -176,18 +178,19 @@ function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
       starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
     }
   }
-
   const ambiguousNames = new Set<string>()
+  for (const [name, count] of starNameCounts) {
+    if (count > 1) {
+      ambiguousNames.add(name)
+    }
+  }
+
+  // propagate ambiguous star re-exports to the parent
   for (const source of scan.starSources) {
     for (const name of source.scan.ambiguousNames) {
       if (!scan.explicitNames.has(name)) {
         ambiguousNames.add(name)
       }
-    }
-  }
-  for (const [name, count] of starNameCounts) {
-    if (count > 1) {
-      ambiguousNames.add(name)
     }
   }
 
