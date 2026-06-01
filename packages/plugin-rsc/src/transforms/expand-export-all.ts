@@ -169,7 +169,7 @@ function collectExplicitExportNames(ast: Program): Set<string> {
 function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
   const starNameCounts = new Map<string, number>()
   for (const source of scan.starSources) {
-    for (const name of new Set(source.scan.names)) {
+    for (const name of source.scan.names) {
       if (name === 'default' || scan.explicitNames.has(name)) {
         continue
       }
