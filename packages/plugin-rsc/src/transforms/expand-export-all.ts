@@ -58,19 +58,8 @@ export async function transformExpandExportAll(
   const { plan } = resolveStarExports(scan)
   const output = new MagicString(code)
   for (const item of plan) {
-    if (item.names.length === 0) {
-      output.update(
-        item.node.start,
-        item.node.end,
-        `import ${JSON.stringify(item.source)};`,
-      )
-    } else {
-      output.update(
-        item.node.start,
-        item.node.end,
-        `export { ${item.names.join(', ')} } from ${JSON.stringify(item.source)};`,
-      )
-    }
+    const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.source)};`
+    output.update(item.node.start, item.node.end, newExport)
   }
   if (!output.hasChanged()) {
     return

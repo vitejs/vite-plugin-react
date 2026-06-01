@@ -1,2 +1,2 @@
-export { fromDep } from "./dep.js";
+export {fromDep} from "./dep.js";
 export const shared = 1

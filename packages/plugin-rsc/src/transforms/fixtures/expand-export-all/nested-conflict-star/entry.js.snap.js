@@ -1,1 +1,1 @@
-export { onlyA, onlyB } from "./dep.js";
+export {onlyA, onlyB} from "./dep.js";
