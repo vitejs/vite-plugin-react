@@ -24,6 +24,11 @@ type StarExportSource = {
   scan: ExportNameScan
 }
 
+// `names` and `ambiguousNames` describe this module's star-visible export
+// state. A name in `names` can be safely re-exported by a parent. A name in
+// `ambiguousNames` must be propagated even though it is not visible, because a
+// parent star export must also treat that name as ambiguous unless the parent
+// defines it explicitly.
 type ExportNameScan = {
   names: string[]
   ambiguousNames: Set<string>
