@@ -107,7 +107,10 @@ export function transformProxyExport(
         const names: string[] = []
         for (const spec of node.specifiers) {
           if (spec.exported.type !== 'Identifier') {
-            throw new Error('unsupported string literal export name')
+            throw Object.assign(
+              new Error('unsupported string literal export name'),
+              { pos: spec.exported.start },
+            )
           }
           names.push(spec.exported.name)
         }

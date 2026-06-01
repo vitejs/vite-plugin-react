@@ -147,7 +147,10 @@ export function transformWrapExport(
           for (const spec of node.specifiers) {
             tinyassert(spec.local.type === 'Identifier')
             if (spec.exported.type !== 'Identifier') {
-              throw new Error('unsupported string literal export name')
+              throw Object.assign(
+                new Error('unsupported string literal export name'),
+                { pos: spec.exported.start },
+              )
             }
             const name = spec.local.name
             toAppend.push(
@@ -163,7 +166,10 @@ export function transformWrapExport(
           for (const spec of node.specifiers) {
             tinyassert(spec.local.type === 'Identifier')
             if (spec.exported.type !== 'Identifier') {
-              throw new Error('unsupported string literal export name')
+              throw Object.assign(
+                new Error('unsupported string literal export name'),
+                { pos: spec.exported.start },
+              )
             }
             wrapExport(spec.local.name, spec.exported.name)
           }

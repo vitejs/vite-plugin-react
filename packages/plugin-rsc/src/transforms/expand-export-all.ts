@@ -148,7 +148,10 @@ function collectExplicitExportNames(ast: Program): Set<string> {
           if (spec.exported.type === 'Identifier') {
             names.add(spec.exported.name)
           } else {
-            throw new Error('unsupported string literal export name')
+            throw Object.assign(
+              new Error('unsupported string literal export name'),
+              { pos: spec.exported.start },
+            )
           }
         }
       }
