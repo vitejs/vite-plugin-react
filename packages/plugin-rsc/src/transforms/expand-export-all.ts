@@ -192,6 +192,8 @@ function collectExplicitExportNames(ast: Program): Set<string> {
         for (const spec of node.specifiers) {
           if (spec.exported.type === 'Identifier') {
             names.add(spec.exported.name)
+          } else {
+            throw new Error('unsupported string literal export name')
           }
         }
       }
@@ -235,6 +237,8 @@ function collectVisibleExportScan(
             spec.exported.name !== 'default'
           ) {
             names.push(spec.exported.name)
+          } else if (spec.exported.type !== 'Identifier') {
+            throw new Error('unsupported string literal export name')
           }
         }
       }

@@ -1,1 +1,5 @@
+/* ERROR
 
+unsupported string literal export name
+
+*/
