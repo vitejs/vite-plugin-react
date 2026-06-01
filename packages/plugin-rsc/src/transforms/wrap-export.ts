@@ -146,7 +146,12 @@ export function transformWrapExport(
           output.remove(node.start, node.end)
           for (const spec of node.specifiers) {
             tinyassert(spec.local.type === 'Identifier')
-            tinyassert(spec.exported.type === 'Identifier')
+            if (spec.exported.type !== 'Identifier') {
+              throw Object.assign(
+                new Error('unsupported string literal export name'),
+                { pos: spec.exported.start },
+              )
+            }
             const name = spec.local.name
             toAppend.push(
               `import { ${name} as $$import_${name} } from ${node.source.raw}`,
@@ -160,7 +165,12 @@ export function transformWrapExport(
           output.remove(node.start, node.end)
           for (const spec of node.specifiers) {
             tinyassert(spec.local.type === 'Identifier')
-            tinyassert(spec.exported.type === 'Identifier')
+            if (spec.exported.type !== 'Identifier') {
+              throw Object.assign(
+                new Error('unsupported string literal export name'),
+                { pos: spec.exported.start },
+              )
+            }
             wrapExport(spec.local.name, spec.exported.name)
           }
         }
@@ -175,14 +185,7 @@ export function transformWrapExport(
     // for now we just give an option to not throw for this case.
     // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
     if (node.type === 'ExportAllDeclaration') {
-      if (node.exported?.type === 'Identifier') {
-        tinyassert(node.source.type === 'Literal')
-        const exportedName = node.exported.name
-        const localName = `$$import_${exportedName}`
-        output.remove(node.start, node.end)
-        toAppend.push(`import * as ${localName} from ${node.source.raw}`)
-        wrapExport(localName, exportedName)
-      } else if (!options.ignoreExportAllDeclaration) {
+      if (!options.ignoreExportAllDeclaration) {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
           pos: node.start,
         })

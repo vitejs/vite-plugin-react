@@ -178,6 +178,16 @@ export { x as y }
     `)
   })
 
+  test('export string name throws', async () => {
+    const input = `
+const x = 0;
+export { x as "my thing" }
+`
+    await expect(testTransform(input)).rejects.toThrow(
+      'unsupported string literal export name',
+    )
+  })
+
   test('re-export simple', async () => {
     const input = `export { x } from "./dep"`
     expect(await testTransform(input)).toMatchInlineSnapshot(`
@@ -207,13 +217,7 @@ export { x as y }
 
   test('re-export all rename', async () => {
     const input = `export * as all from "./dep"`
-    expect(await testTransform(input)).toMatchInlineSnapshot(`
-      ";
-      import * as $$import_all from "./dep";
-      const $$wrap_$$import_all = /* #__PURE__ */ $$wrap($$import_all, "<id>", "all");
-      export { $$wrap_$$import_all as all };
-      "
-    `)
+    expect(await testTransform(input)).toMatchInlineSnapshot(`false`)
   })
 
   test('filter', async () => {

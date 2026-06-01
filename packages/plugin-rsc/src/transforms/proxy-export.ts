@@ -1,4 +1,3 @@
-import { tinyassert } from '@hiogawa/utils'
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
@@ -107,7 +106,12 @@ export function transformProxyExport(
          */
         const names: string[] = []
         for (const spec of node.specifiers) {
-          tinyassert(spec.exported.type === 'Identifier')
+          if (spec.exported.type !== 'Identifier') {
+            throw Object.assign(
+              new Error('unsupported string literal export name'),
+              { pos: spec.exported.start },
+            )
+          }
           names.push(spec.exported.name)
         }
         createExport(node, names)
