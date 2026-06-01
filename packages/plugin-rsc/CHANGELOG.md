@@ -1,3 +1,19 @@
+## <small>[0.5.27](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.26...plugin-rsc@0.5.27) (2026-06-01)</small>
+### Features
+
+* use carets for rolldown versions ([#1216](https://github.com/vitejs/vite-plugin-react/issues/1216)) ([3bd1f08](https://github.com/vitejs/vite-plugin-react/commit/3bd1f08ae0b82ee0e96feb2ff265e61c6fe74b54))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1218](https://github.com/vitejs/vite-plugin-react/issues/1218)) ([2b8df67](https://github.com/vitejs/vite-plugin-react/commit/2b8df67323265d1ff5ddf47b2db9ab0b9de5c688))
+* **deps:** update all non-major dependencies ([#1227](https://github.com/vitejs/vite-plugin-react/issues/1227)) ([e38acca](https://github.com/vitejs/vite-plugin-react/commit/e38accafea0c7c84f7fc72fd69d9cec731fa7600))
+* **rsc:** handle `export *` re-exports in `use client` and `use server` modules ([#1234](https://github.com/vitejs/vite-plugin-react/issues/1234)) ([dd94ec6](https://github.com/vitejs/vite-plugin-react/commit/dd94ec627855e7cb8a43d5145d496ee3e89f67f3))
+* **rsc:** handle conflict names from `export *` in `use client` and `use server` modules ([#1239](https://github.com/vitejs/vite-plugin-react/issues/1239)) ([d618f63](https://github.com/vitejs/vite-plugin-react/commit/d618f632c39ff5a4edd67c83074f3d9e2d682100))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react to ^19.2.15 ([#1236](https://github.com/vitejs/vite-plugin-react/issues/1236)) ([40dff34](https://github.com/vitejs/vite-plugin-react/commit/40dff34be3881181ac37148e2940fa9f75ada5c1))
+
 ## <small>[0.5.26](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.25...plugin-rsc@0.5.26) (2026-05-07)</small>
 ### Bug Fixes
 
