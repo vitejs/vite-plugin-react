@@ -107,6 +107,9 @@ async function collectExportScan(
   seen: Set<string>,
 ): Promise<ExportNameScan> {
   if (seen.has(resolvedId)) {
+    // TODO: This module-level bailout is only a termination guard. A fully
+    // spec-accurate resolver would track per-name resolution state and binding
+    // identity, so cyclic paths that resolve to the same binding can survive.
     return { names: [], ambiguousNames: new Set() }
   }
   seen.add(resolvedId)
