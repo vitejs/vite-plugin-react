@@ -59,7 +59,11 @@ export async function transformExpandExportAll(
   const output = new MagicString(code)
   for (const item of plan) {
     if (item.names.length === 0) {
-      output.remove(item.node.start, item.node.end)
+      output.update(
+        item.node.start,
+        item.node.end,
+        `import ${JSON.stringify(item.source)};`,
+      )
     } else {
       output.update(
         item.node.start,
