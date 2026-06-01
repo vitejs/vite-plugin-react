@@ -44,15 +44,10 @@ export async function transformExpandExportAll(
   options: TransformExpandExportAllOptions,
 ): Promise<{ code: string } | undefined> {
   const { code, ast } = options
-  const bareStars = ast.body.filter(
-    (n): n is ExportAllDeclaration =>
-      n.type === 'ExportAllDeclaration' && !n.exported,
-  )
-  if (bareStars.length === 0) {
+  const scan = await scanModuleExports(ast, options.importer, options)
+  if (scan.starSources.length === 0) {
     return
   }
-
-  const scan = await scanModuleExports(ast, options.importer, options)
   const { plans } = resolveStarExports(scan)
   const output = new MagicString(code)
   for (const item of plans) {
