@@ -49,7 +49,12 @@ export async function transformExpandExportAll(
     return
   }
 
-  const scan = await scanCurrentModule(bareStars, options)
+  const scan = await scanModuleExports(
+    ast,
+    bareStars,
+    options.importer,
+    options,
+  )
   const { plan } = resolveStarExports(scan)
   const output = new MagicString(code)
   for (const item of plan) {
@@ -69,13 +74,6 @@ export async function transformExpandExportAll(
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
   // their follow-up proxy/wrap transform maps.
   return { code: output.toString() }
-}
-
-async function scanCurrentModule(
-  bareStars: ExportAllDeclaration[],
-  options: TransformExpandExportAllOptions,
-): Promise<ModuleExportScan> {
-  return scanModuleExports(options.ast, bareStars, options.importer, options)
 }
 
 function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
