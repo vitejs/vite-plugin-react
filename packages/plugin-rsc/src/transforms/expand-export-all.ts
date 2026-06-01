@@ -28,7 +28,7 @@ type ExportNameScan = {
 
 type StarExportResolution = {
   ambiguousNames: Set<string>
-  plan: StarExportRewritePlan[]
+  plans: StarExportRewritePlan[]
 }
 
 type StarExportRewritePlan = {
@@ -55,9 +55,9 @@ export async function transformExpandExportAll(
     options.importer,
     options,
   )
-  const { plan } = resolveStarExports(scan)
+  const { plans } = resolveStarExports(scan)
   const output = new MagicString(code)
-  for (const item of plan) {
+  for (const item of plans) {
     const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.source)};`
     output.update(item.node.start, item.node.end, newExport)
   }
@@ -170,7 +170,7 @@ function collectVisibleExportScan(
   resolved: StarExportResolution,
 ): ExportNameScan {
   const starNamesByNode = new Map(
-    resolved.plan.map((item) => [item.node, item.names] as const),
+    resolved.plans.map((item) => [item.node, item.names] as const),
   )
   const names: string[] = []
 
@@ -257,20 +257,24 @@ function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
     }
   }
 
-  const plan: StarExportRewritePlan[] = scan.starSources.map((source) => ({
-    node: source.node,
-    source: source.source,
-    names: source.scan.names.filter(
+  const plans: StarExportRewritePlan[] = []
+  for (const source of scan.starSources) {
+    const names = source.scan.names.filter(
       (name) =>
         name !== 'default' &&
         !scan.explicitNames.has(name) &&
         !ambiguousNames.has(name) &&
         starNameCounts.get(name) === 1,
-    ),
-  }))
+    )
+    plans.push({
+      node: source.node,
+      source: source.source,
+      names,
+    })
+  }
 
   return {
     ambiguousNames,
-    plan,
+    plans: plans,
   }
 }
