@@ -43,13 +43,12 @@ type StarExportRewritePlan = {
 export async function transformExpandExportAll(
   options: TransformExpandExportAllOptions,
 ): Promise<{ code: string } | undefined> {
-  const { code, ast } = options
-  const scan = await scanModuleExports(ast, options.importer, options)
-  if (scan.starSources.length === 0) {
+  const scan = await scanModuleExports(options.ast, options.importer, options)
+  const { plans } = resolveStarExports(scan)
+  if (plans.length === 0) {
     return
   }
-  const { plans } = resolveStarExports(scan)
-  const output = new MagicString(code)
+  const output = new MagicString(options.code)
   for (const item of plans) {
     const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.source)};`
     output.update(item.node.start, item.node.end, newExport)
