@@ -65,56 +65,7 @@ async function scanCurrentModule(
   bareStars: ExportAllDeclaration[],
   options: TransformExpandExportAllOptions,
 ): Promise<ModuleExportScan> {
-  const explicitNames = new Set<string>()
-  const starSources: StarExportSource[] = []
-
-  for (const node of options.ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
-        ) {
-          if (node.declaration.id) explicitNames.add(node.declaration.id.name)
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          for (const decl of node.declaration.declarations) {
-            for (const name of extractNames(decl.id)) {
-              explicitNames.add(name)
-            }
-          }
-        }
-      } else {
-        for (const spec of node.specifiers) {
-          if (spec.exported.type === 'Identifier') {
-            explicitNames.add(spec.exported.name)
-          }
-        }
-      }
-    } else if (node.type === 'ExportDefaultDeclaration') {
-      explicitNames.add('default')
-    } else if (node.type === 'ExportAllDeclaration' && node.exported) {
-      if (node.exported.type === 'Identifier') {
-        explicitNames.add(node.exported.name)
-      }
-    }
-  }
-
-  for (const node of bareStars) {
-    const source = node.source.value as string
-    const resolved = await resolveExportAllSource(
-      source,
-      options.importer,
-      node,
-      options,
-    )
-    starSources.push({
-      node,
-      source,
-      names: await collectExportNames(resolved, options, new Set()),
-    })
-  }
-
-  return { explicitNames, starSources }
+  return scanModuleExports(options.ast, bareStars, options.importer, options)
 }
 
 function buildStarRewritePlan(scan: ModuleExportScan): StarRewritePlan[] {
@@ -146,8 +97,92 @@ async function collectExportNames(
   seen.add(resolvedId)
 
   const ast = await options.load(resolvedId)
+  const bareStars = ast.body.filter(
+    (n): n is ExportAllDeclaration =>
+      n.type === 'ExportAllDeclaration' && !n.exported,
+  )
+  const scan = await scanModuleExports(
+    ast,
+    bareStars,
+    resolvedId,
+    options,
+    seen,
+  )
+  return collectVisibleExportNames(ast, buildStarRewritePlan(scan))
+}
 
+async function scanModuleExports(
+  ast: Program,
+  bareStars: ExportAllDeclaration[],
+  importer: string,
+  options: TransformExpandExportAllOptions,
+  seen = new Set<string>(),
+): Promise<ModuleExportScan> {
+  const explicitNames = collectExplicitExportNames(ast)
+  const starSources: StarExportSource[] = []
+
+  for (const node of bareStars) {
+    const source = node.source.value as string
+    const resolved = await resolveExportAllSource(
+      source,
+      importer,
+      node,
+      options,
+    )
+    starSources.push({
+      node,
+      source,
+      names: await collectExportNames(resolved, options, new Set(seen)),
+    })
+  }
+
+  return { explicitNames, starSources }
+}
+
+function collectExplicitExportNames(ast: Program): Set<string> {
+  const names = new Set<string>()
+  for (const node of ast.body) {
+    if (node.type === 'ExportNamedDeclaration') {
+      if (node.declaration) {
+        if (
+          node.declaration.type === 'FunctionDeclaration' ||
+          node.declaration.type === 'ClassDeclaration'
+        ) {
+          if (node.declaration.id) names.add(node.declaration.id.name)
+        } else if (node.declaration.type === 'VariableDeclaration') {
+          for (const decl of node.declaration.declarations) {
+            for (const name of extractNames(decl.id)) {
+              names.add(name)
+            }
+          }
+        }
+      } else {
+        for (const spec of node.specifiers) {
+          if (spec.exported.type === 'Identifier') {
+            names.add(spec.exported.name)
+          }
+        }
+      }
+    } else if (node.type === 'ExportDefaultDeclaration') {
+      names.add('default')
+    } else if (node.type === 'ExportAllDeclaration') {
+      if (node.exported?.type === 'Identifier') {
+        names.add(node.exported.name)
+      }
+    }
+  }
+  return names
+}
+
+function collectVisibleExportNames(
+  ast: Program,
+  plan: StarRewritePlan[],
+): string[] {
+  const starNamesByNode = new Map(
+    plan.map((item) => [item.node, item.names] as const),
+  )
   const names: string[] = []
+
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
@@ -174,17 +209,12 @@ async function collectExportNames(
     } else if (node.type === 'ExportAllDeclaration') {
       if (node.exported?.type === 'Identifier') {
         names.push(node.exported.name)
-      } else if (node.source) {
-        const subResolved = await resolveExportAllSource(
-          node.source.value as string,
-          resolvedId,
-          node,
-          options,
-        )
-        names.push(...(await collectExportNames(subResolved, options, seen)))
+      } else {
+        names.push(...(starNamesByNode.get(node) ?? []))
       }
     }
   }
+
   return names
 }
 
