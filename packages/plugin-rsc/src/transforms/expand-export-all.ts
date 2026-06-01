@@ -169,19 +169,18 @@ function collectExplicitExportNames(ast: Program): Set<string> {
 function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
   // find multiple re-exported names through "export *"
   // and treat as ambiguous
-  const starNameCounts = new Map<string, number>()
+  const seenStarNames = new Set<string>()
+  const ambiguousNames = new Set<string>()
   for (const source of scan.starSources) {
     for (const name of source.scan.names) {
       if (name === 'default' || scan.explicitNames.has(name)) {
         continue
       }
-      starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
-    }
-  }
-  const ambiguousNames = new Set<string>()
-  for (const [name, count] of starNameCounts) {
-    if (count > 1) {
-      ambiguousNames.add(name)
+      if (seenStarNames.has(name)) {
+        ambiguousNames.add(name)
+      } else {
+        seenStarNames.add(name)
+      }
     }
   }
 
