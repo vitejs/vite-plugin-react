@@ -10,6 +10,11 @@ export type TransformExpandExportAllOptions = {
   load: (id: string) => Promise<Program>
 }
 
+type ModuleExportScan = {
+  explicitNames: Set<string>
+  starSources: StarExportSource[]
+}
+
 type StarExportSource = {
   node: ExportAllDeclaration
   source: string
@@ -21,20 +26,15 @@ type ExportNameScan = {
   ambiguousNames: Set<string>
 }
 
-type ModuleExportScan = {
-  explicitNames: Set<string>
-  starSources: StarExportSource[]
+type StarExportResolution = {
+  ambiguousNames: Set<string>
+  plan: StarExportRewritePlan[]
 }
 
-type StarRewritePlan = {
+type StarExportRewritePlan = {
   node: ExportAllDeclaration
   source: string
   names: string[]
-}
-
-type StarExportResolution = {
-  ambiguousNames: Set<string>
-  plan: StarRewritePlan[]
 }
 
 export async function transformExpandExportAll(
@@ -66,47 +66,38 @@ export async function transformExpandExportAll(
   return { code: output.toString() }
 }
 
-function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
-  const starNameCounts = new Map<string, number>()
-  for (const source of scan.starSources) {
-    for (const name of new Set(source.scan.names)) {
-      if (name === 'default' || scan.explicitNames.has(name)) {
-        continue
-      }
-      starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
-    }
+// Scan a module into local explicit exports and recursively scanned direct
+// `export *` sources. This does not decide conflicts; resolveStarExports does.
+async function scanModuleExports(
+  ast: Program,
+  bareStars: ExportAllDeclaration[],
+  importer: string,
+  options: TransformExpandExportAllOptions,
+  seen = new Set<string>(),
+): Promise<ModuleExportScan> {
+  const starSources: StarExportSource[] = []
+
+  for (const node of bareStars) {
+    const source = node.source.value as string
+    const resolved = await resolveExportAllSource(
+      source,
+      importer,
+      node,
+      options,
+    )
+    starSources.push({
+      node,
+      source,
+      scan: await collectExportScan(resolved, options, new Set(seen)),
+    })
   }
 
-  const ambiguousNames = new Set<string>()
-  for (const source of scan.starSources) {
-    for (const name of source.scan.ambiguousNames) {
-      if (!scan.explicitNames.has(name)) {
-        ambiguousNames.add(name)
-      }
-    }
-  }
-  for (const [name, count] of starNameCounts) {
-    if (count > 1) {
-      ambiguousNames.add(name)
-    }
-  }
-
-  return {
-    ambiguousNames,
-    plan: scan.starSources.map((source) => ({
-      node: source.node,
-      source: source.source,
-      names: source.scan.names.filter(
-        (name) =>
-          name !== 'default' &&
-          !scan.explicitNames.has(name) &&
-          !ambiguousNames.has(name) &&
-          starNameCounts.get(name) === 1,
-      ),
-    })),
-  }
+  const explicitNames = collectExplicitExportNames(ast)
+  return { explicitNames, starSources }
 }
 
+// Return the names that a resolved dependency visibly exports, plus names whose
+// resolution is ambiguous and must continue to poison parent star resolution.
 async function collectExportScan(
   resolvedId: string,
   options: TransformExpandExportAllOptions,
@@ -133,34 +124,8 @@ async function collectExportScan(
   return collectVisibleExportScan(ast, resolved)
 }
 
-async function scanModuleExports(
-  ast: Program,
-  bareStars: ExportAllDeclaration[],
-  importer: string,
-  options: TransformExpandExportAllOptions,
-  seen = new Set<string>(),
-): Promise<ModuleExportScan> {
-  const explicitNames = collectExplicitExportNames(ast)
-  const starSources: StarExportSource[] = []
-
-  for (const node of bareStars) {
-    const source = node.source.value as string
-    const resolved = await resolveExportAllSource(
-      source,
-      importer,
-      node,
-      options,
-    )
-    starSources.push({
-      node,
-      source,
-      scan: await collectExportScan(resolved, options, new Set(seen)),
-    })
-  }
-
-  return { explicitNames, starSources }
-}
-
+// Collect names declared directly by the module, including namespace re-exports.
+// These names shadow star exports at this module boundary.
 function collectExplicitExportNames(ast: Program): Set<string> {
   const names = new Set<string>()
   for (const node of ast.body) {
@@ -198,6 +163,8 @@ function collectExplicitExportNames(ast: Program): Set<string> {
   return names
 }
 
+// Preserve source-order export name collection after star conflicts are resolved,
+// so parent scans see the same visible names this module would expose.
 function collectVisibleExportScan(
   ast: Program,
   resolved: StarExportResolution,
@@ -260,4 +227,50 @@ async function resolveExportAllSource(
     )
   }
   return resolved
+}
+
+// Apply ESM export-star conflict rules for one module boundary and build the
+// rewrite for each direct `export *`. Ambiguity from child modules is preserved
+// so a parent does not accidentally make an invalid name explicit.
+function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
+  const starNameCounts = new Map<string, number>()
+  for (const source of scan.starSources) {
+    for (const name of new Set(source.scan.names)) {
+      if (name === 'default' || scan.explicitNames.has(name)) {
+        continue
+      }
+      starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
+    }
+  }
+
+  const ambiguousNames = new Set<string>()
+  for (const source of scan.starSources) {
+    for (const name of source.scan.ambiguousNames) {
+      if (!scan.explicitNames.has(name)) {
+        ambiguousNames.add(name)
+      }
+    }
+  }
+  for (const [name, count] of starNameCounts) {
+    if (count > 1) {
+      ambiguousNames.add(name)
+    }
+  }
+
+  const plan: StarExportRewritePlan[] = scan.starSources.map((source) => ({
+    node: source.node,
+    source: source.source,
+    names: source.scan.names.filter(
+      (name) =>
+        name !== 'default' &&
+        !scan.explicitNames.has(name) &&
+        !ambiguousNames.has(name) &&
+        starNameCounts.get(name) === 1,
+    ),
+  }))
+
+  return {
+    ambiguousNames,
+    plan,
+  }
 }
