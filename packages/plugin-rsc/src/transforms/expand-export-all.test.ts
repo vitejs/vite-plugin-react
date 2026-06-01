@@ -45,7 +45,7 @@ ${(e as Error).message}
 */
 `
     }
-    return result.code
+    return result.code.trim() + '\n'
   }
 
   for (const [file, mod] of Object.entries(fixtures)) {
