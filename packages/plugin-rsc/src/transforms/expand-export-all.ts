@@ -200,8 +200,7 @@ function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
       (name) =>
         name !== 'default' &&
         !scan.explicitNames.has(name) &&
-        !ambiguousNames.has(name) &&
-        starNameCounts.get(name) === 1,
+        !ambiguousNames.has(name),
     )
     plans.push({
       node: source.node,
