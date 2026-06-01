@@ -20,7 +20,6 @@ type ModuleExportScan = {
 
 type StarExportSource = {
   node: ExportAllDeclaration
-  source: string
   scan: ExportNameScan
 }
 
@@ -41,7 +40,6 @@ type StarExportResolution = {
 
 type StarExportRewritePlan = {
   node: ExportAllDeclaration
-  source: string
   names: string[]
 }
 
@@ -55,7 +53,7 @@ export async function transformExpandExportAll(
   }
   const output = new MagicString(options.code)
   for (const item of plans) {
-    const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.source)};`
+    const newExport = `export {${item.names.join(', ')}} from ${JSON.stringify(item.node.source.value)};`
     output.update(item.node.start, item.node.end, newExport)
   }
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
@@ -90,7 +88,6 @@ async function scanModuleExports(
     }
     starSources.push({
       node,
-      source,
       scan: await collectExportScan(resolved, context, new Set(seen)),
     })
   }
@@ -204,13 +201,12 @@ function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
     )
     plans.push({
       node: source.node,
-      source: source.source,
       names,
     })
   }
 
   return {
     ambiguousNames,
-    plans: plans,
+    plans,
   }
 }
