@@ -79,12 +79,15 @@ async function scanModuleExports(
 
   for (const node of bareStars) {
     const source = node.source.value as string
-    const resolved = await resolveExportAllSource(
-      source,
-      importer,
-      node,
-      options,
-    )
+    const resolved = await options.resolve(source, importer)
+    if (!resolved) {
+      throw Object.assign(
+        new Error(
+          `failed to resolve export-all source ${JSON.stringify(source)}`,
+        ),
+        { pos: node.start },
+      )
+    }
     starSources.push({
       node,
       source,
@@ -209,24 +212,6 @@ function collectVisibleExportScan(
   }
 
   return { names, ambiguousNames: resolved.ambiguousNames }
-}
-
-async function resolveExportAllSource(
-  source: string,
-  importer: string,
-  node: ExportAllDeclaration,
-  options: TransformExpandExportAllOptions,
-): Promise<string> {
-  const resolved = await options.resolve(source, importer)
-  if (!resolved) {
-    throw Object.assign(
-      new Error(
-        `failed to resolve export-all source ${JSON.stringify(source)}`,
-      ),
-      { pos: node.start },
-    )
-  }
-  return resolved
 }
 
 // Apply ESM export-star conflict rules for one module boundary and build the
