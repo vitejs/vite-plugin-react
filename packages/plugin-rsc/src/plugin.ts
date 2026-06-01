@@ -71,7 +71,7 @@ import {
   transformServerActionServer,
   transformWrapExport,
   findDirectives,
-  type TransformExpandExportAllOptions,
+  type TransformExpandExportAllContext,
 } from './transforms'
 import { generateEncryptionKey, toBase64 } from './utils/encryption-utils'
 import { createRpcServer } from './utils/rpc'
@@ -1379,7 +1379,7 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
 
 function createTransformExpandExportAllContext(
   ctx: Rollup.TransformPluginContext,
-): Pick<TransformExpandExportAllOptions, 'resolve' | 'load'> {
+): TransformExpandExportAllContext {
   return {
     resolve: async (source, importer) => {
       return (await ctx.resolve(source, importer))?.id

@@ -2,12 +2,15 @@ import type { ExportAllDeclaration, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames } from './utils'
 
-export type TransformExpandExportAllOptions = {
+export interface TransformExpandExportAllContext {
+  resolve: (source: string, importer: string) => Promise<string | undefined>
+  load: (id: string) => Promise<Program>
+}
+
+export interface TransformExpandExportAllOptions extends TransformExpandExportAllContext {
   code: string
   ast: Program
   importer: string
-  resolve: (source: string, importer: string) => Promise<string | undefined>
-  load: (id: string) => Promise<Program>
 }
 
 type ModuleExportScan = {
@@ -66,7 +69,7 @@ export async function transformExpandExportAll(
 async function scanModuleExports(
   ast: Program,
   importer: string,
-  options: TransformExpandExportAllOptions,
+  context: TransformExpandExportAllContext,
   seen = new Set<string>(),
 ): Promise<ModuleExportScan> {
   const starSources: StarExportSource[] = []
@@ -77,7 +80,7 @@ async function scanModuleExports(
 
   for (const node of bareStars) {
     const source = node.source.value as string
-    const resolved = await options.resolve(source, importer)
+    const resolved = await context.resolve(source, importer)
     if (!resolved) {
       throw Object.assign(
         new Error(
@@ -89,7 +92,7 @@ async function scanModuleExports(
     starSources.push({
       node,
       source,
-      scan: await collectExportScan(resolved, options, new Set(seen)),
+      scan: await collectExportScan(resolved, context, new Set(seen)),
     })
   }
 
@@ -101,7 +104,7 @@ async function scanModuleExports(
 // resolution is ambiguous and must continue to poison parent star resolution.
 async function collectExportScan(
   resolvedId: string,
-  options: TransformExpandExportAllOptions,
+  context: TransformExpandExportAllContext,
   seen: Set<string>,
 ): Promise<ExportNameScan> {
   if (seen.has(resolvedId)) {
@@ -112,8 +115,8 @@ async function collectExportScan(
   }
   seen.add(resolvedId)
 
-  const ast = await options.load(resolvedId)
-  const scan = await scanModuleExports(ast, resolvedId, options, seen)
+  const ast = await context.load(resolvedId)
+  const scan = await scanModuleExports(ast, resolvedId, context, seen)
   const resolved = resolveStarExports(scan)
   const names = [
     ...scan.explicitNames,
