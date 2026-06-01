@@ -1,1 +1,1 @@
-export {b, a} from "./dep1.js";
+export {a, b} from "./dep1.js";

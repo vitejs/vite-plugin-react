@@ -127,7 +127,14 @@ async function collectExportScan(
     seen,
   )
   const resolved = resolveStarExports(scan)
-  return collectVisibleExportScan(ast, resolved)
+  const names = [
+    ...scan.explicitNames,
+    ...resolved.plans.flatMap((item) => item.names),
+  ]
+  return {
+    names,
+    ambiguousNames: resolved.ambiguousNames,
+  }
 }
 
 // Collect names declared directly by the module, including namespace re-exports.
@@ -167,54 +174,6 @@ function collectExplicitExportNames(ast: Program): Set<string> {
     }
   }
   return names
-}
-
-// Preserve source-order export name collection after star conflicts are resolved,
-// so parent scans see the same visible names this module would expose.
-function collectVisibleExportScan(
-  ast: Program,
-  resolved: StarExportResolution,
-): ExportNameScan {
-  const starNamesByNode = new Map(
-    resolved.plans.map((item) => [item.node, item.names] as const),
-  )
-  const names: string[] = []
-
-  for (const node of ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
-        ) {
-          if (node.declaration.id) names.push(node.declaration.id.name)
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          for (const decl of node.declaration.declarations) {
-            names.push(...extractNames(decl.id))
-          }
-        }
-      } else {
-        for (const spec of node.specifiers) {
-          if (
-            spec.exported.type === 'Identifier' &&
-            spec.exported.name !== 'default'
-          ) {
-            names.push(spec.exported.name)
-          } else if (spec.exported.type !== 'Identifier') {
-            throw new Error('unsupported string literal export name')
-          }
-        }
-      }
-    } else if (node.type === 'ExportAllDeclaration') {
-      if (node.exported?.type === 'Identifier') {
-        names.push(node.exported.name)
-      } else {
-        names.push(...(starNamesByNode.get(node) ?? []))
-      }
-    }
-  }
-
-  return { names, ambiguousNames: resolved.ambiguousNames }
 }
 
 // Apply ESM export-star conflict rules for one module boundary and build the
