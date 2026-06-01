@@ -13,7 +13,12 @@ export type TransformExpandExportAllOptions = {
 type StarExportSource = {
   node: ExportAllDeclaration
   source: string
+  scan: ExportNameScan
+}
+
+type ExportNameScan = {
   names: string[]
+  ambiguousNames: Set<string>
 }
 
 type ModuleExportScan = {
@@ -25,6 +30,11 @@ type StarRewritePlan = {
   node: ExportAllDeclaration
   source: string
   names: string[]
+}
+
+type StarExportResolution = {
+  ambiguousNames: Set<string>
+  plan: StarRewritePlan[]
 }
 
 export async function transformExpandExportAll(
@@ -40,7 +50,7 @@ export async function transformExpandExportAll(
   }
 
   const scan = await scanCurrentModule(bareStars, options)
-  const plan = buildStarRewritePlan(scan)
+  const { plan } = resolveStarExports(scan)
   const output = new MagicString(code)
   for (const item of plan) {
     if (item.names.length === 0) {
@@ -68,32 +78,55 @@ async function scanCurrentModule(
   return scanModuleExports(options.ast, bareStars, options.importer, options)
 }
 
-function buildStarRewritePlan(scan: ModuleExportScan): StarRewritePlan[] {
+function resolveStarExports(scan: ModuleExportScan): StarExportResolution {
   const starNameCounts = new Map<string, number>()
   for (const source of scan.starSources) {
-    for (const name of new Set(source.names)) {
+    for (const name of new Set(source.scan.names)) {
+      if (name === 'default' || scan.explicitNames.has(name)) {
+        continue
+      }
       starNameCounts.set(name, (starNameCounts.get(name) ?? 0) + 1)
     }
   }
 
-  return scan.starSources.map((source) => ({
-    node: source.node,
-    source: source.source,
-    names: source.names.filter(
-      (name) =>
-        name !== 'default' &&
-        !scan.explicitNames.has(name) &&
-        starNameCounts.get(name) === 1,
-    ),
-  }))
+  const ambiguousNames = new Set<string>()
+  for (const source of scan.starSources) {
+    for (const name of source.scan.ambiguousNames) {
+      if (!scan.explicitNames.has(name)) {
+        ambiguousNames.add(name)
+      }
+    }
+  }
+  for (const [name, count] of starNameCounts) {
+    if (count > 1) {
+      ambiguousNames.add(name)
+    }
+  }
+
+  return {
+    ambiguousNames,
+    plan: scan.starSources.map((source) => ({
+      node: source.node,
+      source: source.source,
+      names: source.scan.names.filter(
+        (name) =>
+          name !== 'default' &&
+          !scan.explicitNames.has(name) &&
+          !ambiguousNames.has(name) &&
+          starNameCounts.get(name) === 1,
+      ),
+    })),
+  }
 }
 
-async function collectExportNames(
+async function collectExportScan(
   resolvedId: string,
   options: TransformExpandExportAllOptions,
   seen: Set<string>,
-): Promise<string[]> {
-  if (seen.has(resolvedId)) return []
+): Promise<ExportNameScan> {
+  if (seen.has(resolvedId)) {
+    return { names: [], ambiguousNames: new Set() }
+  }
   seen.add(resolvedId)
 
   const ast = await options.load(resolvedId)
@@ -108,7 +141,8 @@ async function collectExportNames(
     options,
     seen,
   )
-  return collectVisibleExportNames(ast, buildStarRewritePlan(scan))
+  const resolved = resolveStarExports(scan)
+  return collectVisibleExportScan(ast, resolved)
 }
 
 async function scanModuleExports(
@@ -132,7 +166,7 @@ async function scanModuleExports(
     starSources.push({
       node,
       source,
-      names: await collectExportNames(resolved, options, new Set(seen)),
+      scan: await collectExportScan(resolved, options, new Set(seen)),
     })
   }
 
@@ -174,12 +208,12 @@ function collectExplicitExportNames(ast: Program): Set<string> {
   return names
 }
 
-function collectVisibleExportNames(
+function collectVisibleExportScan(
   ast: Program,
-  plan: StarRewritePlan[],
-): string[] {
+  resolved: StarExportResolution,
+): ExportNameScan {
   const starNamesByNode = new Map(
-    plan.map((item) => [item.node, item.names] as const),
+    resolved.plan.map((item) => [item.node, item.names] as const),
   )
   const names: string[] = []
 
@@ -215,7 +249,7 @@ function collectVisibleExportNames(
     }
   }
 
-  return names
+  return { names, ambiguousNames: resolved.ambiguousNames }
 }
 
 async function resolveExportAllSource(
