@@ -49,12 +49,7 @@ export async function transformExpandExportAll(
     return
   }
 
-  const scan = await scanModuleExports(
-    ast,
-    bareStars,
-    options.importer,
-    options,
-  )
+  const scan = await scanModuleExports(ast, options.importer, options)
   const { plans } = resolveStarExports(scan)
   const output = new MagicString(code)
   for (const item of plans) {
@@ -70,12 +65,15 @@ export async function transformExpandExportAll(
 // `export *` sources. This does not decide conflicts; resolveStarExports does.
 async function scanModuleExports(
   ast: Program,
-  bareStars: ExportAllDeclaration[],
   importer: string,
   options: TransformExpandExportAllOptions,
   seen = new Set<string>(),
 ): Promise<ModuleExportScan> {
   const starSources: StarExportSource[] = []
+  const bareStars = ast.body.filter(
+    (n): n is ExportAllDeclaration =>
+      n.type === 'ExportAllDeclaration' && !n.exported,
+  )
 
   for (const node of bareStars) {
     const source = node.source.value as string
@@ -115,17 +113,7 @@ async function collectExportScan(
   seen.add(resolvedId)
 
   const ast = await options.load(resolvedId)
-  const bareStars = ast.body.filter(
-    (n): n is ExportAllDeclaration =>
-      n.type === 'ExportAllDeclaration' && !n.exported,
-  )
-  const scan = await scanModuleExports(
-    ast,
-    bareStars,
-    resolvedId,
-    options,
-    seen,
-  )
+  const scan = await scanModuleExports(ast, resolvedId, options, seen)
   const resolved = resolveStarExports(scan)
   const names = [
     ...scan.explicitNames,
