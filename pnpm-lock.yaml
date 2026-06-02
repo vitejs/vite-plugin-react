@@ -568,8 +568,8 @@ importers:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
       vite-dev-rpc:
-        specifier: ^1.1.0
-        version: 1.1.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
+        specifier: ^2.0.0
+        version: 2.0.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
 
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
@@ -596,8 +596,8 @@ importers:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
       vite-dev-rpc:
-        specifier: ^1.1.0
-        version: 1.1.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
+        specifier: ^2.0.0
+        version: 2.0.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
@@ -2726,9 +2726,6 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  birpc@2.6.1:
-    resolution: {integrity: sha512-LPnFhlDpdSH6FJhJyn4M0kFO7vtQ5iPw24FnG0y21q09xC7e8+1LeR31S1MAIrDAHp4m7aas4bEkTDTvMAtebQ==}
-
   birpc@4.0.0:
     resolution: {integrity: sha512-LShSxJP0KTmd101b6DRyGBj57LZxSDYWKitQNW/mi8GRMvZb078Uf9+pveax1DrVL89vm7mWe+TovdI/UDOuPw==}
 
@@ -4405,20 +4402,10 @@ packages:
   vfile@6.0.1:
     resolution: {integrity: sha512-1bYqc7pt6NIADBJ98UiG0Bn/CHIVOoZ/IyEkqIruLg0mE1BKzkOXY2D6CSqQIcKqgadppE5lrxgWXJmXd7zZJw==}
 
-  vite-dev-rpc@1.1.0:
-    resolution: {integrity: sha512-pKXZlgoXGoE8sEKiKJSng4hI1sQ4wi5YT24FCrwrLt6opmkjlqPPVmiPWWJn8M8byMxRGzp1CrFuqQs4M/Z39A==}
-    peerDependencies:
-      vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.1 || ^7.0.0-0
-
   vite-dev-rpc@2.0.0:
     resolution: {integrity: sha512-yKwbTwdHKSD2k/aGqyWpPHepo45OQc8lH3/6IfT4ZqeKE26ooKvi4WIEKzqWav8v+9Is8u1k8q54hvOmqASazA==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.1 || ^7.0.0-0 || ^8.0.0
-
-  vite-hot-client@2.1.0:
-    resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
-    peerDependencies:
-      vite: ^2.6.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0
 
   vite-hot-client@2.2.0:
     resolution: {integrity: sha512-76Zs9zrHbH7M7wqeyooGQKdX+yg0pQ0xuQ1PbFp4z5a0Lzn2e5IPFoCswnmqZ4GiwqB4Jo3WcDAMO9jARTJl8w==}
@@ -6056,8 +6043,6 @@ snapshots:
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.10.0: {}
-
-  birpc@2.6.1: {}
 
   birpc@4.0.0: {}
 
@@ -7937,21 +7922,11 @@ snapshots:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
-  vite-dev-rpc@1.1.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)):
-    dependencies:
-      birpc: 2.6.1
-      vite: 8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
-      vite-hot-client: 2.1.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
-
   vite-dev-rpc@2.0.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)):
     dependencies:
       birpc: 4.0.0
       vite: 8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
       vite-hot-client: 2.2.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))
-
-  vite-hot-client@2.1.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)):
-    dependencies:
-      vite: 8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
 
   vite-hot-client@2.2.0(vite@8.0.16(@types/node@24.12.4)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)):
     dependencies:
