@@ -50,8 +50,8 @@
     "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "rolldown": "^1.0.3",
     "tsdown": "^0.22.1",
     "vite": "^8.0.16"
