@@ -1,5 +1,6 @@
 import { exactRegex } from '@rolldown/pluginutils'
 import type { Literal, Program } from 'estree'
+import { walk } from 'estree-walker'
 import type { Plugin, ResolvedConfig, Rollup, ViteDevServer } from 'vite'
 import { parseAstAsync } from 'vite'
 import {
@@ -56,7 +57,7 @@ export type ServerFunctionDirective = {
     id: string
     meta: Parameters<TransformWrapExportFilter>[1]
   }) => boolean
-  /** Creates the error shown when a module boundary is imported outside RSC. */
+  /** Creates the error shown for inline directives outside RSC. */
   clientError?: (context: { id: string; environment: string }) => string
 }
 
@@ -118,6 +119,39 @@ function findModuleDirective(
   }
 }
 
+function findInlineDirective(
+  ast: Program,
+  directive: string | RegExp,
+): StringLiteral | undefined {
+  let result: StringLiteral | undefined
+  walk(ast, {
+    enter(node) {
+      if (
+        result ||
+        (node.type !== 'FunctionDeclaration' &&
+          node.type !== 'FunctionExpression' &&
+          node.type !== 'ArrowFunctionExpression') ||
+        node.body.type !== 'BlockStatement'
+      ) {
+        return
+      }
+      for (const statement of node.body.body) {
+        if (
+          statement.type === 'ExpressionStatement' &&
+          statement.expression.type === 'Literal' &&
+          isStringLiteral(statement.expression) &&
+          matchDirective(statement.expression.value, directive)
+        ) {
+          result = statement.expression
+          this.skip()
+          return
+        }
+      }
+    },
+  })
+  return result
+}
+
 export function vitePluginServerFunctionDirectives(options: Options): Plugin {
   const { definitions, manager } = options
   return {
@@ -154,6 +188,23 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
         }
 
         if (!isServer) {
+          for (const definition of active) {
+            const inlineDirective = findInlineDirective(
+              ast,
+              definition.directive,
+            )
+            if (inlineDirective && definition.clientError) {
+              throw Object.assign(
+                new Error(
+                  definition.clientError({
+                    id,
+                    environment: this.environment.name,
+                  }),
+                ),
+                { pos: inlineDirective.start },
+              )
+            }
+          }
           const matches = active.flatMap((definition) => {
             const moduleDirective = findModuleDirective(
               ast,
@@ -175,18 +226,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
           }
           const match = matches[0]
           if (!match) return
-          const [definition, moduleDirective] = match
-          if (definition.clientError) {
-            throw Object.assign(
-              new Error(
-                definition.clientError({
-                  id,
-                  environment: this.environment.name,
-                }),
-              ),
-              { pos: moduleDirective.start },
-            )
-          }
+          const [, moduleDirective] = match
 
           const result = transformDirectiveProxyExport(ast, {
             code,
@@ -288,6 +328,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             },
             stableName: true,
             detectUseServerModule: false,
+            rejectForbiddenExpressions: true,
           })
           if (!result.output.hasChanged()) continue
 

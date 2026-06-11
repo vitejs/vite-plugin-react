@@ -1,6 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
+  BlockStatement,
   Literal,
   Node,
   MemberExpression,
@@ -30,6 +31,7 @@ export function transformHoistInlineDirective(
     decode?: (value: string) => string
     noExport?: boolean
     stableName?: boolean
+    rejectForbiddenExpressions?: boolean
   },
 ): {
   output: MagicString
@@ -66,6 +68,9 @@ export function transformHoistInlineDirective(
               pos: node.start,
             },
           )
+        }
+        if (options.rejectForbiddenExpressions) {
+          validateForbiddenExpressions(node.body, match[0])
         }
 
         const isObjectMethod =
@@ -204,6 +209,37 @@ export function transformHoistInlineDirective(
   })
 
   return { output, names }
+}
+
+function validateForbiddenExpressions(body: BlockStatement, directive: string) {
+  walk(body, {
+    enter(node) {
+      if (
+        node !== body &&
+        (node.type === 'FunctionDeclaration' ||
+          node.type === 'FunctionExpression')
+      ) {
+        this.skip()
+        return
+      }
+      const expression =
+        node.type === 'ThisExpression'
+          ? 'this'
+          : node.type === 'Super'
+            ? 'super'
+            : node.type === 'Identifier' && node.name === 'arguments'
+              ? 'arguments'
+              : undefined
+      if (expression) {
+        throw Object.assign(
+          new Error(
+            `${JSON.stringify(directive)} functions cannot use ${JSON.stringify(expression)}.`,
+          ),
+          { pos: node.start },
+        )
+      }
+    },
+  })
 }
 
 const exactRegex = (s: string): RegExp =>

@@ -1,7 +1,6 @@
 import type { Rollup } from 'vite'
 import { describe, expect, it, vi } from 'vitest'
 import {
-  SERVER_FUNCTION_DIRECTIVE_MARKER,
   vitePluginServerFunctionDirectives,
   type ServerFunctionDirective,
 } from './server-function-directives'
@@ -75,6 +74,8 @@ function cacheDirective(
     directive: /^use cache(?:: .+)?$/,
     test: (code) => code.includes('use cache'),
     rejectNonAsyncFunction: true,
+    clientError: ({ id, environment }) =>
+      `inline use cache is not allowed in ${environment}: ${id}`,
     wrap: ({ value, directiveMatch, location }) =>
       `cache(${value}, ${JSON.stringify(directiveMatch[0])}, ${JSON.stringify(location)})`,
     ...overrides,
@@ -90,10 +91,19 @@ export async function getData() {
   return 1;
 }
 `)
-    expect(result?.code).toContain(SERVER_FUNCTION_DIRECTIVE_MARKER)
-    expect(result?.code).toContain('cache($$hoist_')
-    expect(result?.code).toContain('$$ReactServer.registerServerReference')
-    expect(result?.code).toContain('/rsc-runtime.js')
+    expect(result?.code).toMatchInlineSnapshot(`
+      "/* __vite_rsc_server_function_directives__ */
+      import * as $$ReactServer from "/rsc-runtime.js";
+
+      export const getData = /* #__PURE__ */ $$ReactServer.registerServerReference(cache($$hoist_e9c2205b6101_0_getData, "use cache", "inline"), "53eb073e2100", "$$hoist_e9c2205b6101_0_getData");
+
+      ;export async function $$hoist_e9c2205b6101_0_getData() {
+        "use cache";
+        return 1;
+      };
+      /* #__PURE__ */ Object.defineProperty($$hoist_e9c2205b6101_0_getData, "name", { value: "getData" });
+      "
+    `)
     expect(
       manager.serverReferenceMetaMap['/src/example.ts']?.exportNames,
     ).toEqual([expect.stringMatching(/^\$\$hoist_/)])
@@ -110,9 +120,22 @@ export async function outer(value) {
   };
 }
 `)
-    expect(result?.code).toContain('encryptActionBoundArgs([value])')
-    expect(result?.code).toContain('decryptActionBoundArgs($$encoded)')
-    expect(result?.code).toContain('/encryption-runtime.js')
+    expect(result?.code).toMatchInlineSnapshot(`
+      "/* __vite_rsc_server_function_directives__ */
+      import * as $$ReactServer from "/rsc-runtime.js";
+      import * as __vite_rsc_encryption_runtime from "/encryption-runtime.js";
+
+      export async function outer(value) {
+        return /* #__PURE__ */ $$ReactServer.registerServerReference((($$wrapped) => async ($$encoded, ...$$args) => $$wrapped(...await __vite_rsc_encryption_runtime.decryptActionBoundArgs($$encoded), ...$$args))(cache($$hoist_ab3ae7af371a_0_cached)), "53eb073e2100", "$$hoist_ab3ae7af371a_0_cached").bind(null, __vite_rsc_encryption_runtime.encryptActionBoundArgs([value]));
+      }
+
+      ;export async function $$hoist_ab3ae7af371a_0_cached(value) {
+          "use cache";
+          return value;
+        };
+      /* #__PURE__ */ Object.defineProperty($$hoist_ab3ae7af371a_0_cached, "name", { value: "cached" });
+      "
+    `)
     expect(wrap).toHaveBeenCalledWith(
       expect.objectContaining({ location: 'inline', hasBoundArgs: true }),
     )
@@ -131,8 +154,18 @@ export async function getData() { return 1 }
 export const metadata = { title: "test" };
 `)
     expect(expandExportAll).toHaveBeenCalledOnce()
-    expect(result?.code).toContain('cache(getData, "use cache", "module")')
-    expect(result?.code).not.toContain('cache(metadata')
+    expect(result?.code).toMatchInlineSnapshot(`
+      "/* __vite_rsc_server_function_directives__ */
+
+
+      /* "use cache" */;
+      async function getData() { return 1 }
+      let metadata = { title: "test" };
+      getData = /* #__PURE__ */ $$ReactServer.registerServerReference(cache(getData, "use cache", "module"), "53eb073e2100", "getData");
+      export { getData };
+      export { metadata };
+      "
+    `)
     expect(
       manager.serverReferenceMetaMap['/src/example.ts']?.exportNames,
     ).toEqual(['getData'])
@@ -141,36 +174,63 @@ export const metadata = { title: "test" };
     )
   })
 
-  it.each([
-    ['client', '/browser-runtime.js'],
-    ['ssr', '/ssr-runtime.js'],
-  ] as const)('creates module proxies in %s', async (environment, runtime) => {
+  it('creates module proxies in client', async () => {
     const { run } = createHarness([cacheDirective()])
     const result = await run(
       `"use cache"; export async function getData() { return 1 }`,
-      environment,
+      'client',
     )
-    expect(result?.code).toContain(runtime)
-    expect(result?.code).toContain('$$ReactClient.createServerReference')
-    expect(result?.code).toContain('#getData')
+    expect(result?.code).toMatchInlineSnapshot(`
+      "import * as $$ReactClient from "/browser-runtime.js";
+       export const getData = /* #__PURE__ */ $$ReactClient.createServerReference("53eb073e2100#getData",$$ReactClient.callServer,undefined,undefined,"getData");
+      "
+    `)
   })
 
-  it('uses clientError for non-RSC module boundaries', async () => {
+  it('creates module proxies in SSR', async () => {
+    const { run } = createHarness([cacheDirective()])
+    const result = await run(
+      `"use cache"; export async function getData() { return 1 }`,
+      'ssr',
+    )
+    expect(result?.code).toMatchInlineSnapshot(`
+      "import * as $$ReactClient from "/ssr-runtime.js";
+       export const getData = /* #__PURE__ */ $$ReactClient.createServerReference("53eb073e2100#getData",$$ReactClient.callServer,undefined,undefined,"getData");
+      "
+    `)
+  })
+
+  it('uses clientError for non-RSC inline directives', async () => {
     const { run } = createHarness([
       cacheDirective({
         clientError: ({ id, environment }) => `${environment}:${id}`,
       }),
     ])
     await expect(
-      run(`"use cache"; export async function getData() {}`, 'client'),
+      run(`export async function getData() { "use cache" }`, 'client'),
     ).rejects.toThrow('client:/src/example.ts')
   })
 
-  it('leaves non-server inline directives untouched', async () => {
+  it.each(['client', 'ssr'] as const)(
+    'rejects inline directives in %s when clientError is configured',
+    async (environment) => {
+      const { run } = createHarness([cacheDirective()])
+      const code = `export async function getData() { "use cache" }`
+      await expect(run(code, environment)).rejects.toThrow(
+        `inline use cache is not allowed in ${environment}: /src/example.ts`,
+      )
+    },
+  )
+
+  it('leaves non-server inline directives untouched without clientError', async () => {
     const { run } = createHarness([cacheDirective()])
+    const { run: runWithoutError } = createHarness([
+      cacheDirective({ clientError: undefined }),
+    ])
     const code = `export async function getData() { "use cache" }`
-    await expect(run(code, 'client')).resolves.toBeUndefined()
-    await expect(run(code, 'ssr')).resolves.toBeUndefined()
+    await expect(run(code, 'client')).rejects.toThrow()
+    await expect(runWithoutError(code, 'client')).resolves.toBeUndefined()
+    await expect(runWithoutError(code, 'ssr')).resolves.toBeUndefined()
   })
 
   it('wraps inline directives inside use-server modules without owning metadata', async () => {
@@ -187,8 +247,20 @@ export async function action() {
   return cached();
 }
 `)
-    expect(result?.code).toContain('cache($$hoist_')
-    expect(result?.code).not.toContain('$$ReactServer.registerServerReference')
+    expect(result?.code).toMatchInlineSnapshot(`
+      "/* __vite_rsc_server_function_directives__ */
+
+
+      "use server";
+      export async function action() {
+        const cached = /* #__PURE__ */ cache($$hoist_bf311121ee97_0_cached, "use cache", "inline");
+        return cached();
+      }
+
+      ;export async function $$hoist_bf311121ee97_0_cached() { "use cache"; return 1 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_bf311121ee97_0_cached, "name", { value: "cached" });
+      "
+    `)
     expect(manager.serverReferenceMetaMap['/src/example.ts']).toEqual({
       importId: '/src/example.ts',
       referenceKey: 'existing',
@@ -225,6 +297,20 @@ export async function action() {
       run(`export function getData() { "use cache" }`),
     ).rejects.toThrow('non async function')
   })
+
+  it.each(['this', 'super', 'arguments'] as const)(
+    'rejects %s inside inline directive functions',
+    async (expression) => {
+      const { run } = createHarness([cacheDirective()])
+      const code =
+        expression === 'super'
+          ? `class Base { value() {} } class Test extends Base { static async value() { "use cache"; return super.value() } }`
+          : `export async function getData() { "use cache"; return ${expression} }`
+      await expect(run(code)).rejects.toThrow(
+        `"use cache" functions cannot use ${JSON.stringify(expression)}`,
+      )
+    },
+  )
 
   it('respects source and id prefilters and clears stale metadata', async () => {
     const test = vi.fn(() => false)

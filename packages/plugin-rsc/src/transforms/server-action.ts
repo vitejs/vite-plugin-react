@@ -28,6 +28,7 @@ export function transformServerActionServer(
     stableName?: boolean
     preserveModuleDirective?: boolean
     detectUseServerModule?: boolean
+    rejectForbiddenExpressions?: boolean
   },
 ):
   | {
@@ -78,5 +79,6 @@ export function transformServerActionServer(
     encode: options.encode,
     decode: options.decode,
     stableName: options.stableName,
+    rejectForbiddenExpressions: options.rejectForbiddenExpressions,
   })
 }
