@@ -40,7 +40,7 @@
     "eslint-plugin-regexp": "^3.1.0",
     "fs-extra": "^11.3.5",
     "globals": "^17.6.0",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.7",
     "oxfmt": "^0.53.0",
     "picocolors": "^1.1.1",
     "playwright-chromium": "^1.60.0",
