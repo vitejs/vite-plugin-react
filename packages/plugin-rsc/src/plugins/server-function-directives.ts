@@ -7,6 +7,7 @@ import {
   hasDirective,
   transformDirectiveProxyExport,
   transformServerActionServer,
+  type FunctionParameters,
   type TransformWrapExportFilter,
 } from '../transforms'
 import { hashString } from './utils'
@@ -30,6 +31,8 @@ export type ServerFunctionDirectiveContext = {
   location: 'inline' | 'module'
   /** Whether an inline function closes over values from an outer scope. */
   hasBoundArgs: boolean
+  /** Declared parameter shape when statically known. */
+  parameters?: FunctionParameters
   /** Export metadata. Only present for module-level directives. */
   meta?: Parameters<TransformWrapExportFilter>[1]
 }
@@ -292,7 +295,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             moduleDirective,
             moduleRuntime: (value, name, meta) => {
               if (!moduleMatch) return value
-              return `$$ReactServer.registerServerReference(${definition.wrap({ value, name, id, directiveMatch: moduleMatch, location: 'module', hasBoundArgs: false, meta })}, ${JSON.stringify(normalizedId)}, ${JSON.stringify(name)})`
+              return `$$ReactServer.registerServerReference(${definition.wrap({ value, name, id, directiveMatch: moduleMatch, location: 'module', hasBoundArgs: false, parameters: meta.parameters, meta })}, ${JSON.stringify(normalizedId)}, ${JSON.stringify(name)})`
             },
             inlineRuntime: (value, name, meta) => {
               definition.validate?.({
@@ -308,6 +311,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
                 directiveMatch: meta.directiveMatch,
                 location: 'inline',
                 hasBoundArgs: meta.hasBoundArgs,
+                parameters: meta.parameters,
               })
 
               if (useServerBoundary) return wrapped

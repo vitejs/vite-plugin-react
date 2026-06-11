@@ -82,6 +82,21 @@ function cacheDirective(
   }
 }
 
+function parameterWrap(
+  contexts: Array<{
+    name: string
+    location: string
+    parameters: { count: number; hasRest: boolean } | undefined
+  }>,
+) {
+  return cacheDirective({
+    wrap: ({ value, name, location, parameters }) => {
+      contexts.push({ name, location, parameters })
+      return `cache(${value})`
+    },
+  })
+}
+
 describe('vitePluginServerFunctionDirectives', () => {
   it('hoists, wraps, and registers inline functions in RSC', async () => {
     const { manager, run } = createHarness([cacheDirective()])
@@ -351,5 +366,102 @@ export async function action() {
     )
     expect(server?.map).toMatchObject({ version: 3 })
     expect(client?.map).toMatchObject({ version: 3 })
+  })
+
+  it('exposes declared parameter metadata for inline functions', async () => {
+    const contexts: Parameters<typeof parameterWrap>[0] = []
+    const { run } = createHarness([parameterWrap(contexts)])
+    await run(`
+export async function getData(value, { offset }, ...rest) {
+  "use cache";
+  return [value, offset, rest];
+}
+`)
+    expect(contexts).toEqual([
+      expect.objectContaining({
+        location: 'inline',
+        parameters: { count: 3, hasRest: true },
+      }),
+    ])
+
+    contexts.length = 0
+    await run(`
+export async function action() {
+  "use cache";
+  return 1;
+}
+`)
+    expect(contexts).toEqual([
+      expect.objectContaining({
+        parameters: { count: 0, hasRest: false },
+      }),
+    ])
+  })
+
+  it('exposes declared parameter metadata for module exports', async () => {
+    const contexts: Parameters<typeof parameterWrap>[0] = []
+    const { run } = createHarness([parameterWrap(contexts)])
+    await run(`
+"use cache";
+export async function direct(value, offset) { return value + offset }
+const local = async (value) => value;
+export { local };
+export { external } from "./external";
+`)
+    expect(contexts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'direct',
+          parameters: { count: 2, hasRest: false },
+        }),
+        expect.objectContaining({
+          name: 'local',
+          parameters: { count: 1, hasRest: false },
+        }),
+        expect.objectContaining({ name: 'external', parameters: undefined }),
+      ]),
+    )
+  })
+
+  it('exposes declared parameter metadata for default exports', async () => {
+    const contexts: Parameters<typeof parameterWrap>[0] = []
+    const { run } = createHarness([parameterWrap(contexts)])
+    await run(`
+"use cache";
+export default async function Page({ params }, ...rest) {
+  return [params, rest];
+}
+`)
+    expect(contexts).toEqual([
+      expect.objectContaining({
+        name: 'default',
+        parameters: { count: 2, hasRest: true },
+      }),
+    ])
+
+    contexts.length = 0
+    await run(`
+"use cache";
+const Page = async ({ params }) => params;
+export default Page;
+`)
+    expect(contexts).toEqual([
+      expect.objectContaining({
+        name: 'default',
+        parameters: { count: 1, hasRest: false },
+      }),
+    ])
+
+    contexts.length = 0
+    await run(`
+"use cache";
+export default createPage();
+`)
+    expect(contexts).toEqual([
+      expect.objectContaining({
+        name: 'default',
+        parameters: undefined,
+      }),
+    ])
   })
 })

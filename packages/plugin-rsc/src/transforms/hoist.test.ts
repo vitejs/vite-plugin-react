@@ -466,11 +466,11 @@ export async function kv() {
       }),
     ).toMatchInlineSnapshot(`
       "
-      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null],"hasBoundArgs":false});
+      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
-      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"],"hasBoundArgs":false});
+      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
-      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"],"hasBoundArgs":false});
+      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
       ;async function $$hoist_0_none() {
         "use cache";
