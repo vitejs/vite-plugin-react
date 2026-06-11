@@ -27,6 +27,7 @@ export function transformServerActionServer(
     decode?: (value: string) => string
     stableName?: boolean
     preserveModuleDirective?: boolean
+    detectUseServerModule?: boolean
   },
 ):
   | {
@@ -37,12 +38,15 @@ export function transformServerActionServer(
       output: MagicString
       names: string[]
     } {
-  const useServerStatement = ast.body.find(
-    (statement) =>
-      statement.type === 'ExpressionStatement' &&
-      statement.expression.type === 'Literal' &&
-      statement.expression.value === 'use server',
-  )
+  const useServerStatement =
+    options.detectUseServerModule === false
+      ? undefined
+      : ast.body.find(
+          (statement) =>
+            statement.type === 'ExpressionStatement' &&
+            statement.expression.type === 'Literal' &&
+            statement.expression.value === 'use server',
+        )
   const moduleDirective =
     options.moduleDirective ??
     (useServerStatement?.type === 'ExpressionStatement' &&

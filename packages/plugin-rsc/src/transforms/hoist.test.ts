@@ -578,8 +578,5 @@ export async function two() { "use cache: remote" }
     expect(await testTransform(input, { directive, noExport: true })).toContain(
       'use cache: remote',
     )
-    expect(await testTransform(input, { directive, noExport: true })).toContain(
-      'use cache: remote',
-    )
   })
 })
