@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { parseAstAsync } from 'vite'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { debugSourceMap } from './test-utils'
 
@@ -466,11 +466,11 @@ export async function kv() {
       }),
     ).toMatchInlineSnapshot(`
       "
-      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null]});
+      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null],"hasBoundArgs":false});
 
-      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"]});
+      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"],"hasBoundArgs":false});
 
-      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"]});
+      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"],"hasBoundArgs":false});
 
       ;async function $$hoist_0_none() {
         "use cache";
@@ -507,5 +507,79 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it('uses stable names and reports bound arguments', async () => {
+    const input = `
+async function outer(value) {
+  return async function cached() {
+    "use cache";
+    return value;
+  };
+}
+`
+    const ast = await parseAstAsync(input)
+    const runtime = vi.fn((value: string) => value)
+    const first = transformHoistInlineDirective(input, ast, {
+      directive: 'use cache',
+      stableName: true,
+      runtime,
+    })
+    const second = transformHoistInlineDirective(input, ast, {
+      directive: 'use cache',
+      stableName: true,
+      runtime: (value) => value,
+    })
+    expect(runtime).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      expect.objectContaining({ hasBoundArgs: true }),
+    )
+    expect(first.names).toEqual(second.names)
+    expect(first.names[0]).toMatch(/^\$\$hoist_[a-f0-9]{12}_0_cached$/)
+  })
+
+  it('supports object and static class methods', async () => {
+    const input = `
+const object = {
+  async ["cached"]() { "use cache"; return 1 },
+};
+class Cache {
+  static async ["cached"]() { "use cache"; return 2 }
+}
+`
+    const transformed = await testTransform(input, {
+      directive: 'use cache',
+    })
+    expect(transformed).toContain('"cached": /* #__PURE__ */')
+    expect(transformed).toContain('static ["cached"] = /* #__PURE__ */')
+    await parseAstAsync(transformed!)
+  })
+
+  it('rejects instance, private, getter and setter methods', async () => {
+    for (const input of [
+      `class Cache { async cached() { "use cache" } }`,
+      `class Cache { static async #cached() { "use cache" } }`,
+      `const cache = { get cached() { "use cache"; return 1 } }`,
+      `class Cache { static set cached(value) { "use cache" } }`,
+    ]) {
+      await expect(
+        testTransform(input, { directive: 'use cache' }),
+      ).rejects.toThrow(/not allowed/)
+    }
+  })
+
+  it('supports stateful directive regexes repeatedly', async () => {
+    const directive = /^use cache(?:: .+)?$/gy
+    const input = `
+export async function one() { "use cache" }
+export async function two() { "use cache: remote" }
+`
+    expect(await testTransform(input, { directive, noExport: true })).toContain(
+      'use cache: remote',
+    )
+    expect(await testTransform(input, { directive, noExport: true })).toContain(
+      'use cache: remote',
+    )
   })
 })

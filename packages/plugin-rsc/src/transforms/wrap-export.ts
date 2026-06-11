@@ -39,7 +39,15 @@ export function transformWrapExport(
     end: number,
     exports: { name: string; meta: ExportMeta }[],
   ) {
-    exportNames.push(...exports.map((e) => e.name))
+    const filteredExports = exports.map((item) => ({
+      ...item,
+      shouldWrap: filter(item.name, item.meta),
+    }))
+    exportNames.push(
+      ...filteredExports
+        .filter((item) => item.shouldWrap)
+        .map((item) => item.name),
+    )
     // update code and move to preserve `registerServerReference` position
     // e.g.
     // input
@@ -49,9 +57,9 @@ export function transformWrapExport(
     //   async function f() {}
     //   f = registerServerReference(f, ...)   << maps to original "export" token
     //   export { f }                          <<
-    const newCode = exports
+    const newCode = filteredExports
       .map((e) => [
-        filter(e.name, e.meta) &&
+        e.shouldWrap &&
           `${e.name} = /* #__PURE__ */ ${options.runtime(
             e.name,
             e.name,
@@ -67,11 +75,11 @@ export function transformWrapExport(
   }
 
   function wrapExport(name: string, exportName: string, meta: ExportMeta = {}) {
-    exportNames.push(exportName)
     if (!filter(exportName, meta)) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
     }
+    exportNames.push(exportName)
 
     toAppend.push(
       `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
@@ -94,20 +102,16 @@ export function transformWrapExport(
           /**
            * export function foo() {}
            */
-          validateNonAsyncFunction(options, node.declaration)
           const name = node.declaration.id.name
-          wrapSimple(node.start, node.declaration.start, [
-            { name, meta: { isFunction: true, declName: name } },
-          ])
+          const meta = { isFunction: true, declName: name }
+          if (filter(name, meta)) {
+            validateNonAsyncFunction(options, node.declaration)
+          }
+          wrapSimple(node.start, node.declaration.start, [{ name, meta }])
         } else if (node.declaration.type === 'VariableDeclaration') {
           /**
            * export const foo = 1, bar = 2
            */
-          for (const decl of node.declaration.declarations) {
-            if (decl.init) {
-              validateNonAsyncFunction(options, decl.init)
-            }
-          }
           if (node.declaration.kind === 'const') {
             output.update(
               node.declaration.start,
@@ -119,13 +123,34 @@ export function transformWrapExport(
             extractNames(decl.id),
           )
           // treat only simple single decl as function
-          let isFunction = false
+          let isFunction: boolean | undefined
           if (node.declaration.declarations.length === 1) {
             const decl = node.declaration.declarations[0]!
-            isFunction =
-              decl.id.type === 'Identifier' &&
-              (decl.init?.type === 'ArrowFunctionExpression' ||
-                decl.init?.type === 'FunctionExpression')
+            if (decl.id.type === 'Identifier') {
+              if (
+                decl.init?.type === 'ArrowFunctionExpression' ||
+                decl.init?.type === 'FunctionExpression'
+              ) {
+                isFunction = true
+              } else if (
+                decl.init?.type === 'Literal' ||
+                decl.init?.type === 'ObjectExpression' ||
+                decl.init?.type === 'ArrayExpression' ||
+                decl.init?.type === 'ClassExpression'
+              ) {
+                isFunction = false
+              }
+            }
+          }
+          for (const decl of node.declaration.declarations) {
+            if (
+              decl.init &&
+              extractNames(decl.id).some((name) =>
+                filter(name, { isFunction, declName: name }),
+              )
+            ) {
+              validateNonAsyncFunction(options, decl.init)
+            }
           }
           wrapSimple(
             node.start,
@@ -198,9 +223,8 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(options, node.declaration)
       let localName: string
-      let isFunction = false
+      let isFunction: boolean | undefined
       let declName: string | undefined
       let defaultExportIdentifierName: string | undefined
       if (
@@ -219,7 +243,27 @@ export function transformWrapExport(
         output.update(node.start, node.declaration.start, 'const $$default = ')
         if (node.declaration.type === 'Identifier') {
           defaultExportIdentifierName = node.declaration.name
+        } else if (
+          node.declaration.type === 'ArrowFunctionExpression' ||
+          node.declaration.type === 'FunctionExpression'
+        ) {
+          isFunction = true
+        } else if (
+          node.declaration.type === 'Literal' ||
+          node.declaration.type === 'ObjectExpression' ||
+          node.declaration.type === 'ArrayExpression' ||
+          node.declaration.type === 'ClassExpression'
+        ) {
+          isFunction = false
         }
+      }
+      const defaultMeta = {
+        isFunction,
+        declName,
+        defaultExportIdentifierName,
+      }
+      if (filter('default', defaultMeta)) {
+        validateNonAsyncFunction(options, node.declaration)
       }
       wrapExport(localName, 'default', {
         isFunction,
