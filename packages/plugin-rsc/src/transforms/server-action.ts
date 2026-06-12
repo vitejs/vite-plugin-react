@@ -55,6 +55,7 @@ export function transformServerActionServer(
       ? useServerStatement.expression
       : undefined)
 
+  // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (moduleDirective?.type === 'Literal') {
     const result = transformWrapExport(input, ast, {
       runtime: options.moduleRuntime ?? options.runtime,
