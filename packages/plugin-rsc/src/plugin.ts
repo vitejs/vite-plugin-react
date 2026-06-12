@@ -826,12 +826,10 @@ export default function vitePluginRsc(
             const env = ctx.server.environments.rsc!
             const mod = env.moduleGraph.getModuleById(ctx.file)
             if (mod) {
-              // Only treat this as a server-only file leaking into the client
-              // graph when its client modules are referenced solely as style
-              // dependencies (CSS importers). If a client module here has a
-              // non-CSS importer (e.g. a framework route file that co-locates a
-              // server function with a client-rendered route component), it is
-              // genuine client code and must keep its client HMR / Fast Refresh.
+              // A non-CSS importer means a client module here is real client
+              // code (e.g. a route component co-located with a server fn), not a
+              // server-only file pulled into the client graph as a style dep, so
+              // keep its HMR instead of returning [].
               const hasNonCssImporter = ctx.modules.some((clientMod) =>
                 [...clientMod.importers].some(
                   (importer) => importer.id && !isCSSRequest(importer.id),
