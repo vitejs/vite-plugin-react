@@ -52,6 +52,8 @@ export type ServerFunctionDirective = {
   }) => void
   /** Reject synchronous annotated functions when enabled. */
   rejectNonAsyncFunction?: boolean
+  /** Overrides synchronous-function validation for module-level directives. */
+  rejectNonAsyncModule?: boolean
   /** Returns the runtime expression used to wrap the server function. */
   wrap: (context: ServerFunctionDirectiveContext) => string
   /** Selects which exports a module-level directive wraps and registers. */
@@ -326,6 +328,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             filter: (name, meta) =>
               definition.filterExport?.({ name, id, meta }) ?? true,
             rejectNonAsyncFunction: definition.rejectNonAsyncFunction,
+            rejectNonAsyncModule: definition.rejectNonAsyncModule,
             encode: (value) => {
               needsEncryptionRuntime = true
               return `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`

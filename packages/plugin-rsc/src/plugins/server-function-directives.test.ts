@@ -321,6 +321,18 @@ export async function action() {
     ).rejects.toThrow('non async function')
   })
 
+  it('supports separate async validation for inline and module directives', async () => {
+    const { run } = createHarness([
+      cacheDirective({ rejectNonAsyncModule: false }),
+    ])
+    await expect(
+      run(`"use cache"; export function Page() { return null }`),
+    ).resolves.toBeDefined()
+    await expect(
+      run(`export function getData() { "use cache"; return null }`),
+    ).rejects.toThrow('non async function')
+  })
+
   it.each(['this', 'super', 'arguments'] as const)(
     'rejects %s inside inline directive functions',
     async (expression) => {
