@@ -10,15 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "^8.0.13"
+    "vite": "^8.0.16"
   }
 }
