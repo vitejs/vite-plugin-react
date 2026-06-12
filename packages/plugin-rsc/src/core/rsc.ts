@@ -2,6 +2,7 @@ import { memoize, tinyassert } from '@hiogawa/utils'
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
 import {
   SERVER_DECODE_CLIENT_PREFIX,
+  SERVER_DECODE_REFERENCE_PREFIX,
   SERVER_REFERENCE_PREFIX,
   createReferenceCacheTag,
   removeReferenceCacheTag,
@@ -27,6 +28,28 @@ export function setRequireModule(options: {
   // need memoize to return stable promise from __webpack_require__
   ;(globalThis as any).__vite_rsc_server_require__ = memoize(
     async (id: string) => {
+      if (id.startsWith(SERVER_DECODE_REFERENCE_PREFIX)) {
+        id = id.slice(SERVER_DECODE_REFERENCE_PREFIX.length)
+        id = removeReferenceCacheTag(id)
+        const target = {} as Record<string, unknown>
+        return new Proxy(target, {
+          getOwnPropertyDescriptor(_target, name) {
+            if (typeof name !== 'string' || name === 'then') {
+              return Reflect.getOwnPropertyDescriptor(target, name)
+            }
+            target[name] ??= ReactServer.registerServerReference(
+              () => {
+                throw new Error(
+                  `Unexpectedly preserved server reference '${id}#${name}' is called on server`,
+                )
+              },
+              id,
+              name,
+            )
+            return Reflect.getOwnPropertyDescriptor(target, name)
+          },
+        })
+      }
       if (id.startsWith(SERVER_DECODE_CLIENT_PREFIX)) {
         // decode client reference on the server
         id = id.slice(SERVER_DECODE_CLIENT_PREFIX.length)
@@ -71,7 +94,9 @@ export async function loadServerAction(id: string): Promise<Function> {
   return mod[name]
 }
 
-export function createServerManifest(): BundlerConfig {
+export function createServerManifest(options?: {
+  preserveServerReferences?: boolean
+}): BundlerConfig {
   const cacheTag = import.meta.env.DEV ? createReferenceCacheTag() : ''
 
   return new Proxy(
@@ -83,7 +108,13 @@ export function createServerManifest(): BundlerConfig {
         tinyassert(id)
         tinyassert(name)
         return {
-          id: SERVER_REFERENCE_PREFIX + id + cacheTag,
+          id:
+            SERVER_REFERENCE_PREFIX +
+            (options?.preserveServerReferences
+              ? SERVER_DECODE_REFERENCE_PREFIX
+              : '') +
+            id +
+            cacheTag,
           name,
           chunks: [],
           async: true,

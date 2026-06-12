@@ -40,16 +40,22 @@ export function renderToReadableStream<T>(
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
-  options: CreateFromReadableStreamEdgeOptions = {},
+  options: CreateFromReadableStreamEdgeOptions & {
+    /** Preserve decoded server references so the value can be rendered again. */
+    serverReferences?: 'resolve' | 'preserve'
+  } = {},
 ): Promise<T> {
+  const { serverReferences = 'resolve', ...reactOptions } = options
   return ReactClient.createFromReadableStream(stream, {
     serverConsumerManifest: {
       // https://github.com/facebook/react/pull/31300
       // https://github.com/vercel/next.js/pull/71527
-      serverModuleMap: createServerManifest(),
+      serverModuleMap: createServerManifest({
+        preserveServerReferences: serverReferences === 'preserve',
+      }),
       moduleMap: createServerDecodeClientManifest(),
     },
-    ...options,
+    ...reactOptions,
   })
 }
 
