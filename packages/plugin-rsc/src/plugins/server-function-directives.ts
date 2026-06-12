@@ -176,12 +176,12 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
         const useServerBoundary = hasDirective(ast.body, 'use server')
         if (!isServer && useServerBoundary) return
 
-        const serverEnvironment =
-          manager.server.environments[options.serverEnvironmentName]
         let normalizedId: string
         if (manager.config.command === 'build') {
           normalizedId = hashString(manager.toRelativeId(id))
         } else {
+          const serverEnvironment =
+            manager.server.environments[options.serverEnvironmentName]
           if (!serverEnvironment) {
             throw new Error(
               `Missing ${JSON.stringify(options.serverEnvironmentName)} environment`,

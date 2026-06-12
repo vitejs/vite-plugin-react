@@ -124,6 +124,14 @@ export async function getData() {
     ).toEqual([expect.stringMatching(/^\$\$hoist_/)])
   })
 
+  it('does not require a dev server during build transforms', async () => {
+    const { manager, run } = createHarness([cacheDirective()])
+    manager.server = undefined as unknown as Manager['server']
+    await expect(
+      run(`export async function getData() { "use cache"; return 1 }`),
+    ).resolves.toBeDefined()
+  })
+
   it('encrypts captured values without adding ciphertext to the wrapper', async () => {
     const wrap = vi.fn(({ value }: { value: string }) => `cache(${value})`)
     const { run } = createHarness([cacheDirective({ wrap })])
