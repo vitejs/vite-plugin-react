@@ -237,7 +237,7 @@ export function transformHoistInlineDirective(
 
 function validateForbiddenExpressions(body: BlockStatement, directive: string) {
   walk(body, {
-    enter(node) {
+    enter(node, parent) {
       if (
         node !== body &&
         (node.type === 'FunctionDeclaration' ||
@@ -246,8 +246,14 @@ function validateForbiddenExpressions(body: BlockStatement, directive: string) {
         this.skip()
         return
       }
+      const isJsxDevSourceThis =
+        node.type === 'ThisExpression' &&
+        parent?.type === 'CallExpression' &&
+        parent.arguments.at(-1) === node &&
+        parent.callee.type === 'Identifier' &&
+        /(?:^|_)jsxDEV$/.test(parent.callee.name)
       const expression =
-        node.type === 'ThisExpression'
+        node.type === 'ThisExpression' && !isJsxDevSourceThis
           ? 'this'
           : node.type === 'Super'
             ? 'super'

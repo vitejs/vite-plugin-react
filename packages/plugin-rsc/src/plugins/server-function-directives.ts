@@ -167,6 +167,8 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
     name: 'rsc:server-function-directives',
     transform: {
       async handler(code, id) {
+        if (code.includes(SERVER_FUNCTION_DIRECTIVE_MARKER)) return
+
         const active = definitions.filter(
           (definition) =>
             (definition.test?.(code) ?? code.includes('use ')) &&
@@ -244,8 +246,13 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
               `$$ReactClient.createServerReference(${JSON.stringify(normalizedId + '#' + name)},$$ReactClient.callServer,undefined,${this.environment.mode === 'dev' ? '$$ReactClient.findSourceMapURL' : 'undefined'},${JSON.stringify(name)})`,
           })
           if (!result?.output.hasChanged()) return
+          manager.serverReferenceMetaMap[id] = {
+            importId: id,
+            referenceKey: normalizedId,
+            exportNames: result.exportNames,
+          }
           result.output.prepend(
-            `import * as $$ReactClient from ${JSON.stringify(this.environment.name === options.browserEnvironmentName ? options.browserRuntime : options.ssrRuntime)};\n`,
+            `${SERVER_FUNCTION_DIRECTIVE_MARKER}\nimport * as $$ReactClient from ${JSON.stringify(this.environment.name === options.browserEnvironmentName ? options.browserRuntime : options.ssrRuntime)};\n`,
           )
           return {
             code: result.output.toString(),
@@ -309,6 +316,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             moduleDirective,
             moduleRuntime: (value, name, meta) => {
               if (!moduleMatch) return value
+              needsReactRuntime = true
               return `$$ReactServer.registerServerReference(${definition.wrap({ value, name, id, directiveMatch: moduleMatch, location: 'module', hasBoundArgs: false, parameters: meta.parameters, runtime: getRuntime(), meta })}, ${JSON.stringify(normalizedId)}, ${JSON.stringify(name)})`
             },
             inlineRuntime: (value, name, meta) => {

@@ -1,6 +1,7 @@
 import type { Rollup } from 'vite'
 import { describe, expect, it, vi } from 'vitest'
 import {
+  SERVER_FUNCTION_DIRECTIVE_MARKER,
   vitePluginServerFunctionDirectives,
   type ServerFunctionDirective,
 } from './server-function-directives'
@@ -181,7 +182,7 @@ export const metadata = { title: "test" };
     expect(expandExportAll).toHaveBeenCalledOnce()
     expect(result?.code).toMatchInlineSnapshot(`
       "/* __vite_rsc_server_function_directives__ */
-
+      import * as $$ReactServer from "/rsc-runtime.js";
 
       /* "use cache" */;
       async function getData() { return 1 }
@@ -199,17 +200,38 @@ export const metadata = { title: "test" };
     )
   })
 
-  it('creates module proxies in client', async () => {
+  it('ignores jsxDEV source metadata while rejecting user this expressions', async () => {
     const { run } = createHarness([cacheDirective()])
+    await expect(
+      run(`
+export async function Page() {
+  "use cache";
+  return _jsxDEV("p", { children: "test" }, void 0, false, { fileName: "page.tsx" }, this);
+}
+`),
+    ).resolves.toBeDefined()
+    await expect(
+      run(`export async function getData() { "use cache"; return this.value }`),
+    ).rejects.toThrow('"use cache" functions cannot use "this"')
+  })
+
+  it('creates module proxies in client', async () => {
+    const { manager, run } = createHarness([cacheDirective()])
     const result = await run(
       `"use cache"; export async function getData() { return 1 }`,
       'client',
     )
     expect(result?.code).toMatchInlineSnapshot(`
-      "import * as $$ReactClient from "/browser-runtime.js";
+      "/* __vite_rsc_server_function_directives__ */
+      import * as $$ReactClient from "/browser-runtime.js";
        export const getData = /* #__PURE__ */ $$ReactClient.createServerReference("53eb073e2100#getData",$$ReactClient.callServer,undefined,undefined,"getData");
       "
     `)
+    expect(manager.serverReferenceMetaMap['/src/example.ts']).toEqual({
+      importId: '/src/example.ts',
+      referenceKey: '53eb073e2100',
+      exportNames: ['getData'],
+    })
   })
 
   it('creates module proxies in SSR', async () => {
@@ -219,7 +241,8 @@ export const metadata = { title: "test" };
       'ssr',
     )
     expect(result?.code).toMatchInlineSnapshot(`
-      "import * as $$ReactClient from "/ssr-runtime.js";
+      "/* __vite_rsc_server_function_directives__ */
+      import * as $$ReactClient from "/ssr-runtime.js";
        export const getData = /* #__PURE__ */ $$ReactClient.createServerReference("53eb073e2100#getData",$$ReactClient.callServer,undefined,undefined,"getData");
       "
     `)
@@ -384,6 +407,18 @@ export class CacheClass {
     expect(test).toHaveBeenCalled()
     expect(filter).toHaveBeenCalled()
     expect(manager.serverReferenceMetaMap['/src/example.ts']).toBeUndefined()
+  })
+
+  it('preserves metadata when transformed output is processed again', async () => {
+    const { manager, run } = createHarness([cacheDirective()])
+    const result = await run(
+      `"use cache"; export async function getData() { return 1 }`,
+    )
+    expect(result?.code).toContain(SERVER_FUNCTION_DIRECTIVE_MARKER)
+    const metadata = manager.serverReferenceMetaMap['/src/example.ts']
+
+    await expect(run(result!.code!)).resolves.toBeUndefined()
+    expect(manager.serverReferenceMetaMap['/src/example.ts']).toEqual(metadata)
   })
 
   it('rejects overlapping module directive definitions', async () => {
