@@ -2055,13 +2055,12 @@ function vitePluginUseServer(
             }
             const customExportNames =
               manager.serverReferenceMetaMap[id]?.exportNames ?? []
+            const exportNames =
+              'names' in result ? result.names : result.exportNames
             manager.serverReferenceMetaMap[id] = {
               importId: id,
               referenceKey: getNormalizedId(),
-              exportNames: [
-                ...customExportNames,
-                ...('names' in result ? result.names : result.exportNames),
-              ],
+              exportNames: [...new Set([...customExportNames, ...exportNames])],
             }
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
             output.prepend(
@@ -2134,7 +2133,7 @@ function vitePluginUseServer(
       for (const meta of Object.values(manager.serverReferenceMetaMap)) {
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
-        const exports = meta.exportNames
+        const exports = [...new Set(meta.exportNames)]
           .map((name) => (name === 'default' ? 'default: _default' : name))
           .sort()
         code += `
