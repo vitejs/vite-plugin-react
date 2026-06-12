@@ -333,6 +333,23 @@ export async function action() {
     ).rejects.toThrow('non async function')
   })
 
+  it('imports directive runtimes for synchronous wrapper expressions', async () => {
+    const { run } = createHarness([
+      cacheDirective({
+        runtime: '/cache-runtime.js',
+        wrap: ({ value, runtime }) => `${runtime}.cache(${value})`,
+      }),
+    ])
+    const result = await run(`
+export class CacheClass {
+  static async getData() { "use cache"; return 1 }
+}
+`)
+    expect(result?.code).toContain('from "/cache-runtime.js"')
+    expect(result?.code).toContain('.cache($$hoist_')
+    expect(result?.code).not.toContain('await import')
+  })
+
   it.each(['this', 'super', 'arguments'] as const)(
     'rejects %s inside inline directive functions',
     async (expression) => {

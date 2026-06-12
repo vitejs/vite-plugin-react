@@ -33,6 +33,8 @@ export type ServerFunctionDirectiveContext = {
   hasBoundArgs: boolean
   /** Declared parameter shape when statically known. */
   parameters?: FunctionParameters
+  /** Imported runtime namespace when `runtime` is configured. */
+  runtime?: string
   /** Export metadata. Only present for module-level directives. */
   meta?: Parameters<TransformWrapExportFilter>[1]
 }
@@ -54,6 +56,8 @@ export type ServerFunctionDirective = {
   rejectNonAsyncFunction?: boolean
   /** Overrides synchronous-function validation for module-level directives. */
   rejectNonAsyncModule?: boolean
+  /** Module imported as a namespace for use by `wrap`. */
+  runtime?: string
   /** Returns the runtime expression used to wrap the server function. */
   wrap: (context: ServerFunctionDirectiveContext) => string
   /** Selects which exports a module-level directive wraps and registers. */
@@ -261,6 +265,14 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
           | undefined
 
         for (const definition of active) {
+          const runtimeName = definition.runtime
+            ? `$$server_function_directive_${hashString(definition.runtime)}`
+            : undefined
+          let runtimeUsed = false
+          const getRuntime = () => {
+            if (runtimeName) runtimeUsed = true
+            return runtimeName
+          }
           let moduleDirective = findModuleDirective(ast, definition.directive)
           if (moduleDirective) {
             if (useServerBoundary) {
@@ -297,7 +309,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             moduleDirective,
             moduleRuntime: (value, name, meta) => {
               if (!moduleMatch) return value
-              return `$$ReactServer.registerServerReference(${definition.wrap({ value, name, id, directiveMatch: moduleMatch, location: 'module', hasBoundArgs: false, parameters: meta.parameters, meta })}, ${JSON.stringify(normalizedId)}, ${JSON.stringify(name)})`
+              return `$$ReactServer.registerServerReference(${definition.wrap({ value, name, id, directiveMatch: moduleMatch, location: 'module', hasBoundArgs: false, parameters: meta.parameters, runtime: getRuntime(), meta })}, ${JSON.stringify(normalizedId)}, ${JSON.stringify(name)})`
             },
             inlineRuntime: (value, name, meta) => {
               definition.validate?.({
@@ -314,6 +326,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
                 location: 'inline',
                 hasBoundArgs: meta.hasBoundArgs,
                 parameters: meta.parameters,
+                runtime: getRuntime(),
               })
 
               if (useServerBoundary) return wrapped
@@ -338,6 +351,12 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
             rejectForbiddenExpressions: true,
           })
           if (!result.output.hasChanged()) continue
+
+          if (runtimeUsed && definition.runtime && runtimeName) {
+            result.output.prepend(
+              `import * as ${runtimeName} from ${JSON.stringify(definition.runtime)};\n`,
+            )
+          }
 
           const resultExportNames =
             'names' in result ? result.names : result.exportNames
