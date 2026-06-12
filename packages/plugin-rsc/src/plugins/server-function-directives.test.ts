@@ -109,14 +109,15 @@ export async function getData() {
     expect(result?.code).toMatchInlineSnapshot(`
       "/* __vite_rsc_server_function_directives__ */
       import * as $$ReactServer from "/rsc-runtime.js";
+      export const $$hoist_e9c2205b6101_0_getData = /* #__PURE__ */ $$ReactServer.registerServerReference(cache($$hoist_e9c2205b6101_0_getData$$impl, "use cache", "inline"), "53eb073e2100", "$$hoist_e9c2205b6101_0_getData");
 
-      export const getData = /* #__PURE__ */ $$ReactServer.registerServerReference(cache($$hoist_e9c2205b6101_0_getData, "use cache", "inline"), "53eb073e2100", "$$hoist_e9c2205b6101_0_getData");
+      export const getData = $$hoist_e9c2205b6101_0_getData;
 
-      ;export async function $$hoist_e9c2205b6101_0_getData() {
+      ;async function $$hoist_e9c2205b6101_0_getData$$impl() {
         "use cache";
         return 1;
       };
-      /* #__PURE__ */ Object.defineProperty($$hoist_e9c2205b6101_0_getData, "name", { value: "getData" });
+      /* #__PURE__ */ Object.defineProperty($$hoist_e9c2205b6101_0_getData$$impl, "name", { value: "getData" });
       "
     `)
     expect(
@@ -147,16 +148,17 @@ export async function outer(value) {
       "/* __vite_rsc_server_function_directives__ */
       import * as $$ReactServer from "/rsc-runtime.js";
       import * as __vite_rsc_encryption_runtime from "/encryption-runtime.js";
+      export const $$hoist_ab3ae7af371a_0_cached = /* #__PURE__ */ $$ReactServer.registerServerReference((($$wrapped) => async ($$encoded, ...$$args) => $$wrapped(...await __vite_rsc_encryption_runtime.decryptActionBoundArgs($$encoded), ...$$args))(cache($$hoist_ab3ae7af371a_0_cached$$impl)), "53eb073e2100", "$$hoist_ab3ae7af371a_0_cached");
 
       export async function outer(value) {
-        return /* #__PURE__ */ $$ReactServer.registerServerReference((($$wrapped) => async ($$encoded, ...$$args) => $$wrapped(...await __vite_rsc_encryption_runtime.decryptActionBoundArgs($$encoded), ...$$args))(cache($$hoist_ab3ae7af371a_0_cached)), "53eb073e2100", "$$hoist_ab3ae7af371a_0_cached").bind(null, __vite_rsc_encryption_runtime.encryptActionBoundArgs([value]));
+        return $$hoist_ab3ae7af371a_0_cached.bind(null, __vite_rsc_encryption_runtime.encryptActionBoundArgs([value]));
       }
 
-      ;export async function $$hoist_ab3ae7af371a_0_cached(value) {
+      ;async function $$hoist_ab3ae7af371a_0_cached$$impl(value) {
           "use cache";
           return value;
         };
-      /* #__PURE__ */ Object.defineProperty($$hoist_ab3ae7af371a_0_cached, "name", { value: "cached" });
+      /* #__PURE__ */ Object.defineProperty($$hoist_ab3ae7af371a_0_cached$$impl, "name", { value: "cached" });
       "
     `)
     expect(wrap).toHaveBeenCalledWith(

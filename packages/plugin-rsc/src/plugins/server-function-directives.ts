@@ -347,6 +347,7 @@ export function vitePluginServerFunctionDirectives(options: Options): Plugin {
               return `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
             },
             stableName: true,
+            exportWrappedHoist: !useServerBoundary,
             detectUseServerModule: false,
             rejectForbiddenExpressions: true,
           })

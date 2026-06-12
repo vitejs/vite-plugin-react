@@ -26,6 +26,7 @@ export function transformServerActionServer(
     encode?: (value: string) => string
     decode?: (value: string) => string
     stableName?: boolean
+    exportWrappedHoist?: boolean
     preserveModuleDirective?: boolean
     detectUseServerModule?: boolean
     rejectForbiddenExpressions?: boolean
@@ -80,6 +81,7 @@ export function transformServerActionServer(
     encode: options.encode,
     decode: options.decode,
     stableName: options.stableName,
+    exportWrappedHoist: options.exportWrappedHoist,
     rejectForbiddenExpressions: options.rejectForbiddenExpressions,
   })
 }

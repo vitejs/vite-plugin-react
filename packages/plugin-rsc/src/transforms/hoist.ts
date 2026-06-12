@@ -35,6 +35,7 @@ export function transformHoistInlineDirective(
     encode?: (value: string) => string
     decode?: (value: string) => string
     noExport?: boolean
+    exportWrappedHoist?: boolean
     stableName?: boolean
     rejectForbiddenExpressions?: boolean
   },
@@ -163,32 +164,44 @@ export function transformHoistInlineDirective(
         const newName =
           `$$hoist_${nameKey}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
+        const implementationName = options.exportWrappedHoist
+          ? `${newName}$$impl`
+          : newName
         output.update(
           node.start,
           node.body.start,
-          `\n;${options.noExport ? '' : 'export '}${
+          `\n;${options.noExport || options.exportWrappedHoist ? '' : 'export '}${
             node.async ? 'async ' : ''
-          }function${node.generator ? '*' : ''} ${newName}(${newParams}) `,
+          }function${node.generator ? '*' : ''} ${implementationName}(${newParams}) `,
         )
         output.appendLeft(
           node.end,
-          `;\n/* #__PURE__ */ Object.defineProperty(${newName}, "name", { value: ${JSON.stringify(
+          `;\n/* #__PURE__ */ Object.defineProperty(${implementationName}, "name", { value: ${JSON.stringify(
             originalName,
           )} });\n`,
         )
         output.move(node.start, node.end, input.length)
 
         // replace original declartion with action register + bind
-        let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
-          directiveMatch: match,
-          hasBoundArgs: bindVars.length > 0,
-          parameters: {
-            count: node.params.length,
-            hasRest: node.params.some(
-              (parameter) => parameter.type === 'RestElement',
-            ),
+        let wrappedCode = `/* #__PURE__ */ ${runtime(
+          implementationName,
+          newName,
+          {
+            directiveMatch: match,
+            hasBoundArgs: bindVars.length > 0,
+            parameters: {
+              count: node.params.length,
+              hasRest: node.params.some(
+                (parameter) => parameter.type === 'RestElement',
+              ),
+            },
           },
-        })}`
+        )}`
+        let newCode = wrappedCode
+        if (options.exportWrappedHoist) {
+          output.prepend(`export const ${newName} = ${wrappedCode};\n`)
+          newCode = newName
+        }
         if (bindVars.length > 0) {
           const bindArgs = options.encode
             ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
