@@ -1923,7 +1923,7 @@ function vitePluginDefineEncryptionKey(
   ]
 }
 
-function vitePluginUseServer(
+export function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
     'enableActionEncryption' | 'environment'
@@ -2041,7 +2041,13 @@ function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              delete manager.serverReferenceMetaMap[id]
+              // Only clean up in dev (a file-level directive removed via HMR).
+              // In a build the environments share `serverReferenceMetaMap`, so
+              // deleting here would drop an inline action's entry registered by
+              // the rsc environment from the production manifest.
+              if (manager.config.command !== 'build') {
+                delete manager.serverReferenceMetaMap[id]
+              }
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
