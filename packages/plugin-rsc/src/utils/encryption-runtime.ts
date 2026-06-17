@@ -1,6 +1,7 @@
 import { once } from '@hiogawa/utils'
 import encryptionKeySource from 'virtual:vite-rsc/encryption-key'
-import { createFromReadableStream, renderToReadableStream } from '../react/rsc'
+import { createFromReadableStream } from '../react/rsc/client'
+import { renderToReadableStream } from '../react/rsc/server'
 import {
   arrayToStream,
   concatArrayStream,

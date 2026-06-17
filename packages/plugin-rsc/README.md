@@ -444,9 +444,33 @@ export default defineConfig({
 
 ## RSC runtime (react-server-dom) API
 
+### `@vitejs/plugin-rsc/rsc/server`
+
+This module re-exports the server capabilities provided by
+`react-server-dom/server.edge`, without loading `react-server-dom/client.edge`:
+
+- `renderToReadableStream`
+- `decodeAction/decodeReply/decodeFormState/loadServerAction`
+- `registerClientReference/registerServerReference`
+- `createTemporaryReferenceSet`
+
+Framework RSC entries should prefer this module when they don't need to
+deserialize an RSC stream or encode arguments with the client protocol.
+
+### `@vitejs/plugin-rsc/rsc/client`
+
+This module re-exports the client protocol capabilities provided by
+`react-server-dom/client.edge` for use in the RSC environment:
+
+- `createFromReadableStream`
+- `encodeReply`
+- `createClientTemporaryReferenceSet`
+
 ### `@vitejs/plugin-rsc/rsc`
 
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
+This compatibility module combines `@vitejs/plugin-rsc/rsc/server` and
+`@vitejs/plugin-rsc/rsc/client`. It also exports the server action encryption
+helpers.
 
 - `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serialized RSC and deserializing it for later use.
