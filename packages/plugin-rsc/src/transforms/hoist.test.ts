@@ -508,4 +508,36 @@ export async function test() {
       "
     `)
   })
+
+  it('supports object and static class methods', async () => {
+    const input = `
+const object = {
+  async cached() { "use server"; return 1 },
+  async ["computed"]() { "use server"; return 2 },
+};
+class Actions {
+  static async cached() { "use server"; return 3 }
+  static async ["computed"]() { "use server"; return 4 }
+}
+`
+    const transformed = await testTransform(input)
+    expect(transformed).toContain('cached: /* #__PURE__ */')
+    expect(transformed).toContain('"computed": /* #__PURE__ */')
+    expect(transformed).toContain('static cached = /* #__PURE__ */')
+    expect(transformed).toContain('static ["computed"] = /* #__PURE__ */')
+    expect(transformed).toContain('value: "cached"')
+    expect(transformed).toContain('value: "computed"')
+    await parseAstAsync(transformed!)
+  })
+
+  it('rejects unsupported method forms', async () => {
+    for (const input of [
+      `class Actions { async action() { "use server" } }`,
+      `class Actions { static async #action() { "use server" } }`,
+      `const actions = { get action() { "use server"; return 1 } }`,
+      `class Actions { static set action(value) { "use server" } }`,
+    ]) {
+      await expect(testTransform(input)).rejects.toThrow(/not allowed/)
+    }
+  })
 })
