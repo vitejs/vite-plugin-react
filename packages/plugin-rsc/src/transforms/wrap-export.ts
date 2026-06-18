@@ -3,10 +3,16 @@ import type { Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
-type ExportMeta = {
+export type FunctionParameters = {
+  count: number
+  hasRest: boolean
+}
+
+export type ExportMeta = {
   declName?: string
   isFunction?: boolean
   defaultExportIdentifierName?: string
+  parameters?: FunctionParameters
 }
 
 export type TransformWrapExportFilter = (
@@ -33,6 +39,26 @@ export function transformWrapExport(
   const exportNames: string[] = []
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
+  const localFunctionParameters = new Map<string, FunctionParameters>()
+
+  for (const node of ast.body) {
+    if (node.type === 'FunctionDeclaration' && node.id) {
+      localFunctionParameters.set(node.id.name, getFunctionParameters(node))
+    } else if (node.type === 'VariableDeclaration') {
+      for (const declaration of node.declarations) {
+        if (
+          declaration.id.type === 'Identifier' &&
+          (declaration.init?.type === 'ArrowFunctionExpression' ||
+            declaration.init?.type === 'FunctionExpression')
+        ) {
+          localFunctionParameters.set(
+            declaration.id.name,
+            getFunctionParameters(declaration.init),
+          )
+        }
+      }
+    }
+  }
 
   function wrapSimple(
     start: number,
@@ -97,7 +123,17 @@ export function transformWrapExport(
           validateNonAsyncFunction(options, node.declaration)
           const name = node.declaration.id.name
           wrapSimple(node.start, node.declaration.start, [
-            { name, meta: { isFunction: true, declName: name } },
+            {
+              name,
+              meta: {
+                isFunction: node.declaration.type === 'FunctionDeclaration',
+                declName: name,
+                parameters:
+                  node.declaration.type === 'FunctionDeclaration'
+                    ? getFunctionParameters(node.declaration)
+                    : undefined,
+              },
+            },
           ])
         } else if (node.declaration.type === 'VariableDeclaration') {
           /**
@@ -120,19 +156,27 @@ export function transformWrapExport(
           )
           // treat only simple single decl as function
           let isFunction = false
+          let parameters: FunctionParameters | undefined
           if (node.declaration.declarations.length === 1) {
             const decl = node.declaration.declarations[0]!
             isFunction =
               decl.id.type === 'Identifier' &&
               (decl.init?.type === 'ArrowFunctionExpression' ||
                 decl.init?.type === 'FunctionExpression')
+            if (isFunction) {
+              parameters = getFunctionParameters(
+                decl.init as
+                  | import('estree').ArrowFunctionExpression
+                  | import('estree').FunctionExpression,
+              )
+            }
           }
           wrapSimple(
             node.start,
             node.declaration.start,
             names.map((name) => ({
               name,
-              meta: { isFunction, declName: name },
+              meta: { isFunction, declName: name, parameters },
             })),
           )
         } else {
@@ -171,7 +215,12 @@ export function transformWrapExport(
                 { pos: spec.exported.start },
               )
             }
-            wrapExport(spec.local.name, spec.exported.name)
+            wrapExport(spec.local.name, spec.exported.name, {
+              isFunction: localFunctionParameters.has(spec.local.name)
+                ? true
+                : undefined,
+              parameters: localFunctionParameters.get(spec.local.name),
+            })
           }
         }
       }
@@ -199,6 +248,14 @@ export function transformWrapExport(
      */
     if (node.type === 'ExportDefaultDeclaration') {
       validateNonAsyncFunction(options, node.declaration)
+      const parameters =
+        node.declaration.type === 'FunctionDeclaration' ||
+        node.declaration.type === 'FunctionExpression' ||
+        node.declaration.type === 'ArrowFunctionExpression'
+          ? getFunctionParameters(node.declaration)
+          : node.declaration.type === 'Identifier'
+            ? localFunctionParameters.get(node.declaration.name)
+            : undefined
       let localName: string
       let isFunction = false
       let declName: string | undefined
@@ -225,6 +282,7 @@ export function transformWrapExport(
         isFunction,
         declName,
         defaultExportIdentifierName,
+        parameters,
       })
     }
   }
@@ -234,4 +292,13 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
+}
+
+function getFunctionParameters(node: {
+  params: import('estree').Pattern[]
+}): FunctionParameters {
+  return {
+    count: node.params.length,
+    hasRest: node.params.some((parameter) => parameter.type === 'RestElement'),
+  }
 }

@@ -314,4 +314,54 @@ export default Page;
       "
     `)
   })
+
+  test('reports function parameter metadata for export forms', async () => {
+    const input = `
+export async function named(first, ...rest) {}
+export const arrow = async (first, second) => {}
+async function local(...args) {}
+export { local as renamed }
+export default local
+`
+    const ast = await parseAstAsync(input)
+    const metadata = new Map<string, unknown>()
+    transformWrapExport(input, ast, {
+      runtime: (value, name, meta) => {
+        metadata.set(name, meta)
+        return value
+      },
+    })
+    expect(metadata).toEqual(
+      new Map([
+        [
+          'named',
+          expect.objectContaining({
+            isFunction: true,
+            parameters: { count: 2, hasRest: true },
+          }),
+        ],
+        [
+          'arrow',
+          expect.objectContaining({
+            isFunction: true,
+            parameters: { count: 2, hasRest: false },
+          }),
+        ],
+        [
+          'renamed',
+          expect.objectContaining({
+            isFunction: true,
+            parameters: { count: 1, hasRest: true },
+          }),
+        ],
+        [
+          'default',
+          expect.objectContaining({
+            isFunction: false,
+            parameters: { count: 1, hasRest: true },
+          }),
+        ],
+      ]),
+    )
+  })
 })
