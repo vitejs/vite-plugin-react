@@ -172,6 +172,13 @@ class RscPluginManager {
 
 export type RscPluginOptions = {
   /**
+   * Source markers emitted by preceding transforms that register server
+   * references in the plugin manager. Modules containing a marker keep their
+   * existing server-reference metadata when they do not contain `"use server"`.
+   * @experimental
+   */
+  serverReferenceMarkers?: string[]
+  /**
    * shorthand for configuring `environments.(name).build.rollupOptions.input.index`
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
@@ -1926,7 +1933,7 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'enableActionEncryption' | 'environment'
+    'enableActionEncryption' | 'environment' | 'serverReferenceMarkers'
   >,
   manager: RscPluginManager,
 ): Plugin[] {
@@ -1946,7 +1953,13 @@ function vitePluginUseServer(
         // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
-            delete manager.serverReferenceMetaMap[id]
+            const hasServerReferenceMarker =
+              useServerPluginOptions.serverReferenceMarkers?.some(
+                (marker) => marker.length > 0 && code.includes(marker),
+              ) ?? false
+            if (!hasServerReferenceMarker) {
+              delete manager.serverReferenceMetaMap[id]
+            }
             return
           }
           let ast = await parseAstAsync(code)
