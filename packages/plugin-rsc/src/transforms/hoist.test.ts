@@ -53,6 +53,7 @@ describe(transformHoistInlineDirective, () => {
       encode?: boolean
       noExport?: boolean
       directive?: string | RegExp
+      rejectForbiddenExpressions?: boolean
     },
   ) {
     const ast = await parseAstAsync(input)
@@ -68,6 +69,7 @@ describe(transformHoistInlineDirective, () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
       noExport: options?.noExport,
+      rejectForbiddenExpressions: options?.rejectForbiddenExpressions,
     })
     if (!output.hasChanged()) {
       return
@@ -507,5 +509,42 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it.each([
+    ['this', `async function action() { "use server"; return this }`],
+    ['arguments', `async function action() { "use server"; return arguments }`],
+    [
+      'super',
+      `class Base { method() {} } class Actions extends Base { static async action() { "use server"; return super.method() } }`,
+    ],
+  ])('rejects lexical %s expressions when requested', async (_name, input) => {
+    await expect(
+      testTransform(input, { rejectForbiddenExpressions: true }),
+    ).rejects.toThrow(/cannot use/)
+  })
+
+  it('does not inspect nested function scopes', async () => {
+    const input = `
+async function action() {
+  "use server";
+  return function nested() { return this }
+}
+`
+    await expect(
+      testTransform(input, { rejectForbiddenExpressions: true }),
+    ).resolves.toContain('function nested() { return this }')
+  })
+
+  it('allows JSX dev source metadata this arguments', async () => {
+    const input = `
+async function action() {
+  "use server";
+  return _jsxDEV("div", {}, undefined, false, undefined, this)
+}
+`
+    await expect(
+      testTransform(input, { rejectForbiddenExpressions: true }),
+    ).resolves.toContain('_jsxDEV')
   })
 })

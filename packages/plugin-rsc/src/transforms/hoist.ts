@@ -1,6 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
+  BlockStatement,
   Literal,
   Node,
   MemberExpression,
@@ -28,6 +29,7 @@ export function transformHoistInlineDirective(
     encode?: (value: string) => string
     decode?: (value: string) => string
     noExport?: boolean
+    rejectForbiddenExpressions?: boolean
   },
 ): {
   output: MagicString
@@ -63,6 +65,9 @@ export function transformHoistInlineDirective(
               pos: node.start,
             },
           )
+        }
+        if (options.rejectForbiddenExpressions) {
+          validateForbiddenExpressions(node.body, match[0])
         }
 
         const declName = node.type === 'FunctionDeclaration' && node.id.name
@@ -136,6 +141,43 @@ export function transformHoistInlineDirective(
     output,
     names,
   }
+}
+
+function validateForbiddenExpressions(body: BlockStatement, directive: string) {
+  walk(body, {
+    enter(node, parent) {
+      if (
+        node !== body &&
+        (node.type === 'FunctionDeclaration' ||
+          node.type === 'FunctionExpression')
+      ) {
+        this.skip()
+        return
+      }
+      const isJsxDevSourceThis =
+        node.type === 'ThisExpression' &&
+        parent?.type === 'CallExpression' &&
+        parent.arguments.at(-1) === node &&
+        parent.callee.type === 'Identifier' &&
+        /(?:^|_)jsxDEV$/.test(parent.callee.name)
+      const expression =
+        node.type === 'ThisExpression' && !isJsxDevSourceThis
+          ? 'this'
+          : node.type === 'Super'
+            ? 'super'
+            : node.type === 'Identifier' && node.name === 'arguments'
+              ? 'arguments'
+              : undefined
+      if (expression) {
+        throw Object.assign(
+          new Error(
+            `${JSON.stringify(directive)} functions cannot use ${JSON.stringify(expression)}.`,
+          ),
+          { pos: node.start },
+        )
+      }
+    },
+  })
 }
 
 const exactRegex = (s: string): RegExp =>

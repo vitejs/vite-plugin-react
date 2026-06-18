@@ -15,6 +15,7 @@ export function transformServerActionServer(
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
     decode?: (value: string) => string
+    rejectForbiddenExpressions?: boolean
   },
 ):
   | {
