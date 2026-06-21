@@ -6,6 +6,7 @@ import testExternalFalsyPrimitive from './external-falsy-primitive.cjs'
 import depFnRequire from './function-require.cjs'
 import depFn from './function.cjs'
 import cjsGlobals from './globals.cjs'
+import interop from './interop.cjs'
 import testNodeBuiltins from './node-builtins.cjs'
 import depPrimitive from './primitive.cjs'
 
@@ -20,4 +21,5 @@ export {
   cjsGlobals,
   testNodeBuiltins,
   testExternalFalsyPrimitive,
+  interop,
 }
