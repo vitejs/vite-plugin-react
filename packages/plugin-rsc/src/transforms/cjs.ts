@@ -5,6 +5,13 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree } from './scope'
 
+export type CjsOutputMode = 'module-runner' | 'esm'
+
+export interface TransformCjsToEsmOptions {
+  id: string
+  output?: CjsOutputMode
+}
+
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.
 
@@ -30,18 +37,23 @@ const CJS_INTEROP_HELPER = __cjs_interop__.toString().replace(/\n\s*/g, '')
 export function transformCjsToEsm(
   code: string,
   ast: Program,
-  options: { id: string },
+  options: TransformCjsToEsmOptions,
 ): { output: MagicString } {
   const output = new MagicString(code)
   const scopeTree = buildScopeTree(ast)
 
   const parentNodes: Node[] = []
   const hoistedCodes: string[] = []
+  const namedExports = new Set<string>()
   let hoistIndex = 0
 
   walk(ast, {
     enter(node) {
       parentNodes.push(node)
+      const namedExport = getAssignedExportName(node, scopeTree)
+      if (namedExport) {
+        namedExports.add(namedExport)
+      }
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'Identifier' &&
@@ -113,11 +125,79 @@ export function transformCjsToEsm(
   // TODO: can we use cjs-module-lexer to properly define named exports?
   // for re-exports, we need to eagerly transform dependencies though.
   // https://github.com/nodejs/node/blob/f3adc11e37b8bfaaa026ea85c1cf22e3a0e29ae9/lib/internal/modules/esm/translators.js#L382-L409
-  output.append(`
+  if (options.output === 'esm') {
+    output.append('\n;')
+    let exportIndex = 0
+    for (const name of namedExports) {
+      const binding = `__cjs_export_${exportIndex++}`
+      output.append(
+        `const ${binding}=module.exports==null?undefined:module.exports.${name};` +
+          `export{${binding} as ${name}};\n`,
+      )
+    }
+    output.append('export default module.exports;\n')
+  } else {
+    output.append(`
 ;__vite_ssr_exportAll__(module.exports);
 export default module.exports;
 export const __cjs_module_runner_transform = true;
 `)
+  }
 
   return { output }
+}
+
+function getAssignedExportName(
+  node: Node,
+  scopeTree: ReturnType<typeof buildScopeTree>,
+): string | undefined {
+  if (
+    node.type !== 'AssignmentExpression' ||
+    node.left.type !== 'MemberExpression'
+  ) {
+    return
+  }
+
+  const name = getStaticMemberName(node.left)
+  if (
+    !name ||
+    name === 'default' ||
+    name === '__cjs_module_runner_transform' ||
+    !/^[$A-Z_a-z][$\w]*$/.test(name)
+  ) {
+    return
+  }
+
+  if (
+    node.left.object.type === 'Identifier' &&
+    node.left.object.name === 'exports' &&
+    !scopeTree.referenceToDeclaredScope.has(node.left.object)
+  ) {
+    return name
+  }
+
+  if (
+    node.left.object.type === 'MemberExpression' &&
+    getStaticMemberName(node.left.object) === 'exports' &&
+    node.left.object.object.type === 'Identifier' &&
+    node.left.object.object.name === 'module' &&
+    !scopeTree.referenceToDeclaredScope.has(node.left.object.object)
+  ) {
+    return name
+  }
+}
+
+function getStaticMemberName(
+  node: Extract<Node, { type: 'MemberExpression' }>,
+) {
+  if (!node.computed && node.property.type === 'Identifier') {
+    return node.property.name
+  }
+  if (
+    node.computed &&
+    node.property.type === 'Literal' &&
+    typeof node.property.value === 'string'
+  ) {
+    return node.property.value
+  }
 }

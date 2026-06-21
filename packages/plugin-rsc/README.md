@@ -454,12 +454,16 @@ import { parseAstAsync } from 'vite'
 const commonJsApplicationPlugin = {
   name: 'framework:commonjs-application',
   apply: 'serve',
-  applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
   transform: {
     filter: { id: /\.cjs$/ },
     async handler(code, id) {
       const ast = await parseAstAsync(code)
-      const { output } = transformCjsToEsm(code, ast, { id })
+      const { output } = transformCjsToEsm(code, ast, {
+        id,
+        output: this.environment.config.dev.moduleRunnerTransform
+          ? 'module-runner'
+          : 'esm',
+      })
       return {
         code: output.toString(),
         map: output.generateMap({ hires: 'boundary' }),
@@ -469,9 +473,20 @@ const commonJsApplicationPlugin = {
 }
 ```
 
-This transform targets Vite's server module runner. The generated module uses
-the module runner's `__vite_ssr_exportAll__` helper and top-level `await`, so it
-is not a general production CommonJS bundler transform.
+The `output` option defaults to `"module-runner"`. This mode uses the module
+runner's `__vite_ssr_exportAll__` helper to expose runtime-generated named
+exports. Use `output: "esm"` when the transformed module must run as standard
+ESM, such as in a browser or another environment without Vite's module-runner
+runtime.
+
+ESM output exposes statically assigned CommonJS names, such as `exports.foo`
+and `module.exports.foo`, as named exports. Dynamic names remain available only
+through the default export because ESM export names must be declared
+statically.
+
+Both modes can emit top-level `await`, so this remains a development-oriented
+framework integration transform rather than a general production CommonJS
+bundler transform.
 
 Nested `require()` calls are hoisted to asynchronous imports to keep the
 surrounding function synchronous. This does not preserve Node.js semantics

@@ -1,13 +1,19 @@
 import path from 'node:path'
 import { createServer, createServerModuleRunner, parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { transformCjsToEsm } from './index'
+import { transformCjsToEsm, type TransformCjsToEsmOptions } from './index'
 import { debugSourceMap } from './test-utils'
 
 describe(transformCjsToEsm, () => {
-  async function testTransform(input: string) {
+  async function testTransform(
+    input: string,
+    options: Partial<TransformCjsToEsmOptions> = {},
+  ) {
     const ast = await parseAstAsync(input)
-    const { output } = transformCjsToEsm(input, ast, { id: '/test.js' })
+    const { output } = transformCjsToEsm(input, ast, {
+      id: '/test.js',
+      ...options,
+    })
     if (!output.hasChanged()) {
       return
     }
@@ -141,6 +147,58 @@ function test() {
       export const __cjs_module_runner_transform = true;
       "
     `)
+  })
+
+  it('emits standard ESM output with statically assigned named exports', async () => {
+    const code = await testTransform(
+      `exports.foo = 'ok'; module.exports.bar = 2;`,
+      { output: 'esm' },
+    )
+
+    expect(code).not.toContain('__vite_ssr_exportAll__')
+    expect(code).not.toContain('__cjs_module_runner_transform')
+
+    const url = `data:text/javascript;base64,${Buffer.from(code!).toString('base64')}`
+    const mod = await import(url)
+    expect(Object.keys(mod)).toEqual(['bar', 'default', 'foo'])
+    expect(mod.default).toEqual({ bar: 2, foo: 'ok' })
+    expect(mod.foo).toBe('ok')
+    expect(mod.bar).toBe(2)
+  })
+
+  it('keeps dynamic export names on the default export in ESM output', async () => {
+    const code = await testTransform(
+      `const name = 'foo'; exports[name] = 'ok';`,
+      { output: 'esm' },
+    )
+
+    const url = `data:text/javascript;base64,${Buffer.from(code!).toString('base64')}`
+    const mod = await import(url)
+    expect(Object.keys(mod)).toEqual(['default'])
+    expect(mod.default).toEqual({ foo: 'ok' })
+  })
+
+  it('supports null default exports in ESM output', async () => {
+    const code = await testTransform(
+      `exports.foo = 'old'; module.exports = null;`,
+      {
+        output: 'esm',
+      },
+    )
+
+    const url = `data:text/javascript;base64,${Buffer.from(code!).toString('base64')}`
+    const mod = await import(url)
+    expect(mod.default).toBeNull()
+    expect(mod.foo).toBeUndefined()
+  })
+
+  it('ignores assignments to shadowed CommonJS bindings', async () => {
+    const code = await testTransform(
+      `function set(exports) { exports.foo = 'local' } module.exports = set;`,
+      { output: 'esm' },
+    )
+
+    expect(code).not.toContain('as foo')
   })
 
   it('e2e', async () => {
