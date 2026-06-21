@@ -448,6 +448,49 @@ function defineTest(f: Fixture) {
       const deps =
         manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
+      expect(manifest.clientEntryDeps.js.length).toBeGreaterThan(0)
+      expect(deps.js).toEqual(
+        expect.arrayContaining(manifest.clientEntryDeps.js),
+      )
+      expect(
+        deps.js.some(
+          (href: string) => !manifest.clientEntryDeps.js.includes(href),
+        ),
+      ).toBe(true)
+
+      const clientOnlyDependencyCounts = new Map<string, number>()
+      for (const referenceDeps of Object.values(
+        manifest.clientReferenceDeps,
+      ) as { js: string[] }[]) {
+        for (const href of referenceDeps.js) {
+          if (!manifest.clientEntryDeps.js.includes(href)) {
+            clientOnlyDependencyCounts.set(
+              href,
+              (clientOnlyDependencyCounts.get(href) ?? 0) + 1,
+            )
+          }
+        }
+      }
+      expect(
+        [...clientOnlyDependencyCounts.values()].some((count) => count > 1),
+      ).toBe(true)
+
+      const clientBuildManifest: import('vite').Manifest = JSON.parse(
+        readFileSync(f.root + '/dist/client/.vite/manifest.json', 'utf-8'),
+      )
+      const allReferenceJs = new Set(
+        Object.values(manifest.clientReferenceDeps).flatMap(
+          (referenceDeps) => (referenceDeps as { js: string[] }).js,
+        ),
+      )
+      for (const dynamicModuleId of [
+        'src/routes/browser-only/browser-dep.tsx',
+        'src/routes/lazy-css/client-to-client-child.tsx',
+      ]) {
+        const dynamicChunk = clientBuildManifest[dynamicModuleId]
+        expect(dynamicChunk).toBeDefined()
+        expect(allReferenceJs).not.toContain(`/${dynamicChunk!.file}`)
+      }
     })
   })
 
