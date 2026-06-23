@@ -172,9 +172,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             {
               tag: 'script',
               attrs: { type: 'module' },
-              // In bundled dev mode, Rolldown resolves module specifiers at build
-              // time without URL-level base stripping, so we must use '/' instead
-              // of config.base to match the resolveId hook for '/@react-refresh'.
+              // In bundled dev mode, the src does not go through the middlewares
+              // so we don't need to append the base
               children: getPreambleCode('/'),
             },
           ]
