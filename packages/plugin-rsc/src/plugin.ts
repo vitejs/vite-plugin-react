@@ -1158,6 +1158,7 @@ export function createRpcClient(params) {
 
           const assetDeps = collectAssetDeps(bundle)
           let bootstrapScriptContent: string | RuntimeAsset = ''
+          let clientEntryDeps: AssetDeps | undefined
 
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
@@ -1182,9 +1183,9 @@ export function createRpcClient(params) {
                 `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
               )
             }
-            const entryDeps = assetsURLOfDeps(entry.deps, manager)
+            clientEntryDeps = assetsURLOfDeps(entry.deps, manager)
             for (const [key, deps] of Object.entries(clientReferenceDeps)) {
-              clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
+              clientReferenceDeps[key] = mergeAssetDeps(deps, clientEntryDeps)
             }
             const entryUrl = assetsURL(entry.chunk.fileName, manager)
             if (typeof entryUrl === 'string') {
@@ -1198,6 +1199,7 @@ export function createRpcClient(params) {
 
           manager.buildAssetsManifest = {
             bootstrapScriptContent,
+            clientEntryDeps,
             clientReferenceDeps,
             serverResources,
             cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
@@ -2190,6 +2192,7 @@ function assetsURLOfDeps(deps: AssetDeps, manager: RscPluginManager) {
 
 export type AssetsManifest = {
   bootstrapScriptContent: string | RuntimeAsset
+  clientEntryDeps?: AssetDeps
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
@@ -2202,6 +2205,7 @@ export type AssetDeps = {
 
 export type ResolvedAssetsManifest = {
   bootstrapScriptContent: string
+  clientEntryDeps?: ResolvedAssetDeps
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
