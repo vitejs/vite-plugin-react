@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@rolldown/pluginutils": "^1.0.1",
-    "@swc/core": "^1.15.11"
+    "@swc/core": "^1.15.41"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
