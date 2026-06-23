@@ -1,6 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
+  BlockStatement,
   Literal,
   Node,
   MemberExpression,
@@ -8,7 +9,9 @@ import type {
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import { hashString } from '../plugins/utils'
 import { buildScopeTree, type ScopeTree } from './scope'
+import type { FunctionParameters } from './wrap-export'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -21,13 +24,20 @@ export function transformHoistInlineDirective(
     runtime: (
       value: string,
       name: string,
-      meta: { directiveMatch: RegExpMatchArray },
+      meta: {
+        directiveMatch: RegExpMatchArray
+        hasBoundArgs: boolean
+        parameters: FunctionParameters
+      },
     ) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
     decode?: (value: string) => string
     noExport?: boolean
+    exportWrappedHoist?: boolean
+    stableName?: boolean
+    rejectForbiddenExpressions?: boolean
   },
 ): {
   output: MagicString
@@ -45,6 +55,7 @@ export function transformHoistInlineDirective(
 
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
+  const signatureCounts = new Map<string, number>()
 
   walk(ast, {
     enter(node, parent) {
@@ -64,13 +75,64 @@ export function transformHoistInlineDirective(
             },
           )
         }
+        if (options.rejectForbiddenExpressions) {
+          validateForbiddenExpressions(node.body, match[0])
+        }
+
+        const isObjectMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'Property' &&
+          (parent.method || parent.kind !== 'init')
+        const isClassMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'MethodDefinition'
+        if (isClassMethod && !parent.static) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated class instance methods. Use a function, object method property, or static class method instead.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (isClassMethod && parent.key.type === 'PrivateIdentifier') {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated private class methods.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (
+          (isObjectMethod && parent.kind !== 'init') ||
+          (isClassMethod && parent.kind !== 'method')
+        ) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated getters or setters.`,
+            ),
+            { pos: parent.start },
+          )
+        }
 
         const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const expressionName =
+          node.type === 'FunctionExpression' ? node.id?.name : undefined
+        const methodName =
+          (isObjectMethod || isClassMethod) &&
+          (parent.key.type === 'Identifier' || parent.key.type === 'Literal')
+            ? String(
+                parent.key.type === 'Identifier'
+                  ? parent.key.name
+                  : parent.key.value,
+              )
+            : undefined
         const originalName =
           declName ||
+          methodName ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
+          expressionName ||
           'anonymous_server_function'
 
         const bindVars = getBindVars(node, scopeTree)
@@ -92,35 +154,73 @@ export function transformHoistInlineDirective(
         }
 
         // append a new `FunctionDeclaration` at the end
+        let nameKey = String(names.length)
+        if (options.stableName) {
+          const signature = `${originalName}:${input.slice(node.start, node.end)}`
+          const signatureCount = signatureCounts.get(signature) ?? 0
+          signatureCounts.set(signature, signatureCount + 1)
+          nameKey = `${hashString(signature)}_${signatureCount}`
+        }
         const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+          `$$hoist_${nameKey}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
+        const implementationName = options.exportWrappedHoist
+          ? `${newName}$$impl`
+          : newName
         output.update(
           node.start,
           node.body.start,
-          `\n;${options.noExport ? '' : 'export '}${
+          `\n;${options.noExport || options.exportWrappedHoist ? '' : 'export '}${
             node.async ? 'async ' : ''
-          }function${node.generator ? '*' : ''} ${newName}(${newParams}) `,
+          }function${node.generator ? '*' : ''} ${implementationName}(${newParams}) `,
         )
         output.appendLeft(
           node.end,
-          `;\n/* #__PURE__ */ Object.defineProperty(${newName}, "name", { value: ${JSON.stringify(
+          `;\n/* #__PURE__ */ Object.defineProperty(${implementationName}, "name", { value: ${JSON.stringify(
             originalName,
           )} });\n`,
         )
         output.move(node.start, node.end, input.length)
 
         // replace original declartion with action register + bind
-        let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
-          directiveMatch: match,
-        })}`
+        let wrappedCode = `/* #__PURE__ */ ${runtime(
+          implementationName,
+          newName,
+          {
+            directiveMatch: match,
+            hasBoundArgs: bindVars.length > 0,
+            parameters: {
+              count: node.params.length,
+              hasRest: node.params.some(
+                (parameter) => parameter.type === 'RestElement',
+              ),
+            },
+          },
+        )}`
+        let newCode = wrappedCode
+        if (options.exportWrappedHoist) {
+          output.prepend(`export const ${newName} = ${wrappedCode};\n`)
+          newCode = newName
+        }
         if (bindVars.length > 0) {
           const bindArgs = options.encode
             ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (declName) {
+        if (isObjectMethod) {
+          output.update(
+            parent.start,
+            node.start,
+            `${input.slice(parent.key.start, parent.key.end)}: `,
+          )
+        } else if (isClassMethod) {
+          const key = parent.computed
+            ? `[${input.slice(parent.key.start, parent.key.end)}]`
+            : input.slice(parent.key.start, parent.key.end)
+          output.update(parent.start, node.start, `static ${key} = `)
+          newCode += ';'
+        } else if (declName) {
           newCode = `const ${declName} = ${newCode};`
           if (parent?.type === 'ExportDefaultDeclaration') {
             output.remove(parent.start, node.start)
@@ -132,10 +232,44 @@ export function transformHoistInlineDirective(
     },
   })
 
-  return {
-    output,
-    names,
-  }
+  return { output, names }
+}
+
+function validateForbiddenExpressions(body: BlockStatement, directive: string) {
+  walk(body, {
+    enter(node, parent) {
+      if (
+        node !== body &&
+        (node.type === 'FunctionDeclaration' ||
+          node.type === 'FunctionExpression')
+      ) {
+        this.skip()
+        return
+      }
+      const isJsxDevSourceThis =
+        node.type === 'ThisExpression' &&
+        parent?.type === 'CallExpression' &&
+        parent.arguments.at(-1) === node &&
+        parent.callee.type === 'Identifier' &&
+        /(?:^|_)jsxDEV$/.test(parent.callee.name)
+      const expression =
+        node.type === 'ThisExpression' && !isJsxDevSourceThis
+          ? 'this'
+          : node.type === 'Super'
+            ? 'super'
+            : node.type === 'Identifier' && node.name === 'arguments'
+              ? 'arguments'
+              : undefined
+      if (expression) {
+        throw Object.assign(
+          new Error(
+            `${JSON.stringify(directive)} functions cannot use ${JSON.stringify(expression)}.`,
+          ),
+          { pos: node.start },
+        )
+      }
+    },
+  })
 }
 
 const exactRegex = (s: string): RegExp =>
@@ -151,7 +285,9 @@ function matchDirective(
       stmt.expression.type === 'Literal' &&
       typeof stmt.expression.value === 'string'
     ) {
+      directive.lastIndex = 0
       const match = stmt.expression.value.match(directive)
+      directive.lastIndex = 0
       if (match) {
         return { match, node: stmt.expression }
       }
