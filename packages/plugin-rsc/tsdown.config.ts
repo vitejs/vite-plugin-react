@@ -15,6 +15,7 @@ export default defineConfig({
     'src/react/browser.ts',
     'src/react/ssr.ts',
     'src/react/rsc.ts',
+    'src/utils.ts',
     'src/transforms/index.ts',
     'src/plugins/cjs.ts',
     'src/utils/rpc.ts',
