@@ -1,5 +1,104 @@
 # @vitejs/plugin-react-swc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-swc)](https://www.npmjs.com/package/@vitejs/plugin-react-swc)
 
+> ![CAUTION]
+> This plugin is now deprecated.
+>
+> Vite 8 now uses [Oxc](https://oxc.rs/) for fast refresh transform.
+> If you do not need other SWC-specific transforms, you can use [`@vitejs/plugin-react`](https://github.com/vitejs/vite/tree/main/packages/plugin-react) instead.
+>
+> If you were using this plugin without any options or only the following options:
+>
+> - `jsxImportSource`
+> - `tsDecorators` (remove this option after changing the plugin)
+> - `devTarget` (use `oxc.target` instead)
+> - `reactRefreshHost`
+>
+> , you can simply change the import:
+>
+> ```ts
+> import { defineConfig } from 'vite'
+> import react from '@vitejs/plugin-react' // <-- without `-swc`
+>
+> export default defineConfig({
+>   plugins: [
+>     react({
+>       jsxImportSource: 'reactlike', // if it was used
+>       reactRefreshHost: 'http://localhost:3000', // if it was used
+>     }),
+>   ],
+> })
+> ```
+>
+> If you were using this plugin with options:
+>
+> ```ts
+> import { defineConfig } from 'vite'
+> import react from '@vitejs/plugin-react-swc'
+>
+> export default defineConfig({
+>   plugins: [
+>     react({
+>       jsxImportSource: 'reactlike',
+>       tsDecorators: true,
+>       plugins: [['@swc/plugin-emotion', {}]],
+>       devTarget: 'es2022',
+>       reactRefreshHost: 'http://localhost:3000',
+>     }),
+>   ],
+> })
+> ```
+>
+> , you can use `@rollup/plugin-swc` alongside `@vitejs/plugin-react`:
+>
+> ```
+> import { defineConfig, withFilter } from 'vite'
+> import react from '@vitejs/plugin-react'
+> import swc from '@rollup/plugin-swc'
+> import { makeIdFiltersToMatchWithQuery } from '@rolldown/pluginutils'
+>
+> export default defineConfig({
+>   plugins: [
+>     ['tsx', 'ts', 'jsx', 'js'].map(ext => withFilter(
+>       {
+>         ...swc({
+>           swc: {
+>             swcrc: false,
+>             configFile: false,
+>             sourceMaps: true,
+>             jsc: {
+>               // if `devTarget` was set. use `esnext` if it wasn't
+>               target: 'es2022',
+>               parser: {
+>                 syntax: ext === 'tsx' || ext === 'ts' ? 'typescript' : 'ecmascript',
+>                 decorators: ext === 'tsx' || ext === 'ts', // if `tsDecorators: true` were set
+>                 jsx: ext === 'tsx' || ext === 'jsx',
+>               },
+>               experimental: {
+>                 // if `plugins` were set
+>                 plugins: [['@swc/plugin-emotion', {}]],
+>               },
+>               transform: {
+>                 useDefineForClassFields: true,
+>                 react: {
+>                   runtime: 'preserve',
+>                 }
+>               }
+>             },
+>           },
+>         }),
+>         // run SWC before JSX/TS/TSX transformations
+>         enforce: 'pre',
+>       },
+>       { transform: { id: makeIdFiltersToMatchWithQuery(new RegExp(`\\.${ext}$`)) } },
+>     )),
+>     react({
+>       jsxImportSource: 'reactlike',
+>       reactRefreshHost: 'http://localhost:3000',
+>     })
+>   ],
+> });
+> ```
+
 Speed up your Vite dev server with [SWC](https://swc.rs/)
 
 - ✅ A fast Fast Refresh (~20x faster than Babel)
