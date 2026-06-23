@@ -1551,7 +1551,7 @@ function vitePluginUseClient(
             exportNames,
             renderedExports: [],
           }
-          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
           return { code: output.toString(), map: { mappings: '' } }
         },
@@ -2023,7 +2023,7 @@ function vitePluginUseServer(
               exportNames:
                 'names' in result ? result.names : result.exportNames,
             }
-            const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+            const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
             )

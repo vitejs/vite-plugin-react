@@ -1,6 +1,6 @@
 import { once } from '@hiogawa/utils'
 import encryptionKeySource from 'virtual:vite-rsc/encryption-key'
-import { createFromReadableStream, renderToReadableStream } from '../react/rsc'
+import { renderToReadableStream } from '../react/rsc/server'
 import {
   arrayToStream,
   concatArrayStream,
@@ -28,10 +28,10 @@ export async function encryptActionBoundArgs(
 export async function decryptActionBoundArgs(
   encrypted: ReturnType<typeof encryptActionBoundArgs>,
 ): Promise<unknown> {
-  const serializedBuffer = await decryptBuffer(
-    await encrypted,
-    await getEncryptionKey(),
-  )
+  const [{ createFromReadableStream }, serializedBuffer] = await Promise.all([
+    import('../react/rsc/client'),
+    decryptBuffer(await encrypted, await getEncryptionKey()),
+  ])
   const serialized = arrayToStream(new Uint8Array(serializedBuffer))
   return createFromReadableStream(serialized)
 }
