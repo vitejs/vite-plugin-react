@@ -234,6 +234,15 @@ export type RscPluginOptions = {
   customBuildApp?: boolean
 
   /**
+   * Enable build-time server reference discovery for "use server" actions.
+   * Downstream frameworks that can prove an app contains no server actions may
+   * set this to false to skip the SSR scan build.
+   * @experimental
+   * @default true
+   */
+  serverReferences?: boolean
+
+  /**
    * Custom environment configuration
    * @experimental
    * @default { browser: 'client', ssr: 'ssr', rsc: 'rsc' }
@@ -412,13 +421,17 @@ export default function vitePluginRsc(
 
     // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
-    manager.isScanBuild = true
-    builder.environments.rsc!.config.build.write = false
-    builder.environments.ssr!.config.build.write = false
-    logStep('[1/5] analyze client references...')
-    await builder.build(builder.environments.rsc!)
-    logStep('[2/5] analyze server references...')
-    await builder.build(builder.environments.ssr!)
+    if (rscPluginOptions.serverReferences !== false) {
+      manager.isScanBuild = true
+      builder.environments.rsc!.config.build.write = false
+      builder.environments.ssr!.config.build.write = false
+      logStep('[1/5] analyze client references...')
+      await builder.build(builder.environments.rsc!)
+      logStep('[2/5] analyze server references...')
+      await builder.build(builder.environments.ssr!)
+    } else {
+      logStep('[1/5] skip reference analysis...')
+    }
     manager.isScanBuild = false
     builder.environments.rsc!.config.build.write = true
     builder.environments.ssr!.config.build.write = true
