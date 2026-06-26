@@ -2,15 +2,18 @@ import type {
   ReactCompilerBabelPluginOptions,
   RolldownBabelPreset,
 } from '#optionalTypes'
+import { createRequire } from "module";
 
 export const defaultCodeFilter =
   /forwardRef|memo|(?:const|let|var|function)\s+(?:[A-Z]|use[A-Z0-9])|(?:[A-Z]|use[A-Z0-9])[^\s:=(){}[\],;]*\s*(?:\(|[:=]\s*(?:function|\())/
+
+const require = createRequire(import.meta.url);
 
 export const reactCompilerPreset = (
   options: ReactCompilerBabelPluginOptions = {},
 ): RolldownBabelPreset => ({
   preset: () => ({
-    plugins: [['babel-plugin-react-compiler', options]],
+    plugins: [[require.resolve('babel-plugin-react-compiler'), options]],
   }),
   rolldown: {
     filter: {
