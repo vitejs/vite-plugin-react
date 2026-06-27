@@ -2,7 +2,7 @@ import type {
   ReactCompilerBabelPluginOptions,
   RolldownBabelPreset,
 } from '#optionalTypes'
-import { createRequire } from "module";
+import { createRequire } from 'node:module';
 
 export const defaultCodeFilter =
   /forwardRef|memo|(?:const|let|var|function)\s+(?:[A-Z]|use[A-Z0-9])|(?:[A-Z]|use[A-Z0-9])[^\s:=(){}[\],;]*\s*(?:\(|[:=]\s*(?:function|\())/
