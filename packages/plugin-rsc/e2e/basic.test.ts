@@ -1781,6 +1781,26 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('use cache replays Flight with framework server action', async ({
+    page,
+  }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    const locator = page.getByTestId(
+      'test-use-cache-flight-replay-server-action',
+    )
+    await expect(
+      locator.getByTestId('test-use-cache-flight-replay-server-action-cache'),
+    ).toHaveText('cached product card render count: 1')
+    await locator.getByRole('button', { name: 'add cached product' }).click()
+    await expect(
+      locator.getByTestId('test-use-cache-flight-replay-server-action-result'),
+    ).toHaveText(/^added rsc-product-1 with framework action \([1-9]\d*\)$/)
+    await expect(
+      locator.getByTestId('test-use-cache-flight-replay-server-action-cache'),
+    ).toHaveText('cached product card render count: 1')
+  })
+
   test('hydration mismatch', async ({ page }) => {
     const errors: Error[] = []
     page.on('pageerror', (error) => {

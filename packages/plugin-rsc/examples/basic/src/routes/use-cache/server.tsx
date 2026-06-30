@@ -1,4 +1,6 @@
+import { registerFrameworkServerReference } from '../../framework/server-reference-runtime'
 import { revalidateCache } from '../../framework/use-cache-runtime'
+import { TestUseCacheFlightReplayServerActionClient } from './client'
 
 export function TestUseCache() {
   return (
@@ -6,6 +8,7 @@ export function TestUseCache() {
       <TestUseCacheFn />
       <TestUseCacheComponent />
       <TestUseCacheClosure />
+      <TestUseCacheFlightReplayServerAction />
     </>
   )
 }
@@ -103,3 +106,32 @@ let outerFnArg = ''
 let innerFnArg = ''
 let innerFnCount = 0
 let actionCount2 = 0
+
+async function TestUseCacheFlightReplayServerAction() {
+  return <CachedProductCard productId="rsc-product-1" />
+}
+
+async function CachedProductCard(props: { productId: string }) {
+  'use cache'
+  cachedProductCardRenderCount++
+  return (
+    <TestUseCacheFlightReplayServerActionClient
+      key={props.productId}
+      addToCart={addCachedProductToCart}
+      productId={props.productId}
+      renderCount={cachedProductCardRenderCount}
+    />
+  )
+}
+
+let cachedProductCardRenderCount = 0
+let cartActionCount = 0
+
+const addCachedProductToCart = registerFrameworkServerReference(
+  async (productId: string) => {
+    cartActionCount++
+    return `added ${productId} with framework action (${cartActionCount})`
+  },
+  'framework:cached-flight-product-card',
+  'addToCart',
+)
