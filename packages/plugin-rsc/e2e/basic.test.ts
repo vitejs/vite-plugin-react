@@ -1795,9 +1795,7 @@ function defineTest(f: Fixture) {
     await locator.getByRole('button', { name: 'add cached product' }).click()
     await expect(
       locator.getByTestId('test-use-cache-flight-replay-server-action-result'),
-    ).toHaveText(
-      /^added rsc-product-1 with framework action \([1-9]\d*\)$/,
-    )
+    ).toHaveText(/^added rsc-product-1 with framework action \([1-9]\d*\)$/)
     await expect(
       locator.getByTestId('test-use-cache-flight-replay-server-action-cache'),
     ).toHaveText('cached product card render count: 1')
