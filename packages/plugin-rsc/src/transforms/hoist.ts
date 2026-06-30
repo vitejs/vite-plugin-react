@@ -65,12 +65,63 @@ export function transformHoistInlineDirective(
           )
         }
 
+        const isClassMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'MethodDefinition'
+        if (isClassMethod) {
+          if (!parent.static) {
+            throw Object.assign(
+              new Error(
+                `It is not allowed to define inline ${JSON.stringify(match[0])} annotated class instance methods. Use a function, object method property, or static class method instead.`,
+              ),
+              { pos: parent.start },
+            )
+          }
+          if (parent.key.type === 'PrivateIdentifier') {
+            throw Object.assign(
+              new Error(
+                `It is not allowed to define inline ${JSON.stringify(match[0])} annotated private class methods.`,
+              ),
+              { pos: parent.start },
+            )
+          }
+        }
+
+        const isObjectMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'Property' &&
+          (parent.method || parent.kind !== 'init')
+        if (
+          (isObjectMethod && parent.kind !== 'init') ||
+          (isClassMethod && parent.kind !== 'method')
+        ) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated getters or setters.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+
         const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const expressionName =
+          node.type === 'FunctionExpression' ? node.id?.name : undefined
+        const methodName =
+          (isObjectMethod || isClassMethod) &&
+          (parent.key.type === 'Identifier' || parent.key.type === 'Literal')
+            ? String(
+                parent.key.type === 'Identifier'
+                  ? parent.key.name
+                  : parent.key.value,
+              )
+            : undefined
         const originalName =
           declName ||
+          methodName ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
+          expressionName ||
           'anonymous_server_function'
 
         const bindVars = getBindVars(node, scopeTree)
@@ -120,7 +171,19 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (declName) {
+        if (isObjectMethod) {
+          output.update(
+            parent.start,
+            node.start,
+            `${input.slice(parent.key.start, parent.key.end)}: `,
+          )
+        } else if (isClassMethod) {
+          const key = parent.computed
+            ? `[${input.slice(parent.key.start, parent.key.end)}]`
+            : input.slice(parent.key.start, parent.key.end)
+          output.update(parent.start, node.start, `static ${key} = `)
+          newCode += ';'
+        } else if (declName) {
           newCode = `const ${declName} = ${newCode};`
           if (parent?.type === 'ExportDefaultDeclaration') {
             output.remove(parent.start, node.start)
