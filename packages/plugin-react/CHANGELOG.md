@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.0.3 (2026-06-23)
+
 ## 6.0.2 (2026-05-14)
 
 ### Allow all options in reactCompilerPreset ([#1189](https://github.com/vitejs/vite-plugin-react/pull/1189))
