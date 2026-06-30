@@ -508,4 +508,20 @@ export async function test() {
       "
     `)
   })
+
+  it.each([/^use server$/g, /^use server$/y])(
+    'resets stateful directive regexes: %s',
+    async (directive) => {
+      const input = `
+export async function one() { "use server" }
+export async function two() { "use server" }
+`
+      const first = await testTransform(input, { directive })
+      const second = await testTransform(input, { directive })
+      expect(first).toContain('$$hoist_0_one')
+      expect(first).toContain('$$hoist_1_two')
+      expect(second).toBe(first)
+      expect(directive.lastIndex).toBe(0)
+    },
+  )
 })
