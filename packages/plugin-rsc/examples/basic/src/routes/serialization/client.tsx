@@ -16,13 +16,3 @@ export function TestSerializationClient(props: { action: () => Promise<any> }) {
     </button>
   )
 }
-
-export function TestPreservedServerReference(props: {
-  action: () => Promise<any>
-}) {
-  return (
-    <div data-testid="serialization-preserved-reference">
-      {typeof props.action === 'function' ? 'preserved' : 'missing'}
-    </div>
-  )
-}

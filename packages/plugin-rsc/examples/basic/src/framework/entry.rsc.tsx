@@ -9,6 +9,7 @@ import {
 import type React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { parseRenderRequest } from './request.tsx'
+import { loadFrameworkServerReference } from './server-reference-runtime.ts'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -50,7 +51,9 @@ async function handleRequest({
         : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
       const args = await decodeReply(body, { temporaryReferences })
-      const action = await loadServerAction(renderRequest.actionId)
+      const action =
+        loadFrameworkServerReference(renderRequest.actionId) ??
+        (await loadServerAction(renderRequest.actionId))
       try {
         const data = await action.apply(null, args)
         returnValue = { ok: true, data }

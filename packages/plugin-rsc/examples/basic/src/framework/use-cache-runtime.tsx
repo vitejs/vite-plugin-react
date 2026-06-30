@@ -65,6 +65,9 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     const result = createFromReadableStream(stream, {
       environmentName: 'Cache',
       replayConsoleLogs: true,
+      // Cached RSC streams can contain framework-owned server references whose
+      // implementation modules are not resolvable by the app bundler runtime.
+      serverReferences: 'preserve',
       temporaryReferences: clientTemporaryReferences,
     })
     return result
