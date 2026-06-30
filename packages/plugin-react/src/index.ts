@@ -172,7 +172,9 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             {
               tag: 'script',
               attrs: { type: 'module' },
-              children: getPreambleCode(base),
+              // In bundled dev mode, the src does not go through the middlewares
+              // so we don't need to append the base
+              children: getPreambleCode('/'),
             },
           ]
       },
