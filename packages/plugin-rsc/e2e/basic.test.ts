@@ -1602,6 +1602,9 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await waitForHydration(page)
     await expect(page.getByTestId('serialization')).toHaveText('?')
+    await expect(
+      page.getByTestId('serialization-preserved-reference'),
+    ).toHaveText('preserved')
     await page.getByTestId('serialization').click()
     await expect(page.getByTestId('serialization')).toHaveText('ok')
   })
