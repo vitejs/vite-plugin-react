@@ -65,29 +65,32 @@ export function transformHoistInlineDirective(
           )
         }
 
+        const isClassMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'MethodDefinition'
+        if (isClassMethod) {
+          if (!parent.static) {
+            throw Object.assign(
+              new Error(
+                `It is not allowed to define inline ${JSON.stringify(match[0])} annotated class instance methods. Use a function, object method property, or static class method instead.`,
+              ),
+              { pos: parent.start },
+            )
+          }
+          if (parent.key.type === 'PrivateIdentifier') {
+            throw Object.assign(
+              new Error(
+                `It is not allowed to define inline ${JSON.stringify(match[0])} annotated private class methods.`,
+              ),
+              { pos: parent.start },
+            )
+          }
+        }
+
         const isObjectMethod =
           node.type === 'FunctionExpression' &&
           parent?.type === 'Property' &&
           (parent.method || parent.kind !== 'init')
-        const isClassMethod =
-          node.type === 'FunctionExpression' &&
-          parent?.type === 'MethodDefinition'
-        if (isClassMethod && !parent.static) {
-          throw Object.assign(
-            new Error(
-              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated class instance methods. Use a function, object method property, or static class method instead.`,
-            ),
-            { pos: parent.start },
-          )
-        }
-        if (isClassMethod && parent.key.type === 'PrivateIdentifier') {
-          throw Object.assign(
-            new Error(
-              `It is not allowed to define inline ${JSON.stringify(match[0])} annotated private class methods.`,
-            ),
-            { pos: parent.start },
-          )
-        }
         if (
           (isObjectMethod && parent.kind !== 'init') ||
           (isClassMethod && parent.kind !== 'method')

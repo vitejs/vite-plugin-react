@@ -521,12 +521,30 @@ class Actions {
 }
 `
     const transformed = await testTransform(input)
-    expect(transformed).toContain('cached: /* #__PURE__ */')
-    expect(transformed).toContain('"computed": /* #__PURE__ */')
-    expect(transformed).toContain('static cached = /* #__PURE__ */')
-    expect(transformed).toContain('static ["computed"] = /* #__PURE__ */')
-    expect(transformed).toContain('value: "cached"')
-    expect(transformed).toContain('value: "computed"')
+    expect(transformed).toMatchInlineSnapshot(`
+      "
+      const object = {
+        cached: /* #__PURE__ */ $$register($$hoist_0_cached, "<id>", "$$hoist_0_cached"),
+        "computed": /* #__PURE__ */ $$register($$hoist_1_computed, "<id>", "$$hoist_1_computed"),
+      };
+      class Actions {
+        static cached = /* #__PURE__ */ $$register($$hoist_2_cached, "<id>", "$$hoist_2_cached");
+        static ["computed"] = /* #__PURE__ */ $$register($$hoist_3_computed, "<id>", "$$hoist_3_computed");
+      }
+
+      ;export async function $$hoist_0_cached() { "use server"; return 1 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_cached, "name", { value: "cached" });
+
+      ;export async function $$hoist_1_computed() { "use server"; return 2 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_1_computed, "name", { value: "computed" });
+
+      ;export async function $$hoist_2_cached() { "use server"; return 3 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_2_cached, "name", { value: "cached" });
+
+      ;export async function $$hoist_3_computed() { "use server"; return 4 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_3_computed, "name", { value: "computed" });
+      "
+    `)
     await parseAstAsync(transformed!)
   })
 
