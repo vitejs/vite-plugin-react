@@ -314,4 +314,46 @@ export default Page;
       "
     `)
   })
+
+  test('filtered exports are not validated or reported', async () => {
+    const input = `
+export const revalidate = 1;
+export default async function Page() {}
+`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: (name) => name !== 'revalidate',
+    })
+    expect(result.exportNames).toEqual(['default'])
+    expect(result.output.toString()).toContain('export { revalidate };')
+  })
+
+  test('filtered default exports are not validated or reported', async () => {
+    const input = `export default 1;`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: () => false,
+    })
+    expect(result.exportNames).toEqual([])
+    expect(result.output.toString()).toContain(
+      'export { $$default as default }',
+    )
+  })
+
+  test('unknown identifier exports remain eligible for wrapping', async () => {
+    const input = `
+const cached = async () => 1;
+export default cached;
+`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      filter: (_name, meta) => meta.isFunction !== false,
+    })
+    expect(result.exportNames).toEqual(['default'])
+  })
 })
