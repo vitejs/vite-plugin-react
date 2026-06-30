@@ -53,6 +53,7 @@ describe(transformHoistInlineDirective, () => {
       encode?: boolean
       noExport?: boolean
       directive?: string | RegExp
+      exportWrappedHoist?: boolean
     },
   ) {
     const ast = await parseAstAsync(input)
@@ -68,6 +69,7 @@ describe(transformHoistInlineDirective, () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
       noExport: options?.noExport,
+      exportWrappedHoist: options?.exportWrappedHoist,
     })
     if (!output.hasChanged()) {
       return
@@ -507,5 +509,29 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it('exports wrapped hoists instead of implementations', async () => {
+    const transformed = await testTransform(
+      `async function action() { "use server"; return 1 }`,
+      { exportWrappedHoist: true },
+    )
+    expect(transformed).toContain(
+      'export const $$hoist_0_action = /* #__PURE__ */ $$register($$hoist_0_action$$impl',
+    )
+    expect(transformed).toContain('const action = $$hoist_0_action;')
+    expect(transformed).toContain('async function $$hoist_0_action$$impl()')
+    expect(transformed).not.toContain(
+      'export async function $$hoist_0_action$$impl',
+    )
+  })
+
+  it('binds captured values from the exported wrapped hoist', async () => {
+    const transformed = await testTransform(
+      `function outer(value) { const action = async function() { "use server"; return value }; return action }`,
+      { exportWrappedHoist: true },
+    )
+    expect(transformed).toContain('$$hoist_0_action.bind(null, value)')
+    expect(transformed).toContain('function $$hoist_0_action$$impl(value)')
   })
 })
