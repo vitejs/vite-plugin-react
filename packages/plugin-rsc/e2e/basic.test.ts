@@ -1616,6 +1616,14 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('transitive client package', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await expect(page.getByTestId('transitive-client')).toHaveText(
+      '[test-transitive-client-dep: true]',
+    )
+  })
+
   test('server-in-server package', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
