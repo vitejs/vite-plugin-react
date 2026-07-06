@@ -1,7 +1,7 @@
+import * as ReactDOM from 'react-dom'
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
 import { setRequireModule } from './core/ssr'
-import { preloadClientReferenceDeps } from './core/ssr-resources'
 import type { ResolvedAssetDeps } from './plugin'
 import { toCssVirtual, toReferenceValidationVirtual } from './plugins/shared'
 
@@ -82,9 +82,27 @@ function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
 }
 
 function preloadDeps(deps: ResolvedAssetDeps) {
-  preloadClientReferenceDeps(
-    deps,
-    assetsManifest.clientEntryDeps?.js ?? [],
-    assetsManifest.cssLinkPrecedence !== false,
-  )
+  const clientEntryJsSet = new Set(assetsManifest.clientEntryDeps?.js ?? [])
+  for (const href of deps.js) {
+    const options: ReactDOM.PreloadModuleOptions = {
+      as: 'script',
+      // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
+      // https://github.com/vitejs/vite/issues/6648
+      crossOrigin: '',
+    }
+    if (!clientEntryJsSet.has(href)) {
+      // @ts-expect-error fetchPriority is not yet in React's public types
+      options.fetchPriority = 'low'
+    }
+    ReactDOM.preloadModule(href, options)
+  }
+  for (const href of deps.css) {
+    ReactDOM.preinit(href, {
+      as: 'style',
+      precedence:
+        assetsManifest.cssLinkPrecedence !== false
+          ? 'vite-rsc/client-reference'
+          : undefined,
+    })
+  }
 }
