@@ -93,6 +93,15 @@ type DebugChannel = {
   writable?: WritableStream<Uint8Array>
 }
 
+export interface PipeableStream {
+  pipe<T extends NodeJS.WritableStream>(destination: T): T
+  abort(reason?: unknown): void
+}
+
+export type RenderToPipeableStreamOptions = RenderToReadableStreamOptions
+
+export type CreateFromNodeStreamOptions = CreateFromReadableStreamEdgeOptions
+
 // TODO: for now keep them unknown
 // export type ServerTemporaryReferenceSet = WeakMap<object, string>
 // export type ClientTemporaryReferenceSet = Map<unknown, unknown>
