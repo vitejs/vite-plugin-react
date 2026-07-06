@@ -432,10 +432,15 @@ function defineTest(f: Fixture) {
 
     testNoJs('module preload on ssr', async ({ page }) => {
       await page.goto(f.url())
-      const srcs = await page
+      const links: Record<string, { fetchpriority: string | null }> = await page
         .locator(`head >> link[rel="modulepreload"]`)
         .evaluateAll((elements) =>
-          elements.map((el) => el.getAttribute('href')),
+          Object.fromEntries(
+            elements.map((el) => [
+              el.getAttribute('href'),
+              { fetchpriority: el.getAttribute('fetchpriority') },
+            ]),
+          ),
         )
       const manifest = JSON.parse(
         readFileSync(
@@ -447,7 +452,31 @@ function defineTest(f: Fixture) {
         createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
       const deps =
         manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
+      const srcs = Object.keys(links)
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
+
+      // `fetchPriority` on `modulepreload` is only emitted by newer React
+      // (see https://github.com/facebook/react/pull/36835), so only assert the
+      // rendered attribute on the canary/experimental CI variants.
+      if (/canary|experimental/.test(React.version)) {
+        const priorities: Record<string, string[]> = {}
+        for (const [href, { fetchpriority }] of Object.entries(links)) {
+          ;(priorities[fetchpriority ?? 'default'] ??= []).push(href)
+        }
+        // client entry deps keep their default priority, while
+        // client-reference-only chunks are downgraded to low
+        const clientEntryJs: string[] = manifest.clientEntryDeps?.js ?? []
+        const nonClientEntryJs = deps.js.filter(
+          (href: string) => !clientEntryJs.includes(href),
+        )
+        expect(priorities.default).toEqual(
+          expect.arrayContaining(clientEntryJs),
+        )
+        expect(priorities.low).toEqual(expect.arrayContaining(nonClientEntryJs))
+        expect(clientEntryJs.length).toBeGreaterThan(0)
+        expect(nonClientEntryJs.length).toBeGreaterThan(0)
+        expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
+      }
     })
   })
 
