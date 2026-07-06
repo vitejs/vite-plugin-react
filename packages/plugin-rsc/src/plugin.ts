@@ -97,7 +97,24 @@ type ServerReferenceMeta = {
   referenceKey: string
   // TODO: tree shake unused server functions
   exportNames: string[]
+  inlineExportNames?: string[]
 }
+
+type ScanBuildObserver = (
+  event:
+    | {
+        type: 'reset'
+        environmentName: string
+      }
+    | {
+        type: 'module'
+        environmentName: string
+        code: string
+        imports: readonly esModuleLexer.ImportSpecifier[]
+        exports: readonly esModuleLexer.ExportSpecifier[]
+        info: Rollup.ModuleInfo
+      },
+) => void
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
@@ -128,6 +145,7 @@ class RscPluginManager {
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
   serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
+  scanBuildObservers: Set<ScanBuildObserver> = new Set()
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -2039,6 +2057,7 @@ function vitePluginUseServer(
               referenceKey: getNormalizedId(),
               exportNames:
                 'names' in result ? result.names : result.exportNames,
+              inlineExportNames: 'names' in result ? result.names : [],
             }
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
             output.prepend(
