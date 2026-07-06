@@ -92,7 +92,7 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-type ServerRerferenceMeta = {
+type ServerReferenceMeta = {
   importId: string
   referenceKey: string
   // TODO: tree shake unused server functions
@@ -127,7 +127,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
+  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -1687,6 +1687,21 @@ function vitePluginUseClient(
           ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
+              // Virtualizing a client package keeps the bare `source` as the
+              // client reference id (e.g. `import "pkg-b"` in
+              // `virtual:vite-rsc/client-references`), which is later re-resolved
+              // from the project root. That breaks when `source` is only a
+              // transitive dependency reachable from `importer` but not installed
+              // at the root (see #1247). In that case, skip virtualization and
+              // let it fall back to referencing the fully resolved module id.
+              const resolvedAtRoot = await this.resolve(
+                source,
+                undefined,
+                options,
+              )
+              if (!resolvedAtRoot || resolvedAtRoot.id !== resolved.id) {
+                return
+              }
               packageSources.set(resolved.id, source)
               return resolved
             }
