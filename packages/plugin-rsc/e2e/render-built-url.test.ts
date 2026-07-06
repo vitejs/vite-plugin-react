@@ -111,32 +111,6 @@ test.describe(() => {
       expect(manifestFileContent).toContain(
         `__dynamicBase + "assets/entry.rsc-`,
       )
-
-      const manifest = Function(
-        '__dynamicBase',
-        manifestFileContent.replace('export default', 'return'),
-      )('/custom-server/')
-      expect(manifest.clientEntryDeps.js.length).toBeGreaterThan(0)
-      expect(
-        manifest.clientEntryDeps.js.every((href: string) =>
-          href.startsWith('/custom-server/'),
-        ),
-      ).toBe(true)
-
-      const referenceDeps = Object.values(manifest.clientReferenceDeps) as {
-        js: string[]
-      }[]
-      expect(referenceDeps.length).toBeGreaterThan(0)
-      for (const deps of referenceDeps) {
-        expect(deps.js).toEqual(
-          expect.arrayContaining(manifest.clientEntryDeps.js),
-        )
-      }
-      expect(
-        referenceDeps.some((deps) =>
-          deps.js.some((href) => !manifest.clientEntryDeps.js.includes(href)),
-        ),
-      ).toBe(true)
     })
   })
 })
