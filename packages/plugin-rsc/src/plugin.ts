@@ -92,7 +92,7 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-type ServerRerferenceMeta = {
+type ServerReferenceMeta = {
   importId: string
   referenceKey: string
   // TODO: tree shake unused server functions
@@ -127,7 +127,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
+  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
