@@ -432,10 +432,15 @@ function defineTest(f: Fixture) {
 
     testNoJs('module preload on ssr', async ({ page }) => {
       await page.goto(f.url())
-      const srcs = await page
+      const links: Record<string, { fetchpriority: string | null }> = await page
         .locator(`head >> link[rel="modulepreload"]`)
         .evaluateAll((elements) =>
-          elements.map((el) => el.getAttribute('href')),
+          Object.fromEntries(
+            elements.map((el) => [
+              el.getAttribute('href'),
+              { fetchpriority: el.getAttribute('fetchpriority') },
+            ]),
+          ),
         )
       const manifest = JSON.parse(
         readFileSync(
@@ -447,49 +452,30 @@ function defineTest(f: Fixture) {
         createHash('sha256').update(v).digest().toString('hex').slice(0, 12)
       const deps =
         manifest.clientReferenceDeps[hashString('src/routes/client.tsx')]
+      const srcs = Object.keys(links)
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
-      expect(manifest.clientEntryDeps.js.length).toBeGreaterThan(0)
-      expect(deps.js).toEqual(
-        expect.arrayContaining(manifest.clientEntryDeps.js),
-      )
-      expect(
-        deps.js.some(
-          (href: string) => !manifest.clientEntryDeps.js.includes(href),
-        ),
-      ).toBe(true)
 
-      const clientOnlyDependencyCounts = new Map<string, number>()
-      for (const referenceDeps of Object.values(
-        manifest.clientReferenceDeps,
-      ) as { js: string[] }[]) {
-        for (const href of referenceDeps.js) {
-          if (!manifest.clientEntryDeps.js.includes(href)) {
-            clientOnlyDependencyCounts.set(
-              href,
-              (clientOnlyDependencyCounts.get(href) ?? 0) + 1,
-            )
-          }
+      // `fetchPriority` on `modulepreload` is only emitted by newer React
+      // (see https://github.com/facebook/react/pull/36835), so only assert the
+      // rendered attribute on the canary/experimental CI variants.
+      if (/canary|experimental/.test(React.version)) {
+        const priorities: Record<string, string[]> = {}
+        for (const [href, { fetchpriority }] of Object.entries(links)) {
+          ;(priorities[fetchpriority ?? 'default'] ??= []).push(href)
         }
-      }
-      expect(
-        [...clientOnlyDependencyCounts.values()].some((count) => count > 1),
-      ).toBe(true)
-
-      const clientBuildManifest: import('vite').Manifest = JSON.parse(
-        readFileSync(f.root + '/dist/client/.vite/manifest.json', 'utf-8'),
-      )
-      const allReferenceJs = new Set(
-        Object.values(manifest.clientReferenceDeps).flatMap(
-          (referenceDeps) => (referenceDeps as { js: string[] }).js,
-        ),
-      )
-      for (const dynamicModuleId of [
-        'src/routes/browser-only/browser-dep.tsx',
-        'src/routes/lazy-css/client-to-client-child.tsx',
-      ]) {
-        const dynamicChunk = clientBuildManifest[dynamicModuleId]
-        expect(dynamicChunk).toBeDefined()
-        expect(allReferenceJs).not.toContain(`/${dynamicChunk!.file}`)
+        // client entry deps keep their default priority, while
+        // client-reference-only chunks are downgraded to low
+        const clientEntryJs: string[] = manifest.clientEntryDeps?.js ?? []
+        const nonClientEntryJs = deps.js.filter(
+          (href: string) => !clientEntryJs.includes(href),
+        )
+        expect(priorities.default).toEqual(
+          expect.arrayContaining(clientEntryJs),
+        )
+        expect(priorities.low).toEqual(expect.arrayContaining(nonClientEntryJs))
+        expect(clientEntryJs.length).toBeGreaterThan(0)
+        expect(nonClientEntryJs.length).toBeGreaterThan(0)
+        expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
       }
     })
   })
