@@ -92,7 +92,7 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-type ServerRerferenceMeta = {
+type ServerReferenceMeta = {
   importId: string
   referenceKey: string
   // TODO: tree shake unused server functions
@@ -127,7 +127,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerRerferenceMeta> = {}
+  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -1165,6 +1165,7 @@ export function createRpcClient(params) {
 
           const assetDeps = collectAssetDeps(bundle)
           let bootstrapScriptContent: string | RuntimeAsset = ''
+          let clientEntryDeps: AssetDeps | undefined
 
           const clientReferenceDeps: Record<string, AssetDeps> = {}
           for (const meta of Object.values(manager.clientReferenceMetaMap)) {
@@ -1189,9 +1190,9 @@ export function createRpcClient(params) {
                 `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
               )
             }
-            const entryDeps = assetsURLOfDeps(entry.deps, manager)
+            clientEntryDeps = assetsURLOfDeps(entry.deps, manager)
             for (const [key, deps] of Object.entries(clientReferenceDeps)) {
-              clientReferenceDeps[key] = mergeAssetDeps(deps, entryDeps)
+              clientReferenceDeps[key] = mergeAssetDeps(deps, clientEntryDeps)
             }
             const entryUrl = assetsURL(entry.chunk.fileName, manager)
             if (typeof entryUrl === 'string') {
@@ -1205,6 +1206,7 @@ export function createRpcClient(params) {
 
           manager.buildAssetsManifest = {
             bootstrapScriptContent,
+            clientEntryDeps,
             clientReferenceDeps,
             serverResources,
             cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
@@ -1692,6 +1694,21 @@ function vitePluginUseClient(
           ) {
             const resolved = await this.resolve(source, importer, options)
             if (resolved && resolved.id.includes('/node_modules/')) {
+              // Virtualizing a client package keeps the bare `source` as the
+              // client reference id (e.g. `import "pkg-b"` in
+              // `virtual:vite-rsc/client-references`), which is later re-resolved
+              // from the project root. That breaks when `source` is only a
+              // transitive dependency reachable from `importer` but not installed
+              // at the root (see #1247). In that case, skip virtualization and
+              // let it fall back to referencing the fully resolved module id.
+              const resolvedAtRoot = await this.resolve(
+                source,
+                undefined,
+                options,
+              )
+              if (!resolvedAtRoot || resolvedAtRoot.id !== resolved.id) {
+                return
+              }
               packageSources.set(resolved.id, source)
               return resolved
             }
@@ -2208,6 +2225,7 @@ function assetsURLOfDeps(deps: AssetDeps, manager: RscPluginManager) {
 
 export type AssetsManifest = {
   bootstrapScriptContent: string | RuntimeAsset
+  clientEntryDeps?: AssetDeps
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
@@ -2220,6 +2238,7 @@ export type AssetDeps = {
 
 export type ResolvedAssetsManifest = {
   bootstrapScriptContent: string
+  clientEntryDeps?: ResolvedAssetDeps
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>
   cssLinkPrecedence?: boolean
