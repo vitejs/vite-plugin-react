@@ -524,6 +524,9 @@ importers:
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
         version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.7)
+      '@vitejs/test-dep-server-with-transitive-client':
+        specifier: file:./test-dep/server-with-transitive-client
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.7)
       '@vitejs/test-dep-transitive-cjs':
         specifier: file:./test-dep/transitive-cjs
         version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.7)
@@ -2738,8 +2741,18 @@ packages:
     peerDependencies:
       react: '*'
 
+  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client':
+    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client, type: directory}
+    peerDependencies:
+      react: '*'
+
   '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/transitive-cjs, type: directory}
+    peerDependencies:
+      react: '*'
+
+  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client':
+    resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/transitive-client, type: directory}
     peerDependencies:
       react: '*'
 
@@ -6144,9 +6157,18 @@ snapshots:
     dependencies:
       react: 19.2.7
 
+  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.7)':
+    dependencies:
+      '@vitejs/test-dep-transitive-client': file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.7)
+      react: 19.2.7
+
   '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.7)':
     dependencies:
       '@vitejs/test-dep-cjs': file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.7)
+      react: 19.2.7
+
+  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.7)':
+    dependencies:
       react: 19.2.7
 
   '@vitejs/test-dep-transitive-use-sync-external-store@file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.7)':
