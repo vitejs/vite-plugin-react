@@ -1,7 +1,10 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
 import { createServerConsumerManifest } from '../core/ssr'
-import type { CreateFromReadableStreamEdgeOptions } from '../types'
+import type {
+  CreateFromReadableStreamEdgeOptions,
+  EncodeReplyFunction,
+} from '../types'
 
 export { setRequireModule } from '../core/ssr'
 
@@ -18,6 +21,8 @@ export function createFromReadableStream<T>(
 export function createServerReference(id: string): unknown {
   return ReactClient.createServerReference(id)
 }
+
+export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
 export const callServer = null
 export const findSourceMapURL = null
