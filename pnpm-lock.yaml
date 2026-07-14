@@ -992,6 +992,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-react
 
+  playground/node-env-production:
+    dependencies:
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.7
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: workspace:*
+        version: link:../../packages/plugin-react
+
   playground/react:
     dependencies:
       jsx-entry:

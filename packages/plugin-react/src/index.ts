@@ -12,7 +12,7 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import type { Plugin } from 'vite'
+import type { Plugin, ServerOptions } from 'vite'
 import { reactRefreshWrapperPlugin } from 'vite/internal'
 import { reactCompilerPreset } from './reactCompilerPreset'
 
@@ -66,10 +66,17 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
 
   let runningInVite = false
-  let isProduction = true
   let skipFastRefresh = true
   let base: string
   let isBundledDev = false
+
+  function calculateSkipFastRefresh(
+    isProduction: boolean,
+    command: 'serve' | 'build',
+    hmr: ServerOptions['hmr'],
+  ) {
+    return isProduction || command === 'build' || hmr === false
+  }
 
   const viteBabel: Plugin = {
     name: 'vite:react-babel',
@@ -109,11 +116,18 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       if (config.experimental.bundledDev) {
         isBundledDev = true
       }
-      isProduction = config.isProduction
-      skipFastRefresh =
-        isProduction ||
-        config.command === 'build' ||
-        config.server.hmr === false
+      if (
+        skipFastRefresh !==
+        calculateSkipFastRefresh(
+          config.isProduction,
+          config.command,
+          config.server?.hmr,
+        )
+      ) {
+        this.warn(
+          `NODE_ENV (${JSON.stringify(process.env.NODE_ENV)}) or server.hmr was changed by plugins after the react plugin read the config. This may cause unexpected behavior.`,
+        )
+      }
     },
     options(options) {
       if (!runningInVite) {
@@ -148,8 +162,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   const viteConfigPost: Plugin = {
     name: 'vite:react:config-post',
     enforce: 'post',
-    config(userConfig) {
-      if (userConfig.server?.hmr === false) {
+    config(userConfig, { command }) {
+      skipFastRefresh = calculateSkipFastRefresh(
+        // same with ResolvedConfig.isProduction
+        process.env.NODE_ENV === 'production',
+        command,
+        userConfig.server?.hmr,
+      )
+      if (skipFastRefresh) {
         return {
           oxc: {
             jsx: {
