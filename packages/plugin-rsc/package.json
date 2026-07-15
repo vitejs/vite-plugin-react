@@ -25,6 +25,7 @@
     "./package.json": "./package.json",
     "./types": "./types/index.d.ts",
     ".": "./dist/index.js",
+    "./utils": "./dist/utils.js",
     "./transforms": "./dist/transforms/index.js",
     "./*": "./dist/*.js"
   },
