@@ -9,6 +9,7 @@ import type {
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree, type ScopeTree } from './scope'
+import type { FunctionParameters } from './wrap-export'
 
 export function transformHoistInlineDirective(
   input: string,
@@ -21,7 +22,11 @@ export function transformHoistInlineDirective(
     runtime: (
       value: string,
       name: string,
-      meta: { directiveMatch: RegExpMatchArray },
+      meta: {
+        directiveMatch: RegExpMatchArray
+        hasBoundArgs: boolean
+        parameters: FunctionParameters
+      },
     ) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
@@ -113,6 +118,13 @@ export function transformHoistInlineDirective(
         // replace original declartion with action register + bind
         let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
           directiveMatch: match,
+          hasBoundArgs: bindVars.length > 0,
+          parameters: {
+            count: node.params.length,
+            hasRest: node.params.some(
+              (parameter) => parameter.type === 'RestElement',
+            ),
+          },
         })}`
         if (bindVars.length > 0) {
           const bindArgs = options.encode

@@ -466,11 +466,11 @@ export async function kv() {
       }),
     ).toMatchInlineSnapshot(`
       "
-      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null]});
+      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
-      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"]});
+      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
-      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"]});
+      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"],"hasBoundArgs":false,"parameters":{"count":0,"hasRest":false}});
 
       ;async function $$hoist_0_none() {
         "use cache";
@@ -507,5 +507,32 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it('reports parameter and bound argument metadata', async () => {
+    const input = `
+function outer(captured) {
+  return async function action(first, ...rest) {
+    "use server";
+    return [captured, first, rest];
+  }
+}
+`
+    const ast = await parseAstAsync(input)
+    const metadata: unknown[] = []
+    transformHoistInlineDirective(input, ast, {
+      runtime: (value, _name, meta) => {
+        metadata.push(meta)
+        return value
+      },
+      directive: 'use server',
+    })
+    expect(metadata).toEqual([
+      {
+        directiveMatch: expect.any(Array),
+        hasBoundArgs: true,
+        parameters: { count: 2, hasRest: true },
+      },
+    ])
   })
 })
