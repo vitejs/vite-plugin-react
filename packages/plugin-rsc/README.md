@@ -479,17 +479,21 @@ function renderToReadableStream<T>(
 
 ### `@vitejs/plugin-rsc/ssr`
 
-This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
+This module re-exports RSC runtime APIs provided by `react-server-dom/client.edge`:
 
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+- `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
+- `encodeReply`: Serializes server function arguments
+- `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
 
 ### `@vitejs/plugin-rsc/browser`
 
-This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
+This module re-exports RSC runtime APIs provided by `react-server-dom/client.browser`:
 
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
-- `encodeReply/setServerCallback`: server function related...
+- `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
+- `createFromFetch`: Deserializes an RSC response from a fetch promise
+- `encodeReply`: Serializes server function arguments
+- `setServerCallback`: Configures how server functions are called
+- `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
 
 ## Tips
 

@@ -2,6 +2,7 @@
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
 import { createServerConsumerManifest } from '../core/ssr'
 import type {
+  ClientTemporaryReferenceSet,
   CreateFromReadableStreamEdgeOptions,
   EncodeReplyFunction,
 } from '../types'
@@ -23,6 +24,9 @@ export function createServerReference(id: string): unknown {
 }
 
 export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
+
+export const createTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
+  ReactClient.createTemporaryReferenceSet
 
 export const callServer = null
 export const findSourceMapURL = null
