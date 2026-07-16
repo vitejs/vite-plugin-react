@@ -13,12 +13,20 @@ import type {
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
   options: CreateFromReadableStreamEdgeOptions = {},
+  extraOptions?: {
+    /**
+     * @experimental
+     */
+    preserveServerReferences?: boolean
+  },
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     serverConsumerManifest: {
       // https://github.com/facebook/react/pull/31300
       // https://github.com/vercel/next.js/pull/71527
-      serverModuleMap: createServerManifest({ preserveServerReferences: true }),
+      serverModuleMap: createServerManifest({
+        preserveServerReferences: extraOptions?.preserveServerReferences,
+      }),
       moduleMap: createServerDecodeClientManifest(),
     },
     ...options,
