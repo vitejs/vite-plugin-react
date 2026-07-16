@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/ssg/src/framework/entry.browser.tsx
+  s_f6fdbdef31d03e::t_6aa1fe95695bc3 3,12-14,17-23,31,33,39-46,60,63,68-69,116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "93dae089cba250022d0ee1192c0be590f24730b4",
+  "prompts": {},
+  "sessions": {
+    "s_f6fdbdef31d03e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0979eef92ffeqA09Akon5qn81v",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
