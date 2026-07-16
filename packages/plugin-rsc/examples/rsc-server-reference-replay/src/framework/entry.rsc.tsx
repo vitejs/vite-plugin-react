@@ -1,71 +1,94 @@
-import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import {
-  createFromReadableStream,
-  decodeAction,
   renderToReadableStream,
+  createTemporaryReferenceSet,
+  decodeReply,
+  loadServerAction,
+  decodeAction,
+  decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
-import { wasActionImported } from '../action-import-state'
+import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root'
+import { parseRenderRequest } from './request'
 
-const cacheFile = resolve('.flight-cache')
+export type RscPayload = {
+  root: React.ReactNode
+  returnValue?: { ok: boolean; data: unknown }
+  formState?: ReactFormState
+}
+
+export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
-  const url = new URL(request.url)
+  const renderRequest = parseRenderRequest(request)
+  request = renderRequest.request
 
-  if (request.method === 'POST') {
-    const action = await decodeAction(await request.formData())
-    await action()
-  }
-
-  let bytes: Uint8Array
-  if (url.pathname === '/cache') {
-    const { CachedContent } = await import('../cached-content')
-    const stream = renderToReadableStream(<CachedContent />)
-    bytes = new Uint8Array(await new Response(stream).arrayBuffer())
-    await writeFile(cacheFile, bytes)
-  } else {
-    try {
-      bytes = await readFile(cacheFile)
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return new Response('Visit /cache before replaying the saved Flight.', {
-          status: 404,
+  let returnValue: RscPayload['returnValue'] | undefined
+  let formState: ReactFormState | undefined
+  let temporaryReferences: unknown | undefined
+  let actionStatus: number | undefined
+  if (renderRequest.isAction === true) {
+    if (renderRequest.actionId) {
+      const contentType = request.headers.get('content-type')
+      const body = contentType?.startsWith('multipart/form-data')
+        ? await request.formData()
+        : await request.text()
+      temporaryReferences = createTemporaryReferenceSet()
+      const args = await decodeReply(body, { temporaryReferences })
+      const action = await loadServerAction(renderRequest.actionId)
+      try {
+        const data = await action.apply(null, args)
+        returnValue = { ok: true, data }
+      } catch (error) {
+        returnValue = { ok: false, data: error }
+        actionStatus = 500
+      }
+    } else {
+      const formData = await request.formData()
+      const decodedAction = await decodeAction(formData)
+      try {
+        const result = await decodedAction()
+        formState = await decodeFormState(result, formData)
+      } catch {
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
         })
       }
-      throw error
     }
   }
 
-  const cachedContent = await createFromReadableStream<React.ReactNode>(
-    toReadableStream(bytes),
-    {},
-    { preserveServerReferences: true },
-  )
-  const rscStream = renderToReadableStream({
-    root: (
-      <Root
-        actionImported={wasActionImported()}
-        cachedContent={cachedContent}
-      />
-    ),
-  })
-  const ssr = await import.meta.viteRsc.loadModule<
+  const rscPayload: RscPayload = {
+    root: <Root url={renderRequest.url} />,
+    formState,
+    returnValue,
+  }
+  const rscOptions = { temporaryReferences }
+  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
+
+  if (renderRequest.isRsc) {
+    return new Response(rscStream, {
+      status: actionStatus,
+      headers: {
+        'content-type': 'text/x-component;charset=utf-8',
+      },
+    })
+  }
+
+  const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  const htmlStream = await ssr.renderHtml(rscStream)
-  return new Response(htmlStream, {
-    headers: { 'content-type': 'text/html;charset=utf-8' },
+  const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
+    formState,
+    debugNojs: renderRequest.url.searchParams.has('__nojs'),
   })
-}
 
-function toReadableStream(bytes: Uint8Array): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(bytes)
-      controller.close()
+  return new Response(ssrResult.stream, {
+    status: ssrResult.status,
+    headers: {
+      'Content-type': 'text/html',
     },
   })
 }
 
-export default { fetch: handler }
+if (import.meta.hot) {
+  import.meta.hot.accept()
+}

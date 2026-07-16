@@ -2,7 +2,7 @@
 
 This example persists a Flight payload containing a server reference, restarts the server, and replays the payload without importing the server action in the RSC environment. The action is imported only when the replayed form invokes it.
 
-The example intentionally uses a native form without JavaScript so the final step exercises `decodeAction`.
+The framework files follow the starter example. The application routes own persistence and replay, while the framework only performs its normal request parsing, action handling, and RSC serialization.
 
 ## Development manual test
 

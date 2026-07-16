@@ -1,8 +1,9 @@
+import react from '@vitejs/plugin-react'
 import rsc from '@vitejs/plugin-rsc'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [rsc()],
+  plugins: [rsc(), react()],
   environments: {
     rsc: {
       build: {
@@ -21,7 +22,7 @@ export default defineConfig({
     client: {
       build: {
         rollupOptions: {
-          input: { index: './src/framework/entry.browser.ts' },
+          input: { index: './src/framework/entry.browser.tsx' },
         },
       },
     },
