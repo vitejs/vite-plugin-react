@@ -753,6 +753,28 @@ importers:
         specifier: ^8.1.4
         version: 8.1.4(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.8.2)
 
+  packages/plugin-rsc/examples/ssr-encode-form-action:
+    dependencies:
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.7
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.17
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.17)
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      vite:
+        specifier: ^8.1.4
+        version: 8.1.4(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.8.2)
+
   packages/plugin-rsc/examples/starter:
     dependencies:
       react:
