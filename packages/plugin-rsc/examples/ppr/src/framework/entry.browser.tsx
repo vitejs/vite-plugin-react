@@ -1,60 +1,116 @@
 import {
-  createFromFetch,
   createFromReadableStream,
+  createFromFetch,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
+import { GlobalErrorBoundary } from './error-boundary'
 import { createRscRenderRequest } from './request'
 import type { RscPayload } from './shared'
 
-async function hydrate(): Promise<void> {
-  const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
-  let setPayload: (payload: RscPayload) => void
+async function main() {
+  // stash `setPayload` function to trigger re-rendering
+  // from outside of `BrowserRoot` component (e.g. navigation, hmr)
+  let setPayload: (v: RscPayload) => void
 
+  // deserialize RSC stream back to React VDOM for CSR
+  const initialPayload = await createFromReadableStream<RscPayload>(
+    // initial RSC stream is injected in SSR stream as <script>...FLIGHT_DATA...</script>
+    rscStream,
+  )
+
+  // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
     const [payload, setPayload_] = React.useState(initialPayload)
+
     React.useEffect(() => {
-      setPayload = (nextPayload) =>
-        React.startTransition(() => setPayload_(nextPayload))
+      setPayload = (v) => React.startTransition(() => setPayload_(v))
+    }, [setPayload_])
+
+    // re-fetch/render on client side navigation
+    React.useEffect(() => {
+      return listenNavigation(() => fetchRscPayload())
     }, [])
-    React.useEffect(() => listenNavigation(navigate), [])
+
     return payload.root
   }
 
-  async function navigate() {
-    const request = createRscRenderRequest(window.location.href)
-    setPayload(await createFromFetch<RscPayload>(fetch(request)))
+  // re-fetch RSC and trigger re-rendering
+  async function fetchRscPayload() {
+    const renderRequest = createRscRenderRequest(window.location.href)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
+    setPayload(payload)
   }
 
-  hydrateRoot(document, <BrowserRoot />)
+  // hydration
+  const browserRoot = (
+    <React.StrictMode>
+      <GlobalErrorBoundary>
+        <BrowserRoot />
+      </GlobalErrorBoundary>
+    </React.StrictMode>
+  )
+  if ('__NO_HYDRATE' in globalThis) {
+    createRoot(document).render(browserRoot)
+  } else {
+    hydrateRoot(document, browserRoot)
+  }
+
+  // implement server HMR by triggering re-fetch/render of RSC upon server code change
+  if (import.meta.hot) {
+    import.meta.hot.on('rsc:update', () => {
+      fetchRscPayload()
+    })
+  }
 }
 
-function listenNavigation(onNavigation: () => void): () => void {
-  const onPopState = () => onNavigation()
-  const onClick = (event: MouseEvent) => {
-    const link = (event.target as Element).closest('a')
+// a little helper to setup events interception for client side navigation
+function listenNavigation(onNavigation: () => void) {
+  window.addEventListener('popstate', onNavigation)
+
+  const oldPushState = window.history.pushState
+  window.history.pushState = function (...args) {
+    const res = oldPushState.apply(this, args)
+    onNavigation()
+    return res
+  }
+
+  const oldReplaceState = window.history.replaceState
+  window.history.replaceState = function (...args) {
+    const res = oldReplaceState.apply(this, args)
+    onNavigation()
+    return res
+  }
+
+  function onClick(e: MouseEvent) {
+    let link = (e.target as Element).closest('a')
     if (
+      link &&
       link instanceof HTMLAnchorElement &&
+      link.href &&
+      (!link.target || link.target === '_self') &&
       link.origin === location.origin &&
-      !link.target &&
-      event.button === 0 &&
-      !event.metaKey &&
-      !event.ctrlKey &&
-      !event.altKey &&
-      !event.shiftKey
+      !link.hasAttribute('download') &&
+      e.button === 0 && // left clicks only
+      !e.metaKey && // open in new tab (mac)
+      !e.ctrlKey && // open in new tab (windows)
+      !e.altKey && // download
+      !e.shiftKey &&
+      !e.defaultPrevented
     ) {
-      event.preventDefault()
+      e.preventDefault()
       history.pushState(null, '', link.href)
-      onNavigation()
     }
   }
-  window.addEventListener('popstate', onPopState)
   document.addEventListener('click', onClick)
+
   return () => {
-    window.removeEventListener('popstate', onPopState)
     document.removeEventListener('click', onClick)
+    window.removeEventListener('popstate', onNavigation)
+    window.history.pushState = oldPushState
+    window.history.replaceState = oldReplaceState
   }
 }
 
-hydrate()
+main()
