@@ -5,7 +5,7 @@ import {
   loadServerAction,
   decodeAction,
   decodeFormState,
-} from '@vitejs/plugin-rsc/rsc'
+} from '@vitejs/plugin-rsc/rsc/server'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
