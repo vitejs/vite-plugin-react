@@ -509,8 +509,8 @@ This module re-exports RSC runtime APIs provided by `react-server-dom/client.bro
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `createFromFetch`: Deserializes an RSC response from a fetch promise
 - `encodeReply`: Serializes server function arguments
-- `setServerCallback`: Configures how server functions are called
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
+- `setServerCallback`: Configures how server functions are called
 
 ## Tips
 
