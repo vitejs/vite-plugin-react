@@ -83,6 +83,7 @@ export interface EncodeReplyOptions {
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-client/src/ReactFlightReplyClient.js#L59-L62
 export type EncodeFormActionCallback = (
   id: string,
+  // TODO: probably args can be non-array values, but keep this aligned with encode/decodeReply for now
   args: Promise<unknown[]>,
 ) => ReactCustomFormAction
 
