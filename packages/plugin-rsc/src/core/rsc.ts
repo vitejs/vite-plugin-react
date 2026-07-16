@@ -11,6 +11,15 @@ import {
 // @ts-ignore
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 
+export interface ClientReferenceMetadata {
+  id: string
+  name: string
+}
+
+export interface CreateClientManifestOptions {
+  onClientReference?: (metadata: ClientReferenceMetadata) => void
+}
+
 let init = false
 let requireModule!: (id: string) => unknown
 
@@ -116,12 +125,9 @@ export function createServerDecodeClientManifest(): ModuleMap {
   )
 }
 
-export function createClientManifest(options?: {
-  /**
-   * @internal
-   */
-  onClientReference?: (metadata: { id: string; name: string }) => void
-}): BundlerConfig {
+export function createClientManifest(
+  options?: CreateClientManifestOptions,
+): BundlerConfig {
   const cacheTag = import.meta.env.DEV ? createReferenceCacheTag() : ''
 
   return new Proxy(

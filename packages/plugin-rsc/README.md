@@ -456,14 +456,13 @@ This module re-exports the server capabilities provided by
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
-This server-only module provides RSC static prerendering without loading
-`react-server-dom/client.edge`:
+This module re-exports the static capability provided by
+`react-server-dom/static.edge`:
 
-- `prerender`: resolves to an object containing the static RSC `prelude`
+- `prerender`: static RSC serialization (React VDOM -> RSC stream)
 
-Like `renderToReadableStream`, `prerender` supplies the plugin client manifest
-and supports the Vite-specific `onClientReference` callback as an optional
-third parameter.
+`prerender` supports the same Vite-specific `onClientReference` extension as
+`renderToReadableStream`.
 
 ### `@vitejs/plugin-rsc/rsc/client`
 

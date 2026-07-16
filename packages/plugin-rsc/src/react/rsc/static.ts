@@ -1,17 +1,18 @@
 // @ts-ignore
 import * as ReactStatic from '@vitejs/plugin-rsc/vendor/react-server-dom/static.edge'
-import { createClientManifest } from '../../core/rsc'
-import type { PrerenderOptions, PrerenderResult } from '../../types'
+import {
+  createClientManifest,
+  type CreateClientManifestOptions,
+} from '../../core/rsc'
+import type {
+  PrerenderResult,
+  RenderToReadableStreamOptions,
+} from '../../types'
 
 export function prerender<T>(
   data: T,
-  options?: PrerenderOptions,
-  extraOptions?: {
-    /**
-     * @internal
-     */
-    onClientReference?: (metadata: { id: string; name: string }) => void
-  },
+  options?: RenderToReadableStreamOptions,
+  extraOptions?: CreateClientManifestOptions,
 ): Promise<PrerenderResult> {
   return ReactStatic.prerender(
     data,

@@ -32,7 +32,8 @@ export type CallServerCallback = (
 // Best-effort latest RSC API types
 // https://github.com/wakujs/waku/blob/2ce74ee2381f6c0593b8246f33043434706889fe/packages/waku/src/lib/react-types.d.ts
 
-// https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
+// Current: https://github.com/facebook/react/blob/b740af2510de1e19fcb399abb862af26ff95ac80/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
+// React 19.2: https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
 export interface RenderToReadableStreamOptions {
   debugChannel?: DebugChannel
   environmentName?: string | (() => string)
@@ -42,13 +43,10 @@ export interface RenderToReadableStreamOptions {
   startTime?: number
   temporaryReferences?: ServerTemporaryReferenceSet
   onError?: (error: unknown) => void
-}
-
-// TOOD: needs react link
-export interface PrerenderOptions extends RenderToReadableStreamOptions {
   onPostpone?: (reason: string) => void
 }
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L188-L196
 export interface PrerenderResult {
   prelude: ReadableStream<Uint8Array>
 }
