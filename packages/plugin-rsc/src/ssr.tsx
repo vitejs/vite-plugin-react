@@ -82,13 +82,19 @@ function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
 }
 
 function preloadDeps(deps: ResolvedAssetDeps) {
+  const clientEntryJsSet = new Set(assetsManifest.clientEntryDeps?.js ?? [])
   for (const href of deps.js) {
-    ReactDOM.preloadModule(href, {
+    const options: ReactDOM.PreloadModuleOptions = {
       as: 'script',
       // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
       // https://github.com/vitejs/vite/issues/6648
       crossOrigin: '',
-    })
+    }
+    if (!clientEntryJsSet.has(href)) {
+      // @ts-expect-error fetchPriority is not yet in React's public types
+      options.fetchPriority = 'low'
+    }
+    ReactDOM.preloadModule(href, options)
   }
   for (const href of deps.css) {
     ReactDOM.preinit(href, {

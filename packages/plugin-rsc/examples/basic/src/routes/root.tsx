@@ -30,6 +30,7 @@ import { TestClientInServer } from './deps/client-in-server/server'
 import { TestServerInClient } from './deps/server-in-client/client'
 import { TestServerInServer } from './deps/server-in-server/server'
 import { TestTransitiveCjsClient } from './deps/transitive-cjs/client'
+import { TestTransitiveClient } from './deps/transitive-client/server'
 import { TestExportAll } from './export-all/server'
 import { TestHmrClientDep } from './hmr-client-dep/client'
 import { TestHmrClientDep2 } from './hmr-client-dep2/client'
@@ -116,6 +117,7 @@ export function Root(props: { url: URL }) {
         <TestClientInServer />
         <TestServerInServer />
         <TestServerInClient />
+        <TestTransitiveClient />
         <TestTransitiveCjsClient />
         <TestActionStateServer />
         <TestModuleInvalidationServer />
