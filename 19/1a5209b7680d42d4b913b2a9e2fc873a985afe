@@ -1,0 +1,51 @@
+packages/plugin-rsc/examples/ppr/src/counter.tsx
+  s_f6fdbdef31d03e::t_3101a0760ad83e 1-15
+packages/plugin-rsc/examples/ppr/src/framework/entry.rsc.tsx
+  s_f6fdbdef31d03e::t_06999df6dc6924 1-80
+packages/plugin-rsc/examples/ppr/src/framework/entry.ssr.tsx
+  s_f6fdbdef31d03e::t_7f50f23b331a7b 1-74
+packages/plugin-rsc/examples/ppr/src/root.tsx
+  s_f6fdbdef31d03e::t_2d6aead8a78cb1 1-46
+packages/plugin-rsc/examples/ppr/vite.config.ts
+  s_f6fdbdef31d03e::t_f6cc5955d573dd 1-55
+packages/plugin-rsc/examples/starter-extra/src/framework/entry.rsc.tsx
+  s_f6fdbdef31d03e::t_94734a80bb18cb 8
+packages/plugin-rsc/src/plugin.ts
+  s_f6fdbdef31d03e::t_e3facc60f455c2 1556,2043
+packages/plugin-rsc/src/react/rsc.ts
+  s_f6fdbdef31d03e::t_e4160626a89bb7 1-2
+packages/plugin-rsc/src/react/rsc/client.ts
+  s_f6fdbdef31d03e::t_7b4d8f0c616503 1-31
+packages/plugin-rsc/src/react/rsc/server.ts
+  s_f6fdbdef31d03e::t_b977fd5f5da158 1-61
+packages/plugin-rsc/src/rsc.tsx
+  s_f6fdbdef31d03e::t_99accacf8d75c9 6-7
+packages/plugin-rsc/src/rsc/client.ts
+  s_f6fdbdef31d03e::t_180a4ea7628307 1-3
+packages/plugin-rsc/src/rsc/server.tsx
+  s_f6fdbdef31d03e::t_315fd7603e3d82 1-41
+packages/plugin-rsc/src/rsc/shared.ts
+  s_f6fdbdef31d03e::t_1d83551509d912 1-21
+packages/plugin-rsc/src/utils/encryption-runtime.test.ts
+  s_f6fdbdef31d03e::t_fe999ebd9eea9b 1-39
+packages/plugin-rsc/src/utils/encryption-runtime.ts
+  s_f6fdbdef31d03e::t_9928e94c6f8d22 3,31-34
+pnpm-lock.yaml
+  s_f6fdbdef31d03e::t_b2c6614eb4f05e 654-681
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "191a5209b7680d42d4b913b2a9e2fc873a985afe",
+  "prompts": {},
+  "sessions": {
+    "s_f6fdbdef31d03e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0979eef92ffeqA09Akon5qn81v",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
