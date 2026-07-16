@@ -456,8 +456,8 @@ This module provides Vite-integrated RSC runtime APIs based on
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
-This module re-exports the static capability provided by
-`react-server-dom/static.edge`:
+This module provides a Vite-integrated RSC runtime API based on
+`react-server-dom/static.edge` for use in the RSC environment:
 
 - `prerender`: static RSC serialization (React VDOM -> RSC stream)
 
