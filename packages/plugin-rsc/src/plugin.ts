@@ -346,7 +346,7 @@ export function vitePluginRscMinimal(
       apply: 'serve',
       load: {
         filter: { id: prefixRegex('\0virtual:vite-rsc/reference-validation?') },
-        handler(id, _options) {
+        async handler(id, _options) {
           if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
             const parsed = parseReferenceValidationVirtual(id)
             assert(parsed)
@@ -359,9 +359,19 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              const meta = Object.values(manager.serverReferenceMetaMap).find(
+              let meta = Object.values(manager.serverReferenceMetaMap).find(
                 (meta) => meta.referenceKey === parsed.id,
               )
+              if (!meta) {
+                try {
+                  await (this.environment as DevEnvironment).transformRequest(
+                    parsed.id,
+                  )
+                } catch {}
+                meta = Object.values(manager.serverReferenceMetaMap).find(
+                  (meta) => meta.referenceKey === parsed.id,
+                )
+              }
               if (meta) {
                 return `export {}`
               }
