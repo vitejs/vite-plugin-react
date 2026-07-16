@@ -1,7 +1,7 @@
 import { renderToReadableStream as originalRenderToReadableStream } from '../react/rsc/server'
 import {
   createOnClientReference,
-  type ClientReferenceOptions,
+  type OnClientReference,
 } from './client-reference'
 import './shared'
 
@@ -16,9 +16,16 @@ export * from '../react/rsc/server'
 export function renderToReadableStream<T>(
   data: T,
   options?: object,
-  extraOptions?: ClientReferenceOptions,
+  extraOptions?: {
+    /**
+     * @experimental
+     */
+    onClientReference?: OnClientReference
+  },
 ): ReadableStream<Uint8Array> {
   return originalRenderToReadableStream(data, options, {
-    onClientReference: createOnClientReference(extraOptions),
+    onClientReference: extraOptions?.onClientReference
+      ? createOnClientReference(extraOptions.onClientReference)
+      : undefined,
   })
 }

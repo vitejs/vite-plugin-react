@@ -1,27 +1,19 @@
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
-import type {
-  ClientReferenceMetadata,
-  CreateClientManifestOptions,
-} from '../core/rsc'
+import type { ClientReferenceMetadata } from '../core/rsc'
 import type { ResolvedAssetDeps } from '../plugin'
 
-export interface ClientReferenceOptions {
-  /**
-   * @experimental
-   */
-  onClientReference?: (
-    metadata: ClientReferenceMetadata & { deps: ResolvedAssetDeps },
-  ) => void
-}
+export type OnClientReference = (
+  metadata: ClientReferenceMetadata & { deps: ResolvedAssetDeps },
+) => void
 
 export function createOnClientReference(
-  options?: ClientReferenceOptions,
-): NonNullable<CreateClientManifestOptions['onClientReference']> {
-  return (metadata) => {
+  onClientReference: OnClientReference,
+): (metadata: ClientReferenceMetadata) => void {
+  return (metadata: ClientReferenceMetadata) => {
     const deps = assetsManifest.clientReferenceDeps[metadata.id] ?? {
       js: [],
       css: [],
     }
-    options?.onClientReference?.({ ...metadata, deps })
+    onClientReference({ ...metadata, deps })
   }
 }
