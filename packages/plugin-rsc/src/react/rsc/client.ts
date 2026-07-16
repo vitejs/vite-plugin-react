@@ -18,7 +18,7 @@ export function createFromReadableStream<T>(
     serverConsumerManifest: {
       // https://github.com/facebook/react/pull/31300
       // https://github.com/vercel/next.js/pull/71527
-      serverModuleMap: createServerManifest(),
+      serverModuleMap: createServerManifest({ preserveServerReferences: true }),
       moduleMap: createServerDecodeClientManifest(),
     },
     ...options,
