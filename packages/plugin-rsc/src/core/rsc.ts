@@ -11,15 +11,6 @@ import {
 // @ts-ignore
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 
-export interface ClientReferenceMetadata {
-  id: string
-  name: string
-}
-
-export interface CreateClientManifestOptions {
-  onClientReference?: (metadata: ClientReferenceMetadata) => void
-}
-
 let init = false
 let requireModule!: (id: string) => unknown
 
@@ -148,4 +139,13 @@ export function createClientManifest(
       },
     },
   )
+}
+
+export interface ClientReferenceMetadata {
+  id: string
+  name: string
+}
+
+export interface CreateClientManifestOptions {
+  onClientReference?: (metadata: ClientReferenceMetadata) => void
 }
