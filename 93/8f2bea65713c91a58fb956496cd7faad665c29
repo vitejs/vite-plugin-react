@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/ssr-encode-form-action.test.ts
+  s_5ff36b65ea29ac::t_b519fc626f05d5 25,28-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "938f2bea65713c91a58fb956496cd7faad665c29",
+  "prompts": {},
+  "sessions": {
+    "s_5ff36b65ea29ac": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_097168f25ffei4WvvzGqfX7UwQ",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
