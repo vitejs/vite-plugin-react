@@ -38,32 +38,8 @@ type FormDataThenable = Promise<FormData> & {
 // the bound promise, so this example uses that promise as the cache identity.
 const boundCache = new WeakMap<Promise<unknown[]>, FormDataThenable>()
 
-function encodeFormData(reference: {
-  id: string
-  bound: Promise<unknown[]>
-}): FormDataThenable {
-  // Unlike React's internal processReply, the public encodeReply returns a
-  // regular promise, so instrument it with the status React's renderer expects.
-  const thenable = encodeReply(reference as never).then(
-    (body) => {
-      if (typeof body === 'string') {
-        const data = new FormData()
-        data.append('0', body)
-        body = data
-      }
-      thenable.status = 'fulfilled'
-      thenable.value = body
-      return body
-    },
-    (reason) => {
-      thenable.status = 'rejected'
-      thenable.reason = reason
-      throw reason
-    },
-  ) as FormDataThenable
-  thenable.status = 'pending'
-  return thenable
-}
+// React supplies this internally, but encodeFormAction does not receive it.
+const identifierPrefix = 'test'
 
 // Recreates React's default bound-action encoding:
 // https://github.com/react/react/blob/8d48183291870898ec42ac1f84482d9d26789424/packages/react-client/src/ReactFlightReplyClient.js#L462-L508
@@ -74,9 +50,6 @@ const defaultEncodeFormAction: EncodeFormActionCallback = (id, bound) => {
   // an unbound reference from one bound with no arguments. This example is bound.
   const boundPromise = bound
   if (boundPromise !== null) {
-    // React also supplies an identifier prefix internally. Use a fixed prefix
-    // because encodeFormAction does not receive it.
-    const identifierPrefix = 'test'
     const reference = { id, bound }
     let thenable = boundCache.get(boundPromise)
     if (!thenable) {
@@ -103,4 +76,31 @@ const defaultEncodeFormAction: EncodeFormActionCallback = (id, bound) => {
     encType: 'multipart/form-data',
     data: data,
   }
+}
+
+function encodeFormData(reference: {
+  id: string
+  bound: Promise<unknown[]>
+}): FormDataThenable {
+  // Unlike React's internal processReply, the public encodeReply returns a
+  // regular promise, so instrument it with the status React's renderer expects.
+  const thenable = encodeReply(reference as never).then(
+    (body) => {
+      if (typeof body === 'string') {
+        const data = new FormData()
+        data.append('0', body)
+        body = data
+      }
+      thenable.status = 'fulfilled'
+      thenable.value = body
+      return body
+    },
+    (reason) => {
+      thenable.status = 'rejected'
+      thenable.reason = reason
+      throw reason
+    },
+  ) as FormDataThenable
+  thenable.status = 'pending'
+  return thenable
 }
