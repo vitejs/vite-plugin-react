@@ -14,19 +14,28 @@ export async function renderHtml(
   let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
     payload ??= createFromReadableStream<RscPayload>(rscStream, {
-      // Preserve React's default form metadata, but post to a custom URL.
-      encodeFormAction(id, bound) {
-        return {
-          ...defaultEncodeFormAction(id, bound),
-          action: '/?custom-action=1',
-        }
-      },
+      encodeFormAction: customEncodeFormAction,
     })
     return React.use(payload).root
   }
 
   return renderToReadableStream(<SsrRoot />)
 }
+
+// Preserve React's default form metadata, but post to a custom URL.
+const customEncodeFormAction: EncodeFormActionCallback = (id, bound) => {
+  const defaultResult = defaultEncodeFormAction(id, bound)
+  return {
+    ...defaultResult,
+    action: '/?custom-action=1',
+  }
+}
+
+// Recreates React's default bound-action encoding:
+// https://github.com/react/react/blob/8d48183291870898ec42ac1f84482d9d26789424/packages/react-client/src/ReactFlightReplyClient.js#L462-L508
+
+// React supplies this internally, but encodeFormAction does not receive it.
+const identifierPrefix = 'custom_prefix'
 
 type FormDataThenable = Promise<FormData> & {
   status?: 'pending' | 'fulfilled' | 'rejected'
@@ -38,11 +47,6 @@ type FormDataThenable = Promise<FormData> & {
 // the bound promise, so this example uses that promise as the cache identity.
 const boundCache = new WeakMap<Promise<unknown[]>, FormDataThenable>()
 
-// React supplies this internally, but encodeFormAction does not receive it.
-const identifierPrefix = 'custom_prefix'
-
-// Recreates React's default bound-action encoding:
-// https://github.com/react/react/blob/8d48183291870898ec42ac1f84482d9d26789424/packages/react-client/src/ReactFlightReplyClient.js#L462-L508
 const defaultEncodeFormAction: EncodeFormActionCallback = (id, bound) => {
   let data: null | FormData = null
   let name
