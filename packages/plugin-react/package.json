@@ -46,15 +46,15 @@
     "@rolldown/pluginutils": "^1.0.1"
   },
   "devDependencies": {
-    "@babel/core": "8.0.0-rc.6",
+    "@babel/core": "8.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "rolldown": "^1.1.1",
-    "tsdown": "^0.22.2",
-    "vite": "^8.0.16"
+    "rolldown": "^1.1.5",
+    "tsdown": "^0.22.7",
+    "vite": "^8.1.4"
   },
   "peerDependencies": {
     "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",
