@@ -8,6 +8,7 @@ import type {
 } from '../types'
 
 export { setRequireModule } from '../core/ssr'
+export type { EncodeFormActionCallback } from '../types'
 
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
@@ -25,6 +26,7 @@ export function createServerReference(id: string): unknown {
 
 export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
 
+// TODO: There is probably no actual use case, but for now export what is technically available.
 export const createTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
   ReactClient.createTemporaryReferenceSet
 
