@@ -446,8 +446,8 @@ export default defineConfig({
 
 ### `@vitejs/plugin-rsc/rsc/server`
 
-This module re-exports the server capabilities provided by
-`react-server-dom/server.edge`:
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/server.edge` for use in the RSC environment:
 
 - `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
 - `decodeAction/decodeReply/decodeFormState/loadServerAction`
@@ -456,7 +456,7 @@ This module re-exports the server capabilities provided by
 
 ### `@vitejs/plugin-rsc/rsc/client`
 
-This module re-exports the client protocol capabilities provided by
+This module provides Vite-integrated RSC runtime APIs based on
 `react-server-dom/client.edge` for use in the RSC environment:
 
 - `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
@@ -496,7 +496,8 @@ function renderToReadableStream<T>(
 
 ### `@vitejs/plugin-rsc/ssr`
 
-This module re-exports RSC runtime APIs provided by `react-server-dom/client.edge`:
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/client.edge` for use in the SSR environment:
 
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `encodeReply`: Serializes server function arguments
@@ -504,7 +505,8 @@ This module re-exports RSC runtime APIs provided by `react-server-dom/client.edg
 
 ### `@vitejs/plugin-rsc/browser`
 
-This module re-exports RSC runtime APIs provided by `react-server-dom/client.browser`:
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/client.browser` for use in the browser environment:
 
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `createFromFetch`: Deserializes an RSC response from a fetch promise
