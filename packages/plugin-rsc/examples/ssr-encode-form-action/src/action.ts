@@ -1,7 +1,7 @@
 'use server'
 
-import { setResult } from './state'
+import { setServerState } from './state'
 
-export async function submit(boundValue: string, formData: FormData) {
-  setResult(`${boundValue}:${formData.get('value')}`)
+export async function testAction(boundValue: string, formData: FormData) {
+  setServerState(`${boundValue}:${formData.get('value')}`)
 }

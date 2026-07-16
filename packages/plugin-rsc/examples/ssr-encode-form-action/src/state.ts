@@ -1,9 +1,9 @@
 let result = 'initial'
 
-export function getResult() {
+export function getServerState() {
   return result
 }
 
-export function setResult(value: string) {
+export function setServerState(value: string) {
   result = value
 }

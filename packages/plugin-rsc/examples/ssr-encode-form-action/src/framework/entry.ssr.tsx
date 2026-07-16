@@ -39,7 +39,7 @@ type FormDataThenable = Promise<FormData> & {
 const boundCache = new WeakMap<Promise<unknown[]>, FormDataThenable>()
 
 // React supplies this internally, but encodeFormAction does not receive it.
-const identifierPrefix = 'test'
+const identifierPrefix = 'custom_prefix'
 
 // Recreates React's default bound-action encoding:
 // https://github.com/react/react/blob/8d48183291870898ec42ac1f84482d9d26789424/packages/react-client/src/ReactFlightReplyClient.js#L462-L508
