@@ -16,17 +16,22 @@ export function getStaticPaths(): string[] {
 
 export default async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
-  const payload = createPayload(renderRequest.url)
 
   if (renderRequest.isRsc) {
-    return new Response(renderToReadableStream(payload), {
-      headers: { 'content-type': 'text/x-component;charset=utf-8' },
-    })
+    return new Response(
+      renderToReadableStream(
+        createPayload(renderRequest.url, new Date().toISOString()),
+      ),
+      {
+        headers: { 'content-type': 'text/x-component;charset=utf-8' },
+      },
+    )
   }
 
   const pprData = import.meta.env.DEV
     ? await handlePpr(renderRequest.request)
     : await loadPprData(renderRequest.url.pathname)
+  const payload = createPayload(renderRequest.url, pprData.staticTimestamp)
   const rscStream = renderToReadableStream(payload)
   const [rscForSsr, rscForBrowser] = rscStream.tee()
   const ssr = await import.meta.viteRsc.loadModule<
@@ -40,7 +45,8 @@ export default async function handler(request: Request): Promise<Response> {
 }
 
 export async function handlePpr(request: Request): Promise<PprData> {
-  const payload = createPayload(new URL(request.url))
+  const staticTimestamp = new Date().toISOString()
+  const payload = createPayload(new URL(request.url), staticTimestamp)
   const controller = new AbortController()
   const pendingResult = runPrerender(() =>
     prerender(payload, {
@@ -53,11 +59,14 @@ export async function handlePpr(request: Request): Promise<PprData> {
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  return ssr.prerenderHtml(prelude)
+  return {
+    ...(await ssr.prerenderHtml(prelude)),
+    staticTimestamp,
+  }
 }
 
-function createPayload(url: URL): RscPayload {
-  return { root: <Root url={url} /> }
+function createPayload(url: URL, staticTimestamp: string): RscPayload {
+  return { root: <Root url={url} staticTimestamp={staticTimestamp} /> }
 }
 
 async function loadPprData(pathname: string): Promise<PprData> {

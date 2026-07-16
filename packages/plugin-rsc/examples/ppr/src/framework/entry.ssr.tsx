@@ -12,7 +12,7 @@ const payloadCache = new WeakMap<
 
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
-): Promise<PprData> {
+): Promise<Omit<PprData, 'staticTimestamp'>> {
   const controller = new AbortController()
   const pendingResult = prerender(<SsrRoot rscStream={keepOpen(rscStream)} />, {
     signal: controller.signal,

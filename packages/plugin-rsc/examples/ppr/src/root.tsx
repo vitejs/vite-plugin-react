@@ -3,8 +3,13 @@ import { Suspense } from 'react'
 import { Counter } from './counter'
 import { suspendDuringPrerender } from './framework/ppr-context'
 
-export function Root({ url }: { url: URL }) {
-  const staticTimestamp = new Date().toISOString()
+export function Root({
+  url,
+  staticTimestamp,
+}: {
+  url: URL
+  staticTimestamp: string
+}) {
   return (
     <html lang="en">
       <head>
