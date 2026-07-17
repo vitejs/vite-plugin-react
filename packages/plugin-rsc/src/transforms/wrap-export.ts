@@ -1,5 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
+import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
@@ -140,20 +140,8 @@ export function transformWrapExport(
           let isFunction: boolean | undefined
           if (node.declaration.declarations.length === 1) {
             const decl = node.declaration.declarations[0]!
-            if (decl.id.type === 'Identifier') {
-              if (
-                decl.init?.type === 'ArrowFunctionExpression' ||
-                decl.init?.type === 'FunctionExpression'
-              ) {
-                isFunction = true
-              } else if (
-                decl.init?.type === 'Literal' ||
-                decl.init?.type === 'ObjectExpression' ||
-                decl.init?.type === 'ArrayExpression' ||
-                decl.init?.type === 'ClassExpression'
-              ) {
-                isFunction = false
-              }
+            if (decl.id.type === 'Identifier' && decl.init) {
+              isFunction = getIsFunction(decl.init)
             }
           }
           for (const decl of node.declaration.declarations) {
@@ -257,18 +245,8 @@ export function transformWrapExport(
         output.update(node.start, node.declaration.start, 'const $$default = ')
         if (node.declaration.type === 'Identifier') {
           defaultExportIdentifierName = node.declaration.name
-        } else if (
-          node.declaration.type === 'ArrowFunctionExpression' ||
-          node.declaration.type === 'FunctionExpression'
-        ) {
-          isFunction = true
-        } else if (
-          node.declaration.type === 'Literal' ||
-          node.declaration.type === 'ObjectExpression' ||
-          node.declaration.type === 'ArrayExpression' ||
-          node.declaration.type === 'ClassExpression'
-        ) {
-          isFunction = false
+        } else {
+          isFunction = getIsFunction(node.declaration)
         }
       }
       const defaultMeta = {
@@ -288,4 +266,23 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
+}
+
+function getIsFunction(
+  node: Node | ExportDefaultDeclaration['declaration'],
+): boolean | undefined {
+  if (
+    node.type === 'ArrowFunctionExpression' ||
+    node.type === 'FunctionExpression'
+  ) {
+    return true
+  }
+  if (
+    node.type === 'Literal' ||
+    node.type === 'ObjectExpression' ||
+    node.type === 'ArrayExpression' ||
+    node.type === 'ClassExpression'
+  ) {
+    return false
+  }
 }
