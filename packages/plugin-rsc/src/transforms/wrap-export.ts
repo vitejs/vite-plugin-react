@@ -34,6 +34,8 @@ type ExportMeta = {
   defaultExportIdentifierName?: string
 }
 
+type ExportWithMeta = { name: string; meta: ExportMeta }
+
 export type TransformWrapExportFilter = (
   name: string,
   meta: ExportMeta,
@@ -59,11 +61,7 @@ export function transformWrapExport(
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
 
-  function wrapSimple(
-    start: number,
-    end: number,
-    exports: { name: string; meta: ExportMeta }[],
-  ) {
+  function wrapSimple(start: number, end: number, exports: ExportWithMeta[]) {
     const filteredExports = exports.map((item) => ({
       ...item,
       shouldWrap: filter(item.name, item.meta),
@@ -147,35 +145,27 @@ export function transformWrapExport(
               'let',
             )
           }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extractNames(decl.id),
-          )
-          // treat only simple single decl as function
-          let isFunction: boolean | undefined
-          if (node.declaration.declarations.length === 1) {
-            const decl = node.declaration.declarations[0]!
-            if (decl.id.type === 'Identifier' && decl.init) {
-              isFunction = getIsFunction(decl.init)
-            }
-          }
+          const exports: ExportWithMeta[] = []
           for (const decl of node.declaration.declarations) {
+            const isFunction =
+              decl.id.type === 'Identifier' && decl.init
+                ? getIsFunction(decl.init)
+                : undefined
+            const declarationExports: ExportWithMeta[] = extractNames(
+              decl.id,
+            ).map((name) => ({
+              name,
+              meta: { isFunction, declName: name },
+            }))
+            exports.push(...declarationExports)
             if (
               decl.init &&
-              extractNames(decl.id).some((name) =>
-                filter(name, { isFunction, declName: name }),
-              )
+              declarationExports.some(({ name, meta }) => filter(name, meta))
             ) {
               validateNonAsyncFunction(options, decl.init)
             }
           }
-          wrapSimple(
-            node.start,
-            node.declaration.start,
-            names.map((name) => ({
-              name,
-              meta: { isFunction, declName: name },
-            })),
-          )
+          wrapSimple(node.start, node.declaration.start, exports)
         } else {
           node.declaration satisfies never
         }

@@ -407,10 +407,14 @@ export default cached;
       ],
       [`export const Unknown = getValue()`, [{ declName: 'Unknown' }]],
       [`export const { id } = getValue()`, [{ declName: 'id' }]],
+      [`export const [a, b] = []`, [{ declName: 'a' }, { declName: 'b' }]],
       [
-        `export const MultiFn = () => {}, MultiValue = 1`,
-        // TODO: Classify each declarator independently.
-        [{ declName: 'MultiFn' }, { declName: 'MultiValue' }],
+        `export const MultiFn = () => {}, MultiValue = 1, MultiUnknown = getValue()`,
+        [
+          { isFunction: true, declName: 'MultiFn' },
+          { isFunction: false, declName: 'MultiValue' },
+          { declName: 'MultiUnknown' },
+        ],
       ],
       [
         `export default function Page() {}`,
