@@ -1,7 +1,9 @@
 'use server'
 
-import { actionImportState } from './action-import-state'
+import { actionState } from './action-state'
 
-actionImportState.imported = true
+actionState.imported = true
 
-export async function testAction() {}
+export async function testAction() {
+  actionState.invoked = true
+}
