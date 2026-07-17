@@ -327,7 +327,16 @@ export default async function Page() {}
       filter: (name) => name !== 'revalidate',
     })
     expect(result.exportNames).toEqual(['default'])
-    expect(result.output.toString()).toContain('export { revalidate };')
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      let revalidate = 1;
+      async function Page() {}
+      export { revalidate };
+      ;
+      const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
+      export { $$wrap_Page as default };
+      "
+    `)
   })
 
   test('filtered default exports are not validated or reported', async () => {
@@ -339,9 +348,11 @@ export default async function Page() {}
       filter: () => false,
     })
     expect(result.exportNames).toEqual([])
-    expect(result.output.toString()).toContain(
-      'export { $$default as default }',
-    )
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "const $$default = 1;;
+      export { $$default as default };
+      "
+    `)
   })
 
   test('unknown identifier exports remain eligible for wrapping', async () => {
@@ -355,5 +366,14 @@ export default cached;
       filter: (_name, meta) => meta.isFunction !== false,
     })
     expect(result.exportNames).toEqual(['default'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      const cached = async () => 1;
+      const $$default = cached;
+      ;
+      const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "default");
+      export { $$wrap_$$default as default };
+      "
+    `)
   })
 })

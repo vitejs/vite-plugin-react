@@ -4,8 +4,22 @@ import MagicString from 'magic-string'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
+  /**
+   * The local declaration name when statically available.
+   * For example, `Page` in `export function Page() {}`.
+   */
   declName?: string
+  /**
+   * Whether the export is statically known to be a function
+   * (`export const Page = () => {}`) or non-function
+   * (`export const value = 1`). Undefined means unknown, for example
+   * `export default value`.
+   */
   isFunction?: boolean
+  /**
+   * The local identifier used by a default export.
+   * For example, `Page` in `export default Page`.
+   */
   defaultExportIdentifierName?: string
 }
 
