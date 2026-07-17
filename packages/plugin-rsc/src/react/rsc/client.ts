@@ -15,7 +15,14 @@ export function createFromReadableStream<T>(
   options: CreateFromReadableStreamEdgeOptions = {},
   extraOptions?: {
     /**
+     * Preserve server references for re-serialization without loading their modules.
+     * Preserved references cannot be invoked in the current RSC environment.
+     *
+     * Disabled by default because this API also decodes bound server action
+     * arguments, which must revive references as callable implementations.
+     *
      * @experimental
+     * @default false
      */
     preserveServerReferences?: boolean
   },
