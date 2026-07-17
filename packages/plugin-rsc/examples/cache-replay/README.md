@@ -4,49 +4,29 @@ This example persists a Flight payload containing a server reference and compare
 
 The framework files follow the starter example. The application routes own persistence and replay, while the framework only performs its normal request parsing, action handling, and RSC serialization.
 
-## Development manual test
+## Manual test
 
-Start the first process:
+Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-1. Visit `http://localhost:5173/cache` and confirm the action is imported.
-2. Stop the development server without changing the source graph.
-3. Run `pnpm dev` again.
-4. Visit `http://localhost:5173/read-cache`, then visit the home page and confirm the action is imported.
-5. Restart the development server again.
-6. Visit `http://localhost:5173/read-cache-preserve`, then visit the home page and confirm the action is not imported.
-7. Return to `http://localhost:5173/read-cache-preserve`.
-8. Select **Invoke action** and confirm the action is imported and invoked.
-
-The source graph must remain unchanged across the restart so its development server-reference IDs remain stable.
-
-## Production manual test
-
-Build the example once:
+Alternatively, build once and start the production server:
 
 ```bash
 pnpm build
-```
-
-Start the first process:
-
-```bash
 pnpm preview
 ```
 
-1. Visit `http://localhost:4173/cache`.
-2. Confirm the page displays `Action imported in the RSC environment: true`.
-3. Stop the preview server without rebuilding.
-4. Run `pnpm preview` again.
-5. Visit `http://localhost:4173/read-cache`, then visit the home page and confirm the action is imported.
-6. Restart the preview server again without rebuilding.
-7. Visit `http://localhost:4173/read-cache-preserve`, then visit the home page and confirm the action is not imported.
-8. Return to `http://localhost:4173/read-cache-preserve`.
-9. Select **Invoke action** and confirm the action is imported and invoked.
+1. Visit `/cache` and confirm the action is imported.
+2. Stop and restart the server with `pnpm dev` or `pnpm preview`.
+3. Visit `/read-cache`, then visit `/` and confirm the action is imported.
+4. Restart the server again.
+5. Visit `/read-cache-preserve`, then visit `/` and confirm the action is not imported.
+6. Return to `/read-cache-preserve`.
+7. Select **Invoke action** and confirm the action is imported and invoked.
 
-The same production build must be used for both processes because the persisted Flight payload contains build-specific server-reference IDs.
+Do not change the source graph between development server restarts or rebuild between production server restarts. The persisted Flight payload contains server-reference IDs that must remain stable.
 
 Delete `.flight-cache` to reset the example.
