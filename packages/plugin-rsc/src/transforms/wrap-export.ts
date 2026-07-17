@@ -117,7 +117,7 @@ export function transformWrapExport(
            * export function foo() {}
            */
           const name = node.declaration.id.name
-          const meta = { isFunction: true, declName: name }
+          const meta: ExportMeta = { isFunction: true, declName: name }
           if (filter(name, meta)) {
             validateNonAsyncFunction(options, node.declaration)
           }
@@ -249,7 +249,7 @@ export function transformWrapExport(
           isFunction = getIsFunction(node.declaration)
         }
       }
-      const defaultMeta = {
+      const defaultMeta: ExportMeta = {
         isFunction,
         declName,
         defaultExportIdentifierName,
