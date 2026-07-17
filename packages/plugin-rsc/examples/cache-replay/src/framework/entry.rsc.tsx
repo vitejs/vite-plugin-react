@@ -1,19 +1,12 @@
 import type React from 'react'
+import { inlinePages } from '../inline-pages'
 import { Root } from '../root'
 import { createRscHandler, type RscPayload } from './handler.rsc'
 
 export type { RscPayload }
 
 function AppRoot(props: { url: URL }): React.ReactNode {
-  return (
-    <Root
-      {...props}
-      loadInlineContent={async () => {
-        const { CachedInlineContent } = await import('../cached-inline-content')
-        return <CachedInlineContent />
-      }}
-    />
-  )
+  return <Root {...props} loadPage={(pathname) => inlinePages[pathname]!()} />
 }
 
 export default { fetch: createRscHandler(AppRoot) }

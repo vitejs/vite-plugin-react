@@ -41,6 +41,9 @@ export default defineConfig(({ command }) => {
               pathToFileURL(path.join(prerenderOutDir, 'prerender.js')).href +
                 `?t=${Date.now()}`
             )
+            // The prerender bundle is a build-time tool; executing it above
+            // wrote the payload into dist/, so drop it from the deploy output.
+            fs.rmSync(prerenderOutDir, { recursive: true, force: true })
 
             // Register references reachable only from the runtime graphs
             // before the server-references manifest is emitted, matching the

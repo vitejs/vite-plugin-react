@@ -7,10 +7,12 @@ function RuntimeRoot(props: { url: URL }): React.ReactNode {
   return (
     <Root
       {...props}
-      loadInlineContent={() =>
-        // Written into dist/ by entry.prerender.rsc.tsx during the build.
+      loadPage={(pathname) =>
+        // Written into dist/flight/ by entry.prerender.rsc.tsx during the
+        // build. Resolving by pathname keeps this bundle free of any
+        // reference to the page modules.
         readFlightPreserved(
-          new URL('../.flight-inline-prerender', import.meta.url),
+          new URL(`../flight${pathname}.flight`, import.meta.url),
         )
       }
     />

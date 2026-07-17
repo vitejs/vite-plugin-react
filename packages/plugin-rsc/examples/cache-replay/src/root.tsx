@@ -3,11 +3,14 @@ import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { actionState } from './action-state'
 import { readFlight, readFlightPreserved, writeFlight } from './flight'
-import { inlineActionState } from './inline-action-state'
+import {
+  inlineActionState,
+  secondInlineActionState,
+} from './inline-action-state'
 
 export async function Root(props: {
   url: URL
-  loadInlineContent: () => Promise<React.ReactNode>
+  loadPage: (pathname: string) => Promise<React.ReactNode>
 }) {
   const cacheFile = resolve('.flight-cache')
   const inlineCacheFile = resolve('.flight-inline-cache')
@@ -24,8 +27,10 @@ export async function Root(props: {
   } else if (props.url.pathname === '/delete-cache') {
     await rm(cacheFile, { force: true })
   } else if (props.url.pathname === '/cache-inline') {
-    cachedInlineContent = await props.loadInlineContent()
+    cachedInlineContent = await props.loadPage(props.url.pathname)
     await writeFlight(inlineCacheFile, cachedInlineContent)
+  } else if (props.url.pathname === '/cache-inline-second') {
+    cachedInlineContent = await props.loadPage(props.url.pathname)
   } else if (props.url.pathname === '/read-inline-cache-preserve') {
     cachedInlineContent = await readFlightPreserved(inlineCacheFile)
   }
@@ -41,7 +46,8 @@ export async function Root(props: {
           | <a href="/delete-cache">Delete cache</a>
           {' | '}
           <a href="/cache-inline">Cache inline action</a> |{' '}
-          <a href="/read-inline-cache-preserve">Read inline action cache</a>
+          <a href="/read-inline-cache-preserve">Read inline action cache</a> |{' '}
+          <a href="/cache-inline-second">Second inline page</a>
         </nav>
         <p>
           Action imported in the RSC environment:{' '}
@@ -77,6 +83,18 @@ export async function Root(props: {
           Inline cache file exists:{' '}
           <output data-testid="inline-cache-exists">
             {String(existsSync(inlineCacheFile))}
+          </output>
+        </p>
+        <p>
+          Second inline action imported in the RSC environment:{' '}
+          <output data-testid="second-inline-action-imported">
+            {String(secondInlineActionState.imported)}
+          </output>
+        </p>
+        <p>
+          Second inline action invoked:{' '}
+          <output data-testid="second-inline-action-invoked">
+            {String(secondInlineActionState.invoked)}
           </output>
         </p>
         {cachedContent}
