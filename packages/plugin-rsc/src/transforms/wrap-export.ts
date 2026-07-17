@@ -128,7 +128,10 @@ export function transformWrapExport(
            * export function foo() {}
            */
           const name = node.declaration.id.name
-          const meta: ExportMeta = { isFunction: true, declName: name }
+          const meta: ExportMeta = {
+            isFunction: getIsFunction(node.declaration),
+            declName: name,
+          }
           if (filter(name, meta)) {
             validateNonAsyncFunction(options, node.declaration)
           }
@@ -248,7 +251,7 @@ export function transformWrapExport(
         // preserve name scope for `function foo() {}` and `class Foo {}`
         localName = node.declaration.id.name
         output.remove(node.start, node.declaration.start)
-        isFunction = node.declaration.type === 'FunctionDeclaration'
+        isFunction = getIsFunction(node.declaration)
         declName = node.declaration.id.name
       } else {
         // otherwise we can introduce new variable
@@ -283,12 +286,14 @@ function getIsFunction(
   node: Node | ExportDefaultDeclaration['declaration'],
 ): boolean | undefined {
   if (
+    node.type === 'FunctionDeclaration' ||
     node.type === 'ArrowFunctionExpression' ||
     node.type === 'FunctionExpression'
   ) {
     return true
   }
   if (
+    node.type === 'ClassDeclaration' ||
     node.type === 'Literal' ||
     node.type === 'ObjectExpression' ||
     node.type === 'ArrayExpression' ||

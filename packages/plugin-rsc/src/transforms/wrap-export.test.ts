@@ -380,8 +380,7 @@ export default cached;
   test('runtime export meta', async () => {
     const examples: [input: string, expected: unknown[]][] = [
       [`export function Fn() {}`, [{ isFunction: true, declName: 'Fn' }]],
-      // TODO: Align class declaration metadata with class expressions and default exports.
-      [`export class Cls {}`, [{ isFunction: true, declName: 'Cls' }]],
+      [`export class Cls {}`, [{ isFunction: false, declName: 'Cls' }]],
       [
         `export const Arrow = () => {}`,
         [{ isFunction: true, declName: 'Arrow' }],
@@ -422,7 +421,7 @@ export default cached;
           },
         ],
       ],
-      [`export default function () {}`, [{}]],
+      [`export default function () {}`, [{ isFunction: true }]],
       [
         `export default class Page {}`,
         [
@@ -432,7 +431,7 @@ export default cached;
           },
         ],
       ],
-      [`export default class {}`, [{}]],
+      [`export default class {}`, [{ isFunction: false }]],
       [
         `export default () => {}`,
         [
