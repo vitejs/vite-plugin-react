@@ -4,7 +4,7 @@ import {
   createFromReadableStream,
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
-import { wasActionImported } from './action-import-state'
+import { actionImportState } from './action-import-state'
 
 export async function Root(props: { url: URL }) {
   let cachedContent: React.ReactNode
@@ -30,7 +30,7 @@ export async function Root(props: { url: URL }) {
         <p>
           Action imported in the RSC environment:{' '}
           <output data-testid="action-imported">
-            {String(wasActionImported())}
+            {String(actionImportState.imported)}
           </output>
         </p>
         {cachedContent}

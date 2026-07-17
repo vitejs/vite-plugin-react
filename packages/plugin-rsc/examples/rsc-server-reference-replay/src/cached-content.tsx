@@ -1,8 +1,8 @@
-import { replayedAction } from './action'
+import { testAction } from './action'
 
 export function CachedContent() {
   return (
-    <form action={replayedAction}>
+    <form action={testAction}>
       <button type="submit">Invoke replayed action</button>
     </form>
   )

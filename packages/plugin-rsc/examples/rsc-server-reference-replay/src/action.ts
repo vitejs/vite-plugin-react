@@ -1,7 +1,7 @@
 'use server'
 
-import { markActionImported } from './action-import-state'
+import { actionImportState } from './action-import-state'
 
-markActionImported()
+actionImportState.imported = true
 
-export async function replayedAction() {}
+export async function testAction() {}
