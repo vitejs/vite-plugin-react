@@ -39,29 +39,34 @@ function defineTests(f: Fixture) {
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
+    await page.goto('about:blank')
     await f.restart()
 
     // Default replay imports the referenced action.
     await page.goto(f.url('/read-cache'))
     await waitForHydration(page)
+    await expect(page.getByTestId('cached-content')).toBeVisible()
+    await page.goto(f.url('/'))
     await expect(page.getByTestId('cache-exists')).toHaveText('true')
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
+    await page.goto('about:blank')
     await f.restart()
 
     // Preserved replay leaves the referenced action unloaded.
     await page.goto(f.url('/read-cache-preserve'))
     await waitForHydration(page)
-    await expect(
-      page.getByRole('heading', { name: 'Cached content' }),
-    ).toBeVisible()
+    await expect(page.getByTestId('cached-content')).toBeVisible()
+    await page.goto(f.url('/'))
     await expect(page.getByTestId('cache-exists')).toHaveText('true')
     await expect(page.getByTestId('action-imported')).toHaveText('false')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
     // Invoking the preserved reference imports and runs the action.
-    await page.getByRole('button', { name: 'Invoke action' }).click()
+    await page.goto(f.url('/read-cache-preserve'))
+    await waitForHydration(page)
+    await page.getByTestId('invoke-action').click()
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('true')
   })

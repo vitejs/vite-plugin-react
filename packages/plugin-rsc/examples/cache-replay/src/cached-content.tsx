@@ -2,10 +2,12 @@ import { testAction } from './action'
 
 export function CachedContent() {
   return (
-    <section>
+    <section data-testid="cached-content">
       <h2>Cached content</h2>
       <form action={testAction}>
-        <button type="submit">Invoke action</button>
+        <button type="submit" data-testid="invoke-action">
+          Invoke action
+        </button>
       </form>
     </section>
   )
