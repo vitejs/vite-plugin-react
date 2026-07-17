@@ -20,6 +20,11 @@ export async function Root(props: { url: URL }) {
     const bytes = await readFile(cacheFile)
     cachedContent = await createFromReadableStream<React.ReactNode>(
       new Blob([bytes]).stream(),
+    )
+  } else if (props.url.pathname === '/read-cache-preserve') {
+    const bytes = await readFile(cacheFile)
+    cachedContent = await createFromReadableStream<React.ReactNode>(
+      new Blob([bytes]).stream(),
       {},
       { preserveServerReferences: true },
     )
@@ -34,7 +39,8 @@ export async function Root(props: { url: URL }) {
         <nav>
           <a href="/">Home</a> | <a href="/cache">Cache content</a> |{' '}
           <a href="/read-cache">Read cache</a> |{' '}
-          <a href="/delete-cache">Delete cache</a>
+          <a href="/read-cache-preserve">Read cache and preserve references</a>{' '}
+          | <a href="/delete-cache">Delete cache</a>
         </nav>
         <p>
           Action imported in the RSC environment:{' '}

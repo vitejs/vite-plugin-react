@@ -4,16 +4,21 @@ import { expect, test } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
-for (const mode of ['dev', 'build'] as const) {
-  test.describe(mode, () => {
-    const f = useFixture({
-      root: 'examples/cache-replay',
-      mode,
-    })
-
-    defineTests(f)
+test.describe('dev', () => {
+  const f = useFixture({
+    root: 'examples/cache-replay',
+    mode: 'dev',
   })
-}
+  defineTests(f)
+})
+
+test.describe('build', () => {
+  const f = useFixture({
+    root: 'examples/cache-replay',
+    mode: 'build',
+  })
+  defineTests(f)
+})
 
 function defineTests(f: Fixture) {
   const cacheFile = path.join(f.root, '.flight-cache')
@@ -24,6 +29,10 @@ function defineTests(f: Fixture) {
   test('replays a server reference without loading its module', async ({
     page,
   }) => {
+    await page.goto(f.url('/'))
+    await expect(page.getByTestId('cache-exists')).toHaveText('false')
+
+    // Serialize content after importing its action.
     await page.goto(f.url('/cache'))
     await waitForHydration(page)
     await expect(page.getByTestId('cache-exists')).toHaveText('true')
@@ -32,7 +41,17 @@ function defineTests(f: Fixture) {
 
     await f.restart()
 
+    // Default replay imports the referenced action.
     await page.goto(f.url('/read-cache'))
+    await waitForHydration(page)
+    await expect(page.getByTestId('cache-exists')).toHaveText('true')
+    await expect(page.getByTestId('action-imported')).toHaveText('true')
+    await expect(page.getByTestId('action-invoked')).toHaveText('false')
+
+    await f.restart()
+
+    // Preserved replay leaves the referenced action unloaded.
+    await page.goto(f.url('/read-cache-preserve'))
     await waitForHydration(page)
     await expect(
       page.getByRole('heading', { name: 'Cached content' }),
@@ -41,6 +60,7 @@ function defineTests(f: Fixture) {
     await expect(page.getByTestId('action-imported')).toHaveText('false')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
+    // Invoking the preserved reference imports and runs the action.
     await page.getByRole('button', { name: 'Invoke action' }).click()
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('true')
