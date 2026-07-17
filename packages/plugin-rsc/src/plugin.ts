@@ -366,6 +366,10 @@ export function vitePluginRscMinimal(
                 (meta) => meta.referenceKey === parsed.id,
               )
               if (!meta) {
+                // Server references decoded by `createFromReadableStream` with
+                // `preserveServerReferences` can reach action loading without their
+                // modules entering the graph during replay. Transform the target on
+                // demand to populate metadata before validating its ID.
                 try {
                   // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
                   const resolved = await this.resolve(parsed.id)
