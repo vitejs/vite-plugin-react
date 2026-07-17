@@ -39,6 +39,7 @@ function defineTests(f: Fixture) {
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
+    // Avoid a dev client reload racing navigation after restart.
     await page.goto('about:blank')
     await f.restart()
 
@@ -51,6 +52,7 @@ function defineTests(f: Fixture) {
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('false')
 
+    // Avoid a dev client reload racing navigation after restart.
     await page.goto('about:blank')
     await f.restart()
 
