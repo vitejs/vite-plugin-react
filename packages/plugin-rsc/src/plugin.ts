@@ -334,7 +334,12 @@ export function vitePluginRscMinimal(
           if (code.includes('__vite_rsc_raw_import__')) {
             // inject dynamic import last to avoid Vite adding `?import` query
             // to client references (and browser mode server references)
-            return code.replace('__vite_rsc_raw_import__', 'import')
+            const output = new MagicString(code)
+            output.replace('__vite_rsc_raw_import__', 'import')
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
           }
         },
       },
@@ -1241,11 +1246,15 @@ export function createRpcClient(params) {
               BUILD_ASSETS_MANIFEST_NAME,
             ),
           )
-          code = code.replaceAll(
+          const output = new MagicString(code)
+          output.replaceAll(
             'virtual:vite-rsc/assets-manifest',
             () => replacement,
           )
-          return { code }
+          return {
+            code: output.toString(),
+            map: output.generateMap({ hires: 'boundary' }),
+          }
         }
         return
       },
@@ -1390,13 +1399,17 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
             !code.includes('__viteRscAsyncHooks')
           ) {
             // for build, we cannot use `import` as it confuses rollup commonjs plugin.
-            return (
+            const output = new MagicString(code)
+            output.prepend(
               (this.environment.mode === 'build' && !isRolldownVite
                 ? `const __viteRscAsyncHooks = require("node:async_hooks");`
                 : `import * as __viteRscAsyncHooks from "node:async_hooks";`) +
-              `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;` +
-              code
+                `globalThis.AsyncLocalStorage = __viteRscAsyncHooks.AsyncLocalStorage;`,
             )
+            return {
+              code: output.toString(),
+              map: output.generateMap({ hires: 'boundary' }),
+            }
           }
         },
       },
