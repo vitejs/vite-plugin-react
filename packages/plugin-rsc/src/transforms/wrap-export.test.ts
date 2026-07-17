@@ -380,6 +380,7 @@ export default cached;
   test('runtime export meta', async () => {
     const examples: [input: string, expected: unknown[]][] = [
       [`export function Fn() {}`, [{ isFunction: true, declName: 'Fn' }]],
+      // TODO: Align class declaration metadata with class expressions and default exports.
       [`export class Cls {}`, [{ isFunction: true, declName: 'Cls' }]],
       [
         `export const Arrow = () => {}`,
@@ -405,17 +406,12 @@ export default cached;
         `export const ClassValue = class {}`,
         [{ isFunction: false, declName: 'ClassValue' }],
       ],
-      [
-        `export const Unknown = getValue()`,
-        [{ isFunction: undefined, declName: 'Unknown' }],
-      ],
+      [`export const Unknown = getValue()`, [{ declName: 'Unknown' }]],
+      [`export const { id } = getValue()`, [{ declName: 'id' }]],
       [
         `export const MultiFn = () => {}, MultiValue = 1`,
         // TODO: Classify each declarator independently.
-        [
-          { isFunction: undefined, declName: 'MultiFn' },
-          { isFunction: undefined, declName: 'MultiValue' },
-        ],
+        [{ declName: 'MultiFn' }, { declName: 'MultiValue' }],
       ],
       [
         `export default function Page() {}`,
@@ -423,27 +419,25 @@ export default cached;
           {
             isFunction: true,
             declName: 'Page',
-            defaultExportIdentifierName: undefined,
           },
         ],
       ],
+      [`export default function () {}`, [{}]],
       [
         `export default class Page {}`,
         [
           {
             isFunction: false,
             declName: 'Page',
-            defaultExportIdentifierName: undefined,
           },
         ],
       ],
+      [`export default class {}`, [{}]],
       [
         `export default () => {}`,
         [
           {
             isFunction: true,
-            declName: undefined,
-            defaultExportIdentifierName: undefined,
           },
         ],
       ],
@@ -452,8 +446,6 @@ export default cached;
         [
           {
             isFunction: false,
-            declName: undefined,
-            defaultExportIdentifierName: undefined,
           },
         ],
       ],
@@ -461,12 +453,12 @@ export default cached;
         `const Page = () => {}; export default Page`,
         [
           {
-            isFunction: undefined,
-            declName: undefined,
             defaultExportIdentifierName: 'Page',
           },
         ],
       ],
+      [`const id = async () => {}; export { id }`, [{}]],
+      [`export { id } from './dep'`, [{}]],
     ]
 
     for (const [input, expected] of examples) {
