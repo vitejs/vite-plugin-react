@@ -71,58 +71,50 @@ export function useFixture(options: {
   buildCommand?: string
   cliOptions?: SpawnOptions
 }) {
-  let cleanup: (() => Promise<void>) | undefined
   let baseURL!: string
 
   const cwd = path.resolve(options.root)
   let proc!: ReturnType<typeof runCli>
 
+  async function startServer() {
+    const command =
+      options.command ??
+      (options.mode === 'build' ? `pnpm preview` : `pnpm dev`)
+    proc = runCli({
+      command,
+      label: `${options.root}:${options.mode}`,
+      cwd,
+      ...options.cliOptions,
+    })
+    const port = await proc.findPort()
+    baseURL = `http://localhost:${port}`
+  }
+
+  async function stopServer() {
+    proc.kill()
+    await proc.done
+  }
+
   // TODO: `beforeAll` is called again on any test failure.
   // https://playwright.dev/docs/test-retries
   test.beforeAll(async () => {
-    if (options.mode === 'dev') {
-      proc = runCli({
-        command: options.command ?? `pnpm dev`,
-        label: `${options.root}:dev`,
-        cwd,
-        ...options.cliOptions,
-      })
-      const port = await proc.findPort()
-      // TODO: use `test.extend` to set `baseURL`?
-      baseURL = `http://localhost:${port}`
-      cleanup = async () => {
-        proc.kill()
-        await proc.done
-      }
-    }
     if (options.mode === 'build') {
       if (!process.env.TEST_SKIP_BUILD) {
-        const proc = runCli({
+        const buildProc = runCli({
           command: options.buildCommand ?? `pnpm build`,
           label: `${options.root}:build`,
           cwd,
           ...options.cliOptions,
         })
-        await proc.done
-        assert(proc.proc.exitCode === 0)
-      }
-      proc = runCli({
-        command: options.command ?? `pnpm preview`,
-        label: `${options.root}:preview`,
-        cwd,
-        ...options.cliOptions,
-      })
-      const port = await proc.findPort()
-      baseURL = `http://localhost:${port}`
-      cleanup = async () => {
-        proc.kill()
-        await proc.done
+        await buildProc.done
+        assert(buildProc.proc.exitCode === 0)
       }
     }
+    if (options.mode) await startServer()
   })
 
   test.afterAll(async () => {
-    await cleanup?.()
+    if (options.mode) await stopServer()
   })
 
   const createEditor = useCreateEditor(cwd)
@@ -133,6 +125,10 @@ export function useFixture(options: {
     url: (url: string = './') => new URL(url, baseURL).href,
     createEditor,
     proc: () => proc,
+    restart: async () => {
+      await stopServer()
+      await startServer()
+    },
   }
 }
 
