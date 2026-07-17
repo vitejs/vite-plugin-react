@@ -376,4 +376,109 @@ export default cached;
       "
     `)
   })
+
+  test('runtime export meta', async () => {
+    const examples: [input: string, expected: unknown[]][] = [
+      [`export function Fn() {}`, [{ isFunction: true, declName: 'Fn' }]],
+      [`export class Cls {}`, [{ isFunction: true, declName: 'Cls' }]],
+      [
+        `export const Arrow = () => {}`,
+        [{ isFunction: true, declName: 'Arrow' }],
+      ],
+      [
+        `export const FnExpression = function () {}`,
+        [{ isFunction: true, declName: 'FnExpression' }],
+      ],
+      [
+        `export const Literal = 1`,
+        [{ isFunction: false, declName: 'Literal' }],
+      ],
+      [
+        `export const ObjectValue = {}`,
+        [{ isFunction: false, declName: 'ObjectValue' }],
+      ],
+      [
+        `export const ArrayValue = []`,
+        [{ isFunction: false, declName: 'ArrayValue' }],
+      ],
+      [
+        `export const ClassValue = class {}`,
+        [{ isFunction: false, declName: 'ClassValue' }],
+      ],
+      [
+        `export const Unknown = getValue()`,
+        [{ isFunction: undefined, declName: 'Unknown' }],
+      ],
+      [
+        `export const MultiFn = () => {}, MultiValue = 1`,
+        // TODO: Classify each declarator independently.
+        [
+          { isFunction: undefined, declName: 'MultiFn' },
+          { isFunction: undefined, declName: 'MultiValue' },
+        ],
+      ],
+      [
+        `export default function Page() {}`,
+        [
+          {
+            isFunction: true,
+            declName: 'Page',
+            defaultExportIdentifierName: undefined,
+          },
+        ],
+      ],
+      [
+        `export default class Page {}`,
+        [
+          {
+            isFunction: false,
+            declName: 'Page',
+            defaultExportIdentifierName: undefined,
+          },
+        ],
+      ],
+      [
+        `export default () => {}`,
+        [
+          {
+            isFunction: true,
+            declName: undefined,
+            defaultExportIdentifierName: undefined,
+          },
+        ],
+      ],
+      [
+        `export default 1`,
+        [
+          {
+            isFunction: false,
+            declName: undefined,
+            defaultExportIdentifierName: undefined,
+          },
+        ],
+      ],
+      [
+        `const Page = () => {}; export default Page`,
+        [
+          {
+            isFunction: undefined,
+            declName: undefined,
+            defaultExportIdentifierName: 'Page',
+          },
+        ],
+      ],
+    ]
+
+    for (const [input, expected] of examples) {
+      const actual: unknown[] = []
+      const ast = await parseAstAsync(input)
+      transformWrapExport(input, ast, {
+        runtime(value, _name, meta) {
+          actual.push(meta)
+          return value
+        },
+      })
+      expect(actual).toEqual(expected)
+    }
+  })
 })
