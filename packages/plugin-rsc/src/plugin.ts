@@ -99,6 +99,9 @@ type ServerReferenceMeta = {
   referenceKey: string
   // TODO: tree shake unused server functions
   exportNames: string[]
+  // the environment whose transform registered this entry (see
+  // `deleteServerReferenceMeta` in `vitePluginUseServer`)
+  environmentName: string
 }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
@@ -1978,6 +1981,23 @@ export function vitePluginUseServer(
 
   const debug = createDebug('vite-rsc:use-server')
 
+  // `serverReferenceMetaMap` is shared across environments. Inline "use server"
+  // actions are registered only by the RSC transform, but the same module can
+  // also flow through non-RSC graphs (e.g. a framework reading a route module's
+  // metadata during SSR), whose transforms must not clear them. Only the RSC
+  // environment (the authority on server references) or the environment that
+  // registered an entry may delete it.
+  const deleteServerReferenceMeta = (environmentName: string, id: string) => {
+    const meta = manager.serverReferenceMetaMap[id]
+    if (!meta) return
+    if (
+      environmentName === serverEnvironmentName ||
+      environmentName === meta.environmentName
+    ) {
+      delete manager.serverReferenceMetaMap[id]
+    }
+  }
+
   return [
     {
       name: 'rsc:use-server',
@@ -1988,7 +2008,7 @@ export function vitePluginUseServer(
         // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
-            delete manager.serverReferenceMetaMap[id]
+            deleteServerReferenceMeta(this.environment.name, id)
             return
           }
           let ast = await parseAstAsync(code)
@@ -2064,6 +2084,7 @@ export function vitePluginUseServer(
               referenceKey: getNormalizedId(),
               exportNames:
                 'names' in result ? result.names : result.exportNames,
+              environmentName: this.environment.name,
             }
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
@@ -2083,13 +2104,7 @@ export function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              // Only clean up in dev (a file-level directive removed via HMR).
-              // In a build the environments share `serverReferenceMetaMap`, so
-              // deleting here would drop an inline action's entry registered by
-              // the rsc environment from the production manifest.
-              if (manager.config.command !== 'build') {
-                delete manager.serverReferenceMetaMap[id]
-              }
+              deleteServerReferenceMeta(this.environment.name, id)
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
@@ -2117,6 +2132,7 @@ export function vitePluginUseServer(
               importId: id,
               referenceKey: getNormalizedId(),
               exportNames: result.exportNames,
+              environmentName: this.environment.name,
             }
             const name =
               this.environment.name === browserEnvironmentName

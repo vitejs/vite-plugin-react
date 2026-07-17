@@ -22,9 +22,16 @@ test.describe('build', () => {
 
 function defineTests(f: Fixture) {
   const cacheFile = path.join(f.root, '.flight-cache')
+  const inlineCacheFile = path.join(f.root, '.flight-inline-cache')
 
-  test.beforeEach(() => fs.rmSync(cacheFile, { force: true }))
-  test.afterEach(() => fs.rmSync(cacheFile, { force: true }))
+  test.beforeEach(() => {
+    fs.rmSync(cacheFile, { force: true })
+    fs.rmSync(inlineCacheFile, { force: true })
+  })
+  test.afterEach(() => {
+    fs.rmSync(cacheFile, { force: true })
+    fs.rmSync(inlineCacheFile, { force: true })
+  })
 
   test('replays a server reference without loading its module', async ({
     page,
@@ -71,5 +78,36 @@ function defineTests(f: Fixture) {
     await page.getByTestId('invoke-action').click()
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('true')
+  })
+
+  test('replays an inline server reference without rerunning its component', async ({
+    page,
+  }) => {
+    await page.goto(f.url('/cache-inline'))
+    await waitForHydration(page)
+    // The SSR entry renders the route module's metadata as the document title.
+    await expect(page).toHaveTitle('Cached inline content')
+    await expect(page.getByTestId('inline-cache-exists')).toHaveText('true')
+    await expect(page.getByTestId('inline-action-imported')).toHaveText(
+      String(f.mode === 'dev'),
+    )
+    await expect(page.getByTestId('inline-action-invoked')).toHaveText('false')
+
+    // Invoking the inline action right after rendering it must work even
+    // though the module also flows through the SSR graph for its metadata.
+    await page.getByTestId('invoke-inline-action').click()
+    await expect(page.getByTestId('inline-action-imported')).toHaveText('true')
+    await expect(page.getByTestId('inline-action-invoked')).toHaveText('true')
+
+    await page.goto('about:blank')
+    await f.restart()
+
+    await page.goto(f.url('/read-inline-cache-preserve'))
+    await waitForHydration(page)
+    await expect(page.getByTestId('cached-inline-content')).toBeVisible()
+    await expect(page.getByTestId('inline-action-imported')).toHaveText('false')
+    await page.getByTestId('invoke-inline-action').click()
+    await expect(page.getByTestId('inline-action-imported')).toHaveText('true')
+    await expect(page.getByTestId('inline-action-invoked')).toHaveText('true')
   })
 }

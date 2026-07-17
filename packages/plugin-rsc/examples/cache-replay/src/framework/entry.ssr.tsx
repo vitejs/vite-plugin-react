@@ -3,6 +3,7 @@ import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
+import { cachedInlineContentTitle } from '../cached-inline-content'
 import type { RscPayload } from './entry.rsc'
 
 export async function renderHTML(
@@ -26,13 +27,23 @@ export async function renderHTML(
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options.debugNojs
-        ? undefined
-        : bootstrapScriptContent,
-      nonce: options.nonce,
-      formState: options.formState,
-    })
+    htmlStream = await renderToReadableStream(
+      <>
+        {/* The route module's static metadata becomes the document title on
+            every request (React hoists it into <head>). This import is what
+            pulls the module through the SSR graph while its component renders
+            only in the RSC environment. */}
+        <title>{cachedInlineContentTitle}</title>
+        <SsrRoot />
+      </>,
+      {
+        bootstrapScriptContent: options.debugNojs
+          ? undefined
+          : bootstrapScriptContent,
+        nonce: options.nonce,
+        formState: options.formState,
+      },
+    )
   } catch {
     status = 500
     htmlStream = await renderToReadableStream(
