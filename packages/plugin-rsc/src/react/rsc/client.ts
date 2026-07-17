@@ -13,12 +13,27 @@ import type {
 export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
   options: CreateFromReadableStreamEdgeOptions = {},
+  extraOptions?: {
+    /**
+     * Preserve server references for re-serialization without loading their modules.
+     * Preserved references cannot be invoked in the current RSC environment.
+     *
+     * Disabled by default because this API also decodes bound server action
+     * arguments, which must revive references as callable implementations.
+     *
+     * @experimental
+     * @default false
+     */
+    preserveServerReferences?: boolean
+  },
 ): Promise<T> {
   return ReactClient.createFromReadableStream(stream, {
     serverConsumerManifest: {
       // https://github.com/facebook/react/pull/31300
       // https://github.com/vercel/next.js/pull/71527
-      serverModuleMap: createServerManifest(),
+      serverModuleMap: createServerManifest({
+        preserveServerReferences: extraOptions?.preserveServerReferences,
+      }),
       moduleMap: createServerDecodeClientManifest(),
     },
     ...options,

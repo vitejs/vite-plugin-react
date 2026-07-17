@@ -1,13 +1,40 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
+import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
+  /**
+   * The local declaration name when statically available.
+   *
+   * - `"Page"` for `export function Page() {}`
+   * - `"Page"` for `export const Page = () => {}`
+   * - `undefined` for `export default () => {}`
+   * - `undefined` for `export { Page }`
+   */
   declName?: string
+  /**
+   * Whether the exported value is statically known to be a function.
+   *
+   * - `true` for `export const Page = () => {}`
+   * - `false` for `export const value = 1`
+   * - `undefined` for `export const value = getValue()`
+   * - `undefined` for `export default Page`
+   */
   isFunction?: boolean
+  /**
+   * The local identifier referenced by a default export.
+   * The RSC CSS transform uses this to detect a component by its capitalized
+   * local name and preserve that name on the generated wrapper.
+   *
+   * - `"Page"` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default function Page() {}`
+   * - `undefined` for `export default () => {}`
+   */
   defaultExportIdentifierName?: string
 }
+
+type ExportWithMeta = { name: string; meta: ExportMeta }
 
 export type TransformWrapExportFilter = (
   name: string,
@@ -34,12 +61,16 @@ export function transformWrapExport(
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
 
-  function wrapSimple(
-    start: number,
-    end: number,
-    exports: { name: string; meta: ExportMeta }[],
-  ) {
-    exportNames.push(...exports.map((e) => e.name))
+  function wrapSimple(start: number, end: number, exports: ExportWithMeta[]) {
+    const filteredExports = exports.map((item) => ({
+      ...item,
+      shouldWrap: filter(item.name, item.meta),
+    }))
+    exportNames.push(
+      ...filteredExports
+        .filter((item) => item.shouldWrap)
+        .map((item) => item.name),
+    )
     // update code and move to preserve `registerServerReference` position
     // e.g.
     // input
@@ -49,9 +80,9 @@ export function transformWrapExport(
     //   async function f() {}
     //   f = registerServerReference(f, ...)   << maps to original "export" token
     //   export { f }                          <<
-    const newCode = exports
+    const newCode = filteredExports
       .map((e) => [
-        filter(e.name, e.meta) &&
+        e.shouldWrap &&
           `${e.name} = /* #__PURE__ */ ${options.runtime(
             e.name,
             e.name,
@@ -67,11 +98,11 @@ export function transformWrapExport(
   }
 
   function wrapExport(name: string, exportName: string, meta: ExportMeta = {}) {
-    exportNames.push(exportName)
     if (!filter(exportName, meta)) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
     }
+    exportNames.push(exportName)
 
     toAppend.push(
       `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
@@ -94,20 +125,19 @@ export function transformWrapExport(
           /**
            * export function foo() {}
            */
-          validateNonAsyncFunction(options, node.declaration)
           const name = node.declaration.id.name
-          wrapSimple(node.start, node.declaration.start, [
-            { name, meta: { isFunction: true, declName: name } },
-          ])
+          const meta: ExportMeta = {
+            isFunction: getIsFunction(node.declaration),
+            declName: name,
+          }
+          if (filter(name, meta)) {
+            validateNonAsyncFunction(options, node.declaration)
+          }
+          wrapSimple(node.start, node.declaration.start, [{ name, meta }])
         } else if (node.declaration.type === 'VariableDeclaration') {
           /**
            * export const foo = 1, bar = 2
            */
-          for (const decl of node.declaration.declarations) {
-            if (decl.init) {
-              validateNonAsyncFunction(options, decl.init)
-            }
-          }
           if (node.declaration.kind === 'const') {
             output.update(
               node.declaration.start,
@@ -115,26 +145,27 @@ export function transformWrapExport(
               'let',
             )
           }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extractNames(decl.id),
-          )
-          // treat only simple single decl as function
-          let isFunction = false
-          if (node.declaration.declarations.length === 1) {
-            const decl = node.declaration.declarations[0]!
-            isFunction =
-              decl.id.type === 'Identifier' &&
-              (decl.init?.type === 'ArrowFunctionExpression' ||
-                decl.init?.type === 'FunctionExpression')
-          }
-          wrapSimple(
-            node.start,
-            node.declaration.start,
-            names.map((name) => ({
+          const exports: ExportWithMeta[] = []
+          for (const decl of node.declaration.declarations) {
+            const isFunction =
+              decl.id.type === 'Identifier' && decl.init
+                ? getIsFunction(decl.init)
+                : undefined
+            const declarationExports: ExportWithMeta[] = extractNames(
+              decl.id,
+            ).map((name) => ({
               name,
               meta: { isFunction, declName: name },
-            })),
-          )
+            }))
+            exports.push(...declarationExports)
+            if (
+              decl.init &&
+              declarationExports.some(({ name, meta }) => filter(name, meta))
+            ) {
+              validateNonAsyncFunction(options, decl.init)
+            }
+          }
+          wrapSimple(node.start, node.declaration.start, exports)
         } else {
           node.declaration satisfies never
         }
@@ -198,9 +229,8 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(options, node.declaration)
       let localName: string
-      let isFunction = false
+      let isFunction: boolean | undefined
       let declName: string | undefined
       let defaultExportIdentifierName: string | undefined
       if (
@@ -211,7 +241,7 @@ export function transformWrapExport(
         // preserve name scope for `function foo() {}` and `class Foo {}`
         localName = node.declaration.id.name
         output.remove(node.start, node.declaration.start)
-        isFunction = node.declaration.type === 'FunctionDeclaration'
+        isFunction = getIsFunction(node.declaration)
         declName = node.declaration.id.name
       } else {
         // otherwise we can introduce new variable
@@ -219,13 +249,19 @@ export function transformWrapExport(
         output.update(node.start, node.declaration.start, 'const $$default = ')
         if (node.declaration.type === 'Identifier') {
           defaultExportIdentifierName = node.declaration.name
+        } else {
+          isFunction = getIsFunction(node.declaration)
         }
       }
-      wrapExport(localName, 'default', {
+      const defaultMeta: ExportMeta = {
         isFunction,
         declName,
         defaultExportIdentifierName,
-      })
+      }
+      if (filter('default', defaultMeta)) {
+        validateNonAsyncFunction(options, node.declaration)
+      }
+      wrapExport(localName, 'default', defaultMeta)
     }
   }
 
@@ -234,4 +270,25 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
+}
+
+function getIsFunction(
+  node: Node | ExportDefaultDeclaration['declaration'],
+): boolean | undefined {
+  if (
+    node.type === 'FunctionDeclaration' ||
+    node.type === 'ArrowFunctionExpression' ||
+    node.type === 'FunctionExpression'
+  ) {
+    return true
+  }
+  if (
+    node.type === 'ClassDeclaration' ||
+    node.type === 'Literal' ||
+    node.type === 'ObjectExpression' ||
+    node.type === 'ArrayExpression' ||
+    node.type === 'ClassExpression'
+  ) {
+    return false
+  }
 }
