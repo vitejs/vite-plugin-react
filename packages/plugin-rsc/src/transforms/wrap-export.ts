@@ -6,19 +6,30 @@ import { extractNames, validateNonAsyncFunction } from './utils'
 type ExportMeta = {
   /**
    * The local declaration name when statically available.
-   * For example, `Page` in `export function Page() {}`.
+   *
+   * - `"Page"` for `export function Page() {}`
+   * - `"Page"` for `export const Page = () => {}`
+   * - `undefined` for `export default () => {}`
+   * - `undefined` for `export { Page }`
    */
   declName?: string
   /**
-   * Whether the export is statically known to be a function
-   * (`export const Page = () => {}`) or non-function
-   * (`export const value = 1`). Undefined means unknown, for example
-   * `export default value`.
+   * Whether the exported value is statically known to be a function.
+   *
+   * - `true` for `export const Page = () => {}`
+   * - `false` for `export const value = 1`
+   * - `undefined` for `export const value = getValue()`
+   * - `undefined` for `export default Page`
    */
   isFunction?: boolean
   /**
-   * The local identifier used by a default export.
-   * For example, `Page` in `export default Page`.
+   * The local identifier referenced by a default export.
+   * The RSC CSS transform uses this to detect a component by its capitalized
+   * local name and preserve that name on the generated wrapper.
+   *
+   * - `"Page"` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default function Page() {}`
+   * - `undefined` for `export default () => {}`
    */
   defaultExportIdentifierName?: string
 }
