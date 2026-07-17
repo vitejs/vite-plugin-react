@@ -371,9 +371,11 @@ export function vitePluginRscMinimal(
                   const resolved = await this.resolve(parsed.id)
                   const id = resolved?.id ?? parsed.id
                   // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L271-L282
-                  if (
-                    isFileLoadingAllowed(manager.config, slash(cleanUrl(id)))
-                  ) {
+                  const allowed = isFileLoadingAllowed(
+                    manager.config,
+                    slash(cleanUrl(id)),
+                  )
+                  if (allowed) {
                     await this.environment.transformRequest(parsed.id)
                   }
                 } catch {}
