@@ -654,7 +654,7 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
 
-  packages/plugin-rsc/examples/inline-action-replay:
+  packages/plugin-rsc/examples/prerender-inline-action:
     dependencies:
       react:
         specifier: ^19.2.7

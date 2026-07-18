@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-inline-action-replay",
+  "name": "@vitejs/plugin-rsc-examples-prerender-inline-action",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",

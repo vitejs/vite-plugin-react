@@ -6,7 +6,7 @@ import { waitForHydration } from './helper'
 
 test.describe('dev', () => {
   const f = useFixture({
-    root: 'examples/inline-action-replay',
+    root: 'examples/prerender-inline-action',
     mode: 'dev',
   })
   defineTests(f)
@@ -14,7 +14,7 @@ test.describe('dev', () => {
 
 test.describe('build', () => {
   const f = useFixture({
-    root: 'examples/inline-action-replay',
+    root: 'examples/prerender-inline-action',
     mode: 'build',
   })
   defineTests(f)

@@ -7,7 +7,7 @@ import { vitePluginUseServer } from './plugin'
 //
 // - The rsc environment registers inline "use server" actions. Modules
 //   containing them may also flow through ssr/client graphs (e.g. a framework
-//   reading route metadata during SSR). The inline-action-replay example covers
+//   reading route metadata during SSR). The prerender-inline-action example covers
 //   this path. Those passes must not clear the entries, in dev or build, or a
 //   persisted payload fails with "server reference not found".
 // - Cleanup of a removed directive still happens: the rsc environment may
