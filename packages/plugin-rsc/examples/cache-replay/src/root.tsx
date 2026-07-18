@@ -1,38 +1,35 @@
 import { existsSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { readFile, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { actionState } from './action-state'
-import { readFlight, readFlightPreserved, writeFlight } from './flight'
 import {
-  inlineActionState,
-  secondInlineActionState,
-} from './inline-action-state'
+  createFromReadableStream,
+  renderToReadableStream,
+} from '@vitejs/plugin-rsc/rsc'
+import { actionState } from './action-state'
 
-export async function Root(props: {
-  url: URL
-  loadPage: (pathname: string) => Promise<React.ReactNode>
-}) {
+export async function Root(props: { url: URL }) {
   const cacheFile = resolve('.flight-cache')
-  const inlineCacheFile = resolve('.flight-inline-cache')
   let cachedContent: React.ReactNode
-  let cachedInlineContent: React.ReactNode
   if (props.url.pathname === '/cache') {
     const { CachedContent } = await import('./cached-content')
     cachedContent = <CachedContent />
-    await writeFlight(cacheFile, cachedContent)
+    const stream = renderToReadableStream(cachedContent)
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer())
+    await writeFile(cacheFile, bytes)
   } else if (props.url.pathname === '/read-cache') {
-    cachedContent = await readFlight(cacheFile)
+    const bytes = await readFile(cacheFile)
+    cachedContent = await createFromReadableStream<React.ReactNode>(
+      new Blob([bytes]).stream(),
+    )
   } else if (props.url.pathname === '/read-cache-preserve') {
-    cachedContent = await readFlightPreserved(cacheFile)
+    const bytes = await readFile(cacheFile)
+    cachedContent = await createFromReadableStream<React.ReactNode>(
+      new Blob([bytes]).stream(),
+      {},
+      { preserveServerReferences: true },
+    )
   } else if (props.url.pathname === '/delete-cache') {
     await rm(cacheFile, { force: true })
-  } else if (props.url.pathname === '/cache-inline') {
-    cachedInlineContent = await props.loadPage(props.url.pathname)
-    await writeFlight(inlineCacheFile, cachedInlineContent)
-  } else if (props.url.pathname === '/cache-inline-second') {
-    cachedInlineContent = await props.loadPage(props.url.pathname)
-  } else if (props.url.pathname === '/read-inline-cache-preserve') {
-    cachedInlineContent = await readFlightPreserved(inlineCacheFile)
   }
 
   return (
@@ -44,10 +41,6 @@ export async function Root(props: {
           <a href="/read-cache">Read cache</a> |{' '}
           <a href="/read-cache-preserve">Read cache and preserve references</a>{' '}
           | <a href="/delete-cache">Delete cache</a>
-          {' | '}
-          <a href="/cache-inline">Cache inline action</a> |{' '}
-          <a href="/read-inline-cache-preserve">Read inline action cache</a> |{' '}
-          <a href="/cache-inline-second">Second inline page</a>
         </nav>
         <p>
           Action imported in the RSC environment:{' '}
@@ -67,38 +60,7 @@ export async function Root(props: {
             {String(existsSync(cacheFile))}
           </output>
         </p>
-        <p>
-          Inline action imported in the RSC environment:{' '}
-          <output data-testid="inline-action-imported">
-            {String(inlineActionState.imported)}
-          </output>
-        </p>
-        <p>
-          Inline action invoked:{' '}
-          <output data-testid="inline-action-invoked">
-            {String(inlineActionState.invoked)}
-          </output>
-        </p>
-        <p>
-          Inline cache file exists:{' '}
-          <output data-testid="inline-cache-exists">
-            {String(existsSync(inlineCacheFile))}
-          </output>
-        </p>
-        <p>
-          Second inline action imported in the RSC environment:{' '}
-          <output data-testid="second-inline-action-imported">
-            {String(secondInlineActionState.imported)}
-          </output>
-        </p>
-        <p>
-          Second inline action invoked:{' '}
-          <output data-testid="second-inline-action-invoked">
-            {String(secondInlineActionState.invoked)}
-          </output>
-        </p>
         {cachedContent}
-        {cachedInlineContent}
       </body>
     </html>
   )

@@ -22,16 +22,9 @@ test.describe('build', () => {
 
 function defineTests(f: Fixture) {
   const cacheFile = path.join(f.root, '.flight-cache')
-  const inlineCacheFile = path.join(f.root, '.flight-inline-cache')
 
-  test.beforeEach(() => {
-    fs.rmSync(cacheFile, { force: true })
-    fs.rmSync(inlineCacheFile, { force: true })
-  })
-  test.afterEach(() => {
-    fs.rmSync(cacheFile, { force: true })
-    fs.rmSync(inlineCacheFile, { force: true })
-  })
+  test.beforeEach(() => fs.rmSync(cacheFile, { force: true }))
+  test.afterEach(() => fs.rmSync(cacheFile, { force: true }))
 
   test('replays a server reference without loading its module', async ({
     page,
@@ -78,62 +71,5 @@ function defineTests(f: Fixture) {
     await page.getByTestId('invoke-action').click()
     await expect(page.getByTestId('action-imported')).toHaveText('true')
     await expect(page.getByTestId('action-invoked')).toHaveText('true')
-  })
-
-  test('replays an inline server reference without rerunning its component', async ({
-    page,
-  }) => {
-    // Restart so the module graphs are cold: rendering the route must
-    // transform the inline-action module in the rsc environment first and
-    // then in the ssr graph (for its metadata), the order that used to drop
-    // the action's registration.
-    await f.restart()
-
-    await page.goto(f.url('/cache-inline'))
-    await waitForHydration(page)
-    // The SSR entry renders the route module's metadata as the document title.
-    await expect(page).toHaveTitle('Cached inline content')
-    await expect(page.getByTestId('inline-cache-exists')).toHaveText('true')
-    await expect(page.getByTestId('inline-action-imported')).toHaveText(
-      String(f.mode === 'dev'),
-    )
-    await expect(page.getByTestId('inline-action-invoked')).toHaveText('false')
-
-    // Invoking the inline action right after rendering it must work even
-    // though the module also flows through the SSR graph for its metadata.
-    await page.getByTestId('invoke-inline-action').click()
-    await expect(page.getByTestId('inline-action-imported')).toHaveText('true')
-    await expect(page.getByTestId('inline-action-invoked')).toHaveText('true')
-
-    await page.goto('about:blank')
-    await f.restart()
-
-    await page.goto(f.url('/read-inline-cache-preserve'))
-    await waitForHydration(page)
-    await expect(page.getByTestId('cached-inline-content')).toBeVisible()
-    await expect(page.getByTestId('inline-action-imported')).toHaveText('false')
-    await page.getByTestId('invoke-inline-action').click()
-    await expect(page.getByTestId('inline-action-imported')).toHaveText('true')
-    await expect(page.getByTestId('inline-action-invoked')).toHaveText('true')
-
-    // A page added to the shared map flows through the pipeline with no build
-    // configuration changes: prerendered payload, preserved replay, and its
-    // inline action reaching the manifest.
-    await page.goto(f.url('/cache-inline-second'))
-    await waitForHydration(page)
-    await expect(page.getByTestId('second-inline-content')).toBeVisible()
-    await expect(page.getByTestId('second-inline-action-imported')).toHaveText(
-      String(f.mode === 'dev'),
-    )
-    await expect(page.getByTestId('second-inline-action-invoked')).toHaveText(
-      'false',
-    )
-    await page.getByTestId('invoke-second-inline-action').click()
-    await expect(page.getByTestId('second-inline-action-imported')).toHaveText(
-      'true',
-    )
-    await expect(page.getByTestId('second-inline-action-invoked')).toHaveText(
-      'true',
-    )
   })
 }

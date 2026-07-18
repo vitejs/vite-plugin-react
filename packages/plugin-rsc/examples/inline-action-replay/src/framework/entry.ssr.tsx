@@ -3,6 +3,7 @@ import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
+import { pageTitle } from '../inline-page'
 import type { RscPayload } from './entry.rsc'
 
 export async function renderHTML(
@@ -26,13 +27,19 @@ export async function renderHTML(
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options.debugNojs
-        ? undefined
-        : bootstrapScriptContent,
-      nonce: options.nonce,
-      formState: options.formState,
-    })
+    htmlStream = await renderToReadableStream(
+      <>
+        <title>{pageTitle}</title>
+        <SsrRoot />
+      </>,
+      {
+        bootstrapScriptContent: options.debugNojs
+          ? undefined
+          : bootstrapScriptContent,
+        nonce: options.nonce,
+        formState: options.formState,
+      },
+    )
   } catch {
     status = 500
     htmlStream = await renderToReadableStream(
