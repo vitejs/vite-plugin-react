@@ -4,33 +4,35 @@ This guide provides essential tips for contributors working on the RSC plugin.
 
 ## Testing
 
-### E2E Test Setup
+### End-to-End Tests
 
 Tests use Playwright and are located in `e2e/` and use `examples` as test apps.
 
-#### Test Fixture Patterns
+Avoid reducing plugin or runtime behavior to mocked unit tests. Craft E2E coverage that clearly demonstrates the relevant RSC bundler semantics.
 
-- `examples/basic` - comprehensive test suite for the RSC plugin
-- `examples/starter` - lightweight base template for writing more targeted tests using `setupInlineFixture` utility
-- `examples/e2e/temp/` - base directory for test projects
+#### Choosing a Test Fixture
 
-### Adding New Test Cases
+**Adding a dedicated example**
 
-**Expanding `examples/basic` (for comprehensive features)**
-Best for features that should be part of the main test suite. `examples/basic` is mainly used for e2e testing:
+Prefer a runnable app under `examples/<feature>` for substantial end-to-end behavior. Add a corresponding thin test under `e2e/` and cover both development and production build modes when applicable.
 
-1. Add your test case files to `examples/basic/src/routes/`
-2. Update the routing in `examples/basic/src/routes/root.tsx`
-3. Add corresponding tests in `e2e/basic.test.ts`
+**Expanding `examples/basic`**
 
-**Using `setupInlineFixture` (for specific edge cases)**
-Best for testing specific edge cases or isolated features. See `e2e/ssr-thenable.test.ts` for the pattern.
+Use `examples/basic`, which contains comprehensive test scenarios, when the case is a small extension of the existing application and does not require distinct configuration or framework behavior:
 
-<!-- TODO: mention unit test -->
+1. Add the test case files to `examples/basic/src/routes/`.
+2. Update the routing in `examples/basic/src/routes/root.tsx`.
+3. Add corresponding tests in `e2e/basic.test.ts`.
+
+**Using `setupInlineFixture`**
+
+Use `setupInlineFixture` with `examples/starter` for narrow configuration variants, invalid-input coverage, and cases where a standalone runnable example would add mostly boilerplate. Test projects are written under `examples/e2e/temp/`, with dependencies managed in `examples/e2e/package.json`. See `e2e/ssr-thenable.test.ts` for the pattern.
+
+### Unit Tests
+
+Use colocated unit tests for self-contained transforms and utilities.
 
 ## Development Workflow
-
-<!-- TODO: mention playwright vscode extension? -->
 
 ```bash
 # Build packages
@@ -38,6 +40,9 @@ pnpm dev # pnpm -C packages/plugin-rsc dev
 
 # Type check
 pnpm -C packages/plugin-rsc tsc-dev
+
+# Run unit tests
+pnpm -C packages/plugin-rsc test --run
 
 # Run examples
 pnpm -C packages/plugin-rsc/examples/basic dev # build / preview
@@ -58,9 +63,3 @@ pnpm -C packages/plugin-rsc test-e2e -g "hmr"
 # Test projects created with `setupInlineFixture` are locally runnable. For example:
 pnpm -C packages/plugin-rsc/examples/e2e/temp/react-compiler dev
 ```
-
-## Tips
-
-- Prefer `setupInlineFixture` for new tests - it's more maintainable and faster
-- The `examples/basic` project contains comprehensive test scenarios
-- Dependencies for temp test projects are managed in `examples/e2e/package.json`
