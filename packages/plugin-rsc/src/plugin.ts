@@ -1121,6 +1121,14 @@ export function createRpcClient(params) {
       },
       // client build
       generateBundle(_options, bundle) {
+        // In bundledDev the client environment runs a Rollup build while
+        // `mode === 'dev'`, so this hook fires even though there is no RSC
+        // build output. The build-only asset copying and `buildAssetsManifest`
+        // construction below assume a production build (`manager.bundles['rsc']`
+        // is populated); in dev the manifest is served by the `load` hook above
+        // instead. Skip the build-only work in dev to avoid crashing on the
+        // absent RSC bundle.
+        if (this.environment.mode === 'dev') return
         // copy assets from rsc build to client build
         if (this.environment.name === 'client') {
           const rscBundle = manager.bundles['rsc']!
