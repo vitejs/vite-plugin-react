@@ -5,13 +5,14 @@ import type { PrerenderResult } from 'react-dom/static'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
-import { concatStreams } from './stream-utils'
+import { concatStreams, preventStreamClose } from './stream-utils'
 
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<PrerenderResult> {
   const controller = new AbortController()
-  const pendingResult = prerender(<SsrRoot rscStream={keepOpen(rscStream)} />, {
+  const ssrRoot = <SsrRoot rscStream={preventStreamClose(rscStream)} />
+  const pendingResult = prerender(ssrRoot, {
     signal: controller.signal,
     bootstrapScriptContent:
       await import.meta.viteRsc.loadBootstrapScriptContent('index'),
@@ -35,10 +36,8 @@ export async function resumeHtml(
     throw new Error('Expected the PPR render to contain postponed state')
   }
   const [rscForSsr, rscForBrowser] = rscStream.tee()
-  const resumed = await resume(
-    <SsrRoot rscStream={rscForSsr} />,
-    prerenderResult.postponed,
-  )
+  const ssrRoot = <SsrRoot rscStream={rscForSsr} />
+  const resumed = await resume(ssrRoot, prerenderResult.postponed)
   const html = concatStreams(prerenderResult.prelude, resumed)
   return html.pipeThrough(injectRSCPayload(rscForBrowser))
 }
@@ -55,16 +54,4 @@ function SsrRoot({ rscStream }: { rscStream: ReadableStream<Uint8Array> }) {
     payloadCache.set(rscStream, payload)
   }
   return React.use(payload).root
-}
-
-function keepOpen(
-  stream: ReadableStream<Uint8Array>,
-): ReadableStream<Uint8Array> {
-  return stream.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      flush() {
-        return new Promise<void>(() => {})
-      },
-    }),
-  )
 }

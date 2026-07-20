@@ -26,3 +26,15 @@ export function concatStreams(
     }),
   )
 }
+
+export function preventStreamClose(
+  stream: ReadableStream<Uint8Array>,
+): ReadableStream<Uint8Array> {
+  return stream.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      flush() {
+        return new Promise<void>(() => {})
+      },
+    }),
+  )
+}
