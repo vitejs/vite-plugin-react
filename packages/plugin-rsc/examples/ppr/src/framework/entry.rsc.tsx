@@ -8,6 +8,7 @@ import { Root } from '../root'
 import { runPrerender } from './ppr-context'
 import { parseRenderRequest } from './request'
 import type { PprData, RscPayload } from './shared'
+import { stringToStream } from './stream-utils'
 
 let manifestPromise: Promise<Record<string, PprData>> | undefined
 
@@ -93,15 +94,6 @@ async function loadPprData(pathname: string): Promise<PprData> {
     throw new Error(`PPR route not found: ${pathname}`)
   }
   return data
-}
-
-function stringToStream(data: string): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode(data))
-      controller.close()
-    },
-  })
 }
 
 if (import.meta.hot) {

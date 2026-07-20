@@ -5,6 +5,7 @@ import type { PrerenderResult } from 'react-dom/static'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './shared'
+import { concatStreams } from './stream-utils'
 
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
@@ -38,19 +39,7 @@ export async function resumeHtml(
     <SsrRoot rscStream={rscForSsr} />,
     prerenderResult.postponed,
   )
-  const html = prerenderResult.prelude.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      async flush(controller) {
-        await resumed.pipeTo(
-          new WritableStream({
-            write(chunk) {
-              controller.enqueue(chunk)
-            },
-          }),
-        )
-      },
-    }),
-  )
+  const html = concatStreams(prerenderResult.prelude, resumed)
   return html.pipeThrough(injectRSCPayload(rscForBrowser))
 }
 
