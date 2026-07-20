@@ -58,6 +58,7 @@ import {
 } from './plugins/utils'
 import { validateImportPlugin } from './plugins/validate-import'
 import {
+  FS_PREFIX,
   cleanUrl,
   directRequestRE,
   evalValue,
@@ -1690,10 +1691,16 @@ function vitePluginUseClient(
                 '\0virtual:vite-rsc/client-in-server-package-proxy/'.length,
               ),
             )
+            // Always emit `/@fs/<abs-path>` so import-analysis resolves the
+            // module directly from disk. Without this, when this proxy is
+            // reached via a relative import (so the optimizer doesn't rewrite
+            // it to a `?v=<hash>` URL), import-analysis would treat the raw
+            // absolute path as a root-relative URL and look up the wrong file.
+            const url = path.posix.join(FS_PREFIX, id)
             // TODO: avoid `export default undefined`
             return `
-            export * from ${JSON.stringify(id)};
-            import * as __all__ from ${JSON.stringify(id)};
+            export * from ${JSON.stringify(url)};
+            import * as __all__ from ${JSON.stringify(url)};
             export default __all__.default;
           `
           }
