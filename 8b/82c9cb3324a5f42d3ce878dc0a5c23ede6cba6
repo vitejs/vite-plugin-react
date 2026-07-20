@@ -1,0 +1,199 @@
+.github/workflows/ci-rsc.yml
+  s_f6364a0d883bef::t_bbdb00ec94a6d4 30,67
+.github/workflows/ci.yml
+  s_f6364a0d883bef::t_ca2b7dd4e581de 49,74,109
+.github/workflows/copilot-setup-steps.yml
+  s_f6364a0d883bef::t_6cc15ce3c90efd 25
+.github/workflows/publish.yml
+  s_f6364a0d883bef::t_8a1931bb20ffaf 22
+.github/workflows/release-continuous.yml
+  s_f6364a0d883bef::t_81d8a9cd478b63 26
+.github/workflows/zizmor.yml
+  s_f6364a0d883bef::t_b05eb90977a9d5 30
+AGENTS.md
+  s_f6364a0d883bef::t_f6aabd44c19551 16
+package.json
+  s_f6364a0d883bef::t_2707637f58c692 30,34,36-39,41-43,45,47,50-51,53,75
+packages/plugin-react-swc/package.json
+  s_f6364a0d883bef::t_ddc014a70722b9 36,38,40,42
+packages/plugin-react-swc/playground/styled-components/package.json
+  s_f6364a0d883bef::t_e4fc42d6ff5837 13
+packages/plugin-react/CHANGELOG.md
+  s_f6364a0d883bef::t_cc26ef6b5298c4 5-6
+packages/plugin-react/package.json
+  s_f6364a0d883bef::t_587800098b6feb 3,49,55-57
+packages/plugin-react/src/index.ts
+  s_f6364a0d883bef::t_5c8d698f85d663 175-177
+packages/plugin-react/src/reactCompilerPreset.ts
+  s_f6364a0d883bef::t_b30c7fd18183e2 1,14-19
+packages/plugin-rsc/AGENTS.md
+  s_f6364a0d883bef::t_ef974f654126fa 7-8,18
+packages/plugin-rsc/CHANGELOG.md
+  s_f6364a0d883bef::t_3aa7275f3ed372 1-32
+packages/plugin-rsc/CONTRIBUTING.md
+  s_f6364a0d883bef::t_ca14dd2014a8da 7,11,13,15,17,19,21,23-25,27-33,35,44-46
+packages/plugin-rsc/README.md
+  s_f6364a0d883bef::t_1dfff670a603ee 447,449-450,453-471,499-500,502-504,508-509,511-515
+packages/plugin-rsc/e2e/basic.test.ts
+  s_f6364a0d883bef::t_590c40361bb39c 435,438-443,455,457-479,1648-1655
+packages/plugin-rsc/e2e/cache-replay.test.ts
+  s_f6364a0d883bef::t_5124f5603853a2 1-75
+packages/plugin-rsc/e2e/fixture.ts
+  s_f6364a0d883bef::t_31a28cc7b8e1a8 79-97,103,109-110,113,117,128-131
+packages/plugin-rsc/e2e/ssr-encode-form-action.test.ts
+  s_f6364a0d883bef::t_890b20f54bc121 1-36
+packages/plugin-rsc/examples/basic/package.json
+  s_f6364a0d883bef::t_7894cd9b776889 19,30,34-36
+packages/plugin-rsc/examples/basic/src/routes/deps/transitive-client/server.tsx
+  s_f6364a0d883bef::t_9f7b7389422f37 1-10
+packages/plugin-rsc/examples/basic/src/routes/root.tsx
+  s_f6364a0d883bef::t_652d52cee13339 33,120
+packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client/package.json
+  s_f6364a0d883bef::t_1b199b3aa60b17 1-14
+packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client/server.js
+  s_f6364a0d883bef::t_dc6938a3b82b10 1-6
+packages/plugin-rsc/examples/basic/test-dep/transitive-client/client.js
+  s_f6364a0d883bef::t_b011fe62846393 1-8
+packages/plugin-rsc/examples/basic/test-dep/transitive-client/package.json
+  s_f6364a0d883bef::t_f692847548d6f3 1-11
+packages/plugin-rsc/examples/browser-mode/package.json
+  s_f6364a0d883bef::t_7520b0ebe69c21 21
+packages/plugin-rsc/examples/browser/package.json
+  s_f6364a0d883bef::t_7d938f440bf770 21
+packages/plugin-rsc/examples/cache-replay/.gitignore
+  s_f6364a0d883bef::t_4f73c375fe4fc8 1-2
+packages/plugin-rsc/examples/cache-replay/README.md
+  s_f6364a0d883bef::t_9fdf5fbfc57ea7 1-32
+packages/plugin-rsc/examples/cache-replay/package.json
+  s_f6364a0d883bef::t_c89e82f3790640 1-24
+packages/plugin-rsc/examples/cache-replay/src/action-state.ts
+  s_f6364a0d883bef::t_78eece3b2ca499 1
+packages/plugin-rsc/examples/cache-replay/src/action.ts
+  s_f6364a0d883bef::t_b159bf35b6c097 1-9
+packages/plugin-rsc/examples/cache-replay/src/cached-content.tsx
+  s_f6364a0d883bef::t_445a1128132863 1-14
+packages/plugin-rsc/examples/cache-replay/src/framework/entry.browser.tsx
+  s_f6364a0d883bef::t_1289f665582381 1-124
+packages/plugin-rsc/examples/cache-replay/src/framework/entry.rsc.tsx
+  s_f6364a0d883bef::t_9a7ec3b47e3288 1-94
+packages/plugin-rsc/examples/cache-replay/src/framework/entry.ssr.tsx
+  s_f6364a0d883bef::t_e16a2db9c5ae6d 1-63
+packages/plugin-rsc/examples/cache-replay/src/framework/error-boundary.tsx
+  s_f6364a0d883bef::t_efa55c3b2664b4 1-65
+packages/plugin-rsc/examples/cache-replay/src/framework/request.tsx
+  s_f6364a0d883bef::t_f3daf78a4e3d26 1-52
+packages/plugin-rsc/examples/cache-replay/src/root.tsx
+  s_f6364a0d883bef::t_62448a2e2a6441 1-67
+packages/plugin-rsc/examples/cache-replay/tsconfig.json
+  s_f6364a0d883bef::t_d39911fd9cd3ee 1-17
+packages/plugin-rsc/examples/cache-replay/vite.config.ts
+  s_f6364a0d883bef::t_01fccf926f897f 1-30
+packages/plugin-rsc/examples/no-ssr/package.json
+  s_f6364a0d883bef::t_f3cb38380f2cd9 21
+packages/plugin-rsc/examples/react-router/package.json
+  s_f6364a0d883bef::t_c902ba0ce5060c 18,21-23,28-30
+packages/plugin-rsc/examples/ssg/package.json
+  s_f6364a0d883bef::t_daa6b6de93aa81 23
+packages/plugin-rsc/examples/ssg/src/framework/entry.browser.tsx
+  s_f6364a0d883bef::t_dc25df4616be52 3,12-14,17-23,31,33,39-46,60,63,68-69,116
+packages/plugin-rsc/examples/ssr-encode-form-action/README.md
+  s_f6364a0d883bef::t_4b572c35e9a8c1 1,3,5-6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58-65,68,70,72-76,78,80,82,84,86-90,92
+packages/plugin-rsc/examples/ssr-encode-form-action/package.json
+  s_f6364a0d883bef::t_c22538204b9c99 1-22
+packages/plugin-rsc/examples/ssr-encode-form-action/src/action.ts
+  s_f6364a0d883bef::t_1826d80ac12c75 1-7
+packages/plugin-rsc/examples/ssr-encode-form-action/src/framework/entry.browser.ts
+  s_f6364a0d883bef::t_376dfd97501ae6 1
+packages/plugin-rsc/examples/ssr-encode-form-action/src/framework/entry.rsc.tsx
+  s_f6364a0d883bef::t_4a40e8fd8c8891 1-20
+packages/plugin-rsc/examples/ssr-encode-form-action/src/framework/entry.ssr.tsx
+  s_f6364a0d883bef::t_67cd86d386cbf9 1-110
+packages/plugin-rsc/examples/ssr-encode-form-action/src/root.tsx
+  s_f6364a0d883bef::t_37f869bd0f3067 1-19
+packages/plugin-rsc/examples/ssr-encode-form-action/src/state.ts
+  s_f6364a0d883bef::t_ceb67b556d5a55 1-9
+packages/plugin-rsc/examples/ssr-encode-form-action/tsconfig.json
+  s_f6364a0d883bef::t_53831335b54dff 1-17
+packages/plugin-rsc/examples/ssr-encode-form-action/vite.config.ts
+  s_f6364a0d883bef::t_eb9e30fe42677c 1-29
+packages/plugin-rsc/examples/starter-extra/package.json
+  s_f6364a0d883bef::t_223776a738bfa8 21,27-28
+packages/plugin-rsc/examples/starter-extra/src/framework/entry.rsc.tsx
+  s_f6364a0d883bef::t_b578886b4a55b5 8
+packages/plugin-rsc/examples/starter/package.json
+  s_f6364a0d883bef::t_038cbc52144dbf 22
+packages/plugin-rsc/package.json
+  s_f6364a0d883bef::t_cc790cf2fd577a 3,43,46,53,56,67
+packages/plugin-rsc/src/core/rsc.ts
+  s_f6364a0d883bef::t_ecb14819d9a627 5,31-32,34-45,51,103-105,117
+packages/plugin-rsc/src/core/shared.ts
+  s_f6364a0d883bef::t_1093488c145978 6
+packages/plugin-rsc/src/plugin.ts
+  s_f6364a0d883bef::t_4bdf35eee31eb7 24,72,103,138,385,389,399,402-423,1220,1245,1247,1261,1615,1749-1763,2107,2274,2287
+packages/plugin-rsc/src/react/rsc.ts
+  s_f6364a0d883bef::t_0d476cd39b9bc9 1-2
+packages/plugin-rsc/src/react/rsc/client.ts
+  s_f6364a0d883bef::t_9d2b82f2265bcc 1-46
+packages/plugin-rsc/src/react/rsc/server.ts
+  s_f6364a0d883bef::t_24f642ab5dd8e3 1-61
+packages/plugin-rsc/src/react/ssr.ts
+  s_f6364a0d883bef::t_7f4d8490bc059f 4-8,11,27-32
+packages/plugin-rsc/src/rsc.tsx
+  s_f6364a0d883bef::t_6724ca689c27a5 6-7
+packages/plugin-rsc/src/rsc/client.ts
+  s_f6364a0d883bef::t_ebdeb39dbfed02 1-3
+packages/plugin-rsc/src/rsc/server.tsx
+  s_f6364a0d883bef::t_6bcff6ce9f80f8 1-41
+packages/plugin-rsc/src/rsc/shared.ts
+  s_f6364a0d883bef::t_867f3352f2d4b9 1-21
+packages/plugin-rsc/src/ssr.tsx
+  s_f6364a0d883bef::t_b3f901969ce968 85,87,92-97
+packages/plugin-rsc/src/transforms/wrap-export.test.ts
+  s_4e5cdbd1a64203::t_620971169f1e02 330-355,369-511
+packages/plugin-rsc/src/types/index.ts
+  s_f6364a0d883bef::t_4b6e4f216669d9 51,62,83-99
+packages/plugin-rsc/src/utils/encryption-runtime.ts
+  s_f6364a0d883bef::t_cb52735578de12 3,31-34
+packages/plugin-rsc/tsdown.config.ts
+  s_f6364a0d883bef::t_21f30d843b7e8e 11-12,20-21
+playground/bundled-dev/__tests__/bundled-dev.spec.ts
+  s_f6364a0d883bef::t_4c9f8f18f10be1 1-30
+playground/bundled-dev/index.html
+  s_f6364a0d883bef::t_39e3b0f05b070a 1-2
+playground/bundled-dev/package.json
+  s_f6364a0d883bef::t_27d5196a18b3c6 1-20
+playground/bundled-dev/src/App.tsx
+  s_f6364a0d883bef::t_0cbc112890bc89 1-14
+playground/bundled-dev/src/main.tsx
+  s_f6364a0d883bef::t_630f3b150587de 1-4
+playground/bundled-dev/tsconfig.json
+  s_f6364a0d883bef::t_aec1fd7e27cec3 1-23
+playground/bundled-dev/vite.config.ts
+  s_f6364a0d883bef::t_e32d9bc9864bc5 1-11
+pnpm-lock.yaml
+  s_f6364a0d883bef::t_3886ab98e0dd04 15-16,21-22,24-25,27-28,30-31,34,36-37,39-40,42-43,48-49,54-55,63-64,66-67,70,72-73,88-89,92,106-107,109-110,112-113,125-126,131-132,137-138,143-144,347-348,415-416,424-425,434,440-441,449-450,482-483,495-496,527-529,540-541,543-544,546-547,571-572,575,599-600,603-631,637,679-680,691-692,695-696,698-699,701-702,716-717,719-720,722-723,753-776,803-804,816-817,834-835,837-838,849-867,901,935,1004,1100,1181-1182,1189-1190,1197-1198,1205-1206,1213-1214,1221-1222,1247-1248,1259-1260,1267-1268,1275-1276,1289-1290,1302-1303,1310-1311,1322-1323,1339-1341,1344,1346-1347,1352-1353,1358-1359,1364-1365,1370-1371,1376-1378,1380-1381,1388-1391,1396-1397,1399-1400,1402-1409,1465-1466,1471-1472,1477-1478,1483-1484,1489-1490,1495-1496,1501-1502,1507-1508,1513-1514,1519-1520,1525-1526,1531-1532,1537-1538,1543-1544,1549-1550,1555-1556,1561-1562,1567-1568,1573-1574,1579-1580,1585-1586,1591-1592,1597-1598,1603-1604,1609-1610,1615-1616,1643-1644,1647-1648,1865-1866,1871-1872,1874-1875,1880-1881,1886-1887,1892-1893,1898-1899,1904-1905,1910-1911,1916-1917,1923-1924,1930-1931,1937-1938,1944-1945,1951-1952,1958-1959,1965-1966,1972-1973,1978-1979,1984-1985,1990-1991,1996-1997,2020-2021,2026-2027,2032-2033,2038-2039,2044-2045,2050-2051,2057-2058,2064-2065,2071-2072,2078-2079,2085-2086,2092-2093,2098-2099,2103-2104,2109-2110,2144-2146,2148-2150,2152-2158,2255-2256,2258-2259,2264-2265,2270-2271,2276-2277,2282-2283,2288-2289,2295-2296,2302-2303,2309-2310,2316-2317,2328-2329,2334-2335,2340-2341,2344-2345,2347,2349-2350,2357-2361,2423-2424,2457-2458,2461,2465-2466,2472-2473,2478-2479,2482-2483,2488-2489,2495-2496,2499-2500,2503-2504,2509-2510,2516-2517,2627-2628,2670-2674,2680-2684,2690-2691,2693-2694,2704-2799,2801-2805,2807-2817,2819-2839,2841-2842,2884-2886,3015-3017,3019-3021,3023-3025,3028-3030,3033-3035,3037-3039,3158-3159,3172-3173,3175-3176,3212-3213,3231-3232,3253-3254,3365-3366,3415-3416,3536-3537,3549-3550,3705-3707,3834-3835,3895-3898,3918-3919,3995-4000,4004-4005,4009-4010,4021-4022,4078-4079,4148-4150,4153,4155-4156,4167-4168,4199-4200,4204-4205,4264-4265,4315-4316,4346-4347,4406-4408,4412-4413,4417,4450-4451,4465-4466,4468-4469,4561-4562,4567,4612-4613,4620-4625,4675-4676,4680-4681,4685,4694-4695,4732-4740,4754,4756,4761,4783,4785-4792,4795,4800,4810,4812-4813,4827,4829-4830,4832-4833,4837,4841-4842,4866,4872,4876,4883,4885-4886,4890,4896,4898,4910,4912-4914,4928,4930-4935,4948,4950-4951,4955,4959,4961,4963-4964,4966-4968,4974,4977,4980,4983,4986,4989,4991-4993,4995-4998,5004,5006,5010,5012,5016-5026,5114,5117,5120,5123,5126,5129,5132,5135,5138,5141,5144,5147,5150,5153,5156,5159,5162,5165,5168,5171,5174,5177,5180,5183,5186,5189,5192,5194,5215,5223,5229,5337,5412-5414,5417,5419-5421,5424,5426,5429,5432,5435,5438,5441,5444,5447,5450,5453,5456,5459,5462,5465,5468,5471,5474,5477,5480,5483,5485,5507,5510,5513,5516,5519,5522,5525,5528,5531,5534,5537,5540,5543,5545-5547,5550,5553,5556,5560,5562,5564,5566,5568,5570,5580,5582,5584,5586-5591,5659,5662-5663,5667,5669,5672,5675,5678,5681,5684,5687,5690,5693,5696,5699,5702,5705,5707-5720,5723,5725,5727-5730,5734-5739,5758,5762-5763,5767,5788,5807,5817,5819,5852,5855-5860,5868,5870-5873,5875,5880,5882-5883,5889,5891-5892,5894,5898,5900-5902,5904,5910,5912,5914,5916-5919,5922-5923,5929,5931-5935,5940,5942,6006,6008-6010,6015,6052-6056,6062-6065,6071,6075-6076,6080,6082,6086,6088,6092,6094,6097,6099-6100,6104,6106,6108,6112-6178,6213,6325,6327,6329,6331,6333-6337,6339,6341-6347,6352,6354,6356-6357,6443,6456,6458,6460-6485,6493,6495-6496,6505,6507,6509-6510,6512,6514,6517,6521,6525,6529,6531,6533-6534,6544,6546,6549,6566,6568,6573-6574,6603,6609-6610,6671,6673,6714,6754,6883,6891,7022,7340,7344-7346,7390-7391,7420,7424-7442,7471,7504-7506,7508,7510,7512,7514,7525,7577,7655,7659-7663,7669,7671,7674-7688,7710,7712,7720,7782,7828,7850,7866-7867,7890,7898-7902,7904,7925,7927-7931,7943,7945,8055,8058-8059,8061,8063,8065,8075-8076,8078,8081-8083,8086-8087,8089,8092,8094-8105,8114,8116,8119,8138,8140-8144,8146,8149,8151-8152,8155,8168,8196-8231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8b82c9cb3324a5f42d3ce878dc0a5c23ede6cba6",
+  "prompts": {},
+  "sessions": {
+    "s_4e5cdbd1a64203": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f8142-0c4c-77a2-b87c-e661ae843694",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "James <james@eli.cx>"
+    },
+    "s_f6364a0d883bef": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edd01-80f0-7d31-b4d8-53e3ae5744bf",
+        "model": "gpt-5.5"
+      },
+      "human_author": "James <james@eli.cx>"
+    }
+  }
+}
