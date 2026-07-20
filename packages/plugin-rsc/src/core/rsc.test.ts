@@ -25,7 +25,7 @@ describe('createServerManifest', () => {
   it('preserves server references without loading their implementation', async () => {
     const manifest = createServerManifest({ preserveServerReferences: true })
     const entry = manifest['module-id#action']!
-    expect(entry.id).toContain('$$decode-server-reference:module-id')
+    expect(entry.id).toContain('$$preserve:module-id')
 
     const module = await (globalThis as any).__vite_rsc_require__(entry.id)
     expect(Object.prototype.hasOwnProperty.call(module, 'action')).toBe(true)

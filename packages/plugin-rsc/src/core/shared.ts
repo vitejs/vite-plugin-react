@@ -3,7 +3,7 @@ export const SERVER_REFERENCE_PREFIX = '$$server:'
 
 export const SERVER_DECODE_CLIENT_PREFIX = '$$decode-client:'
 
-export const SERVER_DECODE_REFERENCE_PREFIX = '$$decode-server-reference:'
+export const SERVER_REFERENCE_PRESERVE_PREFIX = '$$preserve:'
 
 // cache bust memoized require promise during dev
 export function createReferenceCacheTag(): string {

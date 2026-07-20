@@ -1,0 +1,14 @@
+{
+  "name": "@vitejs/test-dep-server-with-transitive-client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./server.js"
+  },
+  "dependencies": {
+    "@vitejs/test-dep-transitive-client": "file:../transitive-client"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

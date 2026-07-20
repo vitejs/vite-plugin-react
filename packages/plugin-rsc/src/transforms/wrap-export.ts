@@ -1,5 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { Program } from 'estree'
+import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
@@ -9,11 +9,38 @@ export type FunctionParameters = {
 }
 
 export type ExportMeta = {
+  /**
+   * The local declaration name when statically available.
+   *
+   * - `"Page"` for `export function Page() {}`
+   * - `"Page"` for `export const Page = () => {}`
+   * - `undefined` for `export default () => {}`
+   * - `undefined` for `export { Page }`
+   */
   declName?: string
+  /**
+   * Whether the exported value is statically known to be a function.
+   *
+   * - `true` for `export const Page = () => {}`
+   * - `false` for `export const value = 1`
+   * - `undefined` for `export const value = getValue()`
+   * - `undefined` for `export default Page`
+   */
   isFunction?: boolean
+  /**
+   * The local identifier referenced by a default export.
+   * The RSC CSS transform uses this to detect a component by its capitalized
+   * local name and preserve that name on the generated wrapper.
+   *
+   * - `"Page"` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default function Page() {}`
+   * - `undefined` for `export default () => {}`
+   */
   defaultExportIdentifierName?: string
   parameters?: FunctionParameters
 }
+
+type ExportWithMeta = { name: string; meta: ExportMeta }
 
 export type TransformWrapExportFilter = (
   name: string,
@@ -60,11 +87,7 @@ export function transformWrapExport(
     }
   }
 
-  function wrapSimple(
-    start: number,
-    end: number,
-    exports: { name: string; meta: ExportMeta }[],
-  ) {
+  function wrapSimple(start: number, end: number, exports: ExportWithMeta[]) {
     const filteredExports = exports.map((item) => ({
       ...item,
       shouldWrap: filter(item.name, item.meta),
@@ -129,8 +152,8 @@ export function transformWrapExport(
            * export function foo() {}
            */
           const name = node.declaration.id.name
-          const meta = {
-            isFunction: node.declaration.type === 'FunctionDeclaration',
+          const meta: ExportMeta = {
+            isFunction: getIsFunction(node.declaration),
             declName: name,
             parameters:
               node.declaration.type === 'FunctionDeclaration'
@@ -152,49 +175,33 @@ export function transformWrapExport(
               'let',
             )
           }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extractNames(decl.id),
-          )
-          // treat only simple single decl as function
-          let isFunction: boolean | undefined
-          let parameters: FunctionParameters | undefined
-          if (node.declaration.declarations.length === 1) {
-            const decl = node.declaration.declarations[0]!
-            if (decl.id.type === 'Identifier') {
-              if (
-                decl.init?.type === 'ArrowFunctionExpression' ||
-                decl.init?.type === 'FunctionExpression'
-              ) {
-                isFunction = true
-                parameters = getFunctionParameters(decl.init)
-              } else if (
-                decl.init?.type === 'Literal' ||
-                decl.init?.type === 'ObjectExpression' ||
-                decl.init?.type === 'ArrayExpression' ||
-                decl.init?.type === 'ClassExpression'
-              ) {
-                isFunction = false
-              }
-            }
-          }
+          const exports: ExportWithMeta[] = []
           for (const decl of node.declaration.declarations) {
+            const isFunction =
+              decl.id.type === 'Identifier' && decl.init
+                ? getIsFunction(decl.init)
+                : undefined
+            const parameters =
+              decl.id.type === 'Identifier' &&
+              (decl.init?.type === 'ArrowFunctionExpression' ||
+                decl.init?.type === 'FunctionExpression')
+                ? getFunctionParameters(decl.init)
+                : undefined
+            const declarationExports: ExportWithMeta[] = extractNames(
+              decl.id,
+            ).map((name) => ({
+              name,
+              meta: { isFunction, declName: name, parameters },
+            }))
+            exports.push(...declarationExports)
             if (
               decl.init &&
-              extractNames(decl.id).some((name) =>
-                filter(name, { isFunction, declName: name }),
-              )
+              declarationExports.some(({ name, meta }) => filter(name, meta))
             ) {
               validateNonAsyncFunction(options, decl.init)
             }
           }
-          wrapSimple(
-            node.start,
-            node.declaration.start,
-            names.map((name) => ({
-              name,
-              meta: { isFunction, declName: name, parameters },
-            })),
-          )
+          wrapSimple(node.start, node.declaration.start, exports)
         } else {
           node.declaration satisfies never
         }
@@ -263,18 +270,11 @@ export function transformWrapExport(
      * export default () => {}
      */
     if (node.type === 'ExportDefaultDeclaration') {
-      const parameters =
-        node.declaration.type === 'FunctionDeclaration' ||
-        node.declaration.type === 'FunctionExpression' ||
-        node.declaration.type === 'ArrowFunctionExpression'
-          ? getFunctionParameters(node.declaration)
-          : node.declaration.type === 'Identifier'
-            ? localFunctionParameters.get(node.declaration.name)
-            : undefined
       let localName: string
       let isFunction: boolean | undefined
       let declName: string | undefined
       let defaultExportIdentifierName: string | undefined
+      let parameters: FunctionParameters | undefined
       if (
         (node.declaration.type === 'FunctionDeclaration' ||
           node.declaration.type === 'ClassDeclaration') &&
@@ -283,29 +283,30 @@ export function transformWrapExport(
         // preserve name scope for `function foo() {}` and `class Foo {}`
         localName = node.declaration.id.name
         output.remove(node.start, node.declaration.start)
-        isFunction = node.declaration.type === 'FunctionDeclaration'
+        isFunction = getIsFunction(node.declaration)
         declName = node.declaration.id.name
+        parameters =
+          node.declaration.type === 'FunctionDeclaration'
+            ? getFunctionParameters(node.declaration)
+            : undefined
       } else {
         // otherwise we can introduce new variable
         localName = '$$default'
         output.update(node.start, node.declaration.start, 'const $$default = ')
         if (node.declaration.type === 'Identifier') {
           defaultExportIdentifierName = node.declaration.name
-        } else if (
-          node.declaration.type === 'ArrowFunctionExpression' ||
-          node.declaration.type === 'FunctionExpression'
-        ) {
-          isFunction = true
-        } else if (
-          node.declaration.type === 'Literal' ||
-          node.declaration.type === 'ObjectExpression' ||
-          node.declaration.type === 'ArrayExpression' ||
-          node.declaration.type === 'ClassExpression'
-        ) {
-          isFunction = false
+          parameters = localFunctionParameters.get(node.declaration.name)
+        } else {
+          isFunction = getIsFunction(node.declaration)
+          parameters =
+            node.declaration.type === 'FunctionDeclaration' ||
+            node.declaration.type === 'FunctionExpression' ||
+            node.declaration.type === 'ArrowFunctionExpression'
+              ? getFunctionParameters(node.declaration)
+              : undefined
         }
       }
-      const defaultMeta = {
+      const defaultMeta: ExportMeta = {
         isFunction,
         declName,
         defaultExportIdentifierName,
@@ -323,6 +324,27 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
+}
+
+function getIsFunction(
+  node: Node | ExportDefaultDeclaration['declaration'],
+): boolean | undefined {
+  if (
+    node.type === 'FunctionDeclaration' ||
+    node.type === 'ArrowFunctionExpression' ||
+    node.type === 'FunctionExpression'
+  ) {
+    return true
+  }
+  if (
+    node.type === 'ClassDeclaration' ||
+    node.type === 'Literal' ||
+    node.type === 'ObjectExpression' ||
+    node.type === 'ArrayExpression' ||
+    node.type === 'ClassExpression'
+  ) {
+    return false
+  }
 }
 
 function getFunctionParameters(node: {
