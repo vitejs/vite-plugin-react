@@ -3,13 +3,7 @@ import { Suspense } from 'react'
 import { Counter } from './counter'
 import { suspendDuringPrerender } from './framework/ppr-context'
 
-export function Root({
-  url,
-  staticTimestamp,
-}: {
-  url: URL
-  staticTimestamp: string
-}) {
+export function Root({ url, timestamp }: { url: URL; timestamp: string }) {
   return (
     <html lang="en">
       <head>
@@ -20,7 +14,7 @@ export function Root({
       <body>
         <main>
           <h1>RSC Partial Prerendering</h1>
-          <p data-testid="static">Static shell: {staticTimestamp}</p>
+          <p data-testid="static">Static shell: {timestamp}</p>
           <Suspense
             fallback={<p data-testid="fallback">Loading request data...</p>}
           >

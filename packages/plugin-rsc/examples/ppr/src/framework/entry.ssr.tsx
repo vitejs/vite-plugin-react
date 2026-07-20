@@ -1,9 +1,10 @@
 import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import { resume } from 'react-dom/server.edge'
+import type { PrerenderResult } from 'react-dom/static'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
-import type { PprData, RscPayload } from './shared'
+import type { RscPayload } from './shared'
 
 const payloadCache = new WeakMap<
   ReadableStream<Uint8Array>,
@@ -12,7 +13,7 @@ const payloadCache = new WeakMap<
 
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
-): Promise<Omit<PprData, 'staticTimestamp'>> {
+): Promise<PrerenderResult> {
   const controller = new AbortController()
   const pendingResult = prerender(<SsrRoot rscStream={keepOpen(rscStream)} />, {
     signal: controller.signal,
@@ -27,25 +28,31 @@ export async function prerenderHtml(
   if (result.postponed == null) {
     throw new Error('Expected the PPR render to contain postponed state')
   }
-  return {
-    html: await new Response(result.prelude).text(),
-    postponed: JSON.stringify(result.postponed),
-  }
+  return result
 }
 
 export async function resumeHtml(
   rscForSsr: ReadableStream<Uint8Array>,
   rscForBrowser: ReadableStream<Uint8Array>,
-  pprData: PprData,
+  prerenderResult: PrerenderResult,
 ): Promise<ReadableStream<Uint8Array>> {
+  if (prerenderResult.postponed == null) {
+    throw new Error('Expected the PPR render to contain postponed state')
+  }
   const resumed = await resume(
     <SsrRoot rscStream={rscForSsr} />,
-    JSON.parse(pprData.postponed),
+    prerenderResult.postponed,
   )
-  const html = resumed.pipeThrough(
+  const html = prerenderResult.prelude.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode(pprData.html))
+      async flush(controller) {
+        await resumed.pipeTo(
+          new WritableStream({
+            write(chunk) {
+              controller.enqueue(chunk)
+            },
+          }),
+        )
       },
     }),
   )

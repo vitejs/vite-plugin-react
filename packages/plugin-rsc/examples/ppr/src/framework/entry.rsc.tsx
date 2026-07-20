@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { prerender } from '@vitejs/plugin-rsc/rsc/static'
+import type { PrerenderResult } from 'react-dom/static'
 import { Root } from '../root'
 import { runPrerender } from './ppr-context'
 import { parseRenderRequest } from './request'
@@ -18,26 +19,36 @@ export default async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
 
   if (renderRequest.isRsc) {
-    return new Response(
-      renderToReadableStream(
-        createPayload(renderRequest.url, new Date().toISOString()),
+    const payload: RscPayload = {
+      root: (
+        <Root url={renderRequest.url} timestamp={new Date().toISOString()} />
       ),
-      {
-        headers: { 'content-type': 'text/x-component;charset=utf-8' },
-      },
-    )
+    }
+    return new Response(renderToReadableStream(payload), {
+      headers: { 'content-type': 'text/x-component;charset=utf-8' },
+    })
   }
 
   const pprData = import.meta.env.DEV
     ? await handlePpr(renderRequest.request)
     : await loadPprData(renderRequest.url.pathname)
-  const payload = createPayload(renderRequest.url, pprData.staticTimestamp)
+  const payload: RscPayload = {
+    root: <Root url={renderRequest.url} timestamp={pprData.staticTimestamp} />,
+  }
   const rscStream = renderToReadableStream(payload)
   const [rscForSsr, rscForBrowser] = rscStream.tee()
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  const htmlStream = await ssr.resumeHtml(rscForSsr, rscForBrowser, pprData)
+  const prerenderResult: PrerenderResult = {
+    prelude: stringToStream(pprData.html),
+    postponed: JSON.parse(pprData.postponed),
+  }
+  const htmlStream = await ssr.resumeHtml(
+    rscForSsr,
+    rscForBrowser,
+    prerenderResult,
+  )
 
   return new Response(htmlStream, {
     headers: { 'content-type': 'text/html;charset=utf-8' },
@@ -45,8 +56,10 @@ export default async function handler(request: Request): Promise<Response> {
 }
 
 export async function handlePpr(request: Request): Promise<PprData> {
-  const staticTimestamp = new Date().toISOString()
-  const payload = createPayload(new URL(request.url), staticTimestamp)
+  const timestamp = new Date().toISOString()
+  const payload: RscPayload = {
+    root: <Root url={new URL(request.url)} timestamp={timestamp} />,
+  }
   const controller = new AbortController()
   const pendingResult = runPrerender(() =>
     prerender(payload, {
@@ -59,14 +72,12 @@ export async function handlePpr(request: Request): Promise<PprData> {
   const ssr = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
+  const result = await ssr.prerenderHtml(prelude)
   return {
-    ...(await ssr.prerenderHtml(prelude)),
-    staticTimestamp,
+    html: await new Response(result.prelude).text(),
+    postponed: JSON.stringify(result.postponed),
+    staticTimestamp: timestamp,
   }
-}
-
-function createPayload(url: URL, staticTimestamp: string): RscPayload {
-  return { root: <Root url={url} staticTimestamp={staticTimestamp} /> }
 }
 
 async function loadPprData(pathname: string): Promise<PprData> {
@@ -82,6 +93,15 @@ async function loadPprData(pathname: string): Promise<PprData> {
     throw new Error(`PPR route not found: ${pathname}`)
   }
   return data
+}
+
+function stringToStream(data: string): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(data))
+      controller.close()
+    },
+  })
 }
 
 if (import.meta.hot) {
