@@ -1,7 +1,7 @@
 import { setTimeout as delay } from 'node:timers/promises'
 import { Suspense } from 'react'
 import { Counter } from './counter'
-import { createCachedComponent } from './framework/create-cached-component'
+import { createCachedComponent } from './framework/cache'
 import { suspendDuringPrerender } from './framework/ppr-context'
 
 export function Root({ url }: { url: URL }) {

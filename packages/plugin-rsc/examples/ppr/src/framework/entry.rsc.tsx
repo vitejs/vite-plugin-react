@@ -5,6 +5,7 @@ import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { prerender } from '@vitejs/plugin-rsc/rsc/static'
 import type { PrerenderResult } from 'react-dom/static'
 import { Root } from '../root'
+import { exportCache, importCache, type CacheData } from './cache'
 import { runPrerender } from './ppr-context'
 import { parseRenderRequest } from './request'
 import { stringToStream } from './stream-utils'
@@ -14,6 +15,7 @@ export type RscPayload = {
 }
 
 export type PprData = {
+  cache: CacheData
   html: string
   postponed: string
 }
@@ -26,6 +28,10 @@ export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
+  const pprData = import.meta.env.DEV
+    ? undefined
+    : await loadPprData(renderRequest.url.pathname)
+  if (pprData) importCache(pprData.cache)
 
   if (renderRequest.isRsc) {
     const rscPayload: RscPayload = {
@@ -36,9 +42,7 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const pprData = import.meta.env.DEV
-    ? await handlePpr(renderRequest.request)
-    : await loadPprData(renderRequest.url.pathname)
+  const htmlPprData = pprData ?? (await handlePpr(renderRequest.request))
   const rscPayload: RscPayload = {
     root: <Root url={renderRequest.url} />,
   }
@@ -47,8 +51,8 @@ async function handler(request: Request): Promise<Response> {
     typeof import('./entry.ssr')
   >('ssr', 'index')
   const prerenderResult: PrerenderResult = {
-    prelude: stringToStream(pprData.html),
-    postponed: JSON.parse(pprData.postponed),
+    prelude: stringToStream(htmlPprData.html),
+    postponed: JSON.parse(htmlPprData.postponed),
   }
   const htmlStream = await ssrEntryModule.resumeHtml(rscStream, prerenderResult)
 
@@ -75,6 +79,7 @@ export async function handlePpr(request: Request): Promise<PprData> {
   >('ssr', 'index')
   const result = await ssrEntryModule.prerenderHtml(prelude)
   return {
+    cache: await exportCache(),
     html: await new Response(result.prelude).text(),
     postponed: JSON.stringify(result.postponed),
   }
