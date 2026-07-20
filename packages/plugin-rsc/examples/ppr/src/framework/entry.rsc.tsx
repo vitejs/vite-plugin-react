@@ -7,14 +7,17 @@ import type { PrerenderResult } from 'react-dom/static'
 import { Root } from '../root'
 import { runPrerender } from './ppr-context'
 import { parseRenderRequest } from './request'
-import type { PprData } from './shared'
 import { stringToStream } from './stream-utils'
 
 export type RscPayload = {
   root: React.ReactNode
 }
 
-let manifestPromise: Promise<Record<string, PprData>> | undefined
+export type PprData = {
+  html: string
+  postponed: string
+  staticTimestamp: string
+}
 
 export function getStaticPaths(): string[] {
   return ['/']
@@ -81,6 +84,8 @@ export async function handlePpr(request: Request): Promise<PprData> {
     staticTimestamp: timestamp,
   }
 }
+
+let manifestPromise: Promise<Record<string, PprData>> | undefined
 
 async function loadPprData(pathname: string): Promise<PprData> {
   manifestPromise ??= readFile(
