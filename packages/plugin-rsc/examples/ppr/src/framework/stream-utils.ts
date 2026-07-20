@@ -11,6 +11,7 @@ export function concatStreams(
   first: ReadableStream<Uint8Array>,
   second: ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {
+  // Append the resumed HTML after the prerendered shell closes.
   return first.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({
       async flush(controller) {

@@ -1,8 +1,8 @@
-const RSC_POSTFIX = '_.rsc'
+const URL_POSTFIX = '_.rsc'
 
 export function createRscRenderRequest(urlString: string): Request {
   const url = new URL(urlString)
-  url.pathname += RSC_POSTFIX
+  url.pathname += URL_POSTFIX
   return new Request(url)
 }
 
@@ -12,8 +12,8 @@ export function parseRenderRequest(request: Request): {
   url: URL
 } {
   const url = new URL(request.url)
-  if (url.pathname.endsWith(RSC_POSTFIX)) {
-    url.pathname = url.pathname.slice(0, -RSC_POSTFIX.length)
+  if (url.pathname.endsWith(URL_POSTFIX)) {
+    url.pathname = url.pathname.slice(0, -URL_POSTFIX.length)
     return {
       isRsc: true,
       request: new Request(url, request),

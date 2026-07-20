@@ -4,7 +4,7 @@ import { resume } from 'react-dom/server.edge'
 import type { PrerenderResult } from 'react-dom/static'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
-import type { RscPayload } from './shared'
+import type { RscPayload } from './entry.rsc'
 import { concatStreams } from './stream-utils'
 
 export async function prerenderHtml(
@@ -28,13 +28,13 @@ export async function prerenderHtml(
 }
 
 export async function resumeHtml(
-  rscForSsr: ReadableStream<Uint8Array>,
-  rscForBrowser: ReadableStream<Uint8Array>,
+  rscStream: ReadableStream<Uint8Array>,
   prerenderResult: PrerenderResult,
 ): Promise<ReadableStream<Uint8Array>> {
   if (prerenderResult.postponed == null) {
     throw new Error('Expected the PPR render to contain postponed state')
   }
+  const [rscForSsr, rscForBrowser] = rscStream.tee()
   const resumed = await resume(
     <SsrRoot rscStream={rscForSsr} />,
     prerenderResult.postponed,
