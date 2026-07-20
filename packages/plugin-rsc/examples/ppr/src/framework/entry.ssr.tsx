@@ -10,12 +10,13 @@ import { concatStreams, preventStreamClose } from './stream-utils'
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<PrerenderResult> {
-  const controller = new AbortController()
   const ssrRoot = <SsrRoot rscStream={preventStreamClose(rscStream)} />
+  const bootstrapScriptContent =
+    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const controller = new AbortController()
   const pendingResult = prerender(ssrRoot, {
+    bootstrapScriptContent,
     signal: controller.signal,
-    bootstrapScriptContent:
-      await import.meta.viteRsc.loadBootstrapScriptContent('index'),
     onError() {},
   })
   // Allow the SSR environment to load client-reference modules and reach the
