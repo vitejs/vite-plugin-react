@@ -6,11 +6,6 @@ import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './shared'
 
-const payloadCache = new WeakMap<
-  ReadableStream<Uint8Array>,
-  Promise<RscPayload>
->()
-
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<PrerenderResult> {
@@ -59,6 +54,20 @@ export async function resumeHtml(
   return html.pipeThrough(injectRSCPayload(rscForBrowser))
 }
 
+const payloadCache = new WeakMap<
+  ReadableStream<Uint8Array>,
+  Promise<RscPayload>
+>()
+
+function SsrRoot({ rscStream }: { rscStream: ReadableStream<Uint8Array> }) {
+  let payload = payloadCache.get(rscStream)
+  if (!payload) {
+    payload = createFromReadableStream<RscPayload>(rscStream)
+    payloadCache.set(rscStream, payload)
+  }
+  return React.use(payload).root
+}
+
 function keepOpen(
   stream: ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {
@@ -69,13 +78,4 @@ function keepOpen(
       },
     }),
   )
-}
-
-function SsrRoot({ rscStream }: { rscStream: ReadableStream<Uint8Array> }) {
-  let payload = payloadCache.get(rscStream)
-  if (!payload) {
-    payload = createFromReadableStream<RscPayload>(rscStream)
-    payloadCache.set(rscStream, payload)
-  }
-  return React.use(payload).root
 }
