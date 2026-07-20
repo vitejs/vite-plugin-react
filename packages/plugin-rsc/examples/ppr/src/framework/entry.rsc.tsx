@@ -16,7 +16,6 @@ export type RscPayload = {
 export type PprData = {
   html: string
   postponed: string
-  staticTimestamp: string
 }
 
 export function getStaticPaths(): string[] {
@@ -30,9 +29,7 @@ async function handler(request: Request): Promise<Response> {
 
   if (renderRequest.isRsc) {
     const rscPayload: RscPayload = {
-      root: (
-        <Root url={renderRequest.url} timestamp={new Date().toISOString()} />
-      ),
+      root: <Root url={renderRequest.url} />,
     }
     return new Response(renderToReadableStream(rscPayload), {
       headers: { 'content-type': 'text/x-component;charset=utf-8' },
@@ -43,7 +40,7 @@ async function handler(request: Request): Promise<Response> {
     ? await handlePpr(renderRequest.request)
     : await loadPprData(renderRequest.url.pathname)
   const rscPayload: RscPayload = {
-    root: <Root url={renderRequest.url} timestamp={pprData.staticTimestamp} />,
+    root: <Root url={renderRequest.url} />,
   }
   const rscStream = renderToReadableStream(rscPayload)
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
@@ -61,9 +58,8 @@ async function handler(request: Request): Promise<Response> {
 }
 
 export async function handlePpr(request: Request): Promise<PprData> {
-  const timestamp = new Date().toISOString()
   const rscPayload: RscPayload = {
-    root: <Root url={new URL(request.url)} timestamp={timestamp} />,
+    root: <Root url={new URL(request.url)} />,
   }
   const controller = new AbortController()
   const pendingResult = runPrerender(() =>
@@ -81,7 +77,6 @@ export async function handlePpr(request: Request): Promise<PprData> {
   return {
     html: await new Response(result.prelude).text(),
     postponed: JSON.stringify(result.postponed),
-    staticTimestamp: timestamp,
   }
 }
 

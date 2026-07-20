@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { Counter } from './counter'
 import { suspendDuringPrerender } from './framework/ppr-context'
 
-export function Root({ url, timestamp }: { url: URL; timestamp: string }) {
+export function Root({ url }: { url: URL }) {
   return (
     <html lang="en">
       <head>
@@ -14,7 +14,13 @@ export function Root({ url, timestamp }: { url: URL; timestamp: string }) {
       <body>
         <main>
           <h1>RSC Partial Prerendering</h1>
-          <p data-testid="static">Static shell: {timestamp}</p>
+          {/*
+            React resume skips nodes already emitted in the prelude, so this
+            build-time value stays static. The request-time tree must still
+            preserve the component names, keys, and paths to postponed slots.
+            https://github.com/facebook/react/blob/main/packages/react-server/src/ReactFizzServer.js
+          */}
+          <p data-testid="static">Static shell: {new Date().toISOString()}</p>
           <Suspense
             fallback={<p data-testid="fallback">Loading request data...</p>}
           >
