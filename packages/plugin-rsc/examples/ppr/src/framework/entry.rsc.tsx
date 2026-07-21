@@ -15,9 +15,9 @@ export type RscPayload = {
   // server action handling omitted for brevity
 }
 
-export type PprManifestEntry = {
+export type PprManifest = {
   rscCache: CacheData
-  ssrPrerenderResult: PersistedSsrPrerenderResult
+  routes: Record<string, PersistedSsrPrerenderResult>
 }
 
 export type PersistedSsrPrerenderResult = {
@@ -26,19 +26,15 @@ export type PersistedSsrPrerenderResult = {
   postponed: string
 }
 
-export { getStaticPaths }
-
 export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
   // TODO: Add a dev switch that loads persisted PPR data so this production
   // handoff can be covered without running a build.
-  const pprEntry = import.meta.env.DEV
-    ? undefined
-    : await loadPprManifestEntry(renderRequest.url.pathname)
-  if (pprEntry) {
-    importCache(pprEntry.rscCache)
+  const pprManifest = import.meta.env.DEV ? undefined : await loadPprManifest()
+  if (pprManifest) {
+    importCache(pprManifest.rscCache)
   }
 
   if (renderRequest.isRsc) {
@@ -47,9 +43,16 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
-  const ssrPrerenderResult =
-    pprEntry?.ssrPrerenderResult ??
-    (await handlePpr(renderRequest.request)).ssrPrerenderResult
+  let ssrPrerenderResult: PrerenderResult
+  if (pprManifest) {
+    const persistedResult = pprManifest.routes[renderRequest.url.pathname]
+    if (!persistedResult) {
+      throw new Error(`PPR route not found: ${renderRequest.url.pathname}`)
+    }
+    ssrPrerenderResult = reviveSsrPrerenderResult(persistedResult)
+  } else {
+    ssrPrerenderResult = await prerenderPprRoute(renderRequest.request)
+  }
   return new Response(renderPprStream(renderRequest, ssrPrerenderResult), {
     headers: { 'content-type': 'text/html;charset=utf-8' },
   })
@@ -62,13 +65,15 @@ function renderRscStream(renderRequest: RenderRequest) {
   return renderToReadableStream(rscPayload)
 }
 
+/**
+ * Streams a prerendered HTML shell, then appends its request-time continuation.
+ * The dynamic RSC stream drives both SSR resume and browser hydration.
+ */
 function renderPprStream(
   renderRequest: RenderRequest,
-  ssrPrerenderResult: PersistedSsrPrerenderResult,
+  ssrPrerenderResult: PrerenderResult,
 ): ReadableStream<Uint8Array> {
-  const postponed: PrerenderResult['postponed'] = JSON.parse(
-    ssrPrerenderResult.postponed,
-  )
+  const postponed = ssrPrerenderResult.postponed
   // Validate that persisted input still represents the dynamic HTML outcome
   // selected during prerendering.
   if (postponed == null) {
@@ -83,10 +88,9 @@ function renderPprStream(
     return ssrEntryModule.resumeHtml(rscStream, postponed!)
   }
 
-  // The persisted prelude can flow while the resumed stream is prepared.
+  // The prerendered prelude can flow while the resumed stream is prepared.
   const resumedStreamPromise = getResumedStream()
-  const preludeStream = stringToStream(ssrPrerenderResult.prelude)
-  return preludeStream.pipeThrough(
+  return ssrPrerenderResult.prelude.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({
       async flush(controller) {
         const resumedStream = await resumedStreamPromise
@@ -102,7 +106,11 @@ function renderPprStream(
   )
 }
 
-export async function handlePpr(request: Request): Promise<PprManifestEntry> {
+/**
+ * Produces one route's live React DOM prerender result. The warmup pass fills
+ * the shared RSC cache before the final RSC and HTML prerenders capture a shell.
+ */
+async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
@@ -116,16 +124,13 @@ export async function handlePpr(request: Request): Promise<PprManifestEntry> {
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
-  const result = await ssrEntryModule.prerenderHtml(prelude)
-  return {
-    rscCache: await exportCache(),
-    ssrPrerenderResult: {
-      prelude: await new Response(result.prelude).text(),
-      postponed: JSON.stringify(result.postponed),
-    },
-  }
+  return ssrEntryModule.prerenderHtml(prelude)
 }
 
+/**
+ * Runs an RSC prerender until dynamic work has been reached and all discovered
+ * cache fills have settled, then cuts off the remaining request-time work.
+ */
 async function prerenderRsc(rscPayload: RscPayload, phase: 'warmup' | 'final') {
   const controller = new AbortController()
   const { result, ready } = runWithPrerenderContext(() => {
@@ -150,11 +155,44 @@ async function prerenderRsc(rscPayload: RscPayload, phase: 'warmup' | 'final') {
   return result
 }
 
-let manifestPromise: Promise<Record<string, PprManifestEntry>> | undefined
+// Persistence is a build-only boundary. Development passes the live React
+// result directly, while production restores the serialized manifest entry.
 
-async function loadPprManifestEntry(
-  pathname: string,
-): Promise<PprManifestEntry> {
+async function persistSsrPrerenderResult(
+  result: PrerenderResult,
+): Promise<PersistedSsrPrerenderResult> {
+  return {
+    prelude: await new Response(result.prelude).text(),
+    postponed: JSON.stringify(result.postponed),
+  }
+}
+
+function reviveSsrPrerenderResult(
+  result: PersistedSsrPrerenderResult,
+): PrerenderResult {
+  return {
+    prelude: stringToStream(result.prelude),
+    postponed: JSON.parse(result.postponed),
+  }
+}
+
+export async function generatePprManifest(): Promise<PprManifest> {
+  const routes: PprManifest['routes'] = {}
+  for (const pathname of getStaticPaths()) {
+    const result = await prerenderPprRoute(
+      new Request(new URL(pathname, 'http://ppr.local')),
+    )
+    routes[pathname] = await persistSsrPrerenderResult(result)
+  }
+  return {
+    rscCache: await exportCache(),
+    routes,
+  }
+}
+
+let manifestPromise: Promise<PprManifest> | undefined
+
+async function loadPprManifest(): Promise<PprManifest> {
   manifestPromise ??= readFile(
     path.join(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -162,11 +200,7 @@ async function loadPprManifestEntry(
     ),
     'utf8',
   ).then((data) => JSON.parse(data))
-  const data = (await manifestPromise)[pathname]
-  if (!data) {
-    throw new Error(`PPR route not found: ${pathname}`)
-  }
-  return data
+  return manifestPromise
 }
 
 if (import.meta.hot) {

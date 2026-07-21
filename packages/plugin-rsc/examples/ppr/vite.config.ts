@@ -36,17 +36,8 @@ async function renderPprManifest(config: ResolvedConfig): Promise<void> {
   const entry: typeof import('./src/framework/entry.rsc') = await import(
     pathToFileURL(path.join(rscOutDir, 'index.js')).href
   )
-  const manifest: Record<
-    string,
-    Awaited<ReturnType<typeof entry.handlePpr>>
-  > = {}
-
-  for (const pathname of entry.getStaticPaths()) {
-    config.logger.info('[vite-rsc:ppr] -> ' + pathname)
-    manifest[pathname] = await entry.handlePpr(
-      new Request(new URL(pathname, 'http://ppr.local')),
-    )
-  }
+  config.logger.info('[vite-rsc:ppr] generating manifest')
+  const manifest = await entry.generatePprManifest()
 
   await fs.promises.writeFile(
     path.join(rscOutDir, 'ppr-manifest.json'),
