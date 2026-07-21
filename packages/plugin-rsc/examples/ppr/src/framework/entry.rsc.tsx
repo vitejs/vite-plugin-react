@@ -1,6 +1,3 @@
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { prerender } from '@vitejs/plugin-rsc/rsc/static'
 import type { PrerenderResult } from 'react-dom/static'
@@ -194,17 +191,8 @@ export async function generatePprManifest(): Promise<PprManifest> {
   }
 }
 
-let manifestPromise: Promise<PprManifest> | undefined
-
 async function loadPprManifest(): Promise<PprManifest> {
-  manifestPromise ??= readFile(
-    path.join(
-      path.dirname(fileURLToPath(import.meta.url)),
-      'ppr-manifest.json',
-    ),
-    'utf8',
-  ).then((data) => JSON.parse(data))
-  return manifestPromise
+  return (await import('virtual:ppr-manifest')).default
 }
 
 if (import.meta.hot) {
