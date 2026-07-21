@@ -30,9 +30,13 @@ export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
-  // TODO: Add a dev switch that loads persisted PPR data so this production
-  // handoff can be covered without running a build.
-  const pprManifest = import.meta.env.DEV ? undefined : await loadPprManifest()
+
+  // In dev, `?__ppr` exercises the persisted manifest handoff without a build.
+  const pprManifest: PprManifest | undefined = import.meta.env.DEV
+    ? renderRequest.url.searchParams.has('__ppr')
+      ? await generatePprManifest()
+      : undefined
+    : await loadPprManifest()
   if (pprManifest) {
     importCache(pprManifest.rscCache)
   }

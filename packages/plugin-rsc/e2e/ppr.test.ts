@@ -10,6 +10,14 @@ import {
 test.describe('dev', () => {
   const f = useFixture({ root: 'examples/ppr', mode: 'dev' })
   definePprTest(f)
+
+  test('round trip persisted PPR manifest', async ({ page }) => {
+    using _ = expectNoPageError(page)
+    await page.goto(f.url('/?__ppr'))
+    await expect(page.getByTestId('layout')).toContainText('[rendered at ')
+    await expect(page.getByTestId('dynamic')).toContainText('Requested URL: /')
+    await waitForHydration(page)
+  })
 })
 
 test.describe('build', () => {
