@@ -8,10 +8,12 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type React from 'react'
 import { trackPrerenderWork } from './prerender-context'
-
-// Cache serialization is based on the existing use-cache runtime example:
-// https://github.com/vercel/next.js/pull/70435
-// https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
+import {
+  arrayToStream,
+  concatArrayStream,
+  fromBase64,
+  toBase64,
+} from './stream-utils'
 
 export type CacheData = Record<string, string>
 
@@ -26,7 +28,16 @@ let nextComponentId = 0
 export function createCachedComponent<Props extends object>(
   Component: (props: Props) => React.ReactNode,
 ): (props: Props) => Promise<React.ReactNode> {
+  // Registration order is stable within the same production build. In dev,
+  // reevaluating callers allocates new IDs and naturally invalidates old entries.
+  // A production framework would use a compiler-generated source identity plus
+  // a build or HMR revision instead.
   const componentId = String(nextComponentId++)
+
+  // Cache serialization is based on the existing use-cache runtime example:
+  // cf. todo examples/basic/cache-runtime
+  // https://github.com/vercel/next.js/pull/70435
+  // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
   async function CachedComponent(props: Props): Promise<React.ReactNode> {
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
@@ -43,20 +54,23 @@ export function createCachedComponent<Props extends object>(
           temporaryReferences,
         })) as [Props]
         const result = await Component(decodedProps)
-        return new Uint8Array(
-          await new Response(
-            renderToReadableStream(result, {
-              environmentName: 'Cache',
-              temporaryReferences,
-            }),
-          ).arrayBuffer(),
-        )
+        const stream = renderToReadableStream(result, {
+          environmentName: 'Cache',
+          temporaryReferences,
+        })
+        // examples/basic's StreamCacher and Next.js keep this stream lazy. This
+        // demo materializes it so the entry promise also tracks cache-fill
+        // completion without a separate readiness signal.
+        // TODO: Follow up with a stream-native cache and a separate,
+        // CacheSignal-like completion signal.
+        // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1495-L1519
+        return concatArrayStream(stream)
       })()
       entries.set(key, entry)
     }
 
     return createFromReadableStream<React.ReactNode>(
-      bytesToStream(await entry),
+      arrayToStream(await entry),
       {
         environmentName: 'Cache',
         replayConsoleLogs: true,
@@ -78,27 +92,15 @@ export function createCachedComponent<Props extends object>(
 export async function exportCache(): Promise<CacheData> {
   return Object.fromEntries(
     await Promise.all(
-      [...entries].map(async ([key, value]) => [
-        key,
-        bytesToBase64(await value),
-      ]),
+      [...entries].map(async ([key, value]) => [key, toBase64(await value)]),
     ),
   )
 }
 
 export function importCache(data: CacheData): void {
   for (const [key, value] of Object.entries(data)) {
-    entries.set(key, Promise.resolve(base64ToBytes(value)))
+    entries.set(key, Promise.resolve(fromBase64(value)))
   }
-}
-
-function bytesToStream(data: Uint8Array): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(data)
-      controller.close()
-    },
-  })
 }
 
 async function replyToCacheKey(reply: string | FormData): Promise<string> {
@@ -107,13 +109,5 @@ async function replyToCacheKey(reply: string | FormData): Promise<string> {
     'SHA-256',
     await new Response(reply).arrayBuffer(),
   )
-  return bytesToBase64(new Uint8Array(digest))
-}
-
-function bytesToBase64(data: Uint8Array): string {
-  return btoa(String.fromCharCode(...data))
-}
-
-function base64ToBytes(data: string): Uint8Array {
-  return Uint8Array.from(atob(data), (character) => character.charCodeAt(0))
+  return toBase64(new Uint8Array(digest))
 }
