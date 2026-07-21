@@ -13,7 +13,6 @@ export function Root({ url }: { url: URL }) {
   const pageName = url.pathname === '/about' ? 'About' : 'Home'
   return (
     <CachedLayout>
-      <h2>{pageName}</h2>
       <p>This is the {pageName.toLowerCase()} page.</p>
       <div className="demo-box" style={{ background: '#00800010' }}>
         <h3>Cached async component</h3>
@@ -69,6 +68,9 @@ function Layout({ children }: { children: React.ReactNode }) {
           }}
         >
           <h1>Static layout</h1>
+          <pre data-testid="static">
+            [rendered at {new Date().toISOString()}]
+          </pre>
           <nav aria-label="Main navigation">
             <ul>
               <li>
@@ -79,9 +81,6 @@ function Layout({ children }: { children: React.ReactNode }) {
               </li>
             </ul>
           </nav>
-          <pre data-testid="static">
-            [rendered at {new Date().toISOString()}]
-          </pre>
           {children}
         </main>
       </body>
@@ -100,7 +99,7 @@ async function AsyncContent() {
 
 async function DynamicContent({ url }: { url: URL }) {
   await markDynamic()
-  await delay(500)
+  await delay(300)
   return (
     <pre data-testid="dynamic">
       Requested URL: {url.pathname} [rendered at {new Date().toISOString()}]

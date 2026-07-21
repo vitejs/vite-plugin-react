@@ -38,7 +38,7 @@ function definePprTest(f: Fixture) {
     await using _noReload = await expectNoReload(page)
     await page.getByRole('link', { name: 'About' }).click()
     await expect(page).toHaveURL(f.url('/about'))
-    await expect(page.getByRole('heading', { name: 'About' })).toBeVisible()
+    await expect(page.getByText('This is the about page.')).toBeVisible()
     await expect(page.getByTestId('dynamic')).toContainText(
       'Requested URL: /about',
     )
@@ -47,7 +47,7 @@ function definePprTest(f: Fixture) {
 
   testNoJs('static shell', async ({ page }) => {
     await page.goto(f.url('/about'))
-    await expect(page.getByRole('heading', { name: 'About' })).toBeVisible()
+    await expect(page.getByText('This is the about page.')).toBeVisible()
     await expect(page.getByTestId('static')).toContainText('[rendered at ')
     await expect(page.getByTestId('cached-static')).toContainText(
       '[rendered at ',
