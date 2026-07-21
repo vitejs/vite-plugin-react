@@ -34,6 +34,11 @@ export async function prerenderHtml(
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8580-L8656
   setTimeout(() => controller.abort(new Error('HTML prerender cutoff')), 50)
   const result = await pendingResult
+
+  // This demo requires a dynamic HTML hole so every prerender exercises resume.
+  // A framework should instead classify and persist all valid outcomes: dynamic
+  // HTML with postponed state, dynamic data only, or a fully static result.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8886-L8917
   if (result.postponed == null) {
     throw new Error('Expected the PPR render to contain postponed state')
   }
@@ -44,6 +49,8 @@ export async function resumeHtml(
   rscStream: ReadableStream<Uint8Array>,
   prerenderResult: PrerenderResult,
 ): Promise<ReadableStream<Uint8Array>> {
+  // Validate that persisted input still represents the dynamic HTML outcome
+  // selected during prerendering.
   if (prerenderResult.postponed == null) {
     throw new Error('Expected the PPR render to contain postponed state')
   }
