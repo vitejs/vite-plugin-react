@@ -14,28 +14,28 @@ export function Root({ url }: { url: URL }) {
   return (
     <CachedLayout>
       <p>This is the {pageName.toLowerCase()} page.</p>
-      <div className="demo-box" style={{ background: '#00800010' }}>
-        <h3>Cached async component</h3>
-        <Suspense
-          fallback={
-            <pre data-testid="cached-fallback">
-              [fallback: waiting for cached work...]
-            </pre>
-          }
-        >
-          <CachedAsyncContent />
-        </Suspense>
-      </div>
       <div className="demo-box" style={{ background: '#ff000010' }}>
         <h3>Request-time dynamic component</h3>
         <Suspense
           fallback={
-            <pre data-testid="fallback">
+            <pre data-testid="dynamic-fallback">
               [fallback: waiting for dynamic work..]
             </pre>
           }
         >
           <DynamicContent url={url} />
+        </Suspense>
+      </div>
+      <div className="demo-box" style={{ background: '#00800010' }}>
+        <h3>Cached async component</h3>
+        <Suspense
+          fallback={
+            <pre data-testid="cached-async-fallback">
+              [fallback: waiting for cached work...]
+            </pre>
+          }
+        >
+          <CachedAsyncContent />
         </Suspense>
       </div>
       <div className="demo-box" style={{ background: '#0000ff10' }}>
@@ -68,7 +68,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           }}
         >
           <h1>Static layout</h1>
-          <pre data-testid="static">
+          <pre data-testid="layout">
             [rendered at {new Date().toISOString()}]
           </pre>
           <nav aria-label="Main navigation">
@@ -88,21 +88,21 @@ function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-async function AsyncContent() {
-  await delay(100)
-  return (
-    <pre data-testid="cached-static">
-      [rendered at {new Date().toISOString()}]
-    </pre>
-  )
-}
-
 async function DynamicContent({ url }: { url: URL }) {
   await markDynamic()
   await delay(300)
   return (
     <pre data-testid="dynamic">
       Requested URL: {url.pathname} [rendered at {new Date().toISOString()}]
+    </pre>
+  )
+}
+
+async function AsyncContent() {
+  await delay(100)
+  return (
+    <pre data-testid="cached-async">
+      [rendered at {new Date().toISOString()}]
     </pre>
   )
 }
