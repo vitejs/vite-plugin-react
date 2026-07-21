@@ -26,7 +26,9 @@ export function runWithPrerenderContext<T>(callback: () => T): {
 
 export function trackPrerenderWork<T>(work: Promise<T>): Promise<T> {
   const state = prerenderStorage.getStore()
-  if (!state || state.pendingWork.has(work)) return work
+  if (!state || state.pendingWork.has(work)) {
+    return work
+  }
   state.pendingWork.add(work)
   work.then(
     () => {

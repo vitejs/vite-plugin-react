@@ -104,7 +104,9 @@ export function importCache(data: CacheData): void {
 }
 
 async function replyToCacheKey(reply: string | FormData): Promise<string> {
-  if (typeof reply === 'string') return reply
+  if (typeof reply === 'string') {
+    return reply
+  }
   const digest = await crypto.subtle.digest(
     'SHA-256',
     await new Response(reply).arrayBuffer(),
