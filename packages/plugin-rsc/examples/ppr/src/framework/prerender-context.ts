@@ -70,6 +70,8 @@ async function waitForReady(state: PrerenderState): Promise<void> {
 }
 
 function notify(state: PrerenderState): void {
-  for (const listener of state.listeners) listener()
+  for (const listener of state.listeners) {
+    listener()
+  }
   state.listeners.clear()
 }

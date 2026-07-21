@@ -188,6 +188,7 @@ function reviveSsrPrerenderResult(
   }
 }
 
+// TODO: comment. invoked during build-time or dev-time with __ppr param for simulation.
 export async function generatePprManifest(): Promise<PprManifest> {
   const routes: PprManifest['routes'] = {}
   for (const pathname of getStaticPaths()) {
@@ -202,6 +203,7 @@ export async function generatePprManifest(): Promise<PprManifest> {
   }
 }
 
+// TODO: comment. access build-time generated manifest via virtual module
 async function loadPprManifest(): Promise<PprManifest> {
   return (await import('virtual:ppr-manifest')).default
 }
