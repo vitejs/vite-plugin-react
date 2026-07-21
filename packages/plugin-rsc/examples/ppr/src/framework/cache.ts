@@ -79,8 +79,9 @@ export function createCachedComponent<Props extends object>(
     )
   }
 
-  // TODO: Contrast this minimal wrapper with production cache readiness
-  // tracking in Next.js and vinext.
+  // Tracking the entry promise makes cache-fill completion this demo's
+  // readiness signal. Production frameworks track equivalent work separately
+  // so cached streams can remain lazy.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7943-L7974
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8076-L8080
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts#L170-L200
