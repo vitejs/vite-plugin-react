@@ -1,6 +1,8 @@
-import assetsManifest from 'virtual:vite-rsc/assets-manifest'
-import type { ResolvedAssetDeps } from '../plugin'
 import { renderToReadableStream as originalRenderToReadableStream } from '../react/rsc/server'
+import {
+  createOnClientReference,
+  type OnClientReference,
+} from './client-reference'
 import './shared'
 
 export {
@@ -18,24 +20,12 @@ export function renderToReadableStream<T>(
     /**
      * @experimental
      */
-    onClientReference?: (metadata: {
-      id: string
-      name: string
-      deps: ResolvedAssetDeps
-    }) => void
+    onClientReference?: OnClientReference
   },
 ): ReadableStream<Uint8Array> {
   return originalRenderToReadableStream(data, options, {
-    onClientReference(metadata) {
-      const deps = assetsManifest.clientReferenceDeps[metadata.id] ?? {
-        js: [],
-        css: [],
-      }
-      extraOptions?.onClientReference?.({
-        id: metadata.id,
-        name: metadata.name,
-        deps,
-      })
-    },
+    onClientReference: extraOptions?.onClientReference
+      ? createOnClientReference(extraOptions.onClientReference)
+      : undefined,
   })
 }

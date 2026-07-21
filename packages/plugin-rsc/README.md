@@ -454,6 +454,16 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `registerClientReference/registerServerReference`
 - `createTemporaryReferenceSet`
 
+### `@vitejs/plugin-rsc/rsc/static`
+
+This module provides a Vite-integrated RSC runtime API based on
+`react-server-dom/static.edge` for use in the RSC environment:
+
+- `prerender`: static RSC serialization (React VDOM -> RSC stream)
+
+`prerender` supports the same Vite-specific `onClientReference` extension as
+`renderToReadableStream`.
+
 ### `@vitejs/plugin-rsc/rsc/client`
 
 This module provides Vite-integrated RSC runtime APIs based on

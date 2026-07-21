@@ -1,7 +1,11 @@
 // @ts-ignore
 import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
 import type { ReactFormState } from 'react-dom/client'
-import { createClientManifest, createServerManifest } from '../../core/rsc'
+import {
+  createClientManifest,
+  createServerManifest,
+  type CreateClientManifestOptions,
+} from '../../core/rsc'
 import type {
   DecodeReplyFunction,
   RenderToReadableStreamOptions,
@@ -13,12 +17,7 @@ export { loadServerAction, setRequireModule } from '../../core/rsc'
 export function renderToReadableStream<T>(
   data: T,
   options?: RenderToReadableStreamOptions,
-  extraOptions?: {
-    /**
-     * @internal
-     */
-    onClientReference?: (metadata: { id: string; name: string }) => void
-  },
+  extraOptions?: CreateClientManifestOptions,
 ): ReadableStream<Uint8Array> {
   return ReactServer.renderToReadableStream(
     data,
