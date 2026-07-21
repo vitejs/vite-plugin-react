@@ -10,7 +10,7 @@ import { concatStreams, preventStreamClose } from './stream-utils'
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<PrerenderResult> {
-  const ssrRoot = <SsrRoot rscStream={preventStreamClose(rscStream)} />
+  const ssrRoot = createSsrRoot(preventStreamClose(rscStream))
   const bootstrapScriptContent =
     await import.meta.viteRsc.loadBootstrapScriptContent('index')
   const controller = new AbortController()
@@ -37,22 +37,19 @@ export async function resumeHtml(
     throw new Error('Expected the PPR render to contain postponed state')
   }
   const [rscForSsr, rscForBrowser] = rscStream.tee()
-  const ssrRoot = <SsrRoot rscStream={rscForSsr} />
+  const ssrRoot = createSsrRoot(rscForSsr)
   const resumed = await resume(ssrRoot, prerenderResult.postponed)
   const html = concatStreams(prerenderResult.prelude, resumed)
   return html.pipeThrough(injectRSCPayload(rscForBrowser))
 }
 
-const payloadCache = new WeakMap<
-  ReadableStream<Uint8Array>,
-  Promise<RscPayload>
->()
+function createSsrRoot(rscStream: ReadableStream<Uint8Array>) {
+  let payload: Promise<RscPayload>
 
-function SsrRoot({ rscStream }: { rscStream: ReadableStream<Uint8Array> }) {
-  let payload = payloadCache.get(rscStream)
-  if (!payload) {
-    payload = createFromReadableStream<RscPayload>(rscStream)
-    payloadCache.set(rscStream, payload)
+  function SsrRoot() {
+    payload ??= createFromReadableStream<RscPayload>(rscStream)
+    return React.use(payload).root
   }
-  return React.use(payload).root
+
+  return <SsrRoot />
 }
