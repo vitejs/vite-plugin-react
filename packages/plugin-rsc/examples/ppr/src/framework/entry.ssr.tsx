@@ -17,7 +17,13 @@ export async function prerenderHtml(
   const pendingResult = prerender(ssrRoot, {
     bootstrapScriptContent,
     signal: controller.signal,
-    onError() {},
+    // TODO: Add digest-based error reporting as part of the dedicated error
+    // handling example: https://github.com/vitejs/vite-plugin-react/issues/795
+    onError(error) {
+      if (!controller.signal.aborted) {
+        console.error(error)
+      }
+    },
   })
   // Allow shell-relevant SSR work, including client-reference module loading,
   // to settle and reach the unresolved Flight segment before cutting off.

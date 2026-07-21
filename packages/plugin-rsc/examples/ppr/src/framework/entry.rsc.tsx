@@ -89,7 +89,13 @@ async function prerenderRsc(rscPayload: RscPayload, phase: 'warmup' | 'final') {
   const { result, ready } = runWithPrerenderContext(() => {
     return prerender(rscPayload, {
       signal: controller.signal,
-      onError() {},
+      // TODO: Add digest-based error reporting as part of the dedicated error
+      // handling example: https://github.com/vitejs/vite-plugin-react/issues/795
+      onError(error) {
+        if (!controller.signal.aborted) {
+          console.error(error)
+        }
+      },
     })
   })
   const outcome = await Promise.race([
