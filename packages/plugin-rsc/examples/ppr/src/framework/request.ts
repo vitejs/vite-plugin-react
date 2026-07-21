@@ -22,3 +22,5 @@ export function parseRenderRequest(request: Request): {
   }
   return { isRsc: false, request, url }
 }
+
+export type RenderRequest = ReturnType<typeof parseRenderRequest>

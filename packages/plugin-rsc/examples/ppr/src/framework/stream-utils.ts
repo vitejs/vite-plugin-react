@@ -38,26 +38,6 @@ export function fromBase64(data: string): Uint8Array {
   return Uint8Array.from(atob(data), (character) => character.charCodeAt(0))
 }
 
-export function concatStreams(
-  first: ReadableStream<Uint8Array>,
-  second: ReadableStream<Uint8Array>,
-): ReadableStream<Uint8Array> {
-  // Append the resumed HTML after the prerendered shell closes.
-  return first.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      async flush(controller) {
-        await second.pipeTo(
-          new WritableStream({
-            write(chunk) {
-              controller.enqueue(chunk)
-            },
-          }),
-        )
-      },
-    }),
-  )
-}
-
 export function preventStreamClose(
   stream: ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {

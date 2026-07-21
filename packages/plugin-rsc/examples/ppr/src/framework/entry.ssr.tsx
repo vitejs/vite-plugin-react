@@ -5,7 +5,7 @@ import type { PrerenderResult } from 'react-dom/static'
 import { prerender } from 'react-dom/static.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
-import { concatStreams, preventStreamClose } from './stream-utils'
+import { preventStreamClose } from './stream-utils'
 
 export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
@@ -47,18 +47,12 @@ export async function prerenderHtml(
 
 export async function resumeHtml(
   rscStream: ReadableStream<Uint8Array>,
-  prerenderResult: PrerenderResult,
+  postponed: NonNullable<PrerenderResult['postponed']>,
 ): Promise<ReadableStream<Uint8Array>> {
-  // Validate that persisted input still represents the dynamic HTML outcome
-  // selected during prerendering.
-  if (prerenderResult.postponed == null) {
-    throw new Error('Expected the PPR render to contain postponed state')
-  }
   const [rscForSsr, rscForBrowser] = rscStream.tee()
   const ssrRoot = createSsrRoot(rscForSsr)
-  const resumed = await resume(ssrRoot, prerenderResult.postponed)
-  const html = concatStreams(prerenderResult.prelude, resumed)
-  return html.pipeThrough(injectRSCPayload(rscForBrowser))
+  const resumed = await resume(ssrRoot, postponed)
+  return resumed.pipeThrough(injectRSCPayload(rscForBrowser))
 }
 
 function createSsrRoot(rscStream: ReadableStream<Uint8Array>) {
