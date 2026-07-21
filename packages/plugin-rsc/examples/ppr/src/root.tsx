@@ -2,7 +2,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { Suspense } from 'react'
 import { Counter } from './counter'
 import { createCachedComponent } from './framework/cache'
-import { suspendDuringPrerender } from './framework/ppr-context'
+import { suspendDuringPrerender } from './framework/prerender-context'
 
 export function Root({ url }: { url: URL }) {
   return (
@@ -11,6 +11,13 @@ export function Root({ url }: { url: URL }) {
         fallback={<p data-testid="fallback">Loading request data...</p>}
       >
         <DynamicContent url={url} />
+      </Suspense>
+      <Suspense
+        fallback={
+          <p data-testid="cached-fallback">Loading cached static data...</p>
+        }
+      >
+        <CachedSlowStatic />
       </Suspense>
       <Counter />
       <p>
@@ -23,6 +30,7 @@ export function Root({ url }: { url: URL }) {
 // This has "use cache" semantics, expressed as a decorator instead of a
 // directive-based compiler transform.
 const CachedLayout = createCachedComponent(Layout)
+const CachedSlowStatic = createCachedComponent(SlowStatic)
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -46,6 +54,15 @@ function Layout({ children }: { children: React.ReactNode }) {
 function DynamicContent({ url }: { url: URL }) {
   suspendDuringPrerender()
   return <RequestContent url={url} />
+}
+
+async function SlowStatic() {
+  await delay(100)
+  return (
+    <p data-testid="cached-static">
+      Cached static data: {new Date().toISOString()}
+    </p>
+  )
 }
 
 async function RequestContent({ url }: { url: URL }) {

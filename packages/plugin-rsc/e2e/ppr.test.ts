@@ -23,6 +23,10 @@ function definePprTest(f: Fixture) {
     await page.goto(f.url())
 
     await expect(page.getByTestId('static')).toContainText('Static shell:')
+    await expect(page.getByTestId('cached-static')).toContainText(
+      'Cached static data:',
+    )
+    await expect(page.getByTestId('cached-fallback')).toBeHidden()
     await expect(page.getByTestId('dynamic')).toContainText(
       'Request data: (none)',
     )
@@ -45,10 +49,17 @@ function definePprTest(f: Fixture) {
   testNoJs('static shell', async ({ page }) => {
     await page.goto(f.url())
     await expect(page.getByTestId('static')).toContainText('Static shell:')
+    await expect(page.getByTestId('cached-static')).toContainText(
+      'Cached static data:',
+    )
+    await expect(page.getByTestId('cached-fallback')).toBeHidden()
     await expect(page.getByTestId('fallback')).toBeVisible()
 
     if (f.mode === 'build') {
       const staticTimestamp = await page.getByTestId('static').textContent()
+      const cachedTimestamp = await page
+        .getByTestId('cached-static')
+        .textContent()
       const dynamicTimestamp = await page.getByTestId('dynamic').textContent()
 
       await page.reload()
@@ -56,6 +67,9 @@ function definePprTest(f: Fixture) {
         dynamicTimestamp!,
       )
       await expect(page.getByTestId('static')).toHaveText(staticTimestamp!)
+      await expect(page.getByTestId('cached-static')).toHaveText(
+        cachedTimestamp!,
+      )
     }
   })
 }

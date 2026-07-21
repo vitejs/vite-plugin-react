@@ -7,6 +7,7 @@ import {
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
 import type React from 'react'
+import { trackPrerenderWork } from './prerender-context'
 
 export type CacheData = Record<string, string>
 
@@ -18,38 +19,42 @@ export function createCachedComponent<Props extends object>(
 ): (props: Props) => Promise<React.ReactNode> {
   const componentId = String(nextComponentId++)
 
-  return async function CachedComponent(props: Props) {
-    const clientTemporaryReferences = createClientTemporaryReferenceSet()
-    const encodedArgs = await encodeReply([props], {
-      temporaryReferences: clientTemporaryReferences,
-    })
-    const key = componentId + ':' + (await replyToCacheKey(encodedArgs))
+  return function CachedComponent(props: Props) {
+    return trackPrerenderWork(
+      (async () => {
+        const clientTemporaryReferences = createClientTemporaryReferenceSet()
+        const encodedArgs = await encodeReply([props], {
+          temporaryReferences: clientTemporaryReferences,
+        })
+        const key = componentId + ':' + (await replyToCacheKey(encodedArgs))
 
-    let entry = entries.get(key)
-    if (!entry) {
-      entry = (async () => {
-        const temporaryReferences = createTemporaryReferenceSet()
-        const [decodedProps] = (await decodeReply(encodedArgs, {
-          temporaryReferences,
-        })) as [Props]
-        const result = await Component(decodedProps)
-        return new Uint8Array(
-          await new Response(
-            renderToReadableStream(result, {
-              environmentName: 'Cache',
+        let entry = entries.get(key)
+        if (!entry) {
+          entry = (async () => {
+            const temporaryReferences = createTemporaryReferenceSet()
+            const [decodedProps] = (await decodeReply(encodedArgs, {
               temporaryReferences,
-            }),
-          ).arrayBuffer(),
-        )
-      })()
-      entries.set(key, entry)
-    }
+            })) as [Props]
+            const result = await Component(decodedProps)
+            return new Uint8Array(
+              await new Response(
+                renderToReadableStream(result, {
+                  environmentName: 'Cache',
+                  temporaryReferences,
+                }),
+              ).arrayBuffer(),
+            )
+          })()
+          entries.set(key, entry)
+        }
 
-    return createFromReadableStream(bytesToStream(await entry), {
-      environmentName: 'Cache',
-      replayConsoleLogs: true,
-      temporaryReferences: clientTemporaryReferences,
-    })
+        return createFromReadableStream(bytesToStream(await entry), {
+          environmentName: 'Cache',
+          replayConsoleLogs: true,
+          temporaryReferences: clientTemporaryReferences,
+        })
+      })(),
+    )
   }
 }
 
