@@ -55,6 +55,10 @@ export function markDynamic(): Promise<never> | undefined {
 }
 
 async function waitForReady(state: PrerenderState): Promise<void> {
+  // TODO: Contrast this minimal cache/dynamic gate with production warmup and
+  // task scheduling in Next.js and vinext.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8381-L8490
+  // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts#L80-L120
   while (true) {
     while (!state.dynamicReached || state.pendingWork.size > 0) {
       await new Promise<void>((resolve) => state.listeners.add(resolve))

@@ -9,6 +9,15 @@ import {
 import type React from 'react'
 import { trackPrerenderWork } from './prerender-context'
 
+// Cache serialization is based on the existing use-cache runtime example:
+// https://github.com/vercel/next.js/pull/70435
+// https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
+// TODO: Contrast the minimal `trackPrerenderWork` integration with production
+// cache readiness tracking in Next.js and vinext.
+// https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7943-L7974
+// https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8076-L8080
+// https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts#L170-L200
+
 export type CacheData = Record<string, string>
 
 const entries = new Map<string, Promise<Uint8Array>>()

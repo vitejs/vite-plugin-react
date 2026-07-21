@@ -19,8 +19,13 @@ export async function prerenderHtml(
     signal: controller.signal,
     onError() {},
   })
-  // Allow the SSR environment to load client-reference modules and reach the
-  // unresolved Flight segment before cutting off this minimal demo prerender.
+  // Allow shell-relevant SSR work, including client-reference module loading,
+  // to settle and reach the unresolved Flight segment before cutting off.
+  // TODO: Contrast this fixed delay with Next.js's tracked module warmup and
+  // controlled final prerender cutoff.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8127-L8129
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8220-L8227
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8580-L8656
   setTimeout(() => controller.abort(new Error('HTML prerender cutoff')), 50)
   const result = await pendingResult
   if (result.postponed == null) {

@@ -66,6 +66,10 @@ export async function handlePpr(request: Request): Promise<PprData> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
+  // TODO: Document the production prior art for warming caches in a discarded
+  // RSC pass before restarting the final prerender.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7917
+  // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
   const warmup = await prerenderRsc(rscPayload, 'warmup')
   await warmup.prelude.cancel()
   const { prelude } = await prerenderRsc(rscPayload, 'final')
