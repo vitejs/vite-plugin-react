@@ -1,0 +1,95 @@
+packages/plugin-react-swc/playground/base-path/package.json
+  s_3a8e8bcaf181f3::t_d992c3d33a398b 11-12
+packages/plugin-react-swc/playground/class-components/package.json
+  s_3a8e8bcaf181f3::t_9160a0e7475529 11-12
+packages/plugin-react-swc/playground/decorators/package.json
+  s_3a8e8bcaf181f3::t_947a59482633b8 11-12
+packages/plugin-react-swc/playground/emotion-plugin/package.json
+  s_3a8e8bcaf181f3::t_560af550b9805f 13-14
+packages/plugin-react-swc/playground/emotion/package.json
+  s_3a8e8bcaf181f3::t_228c26cdde2a32 13-14
+packages/plugin-react-swc/playground/hmr/package.json
+  s_3a8e8bcaf181f3::t_0c3c07d3374db2 11-12
+packages/plugin-react-swc/playground/mdx/package.json
+  s_3a8e8bcaf181f3::t_4d90dad8d02562 11-12
+packages/plugin-react-swc/playground/shadow-export/package.json
+  s_3a8e8bcaf181f3::t_6c0280a27afa9e 11-12
+packages/plugin-react-swc/playground/styled-components/package.json
+  s_3a8e8bcaf181f3::t_6349fffe6f98e9 11-12
+packages/plugin-react-swc/playground/ts-lib/package.json
+  s_3a8e8bcaf181f3::t_502e2b935e8e76 12-13
+packages/plugin-react-swc/playground/worker/package.json
+  s_3a8e8bcaf181f3::t_65c30f0c16bc13 11-12
+packages/plugin-react/package.json
+  s_3a8e8bcaf181f3::t_ab2b1ae51bc72c 53-54
+packages/plugin-rsc/examples/basic/package.json
+  s_3a8e8bcaf181f3::t_0227d3049b256c 15-16
+packages/plugin-rsc/examples/browser-mode/package.json
+  s_3a8e8bcaf181f3::t_8a673cfc1b524f 13-14
+packages/plugin-rsc/examples/browser/package.json
+  s_3a8e8bcaf181f3::t_e8aa029c285146 13-14
+packages/plugin-rsc/examples/cache-replay/package.json
+  s_3a8e8bcaf181f3::t_8bf31389077b09 13-14
+packages/plugin-rsc/examples/no-ssr/package.json
+  s_3a8e8bcaf181f3::t_be5d66bfa62bea 13-14
+packages/plugin-rsc/examples/ppr/package.json
+  s_3a8e8bcaf181f3::t_590a3e5f3c597c 13-14
+packages/plugin-rsc/examples/react-router/package.json
+  s_3a8e8bcaf181f3::t_c1526240f9cfbf 16-17
+packages/plugin-rsc/examples/ssg/package.json
+  s_3a8e8bcaf181f3::t_3cd9ecb896085c 13-14
+packages/plugin-rsc/examples/ssr-encode-form-action/package.json
+  s_3a8e8bcaf181f3::t_98bf6b357f965c 13-14
+packages/plugin-rsc/examples/starter-extra/package.json
+  s_3a8e8bcaf181f3::t_f345845fb90ccd 17-18
+packages/plugin-rsc/examples/starter/package.json
+  s_3a8e8bcaf181f3::t_be73bfc8cd08ed 13-14
+packages/plugin-rsc/package.json
+  s_3a8e8bcaf181f3::t_10402e8c6784fd 63-65
+playground/bundled-dev/package.json
+  s_3a8e8bcaf181f3::t_ad78e414717afb 12-13
+playground/class-components/package.json
+  s_3a8e8bcaf181f3::t_994b2c7f903701 11-12
+playground/compiler/package.json
+  s_3a8e8bcaf181f3::t_abd4646204fd6f 11-12
+playground/hmr-false/package.json
+  s_3a8e8bcaf181f3::t_80a33fbfd819d6 12-13
+playground/hook-with-jsx/package.json
+  s_3a8e8bcaf181f3::t_104f6b70e2fc1f 11-12
+playground/include-node-modules/package.json
+  s_3a8e8bcaf181f3::t_f7a3954ca1f358 11-12
+playground/mdx/package.json
+  s_3a8e8bcaf181f3::t_fc62d4f33a91e0 11-12
+playground/react-classic/package.json
+  s_3a8e8bcaf181f3::t_8bddf0740792af 12-13
+playground/react-emotion/package.json
+  s_3a8e8bcaf181f3::t_cf8312a3a3a2d2 14-15
+playground/react-env/package.json
+  s_3a8e8bcaf181f3::t_39ab928d3e0d10 12-13
+playground/react-sourcemap/package.json
+  s_3a8e8bcaf181f3::t_0c1fc0c4a8edcd 14-15
+playground/react/package.json
+  s_3a8e8bcaf181f3::t_6e30fcfc888bfe 13-14
+playground/ssr-react/package.json
+  s_3a8e8bcaf181f3::t_76c0f7149e64ac 11-12
+playground/tsconfig-jsx-preserve/package.json
+  s_3a8e8bcaf181f3::t_1aedf02b35c9cf 12-13
+pnpm-lock.yaml
+  s_3a8e8bcaf181f3::t_d28396266c1bbd 100-101,103-104,152-153,155-156,171-172,174-175,190-191,193-194,210,213,215-216,218-219,235,238,240-241,243-244,262-263,265-266,281-282,284-285,322-323,325-326,341-342,344-345,348,370,372-373,375-376,393-394,396-397,470-471,473-474,476-477,488-489,491-492,511,514,517,520,523,526,529,532,535,552-553,555-556,580-581,583-584,608-609,611-612,660-661,663-664,685-686,688-689,713-714,716-717,720,756-757,759-760,787-788,790-791,809-810,812-813,837-838,840-841,880-881,883-884,899-900,902-903,918-919,921-922,983-984,986-987,1002-1003,1005-1006,1021-1022,1024-1025,1047,1054-1055,1057-1058,1079-1080,1082-1083,1092-1093,1095-1096,1106,1109,1111-1112,1114-1115,1118,1142-1143,1145-1146,1155-1156,1158-1159,1170-1171,1173-1174,1183-1184,1186-1187,4098-4099,4101,4116-4117,4120-4121,4134-4135,5091,5097,5101,5117,5122,5124,5126,5134,5136,6048,6050,6052,6054,6056,6058,6060,6062,6064,6066,6068,6070,6072,6074,6076,6078,6080,6082-6083,6085,6087-6088,6090,6092,6094,6096-6097,7598,7600,7605,7608,7611,7613,7617-7618,7621,7624-7625,7629,7856,7861,7864,7884,7886,8064,8066
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3f7f84d5591d69be951d972169d21d342d2a01e9",
+  "prompts": {},
+  "sessions": {
+    "s_3a8e8bcaf181f3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_078f64fc3ffe10EIYGf26n6fat",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
