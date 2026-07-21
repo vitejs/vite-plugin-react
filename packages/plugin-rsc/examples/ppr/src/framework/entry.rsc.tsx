@@ -54,7 +54,21 @@ async function handler(request: Request): Promise<Response> {
   } else {
     ssrPrerenderResult = await prerenderPprRoute(renderRequest.request)
   }
-  return new Response(renderPprStream(renderRequest, ssrPrerenderResult), {
+
+  // An edge or CDN can stream the static prelude immediately while requesting
+  // the resumed stream from a dedicated dynamic backend endpoint, then stitch
+  // both into one client response. This demo simplifies that backend request
+  // to an in-process renderDynamicPprStream call.
+  // https://nextjs.org/docs/app/api-reference/adapters/implementing-ppr-in-an-adapter#2-runtime-flow-serve-cached-shell-and-resume-in-background
+  const resumedStreamPromise = renderDynamicPprStream(
+    renderRequest,
+    ssrPrerenderResult.postponed,
+  )
+  const htmlStream = stitchPprStreams(
+    ssrPrerenderResult.prelude,
+    resumedStreamPromise,
+  )
+  return new Response(htmlStream, {
     headers: { 'content-type': 'text/html;charset=utf-8' },
   })
 }
@@ -67,31 +81,28 @@ function renderRscStream(renderRequest: RenderRequest) {
 }
 
 /**
- * Streams a prerendered HTML shell, then appends its request-time continuation.
- * The dynamic RSC stream drives both SSR resume and browser hydration.
+ * Models the dynamic server: render request-time Flight, resume SSR, and send
+ * that same Flight payload for browser hydration.
  */
-function renderPprStream(
+async function renderDynamicPprStream(
   renderRequest: RenderRequest,
-  ssrPrerenderResult: PrerenderResult,
-): ReadableStream<Uint8Array> {
-  const postponed = ssrPrerenderResult.postponed
-  // Validate that persisted input still represents the dynamic HTML outcome
-  // selected during prerendering.
+  postponed: PrerenderResult['postponed'],
+): Promise<ReadableStream<Uint8Array>> {
   if (postponed == null) {
     throw new Error('Expected the PPR render to contain postponed state')
   }
+  const rscStream = renderRscStream(renderRequest)
+  const ssrEntryModule = await import.meta.viteRsc.loadModule<
+    typeof import('./entry.ssr')
+  >('ssr', 'index')
+  return ssrEntryModule.resumeHtml(rscStream, postponed)
+}
 
-  async function getResumedStream() {
-    const rscStream = renderRscStream(renderRequest)
-    const ssrEntryModule = await import.meta.viteRsc.loadModule<
-      typeof import('./entry.ssr')
-    >('ssr', 'index')
-    return ssrEntryModule.resumeHtml(rscStream, postponed!)
-  }
-
-  // The prerendered prelude can flow while the resumed stream is prepared.
-  const resumedStreamPromise = getResumedStream()
-  return ssrPrerenderResult.prelude.pipeThrough(
+function stitchPprStreams(
+  preludeStream: ReadableStream<Uint8Array>,
+  resumedStreamPromise: Promise<ReadableStream<Uint8Array>>,
+): ReadableStream<Uint8Array> {
+  return preludeStream.pipeThrough(
     new TransformStream<Uint8Array, Uint8Array>({
       async flush(controller) {
         const resumedStream = await resumedStreamPromise
