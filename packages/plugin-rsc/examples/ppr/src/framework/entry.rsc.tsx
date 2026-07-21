@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { prerender } from '@vitejs/plugin-rsc/rsc/static'
 import type { PrerenderResult } from 'react-dom/static'
-import { Root } from '../root'
+import { Root, getStaticPaths } from '../root'
 import { exportCache, importCache, type CacheData } from './cache'
 import { runWithPrerenderContext } from './prerender-context'
 import { parseRenderRequest } from './request'
@@ -21,9 +21,7 @@ export type PprData = {
   postponed: string
 }
 
-export function getStaticPaths(): string[] {
-  return ['/']
-}
+export { getStaticPaths }
 
 export default { fetch: handler }
 

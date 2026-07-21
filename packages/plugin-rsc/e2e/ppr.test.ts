@@ -22,14 +22,12 @@ function definePprTest(f: Fixture) {
     using _ = expectNoPageError(page)
     await page.goto(f.url())
 
-    await expect(page.getByTestId('static')).toContainText('Static shell:')
+    await expect(page.getByTestId('static')).toContainText('[rendered at ')
     await expect(page.getByTestId('cached-static')).toContainText(
-      'Cached static data:',
+      '[rendered at ',
     )
     await expect(page.getByTestId('cached-fallback')).toBeHidden()
-    await expect(page.getByTestId('dynamic')).toContainText(
-      'Request data: (none)',
-    )
+    await expect(page.getByTestId('dynamic')).toContainText('Requested URL: /')
     await expect(page.getByTestId('fallback')).toBeHidden()
     await waitForHydration(page)
 
@@ -38,22 +36,27 @@ function definePprTest(f: Fixture) {
     await expect(counter).toHaveText('Count is 1')
 
     await using _noReload = await expectNoReload(page)
-    await page.getByRole('link', { name: 'Navigate with RSC' }).click()
-    await expect(page).toHaveURL(f.url('?navigation=1'))
+    await page.getByRole('link', { name: 'About' }).click()
+    await expect(page).toHaveURL(f.url('/about'))
+    await expect(page.getByRole('heading', { name: 'About' })).toBeVisible()
     await expect(page.getByTestId('dynamic')).toContainText(
-      'Request data: ?navigation=1',
+      'Requested URL: /about',
     )
     await expect(counter).toHaveText('Count is 1')
   })
 
   testNoJs('static shell', async ({ page }) => {
-    await page.goto(f.url())
-    await expect(page.getByTestId('static')).toContainText('Static shell:')
+    await page.goto(f.url('/about'))
+    await expect(page.getByRole('heading', { name: 'About' })).toBeVisible()
+    await expect(page.getByTestId('static')).toContainText('[rendered at ')
     await expect(page.getByTestId('cached-static')).toContainText(
-      'Cached static data:',
+      '[rendered at ',
     )
     await expect(page.getByTestId('cached-fallback')).toBeHidden()
     await expect(page.getByTestId('fallback')).toBeVisible()
+    await expect(page.getByTestId('dynamic')).toContainText(
+      'Requested URL: /about',
+    )
 
     if (f.mode === 'build') {
       const staticTimestamp = await page.getByTestId('static').textContent()

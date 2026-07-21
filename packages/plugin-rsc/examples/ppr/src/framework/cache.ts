@@ -14,6 +14,11 @@ export type CacheData = Record<string, string>
 const entries = new Map<string, Promise<Uint8Array>>()
 let nextComponentId = 0
 
+/**
+ * Marks a component as cacheable. Its props form the cache key, and its RSC
+ * result is serialized for reuse across prerender and request renders.
+ * Cache misses are tracked so prerender waits for them before cutting off.
+ */
 export function createCachedComponent<Props extends object>(
   Component: (props: Props) => React.ReactNode | Promise<React.ReactNode>,
 ): (props: Props) => Promise<React.ReactNode> {

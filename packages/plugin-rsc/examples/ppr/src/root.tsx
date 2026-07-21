@@ -2,27 +2,47 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { Suspense } from 'react'
 import { Counter } from './counter'
 import { createCachedComponent } from './framework/cache'
-import { suspendDuringPrerender } from './framework/prerender-context'
+import { markDynamic } from './framework/prerender-context'
+import './style.css'
+
+export function getStaticPaths(): string[] {
+  return ['/', '/about']
+}
 
 export function Root({ url }: { url: URL }) {
+  const pageName = url.pathname === '/about' ? 'About' : 'Home'
   return (
     <CachedLayout>
-      <Suspense
-        fallback={<p data-testid="fallback">Loading request data...</p>}
-      >
-        <DynamicContent url={url} />
-      </Suspense>
-      <Suspense
-        fallback={
-          <p data-testid="cached-fallback">Loading cached static data...</p>
-        }
-      >
-        <CachedSlowStatic />
-      </Suspense>
-      <Counter />
-      <p>
-        <a href={url.search ? '/' : '/?navigation=1'}>Navigate with RSC</a>
-      </p>
+      <h2>{pageName}</h2>
+      <p>This is the {pageName.toLowerCase()} page.</p>
+      <div className="demo-box" style={{ background: '#00800010' }}>
+        <h3>Cached async component</h3>
+        <Suspense
+          fallback={
+            <pre data-testid="cached-fallback">
+              [fallback: waiting for cached work...]
+            </pre>
+          }
+        >
+          <CachedAsyncContent />
+        </Suspense>
+      </div>
+      <div className="demo-box" style={{ background: '#ff000010' }}>
+        <h3>Request-time dynamic component</h3>
+        <Suspense
+          fallback={
+            <pre data-testid="fallback">
+              [fallback: waiting for dynamic work..]
+            </pre>
+          }
+        >
+          <DynamicContent url={url} />
+        </Suspense>
+      </div>
+      <div className="demo-box" style={{ background: '#0000ff10' }}>
+        <h3>Client component</h3>
+        <Counter />
+      </div>
     </CachedLayout>
   )
 }
@@ -30,7 +50,7 @@ export function Root({ url }: { url: URL }) {
 // This has "use cache" semantics, expressed as a decorator instead of a
 // directive-based compiler transform.
 const CachedLayout = createCachedComponent(Layout)
-const CachedSlowStatic = createCachedComponent(SlowStatic)
+const CachedAsyncContent = createCachedComponent(AsyncContent)
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,9 +61,27 @@ function Layout({ children }: { children: React.ReactNode }) {
         <title>RSC Partial Prerendering</title>
       </head>
       <body>
-        <main>
-          <h1>RSC Partial Prerendering</h1>
-          <p data-testid="static">Static shell: {new Date().toISOString()}</p>
+        <main
+          style={{
+            border: '1px solid #00000030',
+            padding: '1rem',
+            margin: '1rem',
+          }}
+        >
+          <h1>Static layout</h1>
+          <nav aria-label="Main navigation">
+            <ul>
+              <li>
+                <a href="/">Home</a>
+              </li>
+              <li>
+                <a href="/about">About</a>
+              </li>
+            </ul>
+          </nav>
+          <pre data-testid="static">
+            [rendered at {new Date().toISOString()}]
+          </pre>
           {children}
         </main>
       </body>
@@ -51,25 +89,21 @@ function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-function DynamicContent({ url }: { url: URL }) {
-  suspendDuringPrerender()
-  return <RequestContent url={url} />
-}
-
-async function SlowStatic() {
+async function AsyncContent() {
   await delay(100)
   return (
-    <p data-testid="cached-static">
-      Cached static data: {new Date().toISOString()}
-    </p>
+    <pre data-testid="cached-static">
+      [rendered at {new Date().toISOString()}]
+    </pre>
   )
 }
 
-async function RequestContent({ url }: { url: URL }) {
-  await delay(100)
+async function DynamicContent({ url }: { url: URL }) {
+  await markDynamic()
+  await delay(500)
   return (
-    <p data-testid="dynamic">
-      Request data: {url.search || '(none)'} at {new Date().toISOString()}
-    </p>
+    <pre data-testid="dynamic">
+      Requested URL: {url.pathname} [rendered at {new Date().toISOString()}]
+    </pre>
   )
 }

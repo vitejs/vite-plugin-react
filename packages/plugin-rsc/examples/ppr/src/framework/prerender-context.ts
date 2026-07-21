@@ -41,12 +41,16 @@ export function trackPrerenderWork<T>(work: Promise<T>): Promise<T> {
   return work
 }
 
-export function suspendDuringPrerender(): void {
+/**
+ * Marks the following work as request-time. Await this before reading request
+ * data: it remains pending during prerender and returns immediately otherwise.
+ */
+export function markDynamic(): Promise<never> | undefined {
   const state = prerenderStorage.getStore()
   if (state) {
     state.dynamicReached = true
     notify(state)
-    throw pending
+    return pending
   }
 }
 
