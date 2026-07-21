@@ -27,8 +27,8 @@ export async function prerenderHtml(
   })
   // Allow shell-relevant SSR work, including client-reference module loading,
   // to settle and reach the unresolved Flight segment before cutting off.
-  // TODO: Contrast this fixed delay with Next.js's tracked module warmup and
-  // controlled final prerender cutoff.
+  // This fixed delay is the demo's approximation; production frameworks track
+  // module work and use scheduler-aware settling before their defined cutoff.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8127-L8129
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8220-L8227
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8580-L8656

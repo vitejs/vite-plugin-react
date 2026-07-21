@@ -34,8 +34,8 @@ export function createCachedComponent<Props extends object>(
   // a build or HMR revision instead.
   const componentId = String(nextComponentId++)
 
-  // Cache serialization is based on the existing use-cache runtime example:
-  // cf. todo examples/basic/cache-runtime
+  // Cache serialization follows the existing use-cache runtime example in
+  // examples/basic/src/framework/use-cache-runtime.tsx.
   // https://github.com/vercel/next.js/pull/70435
   // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 

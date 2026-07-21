@@ -191,7 +191,11 @@ function reviveSsrPrerenderResult(
   }
 }
 
-// TODO: comment. invoked during build-time or dev-time with __ppr param for simulation.
+/**
+ * Prerenders every static route and serializes both its React DOM result and
+ * the shared RSC cache. The build plugin invokes this after all environments
+ * build; development invokes the same path for requests containing `?__ppr`.
+ */
 export async function generatePprManifest(): Promise<PprManifest> {
   const routes: PprManifest['routes'] = {}
   for (const pathname of getStaticPaths()) {
@@ -206,7 +210,8 @@ export async function generatePprManifest(): Promise<PprManifest> {
   }
 }
 
-// TODO: comment. access build-time generated manifest via virtual module
+// During build, the PPR plugin rewrites this virtual import to the generated
+// ESM sidecar so the runtime loads persisted data without filesystem access.
 async function loadPprManifest(): Promise<PprManifest> {
   return (await import('virtual:ppr-manifest')).default
 }
