@@ -7,7 +7,7 @@ type PrerenderState = {
   phase: PrerenderPhase
 }
 
-export type PrerenderPhase = 'prospective' | 'final'
+export type PrerenderPhase = 'first' | 'second'
 
 const prerenderStorage = new AsyncLocalStorage<PrerenderState>()
 const pending = new Promise<never>(() => {})
@@ -33,7 +33,7 @@ export function runWithPrerenderContext<T>(
 
 export function trackPrerenderWork<T>(work: Promise<T>): Promise<T> {
   const state = prerenderStorage.getStore()
-  if (!state || state.phase !== 'prospective' || state.pendingWork.has(work)) {
+  if (!state || state.phase !== 'first' || state.pendingWork.has(work)) {
     return work
   }
   state.pendingWork.add(work)
@@ -50,11 +50,11 @@ export function trackPrerenderWork<T>(work: Promise<T>): Promise<T> {
   return work
 }
 
-export function postponeFinalCacheMiss(): Promise<never> | undefined {
+export function postponeSecondPassCacheMiss(): Promise<never> | undefined {
   const state = prerenderStorage.getStore()
   // The strict pass classifies an unexpected miss as outside the static shell
-  // instead of turning final rendering into another cache-discovery pass.
-  if (state?.phase === 'final') {
+  // instead of turning the second pass into another cache-discovery pass.
+  if (state?.phase === 'second') {
     state.partialReached = true
     notify(state)
     return pending
@@ -84,16 +84,16 @@ async function waitForReady(state: PrerenderState): Promise<void> {
     await new Promise<void>((resolve) => state.listeners.add(resolve))
   }
 
-  if (state.phase === 'final') {
-    // The final render gets one retry window for warm cache reads, but does not
+  if (state.phase === 'second') {
+    // The second pass gets one retry window for warm cache reads, but does not
     // wait for newly discovered fills. Its job is to capture what was made
-    // static by the prospective pass, not to extend the static shell itself.
+    // static by the first pass, not to extend the static shell itself.
     await new Promise<void>((resolve) => setTimeout(resolve, 0))
     return
   }
 
-  // The prospective render remains alive until every discovered cache miss is
-  // filled. This deliberately uses a more permissive cutoff than the final
+  // The first pass remains alive until every discovered cache miss is filled.
+  // This deliberately uses a more permissive cutoff than the second pass
   // render so it can discover static work without making its output canonical.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L8080
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55

@@ -7,7 +7,10 @@ import {
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
 import type React from 'react'
-import { postponeFinalCacheMiss, trackPrerenderWork } from './prerender-context'
+import {
+  postponeSecondPassCacheMiss,
+  trackPrerenderWork,
+} from './prerender-context'
 import {
   arrayToStream,
   concatArrayStream,
@@ -49,7 +52,7 @@ export function createCachedComponent<Props extends object>(
 
     let entry = entries.get(key)
     if (!entry) {
-      const postponed = postponeFinalCacheMiss()
+      const postponed = postponeSecondPassCacheMiss()
       if (postponed) {
         return postponed
       }
@@ -91,8 +94,8 @@ export function createCachedComponent<Props extends object>(
   }
 
   // Tracking unresolved entries makes cache-fill completion this demo's
-  // prospective-render readiness signal, including when concurrent renders
-  // share one fill. A miss in the final render remains postponed instead of
+  // first-pass readiness signal, including when concurrent renders share one
+  // fill. A miss in the second pass remains postponed instead of
   // extending the static shell.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7943-L7974
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8076-L8080

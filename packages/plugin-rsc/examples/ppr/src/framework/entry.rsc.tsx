@@ -30,11 +30,6 @@ export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
-  const debugShell = import.meta.env.DEV
-    ? renderRequest.url.searchParams.get('__ppr_shell')
-    : null
-  const finalOnlyShell = debugShell === 'final'
-  const returnShellOnly = finalOnlyShell || debugShell === 'two-pass'
 
   // In dev, `?__ppr` exercises the persisted manifest handoff without a build.
   const pprManifest: PprManifest | undefined = import.meta.env.DEV
@@ -52,6 +47,11 @@ async function handler(request: Request): Promise<Response> {
     })
   }
 
+  // These debug controls expose how the first pass changes the captured shell:
+  // skip that pass, and optionally return the prelude before request-time resume.
+  const debugNoPrepass = renderRequest.url.searchParams.has('__ppr_no_prepass')
+  const debugPreludeOnly = renderRequest.url.searchParams.has('__ppr_prelude')
+
   let ssrPrerenderResult: PrerenderResult
   if (pprManifest) {
     const persistedResult = pprManifest.routes[renderRequest.url.pathname]
@@ -62,14 +62,14 @@ async function handler(request: Request): Promise<Response> {
   } else {
     ssrPrerenderResult = await prerenderPprRoute(
       renderRequest.request,
-      !finalOnlyShell,
+      debugNoPrepass,
     )
   }
 
-  // Dev-only diagnostics expose the captured shell before request-time resume.
-  // Comparing `final` with `two-pass` demonstrates why cache discovery and
+  // This diagnostic exposes the captured prelude before request-time resume.
+  // Combining it with `__ppr_no_prepass` demonstrates why cache discovery and
   // strict shell capture use separate renders.
-  if (returnShellOnly) {
+  if (debugPreludeOnly) {
     return new Response(ssrPrerenderResult.prelude, {
       headers: { 'content-type': 'text/html;charset=utf-8' },
     })
@@ -139,27 +139,27 @@ function stitchPprStreams(
 }
 
 /**
- * Produces one route's live React DOM prerender result. The prospective pass
- * fills the shared RSC cache before strict RSC and HTML prerenders capture it.
+ * Produces one route's live React DOM prerender result. The first pass fills
+ * the shared RSC cache before the second RSC pass captures the static shell.
  */
 async function prerenderPprRoute(
   request: Request,
-  includeProspectivePass = true,
+  debugNoPrepass: boolean,
 ): Promise<PrerenderResult> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
-  // The discarded prospective pass uses a permissive cutoff to discover and
-  // fill cache entries while request-time work remains suspended. The final
+  // The discarded first pass uses a permissive cutoff to discover and fill
+  // cache entries while request-time work remains suspended. The second
   // pass starts from a clean React render and uses a strict cutoff that does not
   // wait for new fills, so only work warmed by the first pass enters the shell.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7917
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
-  if (includeProspectivePass) {
-    const prospective = await prerenderRsc(rscPayload, 'prospective')
-    await prospective.prelude.cancel()
+  if (!debugNoPrepass) {
+    const firstPass = await prerenderRsc(rscPayload, 'first')
+    await firstPass.prelude.cancel()
   }
-  const { prelude } = await prerenderRsc(rscPayload, 'final')
+  const { prelude } = await prerenderRsc(rscPayload, 'second')
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
   >('ssr', 'index')
@@ -184,9 +184,9 @@ async function prerenderRsc(rscPayload: RscPayload, phase: PrerenderPhase) {
       },
     })
   })
-  // A fully static render completes first. For a partial render, prospective
-  // readiness means all discovered fills settled, while final readiness means
-  // the strict shell-capture window elapsed after reaching unfinished work.
+  // A fully static render completes first. For a partial render, first-pass
+  // readiness means all discovered fills settled, while second-pass readiness
+  // means the strict shell-capture window elapsed after reaching unfinished work.
   const outcome = await Promise.race([
     result.then(() => 'complete' as const),
     ready.then(() => 'cutoff' as const),
@@ -228,6 +228,7 @@ export async function generatePprManifest(): Promise<PprManifest> {
   for (const pathname of getStaticPaths()) {
     const result = await prerenderPprRoute(
       new Request(new URL(pathname, 'http://ppr.local')),
+      false,
     )
     routes[pathname] = await persistSsrPrerenderResult(result)
   }

@@ -22,26 +22,37 @@ test.describe('dev', () => {
 
 test.describe('dev shell phases', () => {
   const f = useFixture({ root: 'examples/ppr', mode: 'dev' })
-
-  test('prospective pass expands the strict static shell', async ({
-    request,
-  }) => {
-    const finalOnly = await request.get(f.url('/?__ppr_shell=final'))
-    expect(finalOnly.ok()).toBe(true)
-    expect(await finalOnly.text()).not.toContain('data-testid="layout"')
-
-    const twoPass = await request.get(f.url('/?__ppr_shell=two-pass'))
-    expect(twoPass.ok()).toBe(true)
-    const twoPassHtml = await twoPass.text()
-    expect(twoPassHtml).toContain('data-testid="layout"')
-    expect(twoPassHtml).toContain('data-testid="cached-async"')
-  })
+  defineShellPhaseTest(f)
 })
 
 test.describe('build', () => {
   const f = useFixture({ root: 'examples/ppr', mode: 'build' })
   definePprTest(f)
 })
+
+function defineShellPhaseTest(f: Fixture) {
+  test('first pass expands the strict second-pass shell', async ({
+    request,
+  }) => {
+    // This describe owns a fresh server and cache. Without the first pass, the
+    // strict second pass postpones the cold CachedLayout miss instead of
+    // filling it, so the captured prelude cannot contain the document shell.
+    const noPrepassPrelude = await request.get(
+      f.url('/?__ppr_no_prepass&__ppr_prelude'),
+    )
+    expect(noPrepassPrelude.ok()).toBe(true)
+    expect(await noPrepassPrelude.text()).not.toContain('data-testid="layout"')
+
+    // The postponed miss left the cache cold. The normal first pass now fills
+    // CachedLayout and its follow-on CachedAsyncContent entry, allowing the
+    // clean second pass to capture both as static prelude content.
+    const twoPass = await request.get(f.url('/?__ppr_prelude'))
+    expect(twoPass.ok()).toBe(true)
+    const twoPassHtml = await twoPass.text()
+    expect(twoPassHtml).toContain('data-testid="layout"')
+    expect(twoPassHtml).toContain('data-testid="cached-async"')
+  })
+}
 
 function definePprTest(f: Fixture) {
   test('hydrate and navigate with static shell', async ({ browser, page }) => {

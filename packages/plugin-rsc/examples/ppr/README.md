@@ -32,7 +32,7 @@ The PPR-relevant shape in [`src/root.tsx`](./src/root.tsx) places cached and dyn
 | Component            | Behavior                                                                                                                                                                                                                    |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CachedLayout`       | Caches the document frame, navigation, and its render timestamp. Its cached bytes contain temporary-reference placeholders rather than concrete `children`, so each invocation can supply fresh values through those slots. |
-| `CachedAsyncContent` | Waits 100 ms on a cache miss. The prospective pass tracks that fill, materializes its Flight result, and reuses it in later renders.                                                                                        |
+| `CachedAsyncContent` | Waits 100 ms on a cache miss. The first pass tracks that fill, materializes its Flight result, and reuses it in later renders.                                                                                              |
 | `DynamicContent`     | Calls `markDynamic()`. It returns a pending promise during prerender and `undefined` during a request render, so the request continues immediately into its request-time work.                                              |
 
 `createCachedComponent` gives this example the semantics of a small `"use cache"` runtime without requiring a compiler transform. Its argument and result serialization follows [`examples/basic/src/framework/use-cache-runtime.tsx`](../basic/src/framework/use-cache-runtime.tsx). Temporary references are important for `CachedLayout`: its cache key and bytes retain reference markers while the matching reference set supplies the concrete dynamic `children` on each invocation.
@@ -44,13 +44,13 @@ Cached work must not call `markDynamic()` directly. The hanging dynamic promise 
 Each RSC prerender races natural completion against a phase-specific partial cutoff:
 
 ```text
-prospective pass
+first pass
   dynamic boundary reached
   + discovered cache fills settled
   + one task to discover follow-on fills
   -> abort and discard its permissive output
 
-final pass
+second pass
   partial boundary reached from dynamic work or an unwarmed cache miss
   + one task for warm cache reads to settle
   -> abort and retain the authoritative partial RSC output
@@ -59,9 +59,9 @@ either pass
   result completes first -> fully static RSC output
 ```
 
-The phase distinction is the reason for rendering twice. The prospective pass deliberately remains alive for tracked cache misses, even after it reaches request-time work. The final pass starts from a clean React render, but a new cache miss remains postponed rather than starting more static work. It therefore captures only the work made available by the first pass. Its output is authoritative because it was produced under the strict shell policy, even when its bytes happen to match the discarded output for a simple component tree.
+The phase distinction is the reason for rendering twice. The first pass deliberately remains alive for tracked cache misses, even after it reaches request-time work. The second pass starts from a clean React render, but a new cache miss remains postponed rather than starting more static work. It therefore captures only the work made available by the first pass. Its output is authoritative because it was produced under the strict shell policy, even when its bytes happen to match the discarded output for a simple component tree.
 
-Both passes still race readiness against natural completion. A fully static render reaches neither `markDynamic()` nor an unwarmed final cache read, so its readiness promise remains pending and `result` wins naturally. [`src/framework/prerender-context.ts`](./src/framework/prerender-context.ts) implements the two partial-render policies with `AsyncLocalStorage`, tracked cache fills, and `setTimeout(0)` retry windows. Production frameworks use more complete cache, module, and scheduler tracking.
+Both passes still race readiness against natural completion. A fully static render reaches neither `markDynamic()` nor an unwarmed second-pass cache read, so its readiness promise remains pending and `result` wins naturally. [`src/framework/prerender-context.ts`](./src/framework/prerender-context.ts) implements the two partial-render policies with `AsyncLocalStorage`, tracked cache fills, and `setTimeout(0)` retry windows. Production frameworks use more complete cache, module, and scheduler tracking.
 
 ## Runtime API layers
 
@@ -91,21 +91,21 @@ Applications should use the `@vitejs/plugin-rsc` exports rather than importing i
 
 Each static path goes through three render steps:
 
-1. **Prospectively warm the RSC cache.** `@vitejs/plugin-rsc/rsc/static` `prerender()` remains alive until discovered cache misses and follow-on fills settle. Its output is discarded because this permissive discovery policy is not the policy used to define the static shell.
-2. **Strictly capture partial Flight.** The same RSC `prerender()` starts a clean pass against the warm cache. It allows one retry task after reaching `DynamicContent`, but unlike the prospective pass it postpones unexpected cache misses instead of filling them. Cutting off here produces the authoritative static Flight prefix around the intentional hole.
+1. **First pass: warm the RSC cache.** `@vitejs/plugin-rsc/rsc/static` `prerender()` remains alive until discovered cache misses and follow-on fills settle. Its output is discarded because this permissive discovery policy is not the policy used to define the static shell.
+2. **Second pass: capture partial Flight.** The same RSC `prerender()` starts a clean pass against the warm cache. It allows one retry task after reaching `DynamicContent`, but unlike the first pass it postpones unexpected cache misses instead of filling them. Cutting off here produces the authoritative static Flight prefix around the intentional hole.
 3. **Capture resumable HTML.** `react-dom/static.edge` `prerender()` consumes the decoded partial Flight tree. `preventStreamClose` keeps the missing segment pending, so React DOM emits an HTML `prelude` for the shell and serializable `postponed` state describing where request-time rendering must continue.
 
-The build persists the shared RSC cache and each route's `{ prelude, postponed }` result. Repeating the RSC render is safe because React rendering must already be pure and restartable; the cache ensures expensive static work is performed on the miss and replayed by the final pass.
+The build persists the shared RSC cache and each route's `{ prelude, postponed }` result. Repeating the RSC render is safe because React rendering must already be pure and restartable; the cache ensures expensive static work is performed on the miss and replayed by the second pass.
 
 The demo intentionally requires a dynamic HTML hole so every generated route exercises `resume`. A complete framework would also persist and serve fully static results and other valid prerender outcomes.
 
 ### Development flow
 
-Development runs the same prospective, final RSC prerender, and React DOM prerender on demand for each document request. It passes the live `{ prelude, postponed }` result directly into request-time resume instead of loading persisted build output.
+Development runs the same first and second RSC passes followed by React DOM prerender on demand for each document request. It passes the live `{ prelude, postponed }` result directly into request-time resume instead of loading persisted build output.
 
 Adding `?__ppr` exercises the persistence boundary without a production build. The dev server prerenders all static paths, serializes the shared cache and route results, then revives the selected route before serving it. The rendering model stays the same; only the handoff changes from live objects to their persisted representation.
 
-The dev-only `?__ppr_shell=final` diagnostic skips the prospective pass and returns only the cold strict shell, while `?__ppr_shell=two-pass` returns the normally warmed strict shell. Comparing them exposes the architectural effect before request-time resume hides the difference.
+The dev-only `?__ppr_no_prepass` diagnostic skips the first pass, while `?__ppr_prelude` returns only the captured prelude without request-time resume. On a fresh dev server, compare `?__ppr_no_prepass&__ppr_prelude` with `?__ppr_prelude` to expose the architectural effect.
 
 ## Request flow
 
@@ -137,15 +137,15 @@ This in-process handoff models an architecture where an edge or CDN serves the s
 
 ## Deliberate approximations
 
-| Concern              | This example                                                                                | Production elaboration                                                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cache readiness      | Tracks unresolved cache-entry promises read during the prospective pass.                    | Track lazy cache streams, module loading, and other framework-owned static work with separate readiness signals.                             |
-| Partial witness      | `partialReached` records dynamic access or a cache miss postponed by the strict final pass. | vinext uses a similar `hasDynamicBoundary` flag; Next.js can derive partiality from output still pending after its static scheduling window. |
-| Prospective settling | One `setTimeout(0)` retry window reveals follow-on cache fills before declaring quiescence. | Use a CacheSignal-like primitive plus runtime-specific task coordination.                                                                    |
-| Final RSC cutoff     | One `setTimeout(0)` gives warm cache reads a retry task without waiting for cache misses.   | Use staged rendering and a scheduler-aware strict cutoff window.                                                                             |
-| HTML settling        | A fixed 50 ms delay allows shell and client-reference work to progress before aborting.     | Track module work and coordinate the final prerender cutoff.                                                                                 |
-| Dynamic backend      | Runs the backend render and stream stitching in the same process.                           | An edge, CDN, or adapter can fetch the resumed stream from a separate backend.                                                               |
-| Cache storage        | Materializes Flight bytes so one promise represents both the entry and its completion.      | Keep cache streams lazy and use a separate CacheSignal-like completion mechanism.                                                            |
+| Concern             | This example                                                                                 | Production elaboration                                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cache readiness     | Tracks unresolved cache-entry promises read during the first pass.                           | Track lazy cache streams, module loading, and other framework-owned static work with separate readiness signals.                             |
+| Partial witness     | `partialReached` records dynamic access or a cache miss postponed by the strict second pass. | vinext uses a similar `hasDynamicBoundary` flag; Next.js can derive partiality from output still pending after its static scheduling window. |
+| First-pass settling | One `setTimeout(0)` retry window reveals follow-on cache fills before declaring quiescence.  | Use a CacheSignal-like primitive plus runtime-specific task coordination.                                                                    |
+| Second-pass cutoff  | One `setTimeout(0)` gives warm cache reads a retry task without waiting for cache misses.    | Use staged rendering and a scheduler-aware strict cutoff window.                                                                             |
+| HTML settling       | A fixed 50 ms delay allows shell and client-reference work to progress before aborting.      | Track module work and coordinate the final prerender cutoff.                                                                                 |
+| Dynamic backend     | Runs the backend render and stream stitching in the same process.                            | An edge, CDN, or adapter can fetch the resumed stream from a separate backend.                                                               |
+| Cache storage       | Materializes Flight bytes so one promise represents both the entry and its completion.       | Keep cache streams lazy and use a separate CacheSignal-like completion mechanism.                                                            |
 
 These are deliberate runtime boundaries, not attempts to detect arbitrary application promises. Cache and dynamic work must enter through framework-owned APIs to participate in prerender readiness.
 
