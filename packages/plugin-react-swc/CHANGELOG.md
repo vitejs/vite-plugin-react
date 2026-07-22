@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.2 (2026-07-22)
+
 ### Don't apply React Refresh wrapper for non JSX files [#1226](https://github.com/vitejs/vite-plugin-react/pull/1226)
 
 Fixes [#1225](https://github.com/vitejs/vite-plugin-react/issues/1225).
