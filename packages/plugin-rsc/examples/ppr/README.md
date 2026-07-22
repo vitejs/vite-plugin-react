@@ -32,7 +32,7 @@ The PPR-relevant shape in [`src/root.tsx`](./src/root.tsx) places cached and dyn
 | Component            | Behavior                                                                                                                                                                                                                    |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CachedLayout`       | Caches the document frame, navigation, and its render timestamp. Its cached bytes contain temporary-reference placeholders rather than concrete `children`, so each invocation can supply fresh values through those slots. |
-| `CachedAsyncContent` | Waits 100 ms on a cache miss. The warmup pass tracks that fill, materializes its Flight result, and reuses it in later renders.                                                                                             |
+| `CachedAsyncContent` | Waits 100 ms on a cache miss. The RSC prerender tracks that fill, materializes its Flight result, and reuses it in later renders.                                                                                           |
 | `DynamicContent`     | Calls `markDynamic()`. It returns a pending promise during prerender and `undefined` during a request render, so the request continues immediately into its request-time work.                                              |
 
 `createCachedComponent` gives this example the semantics of a small `"use cache"` runtime without requiring a compiler transform. Its argument and result serialization follows [`examples/basic/src/framework/use-cache-runtime.tsx`](../basic/src/framework/use-cache-runtime.tsx). Temporary references are important for `CachedLayout`: its cache key and bytes retain reference markers while the matching reference set supplies the concrete dynamic `children` on each invocation.
@@ -52,7 +52,7 @@ dynamic boundary reached
   -> ready -> abort and retain partial RSC output
 ```
 
-The two branches are both necessary. A fully static render does not call `markDynamic()`, so its `ready` promise remains pending and `result` wins naturally. A partial render may be cut off only after `dynamicReached` proves that its suspension is intentional and `pendingWork` proves that no tracked cache fill can add more static output.
+Both branches of this race are necessary. A fully static render does not call `markDynamic()`, so its `ready` promise remains pending and `result` wins naturally. A partial render may be cut off only after `dynamicReached` proves that its suspension is intentional and `pendingWork` proves that no tracked cache fill can add more static output.
 
 [`src/framework/prerender-context.ts`](./src/framework/prerender-context.ts) implements this compact model with `AsyncLocalStorage`, a set of cache promises, and one `setTimeout(0)` retry window. Production frameworks make the same kind of framework-defined approximation with more complete cache, module, and scheduler tracking.
 
@@ -82,11 +82,20 @@ Applications should use the `@vitejs/plugin-rsc` exports rather than importing i
 
 ## Build flow
 
-Each static path goes through three render steps:
+This example sends each static path through three render steps:
 
-1. **Warm the RSC cache.** `@vitejs/plugin-rsc/rsc/static` `prerender()` discovers cache misses and waits for their useful static work to finish. Its output is discarded because it records the process of filling the cache rather than the final warm-cache shell.
+1. **Warm the RSC cache.** `@vitejs/plugin-rsc/rsc/static` `prerender()` discovers cache misses and waits for their useful static work to finish. The demo intentionally discards this result to keep cache discovery and shell capture as separate stages.
 2. **Capture partial Flight.** The same RSC `prerender()` renders a clean pass against the warm cache. Cached content is immediately available, while `DynamicContent` remains pending at `markDynamic()`. Cutting off here produces the static Flight prefix around that intentional hole.
 3. **Capture resumable HTML.** `react-dom/static.edge` `prerender()` consumes the decoded partial Flight tree. `preventStreamClose` keeps the missing segment pending, so React DOM emits an HTML `prelude` for the shell and serializable `postponed` state describing where request-time rendering must continue.
+
+The restart is illustrative rather than required by this compact runtime. Its readiness gate waits for every tracked cache fill to settle and gives React a retry turn before cutoff, so the first RSC prerender already returns a valid partial Flight prelude that could be passed directly to React DOM. Keeping a second pass makes cache discovery and final shell capture explicit and mirrors production architectures where those phases have different contracts.
+
+In Next.js, the distinction is load-bearing because the initial pass omits staged rendering, dynamic tracking, and vary-parameter accumulation, and its result is not retained. The final pass enables the semantics used to produce the authoritative artifact. vinext similarly drains and aborts its warmup stream, then resets PPR state before the final render. A framework needs separate passes when its discovery render is discarded, aborted, or runs without metadata and cutoff semantics required by the persisted result. Separate passes are not required merely because cache fills were initially pending.
+
+- [Next.js initial cache-discovery prerender](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7993)
+- [Next.js final-render staging and dynamic tracking](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8230-L8490)
+- [vinext warmup drain and abort](https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55)
+- [vinext state reset before the final render](https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts#L257-L274)
 
 The build persists the shared RSC cache and each route's `{ prelude, postponed }` result. Repeating the RSC render is safe because React rendering must already be pure and restartable; the cache ensures expensive static work is performed on the miss and replayed by the final pass.
 
@@ -94,7 +103,7 @@ The demo intentionally requires a dynamic HTML hole so every generated route exe
 
 ### Development flow
 
-Development runs the same warmup, final RSC prerender, and React DOM prerender on demand for each document request. It passes the live `{ prelude, postponed }` result directly into request-time resume instead of loading persisted build output.
+Development runs the same chosen warmup, final RSC prerender, and React DOM prerender pipeline on demand for each document request. It passes the live `{ prelude, postponed }` result directly into request-time resume instead of loading persisted build output.
 
 Adding `?__ppr` exercises the persistence boundary without a production build. The dev server prerenders all static paths, serializes the shared cache and route results, then revives the selected route before serving it. The rendering model stays the same; only the handoff changes from live objects to their persisted representation.
 
@@ -153,7 +162,7 @@ These are deliberate runtime boundaries, not attempts to detect arbitrary applic
 
 ## Prior art
 
-- [Next.js cache warmup and final prerender](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L8490)
+- [Next.js prospective and final prerender implementation](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L8490)
 - [Next.js `CacheSignal`](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/cache-signal.ts)
 - [vinext fallback-shell prerender state](https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts)
 - [Next.js adapter PPR request flow](https://nextjs.org/docs/app/api-reference/adapters/implementing-ppr-in-an-adapter#2-runtime-flow-serve-cached-shell-and-resume-in-background)

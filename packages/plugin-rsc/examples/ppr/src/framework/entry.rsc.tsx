@@ -119,17 +119,19 @@ function stitchPprStreams(
 }
 
 /**
- * Produces one route's live React DOM prerender result. The warmup pass fills
- * the shared RSC cache before the final RSC and HTML prerenders capture a shell.
+ * Produces one route's live React DOM prerender result. This demo separates the
+ * RSC cache-discovery and shell-capture stages to mirror larger frameworks.
  */
 async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
-  // The discarded warmup pass discovers and fills cache entries while
-  // request-time work remains suspended. The final pass starts from a clean
-  // React render, reuses those entries, and captures only the resulting shell.
-  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7917
+  // This compact runtime's first pass already returns a valid partial Flight
+  // prelude: readiness waits for cache fills to settle and gives React a retry
+  // turn before cutoff. We nevertheless discard it and restart so cache
+  // discovery and authoritative shell capture remain visibly separate, as
+  // they must in frameworks whose discovery stage lacks final-render semantics.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7993
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
   const warmup = await prerenderRsc(rscPayload, 'warmup')
   await warmup.prelude.cancel()
