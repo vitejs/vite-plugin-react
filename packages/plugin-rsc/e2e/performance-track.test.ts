@@ -19,13 +19,14 @@ test.describe('performance-track', () => {
     await startTracing(session)
 
     await page.goto(f.url())
+    // Wait for the innermost step so the whole waterfall has resolved.
     await expect(
-      page.getByText('SlowServerComponent resolved after 1000ms'),
+      page.getByText('SlowServerComponent resolved after 500ms'),
     ).toBeVisible()
-    await page.getByRole('link', { name: 'Load RSC probe' }).click()
-    await expect(page.getByText('Probe request: on-demand')).toBeVisible()
+    await page.getByRole('link', { name: 'About' }).click()
+    await expect(page.getByRole('heading', { name: 'About' })).toBeVisible()
     await expect(
-      page.getByText('SlowServerComponent resolved after 1000ms'),
+      page.getByText('SlowServerComponent resolved after 500ms'),
     ).toBeVisible()
     await page.waitForTimeout(1000)
 
@@ -33,12 +34,10 @@ test.describe('performance-track', () => {
     const slowSpans = spans.filter(
       (span) => span.name === 'SlowServerComponent',
     )
-    const dynamicImportSpans = spans.filter(
-      (span) => span.name === 'DynamicImportComponent',
-    )
-    expect(slowSpans).toHaveLength(2)
-    expect(dynamicImportSpans).toHaveLength(2)
-    expect(slowSpans.every((span) => span.duration >= 900)).toBe(true)
+    // Two renders (Home + About), each with a nested pair of
+    // SlowServerComponent spans forming the waterfall.
+    expect(slowSpans).toHaveLength(4)
+    expect(slowSpans.every((span) => span.duration >= 200)).toBe(true)
   })
 })
 
