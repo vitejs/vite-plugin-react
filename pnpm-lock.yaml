@@ -6,9 +6,6 @@ settings:
 
 overrides:
   '@types/estree': ^1.0.9
-  react: canary
-  react-dom: canary
-  react-server-dom-webpack: canary
 
 importers:
 
@@ -100,11 +97,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       rolldown:
         specifier: ^1.1.5
         version: 1.1.5
@@ -152,11 +149,11 @@ importers:
   packages/plugin-react-swc/playground/base-path:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -171,11 +168,11 @@ importers:
   packages/plugin-react-swc/playground/class-components:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -190,11 +187,11 @@ importers:
   packages/plugin-react-swc/playground/decorators:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -210,16 +207,16 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721))(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -235,16 +232,16 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721))(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@swc/plugin-emotion':
         specifier: ^14.15.0
@@ -262,11 +259,11 @@ importers:
   packages/plugin-react-swc/playground/hmr:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -281,11 +278,11 @@ importers:
   packages/plugin-react-swc/playground/mdx:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -303,11 +300,11 @@ importers:
   packages/plugin-react-swc/playground/react-18:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^18.3.1
+        version: 18.3.1
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
     devDependencies:
       '@types/react':
         specifier: ^18.3.18
@@ -322,11 +319,11 @@ importers:
   packages/plugin-react-swc/playground/shadow-export:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -341,14 +338,14 @@ importers:
   packages/plugin-react-swc/playground/styled-components:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       styled-components:
         specifier: ^6.4.3
-        version: 6.4.3(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721)
+        version: 6.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@swc/plugin-styled-components':
         specifier: ^12.15.0
@@ -370,13 +367,13 @@ importers:
     dependencies:
       '@vitejs/test-dep-non-js':
         specifier: file:./test-dep/non-js
-        version: file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.8)
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -388,20 +385,16 @@ importers:
         specifier: ../../dist
         version: link:../../dist
 
-  packages/plugin-react-swc/playground/ts-lib/test-dep/non-js:
-    dependencies:
-      react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+  packages/plugin-react-swc/playground/ts-lib/test-dep/non-js: {}
 
   packages/plugin-react-swc/playground/worker:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -427,15 +420,6 @@ importers:
       magic-string:
         specifier: ^0.30.21
         version: 0.30.21
-      react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
-      react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
-      react-server-dom-webpack:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721)
       srvx:
         specifier: ^0.11.22
         version: 0.11.22
@@ -482,6 +466,15 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
+      react-server-dom-webpack:
+        specifier: ^19.2.8
+        version: 19.2.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       tinyexec:
         specifier: ^1.2.4
         version: 1.2.4
@@ -492,11 +485,11 @@ importers:
   packages/plugin-rsc/examples/basic:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.2
@@ -515,31 +508,31 @@ importers:
         version: link:../..
       '@vitejs/test-dep-cjs-events-extend':
         specifier: file:./test-dep/cjs-events-extend
-        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.8)
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.8)
       '@vitejs/test-dep-client-in-server2':
         specifier: file:./test-dep/client-in-server2
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.8)
       '@vitejs/test-dep-css-in-server':
         specifier: file:./test-dep/css-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.8)
       '@vitejs/test-dep-server-in-client':
         specifier: file:./test-dep/server-in-client
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.8)
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.8)
       '@vitejs/test-dep-server-with-transitive-client':
         specifier: file:./test-dep/server-with-transitive-client
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.8)
       '@vitejs/test-dep-transitive-cjs':
         specifier: file:./test-dep/transitive-cjs
-        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.8)
       '@vitejs/test-dep-transitive-use-sync-external-store':
         specifier: file:./test-dep/transitive-use-sync-external-store
-        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.3.0-canary-81e442ea-20260721)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.8)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -556,11 +549,11 @@ importers:
   packages/plugin-rsc/examples/browser:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -584,11 +577,11 @@ importers:
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -612,11 +605,11 @@ importers:
   packages/plugin-rsc/examples/cache-replay:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -664,11 +657,11 @@ importers:
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -689,11 +682,11 @@ importers:
   packages/plugin-rsc/examples/performance-track:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -717,11 +710,11 @@ importers:
   packages/plugin-rsc/examples/ppr:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -745,14 +738,14 @@ importers:
   packages/plugin-rsc/examples/react-router:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       react-router:
         specifier: 7.18.1
-        version: 7.18.1(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721)
+        version: 7.18.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.44.0
@@ -788,11 +781,11 @@ importers:
   packages/plugin-rsc/examples/ssg:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -819,11 +812,11 @@ importers:
   packages/plugin-rsc/examples/ssr-encode-form-action:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -841,11 +834,11 @@ importers:
   packages/plugin-rsc/examples/starter:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -869,11 +862,11 @@ importers:
   packages/plugin-rsc/examples/starter-extra:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.44.0
@@ -912,11 +905,11 @@ importers:
   playground/bundled-dev:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -931,11 +924,11 @@ importers:
   playground/class-components:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -950,11 +943,11 @@ importers:
   playground/compiler:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -981,14 +974,14 @@ importers:
   playground/compiler-react-18:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^18.3.1
+        version: 18.3.1
       react-compiler-runtime:
         specifier: ^1.0.0
-        version: 1.0.0(react@19.3.0-canary-81e442ea-20260721)
+        version: 1.0.0(react@18.3.1)
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -1015,11 +1008,11 @@ importers:
   playground/hmr-false:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -1034,11 +1027,11 @@ importers:
   playground/hook-with-jsx:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -1053,11 +1046,11 @@ importers:
   playground/include-node-modules:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -1079,22 +1072,18 @@ importers:
         version: link:../../packages/plugin-react
       '@vitejs/test-package':
         specifier: file:./test-package
-        version: test-package@file:playground/include-node-modules/test-package(react@19.3.0-canary-81e442ea-20260721)
+        version: test-package@file:playground/include-node-modules/test-package(react@19.2.8)
 
-  playground/include-node-modules/test-package:
-    dependencies:
-      react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+  playground/include-node-modules/test-package: {}
 
   playground/mdx:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -1112,11 +1101,11 @@ importers:
   playground/node-env-production:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.7
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.7
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1128,11 +1117,11 @@ importers:
         specifier: link:./jsx-entry
         version: link:jsx-entry
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1141,11 +1130,11 @@ importers:
   playground/react-classic:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1155,19 +1144,19 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721))(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       react-switch:
         specifier: ^7.1.0
-        version: 7.1.0(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721)
+        version: 7.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -1191,11 +1180,11 @@ importers:
   playground/react-env:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1204,11 +1193,11 @@ importers:
   playground/react-sourcemap:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1219,11 +1208,11 @@ importers:
   playground/ssr-react:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1232,11 +1221,11 @@ importers:
   playground/tsconfig-jsx-preserve:
     dependencies:
       react:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: canary
-        version: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -4050,10 +4039,15 @@ packages:
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0 || ^0.0.0-experimental
 
-  react-dom@19.3.0-canary-81e442ea-20260721:
-    resolution: {integrity: sha512-fPz0I6YRIrVQ7lJiGbysVb3k/2+irIH/TXc7VMfZn6e9HWOcVLixs64bUPW6kTnPU5p8bPTGY6HVHVCTTpcLcg==}
+  react-dom@18.3.1:
+    resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: ^18.3.1
+
+  react-dom@19.2.8:
+    resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
+    peerDependencies:
+      react: ^19.2.8
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -4068,12 +4062,12 @@ packages:
       react-dom:
         optional: true
 
-  react-server-dom-webpack@19.3.0-canary-81e442ea-20260721:
-    resolution: {integrity: sha512-yu269qOd4wQ8n2ybX0DcKXWu39lDbHSvvluNlGVT6pVFNq3fqj90/qewlLZHsCQFLJYlIGsCGaeIV3SiSWb23g==}
+  react-server-dom-webpack@19.2.8:
+    resolution: {integrity: sha512-rFO1VJZ+cH9ZH6hGy9+qmIsmZHZpCMKJZXhWHqT71UnSfg+w+W+gwrwp58MVzMqdFquG8GF1c6C8q0OGphkEdg==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      react: 19.3.0-canary-81e442ea-20260721
-      react-dom: 19.3.0-canary-81e442ea-20260721
+      react: ^19.2.8
+      react-dom: ^19.2.8
       webpack: ^5.59.0
 
   react-switch@7.1.0:
@@ -4082,8 +4076,12 @@ packages:
       react: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react@19.3.0-canary-81e442ea-20260721:
-    resolution: {integrity: sha512-w4i5UEXlDQJnGRgmcewKES6RM4E27OrMbmwb8tKdmB23uU1Hlm9cVn6n+y9OLBXQLA/58ySwl9i5LAipAx37+A==}
+  react@18.3.1:
+    resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.2.8:
+    resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
     engines: {node: '>=0.10.0'}
 
   refa@0.12.1:
@@ -4152,8 +4150,11 @@ packages:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
 
-  scheduler@0.28.0-canary-81e442ea-20260721:
-    resolution: {integrity: sha512-7XrRTcV/voh2F8krSS67h21xGZuzcgJb38eB6NhkTUHHZ1urY3DtlutVzhQEFj2Y8l2uZv3MSdDz5NKCc8EM2w==}
+  scheduler@0.23.2:
+    resolution: {integrity: sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==}
+
+  scheduler@0.27.0:
+    resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
 
   scslre@0.3.0:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
@@ -4958,17 +4959,17 @@ snapshots:
 
   '@emotion/memoize@0.9.0': {}
 
-  '@emotion/react@11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)':
+  '@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)':
     dependencies:
       '@babel/runtime': 7.23.5
       '@emotion/babel-plugin': 11.13.5
       '@emotion/cache': 11.14.0
       '@emotion/serialize': 1.3.3
-      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.3.0-canary-81e442ea-20260721)
+      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.8)
       '@emotion/utils': 1.4.2
       '@emotion/weak-memoize': 0.4.0
       hoist-non-react-statics: 3.3.2
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
     optionalDependencies:
       '@types/react': 19.2.17
     transitivePeerDependencies:
@@ -4984,16 +4985,16 @@ snapshots:
 
   '@emotion/sheet@1.4.0': {}
 
-  '@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721))(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)':
+  '@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)':
     dependencies:
       '@babel/runtime': 7.23.5
       '@emotion/babel-plugin': 11.13.5
       '@emotion/is-prop-valid': 1.4.0
-      '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.3.0-canary-81e442ea-20260721)
+      '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/serialize': 1.3.3
-      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.3.0-canary-81e442ea-20260721)
+      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.8)
       '@emotion/utils': 1.4.2
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
     optionalDependencies:
       '@types/react': 19.2.17
     transitivePeerDependencies:
@@ -5001,9 +5002,9 @@ snapshots:
 
   '@emotion/unitless@0.10.0': {}
 
-  '@emotion/use-insertion-effect-with-fallbacks@1.2.0(react@19.3.0-canary-81e442ea-20260721)':
+  '@emotion/use-insertion-effect-with-fallbacks@1.2.0(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
   '@emotion/utils@1.4.2': {}
 
@@ -5916,56 +5917,56 @@ snapshots:
     transitivePeerDependencies:
       - conventional-commits-filter
 
-  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.8)':
     dependencies:
-      '@vitejs/test-dep-transitive-client': file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.3.0-canary-81e442ea-20260721)
-      react: 19.3.0-canary-81e442ea-20260721
+      '@vitejs/test-dep-transitive-client': file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.8)
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.8)':
     dependencies:
-      '@vitejs/test-dep-cjs': file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.3.0-canary-81e442ea-20260721)
-      react: 19.3.0-canary-81e442ea-20260721
+      '@vitejs/test-dep-cjs': file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.8)
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-use-sync-external-store@file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.3.0-canary-81e442ea-20260721)':
+  '@vitejs/test-dep-transitive-use-sync-external-store@file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.8)':
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
-      use-sync-external-store: 1.6.0(react@19.3.0-canary-81e442ea-20260721)
+      react: 19.2.8
+      use-sync-external-store: 1.6.0(react@19.2.8)
 
   '@vitest/expect@4.1.10':
     dependencies:
@@ -7384,40 +7385,50 @@ snapshots:
 
   quansync@1.0.0: {}
 
-  react-compiler-runtime@1.0.0(react@19.3.0-canary-81e442ea-20260721):
+  react-compiler-runtime@1.0.0(react@18.3.1):
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 18.3.1
 
-  react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721):
+  react-dom@18.3.1(react@18.3.1):
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
-      scheduler: 0.28.0-canary-81e442ea-20260721
+      loose-envify: 1.4.0
+      react: 18.3.1
+      scheduler: 0.23.2
+
+  react-dom@19.2.8(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+      scheduler: 0.27.0
 
   react-is@16.13.1: {}
 
-  react-router@7.18.1(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721):
+  react-router@7.18.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       cookie: 1.0.2
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
       set-cookie-parser: 2.7.1
     optionalDependencies:
-      react-dom: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+      react-dom: 19.2.8(react@19.2.8)
 
-  react-server-dom-webpack@19.3.0-canary-81e442ea-20260721(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721):
+  react-server-dom-webpack@19.2.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
-      react: 19.3.0-canary-81e442ea-20260721
-      react-dom: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
       webpack-sources: 3.3.4
 
-  react-switch@7.1.0(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721):
+  react-switch@7.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       prop-types: 15.8.1
-      react: 19.3.0-canary-81e442ea-20260721
-      react-dom: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
-  react@19.3.0-canary-81e442ea-20260721: {}
+  react@18.3.1:
+    dependencies:
+      loose-envify: 1.4.0
+
+  react@19.2.8: {}
 
   refa@0.12.1:
     dependencies:
@@ -7507,7 +7518,11 @@ snapshots:
     dependencies:
       mri: 1.2.0
 
-  scheduler@0.28.0-canary-81e442ea-20260721: {}
+  scheduler@0.23.2:
+    dependencies:
+      loose-envify: 1.4.0
+
+  scheduler@0.27.0: {}
 
   scslre@0.3.0:
     dependencies:
@@ -7611,15 +7626,15 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.2
 
-  styled-components@6.4.3(react-dom@19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721))(react@19.3.0-canary-81e442ea-20260721):
+  styled-components@6.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@emotion/is-prop-valid': 1.4.0
       css-to-react-native: 3.2.0
       csstype: 3.2.3
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
       stylis: 4.3.6
     optionalDependencies:
-      react-dom: 19.3.0-canary-81e442ea-20260721(react@19.3.0-canary-81e442ea-20260721)
+      react-dom: 19.2.8(react@19.2.8)
 
   stylis@4.2.0: {}
 
@@ -7637,9 +7652,9 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  test-package@file:playground/include-node-modules/test-package(react@19.3.0-canary-81e442ea-20260721):
+  test-package@file:playground/include-node-modules/test-package(react@19.2.8):
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
   tinybench@2.9.0: {}
 
@@ -7812,9 +7827,9 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-sync-external-store@1.6.0(react@19.3.0-canary-81e442ea-20260721):
+  use-sync-external-store@1.6.0(react@19.2.8):
     dependencies:
-      react: 19.3.0-canary-81e442ea-20260721
+      react: 19.2.8
 
   util-deprecate@1.0.2: {}
 

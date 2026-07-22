@@ -18,9 +18,6 @@ onlyBuiltDependencies:
 
 overrides:
   '@types/estree': ^1.0.9
-  react: canary
-  react-dom: canary
-  react-server-dom-webpack: canary
 
 peerDependencyRules:
   ignoreMissing:
