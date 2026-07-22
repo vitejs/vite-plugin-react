@@ -133,6 +133,16 @@ async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
   // they must in frameworks whose discovery stage lacks final-render semantics.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7993
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
+  //
+  // The API is incidental here. Only the warmup's cache fills matter, so this
+  // first pass could instead drain a plain renderToReadableStream() and would
+  // likely work, which is the arrangement vinext uses. Flipping the final pass
+  // the same way is the harder direction, because a plain render errors its
+  // pending holes on abort rather than halting them, so recovering a resumable
+  // prelude needs the extra post-abort chunk discarding and non-closing-stream
+  // replay that Next.js somehow manages. Keeping prerender() on both passes
+  // keeps this runtime compact.
+  // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8230-L8607
   const warmup = await prerenderRsc(rscPayload, 'warmup')
   await warmup.prelude.cancel()
   const { prelude } = await prerenderRsc(rscPayload, 'final')
