@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/performance-track/src/root.tsx
+  s_5375ba2a0cf9fb::t_8c79c56cbe3508 1-2,5,11,15-39,45-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1821ac3c5d6417991089d28f947167b430631386",
+  "prompts": {},
+  "sessions": {
+    "s_5375ba2a0cf9fb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07761e2f1ffeWRsEanZBIYaclY",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
