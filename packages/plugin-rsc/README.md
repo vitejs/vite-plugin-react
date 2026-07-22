@@ -442,6 +442,43 @@ export default defineConfig({
 })
 ```
 
+### `@vitejs/plugin-rsc/transforms`
+
+The CommonJS transform used by the RSC module runner is available as a
+low-level framework integration API:
+
+```js
+import { transformCjsToEsm } from '@vitejs/plugin-rsc/transforms'
+import { parseAstAsync } from 'vite'
+
+const commonJsApplicationPlugin = {
+  name: 'framework:commonjs-application',
+  apply: 'serve',
+  applyToEnvironment: (env) => env.config.dev.moduleRunnerTransform,
+  transform: {
+    filter: { id: /\.cjs$/ },
+    async handler(code, id) {
+      const ast = await parseAstAsync(code)
+      const { output } = transformCjsToEsm(code, ast, { id })
+      return {
+        code: output.toString(),
+        map: output.generateMap({ hires: 'boundary' }),
+      }
+    },
+  },
+}
+```
+
+This transform targets Vite's server module runner. The generated module uses
+the module runner's `__vite_ssr_exportAll__` helper and top-level `await`, so it
+is not a general production CommonJS bundler transform.
+
+Nested `require()` calls are hoisted to asynchronous imports to keep the
+surrounding function synchronous. This does not preserve Node.js semantics
+when a nested require is conditional or depends on runtime state. Frameworks
+should detect or implement their own policy for dynamic `require()` calls
+before invoking this transform.
+
 ## RSC runtime (react-server-dom) API
 
 ### `@vitejs/plugin-rsc/rsc/server`
