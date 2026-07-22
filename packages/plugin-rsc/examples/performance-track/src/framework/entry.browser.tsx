@@ -2,18 +2,19 @@ import {
   createFromFetch,
   createFromReadableStream,
 } from '@vitejs/plugin-rsc/browser'
-import React, { type ReactNode } from 'react'
+import React from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { rscStream } from 'rsc-html-stream/client'
+import type { RscPayload } from './entry.rsc.tsx'
 import { createRscRenderRequest } from './request.ts'
 
 async function main() {
-  const initialPayload = await createFromReadableStream<ReactNode>(rscStream)
-  let setPayload: (payload: Awaited<ReactNode>) => void
+  const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
+  let setPayload: (payload: Awaited<RscPayload>) => void
 
   function BrowserRoot() {
     const [payload, setPayload_] =
-      React.useState<Awaited<ReactNode>>(initialPayload)
+      React.useState<Awaited<RscPayload>>(initialPayload)
 
     React.useEffect(() => {
       setPayload = (nextPayload) => {
@@ -27,7 +28,7 @@ async function main() {
 
   async function fetchRscPayload() {
     const request = createRscRenderRequest(window.location.href)
-    setPayload(await createFromFetch<ReactNode>(fetch(request)))
+    setPayload(await createFromFetch<RscPayload>(fetch(request)))
   }
 
   hydrateRoot(document, <BrowserRoot />)

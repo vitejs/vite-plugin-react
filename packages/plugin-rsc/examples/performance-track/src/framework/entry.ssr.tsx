@@ -1,16 +1,17 @@
 import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
-import React, { type ReactNode } from 'react'
+import React from 'react'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
+import type { RscPayload } from './entry.rsc.tsx'
 
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<ReadableStream<Uint8Array>> {
   const [ssrStream, browserStream] = rscStream.tee()
-  let payload: Promise<ReactNode> | undefined
+  let payload: Promise<RscPayload> | undefined
 
   function SsrRoot() {
-    payload ??= createFromReadableStream<ReactNode>(ssrStream)
+    payload ??= createFromReadableStream<RscPayload>(ssrStream)
     return React.use(payload)
   }
 
