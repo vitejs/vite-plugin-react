@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-import React from 'react'
 import { type Fixture, useFixture } from './fixture'
 
 test.describe('dev-performance-track', () => {
@@ -32,10 +31,11 @@ function definePerformanceTrackTest(f: Fixture) {
   })
 
   test.describe(() => {
-    // Performance tracks are only emitted in dev, and require a Chromium
-    // trace and newer React (see https://github.com/facebook/react).
-    // React's development performance flush is flaky, so this is opt-in via
-    // `TEST_PERFORMANCE_TRACK=1` for local runs and is not exercised in CI.
+    // Performance tracks are only emitted in dev and require a Chromium trace,
+    // and the assertions below need a React build that emits Server Components
+    // tracks (canary/experimental). React's development performance flush is
+    // also flaky, so this is opt-in via `TEST_PERFORMANCE_TRACK=1` for local
+    // runs and is not exercised in CI.
     test.skip(!process.env.TEST_PERFORMANCE_TRACK)
     test.skip(f.mode !== 'dev')
 
@@ -44,7 +44,6 @@ function definePerformanceTrackTest(f: Fixture) {
       page,
     }) => {
       test.skip(browserName !== 'chromium')
-      test.skip(!/canary|experimental/.test(React.version))
 
       const session = await page.context().newCDPSession(page)
       await session.send('Tracing.start', {
