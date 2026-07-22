@@ -1,39 +1,47 @@
 import { expect, test } from '@playwright/test'
 import React from 'react'
-import { useFixture } from './fixture'
+import { type Fixture, useFixture } from './fixture'
 
-for (const mode of ['dev', 'build'] as const) {
-  test.describe(`${mode}-performance-track`, () => {
-    const f = useFixture({ root: 'examples/performance-track', mode })
+test.describe('dev-performance-track', () => {
+  const f = useFixture({ root: 'examples/performance-track', mode: 'dev' })
+  definePerformanceTrackTest(f)
+})
 
-    test('loads initial and on-demand RSC probes', async ({ page }) => {
-      await page.goto(f.url())
+test.describe('build-performance-track', () => {
+  const f = useFixture({ root: 'examples/performance-track', mode: 'build' })
+  definePerformanceTrackTest(f)
+})
 
-      await expect(page.getByText('Probe request: initial')).toBeVisible()
-      await expect(
-        page.getByText('DynamicImportComponent resolved'),
-      ).toBeVisible()
-      await expect(
-        page.getByText('SlowServerComponent resolved after 1000ms'),
-      ).toBeVisible()
+function definePerformanceTrackTest(f: Fixture) {
+  test('loads initial and on-demand RSC probes', async ({ page }) => {
+    await page.goto(f.url())
 
-      await page.getByRole('link', { name: 'Load RSC probe' }).click()
-      await expect(page.getByText('Probe request: on-demand')).toBeVisible()
-      await expect(
-        page.getByText('SlowServerComponent resolved after 1000ms'),
-      ).toBeVisible()
-    })
+    await expect(page.getByText('Probe request: initial')).toBeVisible()
+    await expect(
+      page.getByText('DynamicImportComponent resolved'),
+    ).toBeVisible()
+    await expect(
+      page.getByText('SlowServerComponent resolved after 1000ms'),
+    ).toBeVisible()
+
+    await page.getByRole('link', { name: 'Load RSC probe' }).click()
+    await expect(page.getByText('Probe request: on-demand')).toBeVisible()
+    await expect(
+      page.getByText('SlowServerComponent resolved after 1000ms'),
+    ).toBeVisible()
+  })
+
+  test.describe(() => {
+    // Performance tracks are only emitted in dev, and require a Chromium
+    // trace and newer React (see https://github.com/facebook/react).
+    test.skip(f.mode !== 'dev')
 
     test('emits server component performance tracks', async ({
       browserName,
       page,
     }) => {
-      test.skip(
-        f.mode !== 'dev' ||
-          browserName !== 'chromium' ||
-          !/canary|experimental/.test(React.version),
-        'Performance tracks require development mode and newer React',
-      )
+      test.skip(browserName !== 'chromium')
+      test.skip(!/canary|experimental/.test(React.version))
 
       const session = await page.context().newCDPSession(page)
       await session.send('Tracing.start', {
