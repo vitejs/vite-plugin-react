@@ -34,6 +34,9 @@ function definePerformanceTrackTest(f: Fixture) {
   test.describe(() => {
     // Performance tracks are only emitted in dev, and require a Chromium
     // trace and newer React (see https://github.com/facebook/react).
+    // React's development performance flush is flaky, so this is opt-in via
+    // `TEST_PERFORMANCE_TRACK=1` for local runs and is not exercised in CI.
+    test.skip(!process.env.TEST_PERFORMANCE_TRACK)
     test.skip(f.mode !== 'dev')
 
     test('emits server component performance tracks', async ({
@@ -101,10 +104,8 @@ function definePerformanceTrackTest(f: Fixture) {
       const dynamicImportSpans = spans.filter(
         (span) => span.name === 'DynamicImportComponent',
       )
-      test.skip(
-        slowSpans.length !== 2 || dynamicImportSpans.length !== 2,
-        'React did not flush the flaky development performance entries',
-      )
+      expect(slowSpans).toHaveLength(2)
+      expect(dynamicImportSpans).toHaveLength(2)
       expect(slowSpans.every((span) => span.duration >= 900)).toBe(true)
     })
   })
