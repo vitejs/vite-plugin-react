@@ -1,3 +1,16 @@
+## <small>[0.5.29](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.28...plugin-rsc%400.5.29) (2026-07-22)</small>
+### Features
+
+* **rsc:** expose static API and add PPR example ([#1285](https://github.com/vitejs/vite-plugin-react/issues/1285)) ([8b785f6](https://github.com/vitejs/vite-plugin-react/commit/8b785f6e5c4658996f2707fde8fa85bb478cbc38))
+
+### Bug Fixes
+
+* **deps:** update react 19.2.8 ([#1298](https://github.com/vitejs/vite-plugin-react/issues/1298)) ([98b32d4](https://github.com/vitejs/vite-plugin-react/commit/98b32d47a3f2517d52e8a51d8e28ff2ed13678a2))
+
+### Miscellaneous Chores
+
+* **rsc:** rework testing guidance ([#1293](https://github.com/vitejs/vite-plugin-react/issues/1293)) ([5954659](https://github.com/vitejs/vite-plugin-react/commit/59546596a308f04d5fb1a29fd11b5d386be003ae))
+
 ## <small>[0.5.28](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.27...plugin-rsc%400.5.28) (2026-07-17)</small>
 ### Features
 
