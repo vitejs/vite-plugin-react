@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/performance-track.test.ts
+  s_a3ff7a83c14ece::t_c4407b52544e48 2-8,12-16,18-22,24,33,35-38,40-49,51-62,64-68,70-78,80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "df59d3fb81f63adddaefad474300fa32211903f2",
+  "prompts": {},
+  "sessions": {
+    "s_a3ff7a83c14ece": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_077902d0cffelF7f5wkGgN6cIV",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
