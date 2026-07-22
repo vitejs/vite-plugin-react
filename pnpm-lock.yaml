@@ -97,11 +97,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       rolldown:
         specifier: ^1.1.5
         version: 1.1.5
@@ -149,11 +149,11 @@ importers:
   packages/plugin-react-swc/playground/base-path:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -168,11 +168,11 @@ importers:
   packages/plugin-react-swc/playground/class-components:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -187,11 +187,11 @@ importers:
   packages/plugin-react-swc/playground/decorators:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -207,16 +207,16 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -232,16 +232,16 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@swc/plugin-emotion':
         specifier: ^14.5.0
@@ -259,11 +259,11 @@ importers:
   packages/plugin-react-swc/playground/hmr:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -278,11 +278,11 @@ importers:
   packages/plugin-react-swc/playground/mdx:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -319,11 +319,11 @@ importers:
   packages/plugin-react-swc/playground/shadow-export:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -338,14 +338,14 @@ importers:
   packages/plugin-react-swc/playground/styled-components:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       styled-components:
         specifier: ^6.4.3
-        version: 6.4.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 6.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@swc/plugin-styled-components':
         specifier: ^12.5.0
@@ -367,13 +367,13 @@ importers:
     dependencies:
       '@vitejs/test-dep-non-js':
         specifier: file:./test-dep/non-js
-        version: file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.7)
+        version: file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.8)
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -390,11 +390,11 @@ importers:
   packages/plugin-react-swc/playground/worker:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -467,14 +467,14 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       react-server-dom-webpack:
-        specifier: ^19.2.7
-        version: 19.2.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       tinyexec:
         specifier: ^1.2.4
         version: 1.2.4
@@ -485,11 +485,11 @@ importers:
   packages/plugin-rsc/examples/basic:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.2
@@ -508,31 +508,31 @@ importers:
         version: link:../..
       '@vitejs/test-dep-cjs-events-extend':
         specifier: file:./test-dep/cjs-events-extend
-        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.8)
       '@vitejs/test-dep-client-in-server':
         specifier: file:./test-dep/client-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.8)
       '@vitejs/test-dep-client-in-server2':
         specifier: file:./test-dep/client-in-server2
-        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.8)
       '@vitejs/test-dep-css-in-server':
         specifier: file:./test-dep/css-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.8)
       '@vitejs/test-dep-server-in-client':
         specifier: file:./test-dep/server-in-client
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.8)
       '@vitejs/test-dep-server-in-server':
         specifier: file:./test-dep/server-in-server
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.8)
       '@vitejs/test-dep-server-with-transitive-client':
         specifier: file:./test-dep/server-with-transitive-client
-        version: file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.8)
       '@vitejs/test-dep-transitive-cjs':
         specifier: file:./test-dep/transitive-cjs
-        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.8)
       '@vitejs/test-dep-transitive-use-sync-external-store':
         specifier: file:./test-dep/transitive-use-sync-external-store
-        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.7)
+        version: file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.8)
       rsc-html-stream:
         specifier: ^0.0.7
         version: 0.0.7
@@ -549,11 +549,11 @@ importers:
   packages/plugin-rsc/examples/browser:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -577,11 +577,11 @@ importers:
   packages/plugin-rsc/examples/browser-mode:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -605,11 +605,11 @@ importers:
   packages/plugin-rsc/examples/cache-replay:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -657,11 +657,11 @@ importers:
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -682,11 +682,11 @@ importers:
   packages/plugin-rsc/examples/ppr:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -710,14 +710,14 @@ importers:
   packages/plugin-rsc/examples/react-router:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       react-router:
         specifier: 7.18.1
-        version: 7.18.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 7.18.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.44.0
@@ -753,11 +753,11 @@ importers:
   packages/plugin-rsc/examples/ssg:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -784,11 +784,11 @@ importers:
   packages/plugin-rsc/examples/ssr-encode-form-action:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -806,11 +806,11 @@ importers:
   packages/plugin-rsc/examples/starter:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -834,11 +834,11 @@ importers:
   packages/plugin-rsc/examples/starter-extra:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.44.0
@@ -877,11 +877,11 @@ importers:
   playground/bundled-dev:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -896,11 +896,11 @@ importers:
   playground/class-components:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -915,11 +915,11 @@ importers:
   playground/compiler:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -980,11 +980,11 @@ importers:
   playground/hmr-false:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -999,11 +999,11 @@ importers:
   playground/hook-with-jsx:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -1018,11 +1018,11 @@ importers:
   playground/include-node-modules:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -1044,18 +1044,18 @@ importers:
         version: link:../../packages/plugin-react
       '@vitejs/test-package':
         specifier: file:./test-package
-        version: test-package@file:playground/include-node-modules/test-package(react@19.2.7)
+        version: test-package@file:playground/include-node-modules/test-package(react@19.2.8)
 
   playground/include-node-modules/test-package: {}
 
   playground/mdx:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@mdx-js/rollup':
         specifier: ^3.1.1
@@ -1076,11 +1076,11 @@ importers:
         specifier: link:./jsx-entry
         version: link:jsx-entry
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1089,11 +1089,11 @@ importers:
   playground/react-classic:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1103,19 +1103,19 @@ importers:
     dependencies:
       '@emotion/react':
         specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/styled':
         specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       react-switch:
         specifier: ^7.1.0
-        version: 7.1.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 7.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@babel/core':
         specifier: ^7.29.7
@@ -1139,11 +1139,11 @@ importers:
   playground/react-env:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1152,11 +1152,11 @@ importers:
   playground/react-sourcemap:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1167,11 +1167,11 @@ importers:
   playground/ssr-react:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@vitejs/plugin-react':
         specifier: workspace:*
@@ -1180,11 +1180,11 @@ importers:
   playground/tsconfig-jsx-preserve:
     dependencies:
       react:
-        specifier: ^19.2.7
-        version: 19.2.7
+        specifier: ^19.2.8
+        version: 19.2.8
       react-dom:
-        specifier: ^19.2.7
-        version: 19.2.7(react@19.2.7)
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -4095,10 +4095,10 @@ packages:
     peerDependencies:
       react: ^19.2.6
 
-  react-dom@19.2.7:
-    resolution: {integrity: sha512-t0BRVXvbiE/o20Hfw669rLbMCDWtYZLvmJigy2f0MxsXF+71pxhR3xOkspmsO8h3ZlNzyibAmtCa3l4lYKk6gQ==}
+  react-dom@19.2.8:
+    resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
     peerDependencies:
-      react: ^19.2.7
+      react: ^19.2.8
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -4113,12 +4113,12 @@ packages:
       react-dom:
         optional: true
 
-  react-server-dom-webpack@19.2.7:
-    resolution: {integrity: sha512-bYfuvqPJnHB4CHo2Ze7fQyJAO77TUu1W/aKFt81ICXbLiOTg5jHaO/NPDlpvGWUALoEGaGb7Oi1uXAaO+Bw6jw==}
+  react-server-dom-webpack@19.2.8:
+    resolution: {integrity: sha512-rFO1VJZ+cH9ZH6hGy9+qmIsmZHZpCMKJZXhWHqT71UnSfg+w+W+gwrwp58MVzMqdFquG8GF1c6C8q0OGphkEdg==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      react: ^19.2.7
-      react-dom: ^19.2.7
+      react: ^19.2.8
+      react-dom: ^19.2.8
       webpack: ^5.59.0
 
   react-switch@7.1.0:
@@ -4131,8 +4131,8 @@ packages:
     resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
     engines: {node: '>=0.10.0'}
 
-  react@19.2.7:
-    resolution: {integrity: sha512-HNe9WslTbXmFK8o8cmwgAeJFSBvt1bPdHCVKtaaV+WlAN36mpT4hcRpwbf3fY56ar2oIXzsBpOAiIRHAdY0OlQ==}
+  react@19.2.8:
+    resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
     engines: {node: '>=0.10.0'}
 
   refa@0.12.1:
@@ -5088,17 +5088,17 @@ snapshots:
 
   '@emotion/memoize@0.9.0': {}
 
-  '@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7)':
+  '@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)':
     dependencies:
       '@babel/runtime': 7.23.5
       '@emotion/babel-plugin': 11.13.5
       '@emotion/cache': 11.14.0
       '@emotion/serialize': 1.3.3
-      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.7)
+      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.8)
       '@emotion/utils': 1.4.2
       '@emotion/weak-memoize': 0.4.0
       hoist-non-react-statics: 3.3.2
-      react: 19.2.7
+      react: 19.2.8
     optionalDependencies:
       '@types/react': 19.2.17
     transitivePeerDependencies:
@@ -5114,16 +5114,16 @@ snapshots:
 
   '@emotion/sheet@1.4.0': {}
 
-  '@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)':
+  '@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8))(@types/react@19.2.17)(react@19.2.8)':
     dependencies:
       '@babel/runtime': 7.23.5
       '@emotion/babel-plugin': 11.13.5
       '@emotion/is-prop-valid': 1.4.0
-      '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.2.8)
       '@emotion/serialize': 1.3.3
-      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.7)
+      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@19.2.8)
       '@emotion/utils': 1.4.2
-      react: 19.2.7
+      react: 19.2.8
     optionalDependencies:
       '@types/react': 19.2.17
     transitivePeerDependencies:
@@ -5131,9 +5131,9 @@ snapshots:
 
   '@emotion/unitless@0.10.0': {}
 
-  '@emotion/use-insertion-effect-with-fallbacks@1.2.0(react@19.2.7)':
+  '@emotion/use-insertion-effect-with-fallbacks@1.2.0(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
   '@emotion/utils@1.4.2': {}
 
@@ -6045,56 +6045,56 @@ snapshots:
     transitivePeerDependencies:
       - conventional-commits-filter
 
-  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.7)':
+  '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.7)':
+  '@vitejs/test-dep-cjs@file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.7)':
+  '@vitejs/test-dep-client-in-server2@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server2(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.7)':
+  '@vitejs/test-dep-client-in-server@file:packages/plugin-rsc/examples/basic/test-dep/client-in-server(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.7)':
+  '@vitejs/test-dep-css-in-server@file:packages/plugin-rsc/examples/basic/test-dep/css-in-server(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.7)':
+  '@vitejs/test-dep-non-js@file:packages/plugin-react-swc/playground/ts-lib/test-dep/non-js(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.7)':
+  '@vitejs/test-dep-server-in-client@file:packages/plugin-rsc/examples/basic/test-dep/server-in-client(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.7)':
+  '@vitejs/test-dep-server-in-server@file:packages/plugin-rsc/examples/basic/test-dep/server-in-server(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.7)':
+  '@vitejs/test-dep-server-with-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/server-with-transitive-client(react@19.2.8)':
     dependencies:
-      '@vitejs/test-dep-transitive-client': file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.7)
-      react: 19.2.7
+      '@vitejs/test-dep-transitive-client': file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.8)
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.7)':
+  '@vitejs/test-dep-transitive-cjs@file:packages/plugin-rsc/examples/basic/test-dep/transitive-cjs(react@19.2.8)':
     dependencies:
-      '@vitejs/test-dep-cjs': file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.7)
-      react: 19.2.7
+      '@vitejs/test-dep-cjs': file:packages/plugin-rsc/examples/basic/test-dep/cjs(react@19.2.8)
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.7)':
+  '@vitejs/test-dep-transitive-client@file:packages/plugin-rsc/examples/basic/test-dep/transitive-client(react@19.2.8)':
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
-  '@vitejs/test-dep-transitive-use-sync-external-store@file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.7)':
+  '@vitejs/test-dep-transitive-use-sync-external-store@file:packages/plugin-rsc/examples/basic/test-dep/transitive-use-sync-external-store(react@19.2.8)':
     dependencies:
-      react: 19.2.7
-      use-sync-external-store: 1.6.0(react@19.2.7)
+      react: 19.2.8
+      use-sync-external-store: 1.6.0(react@19.2.8)
 
   '@vitest/expect@4.1.10':
     dependencies:
@@ -7595,38 +7595,38 @@ snapshots:
       react: 19.2.6
       scheduler: 0.27.0
 
-  react-dom@19.2.7(react@19.2.7):
+  react-dom@19.2.8(react@19.2.8):
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
       scheduler: 0.27.0
 
   react-is@16.13.1: {}
 
-  react-router@7.18.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-router@7.18.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       cookie: 1.0.2
-      react: 19.2.7
+      react: 19.2.8
       set-cookie-parser: 2.7.1
     optionalDependencies:
-      react-dom: 19.2.7(react@19.2.7)
+      react-dom: 19.2.8(react@19.2.8)
 
-  react-server-dom-webpack@19.2.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-server-dom-webpack@19.2.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       acorn-loose: 8.5.2
       neo-async: 2.6.2
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
       webpack-sources: 3.3.4
 
-  react-switch@7.1.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-switch@7.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       prop-types: 15.8.1
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   react@19.2.6: {}
 
-  react@19.2.7: {}
+  react@19.2.8: {}
 
   refa@0.12.1:
     dependencies:
@@ -7853,15 +7853,15 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.2
 
-  styled-components@6.4.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  styled-components@6.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@emotion/is-prop-valid': 1.4.0
       css-to-react-native: 3.2.0
       csstype: 3.2.3
-      react: 19.2.7
+      react: 19.2.8
       stylis: 4.3.6
     optionalDependencies:
-      react-dom: 19.2.7(react@19.2.7)
+      react-dom: 19.2.8(react@19.2.8)
 
   stylis@4.2.0: {}
 
@@ -7881,9 +7881,9 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  test-package@file:playground/include-node-modules/test-package(react@19.2.7):
+  test-package@file:playground/include-node-modules/test-package(react@19.2.8):
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
   tinybench@2.9.0: {}
 
@@ -8061,9 +8061,9 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-sync-external-store@1.6.0(react@19.2.7):
+  use-sync-external-store@1.6.0(react@19.2.8):
     dependencies:
-      react: 19.2.7
+      react: 19.2.8
 
   util-deprecate@1.0.2: {}
 
