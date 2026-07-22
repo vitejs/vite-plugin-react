@@ -30,6 +30,11 @@ export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
+  const debugShell = import.meta.env.DEV
+    ? renderRequest.url.searchParams.get('__ppr_shell')
+    : null
+  const finalOnlyShell = debugShell === 'final'
+  const returnShellOnly = finalOnlyShell || debugShell === 'two-pass'
 
   // In dev, `?__ppr` exercises the persisted manifest handoff without a build.
   const pprManifest: PprManifest | undefined = import.meta.env.DEV
@@ -55,7 +60,19 @@ async function handler(request: Request): Promise<Response> {
     }
     ssrPrerenderResult = reviveSsrPrerenderResult(persistedResult)
   } else {
-    ssrPrerenderResult = await prerenderPprRoute(renderRequest.request)
+    ssrPrerenderResult = await prerenderPprRoute(
+      renderRequest.request,
+      !finalOnlyShell,
+    )
+  }
+
+  // Dev-only diagnostics expose the captured shell before request-time resume.
+  // Comparing `final` with `two-pass` demonstrates why cache discovery and
+  // strict shell capture use separate renders.
+  if (returnShellOnly) {
+    return new Response(ssrPrerenderResult.prelude, {
+      headers: { 'content-type': 'text/html;charset=utf-8' },
+    })
   }
 
   // An edge or CDN can stream the static prelude immediately while requesting
@@ -125,7 +142,10 @@ function stitchPprStreams(
  * Produces one route's live React DOM prerender result. The prospective pass
  * fills the shared RSC cache before strict RSC and HTML prerenders capture it.
  */
-async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
+async function prerenderPprRoute(
+  request: Request,
+  includeProspectivePass = true,
+): Promise<PrerenderResult> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
@@ -135,8 +155,10 @@ async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
   // wait for new fills, so only work warmed by the first pass enters the shell.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7917
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
-  const prospective = await prerenderRsc(rscPayload, 'prospective')
-  await prospective.prelude.cancel()
+  if (includeProspectivePass) {
+    const prospective = await prerenderRsc(rscPayload, 'prospective')
+    await prospective.prelude.cancel()
+  }
   const { prelude } = await prerenderRsc(rscPayload, 'final')
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')

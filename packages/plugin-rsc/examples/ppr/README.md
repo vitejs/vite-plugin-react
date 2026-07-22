@@ -105,6 +105,8 @@ Development runs the same prospective, final RSC prerender, and React DOM preren
 
 Adding `?__ppr` exercises the persistence boundary without a production build. The dev server prerenders all static paths, serializes the shared cache and route results, then revives the selected route before serving it. The rendering model stays the same; only the handoff changes from live objects to their persisted representation.
 
+The dev-only `?__ppr_shell=final` diagnostic skips the prospective pass and returns only the cold strict shell, while `?__ppr_shell=two-pass` returns the normally warmed strict shell. Comparing them exposes the architectural effect before request-time resume hides the difference.
+
 ## Request flow
 
 The request combines three persisted inputs with fresh request data:

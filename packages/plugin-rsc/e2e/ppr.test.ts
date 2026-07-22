@@ -20,6 +20,24 @@ test.describe('dev', () => {
   })
 })
 
+test.describe('dev shell phases', () => {
+  const f = useFixture({ root: 'examples/ppr', mode: 'dev' })
+
+  test('prospective pass expands the strict static shell', async ({
+    request,
+  }) => {
+    const finalOnly = await request.get(f.url('/?__ppr_shell=final'))
+    expect(finalOnly.ok()).toBe(true)
+    expect(await finalOnly.text()).not.toContain('data-testid="layout"')
+
+    const twoPass = await request.get(f.url('/?__ppr_shell=two-pass'))
+    expect(twoPass.ok()).toBe(true)
+    const twoPassHtml = await twoPass.text()
+    expect(twoPassHtml).toContain('data-testid="layout"')
+    expect(twoPassHtml).toContain('data-testid="cached-async"')
+  })
+})
+
 test.describe('build', () => {
   const f = useFixture({ root: 'examples/ppr', mode: 'build' })
   definePprTest(f)
