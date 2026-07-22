@@ -3,7 +3,10 @@ import { prerender } from '@vitejs/plugin-rsc/rsc/static'
 import type { PrerenderResult } from 'react-dom/static'
 import { Root, getStaticPaths } from '../root'
 import { exportCache, importCache, type CacheData } from './cache'
-import { runWithPrerenderContext } from './prerender-context'
+import {
+  runWithPrerenderContext,
+  type PrerenderPhase,
+} from './prerender-context'
 import { parseRenderRequest, type RenderRequest } from './request'
 import { stringToStream } from './stream-utils'
 
@@ -119,20 +122,21 @@ function stitchPprStreams(
 }
 
 /**
- * Produces one route's live React DOM prerender result. The warmup pass fills
- * the shared RSC cache before the final RSC and HTML prerenders capture a shell.
+ * Produces one route's live React DOM prerender result. The prospective pass
+ * fills the shared RSC cache before strict RSC and HTML prerenders capture it.
  */
 async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
   const rscPayload: RscPayload = {
     root: <Root url={new URL(request.url)} />,
   }
-  // The discarded warmup pass discovers and fills cache entries while
-  // request-time work remains suspended. The final pass starts from a clean
-  // React render, reuses those entries, and captures only the resulting shell.
+  // The discarded prospective pass uses a permissive cutoff to discover and
+  // fill cache entries while request-time work remains suspended. The final
+  // pass starts from a clean React render and uses a strict cutoff that does not
+  // wait for new fills, so only work warmed by the first pass enters the shell.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7905-L7917
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/server/app-ppr-fallback-shell-render.ts#L28-L55
-  const warmup = await prerenderRsc(rscPayload, 'warmup')
-  await warmup.prelude.cancel()
+  const prospective = await prerenderRsc(rscPayload, 'prospective')
+  await prospective.prelude.cancel()
   const { prelude } = await prerenderRsc(rscPayload, 'final')
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr')
@@ -141,12 +145,12 @@ async function prerenderPprRoute(request: Request): Promise<PrerenderResult> {
 }
 
 /**
- * Runs an RSC prerender until dynamic work has been reached and all discovered
- * cache fills have settled, then cuts off the remaining request-time work.
+ * Runs either a permissive cache-discovery prerender or a strict shell-capture
+ * prerender until its phase-specific readiness condition is reached.
  */
-async function prerenderRsc(rscPayload: RscPayload, phase: 'warmup' | 'final') {
+async function prerenderRsc(rscPayload: RscPayload, phase: PrerenderPhase) {
   const controller = new AbortController()
-  const { result, ready } = runWithPrerenderContext(() => {
+  const { result, ready } = runWithPrerenderContext(phase, () => {
     return prerender(rscPayload, {
       signal: controller.signal,
       // TODO: Add digest-based error reporting as part of the dedicated error
@@ -158,8 +162,9 @@ async function prerenderRsc(rscPayload: RscPayload, phase: 'warmup' | 'final') {
       },
     })
   })
-  // A fully static render completes first. Otherwise `ready` certifies that
-  // the unfinished render is intentionally dynamic and has no cache fills left.
+  // A fully static render completes first. For a partial render, prospective
+  // readiness means all discovered fills settled, while final readiness means
+  // the strict shell-capture window elapsed after reaching unfinished work.
   const outcome = await Promise.race([
     result.then(() => 'complete' as const),
     ready.then(() => 'cutoff' as const),

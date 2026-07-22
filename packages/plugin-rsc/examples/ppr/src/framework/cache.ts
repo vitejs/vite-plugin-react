@@ -7,7 +7,7 @@ import {
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
 import type React from 'react'
-import { trackPrerenderWork } from './prerender-context'
+import { postponeFinalCacheMiss, trackPrerenderWork } from './prerender-context'
 import {
   arrayToStream,
   concatArrayStream,
@@ -17,7 +17,12 @@ import {
 
 export type CacheData = Record<string, string>
 
-const entries = new Map<string, Promise<Uint8Array>>()
+type CacheEntry = {
+  pending: boolean
+  value: Promise<Uint8Array>
+}
+
+const entries = new Map<string, CacheEntry>()
 let nextComponentId = 0
 
 /**
@@ -48,7 +53,12 @@ export function createCachedComponent<Props extends object>(
 
     let entry = entries.get(key)
     if (!entry) {
-      entry = (async () => {
+      const postponed = postponeFinalCacheMiss()
+      if (postponed) {
+        return postponed
+      }
+
+      const value = (async () => {
         const temporaryReferences = createTemporaryReferenceSet()
         const [decodedProps] = (await decodeReply(encodedArgs, {
           temporaryReferences,
@@ -66,11 +76,20 @@ export function createCachedComponent<Props extends object>(
         // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1495-L1519
         return concatArrayStream(stream)
       })()
-      entries.set(key, entry)
+      const createdEntry: CacheEntry = { pending: true, value }
+      entry = createdEntry
+      entries.set(key, createdEntry)
+      value.then(
+        () => (createdEntry.pending = false),
+        () => (createdEntry.pending = false),
+      )
+    }
+    if (entry.pending) {
+      trackPrerenderWork(entry.value)
     }
 
     return createFromReadableStream<React.ReactNode>(
-      arrayToStream(await entry),
+      arrayToStream(await entry.value),
       {
         environmentName: 'Cache',
         replayConsoleLogs: true,
@@ -79,28 +98,33 @@ export function createCachedComponent<Props extends object>(
     )
   }
 
-  // Tracking the entry promise makes cache-fill completion this demo's
-  // readiness signal. Production frameworks track equivalent work separately
-  // so cached streams can remain lazy.
+  // Tracking unresolved entries makes cache-fill completion this demo's
+  // prospective-render readiness signal, including when concurrent renders
+  // share one fill. A miss in the final render remains postponed instead of
+  // extending the static shell.
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L7943-L7974
   // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/app-render/app-render.tsx#L8076-L8080
   // https://github.com/cloudflare/vinext/blob/fd1cc3d3ddaaec8c130d5e4bcae3a6f761089756/packages/vinext/src/shims/ppr-fallback-shell.ts#L170-L200
-  return function TrackedCachedComponent(props: Props) {
-    return trackPrerenderWork(CachedComponent(props))
-  }
+  return CachedComponent
 }
 
 export async function exportCache(): Promise<CacheData> {
   return Object.fromEntries(
     await Promise.all(
-      [...entries].map(async ([key, value]) => [key, toBase64(await value)]),
+      [...entries].map(async ([key, entry]) => [
+        key,
+        toBase64(await entry.value),
+      ]),
     ),
   )
 }
 
 export function importCache(data: CacheData): void {
   for (const [key, value] of Object.entries(data)) {
-    entries.set(key, Promise.resolve(fromBase64(value)))
+    entries.set(key, {
+      pending: false,
+      value: Promise.resolve(fromBase64(value)),
+    })
   }
 }
 
