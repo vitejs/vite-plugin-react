@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.0.4 (2026-07-22)
+
 ### Fixed `$RefreshSig$ is not defined` error when running `vite dev` with `NODE_ENV=production`
 
 When running `vite dev` with `NODE_ENV=production`, the app errored with `$RefreshSig$ is not defined`.
