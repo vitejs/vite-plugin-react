@@ -9,6 +9,7 @@ for (const mode of ['dev', 'build'] as const) {
     test('loads initial and on-demand RSC probes', async ({ page }) => {
       await page.goto(f.url())
 
+      await expect(page.getByText('Probe request: initial')).toBeVisible()
       await expect(
         page.getByText('DynamicImportComponent resolved'),
       ).toBeVisible()
@@ -16,13 +17,11 @@ for (const mode of ['dev', 'build'] as const) {
         page.getByText('SlowServerComponent resolved after 1000ms'),
       ).toBeVisible()
 
-      await page.getByRole('button', { name: 'Load RSC probe' }).click()
-      await expect(
-        page.getByText('DynamicImportComponent resolved'),
-      ).toHaveCount(2)
+      await page.getByRole('link', { name: 'Load RSC probe' }).click()
+      await expect(page.getByText('Probe request: on-demand')).toBeVisible()
       await expect(
         page.getByText('SlowServerComponent resolved after 1000ms'),
-      ).toHaveCount(2)
+      ).toBeVisible()
     })
 
     test('emits server component performance tracks', async ({
@@ -46,10 +45,11 @@ for (const mode of ['dev', 'build'] as const) {
       await expect(
         page.getByText('SlowServerComponent resolved after 1000ms'),
       ).toBeVisible()
-      await page.getByRole('button', { name: 'Load RSC probe' }).click()
+      await page.getByRole('link', { name: 'Load RSC probe' }).click()
+      await expect(page.getByText('Probe request: on-demand')).toBeVisible()
       await expect(
         page.getByText('SlowServerComponent resolved after 1000ms'),
-      ).toHaveCount(2)
+      ).toBeVisible()
       await page.waitForTimeout(1000)
 
       const tracingComplete = new Promise<string>((resolve, reject) => {
