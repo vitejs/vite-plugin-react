@@ -17,12 +17,8 @@ import {
 
 export type CacheData = Record<string, string>
 
-type CacheEntry = {
-  pending: boolean
-  value: Promise<Uint8Array>
-}
-
-const entries = new Map<string, CacheEntry>()
+const entries = new Map<string, Promise<Uint8Array>>()
+const pendingPrerenderEntries = new WeakSet<Promise<Uint8Array>>()
 let nextComponentId = 0
 
 /**
@@ -58,38 +54,34 @@ export function createCachedComponent<Props extends object>(
         return postponed
       }
 
-      const value = (async () => {
-        const temporaryReferences = createTemporaryReferenceSet()
-        const [decodedProps] = (await decodeReply(encodedArgs, {
-          temporaryReferences,
-        })) as [Props]
-        const result = await Component(decodedProps)
-        const stream = renderToReadableStream(result, {
-          environmentName: 'Cache',
-          temporaryReferences,
-        })
-        // examples/basic's StreamCacher and Next.js keep this stream lazy. This
-        // demo materializes it so the entry promise also tracks cache-fill
-        // completion without a separate readiness signal.
-        // TODO: Follow up with a stream-native cache and a separate,
-        // CacheSignal-like completion signal.
-        // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1495-L1519
-        return concatArrayStream(stream)
-      })()
-      const createdEntry: CacheEntry = { pending: true, value }
-      entry = createdEntry
-      entries.set(key, createdEntry)
-      value.then(
-        () => (createdEntry.pending = false),
-        () => (createdEntry.pending = false),
+      entry = trackPendingPrerenderEntry(
+        (async () => {
+          const temporaryReferences = createTemporaryReferenceSet()
+          const [decodedProps] = (await decodeReply(encodedArgs, {
+            temporaryReferences,
+          })) as [Props]
+          const result = await Component(decodedProps)
+          const stream = renderToReadableStream(result, {
+            environmentName: 'Cache',
+            temporaryReferences,
+          })
+          // examples/basic's StreamCacher and Next.js keep this stream lazy. This
+          // demo materializes it so the entry promise also tracks cache-fill
+          // completion without a separate readiness signal.
+          // TODO: Follow up with a stream-native cache and a separate,
+          // CacheSignal-like completion signal.
+          // https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1495-L1519
+          return concatArrayStream(stream)
+        })(),
       )
+      entries.set(key, entry)
     }
-    if (entry.pending) {
-      trackPrerenderWork(entry.value)
+    if (pendingPrerenderEntries.has(entry)) {
+      trackPrerenderWork(entry)
     }
 
     return createFromReadableStream<React.ReactNode>(
-      arrayToStream(await entry.value),
+      arrayToStream(await entry),
       {
         environmentName: 'Cache',
         replayConsoleLogs: true,
@@ -111,21 +103,26 @@ export function createCachedComponent<Props extends object>(
 export async function exportCache(): Promise<CacheData> {
   return Object.fromEntries(
     await Promise.all(
-      [...entries].map(async ([key, entry]) => [
-        key,
-        toBase64(await entry.value),
-      ]),
+      [...entries].map(async ([key, value]) => [key, toBase64(await value)]),
     ),
   )
 }
 
 export function importCache(data: CacheData): void {
   for (const [key, value] of Object.entries(data)) {
-    entries.set(key, {
-      pending: false,
-      value: Promise.resolve(fromBase64(value)),
-    })
+    entries.set(key, Promise.resolve(fromBase64(value)))
   }
+}
+
+function trackPendingPrerenderEntry(
+  entry: Promise<Uint8Array>,
+): Promise<Uint8Array> {
+  pendingPrerenderEntries.add(entry)
+  entry.then(
+    () => pendingPrerenderEntries.delete(entry),
+    () => pendingPrerenderEntries.delete(entry),
+  )
+  return entry
 }
 
 async function replyToCacheKey(reply: string | FormData): Promise<string> {
