@@ -1,3 +1,48 @@
+## <small>[0.5.29](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.28...plugin-rsc%400.5.29) (2026-07-22)</small>
+### Features
+
+* **rsc:** expose static API and add PPR example ([#1285](https://github.com/vitejs/vite-plugin-react/issues/1285)) ([8b785f6](https://github.com/vitejs/vite-plugin-react/commit/8b785f6e5c4658996f2707fde8fa85bb478cbc38))
+
+### Bug Fixes
+
+* **deps:** update react 19.2.8 ([#1298](https://github.com/vitejs/vite-plugin-react/issues/1298)) ([98b32d4](https://github.com/vitejs/vite-plugin-react/commit/98b32d47a3f2517d52e8a51d8e28ff2ed13678a2))
+
+### Miscellaneous Chores
+
+* **rsc:** rework testing guidance ([#1293](https://github.com/vitejs/vite-plugin-react/issues/1293)) ([5954659](https://github.com/vitejs/vite-plugin-react/commit/59546596a308f04d5fb1a29fd11b5d386be003ae))
+
+## <small>[0.5.28](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.27...plugin-rsc%400.5.28) (2026-07-17)</small>
+### Features
+
+* **rsc:** ability to not load server reference module during `createFromReadableStream` on `rsc` environment ([#1289](https://github.com/vitejs/vite-plugin-react/issues/1289)) ([a3690f3](https://github.com/vitejs/vite-plugin-react/commit/a3690f37480b43d63366272b57f9bac0d2377c3b))
+* **rsc:** split server and client runtimes ([#1252](https://github.com/vitejs/vite-plugin-react/issues/1252)) ([61637cf](https://github.com/vitejs/vite-plugin-react/commit/61637cf21c2b485452c930579c90832de6f65abc))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1241](https://github.com/vitejs/vite-plugin-react/issues/1241)) ([cd80f0f](https://github.com/vitejs/vite-plugin-react/commit/cd80f0f7b2b750f6e8f719f9c3dbe4f22ddd94db))
+* **deps:** update all non-major dependencies ([#1249](https://github.com/vitejs/vite-plugin-react/issues/1249)) ([889efb0](https://github.com/vitejs/vite-plugin-react/commit/889efb02cdc4ec978a5e177a37e0213cfded38a4))
+* **deps:** update all non-major dependencies ([#1282](https://github.com/vitejs/vite-plugin-react/issues/1282)) ([f09ea01](https://github.com/vitejs/vite-plugin-react/commit/f09ea01b0b66a4900c3e42cef2aa0147e78b097c))
+* **deps:** update react-related dependencies ([#1245](https://github.com/vitejs/vite-plugin-react/issues/1245)) ([3cc33a7](https://github.com/vitejs/vite-plugin-react/commit/3cc33a703636b558a1c1c99e787ddc6bd64aab2d))
+* **plugin-rsc:** expose `encodeFormAction` option type and re-export `encodeReply` and `createTemporaryReferenceSet` from ssr ([#1280](https://github.com/vitejs/vite-plugin-react/issues/1280)) ([85095b5](https://github.com/vitejs/vite-plugin-react/commit/85095b5299447dda98b0edc428d84795540933f9))
+* **rsc:** fix `transformWrapExport ` with `filter` and `rejectNonAsyncFunction` ([#1254](https://github.com/vitejs/vite-plugin-react/issues/1254)) ([24d6376](https://github.com/vitejs/vite-plugin-react/commit/24d63766cc77419b9f4d95b2564252470604f44f))
+* **rsc:** fix transitive dep as client boundary by bailing out client package virtual ([#1277](https://github.com/vitejs/vite-plugin-react/issues/1277)) ([85814bf](https://github.com/vitejs/vite-plugin-react/commit/85814bf2bf9d7e92ff4027da6762c01dfacb1276))
+* **rsc:** lower client reference preload priority ([#1264](https://github.com/vitejs/vite-plugin-react/issues/1264)) ([8469321](https://github.com/vitejs/vite-plugin-react/commit/84693214ef8cccc3357561fe4654f401a30dab62))
+
+### Documentation
+
+* **plugin-rsc:** align runtime API descriptions ([#1286](https://github.com/vitejs/vite-plugin-react/issues/1286)) ([2bed52c](https://github.com/vitejs/vite-plugin-react/commit/2bed52cbefd156e3b8d4a3dd83a5840e94e30176))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency vite-dev-rpc to v2 ([#1210](https://github.com/vitejs/vite-plugin-react/issues/1210)) ([eed2acb](https://github.com/vitejs/vite-plugin-react/commit/eed2acb9cadda22ef6826df49ac76604ddfbf9f7))
+* **plugin-rsc:** explain preserved reference validation ([#1291](https://github.com/vitejs/vite-plugin-react/issues/1291)) ([0f5348d](https://github.com/vitejs/vite-plugin-react/commit/0f5348d1a80f9753b1e71c7ac8d3953dc3dc9b3f))
+* **rsc:** fix typo in type name ([#1275](https://github.com/vitejs/vite-plugin-react/issues/1275)) ([c1d0a7c](https://github.com/vitejs/vite-plugin-react/commit/c1d0a7cd76bb83d896c789417da1978bd0537502))
+* **rsc:** remove obsolete research documentation ([#1288](https://github.com/vitejs/vite-plugin-react/issues/1288)) ([f098083](https://github.com/vitejs/vite-plugin-react/commit/f098083b8d858ab755237f51cb31784247d147f3))
+
+### Code Refactoring
+
+* **rsc:** align SSG browser entry ([#1287](https://github.com/vitejs/vite-plugin-react/issues/1287)) ([83e3448](https://github.com/vitejs/vite-plugin-react/commit/83e344870da83789471026adb94834265a7d578f))
+
 ## <small>[0.5.27](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc@0.5.26...plugin-rsc@0.5.27) (2026-06-01)</small>
 ### Features
 

@@ -21,6 +21,7 @@ import {
   type ViteDevServer,
   defaultServerConditions,
   isCSSRequest,
+  isFileLoadingAllowed,
   normalizePath,
   parseAstAsync,
 } from 'vite'
@@ -62,6 +63,7 @@ import {
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
+  slash,
 } from './plugins/vite-utils'
 import {
   type TransformWrapExportFilter,
@@ -346,10 +348,11 @@ export function vitePluginRscMinimal(
       apply: 'serve',
       load: {
         filter: { id: prefixRegex('\0virtual:vite-rsc/reference-validation?') },
-        handler(id, _options) {
+        async handler(id, _options) {
           if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
             const parsed = parseReferenceValidationVirtual(id)
             assert(parsed)
+            assert(this.environment.mode === 'dev')
             if (parsed.type === 'client') {
               const meta = Object.values(manager.clientReferenceMetaMap).find(
                 (meta) => meta.referenceKey === parsed.id,
@@ -359,9 +362,31 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              const meta = Object.values(manager.serverReferenceMetaMap).find(
+              let meta = Object.values(manager.serverReferenceMetaMap).find(
                 (meta) => meta.referenceKey === parsed.id,
               )
+              if (!meta) {
+                // Server references decoded by `createFromReadableStream` with
+                // `preserveServerReferences` can reach action loading without their
+                // modules entering the graph during replay. Transform the target on
+                // demand to populate metadata before validating its ID.
+                try {
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
+                  const resolved = await this.resolve(parsed.id)
+                  const id = resolved?.id ?? parsed.id
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L271-L282
+                  const allowed = isFileLoadingAllowed(
+                    manager.config,
+                    slash(cleanUrl(id)),
+                  )
+                  if (allowed) {
+                    await this.environment.transformRequest(parsed.id)
+                  }
+                } catch {}
+                meta = Object.values(manager.serverReferenceMetaMap).find(
+                  (meta) => meta.referenceKey === parsed.id,
+                )
+              }
               if (meta) {
                 return `export {}`
               }
@@ -573,6 +598,7 @@ export default function vitePluginRsc(
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   `${reactServerDomPackageName}/server.edge`,
+                  `${reactServerDomPackageName}/static.edge`,
                   `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME, ...optimizeDepsExclude],
@@ -1553,7 +1579,7 @@ function vitePluginUseClient(
             exportNames,
             renderedExports: [],
           }
-          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
           return { code: output.toString(), map: { mappings: '' } }
         },
@@ -2040,7 +2066,7 @@ function vitePluginUseServer(
               exportNames:
                 'names' in result ? result.names : result.exportNames,
             }
-            const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+            const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
             )
