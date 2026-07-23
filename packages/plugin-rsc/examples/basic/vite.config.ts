@@ -32,21 +32,7 @@ export default defineConfig({
     react(),
     vitePluginUseCache(),
     vitePluginVirtualModuleTest(),
-    {
-      name: 'test-root-package-resolution-importer',
-      enforce: 'pre',
-      resolveId(source, importer) {
-        // Root package probes need a concrete importer so ownership-sensitive
-        // resolvers keep the lookup anchored to the project.
-        if (
-          this.environment.name === 'rsc' &&
-          source === '@vitejs/test-dep-transitive-client/client' &&
-          importer == null
-        ) {
-          throw new Error('root package resolution requires an importer')
-        }
-      },
-    },
+    testRootPackageResolutionImporterPlugin(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -285,6 +271,24 @@ export default { fetch: handler };
     },
   },
 }) as any
+
+function testRootPackageResolutionImporterPlugin(): Plugin {
+  return {
+    name: 'test-root-package-resolution-importer',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      // Root package probes need a concrete importer so ownership-sensitive
+      // resolvers keep the lookup anchored to the project.
+      if (
+        this.environment.name === 'rsc' &&
+        source === '@vitejs/test-dep-transitive-client/client' &&
+        importer == null
+      ) {
+        throw new Error('root package resolution requires an importer')
+      }
+    },
+  }
+}
 
 function testBuildPlugin(): Plugin[] {
   const moduleIds: { name: string; ids: string[] }[] = []

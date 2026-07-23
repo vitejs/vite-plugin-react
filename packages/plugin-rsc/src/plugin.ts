@@ -1719,9 +1719,8 @@ function vitePluginUseClient(
               // transitive dependency reachable from `importer` but not installed
               // at the root (see #1247). In that case, skip virtualization and
               // let it fall back to referencing the fully resolved module id.
-              // Rolldown preserves an undefined importer, so use Vite's
-              // conventional root importer to keep importer-sensitive
-              // resolution anchored to the project root.
+              // Use Vite's conventional root importer so every resolver in the
+              // plugin chain evaluates the package from the project root.
               const rootImporter = path.join(
                 this.environment.config.root,
                 'index.html',
