@@ -147,12 +147,9 @@ export function createServerDecodeClientManifest(): ModuleMap {
   )
 }
 
-export function createClientManifest(options?: {
-  /**
-   * @internal
-   */
-  onClientReference?: (metadata: { id: string; name: string }) => void
-}): BundlerConfig {
+export function createClientManifest(
+  options?: CreateClientManifestOptions,
+): BundlerConfig {
   const cacheTag = import.meta.env.DEV ? createReferenceCacheTag() : ''
 
   return new Proxy(
@@ -173,4 +170,13 @@ export function createClientManifest(options?: {
       },
     },
   )
+}
+
+export interface ClientReferenceMetadata {
+  id: string
+  name: string
+}
+
+export interface CreateClientManifestOptions {
+  onClientReference?: (metadata: ClientReferenceMetadata) => void
 }
