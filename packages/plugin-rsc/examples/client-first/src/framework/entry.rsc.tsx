@@ -26,7 +26,8 @@ export default async function handler(request: Request) {
 }
 
 // hard-coded RSC function registry for demo simplicity
-// TODO: Populate this through createRscFn when evaluating the RSC module split.
+// TODO: Replace this with a split-module resolver: encoded module IDs with lazy
+// loading in dev, and a generated manifest in build.
 const rscFunctions = { getServerMessage: getServerMessage.handler }
 
 // The browser reaches this executor over HTTP, while SSR invokes it directly
