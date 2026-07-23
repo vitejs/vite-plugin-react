@@ -32,7 +32,7 @@ export default defineConfig({
     react(),
     vitePluginUseCache(),
     vitePluginVirtualModuleTest(),
-    testRootPackageResolutionImporterPlugin(),
+    testRscVirtualClientPackagePlugin(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -272,19 +272,20 @@ export default { fetch: handler };
   },
 }) as any
 
-function testRootPackageResolutionImporterPlugin(): Plugin {
+function testRscVirtualClientPackagePlugin(): Plugin {
   return {
-    name: 'test-root-package-resolution-importer',
+    name: 'test-rsc-virtual-client-package',
     enforce: 'pre',
     resolveId(source, importer) {
-      // Root package probes need a concrete importer so ownership-sensitive
-      // resolvers keep the lookup anchored to the project.
+      // `rsc:virtual-client-package` should pass an explicit root importer.
       if (
         this.environment.name === 'rsc' &&
         source === '@vitejs/test-dep-transitive-client/client' &&
         importer == null
       ) {
-        throw new Error('root package resolution requires an importer')
+        throw new Error(
+          '`rsc:virtual-client-package` root resolution requires an importer',
+        )
       }
     },
   }
