@@ -852,8 +852,12 @@ export default function vitePluginRsc(
             const env = ctx.server.environments.rsc!
             const mod = env.moduleGraph.getModuleById(ctx.file)
             if (mod) {
-              // Always refresh style/watch importers, but preserve normal client
-              // HMR when the file also has a genuine JavaScript importer.
+              // Unusually, the same source file can be live in the client graph
+              // while also present in the RSC graph without a "use client"
+              // boundary. For example, a client-first framework may extract an
+              // RSC function handler while treating a component in the same file
+              // as client code by convention. Refresh style/watch importers, but
+              // preserve normal client HMR in this case.
               let hasNonCssImporter = false
               for (const clientMod of ctx.modules) {
                 for (const importer of clientMod.importers) {
