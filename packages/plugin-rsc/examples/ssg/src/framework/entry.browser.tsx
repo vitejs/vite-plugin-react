@@ -1,6 +1,6 @@
 import {
-  createFromFetch,
   createFromReadableStream,
+  createFromFetch,
 } from '@vitejs/plugin-rsc/browser'
 import React from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
@@ -9,17 +9,18 @@ import { GlobalErrorBoundary } from './error-boundary'
 import { createRscRenderRequest } from './request'
 import type { RscPayload } from './shared'
 
-async function hydrate(): Promise<void> {
-  async function onNavigation() {
-    const renderRequest = createRscRenderRequest(window.location.href)
-    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
-    setPayload(payload)
-  }
-
-  const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
-
+async function main() {
+  // stash `setPayload` function to trigger re-rendering
+  // from outside of `BrowserRoot` component (e.g. navigation, hmr)
   let setPayload: (v: RscPayload) => void
 
+  // deserialize RSC stream back to React VDOM for CSR
+  const initialPayload = await createFromReadableStream<RscPayload>(
+    // initial RSC stream is injected in SSR stream as <script>...FLIGHT_DATA...</script>
+    rscStream,
+  )
+
+  // browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
     const [payload, setPayload_] = React.useState(initialPayload)
 
@@ -27,13 +28,22 @@ async function hydrate(): Promise<void> {
       setPayload = (v) => React.startTransition(() => setPayload_(v))
     }, [setPayload_])
 
+    // re-fetch/render on client side navigation
     React.useEffect(() => {
-      return listenNavigation(() => onNavigation())
+      return listenNavigation(() => fetchRscPayload())
     }, [])
 
     return payload.root
   }
 
+  // re-fetch RSC and trigger re-rendering
+  async function fetchRscPayload() {
+    const renderRequest = createRscRenderRequest(window.location.href)
+    const payload = await createFromFetch<RscPayload>(fetch(renderRequest))
+    setPayload(payload)
+  }
+
+  // hydration
   const browserRoot = (
     <React.StrictMode>
       <GlobalErrorBoundary>
@@ -41,21 +51,22 @@ async function hydrate(): Promise<void> {
       </GlobalErrorBoundary>
     </React.StrictMode>
   )
-
   if ('__NO_HYDRATE' in globalThis) {
     createRoot(document).render(browserRoot)
   } else {
     hydrateRoot(document, browserRoot)
   }
 
+  // implement server HMR by triggering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on('rsc:update', () => {
-      window.history.replaceState({}, '', window.location.href)
+      fetchRscPayload()
     })
   }
 }
 
-function listenNavigation(onNavigation: () => void): () => void {
+// a little helper to setup events interception for client side navigation
+function listenNavigation(onNavigation: () => void) {
   window.addEventListener('popstate', onNavigation)
 
   const oldPushState = window.history.pushState
@@ -102,4 +113,4 @@ function listenNavigation(onNavigation: () => void): () => void {
   }
 }
 
-hydrate()
+main()

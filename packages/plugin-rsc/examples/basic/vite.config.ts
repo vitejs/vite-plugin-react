@@ -32,6 +32,7 @@ export default defineConfig({
     react(),
     vitePluginUseCache(),
     vitePluginVirtualModuleTest(),
+    testRscVirtualClientPackagePlugin(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -270,6 +271,25 @@ export default { fetch: handler };
     },
   },
 }) as any
+
+function testRscVirtualClientPackagePlugin(): Plugin {
+  return {
+    name: 'test-rsc-virtual-client-package',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      // `rsc:virtual-client-package` should pass an explicit root importer.
+      if (
+        this.environment.name === 'rsc' &&
+        source === '@vitejs/test-dep-transitive-client/client' &&
+        importer == null
+      ) {
+        throw new Error(
+          '`rsc:virtual-client-package` root resolution requires an importer',
+        )
+      }
+    },
+  }
+}
 
 function testBuildPlugin(): Plugin[] {
   const moduleIds: { name: string; ids: string[] }[] = []
