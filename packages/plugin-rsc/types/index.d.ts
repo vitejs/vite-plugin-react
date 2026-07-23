@@ -32,6 +32,7 @@ declare global {
 
   interface ImportMetaEnv {
     readonly __vite_rsc_build__: boolean
+    readonly __vite_rsc_bundled_dev__: boolean
   }
 }
 
