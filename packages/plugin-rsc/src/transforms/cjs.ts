@@ -11,16 +11,27 @@ import { buildScopeTree } from './scope'
 // Runtime helper to handle CJS/ESM interop when transforming require() to import()
 // Unwrap .default for modules
 // 1. if it was transformed by this plugin (marked with __cjs_module_runner_transform)
-// 2. if all named exports point to .default properties (common CJS pattern)
+// 2. if Node marks .default as the exact CommonJS module.exports value
+//    https://nodejs.org/api/esm.html#commonjs-namespaces
+// 3. if all named exports point to .default properties (common CJS pattern)
 //    this is particularly important for Node built-in modules consumptions;
 //    where the built-in modules are not transformed by this plugin but still follow the CJS export pattern
 //    see [getESMFacade](https://github.com/nodejs/node/blob/f200685d9930404d610a52d9e06513bf0a821ed4/lib/internal/bootstrap/realm.js#L347-L360)
 //
-// This ensures we don't incorrectly unwrap .default on genuine ESM modules
+// Without a "module.exports" export, require(esm) returns the module namespace
+// object and exposes an ESM default export as its .default property:
+// https://nodejs.org/api/modules.html#loading-ecmascript-modules-using-require
+// https://tc39.es/ecma262/#sec-module-namespace-exotic-objects
+//
+// Keep genuine ESM namespaces intact; the null guard also avoids dereferencing
+// a nullish default when the namespace has named exports.
 function __cjs_interop__(m: any) {
   return m.__cjs_module_runner_transform ||
+    ('module.exports' in m && m['module.exports'] === m.default) ||
     ('default' in m &&
-      Object.keys(m).every((k) => k === 'default' || m[k] === m.default[k]))
+      Object.keys(m).every(
+        (k) => k === 'default' || (m.default != null && m[k] === m.default[k]),
+      ))
     ? m.default
     : m
 }
