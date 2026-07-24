@@ -1,0 +1,21 @@
+packages/plugin-rsc/src/transforms/server-action.ts
+  s_f6364a0d883bef::t_0f51fca253e43f 1,4-5
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_f6364a0d883bef::t_c8f0cacadf0df1 135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "18fd2c0a76d124f36b2b1885049b2f641dfca018",
+  "prompts": {},
+  "sessions": {
+    "s_f6364a0d883bef": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edd01-80f0-7d31-b4d8-53e3ae5744bf",
+        "model": "gpt-5.5"
+      },
+      "human_author": "James <james@eli.cx>"
+    }
+  }
+}
