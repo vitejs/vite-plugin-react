@@ -23,8 +23,7 @@ type ServerReferenceClaimMap = Map<
 
 export class ServerReferencesManager {
   private claimMap: ServerReferenceClaimMap = new Map()
-  // todo: nit. this Map too?
-  private metaMap: Record<string, ServerReferenceMeta> = {}
+  metaMap: Map<string, ServerReferenceMeta> = new Map()
 
   constructor(private manager: RscPluginManager) {}
 
@@ -77,10 +76,6 @@ export class ServerReferencesManager {
     this.replaceClaim(owner, id, undefined)
   }
 
-  getMeta(): ServerReferenceMeta[] {
-    return Object.values(this.metaMap)
-  }
-
   private normalizeImportId(id: string): string {
     return this.manager.config.command !== 'build' &&
       id.includes('/node_modules/')
@@ -91,8 +86,8 @@ export class ServerReferencesManager {
 
 function deriveMetaMap(
   claimMap: ServerReferenceClaimMap,
-): Record<string, ServerReferenceMeta> {
-  return Object.fromEntries(
+): Map<string, ServerReferenceMeta> {
+  return new Map(
     [...claimMap].map(([importId, claims]) => [
       importId,
       aggregateClaims(importId, claims),
