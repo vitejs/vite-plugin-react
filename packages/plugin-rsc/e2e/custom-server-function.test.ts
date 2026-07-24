@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { useFixture } from './fixture'
 import {
   expectNoPageError,
@@ -64,7 +64,15 @@ function defineTest(f: ReturnType<typeof useFixture>) {
     using _ = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
+    await testActions(page)
+  })
 
+  testNoJs('progressive forms', async ({ page }) => {
+    await page.goto(f.url())
+    await testActions(page)
+  })
+
+  async function testActions(page: Page) {
     await page.getByRole('button', { name: 'Built-in: 0' }).click()
     await expect(
       page.getByRole('button', { name: 'Built-in: 1' }),
@@ -77,20 +85,11 @@ function defineTest(f: ReturnType<typeof useFixture>) {
     await expect(
       page.getByRole('button', { name: 'From client: 1' }),
     ).toBeVisible()
-  })
 
-  testNoJs('progressive forms', async ({ page }) => {
-    await page.goto(f.url())
-
-    for (const label of ['Built-in', 'Custom', 'From client']) {
-      const button = page.getByRole('button', {
-        name: new RegExp(`^${label}: \\d+$`),
-      })
-      const count = Number((await button.textContent())!.split(': ')[1])
-      await button.click()
-      await expect(
-        page.getByRole('button', { name: `${label}: ${count + 1}` }),
-      ).toBeVisible()
-    }
-  })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(
+      page.getByRole('button', { name: 'Built-in: 0' }),
+    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Custom: 0' })).toBeVisible()
+  }
 }

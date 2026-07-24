@@ -3,6 +3,7 @@ import {
   getCounts,
   incrementBuiltin,
   incrementCustom,
+  resetCounts,
 } from './actions.ts'
 
 export function MixedDirectives() {
@@ -16,6 +17,9 @@ export function MixedDirectives() {
         <button>
           {customLabel}: {customCount}
         </button>
+      </form>
+      <form action={resetCounts}>
+        <button>Reset</button>
       </form>
     </>
   )

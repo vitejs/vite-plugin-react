@@ -16,3 +16,9 @@ export async function incrementCustom() {
   'use custom-server'
   customCount++
 }
+
+export async function resetCounts() {
+  'use server'
+  builtinCount = 0
+  customCount = 0
+}
