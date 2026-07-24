@@ -10,8 +10,7 @@ export type ServerReferenceMeta = {
   exportNames: string[]
 }
 
-// TODO: probably some default map trick or some util would make code trivial for human.
-type ServerReferenceClaimMap = Map<
+type ServerReferenceClaimMap = DefaultMap<
   // normalized import ID
   string,
   Map<
@@ -22,7 +21,7 @@ type ServerReferenceClaimMap = Map<
 >
 
 export class ServerReferencesManager {
-  private claimMap: ServerReferenceClaimMap = new Map()
+  claimMap: ServerReferenceClaimMap = new DefaultMap(() => new Map())
   metaMap: Map<string, ServerReferenceMeta> = new Map()
 
   constructor(private manager: RscPluginManager) {}
@@ -40,33 +39,17 @@ export class ServerReferencesManager {
   }
 
   replaceClaim(owner: string, meta: ServerReferenceMeta): void {
-    const importId = meta.importId
-    let ownerMap = this.claimMap.get(importId)
-    if (this.manager.config.command !== 'build' && ownerMap) {
-      const identityChanged = [...ownerMap.values()].some(
-        (claim) =>
-          claim.importId === meta.importId &&
-          claim.referenceKey !== meta.referenceKey,
-      )
-      if (identityChanged) {
-        this.claimMap.delete(importId)
-        ownerMap = undefined
-      }
-    }
-    if (!ownerMap) {
-      ownerMap = new Map()
-      this.claimMap.set(importId, ownerMap)
-    }
-    ownerMap.set(owner, meta)
+    this.claimMap.get(meta.importId).set(owner, meta)
     this.metaMap = deriveMetaMap(this.claimMap)
   }
 
   deleteClaim(owner: string, id: string): void {
     const importId = this.normalizeImportId(id)
     const ownerMap = this.claimMap.get(importId)
-    if (!ownerMap) return
     ownerMap.delete(owner)
-    if (ownerMap.size === 0) this.claimMap.delete(importId)
+    if (ownerMap.size === 0) {
+      this.claimMap.delete(importId)
+    }
     this.metaMap = deriveMetaMap(this.claimMap)
   }
 
@@ -129,4 +112,19 @@ function aggregateClaims(
   assert(aggregate)
   aggregate.exportNames = [...exportOwners.keys()].sort()
   return aggregate
+}
+
+class DefaultMap<K, V> extends Map<K, V> {
+  constructor(private createDefault: (key: K) => V) {
+    super()
+  }
+
+  override get(key: K): V {
+    if (super.has(key)) {
+      return super.get(key)!
+    }
+    const value = this.createDefault(key)
+    this.set(key, value)
+    return value
+  }
 }
