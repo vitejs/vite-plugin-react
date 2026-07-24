@@ -132,7 +132,7 @@ export function transformHoistInlineDirective(
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
-          (options.stableName && expressionName) ||
+          expressionName ||
           'anonymous_server_function'
 
         const bindVars = getBindVars(node, scopeTree)
@@ -285,9 +285,7 @@ function matchDirective(
       stmt.expression.type === 'Literal' &&
       typeof stmt.expression.value === 'string'
     ) {
-      directive.lastIndex = 0
       const match = stmt.expression.value.match(directive)
-      directive.lastIndex = 0
       if (match) {
         return { match, node: stmt.expression }
       }

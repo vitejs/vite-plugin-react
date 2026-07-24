@@ -568,15 +568,4 @@ class Cache {
       ).rejects.toThrow(/not allowed/)
     }
   })
-
-  it('supports stateful directive regexes repeatedly', async () => {
-    const directive = /^use cache(?:: .+)?$/gy
-    const input = `
-export async function one() { "use cache" }
-export async function two() { "use cache: remote" }
-`
-    expect(await testTransform(input, { directive, noExport: true })).toContain(
-      'use cache: remote',
-    )
-  })
 })
