@@ -25,4 +25,5 @@ This is a low-level integration example rather than a proposed high-level Server
 - a built-in Server Function and a custom Server Function can coexist in one module
 - each function reaches the server and updates the rendered result
 - a custom Server Function that is not statically imported by the RSC entry works through both the SSR and client proxy paths
+- built-in, inline custom, and client-imported custom functions work as progressively enhanced forms without JavaScript
 - in development, an export can move from the custom owner to the built-in owner and back without reloading, losing the built-in claim, or retaining a conflicting stale claim

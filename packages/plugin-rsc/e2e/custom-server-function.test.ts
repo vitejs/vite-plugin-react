@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
-import { expectNoPageError, expectNoReload, waitForHydration } from './helper'
+import {
+  expectNoPageError,
+  expectNoReload,
+  testNoJs,
+  waitForHydration,
+} from './helper'
 
 test.describe('dev-custom-server-function', () => {
   const f = useFixture({
@@ -72,5 +77,20 @@ function defineTest(f: ReturnType<typeof useFixture>) {
     await expect(
       page.getByRole('button', { name: 'From client: 1' }),
     ).toBeVisible()
+  })
+
+  testNoJs('progressive forms', async ({ page }) => {
+    await page.goto(f.url())
+
+    for (const label of ['Built-in', 'Custom', 'From client']) {
+      const button = page.getByRole('button', {
+        name: new RegExp(`^${label}: \\d+$`),
+      })
+      const count = Number((await button.textContent())!.split(': ')[1])
+      await button.click()
+      await expect(
+        page.getByRole('button', { name: `${label}: ${count + 1}` }),
+      ).toBeVisible()
+    }
   })
 }
