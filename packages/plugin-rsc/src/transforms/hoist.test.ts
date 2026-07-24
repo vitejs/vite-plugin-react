@@ -508,4 +508,54 @@ export async function test() {
       "
     `)
   })
+
+  it('supports object and static class methods', async () => {
+    const input = `
+const object = {
+  async cached() { "use server"; return 1 },
+  async ["computed"]() { "use server"; return 2 },
+};
+class Actions {
+  static async cached() { "use server"; return 3 }
+  static async ["computed"]() { "use server"; return 4 }
+}
+`
+    const transformed = await testTransform(input)
+    expect(transformed).toMatchInlineSnapshot(`
+      "
+      const object = {
+        cached: /* #__PURE__ */ $$register($$hoist_0_cached, "<id>", "$$hoist_0_cached"),
+        "computed": /* #__PURE__ */ $$register($$hoist_1_computed, "<id>", "$$hoist_1_computed"),
+      };
+      class Actions {
+        static cached = /* #__PURE__ */ $$register($$hoist_2_cached, "<id>", "$$hoist_2_cached");
+        static ["computed"] = /* #__PURE__ */ $$register($$hoist_3_computed, "<id>", "$$hoist_3_computed");
+      }
+
+      ;export async function $$hoist_0_cached() { "use server"; return 1 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_cached, "name", { value: "cached" });
+
+      ;export async function $$hoist_1_computed() { "use server"; return 2 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_1_computed, "name", { value: "computed" });
+
+      ;export async function $$hoist_2_cached() { "use server"; return 3 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_2_cached, "name", { value: "cached" });
+
+      ;export async function $$hoist_3_computed() { "use server"; return 4 };
+      /* #__PURE__ */ Object.defineProperty($$hoist_3_computed, "name", { value: "computed" });
+      "
+    `)
+    await parseAstAsync(transformed!)
+  })
+
+  it('rejects unsupported method forms', async () => {
+    for (const input of [
+      `class Actions { async action() { "use server" } }`,
+      `class Actions { static async #action() { "use server" } }`,
+      `const actions = { get action() { "use server"; return 1 } }`,
+      `class Actions { static set action(value) { "use server" } }`,
+    ]) {
+      await expect(testTransform(input)).rejects.toThrow(/not allowed/)
+    }
+  })
 })
