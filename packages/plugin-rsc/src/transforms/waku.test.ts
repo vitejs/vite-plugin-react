@@ -56,6 +56,24 @@ export default function App() {
     expect(await testTransform(input)).toBeUndefined()
   })
 
+  test('normalizes server reference names', async () => {
+    const inputs = [
+      [`'use server'; export async function action() {}`, ['action']],
+      [
+        `export function App() { return async function action() { 'use server' } }`,
+        ['$$hoist_0_anonymous_server_function'],
+      ],
+    ] as const
+
+    for (const [input, expected] of inputs) {
+      const ast = await parseAstAsync(input)
+      const result = transformServerActionServer(input, ast, {
+        runtime: (value) => value,
+      })
+      expect(result.referenceNames).toEqual(expected)
+    }
+  })
+
   test('top-level use client', async () => {
     const input = `
 'use client';

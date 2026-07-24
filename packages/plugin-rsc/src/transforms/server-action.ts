@@ -16,21 +16,18 @@ export function transformServerActionServer(
     encode?: (value: string) => string
     decode?: (value: string) => string
   },
-):
-  | {
-      exportNames: string[]
-      output: MagicString
-    }
-  | {
-      output: MagicString
-      names: string[]
-    } {
+): {
+  output: MagicString
+  referenceNames: string[]
+} {
   // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (hasDirective(ast.body, 'use server')) {
-    return transformWrapExport(input, ast, options)
+    const { output, exportNames } = transformWrapExport(input, ast, options)
+    return { output, referenceNames: exportNames }
   }
-  return transformHoistInlineDirective(input, ast, {
+  const { output, names } = transformHoistInlineDirective(input, ast, {
     ...options,
     directive: 'use server',
   })
+  return { output, referenceNames: names }
 }
