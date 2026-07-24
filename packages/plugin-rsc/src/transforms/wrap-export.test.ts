@@ -379,15 +379,36 @@ export default cached;
 
   test('runtime export meta', async () => {
     const examples: [input: string, expected: unknown[]][] = [
-      [`export function Fn() {}`, [{ isFunction: true, declName: 'Fn' }]],
+      [
+        `export function Fn() {}`,
+        [
+          {
+            isFunction: true,
+            declName: 'Fn',
+            parameters: { count: 0, hasRest: false },
+          },
+        ],
+      ],
       [`export class Cls {}`, [{ isFunction: false, declName: 'Cls' }]],
       [
         `export const Arrow = () => {}`,
-        [{ isFunction: true, declName: 'Arrow' }],
+        [
+          {
+            isFunction: true,
+            declName: 'Arrow',
+            parameters: { count: 0, hasRest: false },
+          },
+        ],
       ],
       [
         `export const FnExpression = function () {}`,
-        [{ isFunction: true, declName: 'FnExpression' }],
+        [
+          {
+            isFunction: true,
+            declName: 'FnExpression',
+            parameters: { count: 0, hasRest: false },
+          },
+        ],
       ],
       [
         `export const Literal = 1`,
@@ -411,7 +432,11 @@ export default cached;
       [
         `export const MultiFn = () => {}, MultiValue = 1, MultiUnknown = getValue()`,
         [
-          { isFunction: true, declName: 'MultiFn' },
+          {
+            isFunction: true,
+            declName: 'MultiFn',
+            parameters: { count: 0, hasRest: false },
+          },
           { isFunction: false, declName: 'MultiValue' },
           { declName: 'MultiUnknown' },
         ],
@@ -422,10 +447,14 @@ export default cached;
           {
             isFunction: true,
             declName: 'Page',
+            parameters: { count: 0, hasRest: false },
           },
         ],
       ],
-      [`export default function () {}`, [{ isFunction: true }]],
+      [
+        `export default function () {}`,
+        [{ isFunction: true, parameters: { count: 0, hasRest: false } }],
+      ],
       [
         `export default class Page {}`,
         [
@@ -441,6 +470,7 @@ export default cached;
         [
           {
             isFunction: true,
+            parameters: { count: 0, hasRest: false },
           },
         ],
       ],
@@ -457,10 +487,14 @@ export default cached;
         [
           {
             defaultExportIdentifierName: 'Page',
+            parameters: { count: 0, hasRest: false },
           },
         ],
       ],
-      [`const id = async () => {}; export { id }`, [{}]],
+      [
+        `const id = async () => {}; export { id }`,
+        [{ isFunction: true, parameters: { count: 0, hasRest: false } }],
+      ],
       [`export { id } from './dep'`, [{}]],
     ]
 
