@@ -59,7 +59,6 @@ export class ServerReferencesManager {
         )
         if (identityChanged) {
           this.claimMap.delete(claimId)
-          delete this.metaMap[claimId]
           ownerMap = undefined
         }
       }
@@ -74,43 +73,7 @@ export class ServerReferencesManager {
     } else {
       return
     }
-
-    ownerMap = this.claimMap.get(claimId)
-    if (!ownerMap) {
-      delete this.metaMap[claimId]
-      return
-    }
-
-    let aggregate: ServerReferenceMeta | undefined
-    const exportOwners = new Map<string, string>()
-    for (const [claimOwner, claim] of ownerMap) {
-      if (!aggregate) {
-        aggregate = {
-          importId: claim.importId,
-          referenceKey: claim.referenceKey,
-          exportNames: [],
-        }
-      } else if (
-        aggregate.importId !== claim.importId ||
-        aggregate.referenceKey !== claim.referenceKey
-      ) {
-        throw new Error(
-          `[vite-rsc] conflicting server reference identity for '${claimId}'`,
-        )
-      }
-      for (const name of claim.exportNames) {
-        const existingOwner = exportOwners.get(name)
-        if (existingOwner && existingOwner !== claimOwner) {
-          throw new Error(
-            `[vite-rsc] server reference '${claim.referenceKey}#${name}' is claimed by both '${existingOwner}' and '${claimOwner}'`,
-          )
-        }
-        exportOwners.set(name, claimOwner)
-      }
-    }
-    assert(aggregate)
-    aggregate.exportNames = [...exportOwners.keys()].sort()
-    this.metaMap[claimId] = aggregate
+    this.metaMap = deriveMetaMap(this.claimMap)
   }
 
   deleteClaim(owner: string, id: string): void {
@@ -127,4 +90,51 @@ export class ServerReferencesManager {
       ? cleanUrl(id)
       : id
   }
+}
+
+function deriveMetaMap(
+  claimMap: ServerReferenceClaimMap,
+): Record<string, ServerReferenceMeta> {
+  return Object.fromEntries(
+    [...claimMap].map(([claimId, claims]) => [
+      claimId,
+      aggregateClaims(claimId, claims),
+    ]),
+  )
+}
+
+function aggregateClaims(
+  claimId: string,
+  claims: Map<string, ServerReferenceMeta>,
+): ServerReferenceMeta {
+  let aggregate: ServerReferenceMeta | undefined
+  const exportOwners = new Map<string, string>()
+  for (const [claimOwner, claim] of claims) {
+    if (!aggregate) {
+      aggregate = {
+        importId: claim.importId,
+        referenceKey: claim.referenceKey,
+        exportNames: [],
+      }
+    } else if (
+      aggregate.importId !== claim.importId ||
+      aggregate.referenceKey !== claim.referenceKey
+    ) {
+      throw new Error(
+        `[vite-rsc] conflicting server reference identity for '${claimId}'`,
+      )
+    }
+    for (const name of claim.exportNames) {
+      const existingOwner = exportOwners.get(name)
+      if (existingOwner && existingOwner !== claimOwner) {
+        throw new Error(
+          `[vite-rsc] server reference '${claim.referenceKey}#${name}' is claimed by both '${existingOwner}' and '${claimOwner}'`,
+        )
+      }
+      exportOwners.set(name, claimOwner)
+    }
+  }
+  assert(aggregate)
+  aggregate.exportNames = [...exportOwners.keys()].sort()
+  return aggregate
 }
