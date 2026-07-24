@@ -70,12 +70,11 @@ export class ServerReferencesManager {
 function deriveMetaMap(
   claimMap: ServerReferenceClaimMap,
 ): Map<string, ServerReferenceMeta> {
-  return new Map(
-    [...claimMap].map(([importId, claims]) => [
-      importId,
-      aggregateClaims(importId, claims),
-    ]),
-  )
+  const metaMap = new Map<string, ServerReferenceMeta>()
+  for (const [importId, claims] of claimMap) {
+    metaMap.set(importId, aggregateClaims(importId, claims))
+  }
+  return metaMap
 }
 
 function aggregateClaims(
@@ -85,6 +84,8 @@ function aggregateClaims(
   let aggregate: ServerReferenceMeta | undefined
   const exportOwners = new Map<string, string>()
   for (const [claimOwner, claim] of claims) {
+    // A mismatch indicates incompatible plugin integration claims, not an
+    // application authoring error.
     if (!aggregate) {
       aggregate = {
         importId: claim.importId,
