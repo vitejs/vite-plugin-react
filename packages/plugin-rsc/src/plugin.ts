@@ -1738,11 +1738,17 @@ function vitePluginUseClient(
                 this.environment.config.root,
                 'index.html',
               )
-              const resolvedAtRoot = await this.resolve(
-                source,
-                rootImporter,
-                options,
-              )
+              let resolvedAtRoot
+              try {
+                resolvedAtRoot = await this.resolve(
+                  source,
+                  rootImporter,
+                  options,
+                )
+              } catch {
+                // A different version at the root may not export this subpath.
+                return
+              }
               if (!resolvedAtRoot || resolvedAtRoot.id !== resolved.id) {
                 return
               }
