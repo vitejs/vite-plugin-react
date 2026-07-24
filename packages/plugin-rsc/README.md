@@ -544,19 +544,13 @@ The runtime APIs are exposed through two layers:
   integrations that provide module loading through `setRequireModule` instead
   of using the plugin's generated manifests.
 
-The two layers share the same module loader within an environment. Therefore,
-generated code can import a low-level `/react/*` entry after the application
-entry has initialized module loading through a recommended top-level entry.
-Application code should still import from the top-level entry because it
-already re-exports the same runtime APIs and does not require relying on this
-initialization order.
-
-Direct use of `/react/*` is intended for advanced integrations that control
-module loading themselves, usually together with the experimental
-`vitePluginRscMinimal` API. The
-[`examples/browser-mode`](./examples/browser-mode) example demonstrates this by
-running the RSC and React client environments in the browser and installing
-custom loaders for both environments.
+The two layers share the same module loader within an environment, which allows
+generated code to use `/react/*` after a top-level entry initializes the
+built-in loader. Application code should continue using the top-level entries,
+which re-export the same runtime APIs. Direct use of `/react/*` is only needed
+by custom integrations that install their own loaders, such as the
+[`examples/browser-mode`](./examples/browser-mode) example, which runs the RSC
+and React client environments in the browser.
 
 ## Tips
 
