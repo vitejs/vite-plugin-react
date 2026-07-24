@@ -27,6 +27,7 @@ npm create vite@latest -- --template rsc
 
 - [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
   - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/custom-server-function`](./examples/custom-server-function) - Third-party Server Function directive integration using server reference claims.
 - [`./examples/performance-track`](./examples/performance-track) - Minimal React Server Components performance track probe.
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/react-router`](./examples/react-router) - React Router RSC integration
