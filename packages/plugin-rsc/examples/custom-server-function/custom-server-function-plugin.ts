@@ -1,4 +1,4 @@
-import { getPluginApi } from '@vitejs/plugin-rsc'
+import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import {
   hasDirective,
   transformDirectiveProxyExport,
@@ -16,7 +16,7 @@ const pluginName = 'example:custom-server-function'
 // TODO: Give the custom directive observable runtime semantics so ownership
 // swaps can assert the active registration path in addition to claim cleanup.
 export function customServerFunctionPlugin(): Plugin {
-  let manager: NonNullable<ReturnType<typeof getPluginApi>>['manager']
+  let manager: RscPluginManager
 
   return {
     name: pluginName,
