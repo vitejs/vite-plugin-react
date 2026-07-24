@@ -1,4 +1,9 @@
-import { getCounts, incrementBuiltin, incrementCustom } from './actions.ts'
+import {
+  customLabel,
+  getCounts,
+  incrementBuiltin,
+  incrementCustom,
+} from './actions.ts'
 
 export function MixedDirectives() {
   const { builtinCount, customCount } = getCounts()
@@ -8,7 +13,9 @@ export function MixedDirectives() {
         <button>Built-in: {builtinCount}</button>
       </form>
       <form action={incrementCustom}>
-        <button>Custom: {customCount}</button>
+        <button>
+          {customLabel}: {customCount}
+        </button>
       </form>
     </>
   )

@@ -16,20 +16,34 @@ const initialPayload = await createFromReadableStream<RscPayload>(rscStream)
 function BrowserRoot() {
   const [payload, setPayload] = React.useState(initialPayload)
   React.useEffect(() => {
+    async function updatePayload(
+      request: Request,
+      temporaryReferences = createTemporaryReferenceSet(),
+    ) {
+      const nextPayload = await createFromFetch<RscPayload>(fetch(request), {
+        temporaryReferences,
+      })
+      React.startTransition(() => setPayload(nextPayload))
+      return nextPayload
+    }
+
     setServerCallback(async (id, args) => {
       const temporaryReferences = createTemporaryReferenceSet()
       const request = createRscRenderRequest(window.location.href, {
         id,
         body: await encodeReply(args, { temporaryReferences }),
       })
-      const nextPayload = await createFromFetch<RscPayload>(fetch(request), {
-        temporaryReferences,
-      })
-      React.startTransition(() => setPayload(nextPayload))
+      const nextPayload = await updatePayload(request, temporaryReferences)
       const { ok, data } = nextPayload.returnValue!
       if (!ok) throw data
       return data
     })
+
+    const handleRscUpdate = () => {
+      void updatePayload(createRscRenderRequest(window.location.href))
+    }
+    import.meta.hot?.on('rsc:update', handleRscUpdate)
+    return () => import.meta.hot?.off('rsc:update', handleRscUpdate)
   }, [])
   return payload.root
 }

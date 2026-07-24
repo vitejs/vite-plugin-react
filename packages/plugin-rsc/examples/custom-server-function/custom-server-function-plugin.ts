@@ -10,6 +10,8 @@ import { parseAstAsync, type Plugin } from 'vite'
 const directive = 'use custom-server'
 const owner = 'example:use-custom-server'
 
+// TODO: Give the custom directive observable runtime semantics so ownership
+// swaps can assert the active registration path in addition to claim cleanup.
 export function customServerFunctionPlugin(): Plugin {
   let manager: NonNullable<ReturnType<typeof getPluginApi>>['manager']
 
