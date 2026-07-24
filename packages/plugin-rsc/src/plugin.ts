@@ -41,6 +41,10 @@ import {
 } from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
 import {
+  ServerReferencesManager,
+  type ServerReferenceMeta,
+} from './plugins/server-reference'
+import {
   parseCssVirtual,
   toCssVirtual,
   parseIdQuery,
@@ -94,13 +98,6 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-type ServerReferenceMeta = {
-  importId: string
-  referenceKey: string
-  // TODO: tree shake unused server functions
-  exportNames: string[]
-}
-
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
@@ -129,7 +126,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
+  serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -362,9 +359,7 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              let meta = Object.values(manager.serverReferenceMetaMap).find(
-                (meta) => meta.referenceKey === parsed.id,
-              )
+              let meta = manager.serverReferences.findByReferenceKey(parsed.id)
               if (!meta) {
                 // Server references decoded by `createFromReadableStream` with
                 // `preserveServerReferences` can reach action loading without their
@@ -383,9 +378,7 @@ export function vitePluginRscMinimal(
                     await this.environment.transformRequest(parsed.id)
                   }
                 } catch {}
-                meta = Object.values(manager.serverReferenceMetaMap).find(
-                  (meta) => meta.referenceKey === parsed.id,
-                )
+                meta = manager.serverReferences.findByReferenceKey(parsed.id)
               }
               if (meta) {
                 return `export {}`
@@ -1996,18 +1989,18 @@ function vitePluginUseServer(
     useServerPluginOptions.environment?.browser ?? 'client'
 
   const debug = createDebug('vite-rsc:use-server')
+  const pluginName = 'rsc:use-server'
 
   return [
     {
-      name: 'rsc:use-server',
+      name: pluginName,
       transform: {
         // TODO: cannot use filter because handler has cleanup side effect
-        // (`delete manager.serverReferenceMetaMap[id]`) that must run
-        // even when directive is removed (HMR case)
+        // that must run even when directive is removed (HMR case)
         // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
-            delete manager.serverReferenceMetaMap[id]
+            manager.serverReferences.deleteClaim(pluginName, id)
             return
           }
           let ast = await parseAstAsync(code)
@@ -2024,9 +2017,9 @@ function vitePluginUseServer(
             }
           }
 
-          let normalizedId_: string | undefined
-          const getNormalizedId = () => {
-            if (!normalizedId_) {
+          let serverReference_: ServerReferenceMeta | undefined
+          const getServerReference = () => {
+            if (!serverReference_) {
               if (
                 this.environment.mode === 'dev' &&
                 id.includes('/node_modules/')
@@ -2037,18 +2030,13 @@ function vitePluginUseServer(
                 debug(
                   `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
                 )
-                id = cleanUrl(id)
               }
-              if (manager.config.command === 'build') {
-                normalizedId_ = hashString(manager.toRelativeId(id))
-              } else {
-                normalizedId_ = normalizeViteImportAnalysisUrl(
-                  manager.server.environments[serverEnvironmentName]!,
-                  id,
-                )
-              }
+              serverReference_ = manager.serverReferences.resolve(
+                id,
+                serverEnvironmentName,
+              )
             }
-            return normalizedId_
+            return serverReference_
           }
 
           if (this.environment.name === serverEnvironmentName) {
@@ -2061,7 +2049,7 @@ function vitePluginUseServer(
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
-                  getNormalizedId(),
+                  getServerReference().referenceKey,
                 )}, ${JSON.stringify(name)})`,
               rejectNonAsyncFunction: true,
               encode: enableEncryption
@@ -2075,14 +2063,13 @@ function vitePluginUseServer(
             })
             const output = result.output
             if (!result || !output.hasChanged()) {
-              delete manager.serverReferenceMetaMap[id]
+              manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
+            manager.serverReferences.replaceClaim(pluginName, id, {
+              ...getServerReference(),
               exportNames: result.referenceNames,
-            }
+            })
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
@@ -2101,7 +2088,10 @@ function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              delete manager.serverReferenceMetaMap[id]
+              // TODO: Inline server functions entering a non-RSC graph are
+              // unsupported and should throw an explicit validation error.
+              // https://github.com/vitejs/vite-plugin-react/issues/883#issuecomment-5029243311
+              manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
@@ -2112,7 +2102,7 @@ function vitePluginUseServer(
               code,
               runtime: (name) =>
                 `$$ReactClient.createServerReference(` +
-                `${JSON.stringify(getNormalizedId() + '#' + name)},` +
+                `${JSON.stringify(getServerReference().referenceKey + '#' + name)},` +
                 `$$ReactClient.callServer, ` +
                 `undefined, ` +
                 (this.environment.mode === 'dev'
@@ -2122,14 +2112,19 @@ function vitePluginUseServer(
               directive: 'use server',
               rejectNonAsyncFunction: true,
             })
-            if (!result) return
-            const output = result?.output
-            if (!output?.hasChanged()) return
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
-              exportNames: result.exportNames,
+            if (!result) {
+              manager.serverReferences.deleteClaim(pluginName, id)
+              return
             }
+            const output = result?.output
+            if (!output?.hasChanged()) {
+              manager.serverReferences.deleteClaim(pluginName, id)
+              return
+            }
+            manager.serverReferences.replaceClaim(pluginName, id, {
+              ...getServerReference(),
+              exportNames: result.exportNames,
+            })
             const name =
               this.environment.name === browserEnvironmentName
                 ? 'browser'
@@ -2151,7 +2146,7 @@ function vitePluginUseServer(
         return { code: `export {}`, map: null }
       }
       let code = ''
-      for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+      for (const meta of manager.serverReferences.metaMap.values()) {
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
         const exports = meta.exportNames
