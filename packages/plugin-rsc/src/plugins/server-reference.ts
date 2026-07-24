@@ -10,6 +10,7 @@ export type ServerReferenceMeta = {
   exportNames: string[]
 }
 
+// TODO: probably some default map trick or some util would make code trivial for human.
 type ServerReferenceClaimMap = Map<
   string,
   Map<string, Map<string, ServerReferenceMeta>>
@@ -19,7 +20,7 @@ export class ServerReferencesManager {
   private claimMap: ServerReferenceClaimMap = new Map()
   private metaMap: Record<string, ServerReferenceMeta> = {}
 
-  constructor(private readonly manager: RscPluginManager) {}
+  constructor(private manager: RscPluginManager) {}
 
   resolve(id: string, serverEnvironmentName: string): ServerReferenceMeta {
     const importId =

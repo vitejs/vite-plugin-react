@@ -118,8 +118,6 @@ export type { RscPluginManager }
  * @experimental
  */
 class RscPluginManager {
-  readonly serverReferences: ServerReferencesManager =
-    new ServerReferencesManager(this)
   server!: ViteDevServer
   config!: ResolvedConfig
   bundles: Record<string, Rollup.OutputBundle> = {}
@@ -128,6 +126,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
+  serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
