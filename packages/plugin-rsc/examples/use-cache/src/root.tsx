@@ -1,12 +1,19 @@
-import { revalidateCache } from '../../framework/use-cache-runtime'
+import { revalidateCache } from './framework/use-cache-runtime'
 
-export function TestUseCache() {
+export function Root() {
   return (
-    <>
-      <TestUseCacheFn />
-      <TestUseCacheComponent />
-      <TestUseCacheClosure />
-    </>
+    <html>
+      <head>
+        <meta charSet="utf-8" />
+        <title>RSC use cache</title>
+      </head>
+      <body>
+        <h1>RSC use cache</h1>
+        <TestUseCacheFn />
+        <TestUseCacheComponent />
+        <TestUseCacheClosure />
+      </body>
+    </html>
   )
 }
 
@@ -19,13 +26,11 @@ function TestUseCacheFn() {
         actionCount++
         const argument = formData.get('argument')
         await testFn(argument)
-        if (argument === 'revalidate') {
-          revalidateCache(testFn)
-        }
+        if (argument === 'revalidate') revalidateCache(testFn)
       }}
     >
       <button>test-use-cache-fn</button>
-      <input className="w-25" name="argument" placeholder="argument" />
+      <input name="argument" placeholder="argument" />
       <span>
         (actionCount: {actionCount}, cacheFnCount: {cacheFnCount})
       </span>
@@ -42,9 +47,8 @@ async function testFn(..._args: unknown[]) {
 }
 
 function TestUseCacheComponent() {
-  // NOTE: wrapping with `span` (or any jsx) is crucial because
-  // raw string `children` would get included as cache key
-  // and thus causes `TestComponent` to be evaluated in each render.
+  // Wrapping children in JSX keeps their concrete value out of the cache key,
+  // which allows the cached component to provide a static shell.
   return (
     <TestComponent>
       <span>{new Date().toISOString()}</span>
@@ -69,7 +73,7 @@ async function TestComponent(props: { children?: React.ReactNode }) {
 
 async function TestUseCacheClosure() {
   return (
-    <div data-testid="test-use-cache-closure" className="flex gap-1">
+    <div data-testid="test-use-cache-closure">
       <form
         action={async (formData) => {
           'use server'
@@ -80,8 +84,8 @@ async function TestUseCacheClosure() {
         }}
       >
         <button>test-use-cache-closure</button>
-        <input className="w-15" name="outer" placeholder="outer" />
-        <input className="w-15" name="inner" placeholder="inner" />
+        <input name="outer" placeholder="outer" />
+        <input name="inner" placeholder="inner" />
       </form>
       <span>
         (actionCount: {actionCount2}, innerFnCount: {innerFnCount})
