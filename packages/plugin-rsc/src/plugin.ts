@@ -2000,25 +2000,11 @@ function vitePluginUseServer(
       name: 'rsc:use-server',
       transform: {
         // TODO: cannot use filter because handler has cleanup side effect
-        // (removing the current environment's reference claim) that must run
-        // even when directive is removed (HMR case)
+        // that must run even when directive is removed (HMR case)
         // filter: { code: 'use server' },
         async handler(code, id) {
-          const clearReferenceClaim = () =>
-            manager.serverReferences.replaceClaim(
-              referenceOwner,
-              this.environment.name,
-              id,
-              undefined,
-            )
-          const clearAllReferenceClaims = () =>
-            manager.serverReferences.clearClaims(referenceOwner, id)
           if (!code.includes('use server')) {
-            if (this.environment.name === serverEnvironmentName) {
-              clearAllReferenceClaims()
-            } else {
-              clearReferenceClaim()
-            }
+            manager.serverReferences.deleteClaim(referenceOwner, id)
             return
           }
           let ast = await parseAstAsync(code)
@@ -2081,22 +2067,14 @@ function vitePluginUseServer(
             })
             const output = result.output
             if (!result || !output.hasChanged()) {
-              clearAllReferenceClaims()
+              manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
-            // The RSC transform sees both module-level and inline directives,
-            // so its result supersedes stale discoveries from other environments.
-            clearAllReferenceClaims()
-            manager.serverReferences.replaceClaim(
-              referenceOwner,
-              this.environment.name,
-              id,
-              {
-                ...getServerReference(),
-                exportNames:
-                  'names' in result ? result.names : result.exportNames,
-              },
-            )
+            manager.serverReferences.replaceClaim(referenceOwner, id, {
+              ...getServerReference(),
+              exportNames:
+                'names' in result ? result.names : result.exportNames,
+            })
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
@@ -2115,7 +2093,10 @@ function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              clearReferenceClaim()
+              // TODO: Inline server functions entering a non-RSC graph are
+              // unsupported and should throw an explicit validation error.
+              // https://github.com/vitejs/vite-plugin-react/issues/883#issuecomment-5029243311
+              manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
@@ -2137,23 +2118,18 @@ function vitePluginUseServer(
               rejectNonAsyncFunction: true,
             })
             if (!result) {
-              clearReferenceClaim()
+              manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
             const output = result?.output
             if (!output?.hasChanged()) {
-              clearReferenceClaim()
+              manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
-            manager.serverReferences.replaceClaim(
-              referenceOwner,
-              this.environment.name,
-              id,
-              {
-                ...getServerReference(),
-                exportNames: result.exportNames,
-              },
-            )
+            manager.serverReferences.replaceClaim(referenceOwner, id, {
+              ...getServerReference(),
+              exportNames: result.exportNames,
+            })
             const name =
               this.environment.name === browserEnvironmentName
                 ? 'browser'

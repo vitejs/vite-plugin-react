@@ -23,16 +23,7 @@ export function customServerFunctionPlugin(): Plugin {
     async transform(code, id) {
       const environmentName = this.environment.name
       if (!code.includes(directive)) {
-        if (environmentName === 'rsc') {
-          manager.serverReferences.clearClaims(owner, id)
-        } else {
-          manager.serverReferences.replaceClaim(
-            owner,
-            environmentName,
-            id,
-            undefined,
-          )
-        }
+        manager.serverReferences.deleteClaim(owner, id)
         return
       }
 
@@ -55,12 +46,11 @@ export function customServerFunctionPlugin(): Plugin {
               rejectNonAsyncFunction: true,
             })
         if (!result.output.hasChanged()) {
-          manager.serverReferences.clearClaims(owner, id)
+          manager.serverReferences.deleteClaim(owner, id)
           return
         }
 
-        manager.serverReferences.clearClaims(owner, id)
-        manager.serverReferences.replaceClaim(owner, environmentName, id, {
+        manager.serverReferences.replaceClaim(owner, id, {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
@@ -88,16 +78,11 @@ export function customServerFunctionPlugin(): Plugin {
           `${JSON.stringify(name)})`,
       })
       if (!result?.output.hasChanged()) {
-        manager.serverReferences.replaceClaim(
-          owner,
-          environmentName,
-          id,
-          undefined,
-        )
+        manager.serverReferences.deleteClaim(owner, id)
         return
       }
 
-      manager.serverReferences.replaceClaim(owner, environmentName, id, {
+      manager.serverReferences.replaceClaim(owner, id, {
         ...reference,
         exportNames: result.exportNames,
       })
