@@ -59,7 +59,6 @@ import { TestTailwind } from './tailwind'
 import { TestTemporaryReference } from './temporary-reference/client'
 import { TestTreeShakeServer } from './tree-shake/server'
 import { TestTreeShake2 } from './tree-shake2/server'
-import { TestUseCache } from './use-cache/server'
 import { TestUseId } from './use-id/server'
 import { TestVirtualModule } from './virtual-module/server'
 
@@ -122,7 +121,6 @@ export function Root(props: { url: URL }) {
         <TestActionStateServer />
         <TestModuleInvalidationServer />
         <TestBrowserOnly />
-        <TestUseCache />
         <TestReactCache url={props.url} />
         <TestCssQueries />
         <TestImportMetaGlob />

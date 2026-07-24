@@ -25,8 +25,8 @@ npm create vite@latest -- --template rsc
 
 **Integration examples:**
 
-- [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
-  - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/basic`](./examples/basic) - Comprehensive showcase of standard RSC features and the primary E2E test fixture.
+- [`./examples/use-cache`](./examples/use-cache) - Minimal cache feature inspired by Next.js's `"use cache"`, built with generic transform and RSC runtime APIs.
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/ppr`](./examples/ppr) - Partial prerendering with a reusable static HTML shell and request-time RSC content.
 - [`./examples/no-ssr`](./examples/no-ssr) - RSC application without an SSR environment.
