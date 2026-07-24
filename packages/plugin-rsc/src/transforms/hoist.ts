@@ -132,7 +132,7 @@ export function transformHoistInlineDirective(
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
-          expressionName ||
+          (options.stableName && expressionName) ||
           'anonymous_server_function'
 
         const bindVars = getBindVars(node, scopeTree)
