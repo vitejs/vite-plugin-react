@@ -1,12 +1,19 @@
-import { revalidateCache } from '../../framework/use-cache-runtime'
+import { revalidateCache } from './framework/use-cache-runtime'
 
-export function TestUseCache() {
+export function Root(_props: { url: URL }) {
   return (
-    <>
-      <TestUseCacheFn />
-      <TestUseCacheComponent />
-      <TestUseCacheClosure />
-    </>
+    <html>
+      <head>
+        <meta charSet="utf-8" />
+        <title>RSC use cache</title>
+      </head>
+      <body>
+        <h1>RSC use cache</h1>
+        <TestUseCacheFn />
+        <TestUseCacheComponent />
+        <TestUseCacheClosure />
+      </body>
+    </html>
   )
 }
 
@@ -25,7 +32,7 @@ function TestUseCacheFn() {
       }}
     >
       <button>test-use-cache-fn</button>
-      <input className="w-25" name="argument" placeholder="argument" />
+      <input name="argument" placeholder="argument" />
       <span>
         (actionCount: {actionCount}, cacheFnCount: {cacheFnCount})
       </span>
@@ -69,7 +76,7 @@ async function TestComponent(props: { children?: React.ReactNode }) {
 
 async function TestUseCacheClosure() {
   return (
-    <div data-testid="test-use-cache-closure" className="flex gap-1">
+    <div data-testid="test-use-cache-closure">
       <form
         action={async (formData) => {
           'use server'
@@ -80,8 +87,8 @@ async function TestUseCacheClosure() {
         }}
       >
         <button>test-use-cache-closure</button>
-        <input className="w-15" name="outer" placeholder="outer" />
-        <input className="w-15" name="inner" placeholder="inner" />
+        <input name="outer" placeholder="outer" />
+        <input name="inner" placeholder="inner" />
       </form>
       <span>
         (actionCount: {actionCount2}, innerFnCount: {innerFnCount})
