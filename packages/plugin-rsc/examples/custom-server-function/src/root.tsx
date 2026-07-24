@@ -1,7 +1,7 @@
 import { ActionFromClient } from './features/action-from-client/client.tsx'
 import { MixedDirectives } from './features/mixed-directives/server.tsx'
 
-export function Root() {
+export function Root(_props: { url: URL }) {
   return (
     <html lang="en">
       <head>
