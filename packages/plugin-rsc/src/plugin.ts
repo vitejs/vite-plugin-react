@@ -101,6 +101,17 @@ type ServerReferenceMeta = {
   exportNames: string[]
 }
 
+type ServerReferenceClaimMap = Map<
+  string,
+  Map<string, Map<string, ServerReferenceMeta>>
+>
+
+const serverReferenceClaimMaps = new WeakMap<object, ServerReferenceClaimMap>()
+const serverReferenceMetaMaps = new WeakMap<
+  object,
+  Record<string, ServerReferenceMeta>
+>()
+
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
@@ -129,7 +140,6 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv
@@ -146,6 +156,140 @@ class RscPluginManager {
     // sort for stable build
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
+  }
+
+  resolveServerReference(
+    id: string,
+    serverEnvironmentName: string,
+  ): ServerReferenceMeta {
+    const importId =
+      this.config.command !== 'build' && id.includes('/node_modules/')
+        ? cleanUrl(id)
+        : id
+    const referenceKey =
+      this.config.command === 'build'
+        ? hashString(this.toRelativeId(importId))
+        : normalizeViteImportAnalysisUrl(
+            this.server.environments[serverEnvironmentName]!,
+            importId,
+          )
+    return { importId, referenceKey, exportNames: [] }
+  }
+
+  replaceServerReferenceClaim(
+    owner: string,
+    environmentName: string,
+    id: string,
+    meta: ServerReferenceMeta | undefined,
+  ): void {
+    const claimId =
+      this.config.command !== 'build' && id.includes('/node_modules/')
+        ? cleanUrl(id)
+        : id
+    let claimMap = serverReferenceClaimMaps.get(this)
+    let ownerMap = claimMap?.get(claimId)
+    let metaMap = serverReferenceMetaMaps.get(this)
+    if (!metaMap) {
+      metaMap = {}
+      serverReferenceMetaMaps.set(this, metaMap)
+    }
+    if (meta?.exportNames.length) {
+      if (!claimMap) {
+        claimMap = new Map()
+        serverReferenceClaimMaps.set(this, claimMap)
+      }
+      if (this.config.command !== 'build' && ownerMap) {
+        const identityChanged = [...ownerMap.values()].some((environmentMap) =>
+          [...environmentMap.values()].some(
+            (claim) =>
+              claim.importId === meta.importId &&
+              claim.referenceKey !== meta.referenceKey,
+          ),
+        )
+        if (identityChanged) {
+          claimMap.delete(claimId)
+          delete metaMap[claimId]
+          ownerMap = undefined
+        }
+      }
+      if (!ownerMap) {
+        ownerMap = new Map()
+        claimMap.set(claimId, ownerMap)
+      }
+      let environmentMap = ownerMap.get(owner)
+      if (!environmentMap) {
+        environmentMap = new Map()
+        ownerMap.set(owner, environmentMap)
+      }
+      environmentMap.set(environmentName, meta)
+    } else if (ownerMap) {
+      const environmentMap = ownerMap.get(owner)
+      environmentMap?.delete(environmentName)
+      if (environmentMap?.size === 0) ownerMap.delete(owner)
+      if (ownerMap.size === 0) claimMap?.delete(claimId)
+    } else {
+      return
+    }
+
+    ownerMap = claimMap?.get(claimId)
+    if (!ownerMap) {
+      delete metaMap[claimId]
+      return
+    }
+
+    let aggregate: ServerReferenceMeta | undefined
+    const exportOwners = new Map<string, string>()
+    for (const [claimOwner, environmentMap] of ownerMap) {
+      for (const claim of environmentMap.values()) {
+        if (!aggregate) {
+          aggregate = {
+            importId: claim.importId,
+            referenceKey: claim.referenceKey,
+            exportNames: [],
+          }
+        } else if (
+          aggregate.importId !== claim.importId ||
+          aggregate.referenceKey !== claim.referenceKey
+        ) {
+          throw new Error(
+            `[vite-rsc] conflicting server reference identity for '${claimId}'`,
+          )
+        }
+        for (const name of claim.exportNames) {
+          const existingOwner = exportOwners.get(name)
+          if (existingOwner && existingOwner !== claimOwner) {
+            throw new Error(
+              `[vite-rsc] server reference '${claim.referenceKey}#${name}' is claimed by both '${existingOwner}' and '${claimOwner}'`,
+            )
+          }
+          exportOwners.set(name, claimOwner)
+        }
+      }
+    }
+    assert(aggregate)
+    aggregate.exportNames = [...exportOwners.keys()].sort()
+    metaMap[claimId] = aggregate
+  }
+
+  getServerReferenceMeta(): ServerReferenceMeta[] {
+    return Object.values(serverReferenceMetaMaps.get(this) ?? {})
+  }
+
+  clearServerReferenceClaims(owner: string, id: string): void {
+    const claimId =
+      this.config.command !== 'build' && id.includes('/node_modules/')
+        ? cleanUrl(id)
+        : id
+    const environmentNames = [
+      ...(serverReferenceClaimMaps
+        .get(this)
+        ?.get(claimId)
+        ?.get(owner)
+        ?.keys() ?? []),
+    ]
+    for (const environmentName of environmentNames) {
+      this.replaceServerReferenceClaim(owner, environmentName, id, undefined)
+    }
   }
 
   toRelativeId(id: string): string {
@@ -362,9 +506,9 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              let meta = Object.values(manager.serverReferenceMetaMap).find(
-                (meta) => meta.referenceKey === parsed.id,
-              )
+              let meta = manager
+                .getServerReferenceMeta()
+                .find((meta) => meta.referenceKey === parsed.id)
               if (!meta) {
                 // Server references decoded by `createFromReadableStream` with
                 // `preserveServerReferences` can reach action loading without their
@@ -383,9 +527,9 @@ export function vitePluginRscMinimal(
                     await this.environment.transformRequest(parsed.id)
                   }
                 } catch {}
-                meta = Object.values(manager.serverReferenceMetaMap).find(
-                  (meta) => meta.referenceKey === parsed.id,
-                )
+                meta = manager
+                  .getServerReferenceMeta()
+                  .find((meta) => meta.referenceKey === parsed.id)
               }
               if (meta) {
                 return `export {}`
@@ -1996,18 +2140,32 @@ function vitePluginUseServer(
     useServerPluginOptions.environment?.browser ?? 'client'
 
   const debug = createDebug('vite-rsc:use-server')
+  const referenceOwner = 'rsc:use-server'
 
   return [
     {
       name: 'rsc:use-server',
       transform: {
         // TODO: cannot use filter because handler has cleanup side effect
-        // (`delete manager.serverReferenceMetaMap[id]`) that must run
+        // (removing the current environment's reference claim) that must run
         // even when directive is removed (HMR case)
         // filter: { code: 'use server' },
         async handler(code, id) {
+          const clearReferenceClaim = () =>
+            manager.replaceServerReferenceClaim(
+              referenceOwner,
+              this.environment.name,
+              id,
+              undefined,
+            )
+          const clearAllReferenceClaims = () =>
+            manager.clearServerReferenceClaims(referenceOwner, id)
           if (!code.includes('use server')) {
-            delete manager.serverReferenceMetaMap[id]
+            if (this.environment.name === serverEnvironmentName) {
+              clearAllReferenceClaims()
+            } else {
+              clearReferenceClaim()
+            }
             return
           }
           let ast = await parseAstAsync(code)
@@ -2024,9 +2182,9 @@ function vitePluginUseServer(
             }
           }
 
-          let normalizedId_: string | undefined
-          const getNormalizedId = () => {
-            if (!normalizedId_) {
+          let serverReference_: ServerReferenceMeta | undefined
+          const getServerReference = () => {
+            if (!serverReference_) {
               if (
                 this.environment.mode === 'dev' &&
                 id.includes('/node_modules/')
@@ -2037,18 +2195,13 @@ function vitePluginUseServer(
                 debug(
                   `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
                 )
-                id = cleanUrl(id)
               }
-              if (manager.config.command === 'build') {
-                normalizedId_ = hashString(manager.toRelativeId(id))
-              } else {
-                normalizedId_ = normalizeViteImportAnalysisUrl(
-                  manager.server.environments[serverEnvironmentName]!,
-                  id,
-                )
-              }
+              serverReference_ = manager.resolveServerReference(
+                id,
+                serverEnvironmentName,
+              )
             }
-            return normalizedId_
+            return serverReference_
           }
 
           if (this.environment.name === serverEnvironmentName) {
@@ -2061,7 +2214,7 @@ function vitePluginUseServer(
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
-                  getNormalizedId(),
+                  getServerReference().referenceKey,
                 )}, ${JSON.stringify(name)})`,
               rejectNonAsyncFunction: true,
               encode: enableEncryption
@@ -2075,15 +2228,22 @@ function vitePluginUseServer(
             })
             const output = result.output
             if (!result || !output.hasChanged()) {
-              delete manager.serverReferenceMetaMap[id]
+              clearAllReferenceClaims()
               return
             }
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
-              exportNames:
-                'names' in result ? result.names : result.exportNames,
-            }
+            // The RSC transform sees both module-level and inline directives,
+            // so its result supersedes stale discoveries from other environments.
+            clearAllReferenceClaims()
+            manager.replaceServerReferenceClaim(
+              referenceOwner,
+              this.environment.name,
+              id,
+              {
+                ...getServerReference(),
+                exportNames:
+                  'names' in result ? result.names : result.exportNames,
+              },
+            )
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
@@ -2102,7 +2262,7 @@ function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              delete manager.serverReferenceMetaMap[id]
+              clearReferenceClaim()
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
@@ -2113,7 +2273,7 @@ function vitePluginUseServer(
               code,
               runtime: (name) =>
                 `$$ReactClient.createServerReference(` +
-                `${JSON.stringify(getNormalizedId() + '#' + name)},` +
+                `${JSON.stringify(getServerReference().referenceKey + '#' + name)},` +
                 `$$ReactClient.callServer, ` +
                 `undefined, ` +
                 (this.environment.mode === 'dev'
@@ -2123,14 +2283,24 @@ function vitePluginUseServer(
               directive: 'use server',
               rejectNonAsyncFunction: true,
             })
-            if (!result) return
-            const output = result?.output
-            if (!output?.hasChanged()) return
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
-              exportNames: result.exportNames,
+            if (!result) {
+              clearReferenceClaim()
+              return
             }
+            const output = result?.output
+            if (!output?.hasChanged()) {
+              clearReferenceClaim()
+              return
+            }
+            manager.replaceServerReferenceClaim(
+              referenceOwner,
+              this.environment.name,
+              id,
+              {
+                ...getServerReference(),
+                exportNames: result.exportNames,
+              },
+            )
             const name =
               this.environment.name === browserEnvironmentName
                 ? 'browser'
@@ -2152,7 +2322,7 @@ function vitePluginUseServer(
         return { code: `export {}`, map: null }
       }
       let code = ''
-      for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+      for (const meta of manager.getServerReferenceMeta()) {
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
         const exports = meta.exportNames
