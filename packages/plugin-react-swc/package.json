@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react-swc",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "private": true,
   "description": "Speed up your Vite dev server with SWC",
   "keywords": [
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@rolldown/pluginutils": "^1.0.1",
-    "@swc/core": "^1.15.11"
+    "@swc/core": "^1.15.46"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

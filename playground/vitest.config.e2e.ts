@@ -6,7 +6,7 @@ const timeout = process.env.PWDEBUG ? Infinity : process.env.CI ? 20_000 : 5_000
 export default defineConfig({
   resolve: {
     alias: {
-      '~utils': resolve(__dirname, './test-utils'),
+      '~utils': resolve(import.meta.dirname, './test-utils'),
     },
   },
   test: {

@@ -4,7 +4,6 @@ import { join } from 'node:path'
 import { exactRegex } from '@rolldown/pluginutils'
 import {
   type JscTarget,
-  type Output,
   type ParserConfig,
   type ReactConfig,
   type Options as SWCOptions,
@@ -197,15 +196,15 @@ const react = (_options?: Options): Plugin[] => {
           },
         )
         if (!result) return
-        if (!refresh) return result
+        if (!refresh || !result.jsx) return result.output
 
         const newCode = addRefreshWrapper(
-          result.code,
+          result.output.code,
           '@vitejs/plugin-react-swc',
           id,
           options.reactRefreshHost,
         )
-        return { code: newCode ?? result.code, map: result.map }
+        return { code: newCode ?? result.output.code, map: result.output.map }
       },
     },
     options.plugins || options.useAtYourOwnRisk_mutateSwcOptions
@@ -219,8 +218,8 @@ const react = (_options?: Options): Plugin[] => {
           configResolved(config) {
             viteCacheRoot = config.cacheDir
           },
-          transform: (code, _id) =>
-            transformWithOptions(
+          async transform(code, _id) {
+            const result = await transformWithOptions(
               _id.split('?')[0],
               code,
               'esnext',
@@ -230,7 +229,9 @@ const react = (_options?: Options): Plugin[] => {
                 runtime: 'automatic',
                 importSource: options.jsxImportSource,
               },
-            ),
+            )
+            return result?.output
+          },
         }
       : {
           name: 'vite:react-swc',
@@ -293,7 +294,6 @@ const transformWithOptions = async (
             : undefined
   if (!parser) return
 
-  let result: Output
   try {
     const swcOptions: SWCOptions = {
       filename: id,
@@ -316,7 +316,13 @@ const transformWithOptions = async (
     if (options.useAtYourOwnRisk_mutateSwcOptions) {
       options.useAtYourOwnRisk_mutateSwcOptions(swcOptions)
     }
-    result = await transform(code, swcOptions)
+    const output = await transform(code, swcOptions)
+    return {
+      output,
+      jsx:
+        (parser.syntax === 'typescript' && parser.tsx) ||
+        (parser.syntax === 'ecmascript' && parser.jsx),
+    }
   } catch (e: any) {
     const message: string = e.message
     const fileStartIndex = message.indexOf('╭─[')
@@ -329,8 +335,6 @@ const transformWithOptions = async (
     }
     throw e
   }
-
-  return result
 }
 
 export default react

@@ -20,11 +20,11 @@ export async function setup({ provide }: TestProject): Promise<void> {
 
   provide('wsEndpoint', browserServer.wsEndpoint())
 
-  const tempDir = path.resolve(__dirname, '../playground-temp')
+  const tempDir = path.resolve(import.meta.dirname, '../playground-temp')
   await fs.ensureDir(tempDir)
   await fs.emptyDir(tempDir)
   await fs
-    .copy(path.resolve(__dirname, '../playground'), tempDir, {
+    .copy(path.resolve(import.meta.dirname, '../playground'), tempDir, {
       dereference: false,
       filter(file) {
         file = file.replace(/\\/g, '/')
@@ -45,6 +45,6 @@ export async function setup({ provide }: TestProject): Promise<void> {
 export async function teardown(): Promise<void> {
   await browserServer?.close()
   if (!process.env.VITE_PRESERVE_BUILD_ARTIFACTS) {
-    fs.removeSync(path.resolve(__dirname, '../playground-temp'))
+    fs.removeSync(path.resolve(import.meta.dirname, '../playground-temp'))
   }
 }

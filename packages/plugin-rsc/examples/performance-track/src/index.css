@@ -1,0 +1,39 @@
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  max-width: 42rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.suspense-box {
+  border: 2px solid #777;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.suspense-box h3,
+.suspense-box p {
+  margin: 0;
+}
+
+.suspense-box p {
+  margin-top: 0.25rem;
+}
+
+.suspense-box.outer {
+  background: #f3f6ff;
+  border-color: #5b70a9;
+}
+
+.suspense-box.inner {
+  background: #fff8e6;
+  border-color: #aa7b20;
+}

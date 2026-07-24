@@ -1,3 +1,30 @@
+## <small>[0.5.30](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.29...plugin-rsc%400.5.30) (2026-07-23)</small>
+### Bug Fixes
+
+* **rsc:** keep client HMR for client modules co-located with rsc-graph code ([#1248](https://github.com/vitejs/vite-plugin-react/issues/1248)) ([f0e27eb](https://github.com/vitejs/vite-plugin-react/commit/f0e27eb481f4c52870e3bea62408980b74660fb9))
+* **rsc:** pass root importer explicitly instead of `undefined` for `this.resolve` in `rsc:virtual-client-package`  ([#1295](https://github.com/vitejs/vite-plugin-react/issues/1295)) ([372a0e7](https://github.com/vitejs/vite-plugin-react/commit/372a0e7293a9887efc63f23636946eb640f606ad))
+
+### Documentation
+
+* **rsc:** clarify PPR render passes ([#1305](https://github.com/vitejs/vite-plugin-react/issues/1305)) ([a3a6cf7](https://github.com/vitejs/vite-plugin-react/commit/a3a6cf72b3af1fc5c7e6a85cd68a2f68be3b7879))
+
+### Miscellaneous Chores
+
+* **rsc:** add performance track example ([#1304](https://github.com/vitejs/vite-plugin-react/issues/1304)) ([3cad164](https://github.com/vitejs/vite-plugin-react/commit/3cad1646f44e357a24b1e1c2b3f2517bbb7e7e70))
+
+## <small>[0.5.29](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.28...plugin-rsc%400.5.29) (2026-07-22)</small>
+### Features
+
+* **rsc:** expose static API and add PPR example ([#1285](https://github.com/vitejs/vite-plugin-react/issues/1285)) ([8b785f6](https://github.com/vitejs/vite-plugin-react/commit/8b785f6e5c4658996f2707fde8fa85bb478cbc38))
+
+### Bug Fixes
+
+* **deps:** update react 19.2.8 ([#1298](https://github.com/vitejs/vite-plugin-react/issues/1298)) ([98b32d4](https://github.com/vitejs/vite-plugin-react/commit/98b32d47a3f2517d52e8a51d8e28ff2ed13678a2))
+
+### Miscellaneous Chores
+
+* **rsc:** rework testing guidance ([#1293](https://github.com/vitejs/vite-plugin-react/issues/1293)) ([5954659](https://github.com/vitejs/vite-plugin-react/commit/59546596a308f04d5fb1a29fd11b5d386be003ae))
+
 ## <small>[0.5.28](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.27...plugin-rsc%400.5.28) (2026-07-17)</small>
 ### Features
 
