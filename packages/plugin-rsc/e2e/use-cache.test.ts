@@ -20,6 +20,8 @@ function defineTests(f: Fixture) {
     await expect(locator.locator('span')).toHaveText(
       '(actionCount: 0, cacheFnCount: 0)',
     )
+
+    // The action runs on every submit, but the cached function runs once per argument.
     await locator.getByRole('button').click()
     await expect(locator.locator('span')).toHaveText(
       '(actionCount: 1, cacheFnCount: 1)',
@@ -69,6 +71,8 @@ function defineTests(f: Fixture) {
     const dynamic2 = await page
       .getByTestId('test-use-cache-component-dynamic')
       .textContent()
+
+    // The cached shell stays stable while temporary-reference children are refreshed.
     expect({ static2, dynamic2 }).toEqual({
       static2: expect.stringMatching(static1!),
       dynamic2: expect.not.stringMatching(dynamic1!),
@@ -83,6 +87,7 @@ function defineTests(f: Fixture) {
       '(actionCount: 0, innerFnCount: 0)',
     )
 
+    // Both the captured outer value and call-time inner argument form the cache key.
     // (x, y)
     await locator.getByPlaceholder('outer').fill('x')
     await locator.getByPlaceholder('inner').fill('y')
