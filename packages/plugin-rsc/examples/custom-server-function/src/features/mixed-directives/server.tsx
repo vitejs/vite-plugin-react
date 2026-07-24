@@ -5,14 +5,9 @@ import {
   incrementCustom,
   resetCounts,
 } from './actions.ts'
-import {
-  getComposedCount,
-  incrementComposed,
-} from './composed-action.ts'
 
-export async function MixedDirectives() {
+export function MixedDirectives() {
   const { builtinCount, customCount } = getCounts()
-  const composedCount = await getComposedCount()
   return (
     <>
       <form action={incrementBuiltin}>
@@ -22,9 +17,6 @@ export async function MixedDirectives() {
         <button>
           {customLabel}: {customCount}
         </button>
-      </form>
-      <form action={incrementComposed}>
-        <button>Composed: {composedCount}</button>
       </form>
       <form action={resetCounts}>
         <button>Reset</button>
