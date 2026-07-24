@@ -1,6 +1,6 @@
 import { revalidateCache } from './framework/use-cache-runtime'
 
-export function Root() {
+export function Root(_props: { url: URL }) {
   return (
     <html>
       <head>
