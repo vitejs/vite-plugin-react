@@ -12,7 +12,7 @@ export type ServerReferenceMeta = {
 
 // TODO: probably some default map trick or some util would make code trivial for human.
 type ServerReferenceClaimMap = Map<
-  // normalized module ID
+  // normalized import ID
   string,
   Map<
     // claim owner
@@ -23,16 +23,13 @@ type ServerReferenceClaimMap = Map<
 
 export class ServerReferencesManager {
   private claimMap: ServerReferenceClaimMap = new Map()
+  // todo: nit. this Map too?
   private metaMap: Record<string, ServerReferenceMeta> = {}
 
   constructor(private manager: RscPluginManager) {}
 
   resolve(id: string, serverEnvironmentName: string): ServerReferenceMeta {
-    // TODO: normalizeId?
-    const importId =
-      this.manager.config.command !== 'build' && id.includes('/node_modules/')
-        ? cleanUrl(id)
-        : id
+    const importId = this.normalizeImportId(id)
     const referenceKey =
       this.manager.config.command === 'build'
         ? hashString(this.manager.toRelativeId(importId))
@@ -48,8 +45,8 @@ export class ServerReferencesManager {
     id: string,
     meta: ServerReferenceMeta | undefined,
   ): void {
-    const claimId = this.normalizeId(id)
-    let ownerMap = this.claimMap.get(claimId)
+    const importId = this.normalizeImportId(id)
+    let ownerMap = this.claimMap.get(importId)
     if (meta?.exportNames.length) {
       if (this.manager.config.command !== 'build' && ownerMap) {
         const identityChanged = [...ownerMap.values()].some(
@@ -58,18 +55,18 @@ export class ServerReferencesManager {
             claim.referenceKey !== meta.referenceKey,
         )
         if (identityChanged) {
-          this.claimMap.delete(claimId)
+          this.claimMap.delete(importId)
           ownerMap = undefined
         }
       }
       if (!ownerMap) {
         ownerMap = new Map()
-        this.claimMap.set(claimId, ownerMap)
+        this.claimMap.set(importId, ownerMap)
       }
       ownerMap.set(owner, meta)
     } else if (ownerMap) {
       ownerMap.delete(owner)
-      if (ownerMap.size === 0) this.claimMap.delete(claimId)
+      if (ownerMap.size === 0) this.claimMap.delete(importId)
     } else {
       return
     }
@@ -84,7 +81,7 @@ export class ServerReferencesManager {
     return Object.values(this.metaMap)
   }
 
-  private normalizeId(id: string): string {
+  private normalizeImportId(id: string): string {
     return this.manager.config.command !== 'build' &&
       id.includes('/node_modules/')
       ? cleanUrl(id)
@@ -96,15 +93,15 @@ function deriveMetaMap(
   claimMap: ServerReferenceClaimMap,
 ): Record<string, ServerReferenceMeta> {
   return Object.fromEntries(
-    [...claimMap].map(([claimId, claims]) => [
-      claimId,
-      aggregateClaims(claimId, claims),
+    [...claimMap].map(([importId, claims]) => [
+      importId,
+      aggregateClaims(importId, claims),
     ]),
   )
 }
 
 function aggregateClaims(
-  claimId: string,
+  importId: string,
   claims: Map<string, ServerReferenceMeta>,
 ): ServerReferenceMeta {
   let aggregate: ServerReferenceMeta | undefined
@@ -121,7 +118,7 @@ function aggregateClaims(
       aggregate.referenceKey !== claim.referenceKey
     ) {
       throw new Error(
-        `[vite-rsc] conflicting server reference identity for '${claimId}'`,
+        `[vite-rsc] conflicting server reference identity for '${importId}'`,
       )
     }
     for (const name of claim.exportNames) {
