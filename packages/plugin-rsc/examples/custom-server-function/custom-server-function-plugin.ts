@@ -8,22 +8,25 @@ import {
 import { parseAstAsync, type Plugin } from 'vite'
 
 const directive = 'use custom-server'
-const owner = 'example:use-custom-server'
+const pluginName = 'example:custom-server-function'
 
+// This intentionally mirrors the built-in "use server" pipeline through the
+// public integration APIs, but uses a separate directive and plugin name and
+// omits export-all expansion and action encryption.
 // TODO: Give the custom directive observable runtime semantics so ownership
 // swaps can assert the active registration path in addition to claim cleanup.
 export function customServerFunctionPlugin(): Plugin {
   let manager: NonNullable<ReturnType<typeof getPluginApi>>['manager']
 
   return {
-    name: 'example:custom-server-function',
+    name: pluginName,
     configResolved(config) {
       manager = getPluginApi(config)!.manager
     },
     async transform(code, id) {
       const environmentName = this.environment.name
       if (!code.includes(directive)) {
-        manager.serverReferences.deleteClaim(owner, id)
+        manager.serverReferences.deleteClaim(pluginName, id)
         return
       }
 
@@ -46,11 +49,11 @@ export function customServerFunctionPlugin(): Plugin {
               rejectNonAsyncFunction: true,
             })
         if (!result.output.hasChanged()) {
-          manager.serverReferences.deleteClaim(owner, id)
+          manager.serverReferences.deleteClaim(pluginName, id)
           return
         }
 
-        manager.serverReferences.replaceClaim(owner, {
+        manager.serverReferences.replaceClaim(pluginName, {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
@@ -78,11 +81,11 @@ export function customServerFunctionPlugin(): Plugin {
           `${JSON.stringify(name)})`,
       })
       if (!result?.output.hasChanged()) {
-        manager.serverReferences.deleteClaim(owner, id)
+        manager.serverReferences.deleteClaim(pluginName, id)
         return
       }
 
-      manager.serverReferences.replaceClaim(owner, {
+      manager.serverReferences.replaceClaim(pluginName, {
         ...reference,
         exportNames: result.exportNames,
       })
