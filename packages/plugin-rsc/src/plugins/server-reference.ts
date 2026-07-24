@@ -11,7 +11,7 @@ export type ServerReferenceMeta = {
 }
 
 type ServerReferenceClaimMap = DefaultMap<
-  // normalized import ID
+  // exact transform module ID
   string,
   Map<
     // claim owner
@@ -38,17 +38,16 @@ export class ServerReferencesManager {
     return { importId, referenceKey, exportNames: [] }
   }
 
-  replaceClaim(owner: string, meta: ServerReferenceMeta): void {
-    this.claimMap.get(meta.importId).set(owner, meta)
+  replaceClaim(owner: string, id: string, meta: ServerReferenceMeta): void {
+    this.claimMap.get(id).set(owner, meta)
     this.metaMap = deriveMetaMap(this.claimMap)
   }
 
   deleteClaim(owner: string, id: string): void {
-    const importId = this.normalizeImportId(id)
-    const ownerMap = this.claimMap.get(importId)
+    const ownerMap = this.claimMap.get(id)
     ownerMap.delete(owner)
     if (ownerMap.size === 0) {
-      this.claimMap.delete(importId)
+      this.claimMap.delete(id)
     }
     this.metaMap = deriveMetaMap(this.claimMap)
   }
@@ -70,8 +69,18 @@ export class ServerReferencesManager {
 function deriveMetaMap(
   claimMap: ServerReferenceClaimMap,
 ): Map<string, ServerReferenceMeta> {
+  const normalizedClaimMap = new DefaultMap<
+    string,
+    Map<string, ServerReferenceMeta>
+  >(() => new Map())
+  for (const claims of claimMap.values()) {
+    for (const [owner, claim] of claims) {
+      normalizedClaimMap.get(claim.importId).set(owner, claim)
+    }
+  }
+
   const metaMap = new Map<string, ServerReferenceMeta>()
-  for (const [importId, claims] of claimMap) {
+  for (const [importId, claims] of normalizedClaimMap) {
     metaMap.set(importId, aggregateClaims(importId, claims))
   }
   return metaMap

@@ -2066,7 +2066,7 @@ function vitePluginUseServer(
               manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
-            manager.serverReferences.replaceClaim(pluginName, {
+            manager.serverReferences.replaceClaim(pluginName, id, {
               ...getServerReference(),
               exportNames: result.referenceNames,
             })
@@ -2121,7 +2121,7 @@ function vitePluginUseServer(
               manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
-            manager.serverReferences.replaceClaim(pluginName, {
+            manager.serverReferences.replaceClaim(pluginName, id, {
               ...getServerReference(),
               exportNames: result.exportNames,
             })

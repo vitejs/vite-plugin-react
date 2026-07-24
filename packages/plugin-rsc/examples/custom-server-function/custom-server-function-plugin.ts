@@ -53,7 +53,7 @@ export function customServerFunctionPlugin(): Plugin {
           return
         }
 
-        manager.serverReferences.replaceClaim(pluginName, {
+        manager.serverReferences.replaceClaim(pluginName, id, {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
@@ -85,7 +85,7 @@ export function customServerFunctionPlugin(): Plugin {
         return
       }
 
-      manager.serverReferences.replaceClaim(pluginName, {
+      manager.serverReferences.replaceClaim(pluginName, id, {
         ...reference,
         exportNames: result.exportNames,
       })
