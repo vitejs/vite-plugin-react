@@ -1,0 +1,21 @@
+packages/plugin-rsc/e2e/custom-server-function.test.ts
+  s_e45ded8d829a30::t_4e2ffbac19b793 3,11-46
+packages/plugin-rsc/examples/custom-server-function/src/features/mixed-directives/actions.ts
+  s_e45ded8d829a30::t_dbee2563875d2b 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a7c6815626e00851efec9ffc701ac8b53c42e39a",
+  "prompts": {},
+  "sessions": {
+    "s_e45ded8d829a30": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06e4b2925ffesubD0l845oH50y",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
