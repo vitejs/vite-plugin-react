@@ -32,7 +32,8 @@ export type CallServerCallback = (
 // Best-effort latest RSC API types
 // https://github.com/wakujs/waku/blob/2ce74ee2381f6c0593b8246f33043434706889fe/packages/waku/src/lib/react-types.d.ts
 
-// https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
+// Current: https://github.com/facebook/react/blob/b740af2510de1e19fcb399abb862af26ff95ac80/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
+// React 19.2: https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
 export interface RenderToReadableStreamOptions {
   debugChannel?: DebugChannel
   environmentName?: string | (() => string)
@@ -42,12 +43,19 @@ export interface RenderToReadableStreamOptions {
   startTime?: number
   temporaryReferences?: ServerTemporaryReferenceSet
   onError?: (error: unknown) => void
+  onPostpone?: (reason: string) => void
+}
+
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L188-L196
+export interface PrerenderResult {
+  prelude: ReadableStream<Uint8Array>
 }
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
   callServer?: CallServerCallback
   debugChannel?: DebugChannel
+  encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
   replayConsoleLogs?: boolean
@@ -58,6 +66,7 @@ export interface CreateFromReadableStreamBrowserOptions {
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.js#L74-L87
 export interface CreateFromReadableStreamEdgeOptions {
   debugChannel?: DebugChannel
+  encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
   nonce?: string
@@ -76,6 +85,23 @@ export interface DecodeReplyOptions {
 export interface EncodeReplyOptions {
   temporaryReferences?: ClientTemporaryReferenceSet
   signal?: AbortSignal
+}
+
+// https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-client/src/ReactFlightReplyClient.js#L59-L62
+export type EncodeFormActionCallback = (
+  id: string,
+  // TODO: probably args can be non-array values, but keep this aligned with encode/decodeReply for now
+  args: Promise<unknown[]>,
+) => ReactCustomFormAction
+
+// https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/shared/ReactTypes.js#L153-L160
+export type ReactCustomFormAction = {
+  name?: string
+  action?: string
+  encType?: string
+  method?: string
+  target?: string
+  data?: FormData | null
 }
 
 // TODO: technically encode/decodeReply can serialize non-array values

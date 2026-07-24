@@ -25,9 +25,15 @@ npm create vite@latest -- --template rsc
 
 **Integration examples:**
 
-- [`./examples/basic`](./examples/basic) - Advanced RSC features and testing
-  - This is mainly used for e2e testing and includes various advanced RSC usages (e.g. `"use cache"` example).
+- [`./examples/basic`](./examples/basic) - Comprehensive showcase of standard RSC features and the primary E2E test fixture.
+- [`./examples/use-cache`](./examples/use-cache) - Minimal cache feature inspired by Next.js's `"use cache"`, built with generic transform and RSC runtime APIs.
+- [`./examples/custom-server-function`](./examples/custom-server-function) - Third-party Server Function directive integration using server reference claims.
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
+- [`./examples/ppr`](./examples/ppr) - Partial prerendering with a reusable static HTML shell and request-time RSC content.
+- [`./examples/no-ssr`](./examples/no-ssr) - RSC application without an SSR environment.
+- [`./examples/client-first`](./examples/client-first) - Experimental client-owned page that consumes RSC function results.
+- [`./examples/browser-mode`](./examples/browser-mode) - Advanced setup that runs both RSC and React client environments in the browser with custom module loading.
+- [`./examples/performance-track`](./examples/performance-track) - Minimal React Server Components performance track probe.
 - [`./examples/react-router`](./examples/react-router) - React Router RSC integration
   - Demonstrates how to integrate [experimental React Router RSC API](https://remix.run/blog/rsc-preview). React Router now provides [official RSC support](https://reactrouter.com/how-to/react-server-components), so it's recommended to follow React Router's official documentation for the latest integration.
 
@@ -444,14 +450,41 @@ export default defineConfig({
 
 ## RSC runtime (react-server-dom) API
 
-### `@vitejs/plugin-rsc/rsc`
+### `@vitejs/plugin-rsc/rsc/server`
 
-This module re-exports RSC runtime API provided by `react-server-dom/server.edge` and `react-server-dom/client.edge` such as:
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/server.edge` for use in the RSC environment:
 
 - `renderToReadableStream`: RSC serialization (React VDOM -> RSC stream)
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM). This is also available on rsc environment itself. For example, it allows saving serialized RSC and deserializing it for later use.
-- `decodeAction/decodeReply/decodeFormState/loadServerAction/createTemporaryReferenceSet`
-- `encodeReply/createClientTemporaryReferenceSet`
+- `decodeAction/decodeReply/decodeFormState/loadServerAction`
+- `registerClientReference/registerServerReference`
+- `createTemporaryReferenceSet`
+
+### `@vitejs/plugin-rsc/rsc/static`
+
+This module provides a Vite-integrated RSC runtime API based on
+`react-server-dom/static.edge` for use in the RSC environment:
+
+- `prerender`: static RSC serialization (React VDOM -> RSC stream)
+
+`prerender` supports the same Vite-specific `onClientReference` extension as
+`renderToReadableStream`.
+
+### `@vitejs/plugin-rsc/rsc/client`
+
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/client.edge` for use in the RSC environment:
+
+- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+- `encodeReply`
+- `createClientTemporaryReferenceSet`
+
+Together, these APIs allow a React VDOM to be serialized, saved as an RSC stream, and later deserialized within the same `rsc` environment.
+
+### `@vitejs/plugin-rsc/rsc`
+
+This module re-exports `@vitejs/plugin-rsc/rsc/server` and
+`@vitejs/plugin-rsc/rsc/client`.
 
 #### Vite-specific extension: `renderToReadableStream` (experimental)
 
@@ -479,17 +512,46 @@ function renderToReadableStream<T>(
 
 ### `@vitejs/plugin-rsc/ssr`
 
-This module re-exports RSC runtime API provided by `react-server-dom/client.edge`
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/client.edge` for use in the SSR environment:
 
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
+- `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
+- `encodeReply`: Serializes server function arguments
+- `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
 
 ### `@vitejs/plugin-rsc/browser`
 
-This module re-exports RSC runtime API provided by `react-server-dom/client.browser`
+This module provides Vite-integrated RSC runtime APIs based on
+`react-server-dom/client.browser` for use in the browser environment:
 
-- `createFromReadableStream`: RSC deserialization (RSC stream -> React VDOM)
-- `createFromFetch`: a robust way of `createFromReadableStream((await fetch("...")).body)`
-- `encodeReply/setServerCallback`: server function related...
+- `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
+- `createFromFetch`: Deserializes an RSC response from a fetch promise
+- `encodeReply`: Serializes server function arguments
+- `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
+- `setServerCallback`: Configures how server functions are called
+
+### Low-level runtime entry points
+
+The runtime APIs are exposed through two layers:
+
+- `@vitejs/plugin-rsc/rsc`, `@vitejs/plugin-rsc/ssr`, and
+  `@vitejs/plugin-rsc/browser` are the recommended entry points for application
+  and framework runtime code. They initialize the plugin's built-in module
+  loading using the manifests generated by Vite and re-export the corresponding
+  React runtime APIs described above.
+- `@vitejs/plugin-rsc/react/rsc`, `@vitejs/plugin-rsc/react/ssr`, and
+  `@vitejs/plugin-rsc/react/browser` are low-level runtime adapters. They are
+  used by code generated for `"use client"` and `"use server"`, and by custom
+  integrations that provide module loading through `setRequireModule` instead
+  of using the plugin's generated manifests.
+
+The two layers share the same module loader within an environment, which allows
+generated code to use `/react/*` after a top-level entry initializes the
+built-in loader. Application code should continue using the top-level entries,
+which re-export the same runtime APIs. Direct use of `/react/*` is only needed
+by custom integrations that install their own loaders, such as the
+[`examples/browser-mode`](./examples/browser-mode) example, which runs the RSC
+and React client environments in the browser.
 
 ## Tips
 
@@ -666,13 +728,6 @@ export function ServerComponent() {
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
-
-## Architecture Documentation
-
-For developers interested in the internal architecture:
-
-- **[docs/architecture.md](docs/architecture.md)** - Build pipeline, data flow, and key components
-- **[docs/bundler-comparison.md](docs/bundler-comparison.md)** - How different bundlers approach RSC
 
 ## Credits
 

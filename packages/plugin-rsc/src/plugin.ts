@@ -21,6 +21,7 @@ import {
   type ViteDevServer,
   defaultServerConditions,
   isCSSRequest,
+  isFileLoadingAllowed,
   normalizePath,
   parseAstAsync,
 } from 'vite'
@@ -39,6 +40,10 @@ import {
   withResolvedIdProxy,
 } from './plugins/resolved-id-proxy'
 import { scanBuildStripPlugin } from './plugins/scan'
+import {
+  ServerReferencesManager,
+  type ServerReferenceMeta,
+} from './plugins/server-reference'
 import {
   parseCssVirtual,
   toCssVirtual,
@@ -62,6 +67,7 @@ import {
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
+  slash,
 } from './plugins/vite-utils'
 import {
   type TransformWrapExportFilter,
@@ -90,14 +96,6 @@ type ClientReferenceMeta = {
   renderedExports: string[]
   serverChunk?: string
   groupChunkId?: string
-}
-
-type ServerReferenceMeta = {
-  importId: string
-  referenceKey: string
-  // TODO: tree shake unused server functions
-  exportNames: string[]
-  inlineExportNames?: string[]
 }
 
 type ScanBuildObserver = (
@@ -144,7 +142,7 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  serverReferenceMetaMap: Record<string, ServerReferenceMeta> = {}
+  serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
   scanBuildObservers: Set<ScanBuildObserver> = new Set()
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
@@ -364,10 +362,11 @@ export function vitePluginRscMinimal(
       apply: 'serve',
       load: {
         filter: { id: prefixRegex('\0virtual:vite-rsc/reference-validation?') },
-        handler(id, _options) {
+        async handler(id, _options) {
           if (id.startsWith('\0virtual:vite-rsc/reference-validation?')) {
             const parsed = parseReferenceValidationVirtual(id)
             assert(parsed)
+            assert(this.environment.mode === 'dev')
             if (parsed.type === 'client') {
               const meta = Object.values(manager.clientReferenceMetaMap).find(
                 (meta) => meta.referenceKey === parsed.id,
@@ -377,9 +376,27 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              const meta = Object.values(manager.serverReferenceMetaMap).find(
-                (meta) => meta.referenceKey === parsed.id,
-              )
+              let meta = manager.serverReferences.findByReferenceKey(parsed.id)
+              if (!meta) {
+                // Server references decoded by `createFromReadableStream` with
+                // `preserveServerReferences` can reach action loading without their
+                // modules entering the graph during replay. Transform the target on
+                // demand to populate metadata before validating its ID.
+                try {
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
+                  const resolved = await this.resolve(parsed.id)
+                  const id = resolved?.id ?? parsed.id
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L271-L282
+                  const allowed = isFileLoadingAllowed(
+                    manager.config,
+                    slash(cleanUrl(id)),
+                  )
+                  if (allowed) {
+                    await this.environment.transformRequest(parsed.id)
+                  }
+                } catch {}
+                meta = manager.serverReferences.findByReferenceKey(parsed.id)
+              }
               if (meta) {
                 return `export {}`
               }
@@ -591,6 +608,7 @@ export default function vitePluginRsc(
                   'react/jsx-runtime',
                   'react/jsx-dev-runtime',
                   `${reactServerDomPackageName}/server.edge`,
+                  `${reactServerDomPackageName}/static.edge`,
                   `${reactServerDomPackageName}/client.edge`,
                 ],
                 exclude: [PKG_NAME, ...optimizeDepsExclude],
@@ -844,14 +862,26 @@ export default function vitePluginRsc(
             const env = ctx.server.environments.rsc!
             const mod = env.moduleGraph.getModuleById(ctx.file)
             if (mod) {
+              // Unusually, the same source file can be live in the client graph
+              // while also present in the RSC graph without a "use client"
+              // boundary. For example, a client-first framework may extract an
+              // RSC function handler while treating a component in the same file
+              // as client code by convention. Refresh style/watch importers, but
+              // preserve normal client HMR in this case.
+              let hasNonCssImporter = false
               for (const clientMod of ctx.modules) {
                 for (const importer of clientMod.importers) {
-                  if (importer.id && isCSSRequest(importer.id)) {
+                  if (!importer.id) continue
+                  if (isCSSRequest(importer.id)) {
                     await this.environment.reloadModule(importer)
+                  } else {
+                    hasNonCssImporter = true
                   }
                 }
               }
-              return []
+              if (!hasNonCssImporter) {
+                return []
+              }
             }
           }
         }
@@ -1571,7 +1601,7 @@ function vitePluginUseClient(
             exportNames,
             renderedExports: [],
           }
-          const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+          const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
           output.prepend(`import * as $$ReactServer from "${importSource}";\n`)
           return { code: output.toString(), map: { mappings: '' } }
         },
@@ -1712,9 +1742,15 @@ function vitePluginUseClient(
               // transitive dependency reachable from `importer` but not installed
               // at the root (see #1247). In that case, skip virtualization and
               // let it fall back to referencing the fully resolved module id.
+              // Vite's resolver already treats an undefined importer as the project
+              // root, but other plugins may not, so pass the root importer explicitly.
+              const rootImporter = path.join(
+                this.environment.config.root,
+                'index.html',
+              )
               const resolvedAtRoot = await this.resolve(
                 source,
-                undefined,
+                rootImporter,
                 options,
               )
               if (!resolvedAtRoot || resolvedAtRoot.id !== resolved.id) {
@@ -1970,18 +2006,18 @@ function vitePluginUseServer(
     useServerPluginOptions.environment?.browser ?? 'client'
 
   const debug = createDebug('vite-rsc:use-server')
+  const pluginName = 'rsc:use-server'
 
   return [
     {
-      name: 'rsc:use-server',
+      name: pluginName,
       transform: {
         // TODO: cannot use filter because handler has cleanup side effect
-        // (`delete manager.serverReferenceMetaMap[id]`) that must run
-        // even when directive is removed (HMR case)
+        // that must run even when directive is removed (HMR case)
         // filter: { code: 'use server' },
         async handler(code, id) {
           if (!code.includes('use server')) {
-            delete manager.serverReferenceMetaMap[id]
+            manager.serverReferences.deleteClaim(pluginName, id)
             return
           }
           let ast = await parseAstAsync(code)
@@ -1998,9 +2034,9 @@ function vitePluginUseServer(
             }
           }
 
-          let normalizedId_: string | undefined
-          const getNormalizedId = () => {
-            if (!normalizedId_) {
+          let serverReference_: ServerReferenceMeta | undefined
+          const getServerReference = () => {
+            if (!serverReference_) {
               if (
                 this.environment.mode === 'dev' &&
                 id.includes('/node_modules/')
@@ -2011,18 +2047,13 @@ function vitePluginUseServer(
                 debug(
                   `internal server reference created through a package imported in ${this.environment.name} environment: ${id}`,
                 )
-                id = cleanUrl(id)
               }
-              if (manager.config.command === 'build') {
-                normalizedId_ = hashString(manager.toRelativeId(id))
-              } else {
-                normalizedId_ = normalizeViteImportAnalysisUrl(
-                  manager.server.environments[serverEnvironmentName]!,
-                  id,
-                )
-              }
+              serverReference_ = manager.serverReferences.resolve(
+                id,
+                serverEnvironmentName,
+              )
             }
-            return normalizedId_
+            return serverReference_
           }
 
           if (this.environment.name === serverEnvironmentName) {
@@ -2035,7 +2066,7 @@ function vitePluginUseServer(
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
-                  getNormalizedId(),
+                  getServerReference().referenceKey,
                 )}, ${JSON.stringify(name)})`,
               rejectNonAsyncFunction: true,
               encode: enableEncryption
@@ -2049,17 +2080,15 @@ function vitePluginUseServer(
             })
             const output = result.output
             if (!result || !output.hasChanged()) {
-              delete manager.serverReferenceMetaMap[id]
+              manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
-              exportNames:
-                'names' in result ? result.names : result.exportNames,
+            manager.serverReferences.replaceClaim(pluginName, id, {
+              ...getServerReference(),
+              exportNames: result.referenceNames,
               inlineExportNames: 'names' in result ? result.names : [],
-            }
-            const importSource = resolvePackage(`${PKG_NAME}/react/rsc`)
+            })
+            const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
               `import * as $$ReactServer from "${importSource}";\n`,
             )
@@ -2077,7 +2106,10 @@ function vitePluginUseServer(
             }
           } else {
             if (!hasDirective(ast.body, 'use server')) {
-              delete manager.serverReferenceMetaMap[id]
+              // TODO: Inline server functions entering a non-RSC graph are
+              // unsupported and should throw an explicit validation error.
+              // https://github.com/vitejs/vite-plugin-react/issues/883#issuecomment-5029243311
+              manager.serverReferences.deleteClaim(pluginName, id)
               return
             }
             const transformDirectiveProxyExport_ = withRollupError(
@@ -2088,7 +2120,7 @@ function vitePluginUseServer(
               code,
               runtime: (name) =>
                 `$$ReactClient.createServerReference(` +
-                `${JSON.stringify(getNormalizedId() + '#' + name)},` +
+                `${JSON.stringify(getServerReference().referenceKey + '#' + name)},` +
                 `$$ReactClient.callServer, ` +
                 `undefined, ` +
                 (this.environment.mode === 'dev'
@@ -2098,14 +2130,19 @@ function vitePluginUseServer(
               directive: 'use server',
               rejectNonAsyncFunction: true,
             })
-            if (!result) return
-            const output = result?.output
-            if (!output?.hasChanged()) return
-            manager.serverReferenceMetaMap[id] = {
-              importId: id,
-              referenceKey: getNormalizedId(),
-              exportNames: result.exportNames,
+            if (!result) {
+              manager.serverReferences.deleteClaim(pluginName, id)
+              return
             }
+            const output = result?.output
+            if (!output?.hasChanged()) {
+              manager.serverReferences.deleteClaim(pluginName, id)
+              return
+            }
+            manager.serverReferences.replaceClaim(pluginName, id, {
+              ...getServerReference(),
+              exportNames: result.exportNames,
+            })
             const name =
               this.environment.name === browserEnvironmentName
                 ? 'browser'
@@ -2127,7 +2164,7 @@ function vitePluginUseServer(
         return { code: `export {}`, map: null }
       }
       let code = ''
-      for (const meta of Object.values(manager.serverReferenceMetaMap)) {
+      for (const meta of manager.serverReferences.metaMap.values()) {
         const key = JSON.stringify(meta.referenceKey)
         const id = JSON.stringify(meta.importId)
         const exports = meta.exportNames

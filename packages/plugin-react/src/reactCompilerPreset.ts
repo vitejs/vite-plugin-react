@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import type {
   ReactCompilerBabelPluginOptions,
   RolldownBabelPreset,
@@ -10,7 +11,12 @@ export const reactCompilerPreset = (
   options: ReactCompilerBabelPluginOptions = {},
 ): RolldownBabelPreset => ({
   preset: () => ({
-    plugins: [['babel-plugin-react-compiler', options]],
+    plugins: [
+      [
+        fileURLToPath(import.meta.resolve('babel-plugin-react-compiler')),
+        options,
+      ],
+    ],
   }),
   rolldown: {
     filter: {

@@ -314,4 +314,166 @@ export default Page;
       "
     `)
   })
+
+  test('filtered exports are not validated or reported', async () => {
+    const input = `
+export const revalidate = 1;
+export default async function Page() {}
+`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: (name) => name !== 'revalidate',
+    })
+    expect(result.exportNames).toEqual(['default'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      let revalidate = 1;
+      async function Page() {}
+      export { revalidate };
+      ;
+      const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
+      export { $$wrap_Page as default };
+      "
+    `)
+  })
+
+  test('filtered default exports are not validated or reported', async () => {
+    const input = `export default 1;`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: () => false,
+    })
+    expect(result.exportNames).toEqual([])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "const $$default = 1;;
+      export { $$default as default };
+      "
+    `)
+  })
+
+  test('unknown identifier exports remain eligible for wrapping', async () => {
+    const input = `
+const cached = async () => 1;
+export default cached;
+`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      filter: (_name, meta) => meta.isFunction !== false,
+    })
+    expect(result.exportNames).toEqual(['default'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      const cached = async () => 1;
+      const $$default = cached;
+      ;
+      const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "default");
+      export { $$wrap_$$default as default };
+      "
+    `)
+  })
+
+  test('runtime export meta', async () => {
+    const examples: [input: string, expected: unknown[]][] = [
+      [`export function Fn() {}`, [{ isFunction: true, declName: 'Fn' }]],
+      [`export class Cls {}`, [{ isFunction: false, declName: 'Cls' }]],
+      [
+        `export const Arrow = () => {}`,
+        [{ isFunction: true, declName: 'Arrow' }],
+      ],
+      [
+        `export const FnExpression = function () {}`,
+        [{ isFunction: true, declName: 'FnExpression' }],
+      ],
+      [
+        `export const Literal = 1`,
+        [{ isFunction: false, declName: 'Literal' }],
+      ],
+      [
+        `export const ObjectValue = {}`,
+        [{ isFunction: false, declName: 'ObjectValue' }],
+      ],
+      [
+        `export const ArrayValue = []`,
+        [{ isFunction: false, declName: 'ArrayValue' }],
+      ],
+      [
+        `export const ClassValue = class {}`,
+        [{ isFunction: false, declName: 'ClassValue' }],
+      ],
+      [`export const Unknown = getValue()`, [{ declName: 'Unknown' }]],
+      [`export const { id } = getValue()`, [{ declName: 'id' }]],
+      [`export const [a, b] = []`, [{ declName: 'a' }, { declName: 'b' }]],
+      [
+        `export const MultiFn = () => {}, MultiValue = 1, MultiUnknown = getValue()`,
+        [
+          { isFunction: true, declName: 'MultiFn' },
+          { isFunction: false, declName: 'MultiValue' },
+          { declName: 'MultiUnknown' },
+        ],
+      ],
+      [
+        `export default function Page() {}`,
+        [
+          {
+            isFunction: true,
+            declName: 'Page',
+          },
+        ],
+      ],
+      [`export default function () {}`, [{ isFunction: true }]],
+      [
+        `export default class Page {}`,
+        [
+          {
+            isFunction: false,
+            declName: 'Page',
+          },
+        ],
+      ],
+      [`export default class {}`, [{ isFunction: false }]],
+      [
+        `export default () => {}`,
+        [
+          {
+            isFunction: true,
+          },
+        ],
+      ],
+      [
+        `export default 1`,
+        [
+          {
+            isFunction: false,
+          },
+        ],
+      ],
+      [
+        `const Page = () => {}; export default Page`,
+        [
+          {
+            defaultExportIdentifierName: 'Page',
+          },
+        ],
+      ],
+      [`const id = async () => {}; export { id }`, [{}]],
+      [`export { id } from './dep'`, [{}]],
+    ]
+
+    for (const [input, expected] of examples) {
+      const actual: unknown[] = []
+      const ast = await parseAstAsync(input)
+      transformWrapExport(input, ast, {
+        runtime(value, _name, meta) {
+          actual.push(meta)
+          return value
+        },
+      })
+      expect(actual).toEqual(expected)
+    }
+  })
 })

@@ -25,7 +25,7 @@ describe('server reference metadata', () => {
       plugins,
     })
 
-    const inlineMeta = Object.values(manager.serverReferenceMetaMap).find(
+    const inlineMeta = [...manager.serverReferences.metaMap.values()].find(
       (meta) => meta.importId.endsWith('/inline.js'),
     )
     expect(inlineMeta?.inlineExportNames).toEqual(inlineMeta?.exportNames)
@@ -33,7 +33,7 @@ describe('server reference metadata', () => {
       expect.stringMatching(/inlineAction$/),
     ])
 
-    const moduleMeta = Object.values(manager.serverReferenceMetaMap).find(
+    const moduleMeta = [...manager.serverReferences.metaMap.values()].find(
       (meta) => meta.importId.endsWith('/module.js'),
     )
     expect(moduleMeta).toMatchObject({
