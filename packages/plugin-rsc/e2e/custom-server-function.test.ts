@@ -31,5 +31,10 @@ function defineTest(f: ReturnType<typeof useFixture>) {
 
     await page.getByRole('button', { name: 'Custom: 0' }).click()
     await expect(page.getByRole('button', { name: 'Custom: 1' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'From client: 0' }).click()
+    await expect(
+      page.getByRole('button', { name: 'From client: 1' }),
+    ).toBeVisible()
   })
 }

@@ -1,7 +1,7 @@
-import { getCounts, incrementBuiltin, incrementCustom } from './actions.ts'
+import { ActionFromClient } from './features/action-from-client/client.tsx'
+import { MixedDirectives } from './features/mixed-directives/server.tsx'
 
 export function Root() {
-  const { builtinCount, customCount } = getCounts()
   return (
     <html lang="en">
       <head>
@@ -10,12 +10,8 @@ export function Root() {
         <title>Custom Server Function</title>
       </head>
       <body>
-        <form action={incrementBuiltin}>
-          <button>Built-in: {builtinCount}</button>
-        </form>
-        <form action={incrementCustom}>
-          <button>Custom: {customCount}</button>
-        </form>
+        <MixedDirectives />
+        <ActionFromClient />
       </body>
     </html>
   )
