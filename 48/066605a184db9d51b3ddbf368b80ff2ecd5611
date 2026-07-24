@@ -1,0 +1,23 @@
+packages/plugin-rsc/examples/basic/vite.config.ts
+  s_3333ba328ea1aa::t_05c2231a56c847 8
+packages/plugin-rsc/examples/use-cache/src/framework/entry.browser.tsx
+  s_3333ba328ea1aa::t_39986c9481b74a 1-46
+pnpm-lock.yaml
+  s_3333ba328ea1aa::t_6de62cb634b042 921-948
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "48066605a184db9d51b3ddbf368b80ff2ecd5611",
+  "prompts": {},
+  "sessions": {
+    "s_3333ba328ea1aa": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06dbc2f0dffeIDGW5HH6ATdiVZ",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
