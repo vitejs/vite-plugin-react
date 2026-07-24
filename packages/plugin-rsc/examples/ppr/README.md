@@ -35,7 +35,7 @@ The PPR-relevant shape in [`src/root.tsx`](./src/root.tsx) places cached and dyn
 | `CachedAsyncContent` | Waits 100 ms on a cache miss. The RSC prerender tracks that fill, materializes its Flight result, and reuses it in later renders.                                                                                           |
 | `DynamicContent`     | Calls `markDynamic()`. It returns a pending promise during prerender and `undefined` during a request render, so the request continues immediately into its request-time work.                                              |
 
-`createCachedComponent` gives this example the semantics of a small `"use cache"` runtime without requiring a compiler transform. Its argument and result serialization follows [`examples/basic/src/framework/use-cache-runtime.tsx`](../basic/src/framework/use-cache-runtime.tsx). Temporary references are important for `CachedLayout`: its cache key and bytes retain reference markers while the matching reference set supplies the concrete dynamic `children` on each invocation.
+`createCachedComponent` gives this example the semantics of a small `"use cache"` runtime without requiring a compiler transform. Its argument and result serialization follows [`examples/use-cache/src/framework/use-cache-runtime.tsx`](../use-cache/src/framework/use-cache-runtime.tsx). Temporary references are important for `CachedLayout`: its cache key and bytes retain reference markers while the matching reference set supplies the concrete dynamic `children` on each invocation.
 
 Cached work must not call `markDynamic()` directly. The hanging dynamic promise would also keep that cache fill pending forever. A production framework can detect an active cache scope and report this as invalid usage.
 
