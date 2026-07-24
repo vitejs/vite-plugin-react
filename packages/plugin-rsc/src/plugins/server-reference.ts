@@ -39,8 +39,8 @@ export class ServerReferencesManager {
     return { importId, referenceKey, exportNames: [] }
   }
 
-  replaceClaim(owner: string, id: string, meta: ServerReferenceMeta): void {
-    const importId = this.normalizeImportId(id)
+  replaceClaim(owner: string, meta: ServerReferenceMeta): void {
+    const importId = meta.importId
     let ownerMap = this.claimMap.get(importId)
     if (this.manager.config.command !== 'build' && ownerMap) {
       const identityChanged = [...ownerMap.values()].some(

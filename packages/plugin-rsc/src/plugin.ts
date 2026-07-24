@@ -2066,7 +2066,7 @@ function vitePluginUseServer(
               manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
-            manager.serverReferences.replaceClaim(referenceOwner, id, {
+            manager.serverReferences.replaceClaim(referenceOwner, {
               ...getServerReference(),
               exportNames:
                 'names' in result ? result.names : result.exportNames,
@@ -2122,7 +2122,7 @@ function vitePluginUseServer(
               manager.serverReferences.deleteClaim(referenceOwner, id)
               return
             }
-            manager.serverReferences.replaceClaim(referenceOwner, id, {
+            manager.serverReferences.replaceClaim(referenceOwner, {
               ...getServerReference(),
               exportNames: result.exportNames,
             })
