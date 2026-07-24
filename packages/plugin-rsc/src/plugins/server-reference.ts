@@ -8,6 +8,7 @@ export type ServerReferenceMeta = {
   referenceKey: string
   // TODO: tree shake unused server functions
   exportNames: string[]
+  inlineExportNames?: string[]
 }
 
 type ServerReferenceClaimMap = DefaultMap<
@@ -100,6 +101,7 @@ function aggregateClaims(
         importId: claim.importId,
         referenceKey: claim.referenceKey,
         exportNames: [],
+        inlineExportNames: [],
       }
     } else if (
       aggregate.importId !== claim.importId ||
@@ -121,6 +123,11 @@ function aggregateClaims(
   }
   assert(aggregate)
   aggregate.exportNames = [...exportOwners.keys()].sort()
+  aggregate.inlineExportNames = [
+    ...new Set(
+      [...claims.values()].flatMap((claim) => claim.inlineExportNames ?? []),
+    ),
+  ].sort()
   return aggregate
 }
 
