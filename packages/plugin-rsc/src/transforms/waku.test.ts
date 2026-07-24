@@ -58,10 +58,16 @@ export default function App() {
 
   test('normalizes server reference names', async () => {
     const inputs = [
-      [`'use server'; export async function action() {}`, ['action']],
+      [
+        `'use server'; export async function action() {}`,
+        { exportNames: ['action'], referenceNames: ['action'] },
+      ],
       [
         `export function App() { return async function action() { 'use server' } }`,
-        ['$$hoist_0_anonymous_server_function'],
+        {
+          names: ['$$hoist_0_anonymous_server_function'],
+          referenceNames: ['$$hoist_0_anonymous_server_function'],
+        },
       ],
     ] as const
 
@@ -70,7 +76,7 @@ export default function App() {
       const result = transformServerActionServer(input, ast, {
         runtime: (value) => value,
       })
-      expect(result.referenceNames).toEqual(expected)
+      expect(result).toMatchObject(expected)
     }
   })
 
