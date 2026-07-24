@@ -175,7 +175,7 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @default { enviornmentName: "rsc", entryName: "index" } */
+  /** @default { environmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
         environmentName: string

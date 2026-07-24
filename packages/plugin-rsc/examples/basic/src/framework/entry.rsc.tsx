@@ -13,7 +13,7 @@ import { parseRenderRequest } from './request.tsx'
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
 export type RscPayload = {
-  // this demo renders/serializes/deserizlies entire root html element
+  // this demo renders/serializes/deserializes the entire root HTML element
   // but this mechanism can be changed to render/fetch different parts of components
   // based on your own route conventions.
   root: React.ReactNode
