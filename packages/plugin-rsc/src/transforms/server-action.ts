@@ -35,10 +35,12 @@ export function transformServerActionServer(
   | {
       exportNames: string[]
       output: MagicString
+      referenceNames: string[]
     }
   | {
       output: MagicString
       names: string[]
+      referenceNames: string[]
     } {
   const useServerStatement =
     options.detectUseServerModule === false
@@ -57,31 +59,13 @@ export function transformServerActionServer(
       : undefined)
 
   // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
-  if (moduleDirective?.type === 'Literal') {
-    const result = transformWrapExport(input, ast, {
-      runtime: options.moduleRuntime ?? options.runtime,
-      filter: options.filter,
-      rejectNonAsyncFunction:
-        options.rejectNonAsyncModule ?? options.rejectNonAsyncFunction,
-    })
-    if (!options.preserveModuleDirective && options.moduleDirective) {
-      result.output.overwrite(
-        moduleDirective.start,
-        moduleDirective.end,
-        `/* ${JSON.stringify(moduleDirective.value)} */`,
-      )
-    }
-    return result
+  if (hasDirective(ast.body, 'use server')) {
+    const result = transformWrapExport(input, ast, options)
+    return { ...result, referenceNames: result.exportNames }
   }
-
-  return transformHoistInlineDirective(input, ast, {
-    runtime: options.inlineRuntime ?? options.runtime,
-    directive: options.directive ?? 'use server',
-    rejectNonAsyncFunction: options.rejectNonAsyncFunction,
-    encode: options.encode,
-    decode: options.decode,
-    stableName: options.stableName,
-    exportWrappedHoist: options.exportWrappedHoist,
-    rejectForbiddenExpressions: options.rejectForbiddenExpressions,
+  const result = transformHoistInlineDirective(input, ast, {
+    ...options,
+    directive: 'use server',
   })
+  return { ...result, referenceNames: result.names }
 }
