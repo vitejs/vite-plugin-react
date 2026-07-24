@@ -2081,8 +2081,7 @@ function vitePluginUseServer(
             manager.serverReferenceMetaMap[id] = {
               importId: id,
               referenceKey: getNormalizedId(),
-              exportNames:
-                'names' in result ? result.names : result.exportNames,
+              exportNames: result.referenceNames,
             }
             const importSource = resolvePackage(`${PKG_NAME}/react/rsc/server`)
             output.prepend(
