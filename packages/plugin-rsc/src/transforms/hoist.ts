@@ -8,6 +8,7 @@ import type {
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import { hashString } from '../plugins/utils'
 import { buildScopeTree, type ScopeTree } from './scope'
 
 export function transformHoistInlineDirective(
@@ -28,6 +29,7 @@ export function transformHoistInlineDirective(
     encode?: (value: string) => string
     decode?: (value: string) => string
     noExport?: boolean
+    stableName?: boolean
   },
 ): {
   output: MagicString
@@ -45,6 +47,7 @@ export function transformHoistInlineDirective(
 
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
+  const signatureCounts = new Map<string, number>()
 
   walk(ast, {
     enter(node, parent) {
@@ -92,8 +95,15 @@ export function transformHoistInlineDirective(
         }
 
         // append a new `FunctionDeclaration` at the end
+        let nameKey = String(names.length)
+        if (options.stableName) {
+          const signature = `${originalName}:${input.slice(node.start, node.end)}`
+          const signatureCount = signatureCounts.get(signature) ?? 0
+          signatureCounts.set(signature, signatureCount + 1)
+          nameKey = `${hashString(signature)}_${signatureCount}`
+        }
         const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+          `$$hoist_${nameKey}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
         output.update(
           node.start,

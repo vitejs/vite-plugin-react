@@ -90,6 +90,16 @@ describe(transformHoistInlineDirective, () => {
     return result.names
   }
 
+  async function testStableTransformNames(input: string) {
+    const ast = await parseAstAsync(input)
+    return transformHoistInlineDirective(input, ast, {
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      directive: 'use server',
+      stableName: true,
+    }).names
+  }
+
   it('none', async () => {
     const input = `
 const x = "x";
@@ -507,5 +517,47 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it('keeps hoist names stable across unrelated insertions', async () => {
+    const original = `
+async function action() { "use server"; return 1 }
+`
+    const withUnrelatedAction = `
+async function unrelated() { "use server"; return 0 }
+${original}
+`
+    const [originalName] = await testStableTransformNames(original)
+    const [, shiftedName] = await testStableTransformNames(withUnrelatedAction)
+    expect(shiftedName).toBe(originalName)
+    expect(originalName).toMatch(/^\$\$hoist_[a-f0-9]{12}_0_action$/)
+  })
+
+  it('changes stable hoist names when the function changes', async () => {
+    const [firstName] = await testStableTransformNames(
+      `async function action() { "use server"; return 1 }`,
+    )
+    const [secondName] = await testStableTransformNames(
+      `async function action() { "use server"; return 2 }`,
+    )
+    expect(secondName).not.toBe(firstName)
+  })
+
+  it('disambiguates duplicate stable hoist signatures', async () => {
+    const names = await testStableTransformNames(`
+const actions = [
+  async function() { "use server" },
+  async function() { "use server" },
+]
+`)
+    expect(names).toHaveLength(2)
+    expect(names[0]).toMatch(/_0_anonymous_server_function$/)
+    expect(names[1]).toMatch(/_1_anonymous_server_function$/)
+    expect(
+      names[1]!.replace(
+        '_1_anonymous_server_function',
+        '_0_anonymous_server_function',
+      ),
+    ).toBe(names[0])
   })
 })
