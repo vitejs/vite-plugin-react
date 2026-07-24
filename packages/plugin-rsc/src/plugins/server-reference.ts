@@ -76,6 +76,12 @@ export class ServerReferencesManager {
     this.replaceClaim(owner, id, undefined)
   }
 
+  findByReferenceKey(referenceKey: string): ServerReferenceMeta | undefined {
+    for (const meta of this.metaMap.values()) {
+      if (meta.referenceKey === referenceKey) return meta
+    }
+  }
+
   private normalizeImportId(id: string): string {
     return this.manager.config.command !== 'build' &&
       id.includes('/node_modules/')

@@ -359,9 +359,7 @@ export function vitePluginRscMinimal(
               }
             }
             if (parsed.type === 'server') {
-              let meta = [...manager.serverReferences.metaMap.values()].find(
-                (meta) => meta.referenceKey === parsed.id,
-              )
+              let meta = manager.serverReferences.findByReferenceKey(parsed.id)
               if (!meta) {
                 // Server references decoded by `createFromReadableStream` with
                 // `preserveServerReferences` can reach action loading without their
@@ -380,9 +378,7 @@ export function vitePluginRscMinimal(
                     await this.environment.transformRequest(parsed.id)
                   }
                 } catch {}
-                meta = [...manager.serverReferences.metaMap.values()].find(
-                  (meta) => meta.referenceKey === parsed.id,
-                )
+                meta = manager.serverReferences.findByReferenceKey(parsed.id)
               }
               if (meta) {
                 return `export {}`
