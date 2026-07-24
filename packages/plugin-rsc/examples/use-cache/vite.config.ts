@@ -6,7 +6,7 @@ import { defineConfig, parseAstAsync, type Plugin } from 'vite'
 export default defineConfig({
   plugins: [
     react(),
-    useCachePlugin(),
+    vitePluginUseCache(),
     rsc({
       entries: {
         client: './src/framework/entry.browser.tsx',
@@ -17,27 +17,29 @@ export default defineConfig({
   ],
 })
 
-function useCachePlugin(): Plugin {
-  return {
-    name: 'use-cache',
-    async transform(code) {
-      if (!code.includes('use cache')) return
-      const ast = await parseAstAsync(code)
-      // @ts-ignore for rolldown-vite CI estree/oxc mismatch
-      const result = transformHoistInlineDirective(code, ast, {
-        runtime: (value) => `__vite_rsc_cache(${value})`,
-        directive: 'use cache',
-        rejectNonAsyncFunction: true,
-        noExport: true,
-      })
-      if (!result.output.hasChanged()) return
-      result.output.prepend(
-        `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
-      )
-      return {
-        code: result.output.toString(),
-        map: result.output.generateMap({ hires: 'boundary' }),
-      }
+function vitePluginUseCache(): Plugin[] {
+  return [
+    {
+      name: 'use-cache',
+      async transform(code) {
+        if (!code.includes('use cache')) return
+        const ast = await parseAstAsync(code)
+        // @ts-ignore for rolldown-vite ci estree/oxc mismatch
+        const result = transformHoistInlineDirective(code, ast, {
+          runtime: (value) => `__vite_rsc_cache(${value})`,
+          directive: 'use cache',
+          rejectNonAsyncFunction: true,
+          noExport: true,
+        })
+        if (!result.output.hasChanged()) return
+        result.output.prepend(
+          `import __vite_rsc_cache from "/src/framework/use-cache-runtime";`,
+        )
+        return {
+          code: result.output.toString(),
+          map: result.output.generateMap({ hires: 'boundary' }),
+        }
+      },
     },
-  }
+  ]
 }

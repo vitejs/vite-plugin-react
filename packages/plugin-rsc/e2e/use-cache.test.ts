@@ -39,6 +39,7 @@ function defineTests(f: Fixture) {
       '(actionCount: 4, cacheFnCount: 2)',
     )
 
+    // revalidate cache
     await locator.getByRole('textbox').fill('revalidate')
     await locator.getByRole('button').click()
     await expect(locator.locator('span')).toHaveText(
@@ -82,17 +83,44 @@ function defineTests(f: Fixture) {
       '(actionCount: 0, innerFnCount: 0)',
     )
 
-    for (const [outer, inner, expected] of [
-      ['x', 'y', '(actionCount: 1, innerFnCount: 1)'],
-      ['x', 'y', '(actionCount: 2, innerFnCount: 1)'],
-      ['xx', 'y', '(actionCount: 3, innerFnCount: 2)'],
-      ['xx', 'y', '(actionCount: 4, innerFnCount: 2)'],
-      ['xx', 'yy', '(actionCount: 5, innerFnCount: 3)'],
-    ] as const) {
-      await locator.getByPlaceholder('outer').fill(outer)
-      await locator.getByPlaceholder('inner').fill(inner)
-      await locator.getByRole('button').click()
-      await expect(locator.locator('span')).toHaveText(expected)
-    }
+    // (x, y)
+    await locator.getByPlaceholder('outer').fill('x')
+    await locator.getByPlaceholder('inner').fill('y')
+    await locator.getByRole('button').click()
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 1, innerFnCount: 1)',
+    )
+
+    // (x, y)
+    await locator.getByPlaceholder('outer').fill('x')
+    await locator.getByPlaceholder('inner').fill('y')
+    await locator.getByRole('button').click()
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 2, innerFnCount: 1)',
+    )
+
+    // (xx, y)
+    await locator.getByPlaceholder('outer').fill('xx')
+    await locator.getByPlaceholder('inner').fill('y')
+    await locator.getByRole('button').click()
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 3, innerFnCount: 2)',
+    )
+
+    // (xx, y)
+    await locator.getByPlaceholder('outer').fill('xx')
+    await locator.getByPlaceholder('inner').fill('y')
+    await locator.getByRole('button').click()
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 4, innerFnCount: 2)',
+    )
+
+    // (xx, yy)
+    await locator.getByPlaceholder('outer').fill('xx')
+    await locator.getByPlaceholder('inner').fill('yy')
+    await locator.getByRole('button').click()
+    await expect(locator.locator('span')).toHaveText(
+      '(actionCount: 5, innerFnCount: 3)',
+    )
   })
 }

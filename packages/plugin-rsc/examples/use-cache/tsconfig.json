@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

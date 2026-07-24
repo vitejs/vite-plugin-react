@@ -1,15 +1,16 @@
 import {
   createClientTemporaryReferenceSet,
-  createFromReadableStream,
+  encodeReply,
   createTemporaryReferenceSet,
   decodeReply,
-  encodeReply,
   renderToReadableStream,
+  createFromReadableStream,
 } from '@vitejs/plugin-rsc/rsc'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
+
 const cachedFnMap = new WeakMap<Function, unknown>()
 const cachedFnCacheEntries = new WeakMap<
   Function,
@@ -29,21 +30,29 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     }
 
     // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
-    // Using `renderToReadableStream` here would serialize React elements such as
-    // children props, preventing the static shell + dynamic children pattern.
-    // https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
+    // NOTE: using `renderToReadableStream` here for arguments serialization would end up
+    // serializing react elements (e.g. children props), which causes
+    // those arguments to be included as a cache key and it doesn't achieve
+    // "use cache static shell + dynamic children props" pattern.
+    // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
     const encodedArguments = await encodeReply(args, {
       temporaryReferences: clientTemporaryReferences,
     })
     const serializedCacheKey = await replyToCacheKey(encodedArguments)
-    // Cache the stream promise to deduplicate concurrent async calls.
+
+    // cache `fn` result as stream
+    // (cache value is promise so that it dedupes concurrent async calls)
     const entryPromise = (cacheEntries[serializedCacheKey] ??= (async () => {
       const temporaryReferences = createTemporaryReferenceSet()
       const decodedArgs = await decodeReply(encodedArguments, {
         temporaryReferences,
       })
+
+      // run the original function
       const result = await fn(...decodedArgs)
+
+      // serialize result to a ReadableStream
       const stream = renderToReadableStream(result, {
         environmentName: 'Cache',
         temporaryReferences,
@@ -51,15 +60,18 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
       return new StreamCacher(stream)
     })())
 
-    // Deserialize a fresh branch of the cached stream for each invocation.
-    return createFromReadableStream((await entryPromise).get(), {
+    // deserialized cached stream
+    const stream = (await entryPromise).get()
+    const result = createFromReadableStream(stream, {
       environmentName: 'Cache',
       replayConsoleLogs: true,
       temporaryReferences: clientTemporaryReferences,
     })
+    return result
   }
 
   cachedFnMap.set(fn, cachedFn)
+
   return cachedFn
 }
 
@@ -68,11 +80,7 @@ export function revalidateCache(cachedFn: Function) {
 }
 
 class StreamCacher {
-  private stream: ReadableStream<Uint8Array>
-
-  constructor(stream: ReadableStream<Uint8Array>) {
-    this.stream = stream
-  }
+  constructor(private stream: ReadableStream<Uint8Array>) {}
   get(): ReadableStream<Uint8Array> {
     const [returnStream, savedStream] = this.stream.tee()
     this.stream = savedStream
@@ -81,7 +89,9 @@ class StreamCacher {
 }
 
 async function replyToCacheKey(reply: string | FormData) {
-  if (typeof reply === 'string') return reply
+  if (typeof reply === 'string') {
+    return reply
+  }
   const buffer = await crypto.subtle.digest(
     'SHA-256',
     await new Response(reply).arrayBuffer(),

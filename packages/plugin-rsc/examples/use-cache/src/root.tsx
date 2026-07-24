@@ -26,7 +26,9 @@ function TestUseCacheFn() {
         actionCount++
         const argument = formData.get('argument')
         await testFn(argument)
-        if (argument === 'revalidate') revalidateCache(testFn)
+        if (argument === 'revalidate') {
+          revalidateCache(testFn)
+        }
       }}
     >
       <button>test-use-cache-fn</button>
@@ -47,8 +49,9 @@ async function testFn(..._args: unknown[]) {
 }
 
 function TestUseCacheComponent() {
-  // Wrapping children in JSX keeps their concrete value out of the cache key,
-  // which allows the cached component to provide a static shell.
+  // NOTE: wrapping with `span` (or any jsx) is crucial because
+  // raw string `children` would get included as cache key
+  // and thus causes `TestComponent` to be evaluated in each render.
   return (
     <TestComponent>
       <span>{new Date().toISOString()}</span>
