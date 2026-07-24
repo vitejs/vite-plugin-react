@@ -1,11 +1,12 @@
 import { type CDPSession, expect, test } from '@playwright/test'
+import React from 'react'
 import { useFixture } from './fixture'
 
 test.describe('performance-track', () => {
-  // Server Components performance tracks are flaky and require a Chromium trace
-  // plus a React build that emits them (canary/experimental), so this is opt-in
-  // via `TEST_PERFORMANCE_TRACK=1` for local runs and is not exercised in CI.
-  test.skip(!process.env.TEST_PERFORMANCE_TRACK)
+  test.skip(
+    !process.env.TEST_PERFORMANCE_TRACK &&
+      !/canary|experimental/.test(React.version),
+  )
 
   const f = useFixture({ root: 'examples/performance-track', mode: 'dev' })
 
