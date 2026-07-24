@@ -92,6 +92,11 @@ function defineTest(f: ReturnType<typeof useFixture>) {
     await page.getByRole('button', { name: 'Custom: 0' }).click()
     await expect(page.getByRole('button', { name: 'Custom: 1' })).toBeVisible()
 
+    // This action composes file-level "use server" with inline
+    // "use custom-server" on the exported function.
+    await page.getByRole('button', { name: 'Composed: 0' }).click()
+    await expect(page.getByRole('button', { name: 'Composed: 1' })).toBeVisible()
+
     // This module is only imported by a Client Component, so its implementation
     // reaches the RSC build through the aggregated server reference manifest.
     await page.getByRole('button', { name: 'From client: 0' }).click()
@@ -104,5 +109,6 @@ function defineTest(f: ReturnType<typeof useFixture>) {
       page.getByRole('button', { name: 'Built-in: 0' }),
     ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Custom: 0' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Composed: 0' })).toBeVisible()
   }
 }

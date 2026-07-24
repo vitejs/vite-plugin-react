@@ -1,3 +1,5 @@
+import { resetComposedCount } from './composed-action.ts'
+
 let builtinCount = 0
 let customCount = 0
 
@@ -21,4 +23,5 @@ export async function resetCounts() {
   'use server'
   builtinCount = 0
   customCount = 0
+  await resetComposedCount()
 }
