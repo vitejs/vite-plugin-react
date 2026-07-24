@@ -38,7 +38,7 @@ function customServerFunction(): Plugin {
     },
     async transform(code, id) {
       if (this.environment.name !== 'rsc') {
-        manager.replaceServerReferenceClaim(
+        manager.serverReferences.replaceClaim(
           owner,
           this.environment.name,
           id,
@@ -47,11 +47,11 @@ function customServerFunction(): Plugin {
         return
       }
       if (!code.includes('use custom-server')) {
-        manager.clearServerReferenceClaims(owner, id)
+        manager.serverReferences.clearClaims(owner, id)
         return
       }
 
-      const reference = manager.resolveServerReference(id, 'rsc')
+      const reference = manager.serverReferences.resolve(id, 'rsc')
       const ast = (await parseAstAsync(code)) as unknown as Parameters<
         typeof transformHoistInlineDirective
       >[1]
@@ -62,12 +62,12 @@ function customServerFunction(): Plugin {
           `$$CustomReactServer.registerServerReference(${value}, ${JSON.stringify(reference.referenceKey)}, ${JSON.stringify(name)})`,
       })
       if (!result.output.hasChanged()) {
-        manager.clearServerReferenceClaims(owner, id)
+        manager.serverReferences.clearClaims(owner, id)
         return
       }
 
-      manager.clearServerReferenceClaims(owner, id)
-      manager.replaceServerReferenceClaim(owner, this.environment.name, id, {
+      manager.serverReferences.clearClaims(owner, id)
+      manager.serverReferences.replaceClaim(owner, this.environment.name, id, {
         ...reference,
         exportNames: result.names,
       })

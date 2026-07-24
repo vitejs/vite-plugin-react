@@ -216,7 +216,7 @@ function rscBrowserModePlugin(): Plugin[] {
             return `export default {}` // no-op during dev
           }
           let code = ''
-          for (const meta of manager.getServerReferenceMeta()) {
+          for (const meta of manager.serverReferences.getMeta()) {
             code += `${JSON.stringify(meta.referenceKey)}: () => import(${JSON.stringify(meta.importId)}),`
           }
           return `export default {${code}}`
