@@ -39,41 +39,35 @@ export class ServerReferencesManager {
     return { importId, referenceKey, exportNames: [] }
   }
 
-  replaceClaim(
-    owner: string,
-    id: string,
-    meta: ServerReferenceMeta | undefined,
-  ): void {
+  replaceClaim(owner: string, id: string, meta: ServerReferenceMeta): void {
     const importId = this.normalizeImportId(id)
     let ownerMap = this.claimMap.get(importId)
-    if (meta?.exportNames.length) {
-      if (this.manager.config.command !== 'build' && ownerMap) {
-        const identityChanged = [...ownerMap.values()].some(
-          (claim) =>
-            claim.importId === meta.importId &&
-            claim.referenceKey !== meta.referenceKey,
-        )
-        if (identityChanged) {
-          this.claimMap.delete(importId)
-          ownerMap = undefined
-        }
+    if (this.manager.config.command !== 'build' && ownerMap) {
+      const identityChanged = [...ownerMap.values()].some(
+        (claim) =>
+          claim.importId === meta.importId &&
+          claim.referenceKey !== meta.referenceKey,
+      )
+      if (identityChanged) {
+        this.claimMap.delete(importId)
+        ownerMap = undefined
       }
-      if (!ownerMap) {
-        ownerMap = new Map()
-        this.claimMap.set(importId, ownerMap)
-      }
-      ownerMap.set(owner, meta)
-    } else if (ownerMap) {
-      ownerMap.delete(owner)
-      if (ownerMap.size === 0) this.claimMap.delete(importId)
-    } else {
-      return
     }
+    if (!ownerMap) {
+      ownerMap = new Map()
+      this.claimMap.set(importId, ownerMap)
+    }
+    ownerMap.set(owner, meta)
     this.metaMap = deriveMetaMap(this.claimMap)
   }
 
   deleteClaim(owner: string, id: string): void {
-    this.replaceClaim(owner, id, undefined)
+    const importId = this.normalizeImportId(id)
+    const ownerMap = this.claimMap.get(importId)
+    if (!ownerMap) return
+    ownerMap.delete(owner)
+    if (ownerMap.size === 0) this.claimMap.delete(importId)
+    this.metaMap = deriveMetaMap(this.claimMap)
   }
 
   findByReferenceKey(referenceKey: string): ServerReferenceMeta | undefined {
