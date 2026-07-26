@@ -555,6 +555,48 @@ and React client environments in the browser.
 
 ## Tips
 
+### Stable client chunks
+
+You can use Rollup's `manualChunks` option to keep React and Vite runtime code in stable client chunks. This allows browsers to reuse these chunks when application code changes.
+
+```ts
+import { fileURLToPath } from 'node:url'
+import rsc from '@vitejs/plugin-rsc'
+import { defineConfig, normalizePath } from 'vite'
+
+const reactServerDom = normalizePath(
+  fileURLToPath(import.meta.resolve('@vitejs/plugin-rsc/react/browser')),
+)
+
+export default defineConfig({
+  plugins: [rsc()],
+  environments: {
+    client: {
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (
+                id.includes('/node_modules/react/') ||
+                id.includes('/node_modules/react-dom/') ||
+                id.includes(reactServerDom)
+              ) {
+                return 'lib-react'
+              }
+              if (id === '\0vite/preload-helper.js') {
+                return 'lib-vite'
+              }
+            },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+Use the functional form of `manualChunks` so the React Server Components runtime is included even when the CommonJS plugin adds a proxy suffix to its module ID, such as `?commonjs-es-import`.
+
 ### CSS Support
 
 The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
