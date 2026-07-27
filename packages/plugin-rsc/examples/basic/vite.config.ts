@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import rsc from '@vitejs/plugin-rsc'
+import * as vite from 'vite'
 import { type Plugin, type Rollup, defineConfig, normalizePath } from 'vite'
 
 export default defineConfig({
@@ -133,10 +134,15 @@ export default defineConfig({
           '@vitejs/plugin-rsc/react/browser',
         )
 
-        return {
-          environments: {
-            client: {
-              build: {
+        const isReactChunk = (id: string) =>
+          id.includes('node_modules/react/') ||
+          id.includes('node_modules/react-dom/') ||
+          id.includes(reactServerDom)
+        const isViteChunk = (id: string) => id === '\0vite/preload-helper.js'
+
+        const build =
+          'rolldownVersion' in vite
+            ? {
                 rolldownOptions: {
                   output: {
                     codeSplitting: {
@@ -145,20 +151,36 @@ export default defineConfig({
                           name: 'lib-react',
                           // use a function to handle commonjs plugin proxy modules
                           // e.g. `(id)?commonjs-es-import`
-                          test: (id) =>
-                            id.includes('node_modules/react/') ||
-                            id.includes('node_modules/react-dom/') ||
-                            id.includes(reactServerDom),
+                          test: isReactChunk,
                         },
                         {
                           name: 'lib-vite',
-                          test: (id) => id === '\0vite/preload-helper.js',
+                          test: isViteChunk,
                         },
                       ],
                     },
                   },
                 },
-              },
+              }
+            : {
+                rollupOptions: {
+                  output: {
+                    manualChunks(id: string) {
+                      if (isReactChunk(id)) {
+                        return 'lib-react'
+                      }
+                      if (isViteChunk(id)) {
+                        return 'lib-vite'
+                      }
+                    },
+                  },
+                },
+              }
+
+        return {
+          environments: {
+            client: {
+              build,
             },
           },
         }
