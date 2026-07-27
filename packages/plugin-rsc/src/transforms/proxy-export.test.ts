@@ -239,6 +239,24 @@ export { x as "my thing" }
   })
 
   test('keep', async () => {
+    // Waku must run its DCE before this transform. For example:
+    //
+    //   // user source
+    //   export const countAtom = allowServer(atom(local1));
+    //   export const MyClientComp = () => <div />;
+    //
+    //   // after Waku's DCE
+    //   export const countAtom = atom(local1);
+    //   export const MyClientComp = () => { throw new Error('...') };
+    //
+    //   // after this transform with `keep: true`
+    //   export const countAtom = $$proxy(atom(local1), "<id>", "countAtom");
+    //   export const MyClientComp = $$proxy(
+    //     () => { throw new Error('...') }, "<id>", "MyClientComp"
+    //   );
+    //
+    // The input below represents Waku's output. `keep` disables our normal DCE
+    // so its retained imports, dependencies, and export initializers survive.
     const input = `\
 "use client"
 import { atom } from 'jotai/vanilla';
