@@ -26,7 +26,7 @@ test('normalizes inline server reference names', async () => {
   )
 
   expect(result).toMatchObject({
-    names: ['$$hoist_0_anonymous_server_function'],
-    referenceNames: ['$$hoist_0_anonymous_server_function'],
+    names: ['$$hoist_0_action'],
+    referenceNames: ['$$hoist_0_action'],
   })
 })
