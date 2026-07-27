@@ -38,7 +38,7 @@ Use colocated unit tests for self-contained transforms and utilities.
 # Build packages
 pnpm dev # pnpm -C packages/plugin-rsc dev
 
-# Type check once
+# Type check
 pnpm -C packages/plugin-rsc tsc
 
 # Run unit tests
