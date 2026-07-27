@@ -4,7 +4,6 @@ import { waitForHydration } from './helper'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/client-package-resolution'
-  const json = (value: unknown) => JSON.stringify(value, null, 2)
 
   test.beforeAll(async () => {
     // Dependency and import graph:
@@ -20,6 +19,7 @@ test.describe(() => {
     // The plugin also probes v2's "./client" specifier from the app root. That
     // finds v1 and throws because v1 does not export "./client", so the plugin
     // must keep the fully resolved nested v2 module ID instead.
+    const json = (value: unknown) => JSON.stringify(value, null, 2)
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
