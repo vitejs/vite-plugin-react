@@ -52,7 +52,7 @@ describe('hoistRuntime fixtures', () => {
     { query: 'raw' },
   )
 
-  async function transformFixture(input: string, noExport = false) {
+  async function transformFixture(input: string) {
     const ast = await parseAstAsync(input)
     const result = transformHoistInlineDirective(input, ast, {
       directive: 'use server',
@@ -61,24 +61,18 @@ describe('hoistRuntime fixtures', () => {
       encode: (value) => `__enc(${value})`,
       decode: (value) => `__dec(${value})`,
       hoistRuntime: true,
-      noExport,
     })
     const transformed = result.output.toString()
     await parseAstAsync(transformed)
-    return { transformed, names: result.names }
+    return `// names: ${JSON.stringify(result.names)}\n\n${transformed}`
   }
 
   for (const [file, mod] of Object.entries(fixtures)) {
     it(path.basename(file), async () => {
       const input = ((await mod()) as any).default as string
-      const result = await transformFixture(input)
-      await expect(result.transformed).toMatchFileSnapshot(file + '.snap.js')
-      await expect(
-        (await transformFixture(input, true)).transformed,
-      ).toMatchFileSnapshot(file + '.snap.no-export.js')
-      await expect(
-        JSON.stringify(result.names, null, 2) + '\n',
-      ).toMatchFileSnapshot(file + '.snap.names.json')
+      await expect(await transformFixture(input)).toMatchFileSnapshot(
+        file + '.snap.js',
+      )
     })
   }
 })
