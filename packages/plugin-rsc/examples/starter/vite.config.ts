@@ -8,8 +8,9 @@ export default defineConfig({
       // `entries` option is only a shorthand for specifying each `rollupOptions.input` below
       // > entries: { rsc, ssr, client },
       //
-      // by default, the plugin setup request handler based on `default export` of `rsc` environment `rollupOptions.input.index`.
-      // This can be disabled when setting up own server handler e.g. `@cloudflare/vite-plugin`.
+      // By default, the plugin sets up a request handler based on the default export of
+      // the `rsc` environment's `rollupOptions.input.index`.
+      // This can be disabled when setting up your own server handler, e.g. `@cloudflare/vite-plugin`.
       // > serverHandler: false
     }),
 
