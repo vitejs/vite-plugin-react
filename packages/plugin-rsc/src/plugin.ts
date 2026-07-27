@@ -212,7 +212,8 @@ export type RscPluginOptions = {
   keepUseClientProxy?: boolean
 
   /**
-   * @deprecated Use `keepUseClientProxy` instead.
+   * @deprecated This option contains a typo. Use `keepUseClientProxy` instead.
+   * It will be removed in the next breaking release.
    */
   keepUseCientProxy?: boolean
 
