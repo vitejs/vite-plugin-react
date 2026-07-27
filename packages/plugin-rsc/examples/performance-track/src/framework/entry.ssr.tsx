@@ -12,7 +12,7 @@ export async function renderHTML(
 
   function SsrRoot() {
     payload ??= createFromReadableStream<RscPayload>(ssrStream)
-    return React.use(payload)
+    return React.use(payload).root
   }
 
   const bootstrapScriptContent =

@@ -23,7 +23,7 @@ async function main() {
     }, [])
 
     React.useEffect(() => listenNavigation(fetchRscPayload), [])
-    return payload
+    return payload.root
   }
 
   async function fetchRscPayload() {
