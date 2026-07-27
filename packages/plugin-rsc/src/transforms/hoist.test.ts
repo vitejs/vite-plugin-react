@@ -46,13 +46,49 @@ describe('fixtures', () => {
   }
 })
 
+describe('hoistRuntime fixtures', () => {
+  const fixtures = import.meta.glob(
+    ['./fixtures/hoist-runtime/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+
+  async function transformFixture(input: string, noExport = false) {
+    const ast = await parseAstAsync(input)
+    const result = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      encode: (value) => `__enc(${value})`,
+      decode: (value) => `__dec(${value})`,
+      hoistRuntime: true,
+      noExport,
+    })
+    const transformed = result.output.toString()
+    await parseAstAsync(transformed)
+    return { transformed, names: result.names }
+  }
+
+  for (const [file, mod] of Object.entries(fixtures)) {
+    it(path.basename(file), async () => {
+      const input = ((await mod()) as any).default as string
+      const result = await transformFixture(input)
+      await expect(result.transformed).toMatchFileSnapshot(file + '.snap.js')
+      await expect(
+        (await transformFixture(input, true)).transformed,
+      ).toMatchFileSnapshot(file + '.snap.no-export.js')
+      await expect(
+        JSON.stringify(result.names, null, 2) + '\n',
+      ).toMatchFileSnapshot(file + '.snap.names.json')
+    })
+  }
+})
+
 describe(transformHoistInlineDirective, () => {
   async function testTransform(
     input: string,
     options?: {
       encode?: boolean
       noExport?: boolean
-      hoistRuntime?: boolean
       directive?: string | RegExp
     },
   ) {
@@ -69,7 +105,6 @@ describe(transformHoistInlineDirective, () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
       noExport: options?.noExport,
-      hoistRuntime: options?.hoistRuntime,
     })
     if (!output.hasChanged()) {
       return
@@ -82,16 +117,12 @@ describe(transformHoistInlineDirective, () => {
     return transformed
   }
 
-  async function testTransformNames(
-    input: string,
-    options?: { hoistRuntime?: boolean },
-  ) {
+  async function testTransformNames(input: string) {
     const ast = await parseAstAsync(input)
     const result = transformHoistInlineDirective(input, ast, {
       runtime: (value, name) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
       directive: 'use server',
-      hoistRuntime: options?.hoistRuntime,
     })
     return result.names
   }
@@ -446,123 +477,6 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
-  })
-
-  it('hoistRuntime', async () => {
-    const input = `
-async function noCapture() {
-  "use server";
-}
-
-function Component() {
-  const value = "value";
-  async function capture() {
-    "use server";
-    return value;
-  }
-  return capture;
-}
-`
-    expect(await testTransform(input, { hoistRuntime: true, encode: true }))
-      .toMatchInlineSnapshot(`
-        "
-        export const $$hoist_0_noCapture = /* #__PURE__ */ $$register($$hoist_0_noCapture$$impl, "<id>", "$$hoist_0_noCapture");
-        export const $$hoist_1_capture = /* #__PURE__ */ $$register($$hoist_1_capture$$impl, "<id>", "$$hoist_1_capture");
-        const noCapture = $$hoist_0_noCapture;
-
-        function Component() {
-          const value = "value";
-          const capture = $$hoist_1_capture.bind(null, __enc([value]));
-          return capture;
-        }
-
-        ;async function $$hoist_0_noCapture$$impl() {
-          "use server";
-        };
-        /* #__PURE__ */ Object.defineProperty($$hoist_0_noCapture$$impl, "name", { value: "noCapture" });
-
-        ;async function $$hoist_1_capture$$impl($$hoist_encoded) {
-            const [value] = __dec($$hoist_encoded);
-        "use server";
-            return value;
-          };
-        /* #__PURE__ */ Object.defineProperty($$hoist_1_capture$$impl, "name", { value: "capture" });
-        "
-      `)
-
-    expect(await testTransformNames(input, { hoistRuntime: true }))
-      .toMatchInlineSnapshot(`
-      [
-        "$$hoist_0_noCapture",
-        "$$hoist_1_capture",
-      ]
-    `)
-  })
-
-  it('hoistRuntime with noExport', async () => {
-    const input = `
-export async function test() {
-  "use server";
-}
-`
-    expect(await testTransform(input, { hoistRuntime: true, noExport: true }))
-      .toMatchInlineSnapshot(`
-      "
-      const $$hoist_0_test = /* #__PURE__ */ $$register($$hoist_0_test$$impl, "<id>", "$$hoist_0_test");
-      export const test = $$hoist_0_test;
-
-      ;async function $$hoist_0_test$$impl() {
-        "use server";
-      };
-      /* #__PURE__ */ Object.defineProperty($$hoist_0_test$$impl, "name", { value: "test" });
-      "
-    `)
-  })
-
-  it('hoistRuntime preserves the directive and import prologue', async () => {
-    const input = `
-"custom directive";
-import "./setup";
-const initialized = setup();
-
-async function topLevel() {
-  "use server";
-}
-
-function Component() {
-  async function nested() {
-    "use server";
-  }
-  return nested;
-}
-`
-    expect(await testTransform(input, { hoistRuntime: true }))
-      .toMatchInlineSnapshot(`
-        "
-        "custom directive";
-        import "./setup";
-        export const $$hoist_0_topLevel = /* #__PURE__ */ $$register($$hoist_0_topLevel$$impl, "<id>", "$$hoist_0_topLevel");
-        export const $$hoist_1_nested = /* #__PURE__ */ $$register($$hoist_1_nested$$impl, "<id>", "$$hoist_1_nested");
-        const initialized = setup();
-
-        const topLevel = $$hoist_0_topLevel;
-
-        function Component() {
-          const nested = $$hoist_1_nested;
-          return nested;
-        }
-
-        ;async function $$hoist_0_topLevel$$impl() {
-          "use server";
-        };
-        /* #__PURE__ */ Object.defineProperty($$hoist_0_topLevel$$impl, "name", { value: "topLevel" });
-
-        ;async function $$hoist_1_nested$$impl() {
-            "use server";
-          };
-        /* #__PURE__ */ Object.defineProperty($$hoist_1_nested$$impl, "name", { value: "nested" });
-        "
-      `)
   })
 
   it('directive pattern', async () => {
