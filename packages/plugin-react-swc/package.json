@@ -33,13 +33,13 @@
     "@swc/core": "^1.15.46"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.13.3",
     "@vitejs/react-common": "workspace:*",
-    "fs-extra": "^11.3.6",
+    "fs-extra": "^11.4.0",
     "prettier": "^3.0.3",
-    "tsdown": "^0.22.7",
+    "tsdown": "^0.22.14",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
