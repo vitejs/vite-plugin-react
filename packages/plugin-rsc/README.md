@@ -27,6 +27,7 @@ npm create vite@latest -- --template rsc
 
 - [`./examples/basic`](./examples/basic) - Comprehensive showcase of standard RSC features and the primary E2E test fixture.
 - [`./examples/use-cache`](./examples/use-cache) - Minimal cache feature inspired by Next.js's `"use cache"`, built with generic transform and RSC runtime APIs.
+- [`./examples/use-cache-callable`](./examples/use-cache-callable) - Inline cache wrapper exported as a callable Server Function through a custom transform.
 - [`./examples/custom-server-function`](./examples/custom-server-function) - Third-party Server Function directive integration using server reference claims.
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/ppr`](./examples/ppr) - Partial prerendering with a reusable static HTML shell and request-time RSC content.

@@ -28,6 +28,12 @@ export function transformHoistInlineDirective(
     encode?: (value: string) => string
     decode?: (value: string) => string
     noExport?: boolean
+    /**
+     * Evaluate the runtime expression once during module initialization.
+     * The expression can reference imports and the hoisted implementation, but
+     * must not depend on other module-local initialization.
+     */
+    hoistRuntime?: boolean
   },
 ): {
   output: MagicString
@@ -45,15 +51,16 @@ export function transformHoistInlineDirective(
 
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
+  const runtimeHoists: string[] = []
 
   walk(ast, {
     enter(node, parent) {
-      if (
-        (node.type === 'FunctionExpression' ||
-          node.type === 'FunctionDeclaration' ||
-          node.type === 'ArrowFunctionExpression') &&
-        node.body.type === 'BlockStatement'
-      ) {
+      const isFunction =
+        node.type === 'FunctionExpression' ||
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'ArrowFunctionExpression'
+      if (isFunction) {
+        if (node.body.type !== 'BlockStatement') return
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
@@ -95,25 +102,36 @@ export function transformHoistInlineDirective(
         const newName =
           `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
+        const implementationName = options.hoistRuntime
+          ? `${newName}$$impl`
+          : newName
         output.update(
           node.start,
           node.body.start,
-          `\n;${options.noExport ? '' : 'export '}${
+          `\n;${options.noExport || options.hoistRuntime ? '' : 'export '}${
             node.async ? 'async ' : ''
-          }function${node.generator ? '*' : ''} ${newName}(${newParams}) `,
+          }function${node.generator ? '*' : ''} ${implementationName}(${newParams}) `,
         )
+        const runtimeCode = `/* #__PURE__ */ ${runtime(
+          implementationName,
+          newName,
+          { directiveMatch: match },
+        )}`
+        if (options.hoistRuntime) {
+          runtimeHoists.push(
+            `${options.noExport ? '' : 'export '}const ${newName} = ${runtimeCode};\n`,
+          )
+        }
         output.appendLeft(
           node.end,
-          `;\n/* #__PURE__ */ Object.defineProperty(${newName}, "name", { value: ${JSON.stringify(
+          `;\n/* #__PURE__ */ Object.defineProperty(${implementationName}, "name", { value: ${JSON.stringify(
             originalName,
           )} });\n`,
         )
         output.move(node.start, node.end, input.length)
 
         // replace original declartion with action register + bind
-        let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
-          directiveMatch: match,
-        })}`
+        let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
             ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
@@ -132,10 +150,33 @@ export function transformHoistInlineDirective(
     },
   })
 
+  if (runtimeHoists.length > 0) {
+    output.prependLeft(
+      getRuntimeHoistPosition(ast, input.length),
+      runtimeHoists.join(''),
+    )
+  }
+
   return {
     output,
     names,
   }
+}
+
+function getRuntimeHoistPosition(ast: Program, fallback: number): number {
+  let inDirectivePrologue = true
+  for (const statement of ast.body) {
+    const isDirective =
+      inDirectivePrologue &&
+      statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      typeof statement.expression.value === 'string'
+    if (isDirective) continue
+    inDirectivePrologue = false
+    if (statement.type === 'ImportDeclaration') continue
+    return statement.start
+  }
+  return fallback
 }
 
 const exactRegex = (s: string): RegExp =>
