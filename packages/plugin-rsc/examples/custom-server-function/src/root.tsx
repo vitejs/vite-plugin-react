@@ -1,4 +1,5 @@
 import { ActionFromClient } from './features/action-from-client/client.tsx'
+import { DirectiveComposition } from './features/directive-composition/server.tsx'
 import { MixedDirectives } from './features/mixed-directives/server.tsx'
 
 export function Root(_props: { url: URL }) {
@@ -11,6 +12,7 @@ export function Root(_props: { url: URL }) {
       </head>
       <body>
         <MixedDirectives />
+        <DirectiveComposition />
         <ActionFromClient />
       </body>
     </html>
