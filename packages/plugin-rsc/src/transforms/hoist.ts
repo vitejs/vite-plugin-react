@@ -10,6 +10,77 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree, type ScopeTree } from './scope'
 
+/**
+ * Turns an inline directive function into a module-level registered function.
+ * Conceptually:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   async function action(y) {
+ *     "use server"
+ *     return x + y
+ *   }
+ * }
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = __RUNTIME__($$hoist_0_action).bind(null, x)
+ * }
+ * export async function $$hoist_0_action(x, y) {
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * The generated export is `$$hoist_0_action`, so `names` contains
+ * `['$$hoist_0_action']` for this example.
+ *
+ * Here, `__RUNTIME__(...)` represents the registration expression returned by the
+ * `runtime` callback. When `encode` and `decode` are provided, the closure
+ * captures instead travel as one encoded bound argument:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = __RUNTIME__($$hoist_0_action).bind(
+ *     null,
+ *     __ENCODE__([x]),
+ *   )
+ * }
+ *
+ * export async function $$hoist_0_action($$hoist_encoded, y) {
+ *   const [x] = __DECODE__($$hoist_encoded)
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * In this second sketch, `__ENCODE__(...)` and `__DECODE__(...)` likewise
+ * represent the expressions returned by those code-generation callbacks.
+ *
+ * With `hoistRuntime`, the runtime result becomes the module-level binding and
+ * the moved function becomes its private implementation:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = $$hoist_0_action.bind(null, x)
+ * }
+ * export const $$hoist_0_action = __RUNTIME__($$hoist_0_action$$impl)
+ * async function $$hoist_0_action$$impl(x, y) {
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * `noExport` independently keeps `$$hoist_0_action` module-local when an
+ * integration needs module-scope runtime initialization without an export.
+ */
 export function transformHoistInlineDirective(
   input: string,
   ast: Program,
@@ -27,6 +98,7 @@ export function transformHoistInlineDirective(
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
     decode?: (value: string) => string
+    /** Keep generated hoisted declarations module-local instead of exporting them. */
     noExport?: boolean
     /**
      * Evaluate the runtime expression once during module initialization.
@@ -39,7 +111,8 @@ export function transformHoistInlineDirective(
   output: MagicString
   names: string[]
 } {
-  // ensure ending space so we can move node at the end without breaking magic-string
+  // MagicString needs an existing boundary at the move destination. The newline
+  // also keeps the first appended declaration separate from the original source.
   if (!input.endsWith('\n')) {
     input += '\n'
   }
@@ -49,18 +122,22 @@ export function transformHoistInlineDirective(
       ? exactRegex(options.directive)
       : options.directive
 
+  // Build the complete scope tree once so each hoisted function can distinguish
+  // closure captures from module bindings and globals, which remain in scope.
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
   const runtimeHoists: string[] = []
 
   walk(ast, {
     enter(node, parent) {
-      const isFunction =
-        node.type === 'FunctionExpression' ||
-        node.type === 'FunctionDeclaration' ||
-        node.type === 'ArrowFunctionExpression'
-      if (isFunction) {
-        if (node.body.type !== 'BlockStatement') return
+      if (
+        (node.type === 'FunctionExpression' ||
+          node.type === 'FunctionDeclaration' ||
+          node.type === 'ArrowFunctionExpression') &&
+        node.body.type === 'BlockStatement'
+      ) {
+        // Only transform functions whose block contains the requested
+        // directive. Other function shapes cannot contain directive prologues.
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
@@ -72,6 +149,9 @@ export function transformHoistInlineDirective(
           )
         }
 
+        // Capture the source-level name so the hoisted function can preserve it
+        // with Object.defineProperty below. Anonymous functions get a stable
+        // fallback for registration and diagnostics.
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
@@ -80,12 +160,17 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
+        // Convert closure captures into leading parameters of the hoisted
+        // function. At the original call site, registration below binds the
+        // corresponding values in the same order.
         const bindVars = getBindVars(node, scopeTree)
         let newParams = [
           ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
         ].join(', ')
         if (bindVars.length > 0 && options.decode) {
+          // Encoded captures travel as one bound argument, then are restored to
+          // the individual parameter names before the original body executes.
           newParams = [
             '$$hoist_encoded',
             ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -98,10 +183,14 @@ export function transformHoistInlineDirective(
           )
         }
 
-        // append a new `FunctionDeclaration` at the end
+        // Rewrite and hoist the original function range into its module-level form.
+        // These edits must happen before `.move()` (hoist) so they travel with the range.
         const newName =
           `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
+        // Hoisted runtimes need two module bindings: a private function for the
+        // original body and a canonical binding for the runtime result. The
+        // default path keeps the original single generated function binding.
         const implementationName = options.hoistRuntime
           ? `${newName}$$impl`
           : newName
@@ -130,7 +219,9 @@ export function transformHoistInlineDirective(
         )
         output.move(node.start, node.end, input.length)
 
-        // replace original declartion with action register + bind
+        // Replace the original function with either the hoisted runtime result
+        // or the runtime expression for its hoisted declaration. Bind closure
+        // captures to the prepended parameters (or one encoded parameter).
         let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
@@ -139,6 +230,8 @@ export function transformHoistInlineDirective(
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (declName) {
+          // A function declaration becomes a const declaration. For a default
+          // export, retain the export as a separate statement after that const.
           newCode = `const ${declName} = ${newCode};`
           if (parent?.type === 'ExportDefaultDeclaration') {
             output.remove(parent.start, node.start)
@@ -151,12 +244,18 @@ export function transformHoistInlineDirective(
   })
 
   if (runtimeHoists.length > 0) {
+    // Runtime results must exist before any transformed source site can read
+    // them. Keep the original directive and import prologue ahead of generated
+    // declarations, then initialize every runtime before user module code.
     output.prependLeft(
       getRuntimeHoistPosition(ast, input.length),
       runtimeHoists.join(''),
     )
   }
 
+  // Expose the canonical generated names. They identify the moved functions by
+  // default or the runtime result bindings under hoistRuntime. Both are exports
+  // unless noExport is set, so callers can also track them as runtime references.
   return {
     output,
     names,
@@ -164,6 +263,8 @@ export function transformHoistInlineDirective(
 }
 
 function getRuntimeHoistPosition(ast: Program, fallback: number): number {
+  // Preserve directives and imports at the beginning of the module. The first
+  // user statement is the earliest safe boundary for generated declarations.
   let inDirectivePrologue = true
   for (const statement of ast.body) {
     const isDirective =
