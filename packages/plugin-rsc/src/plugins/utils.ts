@@ -97,7 +97,7 @@ export function getFallbackRollupEntry(
   name: string
   source: string
 } {
-  const inputEntries = Object.entries(normalizeRollupOpitonsInput(input))
+  const inputEntries = Object.entries(normalizeRollupOptionsInput(input))
   if (inputEntries.length === 1) {
     const [name, source] = inputEntries[0]!
     return { name, source }
@@ -110,7 +110,7 @@ export function getFallbackRollupEntry(
 // normalize to object form
 // https://rollupjs.org/configuration-options/#input
 // https://rollupjs.org/configuration-options/#output-entryfilenames
-export function normalizeRollupOpitonsInput(
+export function normalizeRollupOptionsInput(
   input: Rollup.InputOptions['input'] = {},
 ): Record<string, string> {
   if (typeof input === 'string') {

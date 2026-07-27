@@ -9,7 +9,7 @@ import type { RscPluginManager } from '../plugin'
 import {
   createVirtualPlugin,
   normalizeRelativePath,
-  normalizeRollupOpitonsInput,
+  normalizeRollupOptionsInput,
 } from './utils'
 import { evalValue } from './vite-utils'
 
@@ -31,7 +31,7 @@ export function ensureEnvironmentImportsEntryFallback({
 }: ResolvedConfig): void {
   for (const [name, config] of Object.entries(environments)) {
     if (name === 'client') continue
-    const input = normalizeRollupOpitonsInput(
+    const input = normalizeRollupOptionsInput(
       config.build?.rollupOptions?.input,
     )
     if (Object.keys(input).length === 0) {
