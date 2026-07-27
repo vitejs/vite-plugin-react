@@ -557,7 +557,7 @@ and React client environments in the browser.
 
 ### Stable client chunks
 
-You can use Rollup's `manualChunks` option to keep React and Vite runtime code in stable client chunks. This allows browsers to reuse these chunks when application code changes.
+You can use Rolldown's `codeSplitting.groups` option to keep React and Vite runtime code in stable client chunks. This allows browsers to reuse these chunks when application code changes.
 
 ```ts
 import { fileURLToPath } from 'node:url'
@@ -573,19 +573,25 @@ export default defineConfig({
   environments: {
     client: {
       build: {
-        rollupOptions: {
+        rolldownOptions: {
           output: {
-            manualChunks(id) {
-              if (
-                id.includes('/node_modules/react/') ||
-                id.includes('/node_modules/react-dom/') ||
-                id.includes(reactServerDom)
-              ) {
-                return 'lib-react'
-              }
-              if (id === '\0vite/preload-helper.js') {
-                return 'lib-vite'
-              }
+            codeSplitting: {
+              groups: [
+                {
+                  name: 'lib-react',
+                  test(id) {
+                    return (
+                      id.includes('/node_modules/react/') ||
+                      id.includes('/node_modules/react-dom/') ||
+                      id.includes(reactServerDom)
+                    )
+                  },
+                },
+                {
+                  name: 'lib-vite',
+                  test: (id) => id === '\0vite/preload-helper.js',
+                },
+              ],
             },
           },
         },
@@ -595,7 +601,7 @@ export default defineConfig({
 })
 ```
 
-Use the functional form of `manualChunks` so the React Server Components runtime is included even when the CommonJS plugin adds a proxy suffix to its module ID, such as `?commonjs-es-import`.
+Use a function for the `lib-react` group test so the React Server Components runtime is included even when the CommonJS plugin adds a proxy suffix to its module ID, such as `?commonjs-es-import`.
 
 ### CSS Support
 

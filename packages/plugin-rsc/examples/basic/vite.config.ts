@@ -137,21 +137,24 @@ export default defineConfig({
           environments: {
             client: {
               build: {
-                rollupOptions: {
+                rolldownOptions: {
                   output: {
-                    manualChunks: (id) => {
-                      // need to use functional form to handle commonjs plugin proxy module
-                      // e.g. `(id)?commonjs-es-import`
-                      if (
-                        id.includes('node_modules/react/') ||
-                        id.includes('node_modules/react-dom/') ||
-                        id.includes(reactServerDom)
-                      ) {
-                        return 'lib-react'
-                      }
-                      if (id === '\0vite/preload-helper.js') {
-                        return 'lib-vite'
-                      }
+                    codeSplitting: {
+                      groups: [
+                        {
+                          name: 'lib-react',
+                          // use a function to handle commonjs plugin proxy modules
+                          // e.g. `(id)?commonjs-es-import`
+                          test: (id) =>
+                            id.includes('node_modules/react/') ||
+                            id.includes('node_modules/react-dom/') ||
+                            id.includes(reactServerDom),
+                        },
+                        {
+                          name: 'lib-vite',
+                          test: (id) => id === '\0vite/preload-helper.js',
+                        },
+                      ],
                     },
                   },
                 },
