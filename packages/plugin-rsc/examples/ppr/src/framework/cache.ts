@@ -35,7 +35,7 @@ export function createCachedComponent<Props extends object>(
   const componentId = String(nextComponentId++)
 
   // Cache serialization follows the existing use-cache runtime example in
-  // examples/basic/src/framework/use-cache-runtime.tsx.
+  // examples/use-cache/src/framework/use-cache-runtime.tsx.
   // https://github.com/vercel/next.js/pull/70435
   // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
@@ -58,7 +58,7 @@ export function createCachedComponent<Props extends object>(
           environmentName: 'Cache',
           temporaryReferences,
         })
-        // examples/basic's StreamCacher and Next.js keep this stream lazy. This
+        // examples/use-cache's StreamCacher and Next.js keep this stream lazy. This
         // demo materializes it so the entry promise also tracks cache-fill
         // completion without a separate readiness signal.
         // TODO: Follow up with a stream-native cache and a separate,
