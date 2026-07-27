@@ -4,8 +4,22 @@ import { waitForHydration } from './helper'
 
 test.describe(() => {
   const root = 'examples/e2e/temp/client-package-resolution'
+  const json = (value: unknown) => JSON.stringify(value, null, 2)
 
   test.beforeAll(async () => {
+    // Dependency and import graph:
+    //
+    // app
+    // |-- @vitejs/test-client-dep@1 (exports only its root)
+    // `-- @vitejs/test-server-dep
+    //     `-- @vitejs/test-client-dep@2 (exports "./client")
+    //
+    // root.tsx -> test-server-dep -> test-client-dep@2/client
+    //                                ^ resolves from the actual importer
+    //
+    // The plugin also probes v2's "./client" specifier from the app root. That
+    // finds v1 and throws because v1 does not export "./client", so the plugin
+    // must keep the fully resolved nested v2 module ID instead.
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
@@ -15,14 +29,14 @@ test.describe(() => {
             const packageJson = JSON.parse(source)
             packageJson.dependencies = {
               ...packageJson.dependencies,
-              '@vitejs/test-dep-root-conflict': '1.0.0',
-              '@vitejs/test-dep-server-with-root-conflict': '1.0.0',
+              '@vitejs/test-client-dep': '1.0.0',
+              '@vitejs/test-server-dep': '1.0.0',
             }
             return JSON.stringify(packageJson, null, 2) + '\n'
           },
         },
         'src/root.tsx': /* tsx */ `
-          import { TestServer } from '@vitejs/test-dep-server-with-root-conflict/server'
+          import { TestServer } from '@vitejs/test-server-dep/server'
 
           export function Root() {
             return (
@@ -34,57 +48,48 @@ test.describe(() => {
             )
           }
         `,
-        'node_modules/@vitejs/test-dep-root-conflict/package.json': /* json */ `
-          {
-            "name": "@vitejs/test-dep-root-conflict",
-            "version": "1.0.0",
-            "type": "module",
-            "exports": {
-              ".": "./index.js"
-            }
-          }
-        `,
-        'node_modules/@vitejs/test-dep-root-conflict/index.js': /* js */ `
-          export const root = true
-        `,
-        'node_modules/@vitejs/test-dep-server-with-root-conflict/package.json': /* json */ `
-          {
-            "name": "@vitejs/test-dep-server-with-root-conflict",
-            "version": "1.0.0",
-            "type": "module",
-            "exports": {
-              "./server": "./server.js"
-            },
-            "dependencies": {
-              "@vitejs/test-dep-root-conflict": "2.0.0"
-            },
-            "peerDependencies": {
-              "react": "*"
-            }
-          }
-        `,
-        'node_modules/@vitejs/test-dep-server-with-root-conflict/server.js': /* js */ `
-          import { TestClient } from '@vitejs/test-dep-root-conflict/client'
+        'node_modules/@vitejs/test-server-dep/package.json': json({
+          name: '@vitejs/test-server-dep',
+          version: '1.0.0',
+          type: 'module',
+          exports: {
+            './server': './server.js',
+          },
+          dependencies: {
+            '@vitejs/test-client-dep': '2.0.0',
+          },
+          peerDependencies: {
+            react: '*',
+          },
+        }),
+        'node_modules/@vitejs/test-server-dep/server.js': /* js */ `
+          import { TestClient } from '@vitejs/test-client-dep/client'
           import React from 'react'
 
           export function TestServer() {
             return React.createElement(TestClient)
           }
         `,
-        'node_modules/@vitejs/test-dep-server-with-root-conflict/node_modules/@vitejs/test-dep-root-conflict/package.json': /* json */ `
-          {
-            "name": "@vitejs/test-dep-root-conflict",
-            "version": "2.0.0",
-            "type": "module",
-            "exports": {
-              "./client": "./client.js"
+        'node_modules/@vitejs/test-client-dep/package.json': json({
+          name: '@vitejs/test-client-dep',
+          version: '1.0.0',
+          type: 'module',
+          exports: './index.js',
+        }),
+        'node_modules/@vitejs/test-client-dep/index.js': /* js */ ``,
+        'node_modules/@vitejs/test-server-dep/node_modules/@vitejs/test-client-dep/package.json':
+          json({
+            name: '@vitejs/test-client-dep',
+            version: '2.0.0',
+            type: 'module',
+            exports: {
+              './client': './client.js',
             },
-            "peerDependencies": {
-              "react": "*"
-            }
-          }
-        `,
-        'node_modules/@vitejs/test-dep-server-with-root-conflict/node_modules/@vitejs/test-dep-root-conflict/client.js': /* js */ `
+            peerDependencies: {
+              react: '*',
+            },
+          }),
+        'node_modules/@vitejs/test-server-dep/node_modules/@vitejs/test-client-dep/client.js': /* js */ `
           'use client'
 
           import React from 'react'
