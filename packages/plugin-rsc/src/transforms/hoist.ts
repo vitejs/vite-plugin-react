@@ -244,13 +244,8 @@ export function transformHoistInlineDirective(
   })
 
   if (runtimeHoists.length > 0) {
-    // Runtime results must exist before any transformed source site can read
-    // them. Keep the original directive and import prologue ahead of generated
-    // declarations, then initialize every runtime before user module code.
-    output.prependLeft(
-      getRuntimeHoistPosition(ast, input.length),
-      runtimeHoists.join(''),
-    )
+    // Define hoisted runtime wrappers after leading directives.
+    output.prependLeft(getRuntimeHoistPosition(ast), runtimeHoists.join(''))
   }
 
   // Expose the canonical generated names. They identify the moved functions by
@@ -262,22 +257,19 @@ export function transformHoistInlineDirective(
   }
 }
 
-function getRuntimeHoistPosition(ast: Program, fallback: number): number {
-  // Preserve directives and imports at the beginning of the module. The first
-  // user statement is the earliest safe boundary for generated declarations.
-  let inDirectivePrologue = true
+function getRuntimeHoistPosition(ast: Program): number {
+  // Preserve leading directives so directive-based transforms can
+  // still compose just in case.
   for (const statement of ast.body) {
     const isDirective =
-      inDirectivePrologue &&
       statement.type === 'ExpressionStatement' &&
       statement.expression.type === 'Literal' &&
       typeof statement.expression.value === 'string'
-    if (isDirective) continue
-    inDirectivePrologue = false
-    if (statement.type === 'ImportDeclaration') continue
-    return statement.start
+    if (!isDirective) {
+      return statement.start
+    }
   }
-  return fallback
+  return 0
 }
 
 const exactRegex = (s: string): RegExp =>

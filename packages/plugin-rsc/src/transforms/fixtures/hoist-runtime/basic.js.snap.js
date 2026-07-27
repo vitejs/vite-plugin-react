@@ -1,11 +1,11 @@
 // names: ["$$hoist_0_noCapture","$$hoist_1_capture","$$hoist_2_exported"]
 
 'custom directive'
-import './setup'
-
 export const $$hoist_0_noCapture = /* #__PURE__ */ $$register($$hoist_0_noCapture$$impl, "<id>", "$$hoist_0_noCapture");
 export const $$hoist_1_capture = /* #__PURE__ */ $$register($$hoist_1_capture$$impl, "<id>", "$$hoist_1_capture");
 export const $$hoist_2_exported = /* #__PURE__ */ $$register($$hoist_2_exported$$impl, "<id>", "$$hoist_2_exported");
+import './setup'
+
 const initialized = setup()
 
 const noCapture = $$hoist_0_noCapture;
