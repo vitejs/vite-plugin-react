@@ -22,5 +22,3 @@ pnpm install && pnpm build   # Initial setup (see CONTRIBUTING.md for details)
 pnpm dev                     # Watch mode development
 pnpm test                    # Run all tests
 ```
-
-For automated verification, use one-shot commands. Do not run `pnpm dev`, `tsc-dev`, or other watch commands unless the user explicitly asks for a persistent development process.
