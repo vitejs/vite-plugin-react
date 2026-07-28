@@ -14,7 +14,8 @@ on:
 
 jobs:
   main:
-    if: github.repository == 'vitejs/vite-plugin-react'
+    # Release PR titles become trigger commits for the publish workflow.
+    if: "${{ github.repository == 'vitejs/vite-plugin-react' && !startsWith(github.event.pull_request.title, 'release: ') }}"
     runs-on: ubuntu-latest
     name: Semantic Pull Request
     permissions:
