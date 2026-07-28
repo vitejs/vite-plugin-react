@@ -1,10 +1,14 @@
 'use client'
 
-import { commands } from './commands.js'
+import { commands } from './commands.tsx'
 
 export function ClientForm() {
   return (
-    <form action={commands.objectWrappedAction}>
+    <form
+      action={async () => {
+        await commands.objectWrappedAction()
+      }}
+    >
       <button data-testid="object-wrapped-action">
         Run object-wrapped action
       </button>

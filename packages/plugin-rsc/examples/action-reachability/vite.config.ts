@@ -3,17 +3,36 @@ import rsc, { getPluginApi, type PluginApi } from '@vitejs/plugin-rsc'
 import { defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
-  plugins: [
-    rsc({
-      entries: {
-        client: './src/framework/entry.browser.jsx',
-        rsc: './src/framework/entry.rsc.jsx',
-        ssr: './src/framework/entry.ssr.jsx',
+  plugins: [rsc(), react(), writeReachabilityPicture()],
+  environments: {
+    rsc: {
+      build: {
+        rollupOptions: {
+          input: {
+            index: './src/framework/entry.rsc.tsx',
+          },
+        },
       },
-    }),
-    react(),
-    writeReachabilityPicture(),
-  ],
+    },
+    ssr: {
+      build: {
+        rollupOptions: {
+          input: {
+            index: './src/framework/entry.ssr.tsx',
+          },
+        },
+      },
+    },
+    client: {
+      build: {
+        rollupOptions: {
+          input: {
+            index: './src/framework/entry.browser.tsx',
+          },
+        },
+      },
+    },
+  },
 })
 
 function writeReachabilityPicture(): Plugin {

@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": false,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
     "noEmit": true,
     "moduleResolution": "Bundler",
     "module": "ESNext",
@@ -9,6 +13,5 @@
     "lib": ["ESNext", "DOM"],
     "types": ["vite/client", "@vitejs/plugin-rsc/types"],
     "jsx": "react-jsx"
-  },
-  "include": ["src", "vite.config.ts"]
+  }
 }

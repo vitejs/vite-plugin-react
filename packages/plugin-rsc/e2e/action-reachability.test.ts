@@ -18,7 +18,7 @@ test.describe('build', () => {
       f.createEditor('dist/client/reference-reachability.json').read(),
     )
     const clientReference = reachability.find((value) =>
-      value.importId.endsWith('/src/client-form.jsx'),
+      value.importId.endsWith('/src/client-form.tsx'),
     )
     expect(clientReference?.serverReferenceIds).toEqual([
       expect.stringMatching(/#objectWrappedAction$/),
