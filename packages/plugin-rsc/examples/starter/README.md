@@ -20,7 +20,7 @@ See [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main
 - [`vite.config.ts`](./vite.config.ts)
   - `@vitejs/plugin-rsc/plugin`
 - [`./src/framework/entry.rsc.tsx`](./src/framework/entry.rsc.tsx)
-  - `@vitejs/plugin-rsc/rsc`
+  - `@vitejs/plugin-rsc/rsc/server`
   - `import.meta.viteRsc.loadModule`
 - [`./src/framework/entry.ssr.tsx`](./src/framework/entry.ssr.tsx)
   - `@vitejs/plugin-rsc/ssr`

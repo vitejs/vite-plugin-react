@@ -1,11 +1,13 @@
 import {
   createClientTemporaryReferenceSet,
+  createFromReadableStream,
   encodeReply,
+} from '@vitejs/plugin-rsc/rsc/client'
+import {
   createTemporaryReferenceSet,
   decodeReply,
   renderToReadableStream,
-  createFromReadableStream,
-} from '@vitejs/plugin-rsc/rsc'
+} from '@vitejs/plugin-rsc/rsc/server'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435

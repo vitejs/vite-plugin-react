@@ -1,7 +1,5 @@
-import {
-  createFromReadableStream,
-  renderToReadableStream,
-} from '@vitejs/plugin-rsc/rsc'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/rsc/client'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { testSerializationAction } from './action'
 import { TestSerializationClient } from './client'
 
