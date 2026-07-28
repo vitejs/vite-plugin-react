@@ -7,6 +7,8 @@ This document provides AI-agent-specific guidance for the React Server Component
 
 Before adding integration coverage, follow the test fixture guidance in [CONTRIBUTING.md](CONTRIBUTING.md#choosing-a-test-fixture).
 
+Before creating or changing a conventional RSC example, use [`examples/starter-extra/src/framework`](examples/starter-extra/src/framework) as the comment-light framework baseline. Keep framework code aligned unless the example requires a behavioral difference. The specialized architectures described in [CONTRIBUTING.md](CONTRIBUTING.md#framework-baseline) may diverge.
+
 ## Quick Reference for AI Agents
 
 ### Essential Commands
