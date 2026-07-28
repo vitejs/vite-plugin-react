@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/plugin.ts
+  s_f6364a0d883bef::t_374f78eb9c2d9a 1991,2065-2066,2139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5a2fd7519fa6cce09af04b8b5288ecb8d4a2ddc3",
+  "prompts": {},
+  "sessions": {
+    "s_f6364a0d883bef": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019edd01-80f0-7d31-b4d8-53e3ae5744bf",
+        "model": "gpt-5.5"
+      },
+      "human_author": "James <james@eli.cx>"
+    }
+  }
+}
