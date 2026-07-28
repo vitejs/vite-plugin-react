@@ -1,3 +1,8 @@
+## <small>[0.5.32](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.31...plugin-rsc%400.5.32) (2026-07-28)</small>
+### Bug Fixes
+
+* **rsc:** preserve server reference metadata compatibility ([#1340](https://github.com/vitejs/vite-plugin-react/issues/1340)) ([54f38e0](https://github.com/vitejs/vite-plugin-react/commit/54f38e0c471d6defbd9945e1cfbd96c53ff56107))
+
 ## <small>[0.5.31](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.30...plugin-rsc%400.5.31) (2026-07-28)</small>
 ### Features
 
