@@ -1,10 +1,8 @@
 import { existsSync } from 'node:fs'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import {
-  createFromReadableStream,
-  renderToReadableStream,
-} from '@vitejs/plugin-rsc/rsc'
+import { createFromReadableStream } from '@vitejs/plugin-rsc/rsc/client'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { actionState } from './action-state'
 
 export async function Root(props: { url: URL }) {

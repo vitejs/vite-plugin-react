@@ -1,11 +1,13 @@
 import {
   createClientTemporaryReferenceSet,
   createFromReadableStream,
+  encodeReply,
+} from '@vitejs/plugin-rsc/rsc/client'
+import {
   createTemporaryReferenceSet,
   decodeReply,
-  encodeReply,
   renderToReadableStream,
-} from '@vitejs/plugin-rsc/rsc'
+} from '@vitejs/plugin-rsc/rsc/server'
 import type React from 'react'
 import { trackPrerenderWork } from './prerender-context'
 import {

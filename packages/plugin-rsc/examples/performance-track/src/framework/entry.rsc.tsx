@@ -1,4 +1,4 @@
-import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import type { ReactNode } from 'react'
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.ts'
