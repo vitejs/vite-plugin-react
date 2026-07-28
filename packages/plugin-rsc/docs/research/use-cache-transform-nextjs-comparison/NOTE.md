@@ -3,19 +3,11 @@
 - Repo: git@github.com:vitejs/vite-plugin-react.git
 - Commit: 32611a28365435d81a513c559715411bdc8f127e
 - Branch: main
+- Worktree: /Users/hogawa/code/others/vite-plugin-react
 - Next.js repo: git@github.com:vercel/next.js.git
 - Next.js commit: 153bf8ac5fa00888ef5fbb2b65cac12f0942a44f
 - Next.js branch: canary
-
-## Published Research
-
-- [FINDINGS.md](./FINDINGS.md): completed first-pass transform comparison.
-- [FINDINGS-STABLE-CACHE-IDENTITY.md](./FINDINGS-STABLE-CACHE-IDENTITY.md): completed stable-identity follow-up.
-- [VINEXT-CONTEXT.md](./VINEXT-CONTEXT.md): completed Vinext compatibility context.
-- [SERVER-FUNCTION-EXTENSIBILITY.md](./SERVER-FUNCTION-EXTENSIBILITY.md): focused implementation analysis and API proposal.
-- [VINEXT-SERVER-REFERENCE-PRESERVATION.md](./VINEXT-SERVER-REFERENCE-PRESERVATION.md): completed cache-replay preservation analysis.
-
-Each document is a research snapshot tied to the repository commits listed in its header. Later implementation changes do not rewrite the historical observations unless a note explicitly says otherwise.
+- Next.js worktree: /Users/hogawa/code/others/next.js
 
 ## Goal
 
@@ -27,25 +19,25 @@ This note records the plan after a high-level skim. Its observations are prelimi
 
 ## Initial Code Map
 
-The demo Vite plugin detects source containing `use cache`, parses it, applies the generic inline-directive hoister, and injects the example cache runtime in [packages/plugin-rsc/examples/basic/vite.config.ts:338](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/examples/basic/vite.config.ts#L338).
+The demo Vite plugin detects source containing `use cache`, parses it, applies the generic inline-directive hoister, and injects the example cache runtime in [packages/plugin-rsc/examples/basic/vite.config.ts:338](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/examples/basic/vite.config.ts#L338).
 
-The reusable transform is [packages/plugin-rsc/src/transforms/hoist.ts:13](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/transforms/hoist.ts#L13). It finds directive-bearing functions, hoists them, gathers closure references, turns captured values into leading parameters, wraps the hoisted function with a supplied runtime expression, and binds captured values at the original declaration site.
+The reusable transform is [packages/plugin-rsc/src/transforms/hoist.ts:13](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/transforms/hoist.ts#L13). It finds directive-bearing functions, hoists them, gathers closure references, turns captured values into leading parameters, wraps the hoisted function with a supplied runtime expression, and binds captured values at the original declaration site.
 
-Relevant transform snapshots begin at [packages/plugin-rsc/src/transforms/hoist.test.ts:420](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/transforms/hoist.test.ts#L420). Existing coverage includes `noExport` and directive-pattern handling.
+Relevant transform snapshots begin at [packages/plugin-rsc/src/transforms/hoist.test.ts:420](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/transforms/hoist.test.ts#L420). Existing coverage includes `noExport` and directive-pattern handling.
 
-The demo runtime ABI consumer begins at [packages/plugin-rsc/examples/basic/src/framework/use-cache-runtime.tsx:20](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/examples/basic/src/framework/use-cache-runtime.tsx#L20). Inspect it only to establish what the generated wrapper passes to the runtime and which transform distinctions it can observe.
+The demo runtime ABI consumer begins at [packages/plugin-rsc/examples/basic/src/framework/use-cache-runtime.tsx:20](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/examples/basic/src/framework/use-cache-runtime.tsx#L20). Inspect it only to establish what the generated wrapper passes to the runtime and which transform distinctions it can observe.
 
-Representative demo behavior is in [packages/plugin-rsc/examples/basic/src/routes/use-cache/server.tsx:39](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/examples/basic/src/routes/use-cache/server.tsx#L39), covering a normal function, a component with dynamic children, and a closure.
+Representative demo behavior is in [packages/plugin-rsc/examples/basic/src/routes/use-cache/server.tsx:39](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/examples/basic/src/routes/use-cache/server.tsx#L39), covering a normal function, a component with dynamic children, and a closure.
 
-Next.js implements `"use cache"` as part of its SWC server-actions transform in [crates/next-custom-transforms/src/transforms/server_actions.rs:283](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L283).
+Next.js implements `"use cache"` as part of its SWC server-actions transform in [crates/next-custom-transforms/src/transforms/server_actions.rs:283](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L283).
 
-Runtime and registration imports are emitted around [crates/next-custom-transforms/src/transforms/server_actions.rs:2582](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L2582).
+Runtime and registration imports are emitted around [crates/next-custom-transforms/src/transforms/server_actions.rs:2582](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L2582).
 
-A representative nested closure output is [crates/next-custom-transforms/tests/fixture/server-actions/server-graph/40/output.js:1](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/tests/fixture/server-actions/server-graph/40/output.js#L1). It shows the emitted callable shape, generated reference ID, explicit inner function, closure-bound argument representation, and runtime call.
+A representative nested closure output is [crates/next-custom-transforms/tests/fixture/server-actions/server-graph/40/output.js:1](../../../../../code/others/next.js/crates/next-custom-transforms/tests/fixture/server-actions/server-graph/40/output.js#L1). It shows the emitted callable shape, generated reference ID, explicit inner function, closure-bound argument representation, and runtime call.
 
-A representative custom cache-kind output is [crates/next-custom-transforms/tests/fixture/server-actions/server-graph/38/output.js:1](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/tests/fixture/server-actions/server-graph/38/output.js#L1).
+A representative custom cache-kind output is [crates/next-custom-transforms/tests/fixture/server-actions/server-graph/38/output.js:1](../../../../../code/others/next.js/crates/next-custom-transforms/tests/fixture/server-actions/server-graph/38/output.js#L1).
 
-The Next.js runtime ABI consumer begins at [packages/next/src/server/use-cache/use-cache-wrapper.ts:1612](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1612). Its wider cache implementation is not part of the comparison unless a specific behavior depends on the transform call shape.
+The Next.js runtime ABI consumer begins at [packages/next/src/server/use-cache/use-cache-wrapper.ts:1612](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1612). Its wider cache implementation is not part of the comparison unless a specific behavior depends on the transform call shape.
 
 ## Preliminary Architectural Difference
 
@@ -58,10 +50,13 @@ The investigation should test the consequences of this representational differen
 ## Related Context
 
 - [FINDINGS.md](./FINDINGS.md) contains the completed first-pass comparison.
-- [FINDINGS-STABLE-CACHE-IDENTITY.md](./FINDINGS-STABLE-CACHE-IDENTITY.md) expands the generated-identity follow-up while keeping runtime cache policy secondary.
 - [VINEXT-CONTEXT.md](./VINEXT-CONTEXT.md) explains Vinext's compatibility target where `"use cache"` implicitly also has `"use server"` transport semantics, how it differs from the server-local demo model, and why it activates the cross-environment server-reference follow-up.
 - [SERVER-FUNCTION-EXTENSIBILITY.md](./SERVER-FUNCTION-EXTENSIBILITY.md) documents how Vinext #2156 uses the generalized #1246 transforms and proposes a framework-neutral server-reference registration API.
 - [VINEXT-SERVER-REFERENCE-PRESERVATION.md](./VINEXT-SERVER-REFERENCE-PRESERVATION.md) explains why plugin-rsc's opaque replay option is a Vinext implementation choice rather than a Next.js compatibility requirement.
+- [FINDINGS-MIXED-DIRECTIVE-COMPOSITION.md](./FINDINGS-MIXED-DIRECTIVE-COMPOSITION.md) shows why module-level defaults and inline custom-role overrides require shared classification rather than independently ordered transforms.
+- [FINDINGS-CACHE-SERVER-REFERENCE-TRANSPORT.md](./FINDINGS-CACHE-SERVER-REFERENCE-TRANSPORT.md) closes the cross-environment transport follow-up and assesses PR #1246 plus the Server Reference claim API as sufficient for unmixed module and inline cases.
+- [public/PRESERVE-SERVER-REFERENCES.md](./public/PRESERVE-SERVER-REFERENCES.md) is the shareable version with source references pinned to GitHub permalinks.
+- [public/SERVER-FUNCTION-EXTENSIBILITY.md](./public/SERVER-FUNCTION-EXTENSIBILITY.md) is the shareable server-function extensibility proposal with source references pinned to GitHub permalinks.
 
 ## Research Plan
 

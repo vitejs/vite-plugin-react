@@ -1,7 +1,5 @@
 # Userland Server-Function Extensibility
 
-Public-friendly version: [public/SERVER-FUNCTION-EXTENSIBILITY.md](./public/SERVER-FUNCTION-EXTENSIBILITY.md)
-
 ## Goal
 
 Allow a framework-owned transform to make another directive produce React Server Functions without teaching `@vitejs/plugin-rsc` the directive's framework semantics.
@@ -27,7 +25,7 @@ This capability depends on plugin-rsc's environment graphs, normalized module id
 
 ## Current Built-In Boundary
 
-`vitePluginUseServer` currently owns both syntax policy and the full server-reference lifecycle in [packages/plugin-rsc/src/plugin.ts:1987](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugin.ts#L1987):
+`vitePluginUseServer` currently owns both syntax policy and the full server-reference lifecycle in [`packages/plugin-rsc/src/plugin.ts:1987`](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/plugin.ts#L1987):
 
 - Detect the literal `"use server"` directive.
 - Expand module-level `export *` declarations.
@@ -95,7 +93,6 @@ async function transform(code, id) {
     useServerOwner.replace(this.environment.name, module, {
       exportNames: result ? getExportNames(result) : [],
     })
-
     return result?.output
   }
 
@@ -108,7 +105,6 @@ async function transform(code, id) {
   useServerOwner.replace(this.environment.name, module, {
     exportNames: result?.exportNames ?? [],
   })
-
   return result?.output
 }
 ```
@@ -159,7 +155,7 @@ createServerFunctionPlugin({
 
 This could become a plugin factory or equivalent registration facility, with built-in `"use server"` eventually using the same path. The exact shape should be derived from the working implementation and E2E rather than designed first. It remains a desirable endpoint because userland frameworks should not need to reproduce the stable Server Function lifecycle after the lower-level ownership problem is solved.
 
-Per [plugin-rsc's testing guidance](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/CONTRIBUTING.md#end-to-end-tests), this feature should have its own runnable example with a thin development-and-production E2E demonstrating a simple userland-transformed cached callable crossing the Client Component boundary through the new registration API. Test the observable bundler behavior rather than reducing metadata ownership and proxy orchestration to surgical mocked tests; reserve unit tests for self-contained transform helpers.
+Per [plugin-rsc's testing guidance](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/CONTRIBUTING.md#end-to-end-tests), this feature should have its own runnable example with a thin development-and-production E2E demonstrating a simple userland-transformed cached callable crossing the Client Component boundary through the new registration API. Test the observable bundler behavior rather than reducing metadata ownership and proxy orchestration to surgical mocked tests; reserve unit tests for self-contained transform helpers.
 
 ## Secondary Transform Investigation
 
@@ -174,7 +170,7 @@ The investigated transform payload is:
 - Separate `moduleRuntime` and `inlineRuntime` hooks because module exports and closure-bearing inline functions require different wrapping positions.
 - Export metadata, filtering, async validation, and custom directive matching for framework policy.
 
-[vite-plugin-react PR #1246](https://github.com/vitejs/vite-plugin-react/pull/1246) packages these capabilities into the public transform helpers, including a generalized `transformServerActionServer`. Upstreaming them is a reuse and maintenance choice rather than a bundler architecture requirement. The detailed transform comparison remains in [FINDINGS.md](./FINDINGS.md).
+[vite-plugin-react PR #1246](https://github.com/vitejs/vite-plugin-react/pull/1246) packages these capabilities into the public transform helpers, including a generalized `transformServerActionServer`. Upstreaming them is a reuse and maintenance choice rather than a bundler architecture requirement.
 
 ## Recommended Work
 

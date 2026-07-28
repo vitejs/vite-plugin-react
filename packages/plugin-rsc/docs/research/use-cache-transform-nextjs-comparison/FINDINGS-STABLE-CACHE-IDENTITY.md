@@ -3,9 +3,11 @@
 - Repo: git@github.com:vitejs/vite-plugin-react.git
 - Commit: 31cdbb82219b6b637eee338a3492f735c78116bf
 - Branch: main
+- Worktree: /Users/hogawa/code/others/vite-plugin-react
 - Next.js repo: git@github.com:vercel/next.js.git
 - Next.js commit: 153bf8ac5fa00888ef5fbb2b65cac12f0942a44f
 - Next.js branch: canary
+- Next.js worktree: /Users/hogawa/code/others/next.js
 - Plugin-rsc PR #1246 head: 5a2fd7519fa6cce09af04b8b5288ecb8d4a2ddc3
 - Reviewed: 2026-07-24
 
@@ -32,7 +34,7 @@ This note expands the stable-identity item under [Completed Follow-Ups](./FINDIN
 
 ### ID generation
 
-The shared server-actions transform generates one server-reference ID for actions and cached functions in [crates/next-custom-transforms/src/transforms/server_actions.rs:284](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L284):
+The shared server-actions transform generates one server-reference ID for actions and cached functions in [crates/next-custom-transforms/src/transforms/server_actions.rs:284](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L284):
 
 ```text
 digest = SHA1(hashSalt + fileName + ":" + exportName)
@@ -42,7 +44,7 @@ serverReferenceId = hex(metadata + digest)
 
 The transform receives `hashSalt` from the build configuration. The salt influences the emitted value, but its generation and rotation are build policy rather than syntax analysis.
 
-The leading metadata byte identifies a cache function and encodes positional argument admission in [server_actions.rs:308](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L308). The current implementation marks every declared parameter as used instead of analyzing references in the body in [server_actions.rs:339](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L339).
+The leading metadata byte identifies a cache function and encodes positional argument admission in [server_actions.rs:308](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L308). The current implementation marks every declared parameter as used instead of analyzing references in the body in [server_actions.rs:339](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L339).
 
 The resulting ID therefore carries:
 
@@ -61,7 +63,7 @@ It does not carry:
 
 ### Exported and inline names
 
-For module exports, the hash input uses the source export name. For inline functions, the transform generates names such as `$$RSC_SERVER_ACTION_0` and `$$RSC_SERVER_CACHE_0` from one traversal-order counter in [server_actions.rs:381](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L381).
+For module exports, the hash input uses the source export name. For inline functions, the transform generates names such as `$$RSC_SERVER_ACTION_0` and `$$RSC_SERVER_CACHE_0` from one traversal-order counter in [server_actions.rs:381](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L381).
 
 This creates two identity behaviors:
 
@@ -85,7 +87,7 @@ const wrapped = cache(
 registerServerReference(wrapped, serverReferenceId, null)
 ```
 
-The cache call is assembled in [crates/next-custom-transforms/src/transforms/server_actions.rs:2979](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L2979), and the wrapped callable is registered as a server reference in [server_actions.rs:3127](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/src/transforms/server_actions.rs#L3127).
+The cache call is assembled in [crates/next-custom-transforms/src/transforms/server_actions.rs:2979](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L2979), and the wrapped callable is registered as a server reference in [server_actions.rs:3127](../../../../../code/others/next.js/crates/next-custom-transforms/src/transforms/server_actions.rs#L3127).
 
 The same transform-produced ID therefore has two consumers:
 
@@ -98,7 +100,7 @@ This reuse is a Next.js output design, not proof that a generic Vite RSC impleme
 
 The transform separately analyzes closure captures, inserts them into the hoisted implementation, and reports their count to the cache runtime. The runtime call receives `boundArgsLength`, while the generated server reference is bound to one encrypted capture payload.
 
-At runtime, the protected payload is decrypted and reconstructed before key serialization in [packages/next/src/server/use-cache/use-cache-wrapper.ts:1980](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1980). The capture values then participate in the argument portion of the cache key.
+At runtime, the protected payload is decrypted and reconstructed before key serialization in [packages/next/src/server/use-cache/use-cache-wrapper.ts:1980](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1980). The capture values then participate in the argument portion of the cache key.
 
 This preserves the important distinction:
 
@@ -143,7 +145,7 @@ This matrix concerns the emitted Next.js server-reference/function ID only. Runt
 
 ### Module and export identity
 
-Plugin-rsc resolves a production module reference key as the first 12 hex characters of SHA-256 over the root-relative normalized import path in [packages/plugin-rsc/src/plugins/server-reference.ts:29](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/plugins/server-reference.ts#L29) and [packages/plugin-rsc/src/plugins/utils.ts:130](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/plugins/utils.ts#L130). Development uses a normalized Vite import URL.
+Plugin-rsc resolves a production module reference key as the first 12 hex characters of SHA-256 over the root-relative normalized import path in [packages/plugin-rsc/src/plugins/server-reference.ts:29](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugins/server-reference.ts#L29) and [packages/plugin-rsc/src/plugins/utils.ts:130](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugins/utils.ts#L130). Development uses a normalized Vite import URL.
 
 The complete server reference is effectively:
 
@@ -151,15 +153,15 @@ The complete server reference is effectively:
 referenceKey + "#" + exportName
 ```
 
-The server transform registers this pair in [packages/plugin-rsc/src/plugin.ts:2042](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/plugin.ts#L2042), client and SSR proxies recreate it in [plugin.ts:2097](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/plugin.ts#L2097), and runtime loading splits it back into module and export name in [packages/plugin-rsc/src/core/rsc.ts:94](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/core/rsc.ts#L94).
+The server transform registers this pair in [packages/plugin-rsc/src/plugin.ts:2042](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugin.ts#L2042), client and SSR proxies recreate it in [plugin.ts:2097](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugin.ts#L2097), and runtime loading splits it back into module and export name in [packages/plugin-rsc/src/core/rsc.ts:94](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/core/rsc.ts#L94).
 
-PR #1310 changes ownership and cleanup rather than identity generation. Claims must agree on module identity and cannot assign the same export to different owners in [packages/plugin-rsc/src/plugins/server-reference.ts:69](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/src/plugins/server-reference.ts#L69).
+PR #1310 changes ownership and cleanup rather than identity generation. Claims must agree on module identity and cannot assign the same export to different owners in [packages/plugin-rsc/src/plugins/server-reference.ts:69](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/plugins/server-reference.ts#L69).
 
 ### Current inline identity
 
 The built-in hoister currently names inline references by traversal order. This has the same broad instability as Next.js inline generated names: inserting an earlier directive can rename later references.
 
-The server-local cache example does not consume generated names as cache identity. It memoizes by the hoisted JavaScript function object and then by serialized arguments in [packages/plugin-rsc/examples/use-cache/src/framework/use-cache-runtime.tsx:14](https://github.com/vitejs/vite-plugin-react/blob/31cdbb82219b6b637eee338a3492f735c78116bf/packages/plugin-rsc/examples/use-cache/src/framework/use-cache-runtime.tsx#L14). That is sufficient for one process lifetime but does not expose per-definition identity to an external or shared handler.
+The server-local cache example does not consume generated names as cache identity. It memoizes by the hoisted JavaScript function object and then by serialized arguments in [packages/plugin-rsc/examples/use-cache/src/framework/use-cache-runtime.tsx:14](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/examples/use-cache/src/framework/use-cache-runtime.tsx#L14). That is sufficient for one process lifetime but does not expose per-definition identity to an external or shared handler.
 
 ## PR #1246 `stableName`
 
@@ -170,7 +172,7 @@ signature = originalName + ":" + exactFunctionSourceSlice
 generatedName = "$$hoist_" + sha256(signature)[0:12] + duplicateIndex + originalName
 ```
 
-The implementation is in [packages/plugin-rsc/src/transforms/hoist.ts:156](https://github.com/vitejs/vite-plugin-react/blob/5a2fd7519fa6cce09af04b8b5288ecb8d4a2ddc3/packages/plugin-rsc/src/transforms/hoist.ts#L156).
+The implementation is in [packages/plugin-rsc/src/transforms/hoist.ts:156](../../../../../code/others/vite-plugin-react-pr-1246/packages/plugin-rsc/src/transforms/hoist.ts#L156).
 
 Compared with Next.js inline identity:
 
@@ -186,7 +188,7 @@ Compared with Next.js inline identity:
 
 `stableName` is therefore not a direct reproduction of Next.js identity. It trades Next.js's body-stable logical identity for local source-content invalidation and improved resistance to unrelated insertion.
 
-When combined with `exportWrappedHoist`, the generated name addresses the exported cache wrapper instead of the raw hoisted implementation in [hoist.ts:167](https://github.com/vitejs/vite-plugin-react/blob/5a2fd7519fa6cce09af04b8b5288ecb8d4a2ddc3/packages/plugin-rsc/src/transforms/hoist.ts#L167). This output shape is aligned with Next.js because both cache and server-reference consumers must reach the same wrapped callable.
+When combined with `exportWrappedHoist`, the generated name addresses the exported cache wrapper instead of the raw hoisted implementation in [hoist.ts:167](../../../../../code/others/vite-plugin-react-pr-1246/packages/plugin-rsc/src/transforms/hoist.ts#L167). This output shape is aligned with Next.js because both cache and server-reference consumers must reach the same wrapped callable.
 
 ## Assessment Of PR #1246
 
@@ -229,7 +231,7 @@ Next.js's cache runtime serializes normalized key parts of:
 ]
 ```
 
-The runtime explicitly says the action ID is not unique per implementation, so a build ID prevents unsafe reuse across builds in [packages/next/src/server/use-cache/use-cache-wrapper.ts:1843](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1843). It assembles the final key parts in [use-cache-wrapper.ts:2016](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L2016).
+The runtime explicitly says the action ID is not unique per implementation, so a build ID prevents unsafe reuse across builds in [packages/next/src/server/use-cache/use-cache-wrapper.ts:1843](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L1843). It assembles the final key parts in [use-cache-wrapper.ts:2016](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L2016).
 
 `deploymentId` is effectively a runtime cache namespace constant. It does not add function-level transform information. Its relevance here is only that Next.js deliberately handles body and deployment invalidation outside the transform-generated function ID.
 
@@ -237,15 +239,15 @@ Likewise, the development HMR refresh hash is not evidence that the transform ne
 
 ### Persistence and distributed handlers
 
-Next.js intentionally does not reuse ordinary `"use cache"` or `"use cache: remote"` entries across deployments. The documentation identifies build or deployment identity as the safety boundary in [docs/01-app/03-api-reference/01-directives/use-cache-remote.mdx:92](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/docs/01-app/03-api-reference/01-directives/use-cache-remote.mdx#L92).
+Next.js intentionally does not reuse ordinary `"use cache"` or `"use cache: remote"` entries across deployments. The documentation identifies build or deployment identity as the safety boundary in [docs/01-app/03-api-reference/01-directives/use-cache-remote.mdx:92](../../../../../code/others/next.js/docs/01-app/03-api-reference/01-directives/use-cache-remote.mdx#L92).
 
 This policy does not introduce another transform requirement. Multiple handlers running the same emitted build naturally receive the same function IDs. Whether they share entries depends on the cache handler and key namespace, not additional directive metadata.
 
 ### Experimental implementation hash
 
-Turbopack can emit a separate `codeHash` for cache references under `experimental.durableUseCacheEntries`. Manifest generation computes a server dependency-subtree hash in [crates/next-api/src/server_actions.rs:232](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-api/src/server_actions.rs#L232) and [server_actions.rs:360](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-api/src/server_actions.rs#L360).
+Turbopack can emit a separate `codeHash` for cache references under `experimental.durableUseCacheEntries`. Manifest generation computes a server dependency-subtree hash in [crates/next-api/src/server_actions.rs:232](../../../../../code/others/next.js/crates/next-api/src/server_actions.rs#L232) and [server_actions.rs:360](../../../../../code/others/next.js/crates/next-api/src/server_actions.rs#L360).
 
-Tests show that it changes with the cached module and server dependencies while remaining stable for unrelated and client-only changes in [test/production/app-dir/use-cache-code-hash/use-cache-code-hash.test.ts:52](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/test/production/app-dir/use-cache-code-hash/use-cache-code-hash.test.ts#L52).
+Tests show that it changes with the cached module and server dependencies while remaining stable for unrelated and client-only changes in [test/production/app-dir/use-cache-code-hash/use-cache-code-hash.test.ts:52](../../../../../code/others/next.js/test/production/app-dir/use-cache-code-hash/use-cache-code-hash.test.ts#L52).
 
 The standard cache runtime does not currently consume this manifest field. It should be treated as possible future build-produced information for durable reuse, not as part of the current directive transform contract.
 

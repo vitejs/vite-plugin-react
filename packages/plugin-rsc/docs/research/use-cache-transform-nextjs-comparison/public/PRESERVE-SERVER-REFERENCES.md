@@ -1,12 +1,10 @@
-# Vinext Server-Reference Preservation Analysis
-
-Public-friendly version: [public/PRESERVE-SERVER-REFERENCES.md](./public/PRESERVE-SERVER-REFERENCES.md)
+# Is `preserveServerReferences` Required For Vinext Compatibility?
 
 ## Conclusion
 
-`preserveServerReferences` is not required for Next.js-compatible `"use cache"` behavior.
+No. `preserveServerReferences` is not required for Next.js-compatible `"use cache"` behavior.
 
-Vinext currently uses the option when decoding cached Flight, so plugin-rsc PR #1289 is a dependency of that implementation. However, no Vinext failure or test demonstrates that opaque preservation is required. Next.js revives the referenced server module during cache replay and then reserializes the registered function as a Server Reference.
+Vinext currently uses the option when decoding cached Flight, so [plugin-rsc PR #1289](https://github.com/vitejs/vite-plugin-react/pull/1289) is a dependency of that implementation. However, no Vinext failure or test demonstrates that opaque preservation is required. Next.js revives the referenced server module during cache replay and then reserializes the registered function as a Server Reference.
 
 The actual compatibility requirement is that a Server Reference survives cached Flight replay and remains invocable. Avoiding implementation-module revival is a separate plugin-rsc capability.
 
@@ -47,7 +45,7 @@ The feature was later isolated in [plugin-rsc PR #1253](https://github.com/vitej
 createFromReadableStream(stream, {}, { preserveServerReferences: true })
 ```
 
-Therefore #2156 listing #1289 as an upstream dependency describes its current code path, not a requirement established by the Next.js compatibility target.
+The current call is visible in [`cache-runtime.ts:559-563`](https://github.com/cloudflare/vinext/blob/622f0b915156fbfcb03ca4f1596cc0d0f6725ebe/packages/vinext/src/shims/cache-runtime.ts#L559-L563). Therefore #2156 listing #1289 as an upstream dependency describes its current code path, not a requirement established by the Next.js compatibility target.
 
 ## The Conflated Requirements
 
@@ -73,25 +71,25 @@ Opaque preservation instead creates a synthetic registered reference carrying th
 
 ## Next.js Behavior
 
-On cache replay, Next.js constructs a `serverConsumerManifest` containing `serverModuleMap` in [`use-cache-wrapper.ts:3325`](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L3325).
+On cache replay, Next.js constructs a `serverConsumerManifest` containing `serverModuleMap` in [`use-cache-wrapper.ts:3325-3334`](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L3325-L3334).
 
-It passes that manifest to `createFromReadableStream` in [`use-cache-wrapper.ts:3336`](../../../../../code/others/next.js/packages/next/src/server/use-cache/use-cache-wrapper.ts#L3336). React uses the map to resolve and load the Server Function implementation. Because the loaded export is already registered, rendering the decoded value into the outer RSC response serializes it as a Server Reference again.
+It passes that manifest to `createFromReadableStream` in [`use-cache-wrapper.ts:3336-3342`](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/server/use-cache/use-cache-wrapper.ts#L3336-L3342). React uses the map to resolve and load the Server Function implementation. Because the loaded export is already registered, rendering the decoded value into the outer RSC response serializes it as a Server Reference again.
 
-Next.js has no equivalent of plugin-rsc's `preserveServerReferences` mode. Plugin-rsc PR #1289 explicitly records this distinction in its description.
+Next.js has no equivalent of plugin-rsc's `preserveServerReferences` mode. The description of [plugin-rsc PR #1289](https://github.com/vitejs/vite-plugin-react/pull/1289) explicitly records that Next.js resolves the module during cache replay.
 
 ## Plugin-rsc Behavior
 
-Plugin-rsc's default `createFromReadableStream` supplies a server manifest in [`packages/plugin-rsc/src/react/rsc/client.ts:30`](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/react/rsc/client.ts#L30).
+Plugin-rsc's default `createFromReadableStream` supplies a server manifest in [`client.ts:30-40`](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/react/rsc/client.ts#L30-L40).
 
-Without preservation, the manifest resolves references through `requireModule` in [`packages/plugin-rsc/src/core/rsc.ts:87`](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/core/rsc.ts#L87). Development imports the normalized Vite module URL, while production resolves through `virtual:vite-rsc/server-references`.
+Without preservation, the manifest resolves references through `requireModule` in [`core/rsc.ts:87`](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/core/rsc.ts#L87). Development imports the normalized Vite module URL, while production resolves through `virtual:vite-rsc/server-references`.
 
-With preservation enabled, `createServerManifest` prefixes the reference ID in [`packages/plugin-rsc/src/core/rsc.ts:100`](../../../../../code/others/vite-plugin-react/packages/plugin-rsc/src/core/rsc.ts#L100). The loader recognizes that prefix and constructs an opaque reference without loading the implementation. Such a reference can be reserialized but deliberately cannot be invoked inside the replaying RSC runtime.
+With preservation enabled, `createServerManifest` prefixes the reference ID in [`core/rsc.ts:100-124`](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/src/core/rsc.ts#L100-L124). The loader recognizes that prefix and constructs an opaque reference without loading the implementation. Such a reference can be reserialized but deliberately cannot be invoked inside the replaying RSC runtime.
 
-PR #1289's E2E specifically tests the no-load property. It proves that default replay imports the implementation immediately while preserved replay delays the import until browser invocation. This validates the optional feature, not its necessity for Vinext.
+PR #1289's [`cache-replay.test.ts`](https://github.com/vitejs/vite-plugin-react/blob/32611a28365435d81a513c559715411bdc8f127e/packages/plugin-rsc/e2e/cache-replay.test.ts) specifically tests the no-load property. It proves that default replay imports the implementation immediately while preserved replay delays the import until browser invocation. This validates the optional feature, not its necessity for Vinext.
 
 ## Why The Original Rationale Does Not Transfer
 
-Plugin-rsc PR #1253 motivates preservation with a cache layer replaying a framework-owned action that should not need to import through the application bundler manifest.
+[Plugin-rsc PR #1253](https://github.com/vitejs/vite-plugin-react/pull/1253) motivates preservation with a cache layer replaying a framework-owned action that should not need to import through the application bundler manifest.
 
 Vinext's nested cached functions are different:
 
