@@ -2,14 +2,17 @@ name: Publish Package
 
 on:
   push:
+    # RSC releases start when a generated release PR is merged.
     branches:
       - main
+    # Other packages retain the existing tag-driven release flow.
     tags:
       - 'plugin-*'
 
 permissions: {}
 
 jobs:
+  # Publish tag-driven releases, excluding RSC's commit-driven flow.
   publish:
     if: github.repository == 'vitejs/vite-plugin-react' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/plugin-rsc@')
     runs-on: ubuntu-latest
@@ -70,6 +73,7 @@ jobs:
           path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
           tag-name: ${{ github.ref_name }}
 
+  # Only main pushes can contain an RSC release commit from a merged release PR.
   detect-rsc-release:
     if: github.repository == 'vitejs/vite-plugin-react' && github.ref == 'refs/heads/main'
     name: Detect RSC release commit
