@@ -4,7 +4,7 @@ import { createDebug } from '@hiogawa/utils'
 import * as esModuleLexer from 'es-module-lexer'
 import { parseAstAsync, type Plugin } from 'vite'
 import { findClosestPkgJsonPath } from 'vitefu'
-import { transformCjsToEsm } from '../transforms/cjs'
+import { transformCjsToEsm } from '../transforms'
 import { parseIdQuery } from './shared'
 
 const debug = createDebug('vite-rsc:cjs')
