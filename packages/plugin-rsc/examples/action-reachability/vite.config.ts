@@ -25,7 +25,7 @@ function writeReachabilityPicture(): Plugin {
     },
     generateBundle() {
       if (this.environment.name !== 'client') return
-      const reachability = manager.getClientReferenceServerReferences(this)
+      const reachability = manager.getClientToServerReferenceReachability(this)
       this.emitFile({
         type: 'asset',
         fileName: 'reference-reachability.json',

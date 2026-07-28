@@ -11,13 +11,13 @@ test.describe('build', () => {
   test('tracks and executes an object-wrapped server action', async ({
     page,
   }) => {
-    const reachability: Record<
-      string,
-      { importId: string; serverReferenceIds: string[] }
-    > = JSON.parse(
+    const reachability: {
+      importId: string
+      serverReferenceIds: string[]
+    }[] = JSON.parse(
       f.createEditor('dist/client/reference-reachability.json').read(),
     )
-    const clientReference = Object.values(reachability).find((value) =>
+    const clientReference = reachability.find((value) =>
       value.importId.endsWith('/src/client-form.jsx'),
     )
     expect(clientReference?.serverReferenceIds).toEqual([

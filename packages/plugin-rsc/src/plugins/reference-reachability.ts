@@ -1,6 +1,5 @@
 import type { Rollup } from 'vite'
 import type { RscPluginManager } from '../plugin'
-import { sortObject } from './utils'
 
 /**
  * Server references reachable from a Client Component reference through the
@@ -12,7 +11,7 @@ import { sortObject } from './utils'
  *
  * @experimental
  */
-export type ClientReferenceToServerReferenceReachability = {
+export type ReferenceReachabilityEntry = {
   /** Resolved module ID used as the client graph traversal root. */
   importId: string
   /** Reference key identifying the Client Component across environments. */
@@ -21,12 +20,11 @@ export type ClientReferenceToServerReferenceReachability = {
   serverReferenceIds: string[]
 }
 
-export function getClientReferenceServerReferences(
+export function getClientToServerReferenceReachability(
   context: Rollup.PluginContext,
   manager: RscPluginManager,
-): Record<string, ClientReferenceToServerReferenceReachability> {
-  const result: Record<string, ClientReferenceToServerReferenceReachability> =
-    {}
+): ReferenceReachabilityEntry[] {
+  const result: ReferenceReachabilityEntry[] = []
   for (const clientReference of Object.values(manager.clientReferenceMetaMap)) {
     const serverReferenceIds = new Set<string>()
     const visited = new Set<string>()
@@ -50,11 +48,11 @@ export function getClientReferenceServerReferences(
       queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
     }
 
-    result[clientReference.importId] = {
+    result.push({
       importId: clientReference.importId,
       referenceKey: clientReference.referenceKey,
       serverReferenceIds: [...serverReferenceIds].sort(),
-    }
+    })
   }
-  return sortObject(result)
+  return result.sort((a, b) => a.importId.localeCompare(b.importId))
 }
