@@ -10,6 +10,59 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { buildScopeTree, type ScopeTree } from './scope'
 
+/**
+ * Turns an inline directive function into a module-level registered function.
+ * Conceptually:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   async function action(y) {
+ *     "use server"
+ *     return x + y
+ *   }
+ * }
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = __RUNTIME__($$hoist_0_action).bind(null, x)
+ * }
+ * export async function $$hoist_0_action(x, y) {
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * The generated export is `$$hoist_0_action`, so `names` contains
+ * `['$$hoist_0_action']` for this example.
+ *
+ * Here, `__RUNTIME__(...)` represents the registration expression returned by the
+ * `runtime` callback. When `encode` and `decode` are provided, the closure
+ * captures instead travel as one encoded bound argument:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = __RUNTIME__($$hoist_0_action).bind(
+ *     null,
+ *     __ENCODE__([x]),
+ *   )
+ * }
+ *
+ * export async function $$hoist_0_action($$hoist_encoded, y) {
+ *   const [x] = __DECODE__($$hoist_encoded)
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * In this second sketch, `__ENCODE__(...)` and `__DECODE__(...)` likewise
+ * represent the expressions returned by those code-generation callbacks.
+ */
 export function transformHoistInlineDirective(
   input: string,
   ast: Program,
@@ -27,13 +80,15 @@ export function transformHoistInlineDirective(
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
     decode?: (value: string) => string
+    /** Keep generated hoisted declarations module-local instead of exporting them. */
     noExport?: boolean
   },
 ): {
   output: MagicString
   names: string[]
 } {
-  // ensure ending space so we can move node at the end without breaking magic-string
+  // MagicString needs an existing boundary at the move destination. The newline
+  // also keeps the first appended declaration separate from the original source.
   if (!input.endsWith('\n')) {
     input += '\n'
   }
@@ -43,6 +98,8 @@ export function transformHoistInlineDirective(
       ? exactRegex(options.directive)
       : options.directive
 
+  // Build the complete scope tree once so each hoisted function can distinguish
+  // closure captures from module bindings and globals, which remain in scope.
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
 
@@ -54,6 +111,8 @@ export function transformHoistInlineDirective(
           node.type === 'ArrowFunctionExpression') &&
         node.body.type === 'BlockStatement'
       ) {
+        // Only transform functions whose block contains the requested
+        // directive. Other function shapes cannot contain directive prologues.
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
         if (!node.async && rejectNonAsyncFunction) {
@@ -65,6 +124,9 @@ export function transformHoistInlineDirective(
           )
         }
 
+        // Capture the source-level name so the hoisted function can preserve it
+        // with Object.defineProperty below. Anonymous functions get a stable
+        // fallback for registration and diagnostics.
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
@@ -73,12 +135,17 @@ export function transformHoistInlineDirective(
             parent.id.name) ||
           'anonymous_server_function'
 
+        // Convert closure captures into leading parameters of the hoisted
+        // function. At the original call site, registration below binds the
+        // corresponding values in the same order.
         const bindVars = getBindVars(node, scopeTree)
         let newParams = [
           ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
         ].join(', ')
         if (bindVars.length > 0 && options.decode) {
+          // Encoded captures travel as one bound argument, then are restored to
+          // the individual parameter names before the original body executes.
           newParams = [
             '$$hoist_encoded',
             ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -91,7 +158,8 @@ export function transformHoistInlineDirective(
           )
         }
 
-        // append a new `FunctionDeclaration` at the end
+        // Rewrite and hoist the original function range into its module-level form.
+        // These edits must happen before `.move()` (hoist) so they travel with the range.
         const newName =
           `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
@@ -110,7 +178,9 @@ export function transformHoistInlineDirective(
         )
         output.move(node.start, node.end, input.length)
 
-        // replace original declartion with action register + bind
+        // Replace the original function with the runtime expression for its
+        // hoisted declaration. Bind closure captures to the prepended capture
+        // parameters (or the single encoded parameter).
         let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
           directiveMatch: match,
         })}`
@@ -121,6 +191,8 @@ export function transformHoistInlineDirective(
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (declName) {
+          // A function declaration becomes a const declaration. For a default
+          // export, retain the export as a separate statement after that const.
           newCode = `const ${declName} = ${newCode};`
           if (parent?.type === 'ExportDefaultDeclaration') {
             output.remove(parent.start, node.start)
@@ -132,6 +204,9 @@ export function transformHoistInlineDirective(
     },
   })
 
+  // Expose the generated hoisted declaration names. These are the new
+  // exports by default (unless noExport is set), so callers can also track them
+  // as runtime references.
   return {
     output,
     names,

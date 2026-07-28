@@ -175,7 +175,7 @@ export type RscPluginOptions = {
    */
   entries?: Partial<Record<'client' | 'ssr' | 'rsc', string>>
 
-  /** @default { enviornmentName: "rsc", entryName: "index" } */
+  /** @default { environmentName: "rsc", entryName: "index" } */
   serverHandler?:
     | {
         environmentName: string
@@ -209,6 +209,12 @@ export type RscPluginOptions = {
   defineEncryptionKey?: string
 
   /** Escape hatch for Waku's `allowServer` */
+  keepUseClientProxy?: boolean
+
+  /**
+   * @deprecated This option contains a typo. Use `keepUseClientProxy` instead.
+   * It will be removed in the next breaking release.
+   */
   keepUseCientProxy?: boolean
 
   /**
@@ -1435,7 +1441,7 @@ function createTransformExpandExportAllContext(
 function vitePluginUseClient(
   useClientPluginOptions: Pick<
     RscPluginOptions,
-    'keepUseCientProxy' | 'environment' | 'clientChunks'
+    'keepUseClientProxy' | 'keepUseCientProxy' | 'environment' | 'clientChunks'
   >,
   manager: RscPluginManager,
 ): Plugin[] {
@@ -1558,7 +1564,10 @@ function vitePluginUseClient(
           const result = transformDirectiveProxyExport_(ast, {
             directive: 'use client',
             code,
-            keep: !!useClientPluginOptions.keepUseCientProxy,
+            keep: !!(
+              useClientPluginOptions.keepUseClientProxy ??
+              useClientPluginOptions.keepUseCientProxy
+            ),
             runtime: (name, meta) => {
               let proxyValue =
                 `() => { throw new Error("Unexpectedly client reference export '" + ` +
@@ -1731,11 +1740,17 @@ function vitePluginUseClient(
                 this.environment.config.root,
                 'index.html',
               )
-              const resolvedAtRoot = await this.resolve(
-                source,
-                rootImporter,
-                options,
-              )
+              let resolvedAtRoot
+              try {
+                resolvedAtRoot = await this.resolve(
+                  source,
+                  rootImporter,
+                  options,
+                )
+              } catch {
+                // A different version at the root may not export this subpath.
+                return
+              }
               if (!resolvedAtRoot || resolvedAtRoot.id !== resolved.id) {
                 return
               }

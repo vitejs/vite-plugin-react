@@ -15,12 +15,12 @@ This example isolates React's Server Components performance tracks from SSR and 
 5. Let the Home page resolve, then follow **About** to capture the same workload through client navigation and an on-demand RSC request. After the About page resolves, wait another second for React's deferred performance flush.
 6. Stop recording and inspect the **Server Components** tracks.
 
-Both paths produce a nested pair of `SlowServerComponent` spans. The 500ms inner component only starts after the 300ms outer component resolves, so the two appear as a staircase in the Server Components track instead of overlapping. The initial path uses the normal SSR and injected Flight stream, while client navigation fetches a second ReactNode payload.
+Both paths produce a nested pair of `SlowServerComponent` spans. The 500ms inner component only starts after the 300ms outer component resolves, so the two appear as a staircase in the Server Components track instead of overlapping. The initial path uses the normal SSR and injected Flight stream, while client navigation fetches a second RSC payload.
 
-## Payload shape
+## React compatibility
 
-This fixture intentionally exports `RscPayload = ReactNode` and serializes a top-level React element. React's canary client can recover moved performance debug information from supported renderable root values. Frameworks that move this information into an arbitrary object or a derived promise may need to preserve React's internal `_debugInfo` themselves.
+React 19.2.8 emits timing data but can lose debug information moved from initialized child chunks onto their resolved values. Its performance flush only reads the chunk itself, so Chrome shows track markers without the async component spans. React [fixed this in #34839](https://github.com/facebook/react/pull/34839) by recovering moved debug information from the resolved value during the performance flush.
 
-Waku [extends the recovery logic](https://github.com/dai-shi/waku/blob/3f88539dfd92aab9aa8db32a390d4eb8b143ee44/packages/waku/src/lib/vite-plugins/patch-rsdw.ts#L3) for its plain-object payload. Next.js [propagates `_debugInfo`](https://github.com/vercel/next.js/blob/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/packages/next/src/client/components/router-reducer/ppr-navigations.ts#L2250) onto framework-created promises. These are framework-specific integration details rather than requirements of `@vitejs/plugin-rsc` or the RSC protocol.
+Waku [applies equivalent recovery](https://github.com/dai-shi/waku/blob/3f88539dfd92aab9aa8db32a390d4eb8b143ee44/packages/waku/src/lib/vite-plugins/patch-rsdw.ts#L3) as a transform for React versions without the fix.
 
-This fixture was verified with matching React packages at `19.3.0-canary-81e442ea-20260721`. React 19.2.8 emits timing data but loses moved debug information during the client performance flush, so Chrome shows track markers without component spans. See React's [debug-info recovery logic](https://github.com/facebook/react/blob/b740af2510de1e19fcb399abb862af26ff95ac80/packages/react-client/src/ReactFlightClient.js#L4518-L4535).
+This fixture was verified with matching React packages at `19.3.0-canary-81e442ea-20260721`.
