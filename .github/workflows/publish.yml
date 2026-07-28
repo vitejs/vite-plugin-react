@@ -150,6 +150,8 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Publish package
+        # TODO: plugin-rsc doesn't currently publish alpha/beta prereleases. If it does,
+        # specify an npm dist-tag with `publish --tag ...`.
         run: pnpm --filter @vitejs/plugin-rsc --fail-if-no-match publish --access public --no-git-checks
 
       - id: generate-token
