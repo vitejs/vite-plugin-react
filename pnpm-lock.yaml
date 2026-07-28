@@ -485,6 +485,28 @@ importers:
         specifier: ^0.22.14
         version: 0.22.14(publint@0.3.21)(typescript@6.0.3)
 
+  packages/plugin-rsc/examples/action-reachability:
+    dependencies:
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: link:../../../plugin-react
+      '@vitejs/plugin-rsc':
+        specifier: latest
+        version: link:../..
+      rsc-html-stream:
+        specifier: ^0.0.7
+        version: 0.0.7
+      vite:
+        specifier: ^8.1.5
+        version: 8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+
   packages/plugin-rsc/examples/basic:
     dependencies:
       react:

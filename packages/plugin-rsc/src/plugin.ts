@@ -98,6 +98,12 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
+export type ClientReferenceServerReferences = {
+  importId: string
+  referenceKey: string
+  serverReferenceIds: string[]
+}
+
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
 
@@ -126,6 +132,10 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
+  clientReferenceServerReferences: Record<
+    string,
+    ClientReferenceServerReferences
+  > = {}
   serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
@@ -142,6 +152,9 @@ class RscPluginManager {
   stabilize(): void {
     // sort for stable build
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
+    this.clientReferenceServerReferences = sortObject(
+      this.clientReferenceServerReferences,
+    )
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
   }
 
@@ -1686,6 +1699,46 @@ function vitePluginUseClient(
             return { code, map: null }
           }
         },
+      },
+      generateBundle() {
+        if (manager.isScanBuild) return
+        if (this.environment.name !== browserEnvironmentName) return
+
+        manager.clientReferenceServerReferences = {}
+        for (const clientReference of Object.values(
+          manager.clientReferenceMetaMap,
+        )) {
+          const serverReferenceIds = new Set<string>()
+          const visited = new Set<string>()
+          const queue = [clientReference.importId]
+          for (let index = 0; index < queue.length; index++) {
+            const id = queue[index]!
+            if (visited.has(id)) continue
+            visited.add(id)
+
+            const serverReference = manager.serverReferences.metaMap.get(id)
+            if (serverReference) {
+              for (const exportName of serverReference.exportNames) {
+                serverReferenceIds.add(
+                  `${serverReference.referenceKey}#${exportName}`,
+                )
+              }
+            }
+
+            const info = this.getModuleInfo(id)
+            if (!info) continue
+            queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
+          }
+
+          manager.clientReferenceServerReferences[clientReference.importId] = {
+            importId: clientReference.importId,
+            referenceKey: clientReference.referenceKey,
+            serverReferenceIds: [...serverReferenceIds].sort(),
+          }
+        }
+        manager.clientReferenceServerReferences = sortObject(
+          manager.clientReferenceServerReferences,
+        )
       },
     },
     {
