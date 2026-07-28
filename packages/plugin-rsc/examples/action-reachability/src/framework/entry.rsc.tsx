@@ -95,9 +95,9 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
-      // otherwise server function is called via `<form action={...}>`
-      // before hydration (e.g. when javascript is disabled).
-      // aka progressive enhancement.
+      // TODO: extract the action ID from React's multipart
+      // fields and apply the same route-manifest redispatch before decoding.
+      // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/packages/next/src/server/app-render/action-handler.ts#L1467-L1576
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
       try {
