@@ -1,0 +1,21 @@
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/NOTE.md
+  s_0defc87c84bd97::t_481a2a4f33f3b7 1-163
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/PLAN-CANONICAL-CALLABLE-TRANSFORM.md
+  s_0defc87c84bd97::t_9e0b63d1d6b5c4 1-441
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2471f46decc1c4bcc2fa3ee3347093452bda8e4e",
+  "prompts": {},
+  "sessions": {
+    "s_0defc87c84bd97": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_059800025ffeJuBRrg5B5JHYvB",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
