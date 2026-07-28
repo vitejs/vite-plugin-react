@@ -3,10 +3,27 @@ name: Prepare RSC Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: Exact @vitejs/plugin-rsc version to release
+      release:
+        description: Bumpp release type
         required: true
+        default: next
+        type: choice
+        options:
+          - next
+          - patch
+          - minor
+          - major
+          - prepatch
+          - preminor
+          - premajor
+      version:
+        description: Specify exact version instead of bumpp release type
+        required: false
         type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.version || inputs.release }}
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -40,9 +57,13 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Prepare release
+        id: prepare
         env:
-          VERSION: ${{ inputs.version }}
-        run: node scripts/prepare-rsc-release.ts "$VERSION"
+          RELEASE_TYPE: ${{ inputs.release }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/prepare-rsc-release.ts
+          echo "version=$(jq -r .version packages/plugin-rsc/package.json)" >> "$GITHUB_OUTPUT"
 
       - id: generate-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -58,7 +79,7 @@ jobs:
         env:
           APP_SLUG: ${{ steps.generate-token.outputs.app-slug }}
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ steps.prepare.outputs.version }}
         run: |
           BRANCH="release-plugin-rsc-$VERSION-$GITHUB_RUN_ID"
           BOT_ID="$(gh api "/users/$APP_SLUG%5Bbot%5D" --jq .id)"

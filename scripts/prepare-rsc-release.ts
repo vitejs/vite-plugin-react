@@ -1,22 +1,19 @@
-import { readFileSync, writeFileSync } from 'node:fs'
 import { generateChangelog } from '@vitejs/release-scripts'
-import * as semver from 'semver'
+import { versionBump } from 'bumpp'
 
 async function main() {
-  const version = process.argv[2]
+  const release = process.env.RELEASE_VERSION || process.env.RELEASE_TYPE
   const pkgPath = 'packages/plugin-rsc/package.json'
 
-  if (!version || semver.valid(version) !== version) {
-    throw new Error(`Invalid version: ${version || '(missing)'}`)
-  }
-
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-  if (pkg.version === version) {
-    throw new Error(`Version is already ${version}`)
-  }
-
-  pkg.version = version
-  writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
+  await versionBump({
+    files: [pkgPath],
+    release,
+    commit: false,
+    tag: false,
+    push: false,
+    printCommits: false,
+    confirm: !release,
+  })
 
   await generateChangelog({
     getPkgDir: () => 'packages/plugin-rsc',
