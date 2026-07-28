@@ -7,8 +7,10 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
+import routeActionManifest from 'virtual:route-action-manifest'
 import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
+import { getRoute } from './routes.tsx'
 
 // The schema of payload which is serialized into RSC stream on rsc environment
 // and deserialized on ssr/client environments.
@@ -31,15 +33,53 @@ async function handler(request: Request): Promise<Response> {
   // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
   request = renderRequest.request
+  const { middleware } = getRoute(renderRequest.url.pathname)
+  return middleware(request, () => handleRequest(renderRequest))
+}
 
+async function handleRequest(
+  renderRequest: ReturnType<typeof parseRenderRequest>,
+): Promise<Response> {
+  const request = renderRequest.request
   // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
+  let actionRoute: string | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
       // action is called via `ReactClient.setServerCallback`.
+      actionRoute = Object.entries(routeActionManifest).find(([, actionIds]) =>
+        actionIds.includes(renderRequest.actionId!),
+      )?.[0]
+      if (!actionRoute) {
+        return new Response('Server action is not reachable from any route', {
+          status: 404,
+        })
+      }
+      if (actionRoute !== renderRequest.url.pathname) {
+        if (request.headers.has('x-action-forwarded')) {
+          return new Response(
+            'Forwarded server action reached the wrong route',
+            {
+              status: 404,
+            },
+          )
+        }
+        const targetUrl = new URL(request.url)
+        targetUrl.pathname = actionRoute + '_.rsc'
+        const headers = new Headers(request.headers)
+        headers.set('x-action-forwarded', '1')
+        headers.set('x-rsc-render-url', renderRequest.url.href)
+        return handler(
+          new Request(targetUrl, {
+            method: request.method,
+            headers,
+            body: await request.arrayBuffer(),
+          }),
+        )
+      }
       const contentType = request.headers.get('content-type')
       const body = contentType?.startsWith('multipart/form-data')
         ? await request.formData()
@@ -78,7 +118,13 @@ async function handler(request: Request): Promise<Response> {
   // so that new render reflects updated state from server function call
   // to achieve single round trip to mutate and fetch from server.
   const rscPayload: RscPayload = {
-    root: <Root url={renderRequest.url} />,
+    root: (
+      <Root
+        url={
+          new URL(request.headers.get('x-rsc-render-url') ?? renderRequest.url)
+        }
+      />
+    ),
     formState,
     returnValue,
   }
@@ -91,6 +137,12 @@ async function handler(request: Request): Promise<Response> {
       status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
+        ...(actionRoute && {
+          'x-action-route': actionRoute,
+          'x-action-forwarded': String(
+            request.headers.has('x-action-forwarded'),
+          ),
+        }),
       },
     })
   }

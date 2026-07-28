@@ -1,12 +1,11 @@
-import { ClientForm } from './client-form.tsx'
+import { getRoute } from './framework/routes.tsx'
 
 export function Root(props: { url: URL }) {
+  const { Page } = getRoute(props.url.pathname)
   return (
     <html lang="en">
       <body>
-        <h1>Cross-environment action reachability</h1>
-        <ClientForm />
-        <p>Request URL: {props.url.href}</p>
+        <Page />
       </body>
     </html>
   )

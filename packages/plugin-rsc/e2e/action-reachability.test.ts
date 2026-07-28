@@ -8,21 +8,16 @@ test.describe('build', () => {
     mode: 'build',
   })
 
-  test('tracks and executes an object-wrapped server action', async ({
+  test('dispatches a delayed action to its reachable route', async ({
     page,
   }) => {
-    const reachability: {
-      importId: string
-      serverReferenceIds: string[]
-    }[] = JSON.parse(
-      f.createEditor('dist/client/reference-reachability.json').read(),
+    const manifest: Record<string, string[]> = JSON.parse(
+      f.createEditor('dist/client/route-action-manifest.json').read(),
     )
-    const clientReference = reachability.find((value) =>
-      value.importId.endsWith('/src/client-form.tsx'),
-    )
-    expect(clientReference?.serverReferenceIds).toEqual([
+    expect(manifest['/']).toEqual([
       expect.stringMatching(/#objectWrappedAction$/),
     ])
+    expect(manifest['/other']).toEqual([expect.stringMatching(/#otherAction$/)])
 
     await page.goto(f.url())
     await waitForHydration(page)
@@ -31,9 +26,18 @@ test.describe('build', () => {
         response.request().method() === 'POST' &&
         response.url().endsWith('_.rsc'),
     )
-    await page.getByTestId('object-wrapped-action').click()
+    await page.getByTestId('home-action').click()
+    await page.getByRole('link', { name: 'Other route' }).click()
+    await expect(
+      page.getByRole('heading', { name: 'Other route' }),
+    ).toBeVisible()
     const response = await responsePromise
     expect(response.status()).toBe(200)
-    expect(await response.text()).toContain('OBJECT_WRAPPED_OK')
+    expect(response.headers()['x-action-route']).toBe('/')
+    expect(response.headers()['x-action-forwarded']).toBe('true')
+    expect(await response.text()).toContain('HOME_ACTION_OK:/')
+    await expect(
+      page.getByRole('heading', { name: 'Other route' }),
+    ).toBeVisible()
   })
 })

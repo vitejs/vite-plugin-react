@@ -1,9 +1,10 @@
 import react from '@vitejs/plugin-react'
-import rsc, { getPluginApi, type PluginApi } from '@vitejs/plugin-rsc'
-import { defineConfig, type Plugin } from 'vite'
+import rsc from '@vitejs/plugin-rsc'
+import { defineConfig } from 'vite'
+import { routeActionManifestPlugin } from './route-action-manifest-plugin.ts'
 
 export default defineConfig({
-  plugins: [rsc(), react(), writeReachabilityPicture()],
+  plugins: [rsc(), react(), routeActionManifestPlugin()],
   environments: {
     rsc: {
       build: {
@@ -34,22 +35,3 @@ export default defineConfig({
     },
   },
 })
-
-function writeReachabilityPicture(): Plugin {
-  let manager: PluginApi['manager']
-  return {
-    name: 'write-reference-reachability-picture',
-    configResolved(config) {
-      manager = getPluginApi(config)!.manager
-    },
-    generateBundle() {
-      if (this.environment.name !== 'client') return
-      const reachability = manager.getClientToServerReferenceReachability(this)
-      this.emitFile({
-        type: 'asset',
-        fileName: 'reference-reachability.json',
-        source: JSON.stringify(reachability, null, 2),
-      })
-    },
-  }
-}
