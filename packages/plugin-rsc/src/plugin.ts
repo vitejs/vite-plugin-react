@@ -28,6 +28,10 @@ import {
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import {
+  getClientReferenceServerReferences,
+  type ClientReferenceServerReferences,
+} from './plugins/client-reference-server-references'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ensureEnvironmentImportsEntryFallback,
@@ -98,11 +102,7 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-export type ClientReferenceServerReferences = {
-  importId: string
-  referenceKey: string
-  serverReferenceIds: string[]
-}
+export type { ClientReferenceServerReferences }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
@@ -132,10 +132,23 @@ class RscPluginManager {
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
-  clientReferenceServerReferences: Record<
-    string,
-    ClientReferenceServerReferences
-  > = {}
+
+  /**
+   * Returns server references reachable from Client Component references
+   * through the current client module graph.
+   *
+   * Call this from a final client build hook while Rollup's module graph is
+   * available. See {@link ClientReferenceServerReferences} for the reachability
+   * semantics.
+   *
+   * @experimental
+   */
+  getClientReferenceServerReferences(
+    context: Rollup.PluginContext,
+  ): Record<string, ClientReferenceServerReferences> {
+    return getClientReferenceServerReferences(context, this)
+  }
+
   serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
 
   /** @deprecated Use `serverReferences.metaMap` instead. */
@@ -158,9 +171,6 @@ class RscPluginManager {
   stabilize(): void {
     // sort for stable build
     this.clientReferenceMetaMap = sortObject(this.clientReferenceMetaMap)
-    this.clientReferenceServerReferences = sortObject(
-      this.clientReferenceServerReferences,
-    )
     this.serverResourcesMetaMap = sortObject(this.serverResourcesMetaMap)
   }
 
@@ -1705,46 +1715,6 @@ function vitePluginUseClient(
             return { code, map: null }
           }
         },
-      },
-      generateBundle() {
-        if (manager.isScanBuild) return
-        if (this.environment.name !== browserEnvironmentName) return
-
-        manager.clientReferenceServerReferences = {}
-        for (const clientReference of Object.values(
-          manager.clientReferenceMetaMap,
-        )) {
-          const serverReferenceIds = new Set<string>()
-          const visited = new Set<string>()
-          const queue = [clientReference.importId]
-          for (let index = 0; index < queue.length; index++) {
-            const id = queue[index]!
-            if (visited.has(id)) continue
-            visited.add(id)
-
-            const serverReference = manager.serverReferences.metaMap.get(id)
-            if (serverReference) {
-              for (const exportName of serverReference.exportNames) {
-                serverReferenceIds.add(
-                  `${serverReference.referenceKey}#${exportName}`,
-                )
-              }
-            }
-
-            const info = this.getModuleInfo(id)
-            if (!info) continue
-            queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
-          }
-
-          manager.clientReferenceServerReferences[clientReference.importId] = {
-            importId: clientReference.importId,
-            referenceKey: clientReference.referenceKey,
-            serverReferenceIds: [...serverReferenceIds].sort(),
-          }
-        }
-        manager.clientReferenceServerReferences = sortObject(
-          manager.clientReferenceServerReferences,
-        )
       },
     },
     {

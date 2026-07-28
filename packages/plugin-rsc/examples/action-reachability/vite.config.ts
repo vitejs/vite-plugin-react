@@ -1,7 +1,5 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import react from '@vitejs/plugin-react'
-import rsc, { getPluginApi } from '@vitejs/plugin-rsc'
+import rsc, { getPluginApi, type PluginApi } from '@vitejs/plugin-rsc'
 import { defineConfig, type Plugin } from 'vite'
 
 export default defineConfig({
@@ -19,21 +17,20 @@ export default defineConfig({
 })
 
 function writeReachabilityPicture(): Plugin {
+  let manager: PluginApi['manager']
   return {
     name: 'write-reference-reachability-picture',
-    buildApp: {
-      order: 'post',
-      async handler(builder) {
-        const { manager } = getPluginApi(builder.config)!
-        const outputPath = path.join(
-          builder.config.root,
-          'dist/client/reference-reachability.json',
-        )
-        fs.writeFileSync(
-          outputPath,
-          JSON.stringify(manager.clientReferenceServerReferences, null, 2),
-        )
-      },
+    configResolved(config) {
+      manager = getPluginApi(config)!.manager
+    },
+    generateBundle() {
+      if (this.environment.name !== 'client') return
+      const reachability = manager.getClientReferenceServerReferences(this)
+      this.emitFile({
+        type: 'asset',
+        fileName: 'reference-reachability.json',
+        source: JSON.stringify(reachability, null, 2),
+      })
     },
   }
 }
