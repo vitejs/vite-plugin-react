@@ -3,21 +3,20 @@
 import { useState } from 'react'
 import { cachedFromClient } from './action'
 
-export function FileDirectiveFromClient() {
+export function FileDirectiveFromClient(props: { result: string }) {
   const [requests, setRequests] = useState(0)
-  const [result, setResult] = useState('none')
-
-  async function call() {
-    setRequests((value) => value + 1)
-    setResult(await cachedFromClient('same'))
-  }
 
   return (
-    <div data-testid="file-directive-from-client">
-      <button onClick={() => void call()}>call</button>
+    <form
+      action={cachedFromClient}
+      data-testid="file-directive-from-client"
+      onSubmit={() => setRequests((value) => value + 1)}
+    >
+      <input type="hidden" name="argument" value="same" />
+      <button>call</button>
       <span>
-        requests: {requests}; result: {result}
+        requests: {requests}; result: {props.result}
       </span>
-    </div>
+    </form>
   )
 }

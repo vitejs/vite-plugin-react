@@ -92,9 +92,30 @@ async function replyToCacheKey(reply: string | FormData) {
   if (typeof reply === 'string') {
     return reply
   }
+  // Multipart serialization generates a random boundary, so hash the entries directly.
+  const parts: BlobPart[] = []
+  for (const [name, value] of reply) {
+    if (typeof value === 'string') {
+      parts.push(JSON.stringify([name, 'string', value]), '\0')
+    } else {
+      parts.push(
+        JSON.stringify([
+          name,
+          'file',
+          value.name,
+          value.type,
+          value.size,
+          value.lastModified,
+        ]),
+        '\0',
+        await value.arrayBuffer(),
+        '\0',
+      )
+    }
+  }
   const buffer = await crypto.subtle.digest(
     'SHA-256',
-    await new Response(reply).arrayBuffer(),
+    await new Blob(parts).arrayBuffer(),
   )
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
 }

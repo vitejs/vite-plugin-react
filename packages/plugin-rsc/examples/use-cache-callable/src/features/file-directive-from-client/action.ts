@@ -1,8 +1,9 @@
 'use cache'
 
-let implementationCalls = 0
+import { state } from './state'
 
-export async function cachedFromClient(argument: string) {
-  implementationCalls++
-  return `client:${argument}:${implementationCalls}`
+export async function cachedFromClient(formData: FormData) {
+  const argument = String(formData.get('argument'))
+  state.implementationCalls++
+  state.result = `client:${argument}:${state.implementationCalls}`
 }

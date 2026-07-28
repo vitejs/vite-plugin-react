@@ -3,23 +3,22 @@
 import { useState } from 'react'
 
 export function InlineDirectiveClient(props: {
-  action: (argument: string) => Promise<string>
+  action: (formData: FormData) => Promise<void>
+  result: string
 }) {
   const [requests, setRequests] = useState(0)
-  const [result, setResult] = useState('none')
-
-  async function call(argument: string) {
-    setRequests((value) => value + 1)
-    setResult(await props.action(argument))
-  }
 
   return (
-    <div data-testid="inline-directive">
-      <button onClick={() => void call('same')}>same</button>
-      <button onClick={() => void call('different')}>different</button>
+    <form
+      action={props.action}
+      data-testid="inline-directive"
+      onSubmit={() => setRequests((value) => value + 1)}
+    >
+      <input name="argument" aria-label="argument" defaultValue="same" />
+      <button>call</button>
       <span>
-        requests: {requests}; result: {result}
+        requests: {requests}; result: {props.result}
       </span>
-    </div>
+    </form>
   )
 }

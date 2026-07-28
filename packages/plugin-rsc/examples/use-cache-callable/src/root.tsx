@@ -1,4 +1,4 @@
-import { FileDirectiveFromClient } from './features/file-directive-from-client/client'
+import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirective } from './features/inline-directive/server'
 
@@ -22,7 +22,7 @@ const routes = [
     title: 'File directive from client',
     description:
       'A client component imports a cached module export through its generated proxy.',
-    Component: FileDirectiveFromClient,
+    Component: FileDirectiveFromClientServer,
   },
 ]
 

@@ -3,22 +3,22 @@
 import { useState } from 'react'
 
 export function FileDirectiveFromServerClient(props: {
-  action: (argument: string) => Promise<string>
+  action: (formData: FormData) => Promise<void>
+  result: string
 }) {
   const [requests, setRequests] = useState(0)
-  const [result, setResult] = useState('none')
-
-  async function call() {
-    setRequests((value) => value + 1)
-    setResult(await props.action('same'))
-  }
 
   return (
-    <div data-testid="file-directive-from-server">
-      <button onClick={() => void call()}>call</button>
+    <form
+      action={props.action}
+      data-testid="file-directive-from-server"
+      onSubmit={() => setRequests((value) => value + 1)}
+    >
+      <input type="hidden" name="argument" value="same" />
+      <button>call</button>
       <span>
-        requests: {requests}; result: {result}
+        requests: {requests}; result: {props.result}
       </span>
-    </div>
+    </form>
   )
 }
