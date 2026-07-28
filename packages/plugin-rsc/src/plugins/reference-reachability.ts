@@ -12,7 +12,7 @@ import { sortObject } from './utils'
  *
  * @experimental
  */
-export type ClientReferenceServerReferences = {
+export type ClientReferenceToServerReferenceReachability = {
   /** Resolved module ID used as the client graph traversal root. */
   importId: string
   /** Reference key identifying the Client Component across environments. */
@@ -24,8 +24,9 @@ export type ClientReferenceServerReferences = {
 export function getClientReferenceServerReferences(
   context: Rollup.PluginContext,
   manager: RscPluginManager,
-): Record<string, ClientReferenceServerReferences> {
-  const result: Record<string, ClientReferenceServerReferences> = {}
+): Record<string, ClientReferenceToServerReferenceReachability> {
+  const result: Record<string, ClientReferenceToServerReferenceReachability> =
+    {}
   for (const clientReference of Object.values(manager.clientReferenceMetaMap)) {
     const serverReferenceIds = new Set<string>()
     const visited = new Set<string>()

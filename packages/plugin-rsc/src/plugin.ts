@@ -28,10 +28,6 @@ import {
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
-import {
-  getClientReferenceServerReferences,
-  type ClientReferenceServerReferences,
-} from './plugins/client-reference-server-references'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ensureEnvironmentImportsEntryFallback,
@@ -39,6 +35,10 @@ import {
   writeEnvironmentImportsManifest,
   type EnvironmentImportMeta,
 } from './plugins/import-environment'
+import {
+  getClientReferenceServerReferences,
+  type ClientReferenceToServerReferenceReachability,
+} from './plugins/reference-reachability'
 import {
   vitePluginResolvedIdProxy,
   withResolvedIdProxy,
@@ -102,7 +102,7 @@ type ClientReferenceMeta = {
   groupChunkId?: string
 }
 
-export type { ClientReferenceServerReferences }
+export type { ClientReferenceToServerReferenceReachability }
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
@@ -138,14 +138,14 @@ class RscPluginManager {
    * through the current client module graph.
    *
    * Call this from a final client build hook while Rollup's module graph is
-   * available. See {@link ClientReferenceServerReferences} for the reachability
-   * semantics.
+   * available. See {@link ClientReferenceToServerReferenceReachability} for
+   * the reachability semantics.
    *
    * @experimental
    */
   getClientReferenceServerReferences(
     context: Rollup.PluginContext,
-  ): Record<string, ClientReferenceServerReferences> {
+  ): Record<string, ClientReferenceToServerReferenceReachability> {
     return getClientReferenceServerReferences(context, this)
   }
 

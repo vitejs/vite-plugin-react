@@ -1,6 +1,6 @@
 export {
   default,
-  type ClientReferenceServerReferences,
+  type ClientReferenceToServerReferenceReachability,
   type RscPluginOptions,
   getPluginApi,
   type PluginApi,
