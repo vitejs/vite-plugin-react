@@ -17,6 +17,8 @@ function defineTests(f: Fixture) {
     using _errors = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
+    await page.getByRole('link', { name: 'Inline directive' }).click()
+    await expect(page).toHaveURL(f.url('/inline-directive'))
 
     const example = page.getByTestId('inline-directive')
     await expect(example.locator('span')).toHaveText(
@@ -38,7 +40,7 @@ function defineTests(f: Fixture) {
 
   test('file directive from server', async ({ page }) => {
     using _errors = expectNoPageError(page)
-    await page.goto(f.url())
+    await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
 
     const example = page.getByTestId('file-directive-from-server')
@@ -57,7 +59,7 @@ function defineTests(f: Fixture) {
 
   test('file directive from client', async ({ page }) => {
     using _errors = expectNoPageError(page)
-    await page.goto(f.url())
+    await page.goto(f.url('/file-directive-from-client'))
     await waitForHydration(page)
 
     const example = page.getByTestId('file-directive-from-client')
