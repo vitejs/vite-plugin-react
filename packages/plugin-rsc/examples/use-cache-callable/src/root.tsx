@@ -2,7 +2,7 @@ import { FileDirectiveFromClient } from './features/file-directive-from-client/c
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirective } from './features/inline-directive/server'
 
-export function Root() {
+export function Root(_props: { url: URL }) {
   return (
     <html>
       <head>
