@@ -36,5 +36,5 @@ The release flow depends on configuration outside this repository:
 
 - If release preparation fails, fix the cause and rerun the preparation workflow. Each run creates a uniquely named branch.
 - If publishing fails before npm accepts the package, fix the cause and rerun the failed workflow.
-- If npm publishing succeeds but tag or GitHub release creation fails, do not rerun the entire publish job blindly because npm versions are immutable. Confirm the package state first, then complete the tag and GitHub release with the release bot at the original release commit.
+- If npm publishing succeeds but tag or GitHub release creation fails, do not rerun the entire publish job blindly because npm versions are immutable. Confirm the package state first, then manually create and push the `plugin-rsc@<version>` tag at the original release commit and create the GitHub release from the corresponding changelog entry.
 - If the release tag already exists, investigate whether the package was previously published before retrying or changing any release state.
