@@ -1,6 +1,11 @@
 import react from '@vitejs/plugin-react'
 import rsc, { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
-import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
+import {
+  hasDirective,
+  transformDirectiveProxyExport,
+  transformHoistInlineDirective,
+  transformWrapExport,
+} from '@vitejs/plugin-rsc/transforms'
 import { defineConfig, parseAstAsync, type Plugin } from 'vite'
 
 const directive = 'use cache'
@@ -29,7 +34,6 @@ function callableCachePlugin(): Plugin {
       manager = getPluginApi(config)!.manager
     },
     async transform(code, id) {
-      if (this.environment.name !== 'rsc') return
       if (!code.includes(directive)) {
         manager.serverReferences.deleteClaim(pluginName, id)
         return
@@ -39,28 +43,71 @@ function callableCachePlugin(): Plugin {
       const ast = (await parseAstAsync(code)) as unknown as Parameters<
         typeof transformHoistInlineDirective
       >[1]
-      const result = transformHoistInlineDirective(code, ast, {
-        directive,
-        rejectNonAsyncFunction: true,
-        hoistRuntime: true,
-        runtime: (value, name) =>
+      const environmentName = this.environment.name
+
+      if (environmentName === 'rsc') {
+        const runtime = (value: string, name: string) =>
           `$$ReactServer.registerServerReference(` +
           `$$cacheWrapper(${value}),` +
           `${JSON.stringify(reference.referenceKey)},` +
+          `${JSON.stringify(name)})`
+        const result = hasDirective(ast.body, directive)
+          ? transformWrapExport(code, ast, {
+              runtime,
+              rejectNonAsyncFunction: true,
+            })
+          : transformHoistInlineDirective(code, ast, {
+              directive,
+              rejectNonAsyncFunction: true,
+              hoistRuntime: true,
+              runtime,
+            })
+        if (!result.output.hasChanged()) {
+          manager.serverReferences.deleteClaim(pluginName, id)
+          return
+        }
+
+        manager.serverReferences.replaceClaim(pluginName, id, {
+          ...reference,
+          exportNames: 'names' in result ? result.names : result.exportNames,
+        })
+        result.output.prepend(
+          `import $$cacheWrapper from "/src/framework/cache-runtime";\n` +
+            `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
+        )
+        return {
+          code: result.output.toString(),
+          map: result.output.generateMap({ hires: 'boundary' }),
+        }
+      }
+
+      const result = transformDirectiveProxyExport(ast, {
+        code,
+        directive,
+        rejectNonAsyncFunction: true,
+        runtime: (name) =>
+          `$$ReactClient.createServerReference(` +
+          `${JSON.stringify(reference.referenceKey + '#' + name)},` +
+          `$$ReactClient.callServer,` +
+          `undefined,` +
+          (this.environment.mode === 'dev'
+            ? `$$ReactClient.findSourceMapURL,`
+            : `undefined,`) +
           `${JSON.stringify(name)})`,
       })
-      if (!result.output.hasChanged()) {
+      if (!result?.output.hasChanged()) {
         manager.serverReferences.deleteClaim(pluginName, id)
         return
       }
 
       manager.serverReferences.replaceClaim(pluginName, id, {
         ...reference,
-        exportNames: result.names,
+        exportNames: result.exportNames,
       })
+      const runtimeEnvironment =
+        environmentName === 'client' ? 'browser' : 'ssr'
       result.output.prepend(
-        `import $$cacheWrapper from "/src/cache-runtime";\n` +
-          `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
+        `import * as $$ReactClient from "@vitejs/plugin-rsc/react/${runtimeEnvironment}";\n`,
       )
       return {
         code: result.output.toString(),

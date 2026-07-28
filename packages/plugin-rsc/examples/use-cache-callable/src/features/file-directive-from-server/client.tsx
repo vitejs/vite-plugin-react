@@ -2,21 +2,20 @@
 
 import { useState } from 'react'
 
-export function CallableCacheClient(props: {
+export function FileDirectiveFromServerClient(props: {
   action: (argument: string) => Promise<string>
 }) {
   const [requests, setRequests] = useState(0)
   const [result, setResult] = useState('none')
 
-  async function call(argument: string) {
+  async function call() {
     setRequests((value) => value + 1)
-    setResult(await props.action(argument))
+    setResult(await props.action('same'))
   }
 
   return (
-    <div data-testid="callable-cache">
-      <button onClick={() => void call('same')}>same</button>
-      <button onClick={() => void call('different')}>different</button>
+    <div data-testid="file-directive-from-server">
+      <button onClick={() => void call()}>call</button>
       <span>
         requests: {requests}; result: {result}
       </span>
