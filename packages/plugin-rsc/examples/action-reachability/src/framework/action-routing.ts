@@ -6,6 +6,10 @@ type ActionRoutingResult =
   | { type: 'redispatch'; request: Request }
   | { type: 'reject'; response: Response }
 
+/**
+ * Routes an action through an application graph that can load it. Production
+ * uses the generated route manifest, while development stays on the current route.
+ */
 export function routeActionRequest(
   renderRequest: RenderRequest,
 ): ActionRoutingResult {
