@@ -1,14 +1,14 @@
 import routeActionManifest from 'virtual:route-action-manifest'
-import { createRscRenderRequest, type RenderRequest } from './request.tsx'
+import { createActionRoutingRequest, type RenderRequest } from './request.tsx'
 
 type ActionRoutingResult =
   | { type: 'continue' }
   | { type: 'redispatch'; request: Request }
   | { type: 'reject'; response: Response }
 
-export async function routeActionRequest(
+export function routeActionRequest(
   renderRequest: RenderRequest,
-): Promise<ActionRoutingResult> {
+): ActionRoutingResult {
   const actionId = renderRequest.actionId
   if (!actionId || !routeActionManifest) {
     return { type: 'continue' }
@@ -28,7 +28,7 @@ export async function routeActionRequest(
   if (pathname === renderRequest.url.pathname) {
     return { type: 'continue' }
   }
-  if (renderRequest.request.headers.has('x-action-forwarded')) {
+  if (renderRequest.isActionForwarded) {
     return {
       type: 'reject',
       response: new Response(
@@ -37,20 +37,8 @@ export async function routeActionRequest(
       ),
     }
   }
-
-  const targetUrl = new URL(renderRequest.request.url)
-  targetUrl.pathname = pathname
-  const headers = new Headers(renderRequest.request.headers)
-  headers.set('x-action-forwarded', '1')
   return {
     type: 'redispatch',
-    request: createRscRenderRequest(
-      targetUrl.href,
-      {
-        id: actionId,
-        body: await renderRequest.request.arrayBuffer(),
-      },
-      { headers, renderUrl: renderRequest.renderUrl },
-    ),
+    request: createActionRoutingRequest(renderRequest, pathname),
   }
 }

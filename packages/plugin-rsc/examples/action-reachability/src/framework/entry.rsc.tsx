@@ -36,7 +36,7 @@ async function handleRequest(
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
-      const routing = await routeActionRequest(renderRequest)
+      const routing = routeActionRequest(renderRequest)
       if (routing.type === 'reject') {
         return routing.response
       }
