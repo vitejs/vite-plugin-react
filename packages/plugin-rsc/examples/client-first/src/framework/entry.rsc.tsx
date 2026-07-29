@@ -1,4 +1,4 @@
-import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { getServerMessage } from '../routes/page'
 
 export default async function handler(request: Request) {

@@ -127,6 +127,12 @@ class RscPluginManager {
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
   serverReferences: ServerReferencesManager = new ServerReferencesManager(this)
+
+  /** @deprecated Use `serverReferences.metaMap` instead. */
+  get serverReferenceMetaMap(): Record<string, ServerReferenceMeta> {
+    return Object.fromEntries(this.serverReferences.metaMap)
+  }
+
   serverResourcesMetaMap: Record<string, { key: string }> = {}
   environmentImportMetaMap: Record<
     string, // sourceEnv

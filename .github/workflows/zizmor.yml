@@ -26,5 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
+      # test locally by
+      #   GH_TOKEN="$(gh auth token)" zizmor .github/workflows
       - name: Run zizmor 🌈
         uses: zizmorcore/zizmor-action@6fc4b006235f201fdab3722e17240ab420d580e5 # v0.6.1

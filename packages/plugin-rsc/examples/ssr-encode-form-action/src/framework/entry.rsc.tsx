@@ -1,4 +1,7 @@
-import { decodeAction, renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+import {
+  decodeAction,
+  renderToReadableStream,
+} from '@vitejs/plugin-rsc/rsc/server'
 import { Root } from '../root'
 
 async function handler(request: Request): Promise<Response> {

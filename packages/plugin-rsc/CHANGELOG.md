@@ -1,3 +1,45 @@
+## <small>[0.5.32](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.31...plugin-rsc%400.5.32) (2026-07-28)</small>
+### Bug Fixes
+
+* **rsc:** preserve server reference metadata compatibility ([#1340](https://github.com/vitejs/vite-plugin-react/issues/1340)) ([54f38e0](https://github.com/vitejs/vite-plugin-react/commit/54f38e0c471d6defbd9945e1cfbd96c53ff56107))
+
+## <small>[0.5.31](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.30...plugin-rsc%400.5.31) (2026-07-28)</small>
+### Features
+
+* **rsc:** ability to register server function via plugins ([#1310](https://github.com/vitejs/vite-plugin-react/issues/1310)) ([31cdbb8](https://github.com/vitejs/vite-plugin-react/commit/31cdbb82219b6b637eee338a3492f735c78116bf))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1327](https://github.com/vitejs/vite-plugin-react/issues/1327)) ([a00a9f8](https://github.com/vitejs/vite-plugin-react/commit/a00a9f8240d5a7bb4062ee2a5bac68ea4f0defa6))
+* **deps:** update dependency react-router to v8 [security] ([#1328](https://github.com/vitejs/vite-plugin-react/issues/1328)) ([4560c61](https://github.com/vitejs/vite-plugin-react/commit/4560c61d216a6ca975df5bb7c0194b969300f0be))
+* **rsc:** correct `keepUseClientProxy` option typo ([#1325](https://github.com/vitejs/vite-plugin-react/issues/1325)) ([6225dc9](https://github.com/vitejs/vite-plugin-react/commit/6225dc9bc7ac4a32a0af45020ac39b6929d91728))
+* **rsc:** ignore root resolution errors in `rsc:virtual-client-package` ([#1309](https://github.com/vitejs/vite-plugin-react/issues/1309)) ([d432264](https://github.com/vitejs/vite-plugin-react/commit/d432264bae31cc8e62a9d580420c08c484b1c618))
+
+### Documentation
+
+* replace `tsc-dev` with `tsc` in agents instruction so they won't get stuck ([#1324](https://github.com/vitejs/vite-plugin-react/issues/1324)) ([036ae00](https://github.com/vitejs/vite-plugin-react/commit/036ae00d4b9465c2685b6fda2468e640840bbf25))
+* **rsc:** document `/react/*` entries and update examples list ([#1311](https://github.com/vitejs/vite-plugin-react/issues/1311)) ([bd417ef](https://github.com/vitejs/vite-plugin-react/commit/bd417ef50d2ee4e58249cc8650925f19c74cdcc3))
+
+### Miscellaneous Chores
+
+* **rsc:** align performance track payload with starter ([#1321](https://github.com/vitejs/vite-plugin-react/issues/1321)) ([dfc36c4](https://github.com/vitejs/vite-plugin-react/commit/dfc36c4c1467c95201d42a2b6869289947bf4300))
+* **rsc:** explain inline hoist transform with comments ([#1331](https://github.com/vitejs/vite-plugin-react/issues/1331)) ([7a16ffe](https://github.com/vitejs/vite-plugin-react/commit/7a16ffe904d982e613be7c1916ab8851b3c2933a))
+* **rsc:** fix internal and example typos ([#1318](https://github.com/vitejs/vite-plugin-react/issues/1318)) ([b14ed96](https://github.com/vitejs/vite-plugin-react/commit/b14ed969697db1c1a4c07348a9420b1f873d9aac))
+* **rsc:** split use cache into dedicated example ([#1312](https://github.com/vitejs/vite-plugin-react/issues/1312)) ([713fed1](https://github.com/vitejs/vite-plugin-react/commit/713fed1a34fc051637c02994874f8ee67c4ca426))
+* **rsc:** update Tailwind and remove HMR workaround ([#1329](https://github.com/vitejs/vite-plugin-react/issues/1329)) ([28f6637](https://github.com/vitejs/vite-plugin-react/commit/28f66372d91df0bdf62b59be15f58e0b3b8548e2))
+
+### Code Refactoring
+
+* **rsc:** normalize return value of `transformServerActionServer` ([#1313](https://github.com/vitejs/vite-plugin-react/issues/1313)) ([bc5ca14](https://github.com/vitejs/vite-plugin-react/commit/bc5ca14884a19794819ceb11df19258e8757af92))
+
+### Tests
+
+* **rsc:** unskip performance track test in canary CI ([#1308](https://github.com/vitejs/vite-plugin-react/issues/1308)) ([cd6c50f](https://github.com/vitejs/vite-plugin-react/commit/cd6c50f012aeba93a7a6f1563091535ce43a1ba9))
+
+### Continuous Integration
+
+* **rsc:** setup PR-driven releases ([#1334](https://github.com/vitejs/vite-plugin-react/issues/1334)) ([5174773](https://github.com/vitejs/vite-plugin-react/commit/5174773df61c7d851e9d356e3300d08df1383ff3))
+
 ## <small>[0.5.30](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.29...plugin-rsc%400.5.30) (2026-07-23)</small>
 ### Bug Fixes
 

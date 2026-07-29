@@ -10,6 +10,12 @@ Tests use Playwright and are located in `e2e/` and use `examples` as test apps.
 
 Avoid reducing plugin or runtime behavior to mocked unit tests. Craft E2E coverage that clearly demonstrates the relevant RSC bundler semantics.
 
+#### Framework Baseline
+
+[`examples/starter/src/framework`](examples/starter/src/framework) is the annotated, instructional implementation. For conventional RSC examples, use the comment-light [`examples/starter-extra/src/framework`](examples/starter-extra/src/framework) as the maintenance baseline. Keep copied framework code aligned and limit differences to behavior required by the example so that each example remains independently runnable.
+
+Examples with specialized architectures, such as PPR, SSG, no-SSR, client-first, and browser-only examples, may diverge from this baseline. Keep those differences focused on the architecture being demonstrated.
+
 #### Choosing a Test Fixture
 
 **Adding a dedicated example**
@@ -63,3 +69,7 @@ pnpm -C packages/plugin-rsc test-e2e -g "hmr"
 # Test projects created with `setupInlineFixture` are locally runnable. For example:
 pnpm -C packages/plugin-rsc/examples/e2e/temp/react-compiler dev
 ```
+
+## Releasing
+
+See [RELEASING.md](RELEASING.md) for the maintainer release process.

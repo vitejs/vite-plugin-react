@@ -2,11 +2,19 @@ name: Publish Package
 
 on:
   push:
+    # RSC releases start when a generated release PR is merged.
+    branches:
+      - main
+    # Other packages retain the existing tag-driven release flow.
     tags:
       - 'plugin-*'
 
+permissions: {}
+
 jobs:
+  # Publish tag-driven releases, excluding RSC's commit-driven flow.
   publish:
+    if: github.repository == 'vitejs/vite-plugin-react' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/plugin-rsc@')
     runs-on: ubuntu-latest
     permissions:
       contents: write # for ArnaudBarre/github-release to create a release
@@ -14,7 +22,7 @@ jobs:
     environment: Release
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
@@ -22,7 +30,7 @@ jobs:
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
       - name: Set node version
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -57,19 +65,120 @@ jobs:
         run: pnpm build
 
       - name: Publish package
+        # npm 11.5.2+ is required for trusted publishing.
+        # zizmor: ignore[adhoc-packages]
         run: npm i -g npm@^11.5.2 && pnpm run ci-publish "$GITHUB_REF_NAME"
 
-      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName != 'plugin-rsc'
+      - if: steps.tag.outputs.isAlpha == 'false'
         uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
         with:
           path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
           tag-name: ${{ github.ref_name }}
 
-      - if: steps.tag.outputs.isAlpha == 'false' && steps.tag.outputs.pkgName == 'plugin-rsc'
-        uses: yyx990803/release-tag@8cccf7c5aa332d71d222df46677f70f77a8d2dc0 # v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Only main pushes can contain an RSC release commit from a merged release PR.
+  detect-rsc-release:
+    if: github.repository == 'vitejs/vite-plugin-react' && github.ref == 'refs/heads/main'
+    name: Detect RSC release commit
+    runs-on: ubuntu-slim
+    outputs:
+      release: ${{ steps.detect.outputs.release }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          tag_name: ${{ github.ref }}
-          body: |
-            Please refer to [CHANGELOG.md](https://github.com/vitejs/vite-plugin-react/blob/${{ github.ref_name }}/packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md) for details.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect release
+        id: detect
+        run: |
+          SUBJECT="$(git log -1 --format=%s)"
+          VERSION="$(jq -r .version packages/plugin-rsc/package.json)"
+          EXPECTED="release: plugin-rsc@$VERSION"
+          if [[ "$SUBJECT" == "$EXPECTED"* ]]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "Detected RSC release $VERSION"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "No RSC release commit found at HEAD"
+          fi
+
+  publish-rsc:
+    if: needs.detect-rsc-release.outputs.release == 'true'
+    needs: detect-rsc-release
+    name: Publish RSC
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    environment: Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check release tag
+        env:
+          VERSION: ${{ needs.detect-rsc-release.outputs.version }}
+        run: |
+          TAG="plugin-rsc@$VERSION"
+          if git rev-parse --verify --quiet "refs/tags/$TAG"; then
+            echo "Tag $TAG already exists"
+            exit 1
+          fi
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - name: Set node version
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Disallow installation scripts
+        run: yq '.onlyBuiltDependencies = []' -i pnpm-workspace.yaml
+
+      - name: Install deps
+        run: pnpm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Publish package
+        # TODO: plugin-rsc doesn't currently publish alpha/beta prereleases. If it does,
+        # specify an npm dist-tag with `publish --tag ...`.
+        run: pnpm --filter @vitejs/plugin-rsc --fail-if-no-match publish --access public --no-git-checks
+
+      - id: generate-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_GITHUB_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Create GitHub release
+        run: |
+          TAG="plugin-rsc@$VERSION"
+          node scripts/extract-changelog.ts packages/plugin-rsc/CHANGELOG.md "$VERSION" > "$NOTES_FILE"
+
+          prerelease=()
+          if [[ "${VERSION%%+*}" == *-* ]]; then
+            prerelease+=(--prerelease)
+          fi
+
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes-file "$NOTES_FILE" \
+            "${prerelease[@]}"
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          NOTES_FILE: ${{ runner.temp }}/plugin-rsc-release-notes.md
+          VERSION: ${{ needs.detect-rsc-release.outputs.version }}
