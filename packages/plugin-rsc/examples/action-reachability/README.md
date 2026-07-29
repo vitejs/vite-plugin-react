@@ -2,6 +2,8 @@
 
 This example demonstrates route-aware dispatch for a retained server action. Action A is associated with route `/a` because `/a`'s application graph reaches it, while `/b`'s graph does not. The browser can still retain its server reference, navigate to `/b`, and invoke it there.
 
+See [#1337](https://github.com/vitejs/vite-plugin-react/issues/1337) for the broader discussion of route-aware server reference manifests.
+
 The example follows this sequence:
 
 1. Open `/a` and save action A in a shared browser module.
