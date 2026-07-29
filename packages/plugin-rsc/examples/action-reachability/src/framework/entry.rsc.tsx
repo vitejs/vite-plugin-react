@@ -22,7 +22,7 @@ export default { fetch: handler }
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
   const { middleware } = getRoute(renderRequest.url.pathname)
-  // Forwarded requests re-enter here so the action route replaces the request context.
+  // Redispatched actions re-enter route middleware before execution.
   return middleware(renderRequest.request, () => handleRequest(renderRequest))
 }
 
@@ -36,6 +36,7 @@ async function handleRequest(
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
+      // Route the action through an application graph that can load it.
       const routing = routeActionRequest(renderRequest)
       if (routing.type === 'reject') {
         return routing.response
@@ -58,8 +59,9 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
-      // TODO: extract the action ID from React's multipart
-      // fields and apply the same route-manifest redispatch before decoding.
+      // TODO: Resolve the submitted action ID from React's multipart fields
+      // and apply the same route-aware redispatch before decodeAction().
+      // Next.js's pre-decode validation shows how these fields are inspected:
       // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/packages/next/src/server/app-render/action-handler.ts#L1467-L1576
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
