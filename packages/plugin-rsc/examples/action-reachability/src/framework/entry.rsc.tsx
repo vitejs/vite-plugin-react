@@ -12,28 +12,19 @@ import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
 import { getRoute } from './routes.tsx'
 
-// The schema of payload which is serialized into RSC stream on rsc environment
-// and deserialized on ssr/client environments.
 export type RscPayload = {
-  // this demo renders/serializes/deserializes the entire root HTML element
-  // but this mechanism can be changed to render/fetch different parts of components
-  // based on your own route conventions.
   root: React.ReactNode
-  // server action return value of non-progressive enhancement case
   returnValue?: { ok: boolean; data: unknown }
-  // server action form state (e.g. useActionState) of progressive enhancement case
   formState?: ReactFormState
 }
 
-// The plugin assumes by default that the `rsc` entry has a default export of a request handler.
-// However, server entries can be executed differently by registering your own server handler.
 export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
-  // differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request)
   request = renderRequest.request
   const { middleware } = getRoute(renderRequest.url.pathname)
+  // Forwarded requests re-enter here so the action route replaces the request context.
   return middleware(request, () => handleRequest(renderRequest))
 }
 
@@ -41,7 +32,6 @@ async function handleRequest(
   renderRequest: ReturnType<typeof parseRenderRequest>,
 ): Promise<Response> {
   const request = renderRequest.request
-  // handle server function request
   let returnValue: RscPayload['returnValue'] | undefined
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
@@ -49,7 +39,7 @@ async function handleRequest(
   let actionRoute: string | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
-      // action is called via `ReactClient.setServerCallback`.
+      // Select a route whose application graph reaches the requested action.
       actionRoute = Object.entries(routeActionManifest).find(([, actionIds]) =>
         actionIds.includes(renderRequest.actionId!),
       )?.[0]
@@ -59,6 +49,7 @@ async function handleRequest(
         })
       }
       if (actionRoute !== renderRequest.url.pathname) {
+        // Redispatch through the action route so its middleware establishes context.
         if (request.headers.has('x-action-forwarded')) {
           return new Response(
             'Forwarded server action reached the wrong route',
@@ -71,6 +62,7 @@ async function handleRequest(
         targetUrl.pathname = actionRoute + '_.rsc'
         const headers = new Headers(request.headers)
         headers.set('x-action-forwarded', '1')
+        // Render the visible route after the action runs through another route.
         headers.set('x-rsc-render-url', renderRequest.url.href)
         return handler(
           new Request(targetUrl, {
@@ -104,8 +96,6 @@ async function handleRequest(
         const result = await decodedAction()
         formState = await decodeFormState(result, formData)
       } catch (e) {
-        // there's no single general obvious way to surface this error,
-        // so explicitly return classic 500 response.
         return new Response('Internal Server Error: server action failed', {
           status: 500,
         })
@@ -113,10 +103,6 @@ async function handleRequest(
     }
   }
 
-  // serialization from React VDOM tree to RSC stream.
-  // we render RSC stream after handling server function request
-  // so that new render reflects updated state from server function call
-  // to achieve single round trip to mutate and fetch from server.
   const rscPayload: RscPayload = {
     root: (
       <Root
@@ -131,7 +117,6 @@ async function handleRequest(
   const rscOptions = { temporaryReferences }
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions)
 
-  // Respond RSC stream without HTML rendering as decided by `RenderRequest`
   if (renderRequest.isRsc) {
     return new Response(rscStream, {
       status: actionStatus,
@@ -147,20 +132,14 @@ async function handleRequest(
     })
   }
 
-  // Delegate to SSR environment for html rendering.
-  // The plugin provides `loadModule` helper to allow loading SSR environment entry module
-  // in RSC environment. however this can be customized by implementing own runtime communication
-  // e.g. `@cloudflare/vite-plugin`'s service binding.
   const ssrEntryModule = await import.meta.viteRsc.loadModule<
     typeof import('./entry.ssr.tsx')
   >('ssr', 'index')
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
-    // allow quick simulation of javascript disabled browser
     debugNojs: renderRequest.url.searchParams.has('__nojs'),
   })
 
-  // respond html
   return new Response(ssrResult.stream, {
     status: ssrResult.status,
     headers: {

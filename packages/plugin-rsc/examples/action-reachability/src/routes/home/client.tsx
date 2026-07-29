@@ -7,6 +7,7 @@ export function HomeAction() {
     <button
       data-testid="home-action"
       onClick={async () => {
+        // Delay dispatch so navigation changes the action request's route.
         await new Promise((resolve) => setTimeout(resolve, 500))
         await commands.objectWrappedAction()
       }}

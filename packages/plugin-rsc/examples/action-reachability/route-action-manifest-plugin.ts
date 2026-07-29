@@ -27,6 +27,7 @@ export function routeActionManifestPlugin(): Plugin {
     resolveId(source) {
       if (source !== virtualRouteActionManifest) return
       if (this.environment.mode === 'build') {
+        // The RSC output imports a sidecar written after the later client build.
         return { id: './route-action-manifest.js', external: true }
       }
       return resolvedVirtualRouteActionManifest
@@ -38,6 +39,7 @@ export function routeActionManifestPlugin(): Plugin {
     },
     generateBundle() {
       if (this.environment.name === 'rsc') {
+        // Collect each route's direct actions and reachable Client Components.
         for (const [route, source] of Object.entries(routes)) {
           const clientReferenceKeys = new Set<string>()
           const directServerReferenceIds = new Set<string>()
@@ -74,6 +76,7 @@ export function routeActionManifestPlugin(): Plugin {
       }
 
       if (this.environment.name !== 'client') return
+      // Join RSC route reachability with the final client graph relation.
       const reachabilityByReferenceKey = new Map(
         manager
           .getClientToServerReferenceReachability(this)
@@ -102,6 +105,7 @@ export function routeActionManifestPlugin(): Plugin {
     buildApp: {
       order: 'post',
       async handler() {
+        // The client graph is available only after the RSC output was emitted.
         const outDir = config.environments.rsc!.build.outDir
         fs.writeFileSync(
           path.join(outDir, 'route-action-manifest.js'),
