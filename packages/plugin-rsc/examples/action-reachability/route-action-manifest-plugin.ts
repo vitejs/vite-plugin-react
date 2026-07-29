@@ -55,8 +55,21 @@ export function routeActionManifestPlugin(): Plugin {
 
       if (this.environment.name === 'client') {
         // Join RSC route reachability with the final client graph relation.
-        const reachabilityByReferenceKey =
-          getClientToServerReferenceReachability(this, manager)
+        const reachabilityByReferenceKey = new Map<string, Set<string>>()
+        for (const clientReference of Object.values(
+          manager.clientReferenceMetaMap,
+        )) {
+          const { serverReferenceIds } = collectReachableReferences(
+            this,
+            manager,
+            [clientReference.importId],
+          )
+          reachabilityByReferenceKey.set(
+            clientReference.referenceKey,
+            serverReferenceIds,
+          )
+        }
+
         routeActionManifest = {}
         for (const route of Object.keys(routes)) {
           const actionIds = new Set(routeServerReferenceIds.get(route))
@@ -134,20 +147,4 @@ function collectReachableReferences(
     }
   }
   return { clientReferenceKeys, serverReferenceIds }
-}
-
-function getClientToServerReferenceReachability(
-  context: Rollup.PluginContext,
-  manager: RscPluginManager,
-): Map<string, Set<string>> {
-  const result = new Map<string, Set<string>>()
-  for (const clientReference of Object.values(manager.clientReferenceMetaMap)) {
-    const { serverReferenceIds } = collectReachableReferences(
-      context,
-      manager,
-      [clientReference.importId],
-    )
-    result.set(clientReference.referenceKey, serverReferenceIds)
-  }
-  return result
 }
