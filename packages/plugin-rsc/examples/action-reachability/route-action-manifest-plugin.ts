@@ -77,12 +77,39 @@ export function routeActionManifestPlugin(): Plugin {
       }
 
       if (this.environment.name !== 'client') return
+      const reachabilityByReferenceKey = new Map<string, Set<string>>()
+      for (const clientReference of Object.values(
+        manager.clientReferenceMetaMap,
+      )) {
+        const serverReferenceIds = new Set<string>()
+        const visited = new Set<string>()
+        const queue = [clientReference.importId]
+        for (let index = 0; index < queue.length; index++) {
+          const id = queue[index]!
+          if (visited.has(id)) continue
+          visited.add(id)
+
+          const serverReference = manager.serverReferences.metaMap.get(id)
+          if (serverReference) {
+            for (const exportName of serverReference.exportNames) {
+              serverReferenceIds.add(
+                `${serverReference.referenceKey}#${exportName}`,
+              )
+            }
+          }
+
+          const info = this.getModuleInfo(id)
+          if (info) {
+            queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
+          }
+        }
+        reachabilityByReferenceKey.set(
+          clientReference.referenceKey,
+          serverReferenceIds,
+        )
+      }
+
       // Join RSC route reachability with the final client graph relation.
-      const reachabilityByReferenceKey = new Map(
-        manager
-          .getClientToServerReferenceReachability(this)
-          .map((entry) => [entry.referenceKey, entry.serverReferenceIds]),
-      )
       routeActionManifest = Object.fromEntries(
         Object.keys(routes).map((route) => {
           const actionIds = new Set(routeDirectServerReferenceIds.get(route))
