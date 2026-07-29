@@ -1,6 +1,6 @@
 # Cross-Environment Action Reachability
 
-This example demonstrates route-aware dispatch for a retained server action. Action A is reachable from route `/a`'s application graph but not from route `/b`'s graph. The browser can still retain its server reference, navigate to `/b`, and invoke it there.
+This example demonstrates route-aware dispatch for a retained server action. Action A is associated with route `/a` because `/a`'s application graph reaches it, while `/b`'s graph does not. The browser can still retain its server reference, navigate to `/b`, and invoke it there.
 
 The example follows this sequence:
 
@@ -13,7 +13,7 @@ The example follows this sequence:
 | Production  | `/a` middleware         | `ACTION_A_OK:MIDDLEWARE_A` | `/b`          |
 | Development | `/b` middleware         | `ACTION_A_OK:MIDDLEWARE_B` | `/b`          |
 
-In production, a generated route-action manifest lets the RSC handler redispatch the action request through a route whose graph can load the action. This example enables manifest routing only in production, so development stays on the current route.
+In production, a generated route-action manifest lets the RSC handler redispatch the action request through middleware for a page whose graph reaches the action. This example enables manifest routing only in production, so development stays on the current route.
 
 ## Application graphs
 

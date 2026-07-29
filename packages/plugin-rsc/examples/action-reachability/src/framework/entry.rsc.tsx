@@ -36,7 +36,7 @@ async function handleRequest(
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
-      // Route the action through an application graph that can load it.
+      // Run the action through middleware for a page whose graph reaches it.
       const routing = routeActionRequest(renderRequest)
       if (routing.type === 'reject') {
         return routing.response
@@ -59,11 +59,13 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
-      // TODO: Resolve the submitted action ID from React's multipart fields
-      // and apply the same route-aware redispatch before decodeAction().
-      // This example covers only the explicit-ID flow for simplicity.
+      // TODO: Extract the submitted action ID from React's multipart fields and
+      // apply the same route-aware redispatch before decodeAction().
       // Next.js's pre-decode validation shows how these fields are inspected:
       // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/packages/next/src/server/app-render/action-handler.ts#L1467-L1576
+      // TODO: Determine whether progressive forms need redispatch in practice.
+      // A progressive form normally posts back to the route that rendered it,
+      // so the action already runs through that route's middleware.
       const formData = await request.formData()
       const decodedAction = await decodeAction(formData)
       try {
