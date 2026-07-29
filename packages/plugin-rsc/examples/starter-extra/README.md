@@ -2,6 +2,8 @@
 
 This fixture starts as a copy of [`examples/starter`](../starter) and is reserved for focused e2e scenarios that should not make the public starter demo harder to read.
 
+Its [`src/framework`](./src/framework) directory is the comment-light maintenance baseline for conventional RSC examples. Keep those examples aligned with this shape except where their demonstrated behavior requires a difference. The public starter retains the equivalent instructional implementation with inline commentary.
+
 Use this when a scenario needs a small starter-like app but requires extra test-only routes, components, styles, or deployment variants.
 
 ```sh

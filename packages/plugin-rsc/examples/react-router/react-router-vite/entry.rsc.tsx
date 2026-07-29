@@ -5,7 +5,7 @@ import {
   decodeReply,
   loadServerAction,
   renderToReadableStream,
-} from '@vitejs/plugin-rsc/rsc'
+} from '@vitejs/plugin-rsc/rsc/server'
 import { unstable_matchRSCServerRequest as matchRSCServerRequest } from 'react-router'
 import { routes } from '../app/routes'
 

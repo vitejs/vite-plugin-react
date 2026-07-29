@@ -1,4 +1,4 @@
-import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc'
+import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
 import { Root, getStaticPaths } from '../root'
 import { parseRenderRequest } from './request'
 import type { RscPayload } from './shared'
