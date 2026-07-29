@@ -2,19 +2,16 @@
 
 import React from 'react'
 import { getSavedAction, setSavedAction } from '../saved-action.ts'
-import { commands } from './commands.tsx'
+import { getActionA } from './action-indirect.ts'
 
 export function ActionA() {
   const [result, setResult] = React.useState('none')
   const savedAction = getSavedAction()
+  const actionA = getActionA()
   return (
     <div>
-      <button onClick={() => commands.actionA().then(setResult)}>
-        Run action A
-      </button>
-      <button onClick={() => setSavedAction(commands.actionA)}>
-        Save action A
-      </button>
+      <button onClick={() => actionA().then(setResult)}>Run action A</button>
+      <button onClick={() => setSavedAction(actionA)}>Save action A</button>
       <button
         disabled={!savedAction}
         onClick={() => savedAction?.().then(setResult)}

@@ -13,7 +13,7 @@ Route A's server reference crosses a Client Component boundary through an ordina
 ```text
 routes/a/page.tsx
   -> client.tsx ("use client")
-  -> commands.tsx exports { actionA }
+  -> action-indirect.ts returns actionA through ordinary runtime value flow
   -> action.tsx ("use server")
 ```
 
