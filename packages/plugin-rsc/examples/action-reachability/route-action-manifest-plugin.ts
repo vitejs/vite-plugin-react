@@ -4,8 +4,8 @@ import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import { normalizePath, type Plugin } from 'vite'
 
 const routes = {
-  '/a': ['./src/routes/root.tsx', './src/routes/a/page.tsx'],
-  '/b': ['./src/routes/root.tsx', './src/routes/b/page.tsx'],
+  '/a': ['./src/app/root.tsx', './src/app/a/page.tsx'],
+  '/b': ['./src/app/root.tsx', './src/app/b/page.tsx'],
 }
 
 const ROUTE_ACTION_MANIFEST_ID = 'virtual:route-action-manifest'

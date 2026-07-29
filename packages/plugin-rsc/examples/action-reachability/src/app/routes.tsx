@@ -1,9 +1,9 @@
-import { middleware as middlewareA } from '../routes/a/middleware.ts'
-import { Page as PageA } from '../routes/a/page.tsx'
-import { middleware as middlewareB } from '../routes/b/middleware.ts'
-import { Page as PageB } from '../routes/b/page.tsx'
-import { Root } from '../routes/root.tsx'
-import type { RouteMiddleware } from './middleware.ts'
+import type { RouteMiddleware } from '../framework/middleware.ts'
+import { middleware as middlewareA } from './a/middleware.ts'
+import { Page as PageA } from './a/page.tsx'
+import { middleware as middlewareB } from './b/middleware.ts'
+import { Page as PageB } from './b/page.tsx'
+import { Root } from './root.tsx'
 
 export const routes = {
   '/a': { Page: PageA, middleware: middlewareA },

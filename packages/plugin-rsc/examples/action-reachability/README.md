@@ -3,15 +3,15 @@
 This example implements a mechanical file-system route convention:
 
 ```text
-routes/root.tsx   -> shared layout
-routes/a/page.tsx -> /a
-routes/b/page.tsx -> /b
+app/root.tsx   -> shared layout
+app/a/page.tsx -> /a
+app/b/page.tsx -> /b
 ```
 
 Route A's server reference crosses a Client Component boundary through an ordinary JavaScript object:
 
 ```text
-routes/a/page.tsx
+app/a/page.tsx
   -> client.tsx ("use client")
   -> action-indirect.ts returns actionA through ordinary runtime value flow
   -> action.tsx ("use server")

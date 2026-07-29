@@ -7,9 +7,9 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
+import { getRoute, RouteRoot } from '../app/routes.tsx'
 import { routeActionRequest } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
-import { getRoute, RouteRoot } from './routes.tsx'
 
 export type RscPayload = {
   root: React.ReactNode
