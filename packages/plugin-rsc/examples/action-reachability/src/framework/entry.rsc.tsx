@@ -7,7 +7,7 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import { resolveActionRoute } from './action-routing.ts'
+import { routeActionRequest } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 import { getRoute, RouteRoot } from './routes.tsx'
 
@@ -21,10 +21,9 @@ export default { fetch: handler }
 
 async function handler(request: Request): Promise<Response> {
   const renderRequest = parseRenderRequest(request)
-  request = renderRequest.request
   const { middleware } = getRoute(renderRequest.url.pathname)
   // Forwarded requests re-enter here so the action route replaces the request context.
-  return middleware(request, () => handleRequest(renderRequest))
+  return middleware(renderRequest.request, () => handleRequest(renderRequest))
 }
 
 async function handleRequest(
@@ -35,42 +34,14 @@ async function handleRequest(
   let formState: ReactFormState | undefined
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
-  let actionRoute: string | undefined
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
-      // Select a route whose application graph reaches the requested action.
-      const resolvedRoute = resolveActionRoute(renderRequest.actionId)
-      if (resolvedRoute.enabled) {
-        actionRoute = resolvedRoute.pathname
-        if (!actionRoute) {
-          return new Response('Server action is not reachable from any route', {
-            status: 404,
-          })
-        }
-        if (actionRoute !== renderRequest.url.pathname) {
-          // Redispatch through the action route so its middleware establishes context.
-          if (request.headers.has('x-action-forwarded')) {
-            return new Response(
-              'Forwarded server action reached the wrong route',
-              {
-                status: 404,
-              },
-            )
-          }
-          const targetUrl = new URL(request.url)
-          targetUrl.pathname = actionRoute + '_.rsc'
-          const headers = new Headers(request.headers)
-          headers.set('x-action-forwarded', '1')
-          // Render the visible route after the action runs through another route.
-          headers.set('x-rsc-render-url', renderRequest.url.href)
-          return handler(
-            new Request(targetUrl, {
-              method: request.method,
-              headers,
-              body: await request.arrayBuffer(),
-            }),
-          )
-        }
+      const routing = await routeActionRequest(renderRequest)
+      if (routing.type === 'reject') {
+        return routing.response
+      }
+      if (routing.type === 'redispatch') {
+        return handler(routing.request)
       }
       const contentType = request.headers.get('content-type')
       const body = contentType?.startsWith('multipart/form-data')
@@ -104,14 +75,7 @@ async function handleRequest(
   }
 
   const rscPayload: RscPayload = {
-    root: (
-      <RouteRoot
-        pathname={
-          new URL(request.headers.get('x-rsc-render-url') ?? renderRequest.url)
-            .pathname
-        }
-      />
-    ),
+    root: <RouteRoot pathname={renderRequest.renderUrl.pathname} />,
     formState,
     returnValue,
   }
@@ -123,12 +87,6 @@ async function handleRequest(
       status: actionStatus,
       headers: {
         'content-type': 'text/x-component;charset=utf-8',
-        ...(actionRoute && {
-          'x-action-route': actionRoute,
-          'x-action-forwarded': String(
-            request.headers.has('x-action-forwarded'),
-          ),
-        }),
       },
     })
   }
