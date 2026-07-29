@@ -5,6 +5,8 @@ import { middleware as middlewareB } from './b/middleware.ts'
 import { Page as PageB } from './b/page.tsx'
 import { Root } from './root.tsx'
 
+// TODO: A framework would generate this registry from its route convention.
+// This example declares it explicitly for simplicity.
 export const routes = {
   '/a': { Page: PageA, middleware: middlewareA },
   '/b': { Page: PageB, middleware: middlewareB },

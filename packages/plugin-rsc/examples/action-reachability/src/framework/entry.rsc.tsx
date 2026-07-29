@@ -61,6 +61,7 @@ async function handleRequest(
     } else {
       // TODO: Resolve the submitted action ID from React's multipart fields
       // and apply the same route-aware redispatch before decodeAction().
+      // This example covers only the explicit-ID flow for simplicity.
       // Next.js's pre-decode validation shows how these fields are inspected:
       // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/packages/next/src/server/app-render/action-handler.ts#L1467-L1576
       const formData = await request.formData()

@@ -3,6 +3,8 @@ import path from 'node:path'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import { normalizePath, type Plugin } from 'vite'
 
+// TODO: A framework would derive these graph roots from the runtime route
+// convention. This example lists them again for simplicity.
 const routes = {
   '/a': ['./src/app/root.tsx', './src/app/a/page.tsx'],
   '/b': ['./src/app/root.tsx', './src/app/b/page.tsx'],
