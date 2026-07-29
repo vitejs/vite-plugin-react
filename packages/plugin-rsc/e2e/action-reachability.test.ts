@@ -26,12 +26,16 @@ test.describe('build', () => {
     )
     await page.getByTestId('action-a').click()
     await page.getByRole('link', { name: '/b' }).click()
-    await expect(page.getByRole('heading', { name: '/b' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'This is page "b"' }),
+    ).toBeVisible()
     const response = await responsePromise
     expect(response.status()).toBe(200)
     expect(response.headers()['x-action-route']).toBe('/a')
     expect(response.headers()['x-action-forwarded']).toBe('true')
     expect(await response.text()).toContain('ACTION_A_OK:/a')
-    await expect(page.getByRole('heading', { name: '/b' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'This is page "b"' }),
+    ).toBeVisible()
   })
 })
