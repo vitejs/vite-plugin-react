@@ -8,10 +8,8 @@ test.describe('build', () => {
     mode: 'build',
   })
 
-  test('dispatches a retained action to its reachable route', async ({
-    page,
-  }) => {
-    // /a -> save action A -> navigate to /b -> run action A through /a
+  test('executes a retained action through /a', async ({ page }) => {
+    // The production manifest redispatches the /b request through /a.
     await page.goto(f.url('/a'))
     await waitForHydration(page)
     await page.getByRole('button', { name: 'Save action A' }).click()
@@ -38,14 +36,24 @@ test.describe('dev', () => {
     mode: 'dev',
   })
 
-  test('executes a retained action on the current route', async ({ page }) => {
+  test('executes a retained action through /b', async ({ page }) => {
+    // Development has no route manifest, so the same request stays on /b.
     await page.goto(f.url('/a'))
     await waitForHydration(page)
     await page.getByRole('button', { name: 'Save action A' }).click()
     await page.getByRole('link', { name: '/b' }).click()
-    await page.getByRole('button', { name: 'Run saved action' }).click()
+    await expect(
+      page.getByRole('heading', { name: 'This is page "b"' }),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Run saved action' }),
+    ).toBeEnabled()
 
+    await page.getByRole('button', { name: 'Run saved action' }).click()
     await expect(page.getByText('Result: ACTION_A_OK:/b')).toBeVisible()
     await expect(page).toHaveURL(f.url('/b'))
+    await expect(
+      page.getByRole('heading', { name: 'This is page "b"' }),
+    ).toBeVisible()
   })
 })
