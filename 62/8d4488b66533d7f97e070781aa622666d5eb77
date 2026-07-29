@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/action-reachability/route-action-manifest-plugin.ts
+  s_cba8c8d9783f62::t_e7430af3fa5372 4,19,41,43-48,50,57-60,63,105-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "628d4488b66533d7f97e070781aa622666d5eb77",
+  "prompts": {},
+  "sessions": {
+    "s_cba8c8d9783f62": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_054c33e56ffeALP2IpU1v31SfI",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
