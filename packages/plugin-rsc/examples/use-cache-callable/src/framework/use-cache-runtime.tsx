@@ -94,21 +94,15 @@ async function replyToCacheKey(reply: string | FormData) {
   if (typeof reply === 'string') {
     return reply
   }
-  // Multipart serialization generates a random boundary, so hash the entries directly.
+  // `new Response(reply).arrayBuffer()` would serialize FormData with a random
+  // multipart boundary, so encode entries directly to keep cache keys stable.
   const parts: BlobPart[] = []
   for (const [name, value] of reply) {
     if (typeof value === 'string') {
       parts.push(JSON.stringify([name, 'string', value]), '\0')
     } else {
       parts.push(
-        JSON.stringify([
-          name,
-          'file',
-          value.name,
-          value.type,
-          value.size,
-          value.lastModified,
-        ]),
+        JSON.stringify([name, 'file']),
         '\0',
         await value.arrayBuffer(),
         '\0',
