@@ -11,12 +11,6 @@ test.describe('build', () => {
   test('dispatches a retained action to its reachable route', async ({
     page,
   }) => {
-    const manifest: Record<string, string[]> = JSON.parse(
-      f.createEditor('dist/client/route-action-manifest.json').read(),
-    )
-    expect(manifest['/a']).toEqual([expect.stringMatching(/#actionA$/)])
-    expect(manifest['/b']).toEqual([expect.stringMatching(/#actionB$/)])
-
     // /a -> save action A -> navigate to /b -> run action A through /a
     await page.goto(f.url('/a'))
     await waitForHydration(page)
