@@ -1,39 +1,36 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
-import { normalizePath, type Plugin, type ResolvedConfig } from 'vite'
+import { normalizePath, type Plugin } from 'vite'
 
 const routes = {
   '/': './src/routes/home/page.tsx',
   '/other': './src/routes/other/page.tsx',
 }
 
-const virtualRouteActionManifest = 'virtual:route-action-manifest'
-const resolvedVirtualRouteActionManifest = `\0${virtualRouteActionManifest}`
+const ROUTE_ACTION_MANIFEST_ID = 'virtual:route-action-manifest'
+const ROUTE_ACTION_MANIFEST_FILE = '__route_action_manifest.js'
 
 export function routeActionManifestPlugin(): Plugin {
   let manager: RscPluginManager
-  let config!: ResolvedConfig
   const routeClientReferenceKeys = new Map<string, Set<string>>()
   const routeDirectServerReferenceIds = new Map<string, Set<string>>()
   let routeActionManifest: Record<string, string[]> = {}
 
   return {
     name: 'route-action-manifest',
-    configResolved(resolvedConfig) {
-      config = resolvedConfig
-      manager = getPluginApi(resolvedConfig)!.manager
+    configResolved(config) {
+      manager = getPluginApi(config)!.manager
     },
     resolveId(source) {
-      if (source !== virtualRouteActionManifest) return
-      if (this.environment.mode === 'build') {
-        // The RSC output imports a sidecar written after the later client build.
-        return { id: './route-action-manifest.js', external: true }
+      if (source === ROUTE_ACTION_MANIFEST_ID) {
+        return this.environment.mode === 'build'
+          ? { id: source, external: true }
+          : '\0' + source
       }
-      return resolvedVirtualRouteActionManifest
     },
     load(id) {
-      if (id === resolvedVirtualRouteActionManifest) {
+      if (id === '\0' + ROUTE_ACTION_MANIFEST_ID) {
         return 'export default {}'
       }
     },
@@ -102,13 +99,29 @@ export function routeActionManifestPlugin(): Plugin {
         source: JSON.stringify(routeActionManifest, null, 2),
       })
     },
+    // Leave the virtual import external, then point it at an ESM sidecar
+    // generated after the later client build.
+    renderChunk(code, chunk) {
+      if (code.includes(ROUTE_ACTION_MANIFEST_ID)) {
+        let relativePath = path.posix.relative(
+          path.posix.dirname(chunk.fileName),
+          ROUTE_ACTION_MANIFEST_FILE,
+        )
+        if (!relativePath.startsWith('.')) {
+          relativePath = './' + relativePath
+        }
+        return {
+          code: code.replaceAll(ROUTE_ACTION_MANIFEST_ID, relativePath),
+        }
+      }
+    },
     buildApp: {
       order: 'post',
-      async handler() {
+      async handler(builder) {
         // The client graph is available only after the RSC output was emitted.
-        const outDir = config.environments.rsc!.build.outDir
-        fs.writeFileSync(
-          path.join(outDir, 'route-action-manifest.js'),
+        const outDir = builder.config.environments.rsc.build.outDir
+        await fs.promises.writeFile(
+          path.join(outDir, ROUTE_ACTION_MANIFEST_FILE),
           `export default ${JSON.stringify(routeActionManifest, null, 2)}\n`,
         )
       },
