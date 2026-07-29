@@ -28,7 +28,7 @@ src/app/a/page.tsx
 
 ## Manifest generation
 
-During the RSC build, the manifest plugin traverses each route graph and records directly reachable server reference IDs and reachable client reference keys. During the client build, it traverses the final client graph from each Client Component reference and records reachable server reference IDs. For each route, it unions the directly reachable IDs with the IDs reachable through its client references.
+During the RSC build, the manifest plugin traverses each route graph and records directly reachable server reference IDs and reachable Client Component import IDs. During the client build, it traverses the final client graph from those import IDs and records reachable server reference IDs. For each route, it unions the directly reachable IDs with the IDs reachable through its Client Components.
 
 After all environment builds finish, the plugin installs the mapping in the RSC output for runtime routing.
 

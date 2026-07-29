@@ -15,7 +15,7 @@ const ROUTE_ACTION_MANIFEST_FILE = '__route_action_manifest.js'
 
 export function routeActionManifestPlugin(): Plugin {
   let manager: RscPluginManager
-  const routeClientReferenceKeys = new Map<string, Set<string>>()
+  const routeClientReferenceImportIds = new Map<string, Set<string>>()
   const routeServerReferenceIds = new Map<string, Set<string>>()
   let routeActionManifest: Record<string, string[]> = {}
 
@@ -42,47 +42,33 @@ export function routeActionManifestPlugin(): Plugin {
       if (this.environment.name === 'rsc') {
         // Collect references reachable in each route's RSC graph.
         for (const [route, roots] of Object.entries(routes)) {
-          const { clientReferenceKeys, serverReferenceIds } =
+          const { clientReferenceImportIds, serverReferenceIds } =
             collectReachableReferences(
               this,
               manager,
               roots.map((source) => normalizePath(path.resolve(source))),
             )
-          routeClientReferenceKeys.set(route, clientReferenceKeys)
+          routeClientReferenceImportIds.set(route, clientReferenceImportIds)
           routeServerReferenceIds.set(route, serverReferenceIds)
         }
       }
 
       if (this.environment.name === 'client') {
         // Join RSC route reachability with the final client graph relation.
-        const clientReferenceKeyToServerReferenceIds: Map<
-          string,
-          Set<string>
-        > = new Map()
-        for (const clientReference of Object.values(
-          manager.clientReferenceMetaMap,
-        )) {
-          const { serverReferenceIds } = collectReachableReferences(
-            this,
-            manager,
-            [clientReference.importId],
-          )
-          clientReferenceKeyToServerReferenceIds.set(
-            clientReference.referenceKey,
-            serverReferenceIds,
-          )
-        }
-
+        // Multi-root traversal visits shared modules once per route rather than
+        // once per Client Component root: O(routes * (modules + imports)).
         routeActionManifest = {}
         for (const route of Object.keys(routes)) {
           const actionIds = new Set(routeServerReferenceIds.get(route))
-          for (const referenceKey of routeClientReferenceKeys.get(route) ??
-            []) {
-            for (const actionId of clientReferenceKeyToServerReferenceIds.get(
-              referenceKey,
-            ) ?? []) {
-              actionIds.add(actionId)
-            }
+          const clientReferenceImportIds =
+            routeClientReferenceImportIds.get(route) ?? []
+          const { serverReferenceIds } = collectReachableReferences(
+            this,
+            manager,
+            [...clientReferenceImportIds],
+          )
+          for (const actionId of serverReferenceIds) {
+            actionIds.add(actionId)
           }
           routeActionManifest[route] = [...actionIds].sort()
         }
@@ -123,7 +109,7 @@ function collectReachableReferences(
   manager: RscPluginManager,
   roots: string[],
 ) {
-  const clientReferenceKeys = new Set<string>()
+  const clientReferenceImportIds = new Set<string>()
   const serverReferenceIds = new Set<string>()
   const visited = new Set<string>()
   const queue = [...roots]
@@ -134,7 +120,7 @@ function collectReachableReferences(
 
     const clientReference = manager.clientReferenceMetaMap[id]
     if (clientReference) {
-      clientReferenceKeys.add(clientReference.referenceKey)
+      clientReferenceImportIds.add(clientReference.importId)
     }
 
     const serverReference = manager.serverReferences.metaMap.get(id)
@@ -149,5 +135,5 @@ function collectReachableReferences(
       queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
     }
   }
-  return { clientReferenceKeys, serverReferenceIds }
+  return { clientReferenceImportIds, serverReferenceIds }
 }
