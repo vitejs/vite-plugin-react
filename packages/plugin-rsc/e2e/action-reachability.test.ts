@@ -37,3 +37,21 @@ test.describe('build', () => {
     ).toBeVisible()
   })
 })
+
+test.describe('dev', () => {
+  const f = useFixture({
+    root: 'examples/action-reachability',
+    mode: 'dev',
+  })
+
+  test('executes a retained action on the current route', async ({ page }) => {
+    await page.goto(f.url('/a'))
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Save action A' }).click()
+    await page.getByRole('link', { name: '/b' }).click()
+    await page.getByRole('button', { name: 'Run saved action' }).click()
+
+    await expect(page.getByText('Result: ACTION_A_OK:/b')).toBeVisible()
+    await expect(page).toHaveURL(f.url('/b'))
+  })
+})

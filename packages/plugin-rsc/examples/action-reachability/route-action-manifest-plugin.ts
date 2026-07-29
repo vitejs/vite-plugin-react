@@ -31,17 +31,17 @@ export function routeActionManifestPlugin(): Plugin {
     },
     load(id) {
       if (id === '\0' + ROUTE_ACTION_MANIFEST_ID) {
-        return 'export default {}'
+        return 'export default null'
       }
     },
     generateBundle() {
       if (this.environment.name === 'rsc') {
         // Collect each route's direct actions and reachable Client Components.
-        for (const [route, sources] of Object.entries(routes)) {
+        for (const [route, roots] of Object.entries(routes)) {
           const clientReferenceKeys = new Set<string>()
           const directServerReferenceIds = new Set<string>()
           const visited = new Set<string>()
-          const queue = sources.map((source) =>
+          const queue = roots.map((source) =>
             normalizePath(path.resolve(source)),
           )
           for (let index = 0; index < queue.length; index++) {

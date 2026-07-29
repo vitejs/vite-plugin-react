@@ -1,4 +1,4 @@
 declare module 'virtual:route-action-manifest' {
-  const manifest: Record<string, string[]>
+  const manifest: Record<string, string[]> | null
   export default manifest
 }

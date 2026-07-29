@@ -39,37 +39,39 @@ async function handleRequest(
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
       // Select a route whose application graph reaches the requested action.
-      actionRoute = Object.entries(routeActionManifest).find(([, actionIds]) =>
-        actionIds.includes(renderRequest.actionId!),
-      )?.[0]
-      if (!actionRoute) {
-        return new Response('Server action is not reachable from any route', {
-          status: 404,
-        })
-      }
-      if (actionRoute !== renderRequest.url.pathname) {
-        // Redispatch through the action route so its middleware establishes context.
-        if (request.headers.has('x-action-forwarded')) {
-          return new Response(
-            'Forwarded server action reached the wrong route',
-            {
-              status: 404,
-            },
+      if (routeActionManifest) {
+        actionRoute = Object.entries(routeActionManifest).find(
+          ([, actionIds]) => actionIds.includes(renderRequest.actionId!),
+        )?.[0]
+        if (!actionRoute) {
+          return new Response('Server action is not reachable from any route', {
+            status: 404,
+          })
+        }
+        if (actionRoute !== renderRequest.url.pathname) {
+          // Redispatch through the action route so its middleware establishes context.
+          if (request.headers.has('x-action-forwarded')) {
+            return new Response(
+              'Forwarded server action reached the wrong route',
+              {
+                status: 404,
+              },
+            )
+          }
+          const targetUrl = new URL(request.url)
+          targetUrl.pathname = actionRoute + '_.rsc'
+          const headers = new Headers(request.headers)
+          headers.set('x-action-forwarded', '1')
+          // Render the visible route after the action runs through another route.
+          headers.set('x-rsc-render-url', renderRequest.url.href)
+          return handler(
+            new Request(targetUrl, {
+              method: request.method,
+              headers,
+              body: await request.arrayBuffer(),
+            }),
           )
         }
-        const targetUrl = new URL(request.url)
-        targetUrl.pathname = actionRoute + '_.rsc'
-        const headers = new Headers(request.headers)
-        headers.set('x-action-forwarded', '1')
-        // Render the visible route after the action runs through another route.
-        headers.set('x-rsc-render-url', renderRequest.url.href)
-        return handler(
-          new Request(targetUrl, {
-            method: request.method,
-            headers,
-            body: await request.arrayBuffer(),
-          }),
-        )
       }
       const contentType = request.headers.get('content-type')
       const body = contentType?.startsWith('multipart/form-data')
