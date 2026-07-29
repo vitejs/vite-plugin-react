@@ -12,16 +12,15 @@ export function ActionA() {
       <button onClick={() => commands.actionA().then(setResult)}>
         Run action A
       </button>
-      <button onClick={() => setSavedAction('A', commands.actionA)}>
+      <button onClick={() => setSavedAction(commands.actionA)}>
         Save action A
       </button>
       <button
         disabled={!savedAction}
-        onClick={() => savedAction?.action().then(setResult)}
+        onClick={() => savedAction?.().then(setResult)}
       >
         Run saved action
       </button>
-      <p>Saved action: {savedAction?.name ?? 'none'}</p>
       <p>Result: {result}</p>
     </div>
   )

@@ -1,9 +1,9 @@
 export type Action = () => Promise<string>
 
-let savedAction: { action: Action; name: string } | undefined
+let savedAction: Action | undefined
 
-export function setSavedAction(name: string, action: Action) {
-  savedAction = { action, name }
+export function setSavedAction(action: Action) {
+  savedAction = action
 }
 
 export function getSavedAction() {

@@ -24,7 +24,9 @@ test.describe('build', () => {
     await expect(
       page.getByRole('heading', { name: 'This is page "b"' }),
     ).toBeVisible()
-    await expect(page.getByText('Saved action: A')).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Run saved action' }),
+    ).toBeEnabled()
 
     const responsePromise = page.waitForResponse(
       (response) =>
