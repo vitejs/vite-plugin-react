@@ -1,8 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import type { Program, Node } from 'estree'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import { walk, type Node, type Program } from './estree'
 import { buildScopeTree } from './scope'
 
 // TODO:

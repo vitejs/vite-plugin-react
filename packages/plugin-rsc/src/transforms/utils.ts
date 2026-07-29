@@ -1,5 +1,10 @@
-import type { ExportDefaultDeclaration } from 'estree'
-import type { Identifier, Node, Pattern, Program } from 'estree'
+import type {
+  ExportDefaultDeclaration,
+  Identifier,
+  Node,
+  Pattern,
+  Program,
+} from './estree'
 
 export function hasDirective(
   body: Program['body'],
@@ -66,6 +71,9 @@ export function extractIdentifiers(
       break
     case 'AssignmentPattern':
       extractIdentifiers(param.left, nodes)
+      break
+    case 'TSParameterProperty':
+      extractIdentifiers(param.parameter, nodes)
       break
   }
   return nodes

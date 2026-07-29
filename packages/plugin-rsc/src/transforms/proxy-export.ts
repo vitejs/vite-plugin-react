@@ -1,5 +1,5 @@
-import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { Node, Program } from './estree'
 import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
 
 export type TransformProxyExportOptions = {
@@ -68,7 +68,7 @@ export function transformProxyExport(
            * export function foo() {}
            */
           validateNonAsyncFunction(options, node.declaration)
-          createExport(node, [node.declaration.id.name])
+          createExport(node, [node.declaration.id!.name])
         } else if (node.declaration.type === 'VariableDeclaration') {
           /**
            * export const foo = 1, bar = 2
@@ -96,8 +96,6 @@ export function transformProxyExport(
             extractNames(decl.id),
           )
           createExport(node, names)
-        } else {
-          node.declaration satisfies never
         }
       } else {
         /**

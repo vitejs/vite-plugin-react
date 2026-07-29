@@ -52,7 +52,6 @@
     "@hiogawa/utils": "^1.7.0",
     "@playwright/test": "^1.62.0",
     "@tsconfig/strictest": "^2.0.8",
-    "@types/estree": "^1.0.9",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

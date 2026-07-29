@@ -1,7 +1,7 @@
 import path from 'node:path'
-import type { Identifier, MemberExpression, Node } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
+import type { Identifier, MemberExpression, Node } from './estree'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
 
 // TODO:

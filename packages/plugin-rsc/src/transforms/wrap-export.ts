@@ -1,6 +1,6 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { ExportDefaultDeclaration, Node, Program } from './estree'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
@@ -125,7 +125,7 @@ export function transformWrapExport(
           /**
            * export function foo() {}
            */
-          const name = node.declaration.id.name
+          const name = node.declaration.id!.name
           const meta: ExportMeta = {
             isFunction: getIsFunction(node.declaration),
             declName: name,
@@ -166,8 +166,6 @@ export function transformWrapExport(
             }
           }
           wrapSimple(node.start, node.declaration.start, exports)
-        } else {
-          node.declaration satisfies never
         }
       } else {
         if (node.source) {

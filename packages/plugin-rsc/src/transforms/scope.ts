@@ -1,14 +1,14 @@
 import { tinyassert } from '@hiogawa/utils'
-import type {
-  Program,
-  Identifier,
-  MemberExpression,
-  Node,
-  FunctionDeclaration,
-  FunctionExpression,
-  ArrowFunctionExpression,
-} from 'estree'
-import { walk } from 'estree-walker'
+import {
+  walk,
+  type ArrowFunctionExpression,
+  type FunctionDeclaration,
+  type FunctionExpression,
+  type Identifier,
+  type MemberExpression,
+  type Node,
+  type Program,
+} from './estree'
 import { extractNames } from './utils'
 
 // Replacement for periscopic to correctly handle variable shadowing

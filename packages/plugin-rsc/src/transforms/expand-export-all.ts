@@ -1,5 +1,5 @@
-import type { ExportAllDeclaration, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { ExportAllDeclaration, Program } from './estree'
 import { extractNames } from './utils'
 
 export interface TransformExpandExportAllContext {

@@ -1,13 +1,13 @@
 import { tinyassert } from '@hiogawa/utils'
-import type {
-  Program,
-  Literal,
-  Node,
-  MemberExpression,
-  Identifier,
-} from 'estree'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import {
+  walk,
+  type Identifier,
+  type Literal,
+  type MemberExpression,
+  type Node,
+  type Program,
+} from './estree'
 import { buildScopeTree, type ScopeTree } from './scope'
 
 /**
@@ -109,7 +109,7 @@ export function transformHoistInlineDirective(
         (node.type === 'FunctionExpression' ||
           node.type === 'FunctionDeclaration' ||
           node.type === 'ArrowFunctionExpression') &&
-        node.body.type === 'BlockStatement'
+        node.body?.type === 'BlockStatement'
       ) {
         // Only transform functions whose block contains the requested
         // directive. Other function shapes cannot contain directive prologues.
@@ -127,7 +127,7 @@ export function transformHoistInlineDirective(
         // Capture the source-level name so the hoisted function can preserve it
         // with Object.defineProperty below. Anonymous functions get a stable
         // fallback for registration and diagnostics.
-        const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const declName = node.type === 'FunctionDeclaration' && node.id?.name
         const originalName =
           declName ||
           (parent?.type === 'VariableDeclarator' &&

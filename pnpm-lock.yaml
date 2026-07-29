@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-overrides:
-  '@types/estree': ^1.0.9
-
 importers:
 
   .:
@@ -445,9 +442,6 @@ importers:
       '@tsconfig/strictest':
         specifier: ^2.0.8
         version: 2.0.8
-      '@types/estree':
-        specifier: ^1.0.9
-        version: 1.0.9
       '@types/node':
         specifier: ^24.13.3
         version: 24.13.3
