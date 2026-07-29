@@ -1,5 +1,5 @@
 import type { RouteMiddleware } from '../../framework/middleware.ts'
-import { runWithActionContext } from '../action-context.ts'
+import { runWithRequestContext } from '../request-context.ts'
 
-export const middleware: RouteMiddleware = (request, next) =>
-  runWithActionContext({ request, route: '/b' }, next)
+export const middleware: RouteMiddleware = (_request, next) =>
+  runWithRequestContext({ middlewareTag: 'MIDDLEWARE_B' }, next)

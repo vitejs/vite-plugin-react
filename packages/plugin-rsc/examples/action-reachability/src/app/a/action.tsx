@@ -1,7 +1,7 @@
 'use server'
 
-import { getActionContext } from '../action-context.ts'
+import { getRequestContext } from '../request-context.ts'
 
 export async function actionA() {
-  return `ACTION_A_OK:${getActionContext().route}`
+  return `ACTION_A_OK:${getRequestContext().middlewareTag}`
 }

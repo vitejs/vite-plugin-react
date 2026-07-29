@@ -22,7 +22,9 @@ test.describe('build', () => {
     ).toBeEnabled()
 
     await page.getByRole('button', { name: 'Run saved action' }).click()
-    await expect(page.getByText('Result: ACTION_A_OK:/a')).toBeVisible()
+    await expect(
+      page.getByText('Result: ACTION_A_OK:MIDDLEWARE_A'),
+    ).toBeVisible()
     await expect(page).toHaveURL(f.url('/b'))
     await expect(
       page.getByRole('heading', { name: 'This is page "b"' }),
@@ -50,7 +52,9 @@ test.describe('dev', () => {
     ).toBeEnabled()
 
     await page.getByRole('button', { name: 'Run saved action' }).click()
-    await expect(page.getByText('Result: ACTION_A_OK:/b')).toBeVisible()
+    await expect(
+      page.getByText('Result: ACTION_A_OK:MIDDLEWARE_B'),
+    ).toBeVisible()
     await expect(page).toHaveURL(f.url('/b'))
     await expect(
       page.getByRole('heading', { name: 'This is page "b"' }),
