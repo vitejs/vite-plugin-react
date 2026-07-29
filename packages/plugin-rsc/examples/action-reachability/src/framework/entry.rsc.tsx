@@ -7,7 +7,7 @@ import {
   decodeFormState,
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
-import routeActionManifest from 'virtual:route-action-manifest'
+import { resolveActionRoute } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 import { getRoute, RouteRoot } from './routes.tsx'
 
@@ -39,10 +39,9 @@ async function handleRequest(
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
       // Select a route whose application graph reaches the requested action.
-      if (routeActionManifest) {
-        actionRoute = Object.entries(routeActionManifest).find(
-          ([, actionIds]) => actionIds.includes(renderRequest.actionId!),
-        )?.[0]
+      const resolvedRoute = resolveActionRoute(renderRequest.actionId)
+      if (resolvedRoute.enabled) {
+        actionRoute = resolvedRoute.pathname
         if (!actionRoute) {
           return new Response('Server action is not reachable from any route', {
             status: 404,
