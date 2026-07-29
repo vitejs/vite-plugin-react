@@ -15,7 +15,7 @@ The example follows this sequence:
 | Production  | `/a` middleware         | `ACTION_A_OK:MIDDLEWARE_A` | `/b`          |
 | Development | `/b` middleware         | `ACTION_A_OK:MIDDLEWARE_B` | `/b`          |
 
-In production, a generated route-action manifest lets the RSC handler redispatch the action request through middleware for a page whose graph reaches the action. This example enables manifest routing only in production, so development stays on the current route.
+In production, a generated route-action manifest lets the RSC dispatcher select a deployment whose filtered registry can load the action. The dispatcher also redispatches the request through middleware for a page whose graph reaches the action. This example enables manifest routing only in production, so development stays on the current route.
 
 ## Application graphs
 
@@ -34,12 +34,36 @@ During the RSC build, the manifest plugin traverses each route graph and records
 
 After all environment builds finish, the plugin installs the mapping in the RSC output for runtime routing.
 
+## Route deployments
+
+The final RSC build emits each discovered server-reference module as an explicit chunk entry. Once the client graph completes the route-action relation, a post-build step writes two deployment directories from that canonical output:
+
+```text
+dist/rsc/deployments/a
+  -> rsc request handler and shared dependencies
+  -> rsc filtered server-reference registry
+  -> rsc action A entry and dependencies
+  -> shared SSR output
+
+dist/rsc/deployments/b
+  -> rsc request handler and shared dependencies
+  -> rsc filtered server-reference registry
+  -> rsc action B entry and dependencies
+  -> shared SSR output
+```
+
+The deployment handlers use the low-level `@vitejs/plugin-rsc/react/rsc` runtime with `setRequireModule()`. Each registry imports only the emitted server-reference entries selected for that route. This packaging step copies existing chunks and does not run a second bundle.
+
+The canonical `index.js` is a small dispatcher. It routes normal requests by pathname and explicit-ID action requests by the generated manifest, then loads the selected deployment handler. The copied handlers have independent module-local loaders, so explicit `loadServerAction()` calls use the selected filtered registry even though the example runs both deployments in one process.
+
 ## Request redispatch
 
-For the production scenario above, the RSC handler finds action A under `/a` in the manifest and creates a new action request for `/a`. That request re-enters `/a` middleware, so the action observes `MIDDLEWARE_A`. It also preserves `/b` as the render URL, so the response continues rendering page B.
+For the production scenario above, the RSC dispatcher finds action A under `/a` in the manifest, creates a new action request for `/a`, and loads deployment A. That request enters `/a` middleware, so the action observes `MIDDLEWARE_A`. It also preserves `/b` as the render URL, so the response continues rendering page B.
 
 Development skips route-aware redispatch. The handler executes action A on `/b`, so the action observes `MIDDLEWARE_B`.
 
 ## Protocol scope
 
 For simplicity, route-aware redispatch covers only hydrated action calls that carry an explicit action ID. Progressive multipart form actions still use the baseline `decodeAction()` path without manifest routing.
+
+React's decoder module hook is process-global. Nested server references in action arguments and progressive actions therefore require process isolation or a request-aware decoder integration when multiple deployment handlers run in one process. They are outside this example's explicit-ID deployment proof.

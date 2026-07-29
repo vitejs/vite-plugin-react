@@ -5,11 +5,26 @@ import {
   loadServerAction,
   decodeAction,
   decodeFormState,
-} from '@vitejs/plugin-rsc/rsc'
+  setRequireModule,
+} from '@vitejs/plugin-rsc/react/rsc'
 import type { ReactFormState } from 'react-dom/client'
+import serverReferences from 'virtual:route-server-references'
 import { getRoute, RouteRoot } from '../app/routes.tsx'
 import { routeActionRequest } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
+
+setRequireModule({
+  async load(id) {
+    if (!import.meta.env.__vite_rsc_build__) {
+      return import(/* @vite-ignore */ id)
+    }
+    const load = serverReferences[id]
+    if (!load) {
+      throw new Error(`Server reference unavailable in this deployment: ${id}`)
+    }
+    return load()
+  },
+})
 
 export type RscPayload = {
   root: React.ReactNode
