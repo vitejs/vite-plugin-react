@@ -4,8 +4,8 @@ import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import { normalizePath, type Plugin } from 'vite'
 
 const routes = {
-  '/': './src/routes/home/page.tsx',
-  '/other': './src/routes/other/page.tsx',
+  '/a': ['./src/routes/root.tsx', './src/routes/a/page.tsx'],
+  '/b': ['./src/routes/root.tsx', './src/routes/b/page.tsx'],
 }
 
 const ROUTE_ACTION_MANIFEST_ID = 'virtual:route-action-manifest'
@@ -37,11 +37,13 @@ export function routeActionManifestPlugin(): Plugin {
     generateBundle() {
       if (this.environment.name === 'rsc') {
         // Collect each route's direct actions and reachable Client Components.
-        for (const [route, source] of Object.entries(routes)) {
+        for (const [route, sources] of Object.entries(routes)) {
           const clientReferenceKeys = new Set<string>()
           const directServerReferenceIds = new Set<string>()
           const visited = new Set<string>()
-          const queue = [normalizePath(path.resolve(source))]
+          const queue = sources.map((source) =>
+            normalizePath(path.resolve(source)),
+          )
           for (let index = 0; index < queue.length; index++) {
             const id = queue[index]!
             if (visited.has(id)) continue

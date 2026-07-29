@@ -1,13 +1,27 @@
-import { middleware as homeMiddleware } from '../routes/home/middleware.ts'
-import { Page as HomePage } from '../routes/home/page.tsx'
-import { middleware as otherMiddleware } from '../routes/other/middleware.ts'
-import { Page as OtherPage } from '../routes/other/page.tsx'
+import { middleware as middlewareA } from '../routes/a/middleware.ts'
+import { Page as PageA } from '../routes/a/page.tsx'
+import { middleware as middlewareB } from '../routes/b/middleware.ts'
+import { Page as PageB } from '../routes/b/page.tsx'
+import { Root } from '../routes/root.tsx'
+import type { RouteMiddleware } from './middleware.ts'
 
 export const routes = {
-  '/': { Page: HomePage, middleware: homeMiddleware },
-  '/other': { Page: OtherPage, middleware: otherMiddleware },
+  '/a': { Page: PageA, middleware: middlewareA },
+  '/b': { Page: PageB, middleware: middlewareB },
+}
+
+const rootRoute: {
+  Page?: React.ComponentType
+  middleware: RouteMiddleware
+} = {
+  middleware: (_request, next) => next(),
 }
 
 export function getRoute(pathname: string) {
-  return routes[pathname as keyof typeof routes] ?? routes['/']
+  return routes[pathname as keyof typeof routes] ?? rootRoute
+}
+
+export function RouteRoot(props: { pathname: string }) {
+  const { Page } = getRoute(props.pathname)
+  return <Root>{Page && <Page />}</Root>
 }

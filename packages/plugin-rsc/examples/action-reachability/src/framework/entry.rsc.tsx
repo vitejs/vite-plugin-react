@@ -8,9 +8,8 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import routeActionManifest from 'virtual:route-action-manifest'
-import { Root } from '../root.tsx'
 import { parseRenderRequest } from './request.tsx'
-import { getRoute } from './routes.tsx'
+import { getRoute, RouteRoot } from './routes.tsx'
 
 export type RscPayload = {
   root: React.ReactNode
@@ -105,9 +104,10 @@ async function handleRequest(
 
   const rscPayload: RscPayload = {
     root: (
-      <Root
-        url={
+      <RouteRoot
+        pathname={
           new URL(request.headers.get('x-rsc-render-url') ?? renderRequest.url)
+            .pathname
         }
       />
     ),

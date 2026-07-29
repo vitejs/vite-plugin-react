@@ -1,21 +1,22 @@
 # Cross-Environment Action Reachability
 
-This example implements a small framework convention with two route roots:
+This example implements a mechanical file-system route convention:
 
 ```text
-/       -> routes/home/page.tsx
-/other  -> routes/other/page.tsx
+routes/root.tsx   -> shared layout
+routes/a/page.tsx -> /a
+routes/b/page.tsx -> /b
 ```
 
-The home route's server reference crosses a Client Component boundary through an ordinary JavaScript object:
+Route A's server reference crosses a Client Component boundary through an ordinary JavaScript object:
 
 ```text
-routes/home/page.tsx
+routes/a/page.tsx
   -> client.tsx ("use client")
-  -> commands.tsx exports { objectWrappedAction }
+  -> commands.tsx exports { actionA }
   -> action.tsx ("use server")
 ```
 
 During the final RSC build, the framework plugin traverses from each page root and records reachable Client Component references. During the final client build, it calls plugin-RSC's experimental `manager.getClientToServerReferenceReachability(this)` method and joins the two relations into `dist/client/route-action-manifest.json`.
 
-The hydrated home action waits before invoking its server reference. Navigating to `/other` during that wait causes the action request to arrive on the other route. The RSC handler consults the generated manifest and redispatches the request through `/` within the same server output. Route-local `middleware.ts` establishes an action context with `AsyncLocalStorage`, so the action can verify that it executes under the home route's middleware while the response continues rendering the visible `/other` route. This example intentionally covers the explicit-ID hydrated transport and does not parse React's progressive multipart action protocol.
+The hydrated action A waits before invoking its server reference. Navigating to `/b` during that wait causes the action request to arrive on route B. The RSC handler consults the generated manifest and redispatches the request through `/a` within the same server output. Route-local `middleware.ts` establishes an action context with `AsyncLocalStorage`, so the action can verify that it executes under route A's middleware while the response continues rendering the visible `/b` route. This example intentionally covers the explicit-ID hydrated transport and does not parse React's progressive multipart action protocol.
