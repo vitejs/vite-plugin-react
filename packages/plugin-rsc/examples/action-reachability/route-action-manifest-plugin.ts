@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
-import { normalizePath, type Plugin } from 'vite'
+import { normalizePath, type Plugin, type Rollup } from 'vite'
 
 // TODO: A framework would derive these graph roots from the runtime route
 // convention. This example lists them again for simplicity.
@@ -16,7 +16,7 @@ const ROUTE_ACTION_MANIFEST_FILE = '__route_action_manifest.js'
 export function routeActionManifestPlugin(): Plugin {
   let manager: RscPluginManager
   const routeClientReferenceKeys = new Map<string, Set<string>>()
-  const routeDirectServerReferenceIds = new Map<string, Set<string>>()
+  const routeServerReferenceIds = new Map<string, Set<string>>()
   let routeActionManifest: Record<string, string[]> = {}
 
   return {
@@ -38,81 +38,29 @@ export function routeActionManifestPlugin(): Plugin {
     },
     generateBundle() {
       if (this.environment.name === 'rsc') {
-        // Collect each route's direct actions and reachable Client Components.
+        // Collect references reachable in each route's RSC graph.
         for (const [route, roots] of Object.entries(routes)) {
-          const clientReferenceKeys = new Set<string>()
-          const directServerReferenceIds = new Set<string>()
-          const visited = new Set<string>()
-          const queue = roots.map((source) =>
-            normalizePath(path.resolve(source)),
-          )
-          for (let index = 0; index < queue.length; index++) {
-            const id = queue[index]!
-            if (visited.has(id)) continue
-            visited.add(id)
-
-            const clientReference = manager.clientReferenceMetaMap[id]
-            if (clientReference) {
-              clientReferenceKeys.add(clientReference.referenceKey)
-            }
-
-            const serverReference = manager.serverReferences.metaMap.get(id)
-            if (serverReference) {
-              for (const exportName of serverReference.exportNames) {
-                directServerReferenceIds.add(
-                  `${serverReference.referenceKey}#${exportName}`,
-                )
-              }
-            }
-
-            const info = this.getModuleInfo(id)
-            if (info) {
-              queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
-            }
-          }
+          const { clientReferenceKeys, serverReferenceIds } =
+            collectReachableReferences(
+              this,
+              manager,
+              roots.map((source) => normalizePath(path.resolve(source))),
+            )
           routeClientReferenceKeys.set(route, clientReferenceKeys)
-          routeDirectServerReferenceIds.set(route, directServerReferenceIds)
+          routeServerReferenceIds.set(route, serverReferenceIds)
         }
         return
       }
 
       if (this.environment.name !== 'client') return
-      const reachabilityByReferenceKey = new Map<string, Set<string>>()
-      for (const clientReference of Object.values(
-        manager.clientReferenceMetaMap,
-      )) {
-        const serverReferenceIds = new Set<string>()
-        const visited = new Set<string>()
-        const queue = [clientReference.importId]
-        for (let index = 0; index < queue.length; index++) {
-          const id = queue[index]!
-          if (visited.has(id)) continue
-          visited.add(id)
-
-          const serverReference = manager.serverReferences.metaMap.get(id)
-          if (serverReference) {
-            for (const exportName of serverReference.exportNames) {
-              serverReferenceIds.add(
-                `${serverReference.referenceKey}#${exportName}`,
-              )
-            }
-          }
-
-          const info = this.getModuleInfo(id)
-          if (info) {
-            queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
-          }
-        }
-        reachabilityByReferenceKey.set(
-          clientReference.referenceKey,
-          serverReferenceIds,
-        )
-      }
-
       // Join RSC route reachability with the final client graph relation.
+      const reachabilityByReferenceKey = getClientToServerReferenceReachability(
+        this,
+        manager,
+      )
       routeActionManifest = Object.fromEntries(
         Object.keys(routes).map((route) => {
-          const actionIds = new Set(routeDirectServerReferenceIds.get(route))
+          const actionIds = new Set(routeServerReferenceIds.get(route))
           for (const referenceKey of routeClientReferenceKeys.get(route) ??
             []) {
             for (const actionId of reachabilityByReferenceKey.get(
@@ -153,4 +101,54 @@ export function routeActionManifestPlugin(): Plugin {
       },
     },
   }
+}
+
+function collectReachableReferences(
+  context: Rollup.PluginContext,
+  manager: RscPluginManager,
+  roots: string[],
+) {
+  const clientReferenceKeys = new Set<string>()
+  const serverReferenceIds = new Set<string>()
+  const visited = new Set<string>()
+  const queue = [...roots]
+  for (let index = 0; index < queue.length; index++) {
+    const id = queue[index]!
+    if (visited.has(id)) continue
+    visited.add(id)
+
+    const clientReference = manager.clientReferenceMetaMap[id]
+    if (clientReference) {
+      clientReferenceKeys.add(clientReference.referenceKey)
+    }
+
+    const serverReference = manager.serverReferences.metaMap.get(id)
+    if (serverReference) {
+      for (const exportName of serverReference.exportNames) {
+        serverReferenceIds.add(`${serverReference.referenceKey}#${exportName}`)
+      }
+    }
+
+    const info = context.getModuleInfo(id)
+    if (info) {
+      queue.push(...info.importedIds, ...info.dynamicallyImportedIds)
+    }
+  }
+  return { clientReferenceKeys, serverReferenceIds }
+}
+
+function getClientToServerReferenceReachability(
+  context: Rollup.PluginContext,
+  manager: RscPluginManager,
+): Map<string, Set<string>> {
+  const result = new Map<string, Set<string>>()
+  for (const clientReference of Object.values(manager.clientReferenceMetaMap)) {
+    const { serverReferenceIds } = collectReachableReferences(
+      context,
+      manager,
+      [clientReference.importId],
+    )
+    result.set(clientReference.referenceKey, serverReferenceIds)
+  }
+  return result
 }
