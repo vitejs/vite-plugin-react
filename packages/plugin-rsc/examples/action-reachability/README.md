@@ -1,24 +1,51 @@
 # Cross-Environment Action Reachability
 
-This example implements a mechanical file-system route convention:
+This example demonstrates route-aware dispatch for a retained server action. Action A is reachable from route `/a`'s application graph but not from route `/b`'s graph. The browser can still retain its server reference, navigate to `/b`, and invoke it there.
+
+The example follows this sequence:
+
+1. Open `/a` and save action A in a shared browser module.
+2. Navigate to `/b`, retaining the saved server reference.
+3. Invoke action A through an explicit-ID action request to `/b`.
+
+| Mode        | Action executes through | Result                     | Rendered page |
+| ----------- | ----------------------- | -------------------------- | ------------- |
+| Production  | `/a` middleware         | `ACTION_A_OK:MIDDLEWARE_A` | `/b`          |
+| Development | `/b` middleware         | `ACTION_A_OK:MIDDLEWARE_B` | `/b`          |
+
+In production, a generated route-action manifest lets the RSC handler redispatch the action request through a route whose graph can load the action. Development has no manifest, so the request stays on its current route.
+
+## Application graphs
+
+The app manually declares two routes in `src/app/routes.tsx`:
 
 ```text
-app/root.tsx   -> shared layout
-app/a/page.tsx -> /a
-app/b/page.tsx -> /b
+src/app/root.tsx   -> shared layout
+src/app/a/page.tsx -> /a
+src/app/b/page.tsx -> /b
 ```
 
-Route A's server reference crosses a Client Component boundary through an ordinary JavaScript object:
+The manifest plugin lists `src/app/root.tsx` and the route-specific page module as graph roots for each route. Route `/a` reaches action A through a Client Component and an ordinary runtime return value:
 
 ```text
-app/a/page.tsx
+src/app/a/page.tsx
   -> client.tsx ("use client")
-  -> action-indirect.ts returns actionA through ordinary runtime value flow
+  -> action-indirect.ts returns actionA
   -> action.tsx ("use server")
 ```
 
-During the final RSC build, the framework plugin traverses from each page root and records reachable Client Component references. During the final client build, it calls plugin-RSC's experimental `manager.getClientToServerReferenceReachability(this)` method and joins the two relations into `dist/client/route-action-manifest.json`.
+## Manifest generation
 
-A shared browser module stores a server reference without statically importing either route's action. Saving action A on `/a`, navigating to `/b`, and invoking the saved value sends the request to route B. The RSC handler consults the generated manifest and redispatches the request through `/a` within the same server output. Route-local `middleware.ts` establishes request context with `AsyncLocalStorage`, so the action observes `MIDDLEWARE_A` while the response continues rendering the visible `/b` route. This example intentionally covers the explicit-ID hydrated transport and does not parse React's progressive multipart action protocol.
+During the RSC build, the manifest plugin traverses each route graph and records directly reachable server reference IDs and reachable client reference keys. During the client build, it calls the experimental `manager.getClientToServerReferenceReachability(this)` API to map those client references to server reference IDs. For each route, it unions the directly reachable IDs with the IDs reachable through its client references and emits `dist/client/route-action-manifest.json`.
 
-The route manifest is a production-build feature. In development, no manifest is installed and the retained action observes `MIDDLEWARE_B` from the current route.
+After all environment builds finish, the plugin writes the same mapping to `dist/rsc/__route_action_manifest.js`. The RSC handler imports this ESM sidecar through `virtual:route-action-manifest` at runtime.
+
+## Request redispatch
+
+For the production scenario above, the RSC handler finds action A under `/a` in the manifest and creates a new action request for `/a`. That request re-enters `/a` middleware, so the action observes `MIDDLEWARE_A`. It also preserves `/b` as the render URL, so the response continues rendering page B.
+
+In development, `virtual:route-action-manifest` exports `null`. The handler executes action A on `/b`, so the action observes `MIDDLEWARE_B`.
+
+## Protocol scope
+
+Route-aware redispatch applies only to hydrated action calls that carry an explicit action ID. Progressive multipart form actions are decoded, but the handler does not extract their action IDs from the multipart fields before calling `decodeAction()`, so it cannot consult the route-action manifest first.
