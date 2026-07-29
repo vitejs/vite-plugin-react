@@ -32,6 +32,7 @@ npm create vite@latest -- --template rsc
 - [`./examples/ppr`](./examples/ppr) - Partial prerendering with a reusable static HTML shell and request-time RSC content.
 - [`./examples/no-ssr`](./examples/no-ssr) - RSC application without an SSR environment.
 - [`./examples/client-first`](./examples/client-first) - Experimental client-owned page that consumes RSC function results.
+- [`./examples/action-reachability`](./examples/action-reachability) - Route-aware dispatch for a retained server action.
 - [`./examples/browser-mode`](./examples/browser-mode) - Advanced setup that runs both RSC and React client environments in the browser with custom module loading.
 - [`./examples/performance-track`](./examples/performance-track) - Minimal React Server Components performance track probe.
 - [`./examples/react-router`](./examples/react-router) - React Router RSC integration
