@@ -37,6 +37,8 @@ export function routeActionManifestPlugin(): Plugin {
       }
     },
     generateBundle() {
+      if (manager.isScanBuild) return
+
       if (this.environment.name === 'rsc') {
         // Collect references reachable in each route's RSC graph.
         for (const [route, roots] of Object.entries(routes)) {
@@ -49,17 +51,14 @@ export function routeActionManifestPlugin(): Plugin {
           routeClientReferenceKeys.set(route, clientReferenceKeys)
           routeServerReferenceIds.set(route, serverReferenceIds)
         }
-        return
       }
 
-      if (this.environment.name !== 'client') return
-      // Join RSC route reachability with the final client graph relation.
-      const reachabilityByReferenceKey = getClientToServerReferenceReachability(
-        this,
-        manager,
-      )
-      routeActionManifest = Object.fromEntries(
-        Object.keys(routes).map((route) => {
+      if (this.environment.name === 'client') {
+        // Join RSC route reachability with the final client graph relation.
+        const reachabilityByReferenceKey =
+          getClientToServerReferenceReachability(this, manager)
+        routeActionManifest = {}
+        for (const route of Object.keys(routes)) {
           const actionIds = new Set(routeServerReferenceIds.get(route))
           for (const referenceKey of routeClientReferenceKeys.get(route) ??
             []) {
@@ -69,9 +68,9 @@ export function routeActionManifestPlugin(): Plugin {
               actionIds.add(actionId)
             }
           }
-          return [route, [...actionIds].sort()]
-        }),
-      )
+          routeActionManifest[route] = [...actionIds].sort()
+        }
+      }
     },
     // Leave the virtual import external, then point it at an ESM sidecar
     // generated after the later client build.
