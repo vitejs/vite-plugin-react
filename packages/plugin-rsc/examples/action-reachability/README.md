@@ -36,9 +36,9 @@ src/app/a/page.tsx
 
 ## Manifest generation
 
-During the RSC build, the manifest plugin traverses each route graph and records directly reachable server reference IDs and reachable client reference keys. During the client build, it calls the experimental `manager.getClientToServerReferenceReachability(this)` API to map those client references to server reference IDs. For each route, it unions the directly reachable IDs with the IDs reachable through its client references and emits `dist/client/route-action-manifest.json`.
+During the RSC build, the manifest plugin traverses each route graph and records directly reachable server reference IDs and reachable client reference keys. During the client build, it calls the experimental `manager.getClientToServerReferenceReachability(this)` API to map those client references to server reference IDs. For each route, it unions the directly reachable IDs with the IDs reachable through its client references.
 
-After all environment builds finish, the plugin writes the same mapping to `dist/rsc/__route_action_manifest.js`. The RSC handler imports this ESM sidecar through `virtual:route-action-manifest` at runtime.
+The source imports `virtual:route-action-manifest`. During the production build, the plugin rewrites that import to `__route_action_manifest.js`, then writes the mapping to `dist/rsc/__route_action_manifest.js` after all environment builds finish. The RSC handler loads this ESM sidecar at runtime.
 
 ## Request redispatch
 

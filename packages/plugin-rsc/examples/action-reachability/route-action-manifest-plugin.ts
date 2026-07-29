@@ -95,11 +95,6 @@ export function routeActionManifestPlugin(): Plugin {
           return [route, [...actionIds].sort()]
         }),
       )
-      this.emitFile({
-        type: 'asset',
-        fileName: 'route-action-manifest.json',
-        source: JSON.stringify(routeActionManifest, null, 2),
-      })
     },
     // Leave the virtual import external, then point it at an ESM sidecar
     // generated after the later client build.
