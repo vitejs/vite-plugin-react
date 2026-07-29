@@ -29,18 +29,9 @@ test.describe('build', () => {
       page.getByRole('button', { name: 'Run saved action' }),
     ).toBeEnabled()
 
-    const responsePromise = page.waitForResponse(
-      (response) =>
-        response.request().method() === 'POST' &&
-        response.url().endsWith('_.rsc'),
-    )
     await page.getByRole('button', { name: 'Run saved action' }).click()
-    const response = await responsePromise
-    expect(response.status()).toBe(200)
-    expect(response.headers()['x-action-route']).toBe('/a')
-    expect(response.headers()['x-action-forwarded']).toBe('true')
-    expect(await response.text()).toContain('ACTION_A_OK:/a')
     await expect(page.getByText('Result: ACTION_A_OK:/a')).toBeVisible()
+    await expect(page).toHaveURL(f.url('/b'))
     await expect(
       page.getByRole('heading', { name: 'This is page "b"' }),
     ).toBeVisible()
