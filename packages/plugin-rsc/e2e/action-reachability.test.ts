@@ -17,6 +17,7 @@ test.describe('build', () => {
     expect(manifest['/a']).toEqual([expect.stringMatching(/#actionA$/)])
     expect(manifest['/b']).toEqual([expect.stringMatching(/#actionB$/)])
 
+    // /a -> save action A -> navigate to /b -> run action A through /a
     await page.goto(f.url('/a'))
     await waitForHydration(page)
     await page.getByRole('button', { name: 'Save action A' }).click()
