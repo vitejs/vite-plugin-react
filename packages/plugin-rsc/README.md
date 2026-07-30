@@ -186,20 +186,19 @@ if (import.meta.hot) {
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
 
 ```tsx
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 export async function handleSsr(rscStream: ReadableStream) {
   // deserialize RSC stream back to React VDOM
   const root = await createFromReadableStream(rscStream)
 
-  // helper API to allow referencing browser entry content from SSR environment
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
-
   // render html (traditional SSR)
   const htmlStream = renderToReadableStream(root, {
-    bootstrapScriptContent,
+    bootstrapModules: [getClientEntryUrl()],
   })
 
   return htmlStream
@@ -334,19 +333,22 @@ export function UserApp() {
 
 ### Available on `ssr` environment
 
-#### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
+#### `getClientEntryUrl()`
 
-This provides a raw js code to execute a browser entry file specified by `environments.client.build.rollupOptions.input.index`. This is intended to be used with React DOM SSR API, such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream)
+This returns the URL of the browser entry specified by `environments.client.build.rollupOptions.input.index`. Import it from `@vitejs/plugin-rsc/ssr`. During development, the URL points to a virtual wrapper which sets up React Refresh and RSC HMR before loading the configured entry. During production, it points to the built entry chunk.
+
+This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream), or to implement custom loading and recovery behavior.
 
 ```js
+import { getClientEntryUrl } from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
-const bootstrapScriptContent =
-  await import.meta.viteRsc.loadBootstrapScriptContent('index')
 const htmlStream = await renderToReadableStream(reactNode, {
-  bootstrapScriptContent,
+  bootstrapModules: [getClientEntryUrl()],
 })
 ```
+
+`getClientEntryUrl()` throws when the default client entry is unavailable, such as when using the `customClientEntry` plugin option.
 
 ### Available on `client` environment
 
