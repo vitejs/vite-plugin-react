@@ -33,6 +33,7 @@ export function addRefreshWrapper(
 
 import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";
 const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+import * as __vite_react_currentExports from ${JSON.stringify(id)};
 if (import.meta.hot && !inWebWorker) {
   if (!window.$RefreshReg$) {
     throw new Error(
@@ -40,7 +41,8 @@ if (import.meta.hot && !inWebWorker) {
     );
   }
 
-  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+  const currentExports = __vite_react_currentExports;
+  queueMicrotask(() => {
     RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(
       id,
     )}, currentExports);
