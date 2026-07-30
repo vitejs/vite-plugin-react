@@ -49,7 +49,7 @@ const routes = [
     path: '/inline-directive',
     title: 'Inline directive',
     description:
-      'An inline directive function hoisted from a Server Component.',
+      'Declaration, captured arrow, and direct function-expression directives hoisted from a Server Component.',
     render: () => <InlineDirective />,
   },
   {

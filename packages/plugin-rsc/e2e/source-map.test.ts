@@ -92,11 +92,25 @@ const serverReferenceCases = [
     route: '/inline-directive',
     references: [
       {
-        // Currently resolves to the rendered section instead of the function.
+        // Currently resolves to the following arrow instead of the function.
         name: 'inline-directive',
         originalSource: '/src/features/inline-directive/server.tsx',
-        originalLine: 9,
+        originalLine: 10,
+        originalColumn: 8,
+      },
+      {
+        // Currently resolves to the rendered section instead of the function.
+        name: 'inline-arrow',
+        originalSource: '/src/features/inline-directive/server.tsx',
+        originalLine: 16,
         originalColumn: 4,
+      },
+      {
+        // Currently resolves to the end of the JSX element instead of the function.
+        name: 'inline-function-expression',
+        originalSource: '/src/features/inline-directive/server.tsx',
+        originalLine: 32,
+        originalColumn: 11,
       },
     ],
   },

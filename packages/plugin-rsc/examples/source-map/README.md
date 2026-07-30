@@ -51,7 +51,7 @@ These routes provide additional manual coverage of the `"use server"` transforms
 - `/variables`: exported arrow and function-expression variables.
 - `/defaults`: named, anonymous, and identifier default exports.
 - `/specifiers`: local aliases, re-exports, and expanded `export *` declarations.
-- `/inline-directive`: inline `"use server"` function hoisting.
+- `/inline-directive`: declaration, captured arrow, and direct function-expression hoisting.
 - `/typescript-tsx`: composed TypeScript, JSX, and Server Function transforms.
 - `/multiple-exports`: multiple generated registrations from one module.
 
