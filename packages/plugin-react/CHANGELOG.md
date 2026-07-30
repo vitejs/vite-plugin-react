@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed the react compiler preset filter to be linear
+
+The improved filter in v6.0.3 was non-linear and caused a performance regression ([#1349](https://github.com/vitejs/vite-plugin-react/issues/1349)). The filter was changed to be linear to avoid that.
+
 ## 6.0.4 (2026-07-22)
 
 ### Fixed `$RefreshSig$ is not defined` error when running `vite dev` with `NODE_ENV=production`
@@ -10,6 +14,10 @@ When running `vite dev` with `NODE_ENV=production`, the app errored with `$Refre
 This error is now fixed.
 
 ## 6.0.3 (2026-06-23)
+
+### Improve the react compiler preset filter to reduce false-positives ([#1138](https://github.com/vitejs/vite-plugin-react/pull/1138))
+
+Improved the filter in the react compiler babel preset to reduce the false-positives so that less modules are processed by the react compiler.
 
 ## 6.0.2 (2026-05-14)
 
