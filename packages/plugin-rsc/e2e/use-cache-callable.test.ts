@@ -58,26 +58,33 @@ function defineTests(f: Fixture) {
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    const call = example.getByRole('button', { name: 'Call cached function' })
 
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(executionCount).toHaveText('0')
 
     // Native form submissions call the same cached function without hydration.
-    await example
-      .getByRole('textbox', { name: 'Cache key' })
-      .fill('progressive')
-    await example.getByRole('button', { name: 'Call cached function' }).click()
+    // progressive (cache miss)
+    await argument.fill('progressive')
+    await call.click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('captured + progressive')
 
-    await example
-      .getByRole('textbox', { name: 'Cache key' })
-      .fill('progressive')
-    await example.getByRole('button', { name: 'Call cached function' }).click()
+    // progressive (cache hit)
+    await argument.fill('progressive')
+    await call.click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('captured + progressive')
+
+    // progressive-beta (cache miss)
+    await argument.fill('progressive-beta')
+    await call.click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('captured + progressive-beta')
   })
 
   test('file directive from server', async ({ page }) => {
@@ -90,6 +97,7 @@ function defineTests(f: Fixture) {
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
     const argument = example.getByRole('textbox', { name: 'Cache key' })
+    await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
     await expect(result).toHaveText('not called')
@@ -112,6 +120,45 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('server import + beta')
   })
 
+  testNoJs(
+    'file directive from server progressive enhancement',
+    async ({ page }) => {
+      await page.goto(f.url('/file-directive-from-server'))
+
+      const example = page.getByTestId('file-directive-from-server')
+      const submissionCount = example.getByTestId('submission-count')
+      const executionCount = example.getByTestId('execution-count')
+      const result = example.getByTestId('result')
+      const argument = example.getByRole('textbox', { name: 'Cache key' })
+      const call = example.getByRole('button', { name: 'Call cached function' })
+
+      await page.getByRole('button', { name: 'Reset' }).click()
+      await expect(executionCount).toHaveText('0')
+
+      // The wrapped export remains callable through native form submissions.
+      // progressive (cache miss)
+      await argument.fill('progressive')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('1')
+      await expect(result).toHaveText('server import + progressive')
+
+      // progressive (cache hit)
+      await argument.fill('progressive')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('1')
+      await expect(result).toHaveText('server import + progressive')
+
+      // progressive-beta (cache miss)
+      await argument.fill('progressive-beta')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('2')
+      await expect(result).toHaveText('server import + progressive-beta')
+    },
+  )
+
   test('file directive from client', async ({ page }) => {
     using _errors = expectNoPageError(page)
     await page.goto(f.url('/file-directive-from-client'))
@@ -122,6 +169,7 @@ function defineTests(f: Fixture) {
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
     const argument = example.getByRole('textbox', { name: 'Cache key' })
+    await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
     await expect(result).toHaveText('not called')
@@ -143,6 +191,45 @@ function defineTests(f: Fixture) {
     await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('client import + beta')
   })
+
+  testNoJs(
+    'file directive from client progressive enhancement',
+    async ({ page }) => {
+      await page.goto(f.url('/file-directive-from-client'))
+
+      const example = page.getByTestId('file-directive-from-client')
+      const submissionCount = example.getByTestId('submission-count')
+      const executionCount = example.getByTestId('execution-count')
+      const result = example.getByTestId('result')
+      const argument = example.getByRole('textbox', { name: 'Cache key' })
+      const call = example.getByRole('button', { name: 'Call cached function' })
+
+      await page.getByRole('button', { name: 'Reset' }).click()
+      await expect(executionCount).toHaveText('0')
+
+      // The generated client proxy remains callable through native form submissions.
+      // progressive (cache miss)
+      await argument.fill('progressive')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('1')
+      await expect(result).toHaveText('client import + progressive')
+
+      // progressive (cache hit)
+      await argument.fill('progressive')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('1')
+      await expect(result).toHaveText('client import + progressive')
+
+      // progressive-beta (cache miss)
+      await argument.fill('progressive-beta')
+      await call.click()
+      await expect(submissionCount).toHaveText('0')
+      await expect(executionCount).toHaveText('2')
+      await expect(result).toHaveText('client import + progressive-beta')
+    },
+  )
 }
 
 async function submit(page: Page, form: Locator) {
