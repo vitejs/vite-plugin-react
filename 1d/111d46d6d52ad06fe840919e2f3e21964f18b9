@@ -1,0 +1,31 @@
+packages/common/refresh-utils.ts
+  s_a2b6ccd4b3bbd6::t_146b18a64c09cb 36,44-45
+packages/plugin-react-swc/playground/bundled-dev/__tests__/bundled-dev.spec.ts
+  s_a2b6ccd4b3bbd6::t_d479adf3d91391 1-42
+packages/plugin-react-swc/playground/bundled-dev/index.html
+  s_a2b6ccd4b3bbd6::t_34f57ba4caf840 1-2
+packages/plugin-react-swc/playground/bundled-dev/package.json
+  s_a2b6ccd4b3bbd6::t_d231e85189c649 1-19
+packages/plugin-react-swc/playground/bundled-dev/src/main.tsx
+  s_a2b6ccd4b3bbd6::t_c761c5d8a16c7c 1-4
+packages/plugin-react-swc/playground/bundled-dev/tsconfig.json
+  s_a2b6ccd4b3bbd6::t_0dd6f2db80f4ee 1-15
+packages/plugin-react-swc/playground/bundled-dev/vite.config.ts
+  s_a2b6ccd4b3bbd6::t_1977b54295acc6 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1d111d46d6d52ad06fe840919e2f3e21964f18b9",
+  "prompts": {},
+  "sessions": {
+    "s_a2b6ccd4b3bbd6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb0e3-f563-7483-877f-1beccd0070e6",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
