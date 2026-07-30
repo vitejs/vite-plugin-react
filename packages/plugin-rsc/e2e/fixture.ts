@@ -185,7 +185,9 @@ export async function setupIsolatedFixture(options: {
     ['config', 'get', 'overrides', '--json', '--location', 'project'],
     { throwOnError: true, nodeOptions: { cwd: rootDir } },
   )
-  const workspaceOverrides: Record<string, string> = JSON.parse(overridesJson)
+  const workspaceOverrides: Record<string, string> = JSON.parse(
+    overridesJson || '{}',
+  )
   const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
