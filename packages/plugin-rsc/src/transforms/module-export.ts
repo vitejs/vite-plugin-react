@@ -12,15 +12,20 @@ import { buildScopeTree } from './scope'
 import { extractIdentifiers, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportMeta = {
+  /** Source-local declaration name when one is statically available. */
   localName?: string
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
   isFunction?: boolean
+  /** Identifier referenced by `export default Identifier`. */
   defaultExportIdentifierName?: string
 }
 
 export type TransformModuleExportGenerateContext = {
+  /** Private source implementation or imported/local value being transformed. */
   implementation: string
+  /** Collision-free local name reserved for the canonical runtime result. */
   binding: string
+  /** Public module export name, including `default`. */
   exportName: string
   meta: TransformModuleExportMeta
 }
@@ -39,9 +44,45 @@ export type TransformModuleExportOptions = {
 
 export type TransformModuleExportResult = {
   output: MagicString
+  /** Selected public export names in source order. */
   referenceNames: string[]
 }
 
+/**
+ * Extracts selected module exports into implementation bindings and delegates
+ * complete canonical binding and export generation to the consumer.
+ *
+ * Conceptually:
+ *
+ * ```js
+ * export async function action(value) {
+ *   return value
+ * }
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * async function action$$impl(value) {
+ *   return value
+ * }
+ * export const action = __RUNTIME__(action$$impl, 'action')
+ * ```
+ *
+ * `generate` owns the complete generated declaration and export code represented
+ * by `export const ...` above. The transform does not classify or rewrite that
+ * code, so consumers also own effects and purity annotations.
+ *
+ * Generated code for direct declarations is placed immediately after each
+ * implementation. Local export specifiers are generated at module end so their
+ * values have initialized, while re-exports are converted to local imports at
+ * the original export position.
+ *
+ * This canonical-binding model intentionally does not preserve source function
+ * hoisting under the exported name. Selected mutable, destructured, and duplicate
+ * declaration bindings are rejected instead of receiving implicit reassignment
+ * semantics from the deprecated `transformWrapExport` transform.
+ */
 export function transformModuleExport(
   input: string,
   viteAst: ESTree.Program,
@@ -205,6 +246,8 @@ export function transformModuleExport(
           }
 
           output.remove(node.start, variableDeclaration.start)
+          // Split declarators so each generated canonical binding is initialized
+          // before a later declarator can reference its source export name.
           for (const [index, declaration] of declarations.entries()) {
             const position =
               index === declarations.length - 1
@@ -273,6 +316,8 @@ export function transformModuleExport(
           }
 
           let implementation = item.localName
+          // Local specifiers can appear before their declarations, unlike
+          // re-exports whose imported implementation is available immediately.
           const position = node.source ? node.end : input.length
           if (node.source) {
             implementation = allocateName(`$$import_${item.localName}`)
