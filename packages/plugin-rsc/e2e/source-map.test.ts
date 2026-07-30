@@ -7,6 +7,7 @@ import { waitForHydration } from './helper'
 // errors and console replay.
 // These zero-based expectations record current behavior, including approximate
 // locations. Improving a mapping should update its expectation as a follow-up.
+// https://github.com/vitejs/vite-plugin-react/issues/1361
 const serverReferenceCases = [
   {
     route: '/named-function',

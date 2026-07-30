@@ -9,7 +9,7 @@ The automated E2E test covers every Server Reference case below. It follows the 
 3. Fetch the Vite source map advertised by the script.
 4. Resolve the browser function location to its original source declaration.
 
-These assertions document current behavior rather than requiring every transform to resolve to its ideal source site. Some export and inline forms currently resolve only to a nearby location. Fixing those mappings is follow-up work tracked by [#1356](https://github.com/vitejs/vite-plugin-react/issues/1356); the fixture ensures each improvement can update a visible expectation without regressing the other forms.
+These assertions establish the verification infrastructure requested by [#1356](https://github.com/vitejs/vite-plugin-react/issues/1356) and document current behavior rather than requiring every transform to resolve to its ideal source site. Some export and inline forms currently resolve only to a nearby location. Fixing those mappings is tracked separately by [#1361](https://github.com/vitejs/vite-plugin-react/issues/1361); the fixture ensures each improvement can update a visible expectation without regressing the other forms.
 
 Run the focused test from `packages/plugin-rsc`:
 
