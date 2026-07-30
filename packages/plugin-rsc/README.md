@@ -337,7 +337,7 @@ export function UserApp() {
 
 This returns the URL of the browser entry specified by `environments.client.build.rollupOptions.input.index`. Import it from `@vitejs/plugin-rsc/ssr`. During development, the URL points to a virtual wrapper which sets up React Refresh and RSC HMR before loading the configured entry. During production, it points to the built entry chunk.
 
-This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream), or to implement custom loading and recovery behavior.
+This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream).
 
 ```js
 import { getClientEntryUrl } from '@vitejs/plugin-rsc/ssr'
