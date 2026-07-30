@@ -1,8 +1,8 @@
 import type MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { transformHoistInlineDirective } from './hoist'
+import { transformModuleExport } from './module-export'
 import { hasDirective } from './utils'
-import { transformWrapExport } from './wrap-export'
 
 export function transformServerActionServer(
   input: string,
@@ -26,8 +26,18 @@ export function transformServerActionServer(
     } {
   // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (hasDirective(ast.body, 'use server')) {
-    const result = transformWrapExport(input, ast, options)
-    return { ...result, referenceNames: result.exportNames }
+    const result = transformModuleExport(input, ast, {
+      rejectNonAsyncFunction: options.rejectNonAsyncFunction,
+      generate: ({ implementation, binding, exportName }) => {
+        const declaration =
+          `const ${binding} = /* #__PURE__ */ ` +
+          `${options.runtime(implementation, exportName)};`
+        return binding === exportName
+          ? `export ${declaration}`
+          : `${declaration}\nexport { ${binding} as ${exportName} };`
+      },
+    })
+    return { ...result, exportNames: result.referenceNames }
   }
   const result = transformHoistInlineDirective(input, ast, {
     ...options,

@@ -3,7 +3,7 @@ import {
   hasDirective,
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
-  transformWrapExport,
+  transformModuleExport,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
 
@@ -35,9 +35,16 @@ export function callableCachePlugin(): Plugin {
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
-          ? transformWrapExport(code, ast, {
-              runtime,
+          ? transformModuleExport(code, ast, {
               rejectNonAsyncFunction: true,
+              generate: ({ implementation, binding, exportName }) => {
+                const declaration =
+                  `const ${binding} = /* #__PURE__ */ ` +
+                  `${runtime(implementation, exportName)};`
+                return binding === exportName
+                  ? `export ${declaration}`
+                  : `${declaration}\nexport { ${binding} as ${exportName} };`
+              },
             })
           : transformHoistInlineDirective(code, ast, {
               directive,
@@ -52,7 +59,7 @@ export function callableCachePlugin(): Plugin {
 
         manager.serverReferences.replaceClaim(pluginName, id, {
           ...reference,
-          exportNames: 'names' in result ? result.names : result.exportNames,
+          exportNames: 'names' in result ? result.names : result.referenceNames,
         })
         result.output.prepend(
           `import $$cacheWrapper from "/src/framework/use-cache-runtime";\n` +

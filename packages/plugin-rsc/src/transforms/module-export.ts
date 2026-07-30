@@ -130,13 +130,16 @@ export function transformModuleExport(
           extractDeclaration(identifier, identifier.name, meta, node.end)
         } else if (node.declaration.type === 'VariableDeclaration') {
           const variableDeclaration = node.declaration
-          const selected: Array<{
-            identifier: Identifier
-            meta: ModuleExportMeta
+          const declarations: Array<{
+            node: (typeof variableDeclaration.declarations)[number]
+            selected: Array<{
+              identifier: Identifier
+              meta: ModuleExportMeta
+            }>
+            preserved: string[]
           }> = []
-          const preserved: string[] = []
 
-          for (const declaration of node.declaration.declarations) {
+          for (const declaration of variableDeclaration.declarations) {
             const identifiers = extractIdentifiers(declaration.id)
             if (
               declaration.id.type !== 'Identifier' &&
@@ -156,6 +159,8 @@ export function transformModuleExport(
               declaration.id.type === 'Identifier' && declaration.init
                 ? getIsFunction(declaration.init)
                 : undefined
+            const selected: (typeof declarations)[number]['selected'] = []
+            const preserved: string[] = []
             let validate = false
             for (const identifier of identifiers) {
               const meta: ModuleExportMeta = {
@@ -173,14 +178,54 @@ export function transformModuleExport(
             if (validate && declaration.init) {
               validateNonAsyncFunction(options, declaration.init)
             }
+            declarations.push({
+              node: declaration,
+              selected,
+              preserved,
+            })
           }
 
-          if (selected.length === 0) continue
-          output.remove(node.start, variableDeclaration.start)
-          for (const { identifier, meta } of selected) {
-            extractDeclaration(identifier, identifier.name, meta, node.end)
+          if (
+            !declarations.some((declaration) => declaration.selected.length)
+          ) {
+            continue
           }
-          for (const name of preserved) preserveExport(name, name, node.end)
+          if (variableDeclaration.kind !== 'const') {
+            throw Object.assign(
+              new Error('unsupported mutable export declaration'),
+              { pos: variableDeclaration.start },
+            )
+          }
+
+          output.remove(node.start, variableDeclaration.start)
+          for (const [index, declaration] of declarations.entries()) {
+            const position =
+              index === declarations.length - 1
+                ? node.end
+                : declaration.node.end
+            for (const { identifier, meta } of declaration.selected) {
+              extractDeclaration(identifier, identifier.name, meta, position)
+            }
+            for (const name of declaration.preserved) {
+              preserveExport(name, name, position)
+            }
+          }
+          for (let i = 1; i < declarations.length; i++) {
+            const previous = declarations[i - 1]!.node
+            const current = declarations[i]!.node
+            const separator = input.slice(previous.end, current.start)
+            const comma = findSeparatorComma(separator)
+            const prefix = separator.slice(0, comma)
+            const rest = separator.slice(comma + 1)
+            const codes = emissions.get(previous.end)
+            tinyassert(codes)
+            emissions.delete(previous.end)
+            output.update(
+              previous.end,
+              current.start,
+              `${prefix};\n${codes.join('\n')}\n${variableDeclaration.kind}${/^\s/.test(rest) ? '' : ' '}${rest}`,
+            )
+          }
         } else {
           node.declaration satisfies never
         }
@@ -221,6 +266,7 @@ export function transformModuleExport(
           }
 
           let implementation = item.localName
+          const position = node.source ? node.end : input.length
           if (node.source) {
             implementation = allocateName(`$$import_${item.localName}`)
             emit(
@@ -236,7 +282,7 @@ export function transformModuleExport(
               exportName: item.exportName,
               meta: item.meta,
             },
-            node.end,
+            position,
           )
         }
       }
@@ -318,6 +364,32 @@ export function transformModuleExport(
   }
 
   return { output, referenceNames }
+}
+
+function findSeparatorComma(separator: string): number {
+  let inLineComment = false
+  let inBlockComment = false
+  for (let i = 0; i < separator.length; i++) {
+    const char = separator[i]
+    const next = separator[i + 1]
+    if (inLineComment) {
+      if (char === '\n' || char === '\r') inLineComment = false
+    } else if (inBlockComment) {
+      if (char === '*' && next === '/') {
+        inBlockComment = false
+        i++
+      }
+    } else if (char === '/' && next === '/') {
+      inLineComment = true
+      i++
+    } else if (char === '/' && next === '*') {
+      inBlockComment = true
+      i++
+    } else if (char === ',') {
+      return i
+    }
+  }
+  throw new Error('missing variable declarator separator')
 }
 
 function getModuleDeclarationCounts(ast: Program): Map<string, number> {

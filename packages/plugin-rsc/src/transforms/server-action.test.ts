@@ -18,6 +18,9 @@ test('normalizes top-level server reference names', async () => {
     exportNames: ['action'],
     referenceNames: ['action'],
   })
+  expect(result.output.toString()).toMatchInlineSnapshot(
+    `"'use server'; async function action$$impl() {}\nexport const action = /* #__PURE__ */ action$$impl;\n"`,
+  )
 })
 
 test('normalizes inline server reference names', async () => {

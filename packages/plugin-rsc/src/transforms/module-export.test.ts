@@ -22,7 +22,7 @@ describe(transformModuleExport, () => {
   test('extracts direct and default declarations', async () => {
     const result = await transform(`
 export async function action() {}
-export const loader = async () => {}, value = 1
+export const loader = async () => {} /* comma, here */, value = loader
 export default async function Page() {}
 `)
 
@@ -35,17 +35,18 @@ export default async function Page() {}
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
       async function action$$impl() {}
-      const action = wrap(action$$impl, \"action\");
+      const action = wrap(action$$impl, "action");
       export { action as action };
 
-      const loader$$impl = async () => {}, value$$impl = 1
-      const loader = wrap(loader$$impl, \"loader\");
+      const loader$$impl = async () => {} /* comma, here */;
+      const loader = wrap(loader$$impl, "loader");
       export { loader as loader };
-      const value = wrap(value$$impl, \"value\");
+      const value$$impl = loader
+      const value = wrap(value$$impl, "value");
       export { value as value };
 
       async function Page$$impl() {}
-      const Page = wrap(Page$$impl, \"default\");
+      const Page = wrap(Page$$impl, "default");
       export { Page as default };
 
       "
@@ -55,9 +56,9 @@ export default async function Page() {}
   test('handles aliases, re-exports, filtering, and name collisions', async () => {
     const result = await transform(
       `
+export { value as action, exposed as skipped }
 const value = async () => {}
 const exposed = 0
-export { value as action, exposed as skipped }
 export { remote as action2 } from './dep'
 export * from './other'
 `,
@@ -70,19 +71,20 @@ export * from './other'
     expect(result.referenceNames).toEqual(['action', 'action2'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
-      const value = async () => {}
-      const exposed = 0
 
-      const $$module_action = wrap(value, "action");
-      export { $$module_action as action };
       export { exposed as skipped };
 
+      const value = async () => {}
+      const exposed = 0
 
       import { remote as $$import_remote } from './dep';
       const $$module_action2 = wrap($$import_remote, "action2");
       export { $$module_action2 as action2 };
 
       export * from './other'
+
+      const $$module_action = wrap(value, "action");
+      export { $$module_action as action };
       "
     `)
   })
@@ -139,6 +141,9 @@ export * from './other'
     )
     await expect(
       transform(`export var action = async () => {}; var action;`),
-    ).rejects.toThrow('unsupported duplicate export binding')
+    ).rejects.toThrow('unsupported mutable export declaration')
+    await expect(
+      transform(`export let action = async () => {}`),
+    ).rejects.toThrow('unsupported mutable export declaration')
   })
 })
