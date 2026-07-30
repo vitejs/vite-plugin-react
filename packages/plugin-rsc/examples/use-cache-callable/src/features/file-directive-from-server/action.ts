@@ -4,6 +4,6 @@ import { state } from './state'
 
 export async function cachedFromServer(formData: FormData) {
   const argument = String(formData.get('argument'))
-  state.implementationCalls++
-  state.result = `server:${argument}:${state.implementationCalls}`
+  state.executionCount++
+  state.result = `server import + ${argument}`
 }

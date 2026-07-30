@@ -6,6 +6,7 @@ export function FileDirectiveFromServer() {
   return (
     <FileDirectiveFromServerClient
       action={cachedFromServer}
+      executionCount={state.executionCount}
       result={state.result}
     />
   )

@@ -2,5 +2,10 @@ import { FileDirectiveFromClient } from './client'
 import { state } from './state'
 
 export function FileDirectiveFromClientServer() {
-  return <FileDirectiveFromClient result={state.result} />
+  return (
+    <FileDirectiveFromClient
+      executionCount={state.executionCount}
+      result={state.result}
+    />
+  )
 }

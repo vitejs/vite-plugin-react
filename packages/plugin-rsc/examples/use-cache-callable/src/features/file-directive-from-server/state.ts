@@ -1,4 +1,4 @@
 export const state = {
-  implementationCalls: 0,
-  result: 'none',
+  executionCount: 0,
+  result: 'not called',
 }

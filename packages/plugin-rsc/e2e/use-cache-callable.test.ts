@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
-import { expectNoPageError, waitForHydration } from './helper'
+import { expectNoPageError, testNoJs, waitForHydration } from './helper'
 
 test.describe('dev', () => {
   const f = useFixture({ root: 'examples/use-cache-callable', mode: 'dev' })
@@ -21,40 +21,63 @@ function defineTests(f: Fixture) {
     await expect(page).toHaveURL(f.url('/inline-directive'))
 
     const example = page.getByTestId('inline-directive')
-    await expect(example.locator('span')).toHaveText(
-      'requests: 0; result: none',
-    )
-    const argument = example.getByRole('textbox', { name: 'argument' })
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // The callable is submitted every time, but the cached implementation runs once per argument.
+    // alpha (cache miss)
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 1; result: captured:same:1',
-    )
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
+
+    // alpha (cache hit)
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 2; result: captured:same:1',
-    )
-    await argument.fill('different')
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
+
+    // beta (cache miss)
+    await argument.fill('beta')
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 3; result: captured:different:2',
-    )
+    await expect(submissionCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('captured + beta')
   })
 
-  test('inline directive progressive enhancement', async ({ browser }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false })
-    const page = await context.newPage()
+  testNoJs('inline directive progressive enhancement', async ({ page }) => {
     await page.goto(f.url('/inline-directive'))
 
     const example = page.getByTestId('inline-directive')
-    await example.getByRole('textbox', { name: 'argument' }).fill('progressive')
-    await example.getByRole('button', { name: 'call' }).click()
-    const result = await example.locator('span').textContent()
-    expect(result).toMatch(/^requests: 0; result: captured:progressive:\d+$/)
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
 
-    await example.getByRole('textbox', { name: 'argument' }).fill('progressive')
-    await example.getByRole('button', { name: 'call' }).click()
-    await expect(example.locator('span')).toHaveText(result!)
-    await context.close()
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
+
+    // Native form submissions call the same cached function without hydration.
+    await example
+      .getByRole('textbox', { name: 'Cache key' })
+      .fill('progressive')
+    await example.getByRole('button', { name: 'Call cached function' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + progressive')
+
+    await example
+      .getByRole('textbox', { name: 'Cache key' })
+      .fill('progressive')
+    await example.getByRole('button', { name: 'Call cached function' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + progressive')
   })
 
   test('file directive from server', async ({ page }) => {
@@ -63,17 +86,30 @@ function defineTests(f: Fixture) {
     await waitForHydration(page)
 
     const example = page.getByTestId('file-directive-from-server')
-    await expect(example.locator('span')).toHaveText(
-      'requests: 0; result: none',
-    )
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // The wrapped export is passed from a Server Component to a Client Component.
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 1; result: server:same:1',
-    )
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 2; result: server:same:1',
-    )
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
+
+    // A different FormData argument causes a cache miss.
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('server import + beta')
   })
 
   test('file directive from client', async ({ page }) => {
@@ -82,17 +118,30 @@ function defineTests(f: Fixture) {
     await waitForHydration(page)
 
     const example = page.getByTestId('file-directive-from-client')
-    await expect(example.locator('span')).toHaveText(
-      'requests: 0; result: none',
-    )
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // The generated client proxy calls the wrapped export.
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 1; result: client:same:1',
-    )
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('client import + alpha')
     await submit(page, example)
-    await expect(example.locator('span')).toHaveText(
-      'requests: 2; result: client:same:1',
-    )
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('client import + alpha')
+
+    // A different FormData argument causes a cache miss.
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('client import + beta')
   })
 }
 
@@ -103,6 +152,6 @@ async function submit(page: Page, form: Locator) {
         response.request().method() === 'POST' &&
         response.url().includes('_.rsc'),
     ),
-    form.getByRole('button', { name: 'call' }).click(),
+    form.getByRole('button', { name: 'Call cached function' }).click(),
   ])
 }

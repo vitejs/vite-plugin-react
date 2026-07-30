@@ -14,7 +14,7 @@ import {
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
 const cachedFnMap = new WeakMap<Function, unknown>()
-const cachedFnCacheEntries = new WeakMap<
+let cachedFnCacheEntries = new WeakMap<
   Function,
   Record<string, Promise<StreamCacher>>
 >()
@@ -79,6 +79,10 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
 
 export function revalidateCache(cachedFn: Function) {
   cachedFnCacheEntries.delete(cachedFn)
+}
+
+export function resetCache() {
+  cachedFnCacheEntries = new WeakMap()
 }
 
 class StreamCacher {

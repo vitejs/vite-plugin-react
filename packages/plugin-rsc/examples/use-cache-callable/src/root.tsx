@@ -7,7 +7,7 @@ const routes = [
     path: '/inline-directive',
     title: 'Inline directive',
     description:
-      'A cached function captures server component state and is passed to a client component.',
+      'This Server Component defines an inline cached function, captures a value, and passes the function to the client form.',
     Component: InlineDirective,
   },
   {
@@ -38,6 +38,10 @@ export function Root({ url }: { url: URL }) {
       </head>
       <body>
         <h1>RSC callable use cache</h1>
+        <p>
+          Submit the same cache key twice. Submissions increase on every call,
+          while executions increase only on a cache miss.
+        </p>
         <nav aria-label="Examples">
           <ul>
             {routes.map((item) => (
