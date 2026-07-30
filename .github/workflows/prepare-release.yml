@@ -108,6 +108,7 @@ jobs:
           git commit -m "release: $PACKAGE@$VERSION"
           git push -u "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD
           gh pr create \
+            --assignee "$GITHUB_ACTOR" \
             --base main \
             --head "$BRANCH" \
             --title "release: $PACKAGE@$VERSION" \
