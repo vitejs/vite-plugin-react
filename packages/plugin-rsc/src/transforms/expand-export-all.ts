@@ -1,15 +1,21 @@
 import type { ExportAllDeclaration, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { extractNames } from './utils'
 
 export interface TransformExpandExportAllContext {
   resolve: (source: string, importer: string) => Promise<string | undefined>
+  load: (id: string) => Promise<ESTree.Program>
+}
+
+type EstreeTransformExpandExportAllContext = {
+  resolve: TransformExpandExportAllContext['resolve']
   load: (id: string) => Promise<Program>
 }
 
 export interface TransformExpandExportAllOptions extends TransformExpandExportAllContext {
   code: string
-  ast: Program
+  ast: ESTree.Program
   importer: string
 }
 
@@ -46,7 +52,9 @@ type StarExportRewritePlan = {
 export async function transformExpandExportAll(
   options: TransformExpandExportAllOptions,
 ): Promise<{ code: string } | undefined> {
-  const scan = await scanModuleExports(options.ast, options.importer, options)
+  const ast = options.ast as unknown as Program
+  const context = options as unknown as EstreeTransformExpandExportAllContext
+  const scan = await scanModuleExports(ast, options.importer, context)
   const { plans } = resolveStarExports(scan)
   if (plans.length === 0) {
     return
@@ -66,7 +74,7 @@ export async function transformExpandExportAll(
 async function scanModuleExports(
   ast: Program,
   importer: string,
-  context: TransformExpandExportAllContext,
+  context: EstreeTransformExpandExportAllContext,
   seen = new Set<string>(),
 ): Promise<ModuleExportScan> {
   const starSources: StarExportSource[] = []
@@ -100,7 +108,7 @@ async function scanModuleExports(
 // resolution is ambiguous and must continue to poison parent star resolution.
 async function collectExportScan(
   resolvedId: string,
-  context: TransformExpandExportAllContext,
+  context: EstreeTransformExpandExportAllContext,
   seen: Set<string>,
 ): Promise<ExportNameScan> {
   if (seen.has(resolvedId)) {

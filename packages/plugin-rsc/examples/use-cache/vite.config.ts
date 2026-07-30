@@ -24,7 +24,6 @@ function vitePluginUseCache(): Plugin[] {
       async transform(code) {
         if (!code.includes('use cache')) return
         const ast = await parseAstAsync(code)
-        // @ts-ignore for rolldown-vite ci estree/oxc mismatch
         const result = transformHoistInlineDirective(code, ast, {
           runtime: (value) => `__vite_rsc_cache(${value})`,
           directive: 'use cache',

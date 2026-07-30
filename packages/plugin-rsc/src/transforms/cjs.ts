@@ -3,6 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Program, Node } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { buildScopeTree } from './scope'
 
 // TODO:
@@ -29,9 +30,10 @@ const CJS_INTEROP_HELPER = __cjs_interop__.toString().replace(/\n\s*/g, '')
 
 export function transformCjsToEsm(
   code: string,
-  ast: Program,
+  viteAst: ESTree.Program,
   options: { id: string },
 ): { output: MagicString } {
+  const ast = viteAst as unknown as Program
   const output = new MagicString(code)
   const scopeTree = buildScopeTree(ast)
 

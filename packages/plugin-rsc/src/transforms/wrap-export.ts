@@ -1,6 +1,7 @@
 import { tinyassert } from '@hiogawa/utils'
 import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
@@ -50,12 +51,13 @@ export type TransformWrapExportOptions = {
 
 export function transformWrapExport(
   input: string,
-  ast: Program,
+  viteAst: ESTree.Program,
   options: TransformWrapExportOptions,
 ): {
   exportNames: string[]
   output: MagicString
 } {
+  const ast = viteAst as unknown as Program
   const output = new MagicString(input)
   const exportNames: string[] = []
   const toAppend: string[] = []

@@ -1,5 +1,6 @@
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
 
 export type TransformProxyExportOptions = {
@@ -16,7 +17,7 @@ export type TransformProxyExportOptions = {
 }
 
 export function transformDirectiveProxyExport(
-  ast: Program,
+  ast: ESTree.Program,
   options: {
     directive: string
   } & TransformProxyExportOptions,
@@ -33,12 +34,13 @@ export function transformDirectiveProxyExport(
 }
 
 export function transformProxyExport(
-  ast: Program,
+  viteAst: ESTree.Program,
   options: TransformProxyExportOptions,
 ): {
   exportNames: string[]
   output: MagicString
 } {
+  const ast = viteAst as unknown as Program
   if (options.keep && typeof options.code !== 'string') {
     throw new Error('`keep` option requires `code`')
   }

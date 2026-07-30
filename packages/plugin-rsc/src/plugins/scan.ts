@@ -1,5 +1,6 @@
 import { exactRegex } from '@rolldown/pluginutils'
 import * as esModuleLexer from 'es-module-lexer'
+import type { Program } from 'estree'
 import { walk } from 'estree-walker'
 import { parseAstAsync, type Plugin } from 'vite'
 import type { RscPluginManager } from '../plugin'
@@ -41,7 +42,8 @@ export async function transformScanBuildStrip(code: string): Promise<string> {
   // preserve import.meta.glob for rolldown-vite
   // https://github.com/vitejs/rolldown-vite/issues/373
   if (importGlobRE.test(code)) {
-    const ast = await parseAstAsync(code)
+    const viteAst = await parseAstAsync(code)
+    const ast = viteAst as unknown as Program
     walk(ast, {
       enter(node) {
         if (
