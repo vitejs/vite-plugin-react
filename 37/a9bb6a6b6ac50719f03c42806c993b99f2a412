@@ -1,0 +1,35 @@
+packages/plugin-rsc/examples/server-reference-source-location/src/client.tsx
+  s_6c85e1c2f611b3::t_ca9f5e0b20ee66 1-23
+packages/plugin-rsc/examples/server-reference-source-location/src/framework/entry.browser.tsx
+  s_6c85e1c2f611b3::t_825d9d7aab1ef0 1-124
+packages/plugin-rsc/examples/server-reference-source-location/src/framework/entry.rsc.tsx
+  s_6c85e1c2f611b3::t_53eb5f0f75fbc9 1-94
+packages/plugin-rsc/examples/server-reference-source-location/src/framework/entry.ssr.tsx
+  s_6c85e1c2f611b3::t_ae05a56a0ce91d 1-63
+packages/plugin-rsc/examples/server-reference-source-location/src/framework/error-boundary.tsx
+  s_6c85e1c2f611b3::t_99e6de8543b504 1-76
+packages/plugin-rsc/examples/server-reference-source-location/src/framework/request.tsx
+  s_6c85e1c2f611b3::t_f9bcb6fb5a6665 1-53
+packages/plugin-rsc/examples/server-reference-source-location/tsconfig.json
+  s_6c85e1c2f611b3::t_30ef1377d4b5cd 1-17
+packages/plugin-rsc/examples/server-reference-source-location/vite.config.ts
+  s_6c85e1c2f611b3::t_3ec971792b2d5f 1-36
+pnpm-lock.yaml
+  s_6c85e1c2f611b3::t_ac3422bd686864 881-908
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "37a9bb6a6b6ac50719f03c42806c993b99f2a412",
+  "prompts": {},
+  "sessions": {
+    "s_6c85e1c2f611b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04e7fa6d2ffe1PLoxWVnW2vnSa",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
