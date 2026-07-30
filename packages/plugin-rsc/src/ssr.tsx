@@ -9,6 +9,16 @@ export { createServerConsumerManifest } from './core/ssr'
 
 export * from './react/ssr'
 
+export function getClientEntryUrl(): string {
+  const url = assetsManifest.clientEntryUrl
+  if (!url) {
+    throw new Error(
+      `[vite-rsc] getClientEntryUrl() cannot be used with the 'customClientEntry' option`,
+    )
+  }
+  return url
+}
+
 /**
  * Callback type for client reference dependency notifications.
  * Called during SSR when a client component's dependencies are loaded.

@@ -186,20 +186,19 @@ if (import.meta.hot) {
 - [`entry.ssr.tsx`](./examples/starter/src/framework/entry.ssr.tsx)
 
 ```tsx
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 export async function handleSsr(rscStream: ReadableStream) {
   // deserialize RSC stream back to React VDOM
   const root = await createFromReadableStream(rscStream)
 
-  // helper API to allow referencing browser entry content from SSR environment
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
-
   // render html (traditional SSR)
   const htmlStream = renderToReadableStream(root, {
-    bootstrapScriptContent,
+    bootstrapModules: [getClientEntryUrl()],
   })
 
   return htmlStream
@@ -334,19 +333,20 @@ export function UserApp() {
 
 ### Available on `ssr` environment
 
-#### `import.meta.viteRsc.loadBootstrapScriptContent("index")`
+#### `getClientEntryUrl()`
 
-This provides a raw js code to execute a browser entry file specified by `environments.client.build.rollupOptions.input.index`. This is intended to be used with React DOM SSR API, such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream)
+This returns the URL used to load the client entry specified by `environments.client.build.rollupOptions.input.index`. This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream).
 
 ```js
+import { getClientEntryUrl } from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
-const bootstrapScriptContent =
-  await import.meta.viteRsc.loadBootstrapScriptContent('index')
 const htmlStream = await renderToReadableStream(reactNode, {
-  bootstrapScriptContent,
+  bootstrapModules: [getClientEntryUrl()],
 })
 ```
+
+`getClientEntryUrl()` cannot be used when the `customClientEntry` plugin option is enabled.
 
 ### Available on `client` environment
 

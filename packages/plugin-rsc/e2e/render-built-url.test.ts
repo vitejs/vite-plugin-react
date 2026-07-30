@@ -111,6 +111,9 @@ test.describe(() => {
       expect(manifestFileContent).toContain(
         `__dynamicBase + "assets/entry.rsc-`,
       )
+      expect(manifestFileContent).toMatch(
+        /"clientEntryUrl": __dynamicBase \+ "assets\/index-[\w-]+\.js"/,
+      )
     })
   })
 })
