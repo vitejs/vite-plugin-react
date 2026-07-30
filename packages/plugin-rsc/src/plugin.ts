@@ -284,7 +284,8 @@ export type RscPluginOptions = {
    * - Require an entry chunk named "index"
    * - Automatically include client entry deps in each client reference's dependencies
    *
-   * Note: `import.meta.viteRsc.loadBootstrapScriptContent` cannot be used with this option.
+   * Note: `getClientEntryUrl` and `import.meta.viteRsc.loadBootstrapScriptContent`
+   * cannot be used with this option.
    *
    * Use this when you manually handle client entry setup and preloading.
    *
@@ -1129,7 +1130,9 @@ export function createRpcClient(params) {
               manager,
             )
             const manifest: AssetsManifest = {
-              bootstrapScriptContent: `import(${serializeValueWithRuntime(entryUrl)})`,
+              clientEntryUrl: rscPluginOptions.customClientEntry
+                ? undefined
+                : entryUrl,
               clientReferenceDeps: {},
               cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
             }
@@ -1200,7 +1203,7 @@ export function createRpcClient(params) {
           }
 
           const assetDeps = collectAssetDeps(bundle)
-          let bootstrapScriptContent: string | RuntimeAsset = ''
+          let clientEntryUrl: string | RuntimeAsset | undefined
           let clientEntryDeps: AssetDeps | undefined
 
           const clientReferenceDeps: Record<string, AssetDeps> = {}
@@ -1230,18 +1233,11 @@ export function createRpcClient(params) {
             for (const [key, deps] of Object.entries(clientReferenceDeps)) {
               clientReferenceDeps[key] = mergeAssetDeps(deps, clientEntryDeps)
             }
-            const entryUrl = assetsURL(entry.chunk.fileName, manager)
-            if (typeof entryUrl === 'string') {
-              bootstrapScriptContent = `import(${JSON.stringify(entryUrl)})`
-            } else {
-              bootstrapScriptContent = new RuntimeAsset(
-                `"import(" + JSON.stringify(${entryUrl.runtime}) + ")"`,
-              )
-            }
+            clientEntryUrl = assetsURL(entry.chunk.fileName, manager)
           }
 
           manager.buildAssetsManifest = {
-            bootstrapScriptContent,
+            clientEntryUrl,
             clientEntryDeps,
             clientReferenceDeps,
             serverResources,
@@ -1268,13 +1264,6 @@ export function createRpcClient(params) {
         return
       },
     },
-    createVirtualPlugin('vite-rsc/bootstrap-script-content', function () {
-      assert(this.environment.name !== 'client')
-      return `\
-import assetsManifest from "virtual:vite-rsc/assets-manifest";
-export default assetsManifest.bootstrapScriptContent;
-`
-    }),
     {
       name: 'rsc:bootstrap-script-content',
       transform: {
@@ -1306,7 +1295,7 @@ export default assetsManifest.bootstrapScriptContent;
               entryName,
               `[vite-rsc] expected 'loadBootstrapScriptContent("index")' but got ${argCode}`,
             )
-            let replacement: string = `Promise.resolve(__vite_rsc_assets_manifest.bootstrapScriptContent)`
+            let replacement: string = `Promise.resolve("import(" + JSON.stringify(__vite_rsc_assets_manifest.clientEntryUrl) + ")")`
             const [start, end] = match.indices![0]!
             output.overwrite(start, end, replacement)
           }
@@ -2265,7 +2254,7 @@ function assetsURLOfDeps(deps: AssetDeps, manager: RscPluginManager) {
 //
 
 export type AssetsManifest = {
-  bootstrapScriptContent: string | RuntimeAsset
+  clientEntryUrl?: string | RuntimeAsset
   clientEntryDeps?: AssetDeps
   clientReferenceDeps: Record<string, AssetDeps>
   serverResources?: Record<string, Pick<AssetDeps, 'css'>>
@@ -2278,7 +2267,7 @@ export type AssetDeps = {
 }
 
 export type ResolvedAssetsManifest = {
-  bootstrapScriptContent: string
+  clientEntryUrl?: string
   clientEntryDeps?: ResolvedAssetDeps
   clientReferenceDeps: Record<string, ResolvedAssetDeps>
   serverResources?: Record<string, Pick<ResolvedAssetDeps, 'css'>>

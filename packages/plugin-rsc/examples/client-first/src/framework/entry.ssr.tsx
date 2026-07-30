@@ -1,11 +1,13 @@
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { Root } from '../root'
 import { setRscFnCaller, type RscFnCaller } from './runtime'
 
 export async function renderHtml() {
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = `import(${JSON.stringify(getClientEntryUrl())})`
   return renderToReadableStream(<Root />, { bootstrapScriptContent })
 }
 

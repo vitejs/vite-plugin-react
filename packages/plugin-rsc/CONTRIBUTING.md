@@ -69,7 +69,3 @@ pnpm -C packages/plugin-rsc test-e2e -g "hmr"
 # Test projects created with `setupInlineFixture` are locally runnable. For example:
 pnpm -C packages/plugin-rsc/examples/e2e/temp/react-compiler dev
 ```
-
-## Releasing
-
-See [RELEASING.md](RELEASING.md) for the maintainer release process.

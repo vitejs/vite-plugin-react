@@ -3,6 +3,7 @@ declare global {
     readonly viteRsc: {
       loadCss: (importer?: string) => import('react').ReactNode
       loadModule: <T>(environmentName: string, entryName?: string) => Promise<T>
+      /** @deprecated Use `getClientEntryUrl` from `@vitejs/plugin-rsc/ssr`. */
       loadBootstrapScriptContent: (entryName: string) => Promise<string>
       /**
        * Import a module from another environment using a module specifier.

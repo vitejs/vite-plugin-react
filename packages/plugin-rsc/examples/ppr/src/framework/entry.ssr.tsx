@@ -1,4 +1,7 @@
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import { resume } from 'react-dom/server.edge'
 import type { PrerenderResult } from 'react-dom/static'
@@ -11,8 +14,7 @@ export async function prerenderHtml(
   rscStream: ReadableStream<Uint8Array>,
 ): Promise<PrerenderResult> {
   const ssrRoot = createSsrRoot(preventStreamClose(rscStream))
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = `import(${JSON.stringify(getClientEntryUrl())})`
   const controller = new AbortController()
   const pendingResult = prerender(ssrRoot, {
     bootstrapScriptContent,

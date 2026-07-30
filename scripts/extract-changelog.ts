@@ -7,9 +7,12 @@ function main() {
   }
 
   const sections = readFileSync(path, 'utf-8').split(/^## /m).slice(1)
-  const section = sections.find((section) =>
-    section.split('\n', 1)[0].includes(`[${version}](`),
-  )
+  const section = sections.find((section) => {
+    const heading = section.split('\n', 1)[0]
+    return (
+      heading.includes(`[${version}](`) || heading.startsWith(`${version} (`)
+    )
+  })
   if (!section) throw new Error(`Missing changelog entry for ${version}`)
 
   const notes = section.split('\n').slice(1).join('\n').trim()
