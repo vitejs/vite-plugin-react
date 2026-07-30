@@ -2,113 +2,48 @@ name: Publish Package
 
 on:
   push:
-    # RSC releases start when a generated release PR is merged.
     branches:
       - main
-    # Other packages retain the existing tag-driven release flow.
-    tags:
-      - 'plugin-*'
 
 permissions: {}
 
 jobs:
-  # Publish tag-driven releases, excluding RSC's commit-driven flow.
-  publish:
-    if: github.repository == 'vitejs/vite-plugin-react' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/plugin-rsc@')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # for ArnaudBarre/github-release to create a release
-      id-token: write # for provenance generation
-    environment: Release
-    steps:
-      - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-
-      - name: Set node version
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org/
-          # disable cache, to avoid cache poisoning (https://docs.zizmor.sh/audits/#cache-poisoning)
-          package-manager-cache: false
-
-      - name: Disallow installation scripts
-        run: yq '.onlyBuiltDependencies = []' -i pnpm-workspace.yaml
-
-      - name: Install deps
-        run: pnpm install
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-
-      - name: Get pkgName for tag
-        id: tag
-        run: |
-          # Check if the tag contains "alpha"
-          if [[ $GITHUB_REF_NAME =~ alpha ]]; then
-            echo "isAlpha=true" >> $GITHUB_OUTPUT
-          else
-            echo "isAlpha=false" >> $GITHUB_OUTPUT
-          fi
-
-          # `%@*` truncates @ and version number from the right side.
-          # https://stackoverflow.com/questions/9532654/expression-after-last-specific-character
-          pkgName=${GITHUB_REF_NAME%@*}
-          echo "pkgName=$pkgName" >> $GITHUB_OUTPUT
-
-      - if: steps.tag.outputs.pkgName == 'plugin-react-swc'
-        working-directory: packages/plugin-react-swc
-        run: pnpm build
-
-      - name: Publish package
-        # npm 11.5.2+ is required for trusted publishing.
-        # zizmor: ignore[adhoc-packages]
-        run: npm i -g npm@^11.5.2 && pnpm run ci-publish "$GITHUB_REF_NAME"
-
-      - if: steps.tag.outputs.isAlpha == 'false'
-        uses: ArnaudBarre/github-release@4fa6eafe8e2449c7c1c5a91ae50de4ee34db0b40 # v1.5.0
-        with:
-          path: packages/${{ steps.tag.outputs.pkgName }}/CHANGELOG.md
-          tag-name: ${{ github.ref_name }}
-
-  # Only main pushes can contain an RSC release commit from a merged release PR.
-  detect-rsc-release:
-    if: github.repository == 'vitejs/vite-plugin-react' && github.ref == 'refs/heads/main'
-    name: Detect RSC release commit
+  detect-release:
+    if: github.repository == 'vitejs/vite-plugin-react'
+    name: Detect release commit
     runs-on: ubuntu-slim
     outputs:
+      package: ${{ steps.detect.outputs.package }}
       release: ${{ steps.detect.outputs.release }}
       version: ${{ steps.detect.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Detect release
         id: detect
         run: |
           SUBJECT="$(git log -1 --format=%s)"
-          VERSION="$(jq -r .version packages/plugin-rsc/package.json)"
-          EXPECTED="release: plugin-rsc@$VERSION"
-          if [[ "$SUBJECT" == "$EXPECTED"* ]]; then
-            echo "release=true" >> "$GITHUB_OUTPUT"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "Detected RSC release $VERSION"
-          else
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            echo "No RSC release commit found at HEAD"
-          fi
+          for PACKAGE in plugin-react plugin-react-swc plugin-rsc; do
+            VERSION="$(jq -r .version "packages/$PACKAGE/package.json")"
+            EXPECTED="release: $PACKAGE@$VERSION"
+            if [[ "$SUBJECT" == "$EXPECTED"* ]]; then
+              echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+              echo "release=true" >> "$GITHUB_OUTPUT"
+              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+              echo "Detected $PACKAGE release $VERSION"
+              exit 0
+            fi
+          done
+          echo "release=false" >> "$GITHUB_OUTPUT"
+          echo "No release commit found at HEAD"
 
-  publish-rsc:
-    if: needs.detect-rsc-release.outputs.release == 'true'
-    needs: detect-rsc-release
-    name: Publish RSC
+  publish-release:
+    if: needs.detect-release.outputs.release == 'true'
+    needs: detect-release
+    name: Publish ${{ needs.detect-release.outputs.package }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -123,9 +58,10 @@ jobs:
 
       - name: Check release tag
         env:
-          VERSION: ${{ needs.detect-rsc-release.outputs.version }}
+          PACKAGE: ${{ needs.detect-release.outputs.package }}
+          VERSION: ${{ needs.detect-release.outputs.version }}
         run: |
-          TAG="plugin-rsc@$VERSION"
+          TAG="$PACKAGE@$VERSION"
           if git rev-parse --verify --quiet "refs/tags/$TAG"; then
             echo "Tag $TAG already exists"
             exit 1
@@ -149,10 +85,17 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
+      - name: Build plugin-react-swc package
+        if: needs.detect-release.outputs.package == 'plugin-react-swc'
+        run: pnpm --filter @vitejs/plugin-react-swc build
+
       - name: Publish package
-        # TODO: plugin-rsc doesn't currently publish alpha/beta prereleases. If it does,
-        # specify an npm dist-tag with `publish --tag ...`.
-        run: pnpm --filter @vitejs/plugin-rsc --fail-if-no-match publish --access public --no-git-checks
+        env:
+          PACKAGE: ${{ needs.detect-release.outputs.package }}
+          VERSION: ${{ needs.detect-release.outputs.version }}
+        # npm 11.5.2+ is required for trusted publishing.
+        # zizmor: ignore[adhoc-packages]
+        run: npm i -g npm@^11.5.2 && pnpm run ci-publish "$PACKAGE@$VERSION"
 
       - id: generate-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -165,8 +108,8 @@ jobs:
 
       - name: Create GitHub release
         run: |
-          TAG="plugin-rsc@$VERSION"
-          node scripts/extract-changelog.ts packages/plugin-rsc/CHANGELOG.md "$VERSION" > "$NOTES_FILE"
+          TAG="$PACKAGE@$VERSION"
+          node scripts/extract-changelog.ts "packages/$PACKAGE/CHANGELOG.md" "$VERSION" > "$NOTES_FILE"
 
           prerelease=()
           if [[ "${VERSION%%+*}" == *-* ]]; then
@@ -180,5 +123,6 @@ jobs:
             "${prerelease[@]}"
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-          NOTES_FILE: ${{ runner.temp }}/plugin-rsc-release-notes.md
-          VERSION: ${{ needs.detect-rsc-release.outputs.version }}
+          NOTES_FILE: ${{ runner.temp }}/release-notes.md
+          PACKAGE: ${{ needs.detect-release.outputs.package }}
+          VERSION: ${{ needs.detect-release.outputs.version }}
