@@ -1,0 +1,19 @@
+packages/plugin-react/src/reactCompilerPreset.ts
+  s_ab2bb2cb51b77d::t_c3cd7c04f1b725 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0fe935d6c90cfec6be2e61bc766c707888d9a8f6",
+  "prompts": {},
+  "sessions": {
+    "s_ab2bb2cb51b77d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb127-bf04-7570-b090-acc252115e71",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
