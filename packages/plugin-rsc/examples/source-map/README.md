@@ -5,9 +5,9 @@ This example isolates React development features that transport server source lo
 The automated E2E test currently covers one Server Reference received through RSC. It follows the same source-map path as Chrome DevTools:
 
 1. Read the received function's `[[FunctionLocation]]` through CDP.
-2. Match its `about://React/Server/...` eval script.
-3. Fetch the Vite source map advertised by that script.
-4. Resolve the generated proxy location to its original source declaration.
+2. Find the browser script containing that function.
+3. Fetch the Vite source map advertised by the script.
+4. Resolve the browser function location to its original source declaration.
 
 Run the focused test from `packages/plugin-rsc`:
 

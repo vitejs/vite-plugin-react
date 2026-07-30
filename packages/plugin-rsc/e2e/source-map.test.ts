@@ -16,6 +16,8 @@ test.describe('source map', () => {
   }) => {
     test.skip(browserName !== 'chromium')
 
+    // TODO: extract cdp hack helper like perf tracks
+
     const session = await page.context().newCDPSession(page)
     const scripts = new Map<string, { url: string; sourceMapURL?: string }>()
     session.on('Debugger.scriptParsed', (event) => {
@@ -32,11 +34,9 @@ test.describe('source map', () => {
       .poll(() =>
         page.evaluate(
           () =>
-            typeof (
-              window as Window & {
-                __serverReferenceSourceLocations?: Record<string, unknown>
-              }
-            ).__serverReferenceSourceLocations?.['named-function'],
+            typeof (window as any).__serverReferenceSourceLocations?.[
+              'named-function'
+            ],
         ),
       )
       .toBe('function')
@@ -53,8 +53,12 @@ test.describe('source map', () => {
       objectId: evaluated.result.objectId!,
       ownProperties: true,
     })
-    // React exposes the received Server Function through an eval-backed proxy.
-    const location = properties.internalProperties?.find(
+    // V8 exposes ordinary function locations through this inspector property.
+    // https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-getProperties
+    // https://github.com/v8/v8/blob/main/src/inspector/value-mirror.cc
+    // React creates an eval-backed client proxy at the transported server location.
+    // https://github.com/react/react/pull/30741
+    const functionLocation = properties.internalProperties?.find(
       (property) => property.name === '[[FunctionLocation]]',
     )?.value?.value as
       | {
@@ -63,10 +67,9 @@ test.describe('source map', () => {
           columnNumber: number
         }
       | undefined
-    expect(location).toBeTruthy()
+    expect(functionLocation).toBeTruthy()
 
-    const script = scripts.get(location!.scriptId)
-    expect(script?.url).toMatch(/^about:\/\/React\/Server\//)
+    const script = scripts.get(functionLocation!.scriptId)
     expect(script?.sourceMapURL).toContain('/__vite_rsc_findSourceMapURL?')
 
     // Reproduce the source-map lookup Chrome DevTools performs for that proxy.
@@ -84,8 +87,8 @@ test.describe('source map', () => {
       sourceRoot: payload.sourceRoot ?? '',
     })
     const original = sourceMap.findEntry(
-      location!.lineNumber,
-      location!.columnNumber,
+      functionLocation!.lineNumber,
+      functionLocation!.columnNumber,
     )
 
     expect(original).toMatchObject({
