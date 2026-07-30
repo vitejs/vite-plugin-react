@@ -150,12 +150,19 @@ export default memo(() => {
     'simple variable': ['const foo = 1', false],
     'lowercase function': ['function bar() {}', false],
     'lowercase arrow function': ['let baz = () => {}', false],
-    'non assignments (1)': ['(0,useState)()', false],
-    'non assignments (2)': ['[useState][0]()', false],
-    'non assignments (3)': ['useState;s()', false],
-    'non assignments (4)': ['useState,s()', false],
-    'object without methods (1)': ['const obj = { useState: 1 }', false],
-    'object without methods (2)': ['const obj = { Foo: 1 }', false],
+    'lowercase use prefix': ['const useful = true', false],
+
+    // these are false positives
+    // it is better to have false positives than false negatives,
+    // because false negatives will cause those files to not be processed by the react compiler
+    'false positive: hook reference (1)': ['(0,useState)()', true],
+    'false positive: hook reference (2)': ['[useState][0]()', true],
+    'false positive: hook reference (3)': ['useState;s()', true],
+    'false positive: hook reference (4)': ['useState,s()', true],
+    'false positive: hook property': ['const obj = { useState: 1 }', true],
+    'false positive: component property': ['const obj = { Foo: 1 }', true],
+    // https://github.com/vitejs/vite-plugin-react/issues/1349
+    'false positive: long component name': ['A'.repeat(50_000), true],
   }
 
   for (const [name, [code, expected]] of Object.entries(cases)) {
