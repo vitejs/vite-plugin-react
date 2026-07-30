@@ -4,9 +4,9 @@ import { useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
 // TODO: Automate the remaining manual cases listed in the example README.
-test.describe('server reference source location', () => {
+test.describe('source map', () => {
   const f = useFixture({
-    root: 'examples/server-reference-source-location',
+    root: 'examples/source-map',
     mode: 'dev',
   })
 
@@ -43,7 +43,7 @@ test.describe('server reference source location', () => {
 
     const evaluated = await session.send('Runtime.evaluate', {
       expression: 'window.__serverReferenceSourceLocations["named-function"]',
-      objectGroup: 'server-reference-source-location',
+      objectGroup: 'source-map',
     })
     expect(evaluated.exceptionDetails).toBeUndefined()
     expect(evaluated.result.type).toBe('function')
@@ -95,7 +95,7 @@ test.describe('server reference source location', () => {
     })
 
     await session.send('Runtime.releaseObjectGroup', {
-      objectGroup: 'server-reference-source-location',
+      objectGroup: 'source-map',
     })
   })
 })

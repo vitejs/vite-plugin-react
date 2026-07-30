@@ -1,5 +1,5 @@
 {
-  "name": "@vitejs/plugin-rsc-examples-server-reference-source-location",
+  "name": "@vitejs/plugin-rsc-examples-source-map",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
