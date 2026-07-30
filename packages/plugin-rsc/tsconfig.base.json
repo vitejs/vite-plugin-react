@@ -1,9 +1,6 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "paths": {
-      "@oxc-project/types": ["./node_modules/@types/estree"]
-    },
     "noImplicitReturns": false,
     "exactOptionalPropertyTypes": false,
     "verbatimModuleSyntax": true,

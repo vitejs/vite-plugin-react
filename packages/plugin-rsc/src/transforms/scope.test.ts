@@ -15,7 +15,9 @@ describe('fixtures', () => {
     it(path.basename(file), async () => {
       const input = ((await mod()) as any).default as string
       const ast = await parseAstAsync(input)
-      const scopeTree = buildScopeTree(ast)
+      const scopeTree = buildScopeTree(
+        ast as unknown as Parameters<typeof buildScopeTree>[0],
+      )
       const showReferenceNode = file.includes('/scope/reference-node/')
       const serialized = serializeScopeTree(scopeTree, { showReferenceNode })
       await expect(

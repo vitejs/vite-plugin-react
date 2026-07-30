@@ -42,7 +42,7 @@ export async function transformScanBuildStrip(code: string): Promise<string> {
   // https://github.com/vitejs/rolldown-vite/issues/373
   if (importGlobRE.test(code)) {
     const ast = await parseAstAsync(code)
-    walk(ast, {
+    walk(ast as unknown as Parameters<typeof walk>[0], {
       enter(node) {
         if (
           node.type === 'CallExpression' &&
