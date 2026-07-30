@@ -154,29 +154,26 @@ test.describe('source map', () => {
     }) => {
       test.skip(browserName !== 'chromium')
 
-      const resolver = await createFunctionSourceMapResolver(page, f.url())
-      try {
-        await page.goto(f.url(sourceMapCase.route))
-        await waitForHydration(page)
+      await using resolver = await createFunctionSourceMapResolver(
+        page,
+        f.url(),
+      )
+      await page.goto(f.url(sourceMapCase.route))
+      await waitForHydration(page)
 
-        for (const { name, ...expected } of sourceMapCase.references) {
-          await expect
-            .poll(() =>
-              page.evaluate(
-                (name) =>
-                  typeof (window as any).__serverReferenceSourceLocations?.[
-                    name
-                  ],
-                name,
-              ),
-            )
-            .toBe('function')
+      for (const { name, ...expected } of sourceMapCase.references) {
+        await expect
+          .poll(() =>
+            page.evaluate(
+              (name) =>
+                typeof (window as any).__serverReferenceSourceLocations?.[name],
+              name,
+            ),
+          )
+          .toBe('function')
 
-          const original = await resolver.resolve(name)
-          expect(original).toMatchObject(expected)
-        }
-      } finally {
-        await resolver.dispose()
+        const original = await resolver.resolve(name)
+        expect(original).toMatchObject(expected)
       }
     })
   }
@@ -236,7 +233,7 @@ async function createFunctionSourceMapResolver(page: Page, baseURL: string) {
         functionLocation!.columnNumber,
       )
     },
-    async dispose() {
+    async [Symbol.asyncDispose]() {
       await session.send('Runtime.releaseObjectGroup', {
         objectGroup: 'source-map',
       })
