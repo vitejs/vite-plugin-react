@@ -90,6 +90,8 @@ const serverReferenceCases = [
   },
   {
     route: '/inline-directive',
+    // Inline source locations previously resolved to the directive function.
+    // https://github.com/hi-ogawa/vite-plugins/issues/781#issuecomment-2849009525
     references: [
       {
         // Currently resolves to the following arrow instead of the function.
