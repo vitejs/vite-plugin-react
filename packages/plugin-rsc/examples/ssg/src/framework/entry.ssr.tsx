@@ -1,4 +1,7 @@
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { prerender } from 'react-dom/static.edge'
@@ -19,8 +22,7 @@ export async function renderHtml(
     const root = React.use(payload).root
     return root
   }
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = `import(${JSON.stringify(getClientEntryUrl())})`
 
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined

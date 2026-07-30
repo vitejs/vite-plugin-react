@@ -133,6 +133,10 @@ In many test cases, we need to mock dependencies using `link:` and `file:` proto
 
 For a mock dependency, make sure you add a `@vitejs/test-` prefix to the package name. This will avoid possible issues like false-positive alerts.
 
+## Releasing
+
+See [RELEASING.md](./.github/RELEASING.md) for the maintainer release process.
+
 ## Contributing to `@vitejs/plugin-rsc`
 
 See [CONTRIBUTING.md](packages/plugin-rsc/CONTRIBUTING.md) in the `@vitejs/plugin-rsc` package for specific guidelines on contributing to the React Server Components plugin.

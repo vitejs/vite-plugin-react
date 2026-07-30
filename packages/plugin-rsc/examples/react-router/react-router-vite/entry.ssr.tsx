@@ -1,4 +1,7 @@
-import { createFromReadableStream } from '@vitejs/plugin-rsc/ssr'
+import {
+  createFromReadableStream,
+  getClientEntryUrl,
+} from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream as renderHTMLToReadableStream } from 'react-dom/server.edge'
 import {
   unstable_routeRSCServerRequest as routeRSCServerRequest,
@@ -9,8 +12,7 @@ export default async function handler(
   request: Request,
   serverResponse: Response,
 ): Promise<Response> {
-  const bootstrapScriptContent =
-    await import.meta.viteRsc.loadBootstrapScriptContent('index')
+  const bootstrapScriptContent = `import(${JSON.stringify(getClientEntryUrl())})`
 
   return await routeRSCServerRequest({
     request,
