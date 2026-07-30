@@ -2,7 +2,6 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import {
   transformModuleExport,
-  type TransformModuleExportGenerateContext,
   type TransformModuleExportOptions,
 } from './module-export'
 
@@ -91,25 +90,30 @@ export * from './other'
   })
 
   test('reports metadata and preserves filtered declarations', async () => {
-    const contexts: TransformModuleExportGenerateContext[] = []
     const input = `export const Page = () => {}, value = 1;
 export default Page;`
     const ast = await parseAstAsync(input)
     const result = transformModuleExport(input, ast, {
       filter: (_name, meta) => meta.isFunction !== false,
       exportAll: 'preserve',
-      generate: (context) => {
-        contexts.push(context)
-        return `const ${context.binding} = wrap(${context.implementation}); export { ${context.binding} as ${context.exportName} };`
-      },
+      generate: (context) =>
+        `const ${context.binding} = wrap(${context.implementation}); export { ${context.binding} as ${context.exportName} };`,
     })
 
     expect({
-      contexts,
+      references: result.references,
       output: result.output.toString(),
     }).toMatchInlineSnapshot(`
       {
-        "contexts": [
+        "output": "const Page$$impl = () => {};
+      const Page = wrap(Page$$impl); export { Page as Page };
+      const value = 1;
+      export { value };
+
+
+      const $$default = wrap(Page); export { $$default as default };
+      ",
+        "references": [
           {
             "binding": "Page",
             "exportName": "Page",
@@ -130,14 +134,6 @@ export default Page;`
             },
           },
         ],
-        "output": "const Page$$impl = () => {};
-      const Page = wrap(Page$$impl); export { Page as Page };
-      const value = 1;
-      export { value };
-
-
-      const $$default = wrap(Page); export { $$default as default };
-      ",
       }
     `)
   })

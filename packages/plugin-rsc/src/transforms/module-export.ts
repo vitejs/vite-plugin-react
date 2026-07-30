@@ -44,6 +44,8 @@ export type TransformModuleExportOptions = {
 
 export type TransformModuleExportResult = {
   output: MagicString
+  /** Full generation contexts for selected exports in source order. */
+  references: TransformModuleExportGenerateContext[]
   /** Selected public export names in source order. */
   referenceNames: string[]
 }
@@ -90,7 +92,7 @@ export function transformModuleExport(
 ): TransformModuleExportResult {
   const ast = viteAst as unknown as Program
   const output = new MagicString(input)
-  const referenceNames: string[] = []
+  const references: TransformModuleExportGenerateContext[] = []
   const emissions = new Map<number, string[]>()
   const filter = options.filter ?? (() => true)
   const usedNames = new Set(buildScopeTree(ast).moduleScope.declarations)
@@ -137,7 +139,7 @@ export function transformModuleExport(
     context: TransformModuleExportGenerateContext,
     position: number,
   ): void {
-    referenceNames.push(context.exportName)
+    references.push(context)
     emit(position, options.generate(context))
   }
 
@@ -415,7 +417,11 @@ export function transformModuleExport(
     output.appendLeft(position, `\n${codes.join('\n')}\n`)
   }
 
-  return { output, referenceNames }
+  return {
+    output,
+    references,
+    referenceNames: references.map((reference) => reference.exportName),
+  }
 }
 
 function findSeparatorComma(separator: string): number {
