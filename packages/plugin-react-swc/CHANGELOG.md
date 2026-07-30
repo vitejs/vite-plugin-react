@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 4.3.3 (2026-07-30)
+
 ### Add a patch for bundled-dev mode compat [#1352](https://github.com/vitejs/vite-plugin-react/pull/1352)
 
 Added a patch so that this plugin works with [the experimental bundled dev mode](https://vite.dev/blog/announcing-vite8-1#experimental-bundled-dev-mode). Note that because this Vite feature is experimental, compatibility in future Vite releases is not guaranteed.
