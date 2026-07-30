@@ -2,12 +2,14 @@
 
 This example isolates React development features that transport server source locations into the browser. Cases under `src/features` cover Server Reference definitions, Server Action and Server Component errors, server console replay, and a normal client error baseline.
 
-The automated E2E test currently covers one Server Reference received through RSC. It follows the same source-map path as Chrome DevTools:
+The automated E2E test covers every Server Reference case below. It follows the same source-map path as Chrome DevTools:
 
 1. Read the received function's `[[FunctionLocation]]` through CDP.
 2. Find the browser script containing that function.
 3. Fetch the Vite source map advertised by the script.
 4. Resolve the browser function location to its original source declaration.
+
+These assertions document current behavior rather than requiring every transform to resolve to its ideal source site. Some export and inline forms currently resolve only to a nearby location. Fixing those mappings is follow-up work tracked by [#1356](https://github.com/vitejs/vite-plugin-react/issues/1356); the fixture ensures each improvement can update a visible expectation without regressing the other forms.
 
 Run the focused test from `packages/plugin-rsc`:
 
@@ -57,4 +59,4 @@ The shared Client Component exposes received proxies as `window.__serverReferenc
 
 ## Follow-up Coverage
 
-TODO: automate the remaining Server Reference export shapes and the React error/console cases. Error and console automation should resolve CDP-generated locations through the advertised source maps rather than asserting only displayed error text.
+TODO: automate the React Server Action and Server Component error stacks and console replay. These cases should resolve CDP-generated locations through the advertised source maps rather than asserting only displayed error text.

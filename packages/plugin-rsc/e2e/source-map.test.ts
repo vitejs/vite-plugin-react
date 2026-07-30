@@ -1,104 +1,251 @@
 import { SourceMap, type SourceMapPayload } from 'node:module'
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
-// TODO: Automate the remaining manual cases listed in the example README.
+// TODO: Add separate CDP stack coverage for Server Action and Server Component
+// errors and console replay.
+// These zero-based expectations record current behavior, including approximate
+// locations. Improving a mapping should update its expectation as a follow-up.
+const serverReferenceCases = [
+  {
+    route: '/named-function',
+    references: [
+      {
+        name: 'named-function',
+        originalSource: '/src/features/named-function/action.ts',
+        originalLine: 2,
+        originalColumn: 0,
+      },
+    ],
+  },
+  {
+    route: '/variables',
+    references: [
+      {
+        name: 'arrow-function',
+        originalSource: '/src/features/variables/action.ts',
+        originalLine: 2,
+        originalColumn: 0,
+      },
+      {
+        name: 'function-expression',
+        originalSource: '/src/features/variables/action.ts',
+        originalLine: 4,
+        originalColumn: 0,
+      },
+    ],
+  },
+  {
+    route: '/defaults',
+    references: [
+      {
+        // Currently resolves to the end of the declaration.
+        name: 'default-named-function',
+        originalSource: '/src/features/defaults/named.ts',
+        originalLine: 4,
+        originalColumn: 0,
+      },
+      {
+        // Currently resolves to the end of the declaration.
+        name: 'default-anonymous-function',
+        originalSource: '/src/features/defaults/anonymous.ts',
+        originalLine: 4,
+        originalColumn: 0,
+      },
+      {
+        name: 'default-identifier',
+        originalSource: '/src/features/defaults/identifier.ts',
+        originalLine: 6,
+        originalColumn: 15,
+      },
+    ],
+  },
+  {
+    route: '/specifiers',
+    references: [
+      {
+        // Currently resolves to the end of the local declaration.
+        name: 'local-alias',
+        originalSource: '/src/features/specifiers/local-alias.ts',
+        originalLine: 4,
+        originalColumn: 0,
+      },
+      {
+        // Currently resolves to the module directive instead of the re-export.
+        name: 're-export',
+        originalSource: '/src/features/specifiers/reexport.ts',
+        originalLine: 0,
+        originalColumn: 0,
+      },
+      {
+        // Currently resolves to the module directive instead of the export-all.
+        name: 'export-all',
+        originalSource: '/src/features/specifiers/export-all.ts',
+        originalLine: 0,
+        originalColumn: 0,
+      },
+    ],
+  },
+  {
+    route: '/inline-directive',
+    references: [
+      {
+        // Currently resolves to the rendered section instead of the function.
+        name: 'inline-directive',
+        originalSource: '/src/features/inline-directive/server.tsx',
+        originalLine: 9,
+        originalColumn: 4,
+      },
+    ],
+  },
+  {
+    route: '/typescript-tsx',
+    references: [
+      {
+        name: 'typescript-tsx',
+        originalSource: '/src/features/typescript-tsx/action.tsx',
+        originalLine: 2,
+        originalColumn: 0,
+      },
+    ],
+  },
+  {
+    route: '/multiple-exports',
+    references: [
+      {
+        name: 'first-action',
+        originalSource: '/src/features/multiple-exports/action.ts',
+        originalLine: 2,
+        originalColumn: 0,
+      },
+      {
+        name: 'second-action',
+        originalSource: '/src/features/multiple-exports/action.ts',
+        originalLine: 6,
+        originalColumn: 0,
+      },
+    ],
+  },
+  {
+    route: '/server-reference-from-client',
+    references: [
+      {
+        name: 'server-reference-from-client',
+        originalSource: '/src/features/server-reference-from-client/action.ts',
+        originalLine: 2,
+        originalColumn: 0,
+      },
+    ],
+  },
+]
+
 test.describe('source map', () => {
   const f = useFixture({
     root: 'examples/source-map',
     mode: 'dev',
   })
 
-  test('maps the React server function proxy to its source export', async ({
-    browserName,
-    page,
-  }) => {
-    test.skip(browserName !== 'chromium')
+  for (const sourceMapCase of serverReferenceCases) {
+    test(`maps Server References on ${sourceMapCase.route}`, async ({
+      browserName,
+      page,
+    }) => {
+      test.skip(browserName !== 'chromium')
 
-    // TODO: extract cdp hack helper like perf tracks
+      const resolver = await createFunctionSourceMapResolver(page, f.url())
+      try {
+        await page.goto(f.url(sourceMapCase.route))
+        await waitForHydration(page)
 
-    const session = await page.context().newCDPSession(page)
-    const scripts = new Map<string, { url: string; sourceMapURL?: string }>()
-    session.on('Debugger.scriptParsed', (event) => {
-      scripts.set(event.scriptId, {
-        url: event.url,
-        sourceMapURL: event.sourceMapURL,
-      })
-    })
-    await session.send('Debugger.enable')
+        for (const { name, ...expected } of sourceMapCase.references) {
+          await expect
+            .poll(() =>
+              page.evaluate(
+                (name) =>
+                  typeof (window as any).__serverReferenceSourceLocations?.[
+                    name
+                  ],
+                name,
+              ),
+            )
+            .toBe('function')
 
-    await page.goto(f.url('/named-function'))
-    await waitForHydration(page)
-    await expect
-      .poll(() =>
-        page.evaluate(
-          () =>
-            typeof (window as any).__serverReferenceSourceLocations?.[
-              'named-function'
-            ],
-        ),
-      )
-      .toBe('function')
-
-    const evaluated = await session.send('Runtime.evaluate', {
-      expression: 'window.__serverReferenceSourceLocations["named-function"]',
-      objectGroup: 'source-map',
-    })
-    expect(evaluated.exceptionDetails).toBeUndefined()
-    expect(evaluated.result.type).toBe('function')
-    expect(evaluated.result.objectId).toBeTruthy()
-
-    const properties = await session.send('Runtime.getProperties', {
-      objectId: evaluated.result.objectId!,
-      ownProperties: true,
-    })
-    // V8 exposes ordinary function locations through this inspector property.
-    // https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-getProperties
-    // https://github.com/v8/v8/blob/main/src/inspector/value-mirror.cc
-    // React creates an eval-backed client proxy at the transported server location.
-    // https://github.com/react/react/pull/30741
-    const functionLocation = properties.internalProperties?.find(
-      (property) => property.name === '[[FunctionLocation]]',
-    )?.value?.value as
-      | {
-          scriptId: string
-          lineNumber: number
-          columnNumber: number
+          const original = await resolver.resolve(name)
+          expect(original).toMatchObject(expected)
         }
-      | undefined
-    expect(functionLocation).toBeTruthy()
-
-    const script = scripts.get(functionLocation!.scriptId)
-    expect(script?.sourceMapURL).toContain('/__vite_rsc_findSourceMapURL?')
-
-    // Reproduce the source-map lookup Chrome DevTools performs for that proxy.
-    const sourceMapURL = new URL(script!.sourceMapURL!, f.url()).href
-    const response = await page.request.get(sourceMapURL)
-    expect(response.ok()).toBe(true)
-    const payload = (await response.json()) as Partial<SourceMapPayload>
-    const sourceMap = new SourceMap({
-      file: payload.file ?? '',
-      version: payload.version!,
-      sources: payload.sources!,
-      sourcesContent: payload.sourcesContent ?? [],
-      names: payload.names ?? [],
-      mappings: payload.mappings!,
-      sourceRoot: payload.sourceRoot ?? '',
+      } finally {
+        await resolver.dispose()
+      }
     })
-    const original = sourceMap.findEntry(
-      functionLocation!.lineNumber,
-      functionLocation!.columnNumber,
-    )
-
-    expect(original).toMatchObject({
-      originalSource: '/src/features/named-function/action.ts',
-      originalLine: 2,
-      originalColumn: 0,
-    })
-
-    await session.send('Runtime.releaseObjectGroup', {
-      objectGroup: 'source-map',
-    })
-  })
+  }
 })
+
+async function createFunctionSourceMapResolver(page: Page, baseURL: string) {
+  const session = await page.context().newCDPSession(page)
+  const scripts = new Map<string, { sourceMapURL?: string }>()
+  session.on('Debugger.scriptParsed', (event) => {
+    scripts.set(event.scriptId, { sourceMapURL: event.sourceMapURL })
+  })
+  await session.send('Debugger.enable')
+
+  return {
+    async resolve(reference: string) {
+      const evaluated = await session.send('Runtime.evaluate', {
+        expression: `window.__serverReferenceSourceLocations[${JSON.stringify(reference)}]`,
+        objectGroup: 'source-map',
+      })
+      expect(evaluated.exceptionDetails).toBeUndefined()
+      expect(evaluated.result.type).toBe('function')
+      expect(evaluated.result.objectId).toBeTruthy()
+
+      const properties = await session.send('Runtime.getProperties', {
+        objectId: evaluated.result.objectId!,
+        ownProperties: true,
+      })
+      // V8 exposes ordinary function locations through this inspector property.
+      // https://chromedevtools.github.io/devtools-protocol/tot/Runtime/#method-getProperties
+      // https://github.com/v8/v8/blob/main/src/inspector/value-mirror.cc
+      // React creates an eval-backed client proxy at the transported server location.
+      // https://github.com/react/react/pull/30741
+      const functionLocation = properties.internalProperties?.find(
+        (property) => property.name === '[[FunctionLocation]]',
+      )?.value?.value as FunctionLocation | undefined
+      expect(functionLocation).toBeTruthy()
+
+      const script = scripts.get(functionLocation!.scriptId)
+      expect(script?.sourceMapURL).toContain('/__vite_rsc_findSourceMapURL?')
+
+      // Reproduce the source-map lookup Chrome DevTools performs for the proxy.
+      const sourceMapURL = new URL(script!.sourceMapURL!, baseURL).href
+      const response = await page.request.get(sourceMapURL)
+      expect(response.ok()).toBe(true)
+      const payload = (await response.json()) as Partial<SourceMapPayload>
+      const sourceMap = new SourceMap({
+        file: payload.file ?? '',
+        version: payload.version!,
+        sources: payload.sources!,
+        sourcesContent: payload.sourcesContent ?? [],
+        names: payload.names ?? [],
+        mappings: payload.mappings!,
+        sourceRoot: payload.sourceRoot ?? '',
+      })
+      return sourceMap.findEntry(
+        functionLocation!.lineNumber,
+        functionLocation!.columnNumber,
+      )
+    },
+    async dispose() {
+      await session.send('Runtime.releaseObjectGroup', {
+        objectGroup: 'source-map',
+      })
+      await session.detach()
+    },
+  }
+}
+
+interface FunctionLocation {
+  scriptId: string
+  lineNumber: number
+  columnNumber: number
+}
