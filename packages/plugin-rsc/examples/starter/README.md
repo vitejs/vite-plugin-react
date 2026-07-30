@@ -24,7 +24,7 @@ See [`@vitejs/plugin-rsc`](https://github.com/vitejs/vite-plugin-react/tree/main
   - `import.meta.viteRsc.loadModule`
 - [`./src/framework/entry.ssr.tsx`](./src/framework/entry.ssr.tsx)
   - `@vitejs/plugin-rsc/ssr`
-  - `import.meta.viteRsc.loadBootstrapScriptContent`
+  - `getClientEntryUrl`
   - `rsc-html-stream/server`
 - [`./src/framework/entry.browser.tsx`](./src/framework/entry.browser.tsx)
   - `@vitejs/plugin-rsc/browser`
