@@ -22,7 +22,7 @@ describe(transformModuleExport, () => {
   test('extracts direct and default declarations', async () => {
     const result = await transform(`
 export async function action() {}
-export const loader = async () => {} /* comma, here */, value = loader
+export const loader = async () => {}, value = 1
 export default async function Page() {}
 `)
 
@@ -38,10 +38,9 @@ export default async function Page() {}
       const action = wrap(action$$impl, "action");
       export { action as action };
 
-      const loader$$impl = async () => {} /* comma, here */;
+      const loader$$impl = async () => {}, value$$impl = 1
       const loader = wrap(loader$$impl, "loader");
       export { loader as loader };
-      const value$$impl = loader
       const value = wrap(value$$impl, "value");
       export { value as value };
 
@@ -49,6 +48,23 @@ export default async function Page() {}
       const Page = wrap(Page$$impl, "default");
       export { Page as default };
 
+      "
+    `)
+  })
+
+  test('documents dependent multi-declarator TDZ', async () => {
+    const result = await transform(
+      `export const first = async () => {}, second = first`,
+    )
+
+    // `first` is a later generated const in this output. Supporting this
+    // uncommon dependency would require splitting the source declaration.
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "const first$$impl = async () => {}, second$$impl = first
+      const first = wrap(first$$impl, \"first\");
+      export { first as first };
+      const second = wrap(second$$impl, \"second\");
+      export { second as second };
       "
     `)
   })
@@ -105,9 +121,8 @@ export default Page;`
       output: result.output.toString(),
     }).toMatchInlineSnapshot(`
       {
-        "output": "const Page$$impl = () => {};
+        "output": "const Page$$impl = () => {}, value = 1;
       const Page = wrap(Page$$impl); export { Page as Page };
-      const value = 1;
       export { value };
 
 

@@ -75,10 +75,10 @@ export type TransformModuleExportResult = {
  * by `export const ...` above. The transform does not classify or rewrite that
  * code, so consumers also own effects and purity annotations.
  *
- * Generated code for direct declarations is placed immediately after each
- * implementation. Local export specifiers are generated at module end so their
- * values have initialized, while re-exports are converted to local imports at
- * the original export position.
+ * Generated code for direct declarations is placed immediately after the source
+ * declaration. Local export specifiers are generated at module end so their values
+ * have initialized, while re-exports are converted to local imports at the original
+ * export position.
  *
  * This canonical-binding model intentionally does not preserve source function
  * hoisting under the exported name. Selected mutable, destructured, and duplicate
@@ -248,35 +248,13 @@ export function transformModuleExport(
           }
 
           output.remove(node.start, variableDeclaration.start)
-          // Split declarators so each generated canonical binding is initialized
-          // before a later declarator can reference its source export name.
-          for (const [index, declaration] of declarations.entries()) {
-            const position =
-              index === declarations.length - 1
-                ? node.end
-                : declaration.node.end
+          for (const declaration of declarations) {
             for (const { identifier, meta } of declaration.selected) {
-              extractDeclaration(identifier, identifier.name, meta, position)
+              extractDeclaration(identifier, identifier.name, meta, node.end)
             }
             for (const name of declaration.preserved) {
-              preserveExport(name, name, position)
+              preserveExport(name, name, node.end)
             }
-          }
-          for (let i = 1; i < declarations.length; i++) {
-            const previous = declarations[i - 1]!.node
-            const current = declarations[i]!.node
-            const separator = input.slice(previous.end, current.start)
-            const comma = findSeparatorComma(separator)
-            const prefix = separator.slice(0, comma)
-            const rest = separator.slice(comma + 1)
-            const codes = emissions.get(previous.end)
-            tinyassert(codes)
-            emissions.delete(previous.end)
-            output.update(
-              previous.end,
-              current.start,
-              `${prefix};\n${codes.join('\n')}\n${variableDeclaration.kind}${/^\s/.test(rest) ? '' : ' '}${rest}`,
-            )
           }
         } else {
           node.declaration satisfies never
@@ -422,32 +400,6 @@ export function transformModuleExport(
     references,
     referenceNames: references.map((reference) => reference.exportName),
   }
-}
-
-function findSeparatorComma(separator: string): number {
-  let inLineComment = false
-  let inBlockComment = false
-  for (let i = 0; i < separator.length; i++) {
-    const char = separator[i]
-    const next = separator[i + 1]
-    if (inLineComment) {
-      if (char === '\n' || char === '\r') inLineComment = false
-    } else if (inBlockComment) {
-      if (char === '*' && next === '/') {
-        inBlockComment = false
-        i++
-      }
-    } else if (char === '/' && next === '/') {
-      inLineComment = true
-      i++
-    } else if (char === '/' && next === '*') {
-      inBlockComment = true
-      i++
-    } else if (char === ',') {
-      return i
-    }
-  }
-  throw new Error('missing variable declarator separator')
 }
 
 function getModuleDeclarationCounts(ast: Program): Map<string, number> {
