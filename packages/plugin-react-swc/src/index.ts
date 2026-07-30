@@ -77,6 +77,7 @@ const usingRolldown = 'rolldownVersion' in vite
 
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = true
+  let isBundledDev = false
   let viteCacheRoot: string | undefined
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
@@ -142,6 +143,9 @@ const react = (_options?: Options): Plugin[] => {
       },
       configResolved(config) {
         viteCacheRoot = config.cacheDir
+        if (config.experimental.bundledDev) {
+          isBundledDev = true
+        }
         hmrDisabled = config.server.hmr === false
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
@@ -168,15 +172,25 @@ const react = (_options?: Options): Plugin[] => {
         }
       },
       transformIndexHtml: (_, config) => {
-        if (!hmrDisabled) {
+        if (hmrDisabled) return
+        if (isBundledDev) {
           return [
             {
               tag: 'script',
               attrs: { type: 'module' },
-              children: getPreambleCode(config.server!.config.base),
+              // In bundled dev mode, the src does not go through the middlewares
+              // so we don't need to append the base
+              children: getPreambleCode('/'),
             },
           ]
         }
+        return [
+          {
+            tag: 'script',
+            attrs: { type: 'module' },
+            children: getPreambleCode(config.server!.config.base),
+          },
+        ]
       },
       async transform(code, _id, transformOptions) {
         const id = _id.split('?')[0]
