@@ -1,0 +1,33 @@
+.github/RELEASING.md
+  s_86c29999336aca::t_6b025847721aa7 1,3,7-12,17,20-21,25-27,38,44
+.github/workflows/prepare-release.yml
+  s_cd2f1ae4867093::t_ae8ae02d771e79 1,6-14,34,42,71-72,74-75,91,94,99-100,105-106
+scripts/extract-changelog.ts
+  s_86c29999336aca::t_bb8ae791ee1f79 10-15
+scripts/release-utils.ts
+  s_cd2f1ae4867093::t_aa72e21ede102c 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "032f40ad344f19a6719ecfc308ae9f5f9c5dd126",
+  "prompts": {},
+  "sessions": {
+    "s_86c29999336aca": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb19d-d28f-7e70-8451-e8fdb65fec24",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    },
+    "s_cd2f1ae4867093": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb170-cec1-7c90-bb32-39eba225994d",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
