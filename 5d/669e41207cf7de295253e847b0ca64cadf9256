@@ -1,0 +1,19 @@
+.github/workflows/prepare-release.yml
+  s_86c29999336aca::t_df13d4fbae448c 111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5d669e41207cf7de295253e847b0ca64cadf9256",
+  "prompts": {},
+  "sessions": {
+    "s_86c29999336aca": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb19d-d28f-7e70-8451-e8fdb65fec24",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
