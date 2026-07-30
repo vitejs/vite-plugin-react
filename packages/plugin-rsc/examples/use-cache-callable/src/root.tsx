@@ -1,0 +1,73 @@
+import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
+import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
+import { InlineDirective } from './features/inline-directive/server'
+
+const routes = [
+  {
+    path: '/inline-directive',
+    title: 'Inline directive',
+    description:
+      'This Server Component defines an inline cached function, captures a value, and passes the function to the client form.',
+    Component: InlineDirective,
+  },
+  {
+    path: '/file-directive-from-server',
+    title: 'File directive from server',
+    description:
+      'A cached module export is imported by a server component and passed to a client component.',
+    Component: FileDirectiveFromServer,
+  },
+  {
+    path: '/file-directive-from-client',
+    title: 'File directive from client',
+    description:
+      'A client component imports a cached module export through its generated proxy.',
+    Component: FileDirectiveFromClientServer,
+  },
+]
+
+export function Root({ url }: { url: URL }) {
+  const route = routes.find((item) => item.path === url.pathname)
+  const Example = route?.Component
+
+  return (
+    <html>
+      <head>
+        <meta charSet="utf-8" />
+        <title>RSC callable use cache</title>
+      </head>
+      <body>
+        <h1>RSC callable use cache</h1>
+        <p>
+          Submit the same cache key twice. Submissions increase on every call,
+          while executions increase only on a cache miss.
+        </p>
+        <nav aria-label="Examples">
+          <ul>
+            {routes.map((item) => (
+              <li key={item.path}>
+                <a
+                  href={item.path}
+                  aria-current={route === item ? 'page' : undefined}
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <main>
+          {route && Example ? (
+            <>
+              <h2>{route.title}</h2>
+              <p>{route.description}</p>
+              <Example />
+            </>
+          ) : (
+            <p>Select an example.</p>
+          )}
+        </main>
+      </body>
+    </html>
+  )
+}

@@ -62,6 +62,24 @@ import { buildScopeTree, type ScopeTree } from './scope'
  *
  * In this second sketch, `__ENCODE__(...)` and `__DECODE__(...)` likewise
  * represent the expressions returned by those code-generation callbacks.
+ *
+ * With `hoistRuntime`, the runtime result becomes the module-level binding and
+ * the moved function becomes its private implementation:
+ *
+ * ```js
+ * function Component() {
+ *   const x = 1
+ *   const action = $$hoist_0_action.bind(null, x)
+ * }
+ * export const $$hoist_0_action = __RUNTIME__($$hoist_0_action$$impl)
+ * async function $$hoist_0_action$$impl(x, y) {
+ *   "use server"
+ *   return x + y
+ * }
+ * ```
+ *
+ * `noExport` independently keeps `$$hoist_0_action` module-local when an
+ * integration needs module-scope runtime initialization without an export.
  */
 export function transformHoistInlineDirective(
   input: string,
@@ -82,6 +100,12 @@ export function transformHoistInlineDirective(
     decode?: (value: string) => string
     /** Keep generated hoisted declarations module-local instead of exporting them. */
     noExport?: boolean
+    /**
+     * Evaluate the runtime expression once during module initialization.
+     * The expression can reference imports and the hoisted implementation, but
+     * must not depend on other module-local initialization.
+     */
+    hoistRuntime?: boolean
   },
 ): {
   output: MagicString
@@ -102,6 +126,7 @@ export function transformHoistInlineDirective(
   // closure captures from module bindings and globals, which remain in scope.
   const scopeTree = buildScopeTree(ast)
   const names: string[] = []
+  const runtimeHoists: string[] = []
 
   walk(ast, {
     enter(node, parent) {
@@ -163,27 +188,41 @@ export function transformHoistInlineDirective(
         const newName =
           `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
         names.push(newName)
+        // Hoisted runtimes need two module bindings: a private function for the
+        // original body and a canonical binding for the runtime result. The
+        // default path keeps the original single generated function binding.
+        const implementationName = options.hoistRuntime
+          ? `${newName}$$impl`
+          : newName
         output.update(
           node.start,
           node.body.start,
-          `\n;${options.noExport ? '' : 'export '}${
+          `\n;${options.noExport || options.hoistRuntime ? '' : 'export '}${
             node.async ? 'async ' : ''
-          }function${node.generator ? '*' : ''} ${newName}(${newParams}) `,
+          }function${node.generator ? '*' : ''} ${implementationName}(${newParams}) `,
         )
+        const runtimeCode = `/* #__PURE__ */ ${runtime(
+          implementationName,
+          newName,
+          { directiveMatch: match },
+        )}`
+        if (options.hoistRuntime) {
+          runtimeHoists.push(
+            `${options.noExport ? '' : 'export '}const ${newName} = ${runtimeCode};\n`,
+          )
+        }
         output.appendLeft(
           node.end,
-          `;\n/* #__PURE__ */ Object.defineProperty(${newName}, "name", { value: ${JSON.stringify(
+          `;\n/* #__PURE__ */ Object.defineProperty(${implementationName}, "name", { value: ${JSON.stringify(
             originalName,
           )} });\n`,
         )
         output.move(node.start, node.end, input.length)
 
-        // Replace the original function with the runtime expression for its
-        // hoisted declaration. Bind closure captures to the prepended capture
-        // parameters (or the single encoded parameter).
-        let newCode = `/* #__PURE__ */ ${runtime(newName, newName, {
-          directiveMatch: match,
-        })}`
+        // Replace the original function with either the hoisted runtime result
+        // or the runtime expression for its hoisted declaration. Bind closure
+        // captures to the prepended parameters (or one encoded parameter).
+        let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
             ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
@@ -204,13 +243,33 @@ export function transformHoistInlineDirective(
     },
   })
 
-  // Expose the generated hoisted declaration names. These are the new
-  // exports by default (unless noExport is set), so callers can also track them
-  // as runtime references.
+  if (runtimeHoists.length > 0) {
+    // Define hoisted runtime wrappers after leading directives.
+    output.prependLeft(getRuntimeHoistPosition(ast), runtimeHoists.join(''))
+  }
+
+  // Expose the canonical generated names. They identify the moved functions by
+  // default or the runtime result bindings under hoistRuntime. Both are exports
+  // unless noExport is set, so callers can also track them as runtime references.
   return {
     output,
     names,
   }
+}
+
+function getRuntimeHoistPosition(ast: Program): number {
+  // Preserve leading directives so directive-based transforms can
+  // still compose just in case.
+  for (const statement of ast.body) {
+    const isDirective =
+      statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      typeof statement.expression.value === 'string'
+    if (!isDirective) {
+      return statement.start
+    }
+  }
+  return 0
 }
 
 const exactRegex = (s: string): RegExp =>

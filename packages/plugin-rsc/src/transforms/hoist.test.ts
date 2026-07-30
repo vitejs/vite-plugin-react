@@ -46,6 +46,37 @@ describe('fixtures', () => {
   }
 })
 
+describe('hoistRuntime fixtures', () => {
+  const fixtures = import.meta.glob(
+    ['./fixtures/hoist-runtime/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+
+  async function transformFixture(input: string) {
+    const ast = await parseAstAsync(input)
+    const result = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      encode: (value) => `__enc(${value})`,
+      decode: (value) => `__dec(${value})`,
+      hoistRuntime: true,
+    })
+    const transformed = result.output.toString()
+    await parseAstAsync(transformed)
+    return `// names: ${JSON.stringify(result.names)}\n\n${transformed}`
+  }
+
+  for (const [file, mod] of Object.entries(fixtures)) {
+    it(path.basename(file), async () => {
+      const input = ((await mod()) as any).default as string
+      await expect(await transformFixture(input)).toMatchFileSnapshot(
+        file + '.snap.js',
+      )
+    })
+  }
+})
+
 describe(transformHoistInlineDirective, () => {
   async function testTransform(
     input: string,
