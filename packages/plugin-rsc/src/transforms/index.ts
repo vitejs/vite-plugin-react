@@ -1,4 +1,5 @@
 export * from './hoist'
+export * from './module-export'
 export * from './wrap-export'
 export * from './proxy-export'
 export * from './utils'
