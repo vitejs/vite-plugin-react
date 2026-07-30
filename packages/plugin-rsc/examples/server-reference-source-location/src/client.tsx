@@ -4,20 +4,24 @@ import { useEffect, useState } from 'react'
 
 declare global {
   interface Window {
-    __serverReferenceSourceLocation?: () => Promise<string>
+    __serverReferenceSourceLocations?: Record<string, () => Promise<string>>
   }
 }
 
-export function Client(props: { action: () => Promise<string> }) {
+export function SourceLocationCase(props: {
+  name: string
+  action: () => Promise<string>
+}) {
   const [result, setResult] = useState('ready')
 
   useEffect(() => {
-    window.__serverReferenceSourceLocation = props.action
-  }, [props.action])
+    const actions = (window.__serverReferenceSourceLocations ??= {})
+    actions[props.name] = props.action
+  }, [props.action, props.name])
 
   return (
     <button onClick={() => void props.action().then(setResult)}>
-      {result}
+      <code>{props.name}</code>: {result}
     </button>
   )
 }

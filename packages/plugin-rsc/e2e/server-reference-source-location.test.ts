@@ -3,8 +3,7 @@ import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
-// TODO: Extend this baseline across the module export, inline hoist, and
-// TypeScript/TSX source-map combinations listed in the example README.
+// TODO: Automate the remaining manual cases listed in the example README.
 test.describe('server reference source location', () => {
   const f = useFixture({
     root: 'examples/server-reference-source-location',
@@ -27,7 +26,7 @@ test.describe('server reference source location', () => {
     })
     await session.send('Debugger.enable')
 
-    await page.goto(f.url())
+    await page.goto(f.url('/named-function'))
     await waitForHydration(page)
     await expect
       .poll(() =>
@@ -35,15 +34,15 @@ test.describe('server reference source location', () => {
           () =>
             typeof (
               window as Window & {
-                __serverReferenceSourceLocation?: unknown
+                __serverReferenceSourceLocations?: Record<string, unknown>
               }
-            ).__serverReferenceSourceLocation,
+            ).__serverReferenceSourceLocations?.['named-function'],
         ),
       )
       .toBe('function')
 
     const evaluated = await session.send('Runtime.evaluate', {
-      expression: 'window.__serverReferenceSourceLocation',
+      expression: 'window.__serverReferenceSourceLocations["named-function"]',
       objectGroup: 'server-reference-source-location',
     })
     expect(evaluated.exceptionDetails).toBeUndefined()
@@ -90,7 +89,7 @@ test.describe('server reference source location', () => {
     )
 
     expect(original).toMatchObject({
-      originalSource: '/src/action.ts',
+      originalSource: '/src/features/named-function/action.ts',
       originalLine: 2,
       originalColumn: 0,
     })
