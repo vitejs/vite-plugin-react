@@ -146,6 +146,10 @@ function defineTests(f: Fixture) {
 }
 
 async function submit(page: Page, form: Locator) {
+  // `submissionCount` updates immediately on the client, while a cache hit leaves
+  // the server-rendered execution count and result unchanged. Those assertions do
+  // not prove that the server action and subsequent render have completed, so wait
+  // for the action response before proceeding.
   await Promise.all([
     page.waitForResponse(
       (response) =>
