@@ -12,7 +12,9 @@ export * from './react/ssr'
 export function getClientEntryUrl(): string {
   const url = assetsManifest.clientEntryUrl
   if (!url) {
-    throw new Error('[vite-rsc] default client entry is not configured')
+    throw new Error(
+      `[vite-rsc] getClientEntryUrl() cannot be used with the 'customClientEntry' option`,
+    )
   }
   return url
 }

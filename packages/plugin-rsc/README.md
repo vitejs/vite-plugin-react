@@ -348,7 +348,7 @@ const htmlStream = await renderToReadableStream(reactNode, {
 })
 ```
 
-`getClientEntryUrl()` throws when the default client entry is unavailable, such as when using the `customClientEntry` plugin option.
+`getClientEntryUrl()` cannot be used when the `customClientEntry` plugin option is enabled.
 
 ### Available on `client` environment
 

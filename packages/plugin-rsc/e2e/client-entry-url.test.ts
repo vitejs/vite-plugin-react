@@ -81,10 +81,10 @@ test.describe('getClientEntryUrl with customClientEntry', () => {
 
   const f = useFixture({ root, mode: 'build' })
 
-  test('throws when the default entry is unavailable', async ({ request }) => {
+  test('throws with customClientEntry', async ({ request }) => {
     const response = await request.get(f.url())
     await expect(response.text()).resolves.toContain(
-      '[vite-rsc] default client entry is not configured',
+      `[vite-rsc] getClientEntryUrl() cannot be used with the 'customClientEntry' option`,
     )
   })
 })
