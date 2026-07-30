@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { Identifier, MemberExpression, Node } from 'estree'
+import type { Identifier, MemberExpression, Node, Program } from 'estree'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { type Scope, type ScopeTree, buildScopeTree } from './scope'
@@ -14,10 +14,9 @@ describe('fixtures', () => {
   for (const [file, mod] of Object.entries(fixtures)) {
     it(path.basename(file), async () => {
       const input = ((await mod()) as any).default as string
-      const ast = await parseAstAsync(input)
-      const scopeTree = buildScopeTree(
-        ast as unknown as Parameters<typeof buildScopeTree>[0],
-      )
+      const viteAst = await parseAstAsync(input)
+      const ast = viteAst as unknown as Program
+      const scopeTree = buildScopeTree(ast)
       const showReferenceNode = file.includes('/scope/reference-node/')
       const serialized = serializeScopeTree(scopeTree, { showReferenceNode })
       await expect(
