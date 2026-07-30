@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Fixed the react compiler preset filter to be linear
+### Fixed the react compiler preset filter to be linear ([#1353](https://github.com/vitejs/vite-plugin-react/pull/1353))
 
 The improved filter in v6.0.3 was non-linear and caused a performance regression ([#1349](https://github.com/vitejs/vite-plugin-react/issues/1349)). The filter was changed to be linear to avoid that.
 
