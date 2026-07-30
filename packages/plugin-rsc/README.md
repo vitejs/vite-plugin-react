@@ -335,9 +335,7 @@ export function UserApp() {
 
 #### `getClientEntryUrl()`
 
-This returns the URL used to load the client entry specified by `environments.client.build.rollupOptions.input.index`.
-
-This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream).
+This returns the URL used to load the client entry specified by `environments.client.build.rollupOptions.input.index`. This can be used with React DOM SSR APIs such as [`renderToReadableStream`](https://react.dev/reference/react-dom/server/renderToReadableStream).
 
 ```js
 import { getClientEntryUrl } from '@vitejs/plugin-rsc/ssr'
