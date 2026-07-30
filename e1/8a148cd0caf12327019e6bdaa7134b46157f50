@@ -1,0 +1,23 @@
+packages/plugin-rsc/src/plugin.ts
+  s_8f1f7afda17334::t_110a979b784348 73,77,2433,2465,2767,2773-2783,2785
+packages/plugin-rsc/src/transforms/server-action.ts
+  s_8f1f7afda17334::t_6e522140b5f617 4,29-40
+packages/plugin-rsc/src/transforms/waku.test.ts
+  s_8f1f7afda17334::t_f368674cf20bdb 172,175,177-178,181-182,184,187-189,263,267-272
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e18a148cd0caf12327019e6bdaa7134b46157f50",
+  "prompts": {},
+  "sessions": {
+    "s_8f1f7afda17334": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04ebf9de5ffeCFSlFNa346seT1",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
