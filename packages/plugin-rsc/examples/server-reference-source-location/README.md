@@ -17,6 +17,22 @@ Run the focused test from `packages/plugin-rsc`:
 pnpm exec playwright test e2e/server-reference-source-location.test.ts --project=chromium
 ```
 
+## Manual Verification
+
+Build the workspace packages, then start this example in development:
+
+```sh
+pnpm build
+pnpm -C packages/plugin-rsc/examples/server-reference-source-location dev
+```
+
+Open the printed URL in Chrome and select a case from the navigation. Ensure JavaScript source maps are enabled in Chrome DevTools, then use either workflow:
+
+1. Open the Console and evaluate `window.__serverReferenceSourceLocations['named-function']`, replacing the key with the selected case name. Right-click the returned function and choose **Show function definition**.
+2. Open React DevTools, select the rendered `SourceLocationCase`, find its `action` prop, then use **Go to Definition**.
+
+The browser should open the corresponding file under `src/features` at the original Server Function declaration. An inline case should resolve to its directive-bearing function, while a re-export may resolve to the re-export statement. It should not open generated transform code or an `about://React/Server/...` proxy. Clicking a case button separately verifies that the exposed function remains callable.
+
 ## Cases
 
 The navigation provides these routes for manual invocation and inspection:
