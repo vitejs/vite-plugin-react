@@ -1,5 +1,5 @@
-import type { Program } from 'estree'
 import type MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { transformHoistInlineDirective } from './hoist'
 import { hasDirective } from './utils'
 import { transformWrapExport } from './wrap-export'
@@ -9,7 +9,7 @@ import { transformWrapExport } from './wrap-export'
 // needs to match original position.
 export function transformServerActionServer(
   input: string,
-  ast: Program,
+  ast: ESTree.Program,
   options: {
     runtime: (value: string, name: string) => string
     rejectNonAsyncFunction?: boolean

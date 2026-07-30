@@ -1,10 +1,12 @@
 import type { ExportDefaultDeclaration } from 'estree'
 import type { Identifier, Node, Pattern, Program } from 'estree'
+import type { ESTree } from 'vite'
 
 export function hasDirective(
-  body: Program['body'],
+  viteBody: ESTree.Program['body'],
   directive: string,
 ): boolean {
+  const body = viteBody as unknown as Program['body']
   return !!body.find(
     (stmt) =>
       stmt.type === 'ExpressionStatement' &&

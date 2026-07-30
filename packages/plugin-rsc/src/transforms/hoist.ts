@@ -8,6 +8,7 @@ import type {
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
+import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
 
 /**
@@ -83,7 +84,7 @@ import { buildScopeTree, type ScopeTree } from './scope'
  */
 export function transformHoistInlineDirective(
   input: string,
-  ast: Program,
+  viteAst: ESTree.Program,
   {
     runtime,
     rejectNonAsyncFunction,
@@ -111,6 +112,7 @@ export function transformHoistInlineDirective(
   output: MagicString
   names: string[]
 } {
+  const ast = viteAst as unknown as Program
   // MagicString needs an existing boundary at the move destination. The newline
   // also keeps the first appended declaration separate from the original source.
   if (!input.endsWith('\n')) {
@@ -293,7 +295,11 @@ function matchDirective(
   }
 }
 
-export function findDirectives(ast: Program, directive: string): Literal[] {
+export function findDirectives(
+  viteAst: ESTree.Program,
+  directive: string,
+): Literal[] {
+  const ast = viteAst as unknown as Program
   const directiveRE = exactRegex(directive)
   const nodes: Literal[] = []
   walk(ast, {

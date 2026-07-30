@@ -31,9 +31,7 @@ export function customServerFunctionPlugin(): Plugin {
       }
 
       const reference = manager.serverReferences.resolve(id, 'rsc')
-      const ast = (await parseAstAsync(code)) as unknown as Parameters<
-        typeof transformHoistInlineDirective
-      >[1]
+      const ast = await parseAstAsync(code)
 
       if (environmentName === 'rsc') {
         const runtime = (value: string, name: string) =>

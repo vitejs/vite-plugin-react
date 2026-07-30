@@ -25,9 +25,7 @@ export function callableCachePlugin(): Plugin {
       }
 
       const reference = manager.serverReferences.resolve(id, 'rsc')
-      const ast = (await parseAstAsync(code)) as unknown as Parameters<
-        typeof transformHoistInlineDirective
-      >[1]
+      const ast = await parseAstAsync(code)
       const environmentName = this.environment.name
 
       if (environmentName === 'rsc') {
