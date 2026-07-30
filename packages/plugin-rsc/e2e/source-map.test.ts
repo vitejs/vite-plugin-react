@@ -187,7 +187,7 @@ test.describe('source map', () => {
           .toBe('function')
 
         const original = await resolver.resolve(name)
-        expect(original).toMatchObject(expected)
+        expect.soft(original).toMatchObject(expected)
       }
     })
   }
