@@ -2,6 +2,7 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import {
   transformModuleExport,
+  type TransformModuleExportGenerateContext,
   type TransformModuleExportOptions,
 } from './module-export'
 
@@ -90,8 +91,9 @@ export * from './other'
   })
 
   test('reports metadata and preserves filtered declarations', async () => {
-    const contexts: unknown[] = []
-    const input = `export const Page = () => {}, value = 1; export default Page;`
+    const contexts: TransformModuleExportGenerateContext[] = []
+    const input = `export const Page = () => {}, value = 1;
+export default Page;`
     const ast = await parseAstAsync(input)
     const result = transformModuleExport(input, ast, {
       filter: (_name, meta) => meta.isFunction !== false,
@@ -102,29 +104,42 @@ export * from './other'
       },
     })
 
-    expect(contexts).toEqual([
+    expect({
+      contexts,
+      output: result.output.toString(),
+    }).toMatchInlineSnapshot(`
       {
-        implementation: 'Page$$impl',
-        binding: 'Page',
-        exportName: 'Page',
-        meta: {
-          localName: 'Page',
-          declarationKind: 'const',
-          isFunction: true,
-        },
-      },
-      {
-        implementation: 'Page',
-        binding: '$$default',
-        exportName: 'default',
-        meta: {
-          defaultExportIdentifierName: 'Page',
-          isFunction: undefined,
-        },
-      },
-    ])
-    expect(result.output.toString()).toContain('value = 1;')
-    expect(result.output.toString()).toContain('export { value };')
+        "contexts": [
+          {
+            "binding": "Page",
+            "exportName": "Page",
+            "implementation": "Page$$impl",
+            "meta": {
+              "declarationKind": "const",
+              "isFunction": true,
+              "localName": "Page",
+            },
+          },
+          {
+            "binding": "$$default",
+            "exportName": "default",
+            "implementation": "Page",
+            "meta": {
+              "defaultExportIdentifierName": "Page",
+              "isFunction": undefined,
+            },
+          },
+        ],
+        "output": "const Page$$impl = () => {};
+      const Page = wrap(Page$$impl); export { Page as Page };
+      const value = 1;
+      export { value };
+
+
+      const $$default = wrap(Page); export { $$default as default };
+      ",
+      }
+    `)
   })
 
   test('validates selected exports and export-all policy', async () => {

@@ -11,35 +11,42 @@ import type { ESTree } from 'vite'
 import { buildScopeTree } from './scope'
 import { extractIdentifiers, validateNonAsyncFunction } from './utils'
 
-export type ModuleExportMeta = {
+export type TransformModuleExportMeta = {
   localName?: string
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
   isFunction?: boolean
   defaultExportIdentifierName?: string
 }
 
-export type ModuleExportGenerateContext = {
+export type TransformModuleExportGenerateContext = {
   implementation: string
   binding: string
   exportName: string
-  meta: ModuleExportMeta
+  meta: TransformModuleExportMeta
 }
 
+export type TransformModuleExportFilter = (
+  name: string,
+  meta: TransformModuleExportMeta,
+) => boolean
+
 export type TransformModuleExportOptions = {
-  generate: (context: ModuleExportGenerateContext) => string
-  filter?: (name: string, meta: ModuleExportMeta) => boolean
+  generate: (context: TransformModuleExportGenerateContext) => string
+  filter?: TransformModuleExportFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
+}
+
+export type TransformModuleExportResult = {
+  output: MagicString
+  referenceNames: string[]
 }
 
 export function transformModuleExport(
   input: string,
   viteAst: ESTree.Program,
   options: TransformModuleExportOptions,
-): {
-  output: MagicString
-  referenceNames: string[]
-} {
+): TransformModuleExportResult {
   const ast = viteAst as unknown as Program
   const output = new MagicString(input)
   const referenceNames: string[] = []
@@ -60,7 +67,7 @@ export function transformModuleExport(
   function extractDeclaration(
     identifier: Identifier,
     exportName: string,
-    meta: ModuleExportMeta,
+    meta: TransformModuleExportMeta,
     position: number,
   ): void {
     const localName = identifier.name
@@ -86,7 +93,7 @@ export function transformModuleExport(
   }
 
   function generate(
-    context: ModuleExportGenerateContext,
+    context: TransformModuleExportGenerateContext,
     position: number,
   ): void {
     referenceNames.push(context.exportName)
@@ -115,7 +122,7 @@ export function transformModuleExport(
         ) {
           tinyassert(node.declaration.id)
           const identifier = node.declaration.id
-          const meta: ModuleExportMeta = {
+          const meta: TransformModuleExportMeta = {
             localName: identifier.name,
             declarationKind:
               node.declaration.type === 'FunctionDeclaration'
@@ -134,7 +141,7 @@ export function transformModuleExport(
             node: (typeof variableDeclaration.declarations)[number]
             selected: Array<{
               identifier: Identifier
-              meta: ModuleExportMeta
+              meta: TransformModuleExportMeta
             }>
             preserved: string[]
           }> = []
@@ -163,7 +170,7 @@ export function transformModuleExport(
             const preserved: string[] = []
             let validate = false
             for (const identifier of identifiers) {
-              const meta: ModuleExportMeta = {
+              const meta: TransformModuleExportMeta = {
                 localName: identifier.name,
                 declarationKind: variableDeclaration.kind,
                 isFunction,
@@ -238,7 +245,7 @@ export function transformModuleExport(
               { pos: specifier.exported.start },
             )
           }
-          const meta: ModuleExportMeta = {}
+          const meta: TransformModuleExportMeta = {}
           return {
             localName: specifier.local.name,
             exportName: specifier.exported.name,
@@ -295,7 +302,7 @@ export function transformModuleExport(
     } else if (node.type === 'ExportDefaultDeclaration') {
       let implementation: string
       let bindingBase = '$$default'
-      let meta: ModuleExportMeta
+      let meta: TransformModuleExportMeta
 
       if (
         (node.declaration.type === 'FunctionDeclaration' ||

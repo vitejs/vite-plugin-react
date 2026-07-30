@@ -70,7 +70,7 @@ import {
   slash,
 } from './plugins/vite-utils'
 import {
-  type ModuleExportMeta,
+  type TransformModuleExportFilter,
   hasDirective,
   transformDirectiveProxyExport,
   transformExpandExportAll,
@@ -2430,7 +2430,7 @@ function vitePluginRscCss(
   }: {
     id: string
     code: string
-  }): false | ((name: string, meta: ModuleExportMeta) => boolean) {
+  }): false | TransformModuleExportFilter {
     const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
@@ -2764,7 +2764,7 @@ export async function transformRscCssExport(options: {
   ast: Awaited<ReturnType<typeof parseAstAsync>>
   code: string
   id?: string
-  filter: (name: string, meta: ModuleExportMeta) => boolean
+  filter: TransformModuleExportFilter
 }): Promise<{ output: MagicString } | undefined> {
   if (hasDirective(options.ast.body, 'use client')) {
     return
