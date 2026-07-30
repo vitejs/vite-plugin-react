@@ -8,6 +8,11 @@ export interface TransformExpandExportAllContext {
   load: (id: string) => Promise<ESTree.Program>
 }
 
+type EstreeTransformExpandExportAllContext = {
+  resolve: TransformExpandExportAllContext['resolve']
+  load: (id: string) => Promise<Program>
+}
+
 export interface TransformExpandExportAllOptions extends TransformExpandExportAllContext {
   code: string
   ast: ESTree.Program
@@ -62,11 +67,6 @@ export async function transformExpandExportAll(
   // TODO: return a sourcemap so callers can compose this pre-rewrite with
   // their follow-up proxy/wrap transform maps.
   return { code: output.toString() }
-}
-
-type EstreeTransformExpandExportAllContext = {
-  resolve: TransformExpandExportAllContext['resolve']
-  load: (id: string) => Promise<Program>
 }
 
 // Scan a module into local explicit exports and recursively scanned direct
