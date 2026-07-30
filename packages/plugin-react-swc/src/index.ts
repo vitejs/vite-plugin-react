@@ -77,6 +77,7 @@ const usingRolldown = 'rolldownVersion' in vite
 
 const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = true
+  let isBundledDev = false
   let viteCacheRoot: string | undefined
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
@@ -117,6 +118,29 @@ const react = (_options?: Options): Plugin[] => {
       },
     },
     {
+      name: 'vite:react-swc:refresh-bundled-dev',
+      apply: 'serve',
+      enforce: 'pre',
+      transformIndexHtml: {
+        handler() {
+          if (!hmrDisabled && isBundledDev) {
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module' },
+                // In bundled dev mode, the src does not go through the middlewares
+                // so we don't need to append the base
+                children: getPreambleCode('/'),
+              },
+            ]
+          }
+        },
+        // In unbundled mode, Vite transforms any requests.
+        // But in full bundled mode, Vite only transforms / bundles the scripts injected in `order: 'pre'`.
+        order: 'pre',
+      },
+    },
+    {
       name: 'vite:react-swc',
       apply: 'serve',
       config: () => {
@@ -143,6 +167,7 @@ const react = (_options?: Options): Plugin[] => {
       configResolved(config) {
         viteCacheRoot = config.cacheDir
         hmrDisabled = config.server.hmr === false
+        isBundledDev = !!config.experimental.bundledDev
         const mdxIndex = config.plugins.findIndex(
           (p) => p.name === '@mdx-js/rollup',
         )
@@ -168,7 +193,7 @@ const react = (_options?: Options): Plugin[] => {
         }
       },
       transformIndexHtml: (_, config) => {
-        if (!hmrDisabled) {
+        if (!hmrDisabled && !isBundledDev) {
           return [
             {
               tag: 'script',
@@ -178,12 +203,12 @@ const react = (_options?: Options): Plugin[] => {
           ]
         }
       },
-      async transform(code, _id, transformOptions) {
-        const id = _id.split('?')[0]
+      async transform(code, id, transformOptions) {
+        const file = id.split('?')[0]
         const refresh = !transformOptions?.ssr && !hmrDisabled
 
         const result = await transformWithOptions(
-          id,
+          file,
           code,
           options.devTarget,
           options,
@@ -266,7 +291,7 @@ const react = (_options?: Options): Plugin[] => {
         },
     virtualPreamblePlugin({
       name: '@vitejs/plugin-react-swc/preamble',
-      isEnabled: () => !hmrDisabled,
+      isEnabled: () => !hmrDisabled && !isBundledDev,
     }),
   ]
 }
