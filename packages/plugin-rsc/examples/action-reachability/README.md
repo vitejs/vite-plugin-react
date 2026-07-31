@@ -42,4 +42,6 @@ Development skips route-aware redispatch. The handler executes action A on `/b`,
 
 ## Protocol scope
 
-For simplicity, route-aware redispatch covers only hydrated action calls that carry an explicit action ID. Progressive multipart form actions still use the baseline `decodeAction()` path without manifest routing.
+Hydrated action calls carry an explicit action ID and can be redispatched to a route whose graph reaches the action. Progressive forms normally post back to the route that rendered them, so their multipart `$ACTION_*` fields are instead validated against the current route before `decodeAction()` can load the submitted references. A mismatched progressive action is rejected as stale or manipulated input rather than redispatched.
+
+The route manifest is build-time data, so this progressive validation is production-only. Development keeps the baseline `decodeAction()` behavior.

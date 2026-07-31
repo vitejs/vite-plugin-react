@@ -8,7 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { getRoute, RouteRoot } from '../app/routes.tsx'
-import { routeActionRequest } from './action-routing.ts'
+import { isActionFormDataValid, routeActionRequest } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 
 export type RscPayload = {
@@ -59,14 +59,12 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
-      // TODO: Extract the submitted action ID from React's multipart fields and
-      // apply the same route-aware redispatch before decodeAction().
-      // Next.js's pre-decode validation shows how these fields are inspected:
-      // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/packages/next/src/server/app-render/action-handler.ts#L1467-L1576
-      // TODO: Determine whether progressive forms need redispatch in practice.
-      // A progressive form normally posts back to the route that rendered it,
-      // so the action already runs through that route's middleware.
       const formData = await request.formData()
+      if (!isActionFormDataValid(formData, renderRequest.url.pathname)) {
+        return new Response('Server action is not reachable from this route', {
+          status: 404,
+        })
+      }
       const decodedAction = await decodeAction(formData)
       try {
         const result = await decodedAction()
