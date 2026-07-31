@@ -6,7 +6,6 @@ import type {
   TransformModuleExportFilter,
   TransformModuleExportMeta,
 } from './module-export'
-import { buildScopeTree } from './scope'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportEffectContext = {
@@ -40,14 +39,6 @@ export function transformModuleExportEffect(
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportEffectContext[] = []
   const effects: string[] = []
-  const usedNames = new Set(buildScopeTree(ast).moduleScope.declarations)
-
-  function allocateName(base: string): string {
-    let name = base
-    for (let i = 2; usedNames.has(name); i++) name = `${base}_${i}`
-    usedNames.add(name)
-    return name
-  }
 
   function generate(context: TransformModuleExportEffectContext): void {
     references.push(context)
@@ -114,7 +105,7 @@ export function transformModuleExportEffect(
 
           let binding = specifier.local.name
           if (node.source) {
-            binding = allocateName(`$$effect_import_${binding}`)
+            binding = `$$effect_import_${exportName}`
             const sourceTail = input
               .slice(node.source.end, node.end)
               .replace(/;?\s*$/, ';')
@@ -153,7 +144,7 @@ export function transformModuleExportEffect(
         binding = node.declaration.name
         meta = { defaultExportIdentifierName: binding }
       } else {
-        binding = allocateName('$$effect_default')
+        binding = '$$effect_default'
         meta = { isFunction: getIsFunction(node.declaration) }
       }
       if (!filter('default', meta)) continue

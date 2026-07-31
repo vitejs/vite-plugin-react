@@ -13,7 +13,6 @@ import type {
   TransformModuleExportFilter,
   TransformModuleExportMeta,
 } from './module-export'
-import { buildScopeTree } from './scope'
 import { hasDirective, validateNonAsyncFunction } from './utils'
 
 type DefaultFunctionDeclaration = Extract<
@@ -71,7 +70,6 @@ export function transformModuleExportHoist(
     return { output, references, referenceNames: [] }
   }
 
-  const usedNames = new Set(buildScopeTree(ast).moduleScope.declarations)
   const candidates: HoistCandidate[] = []
 
   for (const statement of ast.body) {
@@ -137,13 +135,6 @@ export function transformModuleExportHoist(
     }
   }
 
-  function allocateName(base: string): string {
-    let name = base
-    for (let i = 2; usedNames.has(name); i++) name = `${base}_${i}`
-    usedNames.add(name)
-    return name
-  }
-
   for (const candidate of candidates) {
     if (!filter(candidate.exportName, candidate.meta)) continue
     const node = candidate.node
@@ -155,9 +146,7 @@ export function transformModuleExportHoist(
     }
     validateNonAsyncFunction(options, node)
 
-    const implementation = allocateName(
-      `$$module_hoist_${references.length}_${candidate.sourceName}`,
-    )
+    const implementation = `$$module_hoist_${references.length}_${candidate.sourceName}`
     const params = node.params
       .map((parameter) => input.slice(parameter.start, parameter.end))
       .join(', ')

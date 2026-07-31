@@ -8,7 +8,6 @@ import type {
 } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { buildScopeTree } from './scope'
 import { extractIdentifiers, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportMeta = {
@@ -23,7 +22,7 @@ export type TransformModuleExportMeta = {
 export type TransformModuleExportGenerateContext = {
   /** Private source implementation or imported/local value being transformed. */
   implementation: string
-  /** Collision-free local name reserved for the canonical runtime result. */
+  /** Generated local name reserved for the canonical runtime result. */
   binding: string
   /** Public module export name, including `default`. */
   exportName: string
@@ -81,8 +80,8 @@ export type TransformModuleExportResult = {
  * export position.
  *
  * This canonical-binding model intentionally does not preserve source function
- * hoisting under the exported name. Selected mutable, destructured, and duplicate
- * declaration bindings are rejected instead of receiving implicit reassignment
+ * hoisting under the exported name. Selected mutable and destructured declaration
+ * bindings are rejected instead of receiving implicit reassignment
  * semantics from the deprecated `transformWrapExport` transform.
  */
 export function transformModuleExport(
@@ -95,17 +94,6 @@ export function transformModuleExport(
   const references: TransformModuleExportGenerateContext[] = []
   const emissions = new Map<number, string[]>()
   const filter = options.filter ?? (() => true)
-  const usedNames = new Set(buildScopeTree(ast).moduleScope.declarations)
-  const declarationCounts = getModuleDeclarationCounts(ast)
-
-  function allocateName(base: string): string {
-    let name = base
-    for (let i = 2; usedNames.has(name); i++) {
-      name = `${base}_${i}`
-    }
-    usedNames.add(name)
-    return name
-  }
 
   function extractDeclaration(
     identifier: Identifier,
@@ -114,19 +102,9 @@ export function transformModuleExport(
     position: number,
   ): void {
     const localName = identifier.name
-    if (declarationCounts.get(localName) !== 1) {
-      throw Object.assign(new Error('unsupported duplicate export binding'), {
-        pos: identifier.start,
-      })
-    }
-    const implementation = allocateName(`${localName}$$impl`)
+    const implementation = `${localName}$$impl`
     output.update(identifier.start, identifier.end, implementation)
-
-    // The source name is available for the generated canonical binding after
-    // its declaration is renamed to the private implementation.
-    usedNames.delete(localName)
-    const binding = allocateName(localName)
-    generate({ implementation, binding, exportName, meta }, position)
+    generate({ implementation, binding: localName, exportName, meta }, position)
   }
 
   function emit(position: number, code: string): void {
@@ -300,13 +278,13 @@ export function transformModuleExport(
           // re-exports whose imported implementation is available immediately.
           const position = node.source ? node.end : input.length
           if (node.source) {
-            implementation = allocateName(`$$import_${item.localName}`)
+            implementation = `$$import_${item.exportName}`
             emit(
               node.end,
               `import { ${item.localName} as ${implementation} } from ${node.source.raw}${sourceTail}`,
             )
           }
-          const binding = allocateName(`$$module_${item.exportName}`)
+          const binding = `$$module_${item.exportName}`
           generate(
             {
               implementation,
@@ -347,17 +325,8 @@ export function transformModuleExport(
 
         validateNonAsyncFunction(options, node.declaration)
         output.remove(node.start, node.declaration.start)
-        if (declarationCounts.get(identifier.name) !== 1) {
-          throw Object.assign(
-            new Error('unsupported duplicate export binding'),
-            {
-              pos: identifier.start,
-            },
-          )
-        }
-        implementation = allocateName(`${identifier.name}$$impl`)
+        implementation = `${identifier.name}$$impl`
         output.update(identifier.start, identifier.end, implementation)
-        usedNames.delete(identifier.name)
         bindingBase = identifier.name
       } else {
         meta = {
@@ -374,7 +343,7 @@ export function transformModuleExport(
           implementation = node.declaration.name
           output.remove(node.start, node.end)
         } else {
-          implementation = allocateName('$$default$$impl')
+          implementation = '$$default$$impl'
           output.update(
             node.start,
             node.declaration.start,
@@ -383,7 +352,7 @@ export function transformModuleExport(
         }
       }
 
-      const binding = allocateName(bindingBase)
+      const binding = bindingBase
       generate(
         { implementation, binding, exportName: 'default', meta },
         node.end,
@@ -400,41 +369,6 @@ export function transformModuleExport(
     references,
     referenceNames: references.map((reference) => reference.exportName),
   }
-}
-
-function getModuleDeclarationCounts(ast: Program): Map<string, number> {
-  const counts = new Map<string, number>()
-  const add = (name: string) => counts.set(name, (counts.get(name) ?? 0) + 1)
-
-  for (const statement of ast.body) {
-    if (statement.type === 'ImportDeclaration') {
-      for (const specifier of statement.specifiers) add(specifier.local.name)
-      continue
-    }
-
-    const declaration =
-      statement.type === 'ExportNamedDeclaration' ||
-      statement.type === 'ExportDefaultDeclaration'
-        ? statement.declaration
-        : statement
-    if (!declaration) continue
-
-    if (declaration.type === 'VariableDeclaration') {
-      for (const declarator of declaration.declarations) {
-        for (const identifier of extractIdentifiers(declarator.id)) {
-          add(identifier.name)
-        }
-      }
-    } else if (
-      (declaration.type === 'FunctionDeclaration' ||
-        declaration.type === 'ClassDeclaration') &&
-      declaration.id
-    ) {
-      add(declaration.id.name)
-    }
-  }
-
-  return counts
 }
 
 function getIsFunction(

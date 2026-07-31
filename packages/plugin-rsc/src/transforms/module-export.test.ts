@@ -69,7 +69,7 @@ export default async function Page() {}
     `)
   })
 
-  test('handles aliases, re-exports, filtering, and name collisions', async () => {
+  test('handles aliases, re-exports, and filtering', async () => {
     const result = await transform(
       `
 export { value as action, exposed as skipped }
@@ -93,8 +93,8 @@ export * from './other'
       const value = async () => {}
       const exposed = 0
 
-      import { remote as $$import_remote } from './dep';
-      const $$module_action2 = wrap($$import_remote, "action2");
+      import { remote as $$import_action2 } from './dep';
+      const $$module_action2 = wrap($$import_action2, "action2");
       export { $$module_action2 as action2 };
 
       export * from './other'
