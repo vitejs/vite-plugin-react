@@ -4,9 +4,6 @@ import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
 import { hasDirective } from './utils'
 
-// TODO: Preserve the `runtime` call's original Server Function position for
-// every inline directive shape.
-// https://github.com/vitejs/vite-plugin-react/issues/1361
 export function transformServerActionServer(
   input: string,
   ast: ESTree.Program,

@@ -1,18 +1,5 @@
 import type MagicString from 'magic-string'
 
-export function formatSourceMapFixture(output: MagicString): string {
-  const code = output.toString()
-  const map = output.generateMap({ includeContent: true, hires: 'boundary' })
-  const visualization = generateVisualizationLink(code, map.toString())
-  return `/*
-Source map visualization:
-
-${visualization}
-*/
-
-${code}`
-}
-
 type SourceMapFixtureOutput = {
   name: string
   output: MagicString
@@ -53,7 +40,7 @@ export function formatDecodedSourceMapMarkdown(
  * This test-local formatter is inspired by Oxc's source map visualizer output:
  * https://github.com/oxc-project/oxc-sourcemap/blob/main/src/sourcemap_visualizer.rs
  */
-export function formatDecodedSourceMap(output: MagicString): string {
+function formatDecodedSourceMap(output: MagicString): string {
   const generatedLines = output.toString().split('\n')
   const map = output.generateDecodedMap({
     includeContent: true,

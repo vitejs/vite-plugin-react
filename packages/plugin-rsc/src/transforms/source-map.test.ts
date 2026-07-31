@@ -5,9 +5,7 @@ import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExport } from './module-export'
 import { transformModuleExportEffect } from './module-export-effect'
 import {
-  formatDecodedSourceMap,
   formatDecodedSourceMapMarkdown,
-  formatSourceMapFixture,
   formatSourceMapMarkdownFixture,
 } from './test-utils'
 import { transformWrapExport } from './wrap-export'
@@ -17,6 +15,9 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
+  // Generated runtime expressions should map to the original Server Function
+  // export site, or to the export statement for re-exports. React uses the
+  // `registerServerReference` caller as the reference's source location.
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
     test(`module-export/${path.basename(file)}`, async () => {
       const input = ((await load()) as any).default as string
@@ -75,11 +76,18 @@ describe('source map fixtures', () => {
         encode: (value) => `encrypt(${value})`,
         decode: (value) => `await decrypt(${value})`,
       })
-      await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
-        file + '.snap.js',
-      )
-      await expect(formatDecodedSourceMap(result.output)).toMatchFileSnapshot(
-        file + '.map.snap.txt',
+      const outputs = [
+        {
+          name: 'hoist',
+          output: result.output,
+          references: result.names,
+        },
+      ]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
       )
     })
   }
