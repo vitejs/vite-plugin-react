@@ -8,7 +8,6 @@ export function transformServerActionServer(
   input: string,
   ast: ESTree.Program,
   options: {
-    /** Must register the supplied function operationally for module directives. */
     runtime: (value: string, name: string) => string
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
