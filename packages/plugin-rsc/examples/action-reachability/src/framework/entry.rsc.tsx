@@ -8,7 +8,7 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { getRoute, RouteRoot } from '../app/routes.tsx'
-import { isActionFormDataValid, routeActionRequest } from './action-routing.ts'
+import { areAllActionIdsValid, routeActionRequest } from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 
 export type RscPayload = {
@@ -60,7 +60,7 @@ async function handleRequest(
       }
     } else {
       const formData = await request.formData()
-      if (!isActionFormDataValid(formData, renderRequest.url.pathname)) {
+      if (!areAllActionIdsValid(formData, renderRequest.url.pathname)) {
         return new Response('Server action is not reachable from this route', {
           status: 404,
         })
