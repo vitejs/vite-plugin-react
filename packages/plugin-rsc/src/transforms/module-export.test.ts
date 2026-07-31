@@ -69,6 +69,26 @@ export default async function Page() {}
     `)
   })
 
+  test('canonicalizes mutable declaration initial values', async () => {
+    const result = await transform(`
+export var action = async () => {}
+export let loader = async () => {}
+`)
+
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      var action$$impl = async () => {}
+      const action = wrap(action$$impl, \"action\");
+      export { action as action };
+
+      let loader$$impl = async () => {}
+      const loader = wrap(loader$$impl, \"loader\");
+      export { loader as loader };
+
+      "
+    `)
+  })
+
   test('handles aliases, re-exports, and filtering', async () => {
     const result = await transform(
       `
@@ -165,11 +185,5 @@ export default Page;`
     await expect(transform(`export const { action } = value`)).rejects.toThrow(
       'unsupported destructured export declaration',
     )
-    await expect(
-      transform(`export var action = async () => {}; var action;`),
-    ).rejects.toThrow('unsupported mutable export declaration')
-    await expect(
-      transform(`export let action = async () => {}`),
-    ).rejects.toThrow('unsupported mutable export declaration')
   })
 })

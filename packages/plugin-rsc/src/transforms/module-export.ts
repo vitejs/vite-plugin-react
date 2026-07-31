@@ -80,9 +80,9 @@ export type TransformModuleExportResult = {
  * export position.
  *
  * This canonical-binding model intentionally does not preserve source function
- * hoisting under the exported name. Selected mutable and destructured declaration
- * bindings are rejected instead of receiving implicit reassignment
- * semantics from the deprecated `transformWrapExport` transform.
+ * hoisting or mutable reassignment under the exported name. Consumers can reject
+ * mutable declarations through `meta.declarationKind` when required. Selected
+ * destructured declaration bindings remain unsupported.
  */
 export function transformModuleExport(
   input: string,
@@ -218,13 +218,6 @@ export function transformModuleExport(
           ) {
             continue
           }
-          if (variableDeclaration.kind !== 'const') {
-            throw Object.assign(
-              new Error('unsupported mutable export declaration'),
-              { pos: variableDeclaration.start },
-            )
-          }
-
           output.remove(node.start, variableDeclaration.start)
           for (const declaration of declarations) {
             for (const { identifier, meta } of declaration.selected) {
