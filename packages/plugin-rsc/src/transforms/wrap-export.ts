@@ -49,7 +49,6 @@ export type TransformWrapExportOptions = {
   filter?: TransformWrapExportFilter
 }
 
-/** @deprecated Use `transformModuleExport` instead. */
 export function transformWrapExport(
   input: string,
   viteAst: ESTree.Program,

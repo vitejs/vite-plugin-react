@@ -1,22 +1,35 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { ExportDefaultDeclaration, Node, Program } from 'estree'
+import type {
+  ExportDefaultDeclaration,
+  Node,
+  Program,
+  VariableDeclaration,
+} from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import type {
-  TransformModuleExportFilter,
-  TransformModuleExportMeta,
-} from './module-export'
 import { extractNames, validateNonAsyncFunction } from './utils'
+
+export type TransformModuleExportEffectMeta = {
+  localName?: string
+  declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
+  isFunction?: boolean
+  defaultExportIdentifierName?: string
+}
+
+export type TransformModuleExportEffectFilter = (
+  name: string,
+  meta: TransformModuleExportEffectMeta,
+) => boolean
 
 export type TransformModuleExportEffectContext = {
   binding: string
   exportName: string
-  meta: TransformModuleExportMeta
+  meta: TransformModuleExportEffectMeta
 }
 
 export type TransformModuleExportEffectOptions = {
   runtime: (context: TransformModuleExportEffectContext) => string
-  filter?: TransformModuleExportFilter
+  filter?: TransformModuleExportEffectFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
 }
@@ -40,7 +53,7 @@ export function transformModuleExportEffect(
   const references: TransformModuleExportEffectContext[] = []
 
   // Generated-name collision detection is intentionally out of scope, matching
-  // the other module export transforms.
+  // the other transform helpers.
 
   function generate(context: TransformModuleExportEffectContext): string {
     references.push(context)
@@ -66,7 +79,7 @@ export function transformModuleExportEffect(
         ) {
           tinyassert(node.declaration.id)
           const binding = node.declaration.id.name
-          const meta: TransformModuleExportMeta = {
+          const meta: TransformModuleExportEffectMeta = {
             localName: binding,
             declarationKind:
               node.declaration.type === 'FunctionDeclaration'
@@ -95,7 +108,7 @@ export function transformModuleExportEffect(
                 : undefined
             let validate = false
             for (const binding of names) {
-              const meta: TransformModuleExportMeta = {
+              const meta: TransformModuleExportEffectMeta = {
                 localName: binding,
                 declarationKind: node.declaration.kind,
                 isFunction,
@@ -129,7 +142,7 @@ export function transformModuleExportEffect(
             )
           }
           const exportName = specifier.exported.name
-          const meta: TransformModuleExportMeta = {}
+          const meta: TransformModuleExportEffectMeta = {}
           if (!filter(exportName, meta)) continue
 
           let binding = specifier.local.name
@@ -171,7 +184,7 @@ export function transformModuleExportEffect(
       }
     } else if (node.type === 'ExportDefaultDeclaration') {
       let binding: string
-      let meta: TransformModuleExportMeta
+      let meta: TransformModuleExportEffectMeta
       if (
         (node.declaration.type === 'FunctionDeclaration' ||
           node.declaration.type === 'ClassDeclaration') &&

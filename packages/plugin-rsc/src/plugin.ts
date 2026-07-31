@@ -70,12 +70,12 @@ import {
   slash,
 } from './plugins/vite-utils'
 import {
-  type TransformModuleExportFilter,
+  type TransformWrapExportFilter,
   hasDirective,
   transformDirectiveProxyExport,
   transformExpandExportAll,
-  transformModuleExport,
   transformServerActionServer,
+  transformWrapExport,
   findDirectives,
   type TransformExpandExportAllContext,
 } from './transforms'
@@ -2419,7 +2419,7 @@ function vitePluginRscCss(
   }: {
     id: string
     code: string
-  }): false | TransformModuleExportFilter {
+  }): false | TransformWrapExportFilter {
     const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
@@ -2451,7 +2451,7 @@ function vitePluginRscCss(
     //   export const Page = () => {}
     return (_name: string, meta) =>
       !!(
-        (meta.isFunction && meta.localName && /^[A-Z]/.test(meta.localName)) ||
+        (meta.isFunction && meta.declName && /^[A-Z]/.test(meta.declName)) ||
         (meta.defaultExportIdentifierName &&
           /^[A-Z]/.test(meta.defaultExportIdentifierName))
       )
@@ -2753,25 +2753,19 @@ export async function transformRscCssExport(options: {
   ast: Awaited<ReturnType<typeof parseAstAsync>>
   code: string
   id?: string
-  filter: TransformModuleExportFilter
+  filter: TransformWrapExportFilter
 }): Promise<{ output: MagicString } | undefined> {
   if (hasDirective(options.ast.body, 'use client')) {
     return
   }
 
-  const result = transformModuleExport(options.code, options.ast, {
-    generate: ({ implementation, binding, exportName, meta }) => {
-      const declaration =
-        `const ${binding} = /* #__PURE__ */ ` +
-        `__vite_rsc_wrap_css__(${implementation}, ${JSON.stringify(
-          meta.defaultExportIdentifierName ?? exportName,
-        )});`
-      return binding === exportName
-        ? `export ${declaration}`
-        : `${declaration}\nexport { ${binding} as ${exportName} };`
-    },
+  const result = transformWrapExport(options.code, options.ast, {
+    runtime: (value, name, meta) =>
+      `__vite_rsc_wrap_css__(${value}, ${JSON.stringify(
+        meta.defaultExportIdentifierName ?? name,
+      )})`,
     filter: options.filter,
-    exportAll: 'preserve',
+    ignoreExportAllDeclaration: true,
   })
   if (result.output.hasChanged()) {
     if (!options.code.includes('__vite_rsc_react__')) {
