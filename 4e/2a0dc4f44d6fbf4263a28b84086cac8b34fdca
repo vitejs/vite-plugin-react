@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/action-reachability.test.ts
+  s_7fc669d68b1f99::t_83ceaa7d165ef2 3,35-42,44-56,58-83,86-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4e2a0dc4f44d6fbf4263a28b84086cac8b34fdca",
+  "prompts": {},
+  "sessions": {
+    "s_7fc669d68b1f99": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_049fb9d90ffexCIoV7akNf3WwE",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
