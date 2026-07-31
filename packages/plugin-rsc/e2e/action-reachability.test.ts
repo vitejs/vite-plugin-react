@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
-import { waitForHydration } from './helper'
+import { testNoJs, waitForHydration } from './helper'
 
 test.describe('build', () => {
   const f = useFixture({
@@ -32,56 +32,59 @@ test.describe('build', () => {
   })
 
   for (const name of ['Unbound', 'Bound']) {
-    test(`${name.toLowerCase()} progressive action is limited to its route`, async ({
-      page,
-    }) => {
-      await page.goto(f.url('/c?__nojs'))
-      const form = page.getByRole('form', {
-        name: `${name} progressive action`,
-        exact: true,
-      })
+    testNoJs(
+      `${name.toLowerCase()} progressive action is limited to its route`,
+      async ({ page }) => {
+        await page.goto(f.url('/c'))
+        const form = page.getByRole('form', {
+          name: `${name} progressive action`,
+          exact: true,
+        })
 
-      const validResponsePromise = page.waitForResponse(
-        (response) => response.request().method() === 'POST',
-      )
-      await form.getByRole('button').click()
-      const validResponse = await validResponsePromise
-      expect(validResponse.status()).toBe(200)
-      expect(validResponse.request().headers()['content-type']).toContain(
-        'multipart/form-data',
-      )
-      expect(validResponse.request().headers()['x-rsc-action']).toBeUndefined()
-      await expect(page).toHaveURL(f.url('/c?__nojs'))
+        const validResponsePromise = page.waitForResponse(
+          (response) => response.request().method() === 'POST',
+        )
+        await form.getByRole('button').click()
+        const validResponse = await validResponsePromise
+        expect(validResponse.status()).toBe(200)
+        expect(validResponse.request().headers()['content-type']).toContain(
+          'multipart/form-data',
+        )
+        expect(
+          validResponse.request().headers()['x-rsc-action'],
+        ).toBeUndefined()
+        await expect(page).toHaveURL(f.url('/c'))
 
-      await page.goto(f.url('/c?__nojs'))
-      const replayedForm = page.getByRole('form', {
-        name: `${name} progressive action`,
-        exact: true,
-      })
-      await replayedForm.evaluate((element) => {
-        element.setAttribute('action', '/b?__nojs')
-      })
-      const rejectedResponsePromise = page.waitForResponse(
-        (response) => response.request().method() === 'POST',
-      )
-      await replayedForm.getByRole('button').click()
-      const rejectedResponse = await rejectedResponsePromise
-      expect(rejectedResponse.status()).toBe(404)
-      expect(rejectedResponse.request().headers()['content-type']).toContain(
-        'multipart/form-data',
-      )
-      expect(
-        rejectedResponse.request().headers()['x-rsc-action'],
-      ).toBeUndefined()
-      await expect(
-        page.getByText('Server action is not reachable'),
-      ).toBeVisible()
-      await expect(page).toHaveURL(f.url('/b?__nojs'))
-    })
+        await page.goto(f.url('/c'))
+        const replayedForm = page.getByRole('form', {
+          name: `${name} progressive action`,
+          exact: true,
+        })
+        await replayedForm.evaluate((element) => {
+          element.setAttribute('action', '/b')
+        })
+        const rejectedResponsePromise = page.waitForResponse(
+          (response) => response.request().method() === 'POST',
+        )
+        await replayedForm.getByRole('button').click()
+        const rejectedResponse = await rejectedResponsePromise
+        expect(rejectedResponse.status()).toBe(404)
+        expect(rejectedResponse.request().headers()['content-type']).toContain(
+          'multipart/form-data',
+        )
+        expect(
+          rejectedResponse.request().headers()['x-rsc-action'],
+        ).toBeUndefined()
+        await expect(
+          page.getByText('Server action is not reachable'),
+        ).toBeVisible()
+        await expect(page).toHaveURL(f.url('/b'))
+      },
+    )
   }
 
-  test('validates the bound action ID React decodes', async ({ page }) => {
-    await page.goto(f.url('/c?__nojs'))
+  testNoJs('validates the bound action ID React decodes', async ({ page }) => {
+    await page.goto(f.url('/c'))
     const form = page.getByRole('form', {
       name: 'Bound progressive action',
       exact: true,
