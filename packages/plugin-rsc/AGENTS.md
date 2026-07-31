@@ -19,7 +19,7 @@ pnpm install
 pnpm build
 ```
 
-Run the full workspace build before RSC E2E tests because examples may import other workspace packages, including `@vitejs/plugin-react`.
+Run the full workspace build before RSC E2E tests because examples use other workspace packages, such as `@vitejs/plugin-react`.
 
 ### Package Commands
 
