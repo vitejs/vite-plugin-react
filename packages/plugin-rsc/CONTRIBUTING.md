@@ -41,8 +41,12 @@ Use colocated unit tests for self-contained transforms and utilities.
 ## Development Workflow
 
 ```bash
-# Build packages
-pnpm dev # pnpm -C packages/plugin-rsc dev
+# Install and build from the repository root
+pnpm install
+pnpm build
+
+# Watch the RSC package during development
+pnpm -C packages/plugin-rsc dev
 
 # Type check
 pnpm -C packages/plugin-rsc tsc
