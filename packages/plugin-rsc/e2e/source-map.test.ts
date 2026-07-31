@@ -210,7 +210,7 @@ test.describe('source map', () => {
         name: new RegExp(`^${item.referenceName}:`),
       })
       await button.click()
-      await expect(button).toContainText(`at ${item.functionName}`)
+      await expect(button).toContainText(`at ${item.functionName} (`)
     }
   })
 })
