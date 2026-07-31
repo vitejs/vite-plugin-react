@@ -5,7 +5,7 @@ export function InlineDirective() {
 
   async function inlineAction() {
     'use server'
-    return new Error().stack?.split('\n')[1] ?? ''
+    return 'inline directive called'
   }
 
   const inlineArrow = async (suffix = 'arrow') => {

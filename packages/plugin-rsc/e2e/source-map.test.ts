@@ -191,23 +191,21 @@ test.describe('source map', () => {
   }
 
   test('preserves Server Function names in stack traces', async ({ page }) => {
+    await page.goto(f.url('/server-function-name'))
+    await waitForHydration(page)
+
     const cases = [
       {
-        route: '/named-function',
-        referenceName: 'named-function',
-        functionName: 'namedFunction',
+        referenceName: 'module-function-name',
+        functionName: 'moduleFunctionName',
       },
       {
-        route: '/inline-directive',
-        referenceName: 'inline-directive',
-        functionName: 'inlineAction',
+        referenceName: 'inline-function-name',
+        functionName: 'inlineFunctionName',
       },
     ]
 
     for (const item of cases) {
-      await page.goto(f.url(item.route))
-      await waitForHydration(page)
-
       const button = page.getByRole('button', {
         name: new RegExp(`^${item.referenceName}:`),
       })
