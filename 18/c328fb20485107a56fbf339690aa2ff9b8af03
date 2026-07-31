@@ -1,0 +1,47 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_f3b2680fb8b078::t_a90c71fba8b29a 55,65
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_f3b2680fb8b078::t_59bf7cd0d9c513 61,70,72-73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_f3b2680fb8b078::t_79b683f27fd0e1 55,60,65
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_f3b2680fb8b078::t_51beb8bbafa9f8 55,60,65
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.snap.md
+  s_f3b2680fb8b078::t_f29593c794d303 43,50,53
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_f3b2680fb8b078::t_e9c940654da039 61,70,73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_f3b2680fb8b078::t_5fb368da2311af 71,76,80,85-86,88
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_f3b2680fb8b078::t_64a42ebd6ecc4b 54,59,64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_f3b2680fb8b078::t_0ea860643dd405 54,59,64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_f3b2680fb8b078::t_e4a9550fe12fa1 60,67,72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.md
+  s_f3b2680fb8b078::t_a47cff93e946a3 51,56-57,59
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_f3b2680fb8b078::t_6f7ba9daf6cbac 65,70,72,77-78,80
+packages/plugin-rsc/src/transforms/module-export-models.test.ts
+  s_f3b2680fb8b078::t_9a13e025afbe07 24-25,68,71-72,77-78,80-81,83,130,146,156-177
+packages/plugin-rsc/src/transforms/server-action.test.ts
+  s_f3b2680fb8b078::t_f6182d50eb9f47 8,22-27
+packages/plugin-rsc/src/transforms/waku.test.ts
+  s_f3b2680fb8b078::t_afdbce1bf9df63 163,167,171,175-182,256,261,263-264,266-267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "18c328fb20485107a56fbf339690aa2ff9b8af03",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
