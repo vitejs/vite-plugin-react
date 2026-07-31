@@ -46,6 +46,8 @@ test.describe('build', () => {
   )
 
   async function testProgressiveAction(page: Page, name: 'Unbound' | 'Bound') {
+    // Without JavaScript, React submits the action as a native full-page (MPA)
+    // multipart form request to the route that rendered it.
     await page.goto(f.url('/c'))
     const form = page.getByRole('form', {
       name: `${name} progressive action`,
@@ -60,6 +62,7 @@ test.describe('build', () => {
     expect(validResponse.status()).toBe(200)
     await expect(page).toHaveURL(f.url('/c'))
 
+    // Replay the same React-generated fields to a route that cannot reach them.
     await page.goto(f.url('/c'))
     const replayedForm = page.getByRole('form', {
       name: `${name} progressive action`,
