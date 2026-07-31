@@ -35,7 +35,7 @@ test.describe('build', () => {
     test(`${name.toLowerCase()} progressive action is limited to its route`, async ({
       page,
     }) => {
-      await page.goto(f.url('/a?__nojs'))
+      await page.goto(f.url('/c?__nojs'))
       const form = page.getByRole('form', {
         name: `${name} progressive action`,
         exact: true,
@@ -51,9 +51,9 @@ test.describe('build', () => {
         'multipart/form-data',
       )
       expect(validResponse.request().headers()['x-rsc-action']).toBeUndefined()
-      await expect(page).toHaveURL(f.url('/a?__nojs'))
+      await expect(page).toHaveURL(f.url('/c?__nojs'))
 
-      await page.goto(f.url('/a?__nojs'))
+      await page.goto(f.url('/c?__nojs'))
       const replayedForm = page.getByRole('form', {
         name: `${name} progressive action`,
         exact: true,
@@ -81,7 +81,7 @@ test.describe('build', () => {
   }
 
   test('validates the bound action ID React decodes', async ({ page }) => {
-    await page.goto(f.url('/a?__nojs'))
+    await page.goto(f.url('/c?__nojs'))
     const form = page.getByRole('form', {
       name: 'Bound progressive action',
       exact: true,

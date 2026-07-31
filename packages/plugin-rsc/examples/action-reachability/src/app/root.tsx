@@ -11,6 +11,9 @@ export function Root(props: { children?: React.ReactNode }) {
             <li>
               <a href="/b">/b</a>
             </li>
+            <li>
+              <a href="/c">/c</a>
+            </li>
           </ul>
         </nav>
         {props.children}

@@ -44,4 +44,6 @@ Development skips route-aware redispatch. The handler executes action A on `/b`,
 
 Hydrated action calls carry an explicit action ID and can be redispatched to a route whose graph reaches the action. Progressive forms normally post back to the route that rendered them, so their multipart `$ACTION_*` fields are instead validated against the current route before `decodeAction()` can load the submitted references. A mismatched progressive action is rejected as stale or manipulated input rather than redispatched.
 
+Route `/c` demonstrates this behavior with unbound and bound progressive forms. Their normal submissions run through `/c` middleware, while replaying the same multipart fields to another route is rejected.
+
 The route manifest is build-time data, so this progressive validation is production-only. Development keeps the baseline `decodeAction()` behavior.
