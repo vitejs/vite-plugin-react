@@ -23,7 +23,7 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
     console.log(styleText('magenta', label), data.toString())
   })
   const done = new Promise<void>((resolve) => {
-    child.on('close', (code) => {
+    child.on('exit', (code) => {
       if (code !== 0 && code !== 143 && process.platform !== 'win32') {
         console.log(styleText('magenta', `${label}`), `exit code ${code}`)
       }
@@ -32,42 +32,15 @@ function runCli(options: { command: string; label?: string } & SpawnOptions) {
   })
 
   async function findPort(): Promise<number> {
-    let portOutput = ''
-    return new Promise((resolve, reject) => {
-      function cleanup() {
-        child.stdout!.off('data', onData)
-        child.off('close', onClose)
-        child.off('error', onError)
-      }
-
-      function onData(data: Buffer) {
-        portOutput += stripVTControlCharacters(String(data))
-        const match = portOutput.match(/http:\/\/localhost:(\d+)/)
+    let stdout = ''
+    return new Promise((resolve) => {
+      child.stdout!.on('data', (data) => {
+        stdout += stripVTControlCharacters(String(data))
+        const match = stdout.match(/http:\/\/localhost:(\d+)/)
         if (match) {
-          cleanup()
           resolve(Number(match[1]))
         }
-      }
-
-      function onClose(code: number | null, signal: NodeJS.Signals | null) {
-        cleanup()
-        const details = stderr.trim() || stdout.trim()
-        reject(
-          new Error(
-            `${label} exited with ${code ?? signal ?? 'unknown status'} before publishing a port` +
-              (details ? `\n${details}` : ''),
-          ),
-        )
-      }
-
-      function onError(error: Error) {
-        cleanup()
-        reject(error)
-      }
-
-      child.stdout!.on('data', onData)
-      child.on('close', onClose)
-      child.on('error', onError)
+      })
     })
   }
 

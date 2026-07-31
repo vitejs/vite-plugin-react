@@ -11,21 +11,12 @@ Before creating or changing a conventional RSC example, use [`examples/starter-e
 
 ## Quick Reference for AI Agents
 
-### Fresh Worktree Setup
+### Essential Commands
 
 ```bash
-# from the repository root
-pnpm install
-pnpm build
-```
-
-Run the full workspace build before RSC E2E tests because examples may import other workspace packages, including `@vitejs/plugin-react`.
-
-### Package Commands
-
-```bash
-# inside packages/plugin-rsc
+# inside packages/plugin-rsc directory
+pnpm build                          # build package
 pnpm tsc                            # typecheck
-pnpm test --run                     # run unit tests
-pnpm test-e2e                       # run E2E tests
+pnpm test                           # Run unit tests
+pnpm test-e2e                       # Run e2e tests
 ```
