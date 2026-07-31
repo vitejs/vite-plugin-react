@@ -4,9 +4,7 @@ import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
 import {
-  formatDecodedSourceMap,
   formatDecodedSourceMapMarkdown,
-  formatSourceMapFixture,
   formatSourceMapMarkdownFixture,
 } from './test-utils'
 import { transformWrapExport } from './wrap-export'
@@ -68,11 +66,18 @@ describe('source map fixtures', () => {
         encode: (value) => `encrypt(${value})`,
         decode: (value) => `await decrypt(${value})`,
       })
-      await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
-        file + '.snap.js',
-      )
-      await expect(formatDecodedSourceMap(result.output)).toMatchFileSnapshot(
-        file + '.map.snap.txt',
+      const outputs = [
+        {
+          name: 'hoist',
+          output: result.output,
+          references: result.names,
+        },
+      ]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
       )
     })
   }
