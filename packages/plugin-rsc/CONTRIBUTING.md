@@ -40,9 +40,15 @@ Use colocated unit tests for self-contained transforms and utilities.
 
 ## Development Workflow
 
+In a fresh worktree, install dependencies and build all workspace packages from the repository root before running E2E tests. RSC examples may import other workspace packages, including `@vitejs/plugin-react`, so building only `packages/plugin-rsc` is insufficient.
+
 ```bash
-# Build packages
-pnpm dev # pnpm -C packages/plugin-rsc dev
+# Install and build from the repository root
+pnpm install
+pnpm build
+
+# Watch the RSC package during development
+pnpm -C packages/plugin-rsc dev
 
 # Type check
 pnpm -C packages/plugin-rsc tsc
