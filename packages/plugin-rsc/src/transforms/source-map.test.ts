@@ -2,7 +2,13 @@ import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
-import { formatDecodedSourceMap, formatSourceMapFixture } from './test-utils'
+import { transformModuleExportEffect } from './module-export-effect'
+import {
+  formatDecodedSourceMap,
+  formatDecodedSourceMapMarkdown,
+  formatSourceMapFixture,
+  formatSourceMapMarkdownFixture,
+} from './test-utils'
 import { transformWrapExport } from './wrap-export'
 
 describe('source map fixtures', () => {
@@ -10,36 +16,36 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
-  // Generated `registerServerReference(...)` calls should map to the original
-  // Server Function definition, or to the export statement for re-exports.
-  const textualMapFixtures = new Set([
-    './fixtures/source-map/wrap-export/named-function.js',
-    './fixtures/source-map/wrap-export/variables.js',
-
-    // TODO: These registrations are currently unmapped.
-    // https://github.com/vitejs/vite-plugin-react/issues/1361
-    './fixtures/source-map/wrap-export/default-anonymous.js',
-    './fixtures/source-map/wrap-export/default-named.js',
-    './fixtures/source-map/wrap-export/local-alias.js',
-    './fixtures/source-map/wrap-export/reexport.js',
-  ])
-
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
-    test(`wrap-export/${path.basename(file)}`, async () => {
+    test(`module-export/${path.basename(file)}`, async () => {
       const input = ((await load()) as any).default as string
       const ast = await parseAstAsync(input)
-      const result = transformWrapExport(input, ast, {
+      const wrapResult = transformWrapExport(input, ast, {
         runtime: (value, name) =>
           `registerServerReference(${value}, ${JSON.stringify(name)})`,
       })
-      await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
-        file + '.snap.js',
+      const effectResult = transformModuleExportEffect(input, ast, {
+        runtime: ({ binding, exportName }) =>
+          `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
+      })
+      const outputs = [
+        {
+          name: 'wrap-export',
+          output: wrapResult.output,
+          references: wrapResult.exportNames,
+        },
+        {
+          name: 'module-export-effect',
+          output: effectResult.output,
+          references: effectResult.referenceNames,
+        },
+      ]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
       )
-      if (textualMapFixtures.has(file)) {
-        await expect(formatDecodedSourceMap(result.output)).toMatchFileSnapshot(
-          file + '.map.snap.txt',
-        )
-      }
     })
   }
 

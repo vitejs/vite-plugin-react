@@ -13,6 +13,41 @@ ${visualization}
 ${code}`
 }
 
+type SourceMapFixtureOutput = {
+  name: string
+  output: MagicString
+  references?: readonly string[]
+}
+
+export function formatSourceMapMarkdownFixture(
+  input: string,
+  outputs: readonly SourceMapFixtureOutput[],
+): string {
+  const sections = [`## Input\n\n${formatCodeBlock('js', input)}`]
+  for (const { name, output, references } of outputs) {
+    const code = output.toString()
+    const map = output.generateMap({ includeContent: true, hires: 'boundary' })
+    const visualization = generateVisualizationLink(code, map.toString())
+    sections.push(
+      `## ${name}\n\n**Status:** ${output.hasChanged() ? 'transformed' : 'unchanged'}\n\n**References:** ${references?.join(', ') || '(none)'}\n\n[Source map visualization](${visualization})\n\n${formatCodeBlock('js', code)}`,
+    )
+  }
+  return sections.join('\n\n') + '\n'
+}
+
+export function formatDecodedSourceMapMarkdown(
+  outputs: readonly SourceMapFixtureOutput[],
+): string {
+  return (
+    outputs
+      .map(
+        ({ name, output }) =>
+          `## ${name}\n\n${formatCodeBlock('txt', formatDecodedSourceMap(output))}`,
+      )
+      .join('\n\n') + '\n'
+  )
+}
+
 /**
  * Formats decoded mapping ranges as compact original-to-generated text pairs.
  * This test-local formatter is inspired by Oxc's source map visualizer output:
@@ -123,6 +158,10 @@ function sliceLine(
   const value = lines[line] ?? ''
   const result = value.slice(start, end)
   return end === undefined && line < lines.length - 1 ? result + '\n' : result
+}
+
+function formatCodeBlock(language: string, code: string): string {
+  return `\`\`\`${language}\n${code}${code.endsWith('\n') ? '' : '\n'}\`\`\``
 }
 
 function generateVisualizationLink(code: string, map: string): string {
