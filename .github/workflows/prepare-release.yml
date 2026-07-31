@@ -13,7 +13,7 @@ on:
           - plugin-react-swc
           - plugin-rsc
       release:
-        description: Bumpp release type
+        description: Release type
         required: true
         default: next
         type: choice
@@ -71,8 +71,7 @@ jobs:
           RELEASE: ${{ inputs.version || inputs.release }}
           RELEASE_PACKAGE: ${{ inputs.package }}
         run: |
-          node scripts/prepare-release.ts "$RELEASE_PACKAGE" "$RELEASE"
-          echo "version=$(jq -r .version packages/$RELEASE_PACKAGE/package.json)" >> "$GITHUB_OUTPUT"
+          node scripts/prepare-release.ts "$RELEASE_PACKAGE" "$RELEASE" >> "$GITHUB_OUTPUT"
 
       - id: generate-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -90,6 +89,7 @@ jobs:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
           PACKAGE: ${{ inputs.package }}
           PR_BODY_FILE: ${{ runner.temp }}/release-pr-body.md
+          TAG: ${{ steps.prepare.outputs.tag }}
           VERSION: ${{ steps.prepare.outputs.version }}
         run: |
           BRANCH="release-$PACKAGE-$VERSION-$GITHUB_RUN_ID"
@@ -105,11 +105,11 @@ jobs:
           git config user.email "$BOT_ID+$APP_SLUG[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
           git add "packages/$PACKAGE/package.json" "packages/$PACKAGE/CHANGELOG.md"
-          git commit -m "release: $PACKAGE@$VERSION"
+          git commit -m "release: $TAG"
           git push -u "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD
           gh pr create \
             --assignee "$GITHUB_ACTOR" \
             --base main \
             --head "$BRANCH" \
-            --title "release: $PACKAGE@$VERSION" \
+            --title "release: $TAG" \
             --body-file "$PR_BODY_FILE"
