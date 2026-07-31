@@ -13,6 +13,26 @@ ${visualization}
 ${code}`
 }
 
+export function formatSourceMapMarkdownFixture(
+  input: string,
+  outputs: readonly { name: string; output: MagicString }[],
+): string {
+  const sections = [`## Input\n\n${formatJavaScriptBlock(input)}`]
+  for (const { name, output } of outputs) {
+    const code = output.toString()
+    const map = output.generateMap({ includeContent: true, hires: 'boundary' })
+    const visualization = generateVisualizationLink(code, map.toString())
+    sections.push(
+      `## ${name}\n\n[Source map visualization](${visualization})\n\n${formatJavaScriptBlock(code)}`,
+    )
+  }
+  return sections.join('\n\n') + '\n'
+}
+
+function formatJavaScriptBlock(code: string): string {
+  return `\`\`\`js\n${code}${code.endsWith('\n') ? '' : '\n'}\`\`\``
+}
+
 function generateVisualizationLink(code: string, map: string): string {
   const codeBuffer = Buffer.from(code)
   const mapBuffer = Buffer.from(map)

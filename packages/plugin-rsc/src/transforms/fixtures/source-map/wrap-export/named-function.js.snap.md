@@ -1,0 +1,67 @@
+## Input
+
+```js
+'use server'
+
+export async function namedFunction() {
+  return 'named function called'
+}
+```
+
+## wrap-export
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTk3ACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbigpIHsKICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfQpuYW1lZEZ1bmN0aW9uID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKG5hbWVkRnVuY3Rpb24sICJuYW1lZEZ1bmN0aW9uIik7CmV4cG9ydCB7IG5hbWVkRnVuY3Rpb24gfTsKMzEyAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBuYW1lZEZ1bmN0aW9uKCkge1xuICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCdcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVKLEtBQUssQ0FBQyxRQUFRLENBQUMsYUFBYSxDQUFDLENBQUMsQ0FBQztBQUN0QyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxNQUFNO0FBQy9CO0FBRkE7QUFBQTsifQ==)
+
+```js
+'use server'
+
+async function namedFunction() {
+  return 'named function called'
+}
+namedFunction = /* #__PURE__ */ registerServerReference(namedFunction, "namedFunction");
+export { namedFunction };
+```
+
+## module-export
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjE3ACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbiQkaW1wbCgpIHsKICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfQpjb25zdCBuYW1lZEZ1bmN0aW9uID0gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UobmFtZWRGdW5jdGlvbiQkaW1wbCwgIm5hbWVkRnVuY3Rpb24iKTsKZXhwb3J0IHsgbmFtZWRGdW5jdGlvbiBhcyBuYW1lZEZ1bmN0aW9uIH07CgozMDYAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIG5hbWVkRnVuY3Rpb24oKSB7XG4gIHJldHVybiAnbmFtZWQgZnVuY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRUosS0FBSyxDQUFDLFFBQVEsQ0FBQyxtQkFBYSxDQUFDLENBQUMsQ0FBQztBQUN0QyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxNQUFNO0FBQy9COzs7OyJ9)
+
+```js
+'use server'
+
+async function namedFunction$$impl() {
+  return 'named function called'
+}
+const namedFunction = registerServerReference(namedFunction$$impl, "namedFunction");
+export { namedFunction as namedFunction };
+
+```
+
+## module-export-effect
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTQ3ACd1c2Ugc2VydmVyJwoKZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIG5hbWVkRnVuY3Rpb24oKSB7CiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBjYWxsZWQnCn0KCnJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKG5hbWVkRnVuY3Rpb24sICJuYW1lZEZ1bmN0aW9uIik7CjMxNAB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbigpIHtcbiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFWCxNQUFNLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxhQUFhLENBQUMsQ0FBQyxDQUFDO0FBQ3RDLENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLE1BQU07QUFDL0I7OzsifQ==)
+
+```js
+'use server'
+
+export async function namedFunction() {
+  return 'named function called'
+}
+
+registerServerReference(namedFunction, "namedFunction");
+```
+
+## module-export-hoist
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MzI4ACd1c2Ugc2VydmVyJwoKZXhwb3J0IGNvbnN0IG5hbWVkRnVuY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoJCRtb2R1bGVfaG9pc3RfMF9uYW1lZEZ1bmN0aW9uLCAibmFtZWRGdW5jdGlvbiIpOwoKO2FzeW5jIGZ1bmN0aW9uICQkbW9kdWxlX2hvaXN0XzBfbmFtZWRGdW5jdGlvbigpIHsKICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfTsKLyogI19fUFVSRV9fICovIE9iamVjdC5kZWZpbmVQcm9wZXJ0eSgkJG1vZHVsZV9ob2lzdF8wX25hbWVkRnVuY3Rpb24sICJuYW1lIiwgeyB2YWx1ZTogIm5hbWVkRnVuY3Rpb24iIH0pOwoyODUAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIG5hbWVkRnVuY3Rpb24oKSB7XG4gIHJldHVybiAnbmFtZWQgZnVuY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRVgsTUFBTTtBQUFDO0FBQUEsaURBQStCO0FBQ3RDLENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLE1BQU07QUFDL0I7OyJ9)
+
+```js
+'use server'
+
+export const namedFunction = /* #__PURE__ */ registerServerReference($$module_hoist_0_namedFunction, "namedFunction");
+
+;async function $$module_hoist_0_namedFunction() {
+  return 'named function called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_hoist_0_namedFunction, "name", { value: "namedFunction" });
+```

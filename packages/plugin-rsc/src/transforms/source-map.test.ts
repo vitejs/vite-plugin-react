@@ -5,7 +5,10 @@ import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExport } from './module-export'
 import { transformModuleExportEffect } from './module-export-effect'
 import { transformModuleExportHoist } from './module-export-hoist'
-import { formatSourceMapFixture } from './test-utils'
+import {
+  formatSourceMapFixture,
+  formatSourceMapMarkdownFixture,
+} from './test-utils'
 import { transformWrapExport } from './wrap-export'
 
 describe('source map fixtures', () => {
@@ -21,11 +24,11 @@ describe('source map fixtures', () => {
     'module-export-hoist',
   ] as const
 
-  for (const model of moduleExportModels) {
-    for (const [file, load] of Object.entries(moduleExportFixtures)) {
-      test(`${model}/${path.basename(file)}`, async () => {
-        const input = ((await load()) as any).default as string
-        const ast = await parseAstAsync(input)
+  for (const [file, load] of Object.entries(moduleExportFixtures)) {
+    test(`module-export-models/${path.basename(file)}`, async () => {
+      const input = ((await load()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const outputs = moduleExportModels.map((model) => {
         let output
         if (model === 'wrap-export') {
           output = transformWrapExport(input, ast, {
@@ -50,11 +53,12 @@ describe('source map fixtures', () => {
               `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
           }).output
         }
-        await expect(formatSourceMapFixture(output)).toMatchFileSnapshot(
-          `${file}.${model}.snap.js`,
-        )
+        return { name: model, output }
       })
-    }
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(`${file}.snap.md`)
+    })
   }
 
   const hoistFixtures = import.meta.glob(
