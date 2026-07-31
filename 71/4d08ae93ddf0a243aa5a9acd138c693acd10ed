@@ -1,0 +1,49 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.md
+  s_f3b2680fb8b078::t_25afccf0acc507 1-3,12-25
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_f3b2680fb8b078::t_3eff4b72a1b71a 1,3-11,13-19,28-47
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.map.snap.md
+  s_f3b2680fb8b078::t_74d0ec1ee50de6 1-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_f3b2680fb8b078::t_9419bf37721b75 1,3-11,13-21,32-53
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.md
+  s_f3b2680fb8b078::t_8eb80bc94a9b24 1-3,11-23
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_f3b2680fb8b078::t_14d22567273b86 1,3-11,13-19,28-47
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.map.snap.md
+  s_f3b2680fb8b078::t_3a4bfb1efd6497 1-3,11-23
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_f3b2680fb8b078::t_06c16b3ad16580 1,3-11,13-21,32-53
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.map.snap.md
+  s_f3b2680fb8b078::t_b7e1e8fdb895b1 1-33
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_f3b2680fb8b078::t_b9535f48a7b2ca 1,3-15,17-23,37-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.md
+  s_f3b2680fb8b078::t_f27da852884136 1-3,10-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_f3b2680fb8b078::t_af9ed4e46ec078 1,3-11,13-19,27-46
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.map.snap.md
+  s_f3b2680fb8b078::t_4c09d7899d0978 1-3,9-19
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.md
+  s_f3b2680fb8b078::t_dd4dd07fdb9d5e 1,3-11,13-17,25-44
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.md
+  s_f3b2680fb8b078::t_b4a7d474c3f947 1-3,15-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_f3b2680fb8b078::t_2b46b3567c5946 1,3-13,15-21,33-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "714d08ae93ddf0a243aa5a9acd138c693acd10ed",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
