@@ -44,3 +44,22 @@ const action = async function actionImplementation() {
 registerServerReference(action, "action");
 export { action };
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** action
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MzY1ACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fYWN0aW9uID0gYXN5bmMgZnVuY3Rpb24gYWN0aW9uSW1wbGVtZW50YXRpb24oKSB7CiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBleHByZXNzaW9uIGNhbGxlZCcKfTsKLyogI19fUFVSRV9fICovIE9iamVjdC5kZWZpbmVQcm9wZXJ0eSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2FjdGlvbiwgIm5hbWUiLCB7IHZhbHVlOiAiYWN0aW9uSW1wbGVtZW50YXRpb24iIH0pOwpleHBvcnQgY29uc3QgYWN0aW9uID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKCQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fYWN0aW9uLCAiYWN0aW9uIikKMzU4AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBjb25zdCBhY3Rpb24gPSBhc3luYyBmdW5jdGlvbiBhY3Rpb25JbXBsZW1lbnRhdGlvbigpIHtcbiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBleHByZXNzaW9uIGNhbGxlZCdcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVXO0FBQUEsK0VBQXNDO0FBQzVELENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLFVBQVUsQ0FBQyxNQUFNO0FBQzFDOztBQUZBLE1BQU0sQ0FBQyxLQUFLLENBQUMsTUFBTSxDQUFDLENBQUM7In0=)
+
+```js
+'use server'
+
+
+const $$module_0_implementation_action = async function actionImplementation() {
+  return 'named function expression called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_0_implementation_action, "name", { value: "actionImplementation" });
+export const action = /* #__PURE__ */ registerServerReference($$module_0_implementation_action, "action")
+```

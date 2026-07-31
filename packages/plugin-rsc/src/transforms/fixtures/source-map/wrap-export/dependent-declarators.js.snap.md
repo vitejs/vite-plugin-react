@@ -44,3 +44,25 @@ registerServerReference(first, "first");
 registerServerReference(second, "second");
 export { first, second };
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** first, second
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NDY0ACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fZmlyc3QgPSBhc3luYyAoKSA9PiAnZmlyc3QgYWN0aW9uIGNhbGxlZCc7Ci8qICNfX1BVUkVfXyAqLyBPYmplY3QuZGVmaW5lUHJvcGVydHkoJCRtb2R1bGVfMF9pbXBsZW1lbnRhdGlvbl9maXJzdCwgIm5hbWUiLCB7IHZhbHVlOiAiZmlyc3QiIH0pOwpjb25zdCBmaXJzdCA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2ZpcnN0LCAiZmlyc3QiKSwKICBzZWNvbmQgPSBmaXJzdAoKY29uc3QgJCRtb2R1bGVfMV9iaW5kaW5nX3NlY29uZCA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShzZWNvbmQsICJzZWNvbmQiKTsKZXhwb3J0IHsgJCRtb2R1bGVfMV9iaW5kaW5nX3NlY29uZCBhcyBzZWNvbmQgfTsKZXhwb3J0IHsgZmlyc3QgfTsKMzE3AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBjb25zdCBmaXJzdCA9IGFzeW5jICgpID0+ICdmaXJzdCBhY3Rpb24gY2FsbGVkJyxcbiAgc2Vjb25kID0gZmlyc3RcbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVVO0FBQUEsb0RBQVksQ0FBQyxLQUFLLENBQUMsTUFBTSxDQUFDLE1BQU07O0FBQTlDLEtBQUssQ0FBQyxLQUFLLENBQUMsQ0FBQyxrRkFBa0M7QUFDdEQsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUM7Ozs7OyJ9)
+
+```js
+'use server'
+
+
+const $$module_0_implementation_first = async () => 'first action called';
+/* #__PURE__ */ Object.defineProperty($$module_0_implementation_first, "name", { value: "first" });
+const first = /* #__PURE__ */ registerServerReference($$module_0_implementation_first, "first"),
+  second = first
+
+const $$module_1_binding_second = /* #__PURE__ */ registerServerReference(second, "second");
+export { $$module_1_binding_second as second };
+export { first };
+```

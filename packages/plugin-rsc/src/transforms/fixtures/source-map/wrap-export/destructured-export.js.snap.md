@@ -44,3 +44,22 @@ const { action } = { action: source }
 registerServerReference(action, "action");
 export { action };
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** action
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjUxACd1c2Ugc2VydmVyJwoKY29uc3Qgc291cmNlID0gYXN5bmMgKCkgPT4gJ2Rlc3RydWN0dXJlZCBleHBvcnQgY2FsbGVkJwoKY29uc3QgeyBhY3Rpb24gfSA9IHsgYWN0aW9uOiBzb3VyY2UgfQoKY29uc3QgJCRtb2R1bGVfMF9iaW5kaW5nX2FjdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShhY3Rpb24sICJhY3Rpb24iKTsKZXhwb3J0IHsgJCRtb2R1bGVfMF9iaW5kaW5nX2FjdGlvbiBhcyBhY3Rpb24gfTsKNDIyAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmNvbnN0IHNvdXJjZSA9IGFzeW5jICgpID0+ICdkZXN0cnVjdHVyZWQgZXhwb3J0IGNhbGxlZCdcblxuZXhwb3J0IGNvbnN0IHsgYWN0aW9uIH0gPSB7IGFjdGlvbjogc291cmNlIH1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVYLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLFlBQVksQ0FBQyxNQUFNLENBQUMsTUFBTTs7QUFFL0MsS0FBSyxDQUFDLENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsTUFBTSxDQUFDOzs7OyJ9)
+
+```js
+'use server'
+
+const source = async () => 'destructured export called'
+
+const { action } = { action: source }
+
+const $$module_0_binding_action = /* #__PURE__ */ registerServerReference(action, "action");
+export { $$module_0_binding_action as action };
+```
