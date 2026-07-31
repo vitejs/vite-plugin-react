@@ -1,0 +1,5 @@
+(0:0) "'use server'\n" --> (0:0) "'use server'\n"
+[unmapped] --> (3:0) ";\n"
+[unmapped] --> (4:0) "import { reexportedAction as $$import_reexportedAction } from './reexport-source';\n"
+[unmapped] --> (5:0) "const $$wrap_$$import_reexportedAction = /* #__PURE__ */ registerServerReference($$import_reexportedAction, \"reexportedAction\");\n"
+[unmapped] --> (6:0) "export { $$wrap_$$import_reexportedAction as reexportedAction };\n"
