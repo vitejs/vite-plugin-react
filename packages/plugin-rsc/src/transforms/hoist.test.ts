@@ -2,7 +2,6 @@ import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
-import { debugSourceMap } from './test-utils'
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob(
@@ -102,9 +101,6 @@ describe(transformHoistInlineDirective, () => {
     })
     if (!output.hasChanged()) {
       return
-    }
-    if (process.env['DEBUG_SOURCEMAP']) {
-      await debugSourceMap(output)
     }
     const transformed = output.toString()
     await parseAstAsync(transformed)
