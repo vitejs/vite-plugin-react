@@ -29,31 +29,47 @@ describe('source map fixtures', () => {
       const input = ((await load()) as any).default as string
       const ast = await parseAstAsync(input)
       const outputs = moduleExportModels.map((model) => {
-        let output
-        if (model === 'wrap-export') {
-          output = transformWrapExport(input, ast, {
-            runtime: (value, name) =>
-              `registerServerReference(${value}, ${JSON.stringify(name)})`,
-          }).output
-        } else if (model === 'module-export') {
-          output = transformModuleExport(input, ast, {
-            generate: ({ implementation, binding, exportName }) =>
-              `const ${binding} = registerServerReference(${implementation}, ${JSON.stringify(exportName)});\n` +
-              `export { ${binding} as ${exportName} };`,
-          }).output
-        } else if (model === 'module-export-effect') {
-          output = transformModuleExportEffect(input, ast, {
-            generate: ({ binding, exportName }) =>
-              `registerServerReference(${binding}, ${JSON.stringify(exportName)});`,
-          }).output
-        } else {
-          output = transformModuleExportHoist(input, ast, {
-            directive: 'use server',
-            runtime: ({ implementation, exportName }) =>
-              `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
-          }).output
+        try {
+          let output
+          let references: string[]
+          if (model === 'wrap-export') {
+            const result = transformWrapExport(input, ast, {
+              runtime: (value, name) =>
+                `registerServerReference(${value}, ${JSON.stringify(name)})`,
+            })
+            output = result.output
+            references = result.exportNames
+          } else if (model === 'module-export') {
+            const result = transformModuleExport(input, ast, {
+              generate: ({ implementation, binding, exportName }) =>
+                `const ${binding} = registerServerReference(${implementation}, ${JSON.stringify(exportName)});\n` +
+                `export { ${binding} as ${exportName} };`,
+            })
+            output = result.output
+            references = result.referenceNames
+          } else if (model === 'module-export-effect') {
+            const result = transformModuleExportEffect(input, ast, {
+              generate: ({ binding, exportName }) =>
+                `registerServerReference(${binding}, ${JSON.stringify(exportName)});`,
+            })
+            output = result.output
+            references = result.referenceNames
+          } else {
+            const result = transformModuleExportHoist(input, ast, {
+              directive: 'use server',
+              runtime: ({ implementation, exportName }) =>
+                `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
+            })
+            output = result.output
+            references = result.referenceNames
+          }
+          return { name: model, output, references }
+        } catch (error) {
+          return {
+            name: model,
+            error: error instanceof Error ? error.message : String(error),
+          }
         }
-        return { name: model, output }
       })
       await expect(
         formatSourceMapMarkdownFixture(input, outputs),

@@ -15,15 +15,27 @@ ${code}`
 
 export function formatSourceMapMarkdownFixture(
   input: string,
-  outputs: readonly { name: string; output: MagicString }[],
+  outputs: readonly {
+    name: string
+    output?: MagicString
+    error?: string
+    references?: readonly string[]
+  }[],
 ): string {
   const sections = [`## Input\n\n${formatJavaScriptBlock(input)}`]
-  for (const { name, output } of outputs) {
+  for (const { name, output, error, references } of outputs) {
+    if (error !== undefined) {
+      sections.push(
+        `## ${name}\n\n**Status:** error\n\n\`\`\`text\n${error}\n\`\`\``,
+      )
+      continue
+    }
+    if (!output) throw new Error(`missing output for ${name}`)
     const code = output.toString()
     const map = output.generateMap({ includeContent: true, hires: 'boundary' })
     const visualization = generateVisualizationLink(code, map.toString())
     sections.push(
-      `## ${name}\n\n[Source map visualization](${visualization})\n\n${formatJavaScriptBlock(code)}`,
+      `## ${name}\n\n**Status:** ${output.hasChanged() ? 'transformed' : 'unchanged'}\n\n**References:** ${references?.join(', ') || '(none)'}\n\n[Source map visualization](${visualization})\n\n${formatJavaScriptBlock(code)}`,
     )
   }
   return sections.join('\n\n') + '\n'
