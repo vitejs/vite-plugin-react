@@ -3,17 +3,11 @@ import { dirname } from 'node:path'
 import { hashString } from '@hiogawa/utils'
 import type MagicString from 'magic-string'
 
-export function formatSourceMapFixture(
-  input: string,
-  output: MagicString,
-): string {
+export function formatSourceMapFixture(output: MagicString): string {
   const code = output.toString()
   const map = output.generateMap({ includeContent: true, hires: 'boundary' })
   const visualization = generateVisualizationLink(code, map.toString())
   return `/*
-Input:
-
-${input}
 Source map visualization:
 
 ${visualization}

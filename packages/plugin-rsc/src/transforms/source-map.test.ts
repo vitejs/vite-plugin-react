@@ -19,9 +19,9 @@ describe('source map fixtures', () => {
         runtime: (value, name) =>
           `registerServerReference(${value}, ${JSON.stringify(name)})`,
       })
-      await expect(
-        formatSourceMapFixture(input, result.output),
-      ).toMatchFileSnapshot(file + '.snap.js')
+      await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
+        file + '.snap.js',
+      )
     })
   }
 
@@ -41,9 +41,9 @@ describe('source map fixtures', () => {
         encode: (value) => `encrypt(${value})`,
         decode: (value) => `await decrypt(${value})`,
       })
-      await expect(
-        formatSourceMapFixture(input, result.output),
-      ).toMatchFileSnapshot(file + '.snap.js')
+      await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
+        file + '.snap.js',
+      )
     })
   }
 })
