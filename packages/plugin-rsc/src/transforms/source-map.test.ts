@@ -11,7 +11,11 @@ describe('source map fixtures', () => {
     { query: 'raw' },
   )
   const textualMapFixtures = new Set([
+    './fixtures/source-map/wrap-export/default-anonymous.js',
+    './fixtures/source-map/wrap-export/default-named.js',
+    './fixtures/source-map/wrap-export/local-alias.js',
     './fixtures/source-map/wrap-export/named-function.js',
+    './fixtures/source-map/wrap-export/reexport.js',
     './fixtures/source-map/wrap-export/variables.js',
   ])
 
