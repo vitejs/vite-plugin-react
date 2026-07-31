@@ -1,0 +1,29 @@
+pnpm-lock.yaml
+  s_2b4563a8d6cfc7::t_9be10196f07496 104,138,496,2251-2252,3354-3355,4230-4231,4331-4332,5211,5218,5742-5744,6309,6615,6621,6628,7687,7781,7783-7784,8107,8125,8392-8393
+.github/workflows/prepare-release.yml
+  s_2b4563a8d6cfc7::t_66416948419de3 16,74,92,108,114
+.github/workflows/publish.yml
+  s_2b4563a8d6cfc7::t_0b529bd46096bd 18,26-39,42,47,62,93,96,125
+scripts/detect-release.ts
+  s_2b4563a8d6cfc7::t_c5967df8b543be 1-17
+scripts/extract-changelog.ts
+  s_2b4563a8d6cfc7::t_e953b5114421a4 1,9
+scripts/prepare-release.ts
+  s_2b4563a8d6cfc7::t_0d987689cb4917 2,11-34,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3833d3558e247131bb4125380b64c936aed6468e",
+  "prompts": {},
+  "sessions": {
+    "s_2b4563a8d6cfc7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fb295-f6ed-7870-99a1-d7bfa4ce0a60",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
