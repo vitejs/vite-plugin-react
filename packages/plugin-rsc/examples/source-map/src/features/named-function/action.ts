@@ -1,5 +1,5 @@
 'use server'
 
 export async function namedFunction() {
-  return 'named function called'
+  return new Error().stack?.split('\n')[1] ?? ''
 }
