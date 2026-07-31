@@ -6,6 +6,7 @@ import { MultipleExports } from './features/multiple-exports/server'
 import { NamedFunction } from './features/named-function/server'
 import { ServerActionError } from './features/server-action-error/server'
 import { ServerComponentError } from './features/server-component-error/server'
+import { ServerFunctionName } from './features/server-function-name/server'
 import { ServerReferenceFromClient } from './features/server-reference-from-client/server'
 import { Specifiers } from './features/specifiers/server'
 import { TypescriptTsx } from './features/typescript-tsx/server'
@@ -64,6 +65,13 @@ const routes = [
     title: 'Multiple exports',
     description: 'Two generated registrations from one module.',
     render: () => <MultipleExports />,
+  },
+  {
+    path: '/server-function-name',
+    title: 'Server Function names',
+    description:
+      'Module-level and inline Server Functions preserve their source names in stack traces.',
+    render: () => <ServerFunctionName />,
   },
   {
     path: '/server-action-error',
