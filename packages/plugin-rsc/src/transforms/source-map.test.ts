@@ -2,7 +2,7 @@ import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
-import { formatSourceMapFixture } from './test-utils'
+import { formatDecodedSourceMap, formatSourceMapFixture } from './test-utils'
 import { transformWrapExport } from './wrap-export'
 
 describe('source map fixtures', () => {
@@ -10,6 +10,10 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
+  const textualMapFixtures = new Set([
+    './fixtures/source-map/wrap-export/named-function.js',
+    './fixtures/source-map/wrap-export/variables.js',
+  ])
 
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
     test(`wrap-export/${path.basename(file)}`, async () => {
@@ -22,6 +26,11 @@ describe('source map fixtures', () => {
       await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
         file + '.snap.js',
       )
+      if (textualMapFixtures.has(file)) {
+        await expect(formatDecodedSourceMap(result.output)).toMatchFileSnapshot(
+          file + '.map.snap.txt',
+        )
+      }
     })
   }
 
@@ -43,6 +52,9 @@ describe('source map fixtures', () => {
       })
       await expect(formatSourceMapFixture(result.output)).toMatchFileSnapshot(
         file + '.snap.js',
+      )
+      await expect(formatDecodedSourceMap(result.output)).toMatchFileSnapshot(
+        file + '.map.snap.txt',
       )
     })
   }
