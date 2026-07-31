@@ -10,6 +10,10 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
+  // Generated `registerServerReference(...)` calls should map to the original
+  // Server Function definition, or to the export statement for re-exports.
+  // Some snapshots below intentionally record currently incorrect unmapped
+  // registration calls tracked by https://github.com/vitejs/vite-plugin-react/issues/1361.
   const textualMapFixtures = new Set([
     './fixtures/source-map/wrap-export/default-anonymous.js',
     './fixtures/source-map/wrap-export/default-named.js',
