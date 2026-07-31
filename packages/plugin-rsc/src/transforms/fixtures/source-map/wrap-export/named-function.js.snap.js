@@ -1,0 +1,21 @@
+/*
+Input:
+
+'use server'
+
+export async function namedFunction() {
+  return 'named function called'
+}
+
+Source map visualization:
+
+https://evanw.github.io/source-map-visualization/#MTk3ACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbigpIHsKICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfQpuYW1lZEZ1bmN0aW9uID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKG5hbWVkRnVuY3Rpb24sICJuYW1lZEZ1bmN0aW9uIik7CmV4cG9ydCB7IG5hbWVkRnVuY3Rpb24gfTsKMzEyAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBuYW1lZEZ1bmN0aW9uKCkge1xuICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCdcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVKLEtBQUssQ0FBQyxRQUFRLENBQUMsYUFBYSxDQUFDLENBQUMsQ0FBQztBQUN0QyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxNQUFNO0FBQy9CO0FBRkE7QUFBQTsifQ==
+*/
+
+'use server'
+
+async function namedFunction() {
+  return 'named function called'
+}
+namedFunction = /* #__PURE__ */ registerServerReference(namedFunction, "namedFunction");
+export { namedFunction };
