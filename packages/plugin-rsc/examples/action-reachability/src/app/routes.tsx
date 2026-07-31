@@ -3,6 +3,8 @@ import { middleware as middlewareA } from './a/middleware.ts'
 import { Page as PageA } from './a/page.tsx'
 import { middleware as middlewareB } from './b/middleware.ts'
 import { Page as PageB } from './b/page.tsx'
+import { middleware as middlewareC } from './c/middleware.ts'
+import { Page as PageC } from './c/page.tsx'
 import { Root } from './root.tsx'
 
 // TODO: A framework would generate this registry from its route convention.
@@ -10,6 +12,7 @@ import { Root } from './root.tsx'
 export const routes = {
   '/a': { Page: PageA, middleware: middlewareA },
   '/b': { Page: PageB, middleware: middlewareB },
+  '/c': { Page: PageC, middleware: middlewareC },
 }
 
 const rootRoute: {
