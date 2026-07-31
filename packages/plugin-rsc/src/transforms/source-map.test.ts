@@ -12,15 +12,16 @@ describe('source map fixtures', () => {
   )
   // Generated `registerServerReference(...)` calls should map to the original
   // Server Function definition, or to the export statement for re-exports.
-  // Some snapshots below intentionally record currently incorrect unmapped
-  // registration calls tracked by https://github.com/vitejs/vite-plugin-react/issues/1361.
   const textualMapFixtures = new Set([
+    './fixtures/source-map/wrap-export/named-function.js',
+    './fixtures/source-map/wrap-export/variables.js',
+
+    // TODO: These registrations are currently unmapped.
+    // https://github.com/vitejs/vite-plugin-react/issues/1361
     './fixtures/source-map/wrap-export/default-anonymous.js',
     './fixtures/source-map/wrap-export/default-named.js',
     './fixtures/source-map/wrap-export/local-alias.js',
-    './fixtures/source-map/wrap-export/named-function.js',
     './fixtures/source-map/wrap-export/reexport.js',
-    './fixtures/source-map/wrap-export/variables.js',
   ])
 
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
