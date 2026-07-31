@@ -24,3 +24,16 @@
 (6:0) "export default defaultIdentifier\n" --> (8:0) "registerServerReference($$effect_default, \"default\");\n"
 (6:0) "export default defaultIdentifier\n" --> (9:0) "export default $$effect_default;\n"
 ```
+
+## module-export
+
+```txt
+(0:0) "'use server'\n" --> (0:0) "'use server'\n"
+(2:0) "async function defaultIdentifier() {\n" --> (2:0) "async function defaultIdentifier() {\n"
+(3:0) "  return 'default identifier called'\n" --> (3:0) "  return 'default identifier called'\n"
+(4:0) "}\n" --> (4:0) "}\n"
+(6:0) "export default " --> (6:0) "const $$module_0_implementation_default = "
+(6:15) "defaultIdentifier\n" --> (6:42) "defaultIdentifier\n"
+[unmapped] --> (8:0) "const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+[unmapped] --> (9:0) "export { $$module_0_binding_default as default };\n"
+```

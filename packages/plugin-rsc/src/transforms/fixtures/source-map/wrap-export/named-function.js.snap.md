@@ -44,3 +44,22 @@ async function namedFunction() {
 registerServerReference(namedFunction, "namedFunction");
 export { namedFunction };
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** namedFunction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NDAyACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fbmFtZWRGdW5jdGlvbiA9IGFzeW5jIGZ1bmN0aW9uICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fbmFtZWRGdW5jdGlvbigpIHsKICByZXR1cm4gJ25hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfTsKLyogI19fUFVSRV9fICovIE9iamVjdC5kZWZpbmVQcm9wZXJ0eSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX25hbWVkRnVuY3Rpb24sICJuYW1lIiwgeyB2YWx1ZTogIm5hbWVkRnVuY3Rpb24iIH0pOwpleHBvcnQgY29uc3QgbmFtZWRGdW5jdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX25hbWVkRnVuY3Rpb24sICJuYW1lZEZ1bmN0aW9uIik7CjI3NgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbigpIHtcbiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFSjtBQUFBLHlHQUErQjtBQUN0QyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxNQUFNO0FBQy9COzs7In0=)
+
+```js
+'use server'
+
+
+const $$module_0_implementation_namedFunction = async function $$module_0_implementation_namedFunction() {
+  return 'named function called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_0_implementation_namedFunction, "name", { value: "namedFunction" });
+export const namedFunction = /* #__PURE__ */ registerServerReference($$module_0_implementation_namedFunction, "namedFunction");
+```

@@ -51,3 +51,24 @@ const $$effect_default = defaultIdentifier;
 registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MzI0ACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gZGVmYXVsdElkZW50aWZpZXIoKSB7CiAgcmV0dXJuICdkZWZhdWx0IGlkZW50aWZpZXIgY2FsbGVkJwp9Cgpjb25zdCAkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2RlZmF1bHQgPSBkZWZhdWx0SWRlbnRpZmllcgoKY29uc3QgJCRtb2R1bGVfMF9iaW5kaW5nX2RlZmF1bHQgPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoJCRtb2R1bGVfMF9pbXBsZW1lbnRhdGlvbl9kZWZhdWx0LCAiZGVmYXVsdCIpOwpleHBvcnQgeyAkJG1vZHVsZV8wX2JpbmRpbmdfZGVmYXVsdCBhcyBkZWZhdWx0IH07CjM1NgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5hc3luYyBmdW5jdGlvbiBkZWZhdWx0SWRlbnRpZmllcigpIHtcbiAgcmV0dXJuICdkZWZhdWx0IGlkZW50aWZpZXIgY2FsbGVkJ1xufVxuXG5leHBvcnQgZGVmYXVsdCBkZWZhdWx0SWRlbnRpZmllclxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRVgsS0FBSyxDQUFDLFFBQVEsQ0FBQyxpQkFBaUIsQ0FBQyxDQUFDLENBQUM7QUFDbkMsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDLE9BQU8sQ0FBQyxVQUFVLENBQUMsTUFBTTtBQUNuQzs7QUFFQSwwQ0FBZTs7OzsifQ==)
+
+```js
+'use server'
+
+async function defaultIdentifier() {
+  return 'default identifier called'
+}
+
+const $$module_0_implementation_default = defaultIdentifier
+
+const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, "default");
+export { $$module_0_binding_default as default };
+```

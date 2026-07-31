@@ -42,3 +42,21 @@ registerServerReference($$effect_import_reexportedAction, "reexportedAction");
 
 import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** reexportedAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MzMzACd1c2Ugc2VydmVyJwoKCgppbXBvcnQgeyByZWV4cG9ydGVkQWN0aW9uIGFzICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fcmVleHBvcnRlZEFjdGlvbiB9IGZyb20gJy4vcmVleHBvcnQtc291cmNlJzsKY29uc3QgJCRtb2R1bGVfMF9iaW5kaW5nX3JlZXhwb3J0ZWRBY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoJCRtb2R1bGVfMF9pbXBsZW1lbnRhdGlvbl9yZWV4cG9ydGVkQWN0aW9uLCAicmVleHBvcnRlZEFjdGlvbiIpOwpleHBvcnQgeyAkJG1vZHVsZV8wX2JpbmRpbmdfcmVleHBvcnRlZEFjdGlvbiBhcyByZWV4cG9ydGVkQWN0aW9uIH07CjE3NgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgeyByZWV4cG9ydGVkQWN0aW9uIH0gZnJvbSAnLi9yZWV4cG9ydC1zb3VyY2UnXG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7Ozs7OzsifQ==)
+
+```js
+'use server'
+
+
+
+import { reexportedAction as $$module_0_implementation_reexportedAction } from './reexport-source';
+const $$module_0_binding_reexportedAction = /* #__PURE__ */ registerServerReference($$module_0_implementation_reexportedAction, "reexportedAction");
+export { $$module_0_binding_reexportedAction as reexportedAction };
+```

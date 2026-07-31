@@ -45,3 +45,23 @@ async function defaultNamedFunction() {
 registerServerReference(defaultNamedFunction, "default");
 export default defaultNamedFunction;
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NDc2ACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fZGVmYXVsdE5hbWVkRnVuY3Rpb24gPSBhc3luYyBmdW5jdGlvbiAkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2RlZmF1bHROYW1lZEZ1bmN0aW9uKCkgewogIHJldHVybiAnZGVmYXVsdCBuYW1lZCBmdW5jdGlvbiBjYWxsZWQnCn07Ci8qICNfX1BVUkVfXyAqLyBPYmplY3QuZGVmaW5lUHJvcGVydHkoJCRtb2R1bGVfMF9pbXBsZW1lbnRhdGlvbl9kZWZhdWx0TmFtZWRGdW5jdGlvbiwgIm5hbWUiLCB7IHZhbHVlOiAiZGVmYXVsdE5hbWVkRnVuY3Rpb24iIH0pOwpjb25zdCBkZWZhdWx0TmFtZWRGdW5jdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2RlZmF1bHROYW1lZEZ1bmN0aW9uLCAiZGVmYXVsdCIpOwpleHBvcnQgZGVmYXVsdCBkZWZhdWx0TmFtZWRGdW5jdGlvbjsKMzEwAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIGRlZmF1bHROYW1lZEZ1bmN0aW9uKCkge1xuICByZXR1cm4gJ2RlZmF1bHQgbmFtZWQgZnVuY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRUk7QUFBQSx1SEFBc0M7QUFDckQsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDLE9BQU8sQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLE1BQU07QUFDdkM7Ozs7In0=)
+
+```js
+'use server'
+
+
+const $$module_0_implementation_defaultNamedFunction = async function $$module_0_implementation_defaultNamedFunction() {
+  return 'default named function called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_0_implementation_defaultNamedFunction, "name", { value: "defaultNamedFunction" });
+const defaultNamedFunction = /* #__PURE__ */ registerServerReference($$module_0_implementation_defaultNamedFunction, "default");
+export default defaultNamedFunction;
+```

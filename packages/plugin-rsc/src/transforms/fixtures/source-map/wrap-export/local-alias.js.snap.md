@@ -51,3 +51,24 @@ async function localAlias() {
 registerServerReference(localAlias, "aliasedAction");
 export { localAlias as aliasedAction }
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** aliasedAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjUyACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gbG9jYWxBbGlhcygpIHsKICByZXR1cm4gJ2xvY2FsIGFsaWFzIGNhbGxlZCcKfQoKCgpjb25zdCAkJG1vZHVsZV8wX2JpbmRpbmdfYWxpYXNlZEFjdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShsb2NhbEFsaWFzLCAiYWxpYXNlZEFjdGlvbiIpOwpleHBvcnQgeyAkJG1vZHVsZV8wX2JpbmRpbmdfYWxpYXNlZEFjdGlvbiBhcyBhbGlhc2VkQWN0aW9uIH07CjMzNgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5hc3luYyBmdW5jdGlvbiBsb2NhbEFsaWFzKCkge1xuICByZXR1cm4gJ2xvY2FsIGFsaWFzIGNhbGxlZCdcbn1cblxuZXhwb3J0IHsgbG9jYWxBbGlhcyBhcyBhbGlhc2VkQWN0aW9uIH1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVYLEtBQUssQ0FBQyxRQUFRLENBQUMsVUFBVSxDQUFDLENBQUMsQ0FBQztBQUM1QixDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsS0FBSyxDQUFDLEtBQUssQ0FBQyxNQUFNO0FBQzVCOzs7Ozs7In0=)
+
+```js
+'use server'
+
+async function localAlias() {
+  return 'local alias called'
+}
+
+
+
+const $$module_0_binding_aliasedAction = /* #__PURE__ */ registerServerReference(localAlias, "aliasedAction");
+export { $$module_0_binding_aliasedAction as aliasedAction };
+```

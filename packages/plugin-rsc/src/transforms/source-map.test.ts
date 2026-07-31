@@ -2,6 +2,7 @@ import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
+import { transformModuleExport } from './module-export'
 import { transformModuleExportEffect } from './module-export-effect'
 import {
   formatDecodedSourceMap,
@@ -28,6 +29,10 @@ describe('source map fixtures', () => {
         runtime: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
+      const moduleResult = transformModuleExport(input, ast, {
+        runtime: ({ implementation, exportName }) =>
+          `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
+      })
       const outputs = [
         {
           name: 'wrap-export',
@@ -38,6 +43,11 @@ describe('source map fixtures', () => {
           name: 'module-export-effect',
           output: effectResult.output,
           references: effectResult.referenceNames,
+        },
+        {
+          name: 'module-export',
+          output: moduleResult.output,
+          references: moduleResult.referenceNames,
         },
       ]
       await expect(

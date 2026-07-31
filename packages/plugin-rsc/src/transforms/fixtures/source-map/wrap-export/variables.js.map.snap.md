@@ -29,3 +29,21 @@
 (4:0) "export const functionExpression = async function () {\n" --> (11:0) "registerServerReference(functionExpression, \"functionExpression\");\n"
 (4:0) "export const functionExpression = async function () {\n" --> (12:0) "export { functionExpression };\n"
 ```
+
+## module-export
+
+```txt
+(0:0) "'use server'\n" --> (0:0) "'use server'\n"
+(2:29) "async () => 'arrow function called'\n" --> (2:0) "\n"
+(2:29) "async () => " --> (3:0) "const $$module_0_implementation_arrowFunction = async () => "
+(2:41) "'arrow function called'\n" --> (3:60) "'arrow function called';\n"
+[unmapped] --> (4:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_arrowFunction, \"name\", { value: \"arrowFunction\" });\n"
+(4:34) "async function () {\n" --> (5:0) "\n"
+(4:34) "async function () " --> (6:0) "const $$module_1_implementation_functionExpression = async function () "
+(4:52) "{\n" --> (6:71) "{\n"
+(5:0) "  return 'function expression called'\n" --> (7:0) "  return 'function expression called'\n"
+(6:0) "}\n" --> (8:0) "};\n"
+[unmapped] --> (9:0) "/* #__PURE__ */ Object.defineProperty($$module_1_implementation_functionExpression, \"name\", { value: \"functionExpression\" });\n"
+(2:0) "export const arrowFunction = async () => 'arrow function called'\n" --> (10:0) "export const arrowFunction = /* #__PURE__ */ registerServerReference($$module_0_implementation_arrowFunction, \"arrowFunction\")\n"
+(4:0) "export const functionExpression = async function () {\n" --> (12:0) "export const functionExpression = /* #__PURE__ */ registerServerReference($$module_1_implementation_functionExpression, \"functionExpression\")\n"
+```

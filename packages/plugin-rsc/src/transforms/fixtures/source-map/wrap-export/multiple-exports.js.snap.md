@@ -61,3 +61,29 @@ export { firstAction };
 registerServerReference(secondAction, "secondAction");
 export { secondAction };
 ```
+
+## module-export
+
+**Status:** transformed
+
+**References:** firstAction, secondAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzY3ACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fZmlyc3RBY3Rpb24gPSBhc3luYyBmdW5jdGlvbiAkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2ZpcnN0QWN0aW9uKCkgewogIHJldHVybiAnZmlyc3QgYWN0aW9uIGNhbGxlZCcKfTsKLyogI19fUFVSRV9fICovIE9iamVjdC5kZWZpbmVQcm9wZXJ0eSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2ZpcnN0QWN0aW9uLCAibmFtZSIsIHsgdmFsdWU6ICJmaXJzdEFjdGlvbiIgfSk7Cgpjb25zdCAkJG1vZHVsZV8xX2ltcGxlbWVudGF0aW9uX3NlY29uZEFjdGlvbiA9IGFzeW5jIGZ1bmN0aW9uICQkbW9kdWxlXzFfaW1wbGVtZW50YXRpb25fc2Vjb25kQWN0aW9uKCkgewogIHJldHVybiAnc2Vjb25kIGFjdGlvbiBjYWxsZWQnCn07Ci8qICNfX1BVUkVfXyAqLyBPYmplY3QuZGVmaW5lUHJvcGVydHkoJCRtb2R1bGVfMV9pbXBsZW1lbnRhdGlvbl9zZWNvbmRBY3Rpb24sICJuYW1lIiwgeyB2YWx1ZTogInNlY29uZEFjdGlvbiIgfSk7CmV4cG9ydCBjb25zdCBmaXJzdEFjdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZSgkJG1vZHVsZV8wX2ltcGxlbWVudGF0aW9uX2ZpcnN0QWN0aW9uLCAiZmlyc3RBY3Rpb24iKTsKCmV4cG9ydCBjb25zdCBzZWNvbmRBY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoJCRtb2R1bGVfMV9pbXBsZW1lbnRhdGlvbl9zZWNvbmRBY3Rpb24sICJzZWNvbmRBY3Rpb24iKTsKNDMyAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBmaXJzdEFjdGlvbigpIHtcbiAgcmV0dXJuICdmaXJzdCBhY3Rpb24gY2FsbGVkJ1xufVxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gc2Vjb25kQWN0aW9uKCkge1xuICByZXR1cm4gJ3NlY29uZCBhY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRUo7QUFBQSxxR0FBNkI7QUFDcEMsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDLEtBQUssQ0FBQyxNQUFNLENBQUMsTUFBTTtBQUM3Qjs7QUFFTztBQUFBLHVHQUE4QjtBQUNyQyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsTUFBTSxDQUFDLE1BQU0sQ0FBQyxNQUFNO0FBQzlCOzs7OzsifQ==)
+
+```js
+'use server'
+
+
+const $$module_0_implementation_firstAction = async function $$module_0_implementation_firstAction() {
+  return 'first action called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_0_implementation_firstAction, "name", { value: "firstAction" });
+
+const $$module_1_implementation_secondAction = async function $$module_1_implementation_secondAction() {
+  return 'second action called'
+};
+/* #__PURE__ */ Object.defineProperty($$module_1_implementation_secondAction, "name", { value: "secondAction" });
+export const firstAction = /* #__PURE__ */ registerServerReference($$module_0_implementation_firstAction, "firstAction");
+
+export const secondAction = /* #__PURE__ */ registerServerReference($$module_1_implementation_secondAction, "secondAction");
+```

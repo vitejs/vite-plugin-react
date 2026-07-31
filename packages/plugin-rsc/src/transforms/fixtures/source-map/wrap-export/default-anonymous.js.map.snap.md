@@ -23,3 +23,16 @@
 (2:0) "export default async function () {\n" --> (6:0) "registerServerReference($$effect_default, \"default\");\n"
 (2:0) "export default async function () {\n" --> (7:0) "export default $$effect_default;\n"
 ```
+
+## module-export
+
+```txt
+(0:0) "'use server'\n" --> (0:0) "'use server'\n"
+(2:15) "async function () {\n" --> (2:0) "\n"
+(2:15) "async function () " --> (3:0) "const $$module_0_implementation_default = async function () "
+(2:33) "{\n" --> (3:60) "{\n"
+(3:0) "  return 'default anonymous function called'\n" --> (4:0) "  return 'default anonymous function called'\n"
+(4:0) "}\n" --> (5:0) "};\n"
+[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_default, \"name\", { value: \"default\" });\n"
+[unmapped] --> (7:0) "export default /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+```

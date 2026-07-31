@@ -17,3 +17,12 @@
 (2:0) "export { reexportedAction } from './reexport-source'\n" --> (5:0) "registerServerReference($$effect_import_reexportedAction, \"reexportedAction\");\n"
 [unmapped] --> (7:0) "import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';"
 ```
+
+## module-export
+
+```txt
+(0:0) "'use server'\n" --> (0:0) "'use server'\n"
+[unmapped] --> (4:0) "import { reexportedAction as $$module_0_implementation_reexportedAction } from './reexport-source';\n"
+[unmapped] --> (5:0) "const $$module_0_binding_reexportedAction = /* #__PURE__ */ registerServerReference($$module_0_implementation_reexportedAction, \"reexportedAction\");\n"
+[unmapped] --> (6:0) "export { $$module_0_binding_reexportedAction as reexportedAction };\n"
+```
