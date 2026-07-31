@@ -21,8 +21,8 @@ export default async function Page() {
         `const ${binding} = wrap(${implementation}, ${JSON.stringify(exportName)}); export { ${binding} as ${exportName} };`,
     })
     const effect = transformModuleExportEffect(input, ast, {
-      generate: ({ binding, exportName }) =>
-        `register(${binding}, ${JSON.stringify(exportName)});`,
+      runtime: ({ binding, exportName }) =>
+        `register(${binding}, ${JSON.stringify(exportName)})`,
     })
     const hoist = transformModuleExportHoist(input, ast, {
       directive: 'use cache',
@@ -65,17 +65,22 @@ export default async function Page() {
 
       ",
           "effect": ""use cache";
-      export async function action(value) {
+      async function action(value) {
         return value
       }
-      export const loader = async () => "loaded"
-      export default async function Page() {
+      const loader = async () => "loaded"
+      async function Page() {
         return "page"
       }
 
       register(action, "action");
+      export { action };
+
       register(loader, "loader");
+      export { loader };
+
       register(Page, "default");
+      export default Page;
       ",
           "hoist": ""use cache";
       export const action = /* #__PURE__ */ wrap($$module_hoist_0_action, "action");
@@ -122,7 +127,7 @@ export default async function Page() {
     const input = `"use cache"; export default async function () {}`
     const ast = await parseAstAsync(input)
     const effect = transformModuleExportEffect(input, ast, {
-      generate: ({ binding }) => `register(${binding});`,
+      runtime: ({ binding }) => `register(${binding})`,
     })
     const hoist = transformModuleExportHoist(input, ast, {
       directive: 'use cache',
@@ -137,8 +142,8 @@ export default async function Page() {
     }).toMatchInlineSnapshot(`
       {
         "effect": ""use cache"; const $$effect_default = async function () {}
-      export default $$effect_default;
       register($$effect_default);
+      export default $$effect_default;
       ",
         "hoist": ""use cache"; export default /* #__PURE__ */ wrap($$module_hoist_0_anonymous_default)
 
@@ -146,6 +151,28 @@ export default async function Page() {
       /* #__PURE__ */ Object.defineProperty($$module_hoist_0_anonymous_default, "name", { value: "anonymous_default" });
       ",
       }
+    `)
+  })
+
+  test('captures default identifiers before later reassignment', async () => {
+    const input = `let action = async () => 'first'
+export default action
+action = async () => 'second'
+`
+    const ast = await parseAstAsync(input)
+    const effect = transformModuleExportEffect(input, ast, {
+      runtime: ({ binding }) => `register(${binding})`,
+    })
+
+    await expect(parseAstAsync(effect.output.toString())).resolves.toBeDefined()
+    expect(effect.output.toString()).toMatchInlineSnapshot(`
+      "let action = async () => 'first'
+      const $$effect_default = action;
+      action = async () => 'second'
+
+      register($$effect_default);
+      export default $$effect_default;
+      "
     `)
   })
 })

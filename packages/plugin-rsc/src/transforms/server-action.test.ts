@@ -5,7 +5,7 @@ import { transformServerActionServer } from './server-action'
 async function transform(input: string) {
   const ast = await parseAstAsync(input)
   return transformServerActionServer(input, ast, {
-    runtime: (value) => value,
+    runtime: (value) => `register(${value})`,
   })
 }
 
@@ -19,7 +19,12 @@ test('normalizes top-level server reference names', async () => {
     referenceNames: ['action'],
   })
   expect(result.output.toString()).toMatchInlineSnapshot(
-    `"'use server'; async function action$$impl() {}\nexport const action = /* #__PURE__ */ action$$impl;\n"`,
+    `
+    "'use server'; async function action() {}
+    register(action);
+    export { action };
+    "
+  `,
   )
 })
 

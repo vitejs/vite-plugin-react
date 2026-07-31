@@ -160,24 +160,26 @@ export default async function() {
 
       const privateFunction = () => 'Secret';
 
-      const log$$impl = async (mesg) => {
+      const log = async (mesg) => {
         console.log(mesg);
       };
-      export const log = /* #__PURE__ */ $runtime(log$$impl, "<id>", "log");
 
-
-      async function greet$$impl(name) {
+      async function greet(name) {
         return 'Hello ' + name;
       }
-      export const greet = /* #__PURE__ */ $runtime(greet$$impl, "<id>", "greet");
 
-
-      const $$default$$impl = async function() {
+      const $$effect_default = async function() {
         return Date.now();
       }
-      const $$default = /* #__PURE__ */ $runtime($$default$$impl, "<id>", "default");
-      export { $$default as default };
 
+      $runtime(log, "<id>", "log");
+      export { log };
+
+      $runtime(greet, "<id>", "greet");
+      export { greet };
+
+      $runtime($$effect_default, "<id>", "default");
+      export default $$effect_default;
       "
     `)
   })
@@ -251,17 +253,18 @@ export default async () => null;
         return innerAction.bind(null, action);
       }
 
-      async function exportedAction$$impl() {
+      async function exportedAction() {
         'use server';
         return null;
       }
-      export const exportedAction = /* #__PURE__ */ $runtime(exportedAction$$impl, "<id>", "exportedAction");
 
+      const $$effect_default = async () => null;
 
-      const $$default$$impl = async () => null;
-      const $$default = /* #__PURE__ */ $runtime($$default$$impl, "<id>", "default");
-      export { $$default as default };
+      $runtime(exportedAction, "<id>", "exportedAction");
+      export { exportedAction };
 
+      $runtime($$effect_default, "<id>", "default");
+      export default $$effect_default;
       "
     `)
   })

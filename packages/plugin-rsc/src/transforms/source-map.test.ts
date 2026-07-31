@@ -49,8 +49,8 @@ describe('source map fixtures', () => {
             references = result.referenceNames
           } else if (model === 'module-export-effect') {
             const result = transformModuleExportEffect(input, ast, {
-              generate: ({ binding, exportName }) =>
-                `registerServerReference(${binding}, ${JSON.stringify(exportName)});`,
+              runtime: ({ binding, exportName }) =>
+                `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
             })
             output = result.output
             references = result.referenceNames

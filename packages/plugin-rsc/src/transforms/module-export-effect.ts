@@ -15,15 +15,15 @@ export type TransformModuleExportEffectContext = {
 }
 
 export type TransformModuleExportEffectOptions = {
-  generate: (context: TransformModuleExportEffectContext) => string
+  runtime: (context: TransformModuleExportEffectContext) => string
   filter?: TransformModuleExportFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
 }
 
 /**
- * Preserves selected source exports and appends one generated module effect for
- * each exported value. This models Next.js-style module Server Action lowering.
+ * Preserves selected source bindings and emits one mapped module effect for each
+ * exported value. This models Next.js-style module Server Action lowering.
  */
 export function transformModuleExportEffect(
   input: string,
@@ -38,11 +38,23 @@ export function transformModuleExportEffect(
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportEffectContext[] = []
-  const effects: string[] = []
 
-  function generate(context: TransformModuleExportEffectContext): void {
+  // Generated-name collision detection is intentionally out of scope, matching
+  // the other module export transforms.
+
+  function generate(context: TransformModuleExportEffectContext): string {
     references.push(context)
-    effects.push(options.generate(context))
+    return `${options.runtime(context)};`
+  }
+
+  function replaceAndMove(
+    start: number,
+    end: number,
+    destination: number,
+    code: string,
+  ): void {
+    output.update(start, end, `\n${code}\n`)
+    if (end !== destination) output.move(start, end, destination)
   }
 
   for (const node of ast.body) {
@@ -65,10 +77,18 @@ export function transformModuleExportEffect(
           }
           if (!filter(binding, meta)) continue
           validateNonAsyncFunction(options, node.declaration)
-          generate({ binding, exportName: binding, meta })
+          replaceAndMove(
+            node.start,
+            node.declaration.start,
+            input.length,
+            `${generate({ binding, exportName: binding, meta })}\nexport { ${binding} };`,
+          )
         } else if (node.declaration.type === 'VariableDeclaration') {
+          const exportNames: string[] = []
+          const effects: string[] = []
           for (const declaration of node.declaration.declarations) {
             const names = extractNames(declaration.id)
+            exportNames.push(...names)
             const isFunction =
               declaration.id.type === 'Identifier' && declaration.init
                 ? getIsFunction(declaration.init)
@@ -82,15 +102,24 @@ export function transformModuleExportEffect(
               }
               if (filter(binding, meta)) {
                 validate = true
-                generate({ binding, exportName: binding, meta })
+                effects.push(generate({ binding, exportName: binding, meta }))
               }
             }
             if (validate && declaration.init) {
               validateNonAsyncFunction(options, declaration.init)
             }
           }
+          if (effects.length > 0) {
+            replaceAndMove(
+              node.start,
+              node.declaration.start,
+              input.length,
+              `${effects.join('\n')}\nexport { ${exportNames.join(', ')} };`,
+            )
+          }
         }
       } else {
+        const effects: string[] = []
         for (const specifier of node.specifiers) {
           tinyassert(specifier.local.type === 'Identifier')
           if (specifier.exported.type !== 'Identifier') {
@@ -113,7 +142,25 @@ export function transformModuleExportEffect(
               `\nimport { ${specifier.local.name} as ${binding} } from ${node.source.raw}${sourceTail}`,
             )
           }
-          generate({ binding, exportName, meta })
+          effects.push(generate({ binding, exportName, meta }))
+        }
+        if (effects.length > 0) {
+          const originalExport = input.slice(node.start, node.end)
+          if (node.source) {
+            replaceAndMove(
+              node.start,
+              node.end,
+              input.length,
+              `${originalExport}\n${effects.join('\n')}`,
+            )
+          } else {
+            replaceAndMove(
+              node.start,
+              node.end,
+              input.length,
+              `${effects.join('\n')}\n${originalExport}`,
+            )
+          }
         }
       }
     } else if (node.type === 'ExportAllDeclaration') {
@@ -141,31 +188,57 @@ export function transformModuleExportEffect(
             node.declaration.type === 'FunctionDeclaration' ? true : false,
         }
       } else if (node.declaration.type === 'Identifier') {
-        binding = node.declaration.name
-        meta = { defaultExportIdentifierName: binding }
+        binding = '$$effect_default'
+        meta = { defaultExportIdentifierName: node.declaration.name }
       } else {
         binding = '$$effect_default'
         meta = { isFunction: getIsFunction(node.declaration) }
       }
       if (!filter('default', meta)) continue
       validateNonAsyncFunction(options, node.declaration)
+      const effect = generate({ binding, exportName: 'default', meta })
 
-      if (
-        node.declaration.type !== 'Identifier' &&
-        !(
-          (node.declaration.type === 'FunctionDeclaration' ||
-            node.declaration.type === 'ClassDeclaration') &&
-          node.declaration.id
+      if (node.declaration.type === 'Identifier') {
+        const exportTokenEnd = node.start + 'export'.length
+        output.update(
+          exportTokenEnd,
+          node.end,
+          `const ${binding} = ${node.declaration.name};`,
         )
+        replaceAndMove(
+          node.start,
+          exportTokenEnd,
+          input.length,
+          `${effect}\nexport default ${binding};`,
+        )
+      } else if (
+        (node.declaration.type === 'FunctionDeclaration' ||
+          node.declaration.type === 'ClassDeclaration') &&
+        node.declaration.id
       ) {
-        output.update(node.start, node.declaration.start, `const ${binding} = `)
-        output.appendLeft(node.end, `\nexport default ${binding};`)
+        replaceAndMove(
+          node.start,
+          node.declaration.start,
+          input.length,
+          `${effect}\nexport default ${binding};`,
+        )
+      } else {
+        const exportTokenEnd = node.start + 'export'.length
+        output.update(
+          exportTokenEnd,
+          node.declaration.start,
+          `const ${binding} = `,
+        )
+        replaceAndMove(
+          node.start,
+          exportTokenEnd,
+          input.length,
+          `${effect}\nexport default ${binding};`,
+        )
       }
-      generate({ binding, exportName: 'default', meta })
     }
   }
 
-  if (effects.length > 0) output.append(`\n${effects.join('\n')}\n`)
   return {
     output,
     references,

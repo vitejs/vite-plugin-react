@@ -49,18 +49,16 @@ const serverReferenceCases: {
     route: '/defaults',
     references: [
       {
-        // Currently resolves to the end of the declaration.
         name: 'default-named-function',
-        rolldown: '/src/features/defaults/named.ts:4:0',
+        rolldown: '/src/features/defaults/named.ts:2:0',
       },
       {
-        // Currently resolves to the end of the declaration.
         name: 'default-anonymous-function',
-        rolldown: '/src/features/defaults/anonymous.ts:4:0',
+        rolldown: '/src/features/defaults/anonymous.ts:2:0',
       },
       {
         name: 'default-identifier',
-        rolldown: '/src/features/defaults/identifier.ts:6:15',
+        rolldown: '/src/features/defaults/identifier.ts:6:0',
       },
     ],
   },
@@ -68,20 +66,17 @@ const serverReferenceCases: {
     route: '/specifiers',
     references: [
       {
-        // Currently resolves to the end of the local declaration.
         name: 'local-alias',
-        rolldown: '/src/features/specifiers/local-alias.ts:4:0',
+        rolldown: '/src/features/specifiers/local-alias.ts:6:0',
       },
       {
-        // Rolldown resolves to the directive while Rollup has no mapping.
         name: 're-export',
-        rolldown: '/src/features/specifiers/reexport.ts:0:0',
+        rolldown: '/src/features/specifiers/reexport.ts:2:0',
         rollup: null,
       },
       {
-        // Rolldown resolves to the directive while Rollup has no mapping.
         name: 'export-all',
-        rolldown: '/src/features/specifiers/export-all.ts:0:0',
+        rolldown: '/src/features/specifiers/export-all.ts:2:0',
         rollup: null,
       },
     ],

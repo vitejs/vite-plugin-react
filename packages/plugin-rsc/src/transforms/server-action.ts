@@ -1,16 +1,17 @@
 import type MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { transformHoistInlineDirective } from './hoist'
-import { transformModuleExport } from './module-export'
+import { transformModuleExportEffect } from './module-export-effect'
 import { hasDirective } from './utils'
 
 // TODO: Preserve the `runtime` call's original Server Function position for
-// every module export and inline directive shape.
+// every inline directive shape.
 // https://github.com/vitejs/vite-plugin-react/issues/1361
 export function transformServerActionServer(
   input: string,
   ast: ESTree.Program,
   options: {
+    /** Must register the supplied function operationally for module directives. */
     runtime: (value: string, name: string) => string
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
@@ -29,16 +30,10 @@ export function transformServerActionServer(
     } {
   // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (hasDirective(ast.body, 'use server')) {
-    const result = transformModuleExport(input, ast, {
+    const result = transformModuleExportEffect(input, ast, {
       rejectNonAsyncFunction: options.rejectNonAsyncFunction,
-      generate: ({ implementation, binding, exportName }) => {
-        const declaration =
-          `const ${binding} = /* #__PURE__ */ ` +
-          `${options.runtime(implementation, exportName)};`
-        return binding === exportName
-          ? `export ${declaration}`
-          : `${declaration}\nexport { ${binding} as ${exportName} };`
-      },
+      runtime: ({ binding, exportName }) =>
+        options.runtime(binding, exportName),
     })
     return { ...result, exportNames: result.referenceNames }
   }
