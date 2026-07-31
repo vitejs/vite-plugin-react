@@ -1,0 +1,14 @@
+/*
+Source map visualization:
+
+https://evanw.github.io/source-map-visualization/#MjEwACd1c2Ugc2VydmVyJwoKY29uc3QgJCRkZWZhdWx0JCRpbXBsID0gYXN5bmMgZnVuY3Rpb24gKCkgewogIHJldHVybiAnZGVmYXVsdCBhbm9ueW1vdXMgZnVuY3Rpb24gY2FsbGVkJwp9CmNvbnN0ICQkZGVmYXVsdCA9IHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKCQkZGVmYXVsdCQkaW1wbCwgImRlZmF1bHQiKTsKZXhwb3J0IHsgJCRkZWZhdWx0IGFzIGRlZmF1bHQgfTsKCjMyMwB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgZGVmYXVsdCBhc3luYyBmdW5jdGlvbiAoKSB7XG4gIHJldHVybiAnZGVmYXVsdCBhbm9ueW1vdXMgZnVuY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRVgsd0JBQWUsS0FBSyxDQUFDLFFBQVEsQ0FBQyxDQUFDLENBQUMsQ0FBQztBQUNqQyxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsT0FBTyxDQUFDLFNBQVMsQ0FBQyxRQUFRLENBQUMsTUFBTTtBQUMzQzs7OzsifQ==
+*/
+
+'use server'
+
+const $$default$$impl = async function () {
+  return 'default anonymous function called'
+}
+const $$default = registerServerReference($$default$$impl, "default");
+export { $$default as default };
+
