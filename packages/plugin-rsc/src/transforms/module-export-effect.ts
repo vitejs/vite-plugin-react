@@ -35,8 +35,12 @@ export type TransformModuleExportEffectOptions = {
 }
 
 /**
- * Preserves selected source bindings and emits one mapped module effect for each
- * exported value. This models Next.js-style module Server Action lowering.
+ * Preserves source bindings and emits registration effects at module end.
+ *
+ * The start of each generated runtime expression remains mapped to its original
+ * Server Function export site. React captures the `registerServerReference`
+ * caller as the reference source location, so unmapped generated code can fall
+ * back to an adjacent location. Re-exports map to their export statement.
  */
 export function transformModuleExportEffect(
   input: string,
@@ -60,6 +64,8 @@ export function transformModuleExportEffect(
     return `${options.runtime(context)};`
   }
 
+  // Rewrite and move an existing source range so the generated runtime
+  // expression retains that range's original mapping at module end.
   function replaceAndMove(
     start: number,
     end: number,

@@ -16,6 +16,9 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
+  // Generated runtime expressions should map to the original Server Function
+  // export site, or to the export statement for re-exports. React uses the
+  // `registerServerReference` caller as the reference's source location.
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
     test(`module-export/${path.basename(file)}`, async () => {
       const input = ((await load()) as any).default as string
