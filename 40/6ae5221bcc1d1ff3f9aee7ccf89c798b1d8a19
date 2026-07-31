@@ -1,0 +1,33 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.js
+  s_f3b2680fb8b078::t_b0585ab327f178 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.js
+  s_f3b2680fb8b078::t_79ff37937fdb1a 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.js
+  s_f3b2680fb8b078::t_d94591cee9e5c9 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.js
+  s_f3b2680fb8b078::t_ed5f5af84d7aa9 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.js
+  s_f3b2680fb8b078::t_7360bcb3132adf 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.js
+  s_f3b2680fb8b078::t_16a517d8e83072 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.js
+  s_f3b2680fb8b078::t_e2026e259831d3 1-2,4-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.js
+  s_f3b2680fb8b078::t_4dfb36146ed075 1-2,4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "406ae5221bcc1d1ff3f9aee7ccf89c798b1d8a19",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
