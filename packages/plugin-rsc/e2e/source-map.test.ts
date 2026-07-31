@@ -189,6 +189,30 @@ test.describe('source map', () => {
       }
     })
   }
+
+  test('preserves Server Function names in stack traces', async ({ page }) => {
+    await page.goto(f.url('/server-function-name'))
+    await waitForHydration(page)
+
+    const cases = [
+      {
+        referenceName: 'module-function-name',
+        functionName: 'moduleFunctionName',
+      },
+      {
+        referenceName: 'inline-function-name',
+        functionName: 'inlineFunctionName',
+      },
+    ]
+
+    for (const item of cases) {
+      const button = page.getByRole('button', {
+        name: new RegExp(`^${item.referenceName}:`),
+      })
+      await button.click()
+      await expect(button).toContainText(`at ${item.functionName} (`)
+    }
+  })
 })
 
 async function createFunctionSourceMapResolver(page: Page, baseURL: string) {

@@ -8,6 +8,7 @@ import { normalizePath, type Plugin, type Rollup } from 'vite'
 const routes = {
   '/a': ['./src/app/root.tsx', './src/app/a/page.tsx'],
   '/b': ['./src/app/root.tsx', './src/app/b/page.tsx'],
+  '/c': ['./src/app/root.tsx', './src/app/c/page.tsx'],
 }
 
 const ROUTE_ACTION_MANIFEST_ID = 'virtual:route-action-manifest'
