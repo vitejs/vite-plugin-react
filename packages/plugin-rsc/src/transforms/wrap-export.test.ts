@@ -1,6 +1,5 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
-import { debugSourceMap } from './test-utils'
 import {
   type TransformWrapExportOptions,
   transformWrapExport,
@@ -17,9 +16,6 @@ async function testTransform(
     ignoreExportAllDeclaration: true,
     ...options,
   })
-  if (process.env['DEBUG_SOURCEMAP']) {
-    await debugSourceMap(output)
-  }
   return output.hasChanged() && output.toString()
 }
 

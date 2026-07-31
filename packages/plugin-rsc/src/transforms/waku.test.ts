@@ -2,7 +2,6 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformDirectiveProxyExport } from './proxy-export'
 import { transformServerActionServer } from './server-action'
-import { debugSourceMap } from './test-utils'
 
 // copied from
 // https://github.com/wakujs/waku/blob/55cc5fb3c74b1cd9fa5dac5b20b8626c4d5043ff/packages/waku/tests/vite-plugin-rsc-transform-internals.test.ts
@@ -21,10 +20,6 @@ async function testDirectiveTransform(input: string, directive: string) {
     return
   }
 
-  if (process.env['DEBUG_SOURCEMAP']) {
-    await debugSourceMap(result.output)
-  }
-
   return result.output.toString()
 }
 
@@ -38,10 +33,6 @@ describe('internal transform function for server environment', () => {
 
     if (!('output' in result) || !result.output.hasChanged()) {
       return
-    }
-
-    if (process.env['DEBUG_SOURCEMAP']) {
-      await debugSourceMap(result.output)
     }
 
     return result.output.toString()
