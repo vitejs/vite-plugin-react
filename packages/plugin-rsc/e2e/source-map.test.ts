@@ -72,12 +72,10 @@ const serverReferenceCases: {
       {
         name: 're-export',
         rolldown: '/src/features/specifiers/reexport.ts:2:0',
-        rollup: null,
       },
       {
         name: 'export-all',
         rolldown: '/src/features/specifiers/export-all.ts:2:0',
-        rollup: null,
       },
     ],
   },
