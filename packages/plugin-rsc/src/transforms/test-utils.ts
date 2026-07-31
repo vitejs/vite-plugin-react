@@ -13,7 +13,11 @@ ${visualization}
 ${code}`
 }
 
-/** Formats decoded mapping ranges as compact original-to-generated text pairs. */
+/**
+ * Formats decoded mapping ranges as compact original-to-generated text pairs.
+ * This test-local formatter is inspired by Oxc's source map visualizer output:
+ * https://github.com/oxc-project/oxc-sourcemap/blob/main/src/sourcemap_visualizer.rs
+ */
 export function formatDecodedSourceMap(output: MagicString): string {
   const generatedLines = output.toString().split('\n')
   const map = output.generateDecodedMap({
