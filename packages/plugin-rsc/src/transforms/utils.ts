@@ -16,6 +16,17 @@ export function hasDirective(
   )
 }
 
+export function getDirectivePrologueEnd(ast: Program): number {
+  for (const statement of ast.body) {
+    const isDirective =
+      statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      typeof statement.expression.value === 'string'
+    if (!isDirective) return statement.start
+  }
+  return 0
+}
+
 // Copied from periscopic `extract_names` / `extract_identifiers`
 export function extractNames(param: Pattern): string[] {
   return extractIdentifiers(param).map((n) => n.name)

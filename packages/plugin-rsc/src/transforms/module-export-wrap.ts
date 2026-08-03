@@ -7,7 +7,7 @@ import {
   type ModuleExportFunction,
   type ModuleExportMeta,
 } from './module-export-scan'
-import { validateNonAsyncFunction } from './utils'
+import { getDirectivePrologueEnd, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportWrapContext = {
   implementation: string
@@ -83,12 +83,18 @@ export function transformModuleExportWrap(
   options: TransformModuleExportWrapOptions,
 ): TransformModuleExportWrapResult {
   const ast = viteAst as unknown as Program
-  if (!input.endsWith('\n')) input += '\n'
+
+  // Keep a boundary outside the parsed AST so moving an export at EOF does not
+  // also move code inserted at the export's end.
+  if (!input.endsWith('\n')) {
+    input += '\n'
+  }
+
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportWrapContext[] = []
   const fallbackCode: string[] = []
-  const hoistPosition = getHoistPosition(ast)
+  const hoistPosition = getDirectivePrologueEnd(ast)
 
   function createContext(
     implementation: string,
@@ -416,18 +422,4 @@ export function transformModuleExportWrap(
     references,
     referenceNames: references.map((reference) => reference.exportName),
   }
-}
-
-function getHoistPosition(ast: Program): number {
-  // 'use server'
-  // const value = 1
-  // ^ (insert hoisted implementations here)
-  for (const statement of ast.body) {
-    const isDirective =
-      statement.type === 'ExpressionStatement' &&
-      statement.expression.type === 'Literal' &&
-      typeof statement.expression.value === 'string'
-    if (!isDirective) return statement.start
-  }
-  return 0
 }
