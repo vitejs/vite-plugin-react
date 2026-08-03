@@ -10,6 +10,7 @@ type ReferenceCase = {
   name: string
   rolldown: string
   rollup?: string | null
+  result?: string
 }
 
 // TODO: Add separate CDP stack coverage for Server Action and Server Component
@@ -74,10 +75,13 @@ const serverReferenceCases: {
       {
         name: 're-export',
         rolldown: '/src/features/specifiers/reexport.ts:0:0',
+        rollup: null,
+        result: 're-export called',
       },
       {
         name: 'export-all',
         rolldown: '/src/features/specifiers/export-all.ts:0:0',
+        rollup: null,
       },
     ],
   },
@@ -181,6 +185,14 @@ test.describe('source map', () => {
             ? reference.rolldown
             : reference.rollup
         expect.soft(actual).toBe(expected)
+
+        if (reference.result) {
+          const button = page.getByRole('button', {
+            name: new RegExp(`^${reference.name}:`),
+          })
+          await button.click()
+          await expect(button).toContainText(reference.result)
+        }
       }
     })
   }
