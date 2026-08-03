@@ -14,11 +14,33 @@ import type { ESTree } from 'vite'
 import { extractNames } from './utils'
 
 export type ModuleExportMeta = {
+  /**
+   * The local declaration name when statically available.
+   *
+   * - `"Page"` for `export function Page() {}`
+   * - `"Page"` for `export const Page = () => {}`
+   * - `undefined` for `export default () => {}`
+   * - `undefined` for `export { Page }`
+   */
   localName?: string
+  /** The source declaration kind when statically available. */
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
-  /** Whether the exported value is statically known to be a function. */
+  /**
+   * Whether the exported value is statically known to be a function.
+   *
+   * - `true` for `export const Page = () => {}`
+   * - `false` for `export const value = 1`
+   * - `undefined` for `export const value = getValue()`
+   * - `undefined` for `export default Page`
+   */
   isFunction?: boolean
-  /** Local identifier referenced by `export default Identifier`. */
+  /**
+   * The local identifier referenced by a default export.
+   *
+   * - `"Page"` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default function Page() {}`
+   * - `undefined` for `export default () => {}`
+   */
   defaultExportIdentifierName?: string
 }
 
