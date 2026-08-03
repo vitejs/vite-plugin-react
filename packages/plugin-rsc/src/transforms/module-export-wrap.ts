@@ -124,9 +124,9 @@ export function transformModuleExportWrap(
   ): TransformModuleExportWrapContext {
     const context = {
       implementation,
+      originalName,
       exportName,
       meta,
-      ...(originalName && { originalName }),
     }
     references.push(context)
     return context

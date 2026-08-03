@@ -25,7 +25,7 @@ function formatContext({
 }: TransformModuleExportWrapContext) {
   return {
     implementation,
-    ...(originalName && { originalName }),
+    originalName,
     exportName,
   }
 }
@@ -58,9 +58,14 @@ export default async function Page() {}
         originalName: 'loader',
         exportName: 'loader',
       },
-      { implementation: 'local', exportName: 'renamed' },
+      {
+        implementation: 'local',
+        originalName: undefined,
+        exportName: 'renamed',
+      },
       {
         implementation: '$$module_3_implementation_forwarded',
+        originalName: undefined,
         exportName: 'forwarded',
       },
       {
