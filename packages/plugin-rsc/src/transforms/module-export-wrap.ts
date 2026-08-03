@@ -59,8 +59,6 @@ export type TransformModuleExportWrapResult = {
  * }
  *
  * export const someValue = createSomeValue()
- *
- * consume(someFn, someValue)
  * ```
  *
  * becomes:
@@ -71,6 +69,7 @@ export type TransformModuleExportWrapResult = {
  * const $$module_0_implementation_someFn = async function $$module_0_implementation_someFn(value) {
  *   return value
  * }
+ * // References within this module resolve to the wrapper.
  * export const someFn = __WRAP__(
  *   Object.defineProperty($$module_0_implementation_someFn, 'name', {
  *     value: 'someFn',
@@ -78,10 +77,8 @@ export type TransformModuleExportWrapResult = {
  *   'someFn',
  * )
  *
+ * // References within this module resolve to the original value.
  * const someValue = createSomeValue()
- *
- * consume(someFn, someValue)
- *
  * const $$module_1_binding_someValue = __WRAP__(someValue, 'someValue')
  * export { $$module_1_binding_someValue as someValue }
  * ```
