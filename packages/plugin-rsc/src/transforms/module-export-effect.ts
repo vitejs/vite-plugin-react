@@ -78,7 +78,9 @@ export function transformModuleExportEffect(
     code: string,
   ): void {
     output.update(start, end, `\n${code}\n`)
-    if (end !== destination) output.move(start, end, destination)
+    if (end !== destination) {
+      output.move(start, end, destination)
+    }
   }
 
   for (const node of ast.body) {
