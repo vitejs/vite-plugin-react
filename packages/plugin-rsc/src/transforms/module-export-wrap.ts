@@ -37,9 +37,48 @@ export type TransformModuleExportWrapOptions = {
 }
 
 /**
- * Produces canonical wrapper exports. Directly exported functions are hoisted
- * and replaced at their original expression sites. Other selected exports keep
- * their source values and receive canonical bindings at the export boundary.
+ * Replaces selected module exports with canonical runtime wrapper bindings.
+ *
+ * Conceptually:
+ *
+ * ```js
+ * 'use server'
+ * export async function action(value) {
+ *   return value
+ * }
+ * export const loader = createLoader()
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * 'use server'
+ * const $$module_0_implementation_action = async function $$module_0_implementation_action(value) {
+ *   return value
+ * }
+ * Object.defineProperty($$module_0_implementation_action, 'name', {
+ *   value: 'action',
+ * })
+ * export const action = __WRAP__($$module_0_implementation_action, 'action')
+ * const loader = createLoader()
+ *
+ * const $$module_1_binding_loader = __WRAP__(loader, 'loader')
+ * export { $$module_1_binding_loader as loader }
+ * ```
+ *
+ * Here, `__WRAP__(...)` represents the expression returned by the `runtime`
+ * callback for each `{ implementation, binding, exportName, meta }` context.
+ * `references` returns those contexts in wrapper creation order, while
+ * `referenceNames` returns only their export names.
+ *
+ * Direct function implementations move after leading directives and before
+ * their wrappers. This avoids initialization-order issues and makes recursive
+ * references resolve through the exported wrapper. Other values retain their
+ * source initialization and receive a separate canonical binding at the export
+ * boundary.
+ *
+ * Generated `$$module_*` names are not deconflicted from user bindings,
+ * consistent with the other transform helpers.
  */
 export function transformModuleExportWrap(
   source: string,
@@ -92,6 +131,10 @@ export function transformModuleExportWrap(
     exportName: string,
     meta: ModuleExportMeta,
   ): void {
+    // const value = init()
+    // ⬇️ (append after source initialization)
+    // const $$module_0_binding_value = __WRAP__(value, 'value')
+    // export { $$module_0_binding_value as value }
     const binding = createName('binding', exportName)
     const context = createContext(implementation, binding, exportName, meta)
     fallbackCode.push(
@@ -108,6 +151,10 @@ export function transformModuleExportWrap(
   ): string {
     validateNonAsyncFunction(options, node)
     const implementation = createName('implementation', sourceName)
+    // export async function action() {}
+    //              ^^^^^^
+    // ⬇️ (rename before moving)
+    // const $$module_0_implementation_action = async function $$module_0_implementation_action() {}
     const originalPrefix =
       node.type === 'FunctionDeclaration' && node.id
         ? input.slice(node.start, node.id.start) +
@@ -128,6 +175,12 @@ export function transformModuleExportWrap(
       node.end,
       `;\n/* #__PURE__ */ Object.defineProperty(${implementation}, "name", { value: ${JSON.stringify(originalName)} });\n`,
     )
+    // 'use server'
+    // export async function action() {}
+    // ⬇️ (move after directives and before the wrapper)
+    // 'use server'
+    // const $$module_0_implementation_action = async function ...
+    // export const action = __WRAP__($$module_0_implementation_action, 'action')
     output.move(node.start, node.end, hoistPosition)
 
     const context = createContext(implementation, sourceName, exportName, meta)
@@ -136,6 +189,16 @@ export function transformModuleExportWrap(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
+      // export function f() {}
+      // ⬇️ (hoist implementation and replace declaration)
+      // const $$module_0_implementation_f = function ...
+      // export const f = __WRAP__($$module_0_implementation_f, 'f')
+      //
+      // export class C {}
+      // ⬇️ (keep initialization in place and append fallback)
+      // class C {}
+      // const $$module_0_binding_C = __WRAP__(C, 'C')
+      // export { $$module_0_binding_C as C }
       const [entry] = group.exports
       const { localName: name } = entry
       const meta = entry.meta
@@ -158,6 +221,13 @@ export function transformModuleExportWrap(
         emitFallback(name, entry.exportName, meta)
       }
     } else if (group.type === 'variable-declaration') {
+      // export const action = async () => {}, value = init()
+      // ⬇️
+      // const $$module_0_implementation_action = async () => {}
+      // const action = __WRAP__($$module_0_implementation_action, 'action'), value = init()
+      // const $$module_1_binding_value = __WRAP__(value, 'value')
+      // export { $$module_1_binding_value as value }
+      // export { action }
       const fallbackNames = new Set<string>()
       const exportNames = group.declarators.flatMap((item) =>
         item.exports.map((entry) => entry.exportName),
@@ -197,6 +267,11 @@ export function transformModuleExportWrap(
       }
 
       if (fallbackNames.size > 0) {
+        // export const selected = init(), skipped = init()
+        // ^^^^^^
+        // ⬇️ (remove `export` and restore the unwrapped export separately)
+        // const selected = init(), skipped = init()
+        // export { skipped }
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
           if (!fallbackNames.has(name))
@@ -204,6 +279,11 @@ export function transformModuleExportWrap(
         }
       }
     } else if (group.type === 'specifiers') {
+      // export { selected as action, skipped }
+      // ⬇️
+      // const $$module_0_binding_action = __WRAP__(selected, 'action')
+      // export { $$module_0_binding_action as action }
+      // export { skipped }
       const preserved: string[] = []
       let selected = false
       for (const entry of group.exports) {
@@ -227,6 +307,11 @@ export function transformModuleExportWrap(
 
         let implementation = localName
         if (group.node.source) {
+          // export { remote as action } from './dep' with { type: 'json' }
+          // ⬇️ (preserve the source tail, including attributes)
+          // import { remote as $$module_0_implementation_action } from './dep' with { type: 'json' }
+          // const $$module_0_binding_action = __WRAP__($$module_0_implementation_action, 'action')
+          // export { $$module_0_binding_action as action }
           implementation = createName('implementation', exportName)
           const sourceTail = input
             .slice(group.node.source.end, group.node.end)
@@ -248,6 +333,9 @@ export function transformModuleExportWrap(
         }
       }
     } else if (group.type === 'export-all') {
+      // export * from './dep'
+      // ⬇️ (unless `exportAll: 'preserve'`)
+      // throw new Error('unsupported ExportAllDeclaration')
       if (options.exportAll !== 'preserve') {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
           pos: group.node.start,
@@ -258,6 +346,16 @@ export function transformModuleExportWrap(
       let meta: ModuleExportMeta
 
       if (isFunctionNode(declaration)) {
+        // export default async function Page() {}
+        // ⬇️
+        // const $$module_0_implementation_Page = async function ...
+        // const Page = __WRAP__($$module_0_implementation_Page, 'default')
+        // export default Page
+        //
+        // export default async () => {}
+        // ⬇️
+        // const $$module_0_implementation_default = async () => {}
+        // export default __WRAP__($$module_0_implementation_default, 'default')
         const sourceName =
           declaration.type !== 'ArrowFunctionExpression' && declaration.id
             ? declaration.id.name
@@ -281,11 +379,24 @@ export function transformModuleExportWrap(
       } else {
         let implementation: string
         if (declaration.type === 'ClassDeclaration' && declaration.id) {
+          // export default class Page {}
+          // ^^^^^^^^^^^^^^
+          // ⬇️ (remove `export default` and append fallback)
+          // class Page {}
+          // const $$module_0_binding_default = __WRAP__(Page, 'default')
+          // export { $$module_0_binding_default as default }
           implementation = declaration.id.name
           meta = group.meta
           if (!filter('default', meta)) continue
           output.remove(group.node.start, declaration.start)
         } else {
+          // export default current
+          // current = next
+          // ⬇️ (snapshot at the original export site)
+          // const $$module_0_implementation_default = current
+          // current = next
+          // const $$module_0_binding_default = __WRAP__($$module_0_implementation_default, 'default')
+          // export { $$module_0_binding_default as default }
           implementation = createName('implementation', 'default')
           meta = group.meta
           if (!filter('default', meta)) continue
@@ -306,6 +417,10 @@ export function transformModuleExportWrap(
   }
 
   if (fallbackCode.length > 0) {
+    // const value = init()
+    // ⬇️ (append)
+    // const $$module_0_binding_value = __WRAP__(value, 'value')
+    // export { $$module_0_binding_value as value }
     output.append(`\n${fallbackCode.join('\n')}\n`)
   }
 
@@ -327,6 +442,9 @@ function isFunctionNode(
 }
 
 function getHoistPosition(ast: Program): number {
+  // 'use server'
+  // const value = 1
+  // ^ (insert hoisted implementations here)
   for (const statement of ast.body) {
     const isDirective =
       statement.type === 'ExpressionStatement' &&
