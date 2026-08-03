@@ -33,7 +33,10 @@ describe('source map fixtures', () => {
       })
       const moduleWrapResult = transformModuleExportWrap(input, ast, {
         generate: ({ implementation, originalName, exportName }) =>
-          `registerServerReference(${restoreFunctionName(implementation, originalName)}, ${JSON.stringify(exportName)})`,
+          restoreFunctionName(
+            `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
+            originalName,
+          ),
       })
       await expect(
         parseAstAsync(moduleWrapResult.output.toString()),

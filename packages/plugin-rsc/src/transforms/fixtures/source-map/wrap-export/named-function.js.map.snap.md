@@ -25,10 +25,9 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:7) "async function namedFunction() {\n" --> (2:0) "\n"
-(2:7) "async function namedFunction() " --> (3:0) "const $$module_0_implementation_namedFunction = async function $$module_0_implementation_namedFunction() "
-(2:38) "{\n" --> (3:105) "{\n"
-(3:0) "  return 'named function called'\n" --> (4:0) "  return 'named function called'\n"
-(4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "export const namedFunction = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_namedFunction, \"name\", { value: \"namedFunction\" }), \"namedFunction\");\n"
+(2:7) "async function namedFunction() {\n" --> (2:0) "async function namedFunction() {\n"
+(3:0) "  return 'named function called'\n" --> (3:0) "  return 'named function called'\n"
+(4:0) "}\n" --> (4:0) "}\n"
+[unmapped] --> (6:0) "const $$module_0_binding_namedFunction = /* #__PURE__ */ Object.defineProperty(registerServerReference(namedFunction, \"namedFunction\"), \"name\", { value: \"namedFunction\" });\n"
+[unmapped] --> (7:0) "export { $$module_0_binding_namedFunction as namedFunction };\n"
 ```

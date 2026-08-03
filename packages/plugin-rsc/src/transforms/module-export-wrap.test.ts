@@ -13,7 +13,10 @@ async function transform(
   const ast = await parseAstAsync(input)
   return transformModuleExportWrap(input, ast, {
     generate: ({ implementation, originalName, exportName }) =>
-      `wrap(${restoreFunctionName(implementation, originalName)}, ${JSON.stringify(exportName)})`,
+      restoreFunctionName(
+        `wrap(${implementation}, ${JSON.stringify(exportName)})`,
+        originalName,
+      ),
     ...options,
   })
 }
@@ -49,12 +52,12 @@ export default async function Page() {}
 
     expect(result.references.map(formatContext)).toEqual([
       {
-        implementation: '$$module_0_implementation_action',
+        implementation: 'action',
         originalName: 'action',
         exportName: 'action',
       },
       {
-        implementation: '$$module_1_implementation_loader',
+        implementation: 'loader',
         originalName: 'loader',
         exportName: 'loader',
       },
@@ -69,7 +72,7 @@ export default async function Page() {}
         exportName: 'forwarded',
       },
       {
-        implementation: '$$module_4_implementation_Page',
+        implementation: 'Page',
         originalName: 'Page',
         exportName: 'default',
       },
@@ -91,16 +94,18 @@ export default async function Page() {}
 
     expect(result.references.map(formatContext)).toEqual([
       {
-        implementation: '$$module_0_implementation_selected',
+        implementation: 'selected',
         originalName: 'selected',
         exportName: 'selected',
       },
     ])
     expect(result.referenceNames).toEqual(['selected'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
-      "
-      const $$module_0_implementation_selected = async () => {};
-      export const selected = /* #__PURE__ */ wrap(Object.defineProperty($$module_0_implementation_selected, "name", { value: "selected" }), "selected"), skipped = async () => {}
+      "const selected = async () => {}, skipped = async () => {}
+
+      const $$module_0_binding_selected = /* #__PURE__ */ Object.defineProperty(wrap(selected, "selected"), "name", { value: "selected" });
+      export { $$module_0_binding_selected as selected };
+      export { skipped };
       "
     `)
 
@@ -123,6 +128,20 @@ export default async function Page() {}
     })
     expect(filtered.output.hasChanged()).toBe(false)
     expect(filtered.references).toEqual([])
+  })
+
+  test('preserves comments around default export keywords', async () => {
+    const result = await transform(
+      `export /* before */ default /* after */ async () => {}`,
+    )
+
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "/* before */ const $$module_0_implementation_default = /* after */ async () => {}
+
+      const $$module_0_binding_default = /* #__PURE__ */ Object.defineProperty(wrap($$module_0_implementation_default, \"default\"), \"name\", { value: \"default\" });
+      export { $$module_0_binding_default as default };
+      "
+    `)
   })
 
   test('controls export-all preservation', async () => {

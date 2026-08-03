@@ -27,13 +27,10 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:21) "async () => 'first action called',\n" --> (2:0) "\n"
-(2:21) "async () => " --> (3:0) "const $$module_0_implementation_first = async () => "
-(2:33) "'first action called',\n" --> (3:52) "'first action called';\n"
-(2:7) "const first = async () => 'first action called'" --> (4:0) "const first = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_first, \"name\", { value: \"first\" }), \"first\")"
-(2:54) ",\n" --> (4:146) ",\n"
-(3:0) "  second = first\n" --> (5:0) "  second = first\n"
+(2:7) "const first = async () => 'first action called',\n" --> (2:0) "const first = async () => 'first action called',\n"
+(3:0) "  second = first\n" --> (3:0) "  second = first\n"
+[unmapped] --> (5:0) "const $$module_0_binding_first = /* #__PURE__ */ Object.defineProperty(registerServerReference(first, \"first\"), \"name\", { value: \"first\" });\n"
+[unmapped] --> (6:0) "export { $$module_0_binding_first as first };\n"
 [unmapped] --> (7:0) "const $$module_1_binding_second = /* #__PURE__ */ registerServerReference(second, \"second\");\n"
 [unmapped] --> (8:0) "export { $$module_1_binding_second as second };\n"
-[unmapped] --> (9:0) "export { first };\n"
 ```

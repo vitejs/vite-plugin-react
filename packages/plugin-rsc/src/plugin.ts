@@ -2760,9 +2760,9 @@ export async function transformRscCssExport(options: {
   }
 
   const result = transformModuleExportWrap(options.code, options.ast, {
-    generate: ({ implementation, exportName, meta }) =>
+    generate: ({ implementation, originalName, exportName, meta }) =>
       `__vite_rsc_wrap_css__(${implementation}, ${JSON.stringify(
-        meta.defaultExportIdentifierName ?? exportName,
+        originalName ?? meta.defaultExportIdentifierName ?? exportName,
       )})`,
     filter: options.filter,
     exportAll: 'preserve',

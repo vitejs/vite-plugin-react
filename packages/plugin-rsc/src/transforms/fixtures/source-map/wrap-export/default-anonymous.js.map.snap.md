@@ -28,10 +28,10 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:15) "async function () {\n" --> (2:0) "\n"
-(2:15) "async function () " --> (3:0) "const $$module_0_implementation_default = async function () "
-(2:33) "{\n" --> (3:60) "{\n"
-(3:0) "  return 'default anonymous function called'\n" --> (4:0) "  return 'default anonymous function called'\n"
-(4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "export default /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_default, \"name\", { value: \"default\" }), \"default\");\n"
+(2:0) "export default " --> (2:0) "const $$module_0_implementation_default = "
+(2:15) "async function () {\n" --> (2:42) "async function () {\n"
+(3:0) "  return 'default anonymous function called'\n" --> (3:0) "  return 'default anonymous function called'\n"
+(4:0) "}\n" --> (4:0) "}\n"
+[unmapped] --> (6:0) "const $$module_0_binding_default = /* #__PURE__ */ Object.defineProperty(registerServerReference($$module_0_implementation_default, \"default\"), \"name\", { value: \"default\" });\n"
+[unmapped] --> (7:0) "export { $$module_0_binding_default as default };\n"
 ```

@@ -34,14 +34,12 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:29) "async () => 'arrow function called'\n" --> (2:0) "\n"
-(2:29) "async () => " --> (3:0) "const $$module_0_implementation_arrowFunction = async () => "
-(2:41) "'arrow function called'\n" --> (3:60) "'arrow function called';\n"
-(4:34) "async function () {\n" --> (4:0) "\n"
-(4:34) "async function () " --> (5:0) "const $$module_1_implementation_functionExpression = async function () "
-(4:52) "{\n" --> (5:71) "{\n"
-(5:0) "  return 'function expression called'\n" --> (6:0) "  return 'function expression called'\n"
-(6:0) "}\n" --> (7:0) "};\n"
-(2:0) "export const arrowFunction = async () => 'arrow function called'\n" --> (8:0) "export const arrowFunction = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_arrowFunction, \"name\", { value: \"arrowFunction\" }), \"arrowFunction\")\n"
-(4:0) "export const functionExpression = async function () {\n" --> (10:0) "export const functionExpression = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_1_implementation_functionExpression, \"name\", { value: \"functionExpression\" }), \"functionExpression\")\n"
+(2:7) "const arrowFunction = async () => 'arrow function called'\n" --> (2:0) "const arrowFunction = async () => 'arrow function called'\n"
+(4:7) "const functionExpression = async function () {\n" --> (4:0) "const functionExpression = async function () {\n"
+(5:0) "  return 'function expression called'\n" --> (5:0) "  return 'function expression called'\n"
+(6:0) "}\n" --> (6:0) "}\n"
+[unmapped] --> (8:0) "const $$module_0_binding_arrowFunction = /* #__PURE__ */ Object.defineProperty(registerServerReference(arrowFunction, \"arrowFunction\"), \"name\", { value: \"arrowFunction\" });\n"
+[unmapped] --> (9:0) "export { $$module_0_binding_arrowFunction as arrowFunction };\n"
+[unmapped] --> (10:0) "const $$module_1_binding_functionExpression = /* #__PURE__ */ Object.defineProperty(registerServerReference(functionExpression, \"functionExpression\"), \"name\", { value: \"functionExpression\" });\n"
+[unmapped] --> (11:0) "export { $$module_1_binding_functionExpression as functionExpression };\n"
 ```
