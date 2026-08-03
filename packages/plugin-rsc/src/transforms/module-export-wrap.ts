@@ -456,10 +456,8 @@ export function transformModuleExportWrap(
           output.remove(group.node.start, declaration.start)
         } else {
           // export default current
-          // current = next
           // ⬇️ (snapshot at the original export site)
           // const $$module_0_implementation_default = current
-          // current = next
           // const $$module_0_binding_default = __WRAP__($$module_0_implementation_default, 'default')
           // export { $$module_0_binding_default as default }
           implementation = createName('implementation', 'default')
