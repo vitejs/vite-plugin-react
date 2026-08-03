@@ -160,7 +160,7 @@ export default async function() {
 
       const privateFunction = () => 'Secret';
 
-      let log = async (mesg) => {
+      const log = async (mesg) => {
         console.log(mesg);
       };
 
@@ -168,16 +168,18 @@ export default async function() {
         return 'Hello ' + name;
       }
 
-      const $$default = async function() {
+      const $$effect_default = async function() {
         return Date.now();
       }
-      log = /* #__PURE__ */ $runtime(log, "<id>", "log");
+
+      $runtime(log, "<id>", "log");
       export { log };
-      greet = /* #__PURE__ */ $runtime(greet, "<id>", "greet");
+
+      $runtime(greet, "<id>", "greet");
       export { greet };
-      ;
-      const $$wrap_$$default = /* #__PURE__ */ $runtime($$default, "<id>", "default");
-      export { $$wrap_$$default as default };
+
+      $runtime($$effect_default, "<id>", "default");
+      export default $$effect_default;
       "
     `)
   })
@@ -256,12 +258,13 @@ export default async () => null;
         return null;
       }
 
-      const $$default = async () => null;
-      exportedAction = /* #__PURE__ */ $runtime(exportedAction, "<id>", "exportedAction");
+      const $$effect_default = async () => null;
+
+      $runtime(exportedAction, "<id>", "exportedAction");
       export { exportedAction };
-      ;
-      const $$wrap_$$default = /* #__PURE__ */ $runtime($$default, "<id>", "default");
-      export { $$wrap_$$default as default };
+
+      $runtime($$effect_default, "<id>", "default");
+      export default $$effect_default;
       "
     `)
   })

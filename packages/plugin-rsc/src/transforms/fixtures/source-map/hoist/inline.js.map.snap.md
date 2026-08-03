@@ -1,3 +1,6 @@
+## hoist
+
+```txt
 (0:0) "export function InlineDirective() {\n" --> (0:0) "export function InlineDirective() {\n"
 (1:0) "  const captured = 'captured'\n" --> (1:0) "  const captured = 'captured'\n"
 (3:0) "  async function inlineAction() {\n" --> (3:0) "  const inlineAction = /* #__PURE__ */ registerServerReference($$hoist_0_inlineAction, \"$$hoist_0_inlineAction\");\n"
@@ -27,3 +30,4 @@
 (15:0) "    return 'inline function expression called'\n" --> (25:0) "    return 'inline function expression called'\n"
 (16:0) "  })\n" --> (26:0) "  };\n"
 [unmapped] --> (27:0) "/* #__PURE__ */ Object.defineProperty($$hoist_2_anonymous_server_function, \"name\", { value: \"anonymous_server_function\" });\n"
+```

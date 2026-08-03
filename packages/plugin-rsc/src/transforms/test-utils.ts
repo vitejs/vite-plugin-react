@@ -1,16 +1,52 @@
 import type MagicString from 'magic-string'
 
-export function formatSourceMapFixture(output: MagicString): string {
-  const code = output.toString()
-  const map = output.generateMap({ includeContent: true, hires: 'boundary' })
-  const visualization = generateVisualizationLink(code, map.toString())
-  return `/*
-Source map visualization:
+type SourceMapFixtureOutput = {
+  name: string
+  output: MagicString
+  references?: readonly string[]
+}
 
-${visualization}
-*/
+export function formatSourceMapMarkdownFixture(
+  input: string,
+  outputs: readonly SourceMapFixtureOutput[],
+): string {
+  const sections = []
+  sections.push(`\
+## Input
 
-${code}`
+${formatCodeBlock('js', input)}`)
+  for (const { name, output, references } of outputs) {
+    const code = output.toString()
+    const map = output.generateMap({ includeContent: true, hires: 'boundary' })
+    const visualization = generateVisualizationLink(code, map.toString())
+    sections.push(`\
+## ${name}
+
+**Status:** ${output.hasChanged() ? 'transformed' : 'unchanged'}
+
+**References:** ${references?.join(', ') || '(none)'}
+
+[Source map visualization](${visualization})
+
+${formatCodeBlock('js', code)}`)
+  }
+  return sections.join('\n\n') + '\n'
+}
+
+export function formatDecodedSourceMapMarkdown(
+  outputs: readonly SourceMapFixtureOutput[],
+): string {
+  return (
+    outputs
+      .map(
+        ({ name, output }) =>
+          `\
+## ${name}
+
+${formatCodeBlock('txt', formatDecodedSourceMap(output))}`,
+      )
+      .join('\n\n') + '\n'
+  )
 }
 
 /**
@@ -18,7 +54,7 @@ ${code}`
  * This test-local formatter is inspired by Oxc's source map visualizer output:
  * https://github.com/oxc-project/oxc-sourcemap/blob/main/src/sourcemap_visualizer.rs
  */
-export function formatDecodedSourceMap(output: MagicString): string {
+function formatDecodedSourceMap(output: MagicString): string {
   const generatedLines = output.toString().split('\n')
   const map = output.generateDecodedMap({
     includeContent: true,
@@ -123,6 +159,10 @@ function sliceLine(
   const value = lines[line] ?? ''
   const result = value.slice(start, end)
   return end === undefined && line < lines.length - 1 ? result + '\n' : result
+}
+
+function formatCodeBlock(language: string, code: string): string {
+  return `\`\`\`${language}\n${code}${code.endsWith('\n') ? '' : '\n'}\`\`\``
 }
 
 function generateVisualizationLink(code: string, map: string): string {

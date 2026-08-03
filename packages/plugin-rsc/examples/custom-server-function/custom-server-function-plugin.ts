@@ -3,7 +3,7 @@ import {
   hasDirective,
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
-  transformWrapExport,
+  transformModuleExportEffect,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
 
@@ -37,9 +37,10 @@ export function customServerFunctionPlugin(): Plugin {
         const runtime = (value: string, name: string) =>
           `$$CustomReactServer.registerServerReference(${value}, ${JSON.stringify(reference.referenceKey)}, ${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
-          ? transformWrapExport(code, ast, {
-              runtime,
+          ? transformModuleExportEffect(code, ast, {
               rejectNonAsyncFunction: true,
+              generate: ({ binding, exportName }) =>
+                runtime(binding, exportName),
             })
           : transformHoistInlineDirective(code, ast, {
               directive,
@@ -53,7 +54,7 @@ export function customServerFunctionPlugin(): Plugin {
 
         manager.serverReferences.replaceClaim(pluginName, id, {
           ...reference,
-          exportNames: 'names' in result ? result.names : result.exportNames,
+          exportNames: 'names' in result ? result.names : result.referenceNames,
         })
         result.output.prepend(
           `import * as $$CustomReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
