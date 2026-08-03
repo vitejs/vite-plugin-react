@@ -1,6 +1,6 @@
 import { parseAstAsync } from 'vite'
 import { expect, test } from 'vitest'
-import { scanModuleExports } from './module-exports'
+import { scanModuleExports } from './module-export-scan'
 
 test(scanModuleExports, async () => {
   const ast = await parseAstAsync(`

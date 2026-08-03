@@ -2,7 +2,7 @@ import { tinyassert } from '@hiogawa/utils'
 import type { Identifier } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { scanModuleExports, type ModuleExportMeta } from './module-exports'
+import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
 import { validateNonAsyncFunction } from './utils'
 
 // TODO: Metadata, filtering, and returned reference contexts are currently

@@ -9,7 +9,7 @@ import type {
 } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { scanModuleExports, type ModuleExportMeta } from './module-exports'
+import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
 import { validateNonAsyncFunction } from './utils'
 
 type FunctionNode =
