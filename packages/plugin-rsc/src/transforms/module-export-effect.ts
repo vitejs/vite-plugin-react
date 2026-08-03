@@ -7,17 +7,15 @@ import { validateNonAsyncFunction } from './utils'
 // TODO: Metadata, filtering, and returned reference contexts are currently
 // ported only for transformWrapExport compatibility. Remove them if no
 // module-export-effect consumer needs this API surface.
-export type TransformModuleExportEffectMeta = ModuleExportMeta
-
 export type TransformModuleExportEffectFilter = (
   name: string,
-  meta: TransformModuleExportEffectMeta,
+  meta: ModuleExportMeta,
 ) => boolean
 
 export type TransformModuleExportEffectContext = {
   binding: string
   exportName: string
-  meta: TransformModuleExportEffectMeta
+  meta: ModuleExportMeta
 }
 
 export type TransformModuleExportEffectOptions = {
