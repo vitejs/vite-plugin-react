@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/module-export-effect.test.ts
+  s_52a139c58c5774::t_b4ef3627f0d808 64-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d35e378edd72b5e0ed29bae78c2a6e436157d91d",
+  "prompts": {},
+  "sessions": {
+    "s_52a139c58c5774": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03a9bf57affe5A5cIxhEY9DewO",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
