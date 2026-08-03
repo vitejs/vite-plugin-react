@@ -8,8 +8,31 @@ import { extractNames, validateNonAsyncFunction } from './utils'
 // ported only for transformWrapExport compatibility. Remove them if no
 // module-export-effect consumer needs this API surface.
 export type TransformModuleExportEffectMeta = {
+  /**
+   * The local declaration name when statically available.
+   *
+   * - `"Page"` for `export function Page() {}`
+   * - `"Page"` for `export const Page = () => {}`
+   * - `undefined` for `export default () => {}`
+   * - `undefined` for `export { Page }`
+   */
   localName?: string
+  /**
+   * Whether the exported value is statically known to be a function.
+   *
+   * - `true` for `export const Page = () => {}`
+   * - `false` for `export const value = 1`
+   * - `undefined` for `export const value = getValue()`
+   * - `undefined` for `export default Page`
+   */
   isFunction?: boolean
+  /**
+   * The local identifier referenced by a default export.
+   *
+   * - `"Page"` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default function Page() {}`
+   * - `undefined` for `export default () => {}`
+   */
   defaultExportIdentifierName?: string
 }
 

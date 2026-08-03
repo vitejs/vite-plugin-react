@@ -61,6 +61,12 @@ export default async function Page() {}
       { binding: 'selected', exportName: 'selected' },
     ])
     expect(result.referenceNames).toEqual(['selected'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "const selected = async () => {}, skipped = async () => {}
+      register(selected);
+      export { selected, skipped };
+      "
+    `)
 
     const filtered = await transform(input, { filter: () => false })
     expect(filtered.output.hasChanged()).toBe(false)
