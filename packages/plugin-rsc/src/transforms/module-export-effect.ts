@@ -9,6 +9,9 @@ import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { extractNames, validateNonAsyncFunction } from './utils'
 
+// TODO: Metadata, filtering, and returned reference contexts are currently
+// ported only for transformWrapExport compatibility. Remove them if no
+// module-export-effect consumer needs this API surface.
 export type TransformModuleExportEffectMeta = {
   localName?: string
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
