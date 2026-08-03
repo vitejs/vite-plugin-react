@@ -169,16 +169,18 @@ export function scanModuleExports(
           type: 'specifiers',
           node,
           exports: node.specifiers.map((specifier) => {
+            // String-literal export names are unsupported. Callers must check
+            // the returned node's local and exported types before rewriting.
             return {
               node: specifier,
               localName:
                 specifier.local.type === 'Identifier'
                   ? specifier.local.name
-                  : String(specifier.local.value),
+                  : '__unsupported_string_export__',
               exportName:
                 specifier.exported.type === 'Identifier'
                   ? specifier.exported.name
-                  : String(specifier.exported.value),
+                  : '__unsupported_string_export__',
               meta: {},
             }
           }),

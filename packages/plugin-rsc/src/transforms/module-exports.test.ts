@@ -95,8 +95,11 @@ export * from './all'
   expect(groups[6]).toMatchObject({ type: 'export-all' })
 })
 
-test('preserves string literal export names', async () => {
-  const ast = await parseAstAsync(`export { local as "public name" }`)
+test('flags string literal export names as unsupported', async () => {
+  const ast = await parseAstAsync(`
+export { local as "public name" }
+export { "remote name" as remote } from './dep'
+`)
 
   expect(scanModuleExports(ast)).toMatchObject([
     {
@@ -104,8 +107,18 @@ test('preserves string literal export names', async () => {
       exports: [
         {
           localName: 'local',
-          exportName: 'public name',
+          exportName: '__unsupported_string_export__',
           node: { exported: { type: 'Literal' } },
+        },
+      ],
+    },
+    {
+      type: 'specifiers',
+      exports: [
+        {
+          localName: '__unsupported_string_export__',
+          exportName: 'remote',
+          node: { local: { type: 'Literal' } },
         },
       ],
     },
