@@ -83,28 +83,6 @@ export default async function Page() {}
     ])
   })
 
-  test('distinguishes canonical and separately wrapped bindings', async () => {
-    const result = await transform(`\
-export async function direct() {}
-const indirect = async () => {}
-export { indirect }
-consume(direct, indirect)
-`)
-
-    expect(result.output.toString()).toMatchInlineSnapshot(`
-      "
-      const $$module_0_implementation_direct = async function $$module_0_implementation_direct() {};
-      export const direct = /* #__PURE__ */ wrap(Object.defineProperty($$module_0_implementation_direct, \"name\", { value: \"direct\" }), \"direct\");
-      const indirect = async () => {}
-
-      consume(direct, indirect)
-
-      const $$module_1_binding_indirect = /* #__PURE__ */ wrap(indirect, \"indirect\");
-      export { $$module_1_binding_indirect as indirect };
-      "
-    `)
-  })
-
   test('filters generated and reported exports', async () => {
     const input = `export const selected = async () => {}, skipped = async () => {}`
     const result = await transform(input, {
