@@ -75,6 +75,7 @@ export type ModuleExportGroup =
       type: 'declaration'
       node: ExportNamedDeclaration
       declaration: FunctionDeclaration | ClassDeclaration
+      /** The function node for `export function foo() {}`. */
       directFunction?: FunctionDeclaration
       exports: [ModuleExportEntry]
     }
@@ -87,6 +88,7 @@ export type ModuleExportGroup =
       declaration: VariableDeclaration
       declarators: {
         node: VariableDeclarator
+        /** The function node for `export const foo = () => {}`. */
         directFunction?: ModuleExportFunction
         exports: ModuleExportEntry[]
       }[]
@@ -119,6 +121,7 @@ export type ModuleExportGroup =
       kind: ModuleExportDefaultKind
       node: ExportDefaultDeclaration
       localName?: string
+      /** The function node for `export default function () {}`. */
       directFunction?: ModuleExportFunction
       meta: ModuleExportMeta
     }
