@@ -1,0 +1,47 @@
+## Input
+
+```js
+'use server'
+
+export default async function defaultNamedFunction() {
+  return 'default named function called'
+}
+```
+
+## wrap-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjYwACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gZGVmYXVsdE5hbWVkRnVuY3Rpb24oKSB7CiAgcmV0dXJuICdkZWZhdWx0IG5hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfQo7CmNvbnN0ICQkd3JhcF9kZWZhdWx0TmFtZWRGdW5jdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShkZWZhdWx0TmFtZWRGdW5jdGlvbiwgImRlZmF1bHQiKTsKZXhwb3J0IHsgJCR3cmFwX2RlZmF1bHROYW1lZEZ1bmN0aW9uIGFzIGRlZmF1bHQgfTsKMzQwAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIGRlZmF1bHROYW1lZEZ1bmN0aW9uKCkge1xuICByZXR1cm4gJ2RlZmF1bHQgbmFtZWQgZnVuY3Rpb24gY2FsbGVkJ1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRUksS0FBSyxDQUFDLFFBQVEsQ0FBQyxvQkFBb0IsQ0FBQyxDQUFDLENBQUM7QUFDckQsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDLE9BQU8sQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLE1BQU07QUFDdkM7Ozs7In0=)
+
+```js
+'use server'
+
+async function defaultNamedFunction() {
+  return 'default named function called'
+}
+;
+const $$wrap_defaultNamedFunction = /* #__PURE__ */ registerServerReference(defaultNamedFunction, "default");
+export { $$wrap_defaultNamedFunction as default };
+```
+
+## module-export-effect
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTkzACd1c2Ugc2VydmVyJwoKYXN5bmMgZnVuY3Rpb24gZGVmYXVsdE5hbWVkRnVuY3Rpb24oKSB7CiAgcmV0dXJuICdkZWZhdWx0IG5hbWVkIGZ1bmN0aW9uIGNhbGxlZCcKfQoKcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoZGVmYXVsdE5hbWVkRnVuY3Rpb24sICJkZWZhdWx0Iik7CmV4cG9ydCBkZWZhdWx0IGRlZmF1bHROYW1lZEZ1bmN0aW9uOwozNTIAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gZGVmYXVsdE5hbWVkRnVuY3Rpb24oKSB7XG4gIHJldHVybiAnZGVmYXVsdCBuYW1lZCBmdW5jdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFSSxLQUFLLENBQUMsUUFBUSxDQUFDLG9CQUFvQixDQUFDLENBQUMsQ0FBQztBQUNyRCxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxRQUFRLENBQUMsTUFBTTtBQUN2QztBQUZBO0FBQUE7QUFBQTsifQ==)
+
+```js
+'use server'
+
+async function defaultNamedFunction() {
+  return 'default named function called'
+}
+
+registerServerReference(defaultNamedFunction, "default");
+export default defaultNamedFunction;
+```
