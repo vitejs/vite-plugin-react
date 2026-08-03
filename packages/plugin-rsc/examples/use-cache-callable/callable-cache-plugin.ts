@@ -48,7 +48,7 @@ export function callableCachePlugin(): Plugin {
               hoistRuntime: true,
               // TODO: Preserve the source function name once the inline hoist
               // runtime callback exposes it.
-              runtime,
+              runtime: (value, name) => runtime(value, name),
             })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
