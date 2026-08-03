@@ -152,6 +152,52 @@ test('records explicit function expression names', async () => {
   ])
 })
 
+test('resolves stable local function exports', async () => {
+  const ast = await parseAstAsync(`
+const named = async () => {}
+function defaultValue() {}
+let mutable = async () => {}
+export { named as action, mutable }
+export default defaultValue
+`)
+
+  expect(scanModuleExports(ast)).toMatchObject([
+    {
+      type: 'specifiers',
+      exports: [
+        {
+          localName: 'named',
+          exportName: 'action',
+          directFunction: {
+            node: { type: 'ArrowFunctionExpression' },
+            originalName: 'named',
+          },
+          meta: { localName: 'named', isFunction: true },
+        },
+        {
+          localName: 'mutable',
+          exportName: 'mutable',
+          directFunction: undefined,
+          meta: { localName: 'mutable', isFunction: true },
+        },
+      ],
+    },
+    {
+      type: 'default',
+      kind: 'identifier',
+      directFunction: {
+        node: { type: 'FunctionDeclaration' },
+        originalName: 'defaultValue',
+      },
+      meta: {
+        localName: 'defaultValue',
+        isFunction: true,
+        defaultExportIdentifierName: 'defaultValue',
+      },
+    },
+  ])
+})
+
 test('flags string literal export names as unsupported', async () => {
   const ast = await parseAstAsync(`
 export { local as "public name" }

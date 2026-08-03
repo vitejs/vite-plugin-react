@@ -19,7 +19,7 @@ export type TransformModuleExportWrapContext = {
    * - `"action"` for `export const action = () => {}`
    * - `"implementation"` for `export const action = function implementation() {}`
    * - `"default"` for `export default () => {}`
-   * - `undefined` for an indirect export such as `export { action }`
+   * - `undefined` for an unresolved or mutable export such as `export { imported }`
    */
   originalName?: string
   /** The public export name, or `"default"` for a default export. */
@@ -90,10 +90,11 @@ export type TransformModuleExportWrapResult = {
  * `references` returns those contexts in wrapper creation order, while
  * `referenceNames` returns only their export names.
  *
- * A direct function export makes its source name the canonical wrapper binding,
- * so local and imported reads of `someFn` receive the same value. Other exports
- * retain their source binding and receive a separate wrapper at the export
- * boundary, so the local `someValue` above remains the unwrapped value.
+ * A direct function export, including a stable local function exported through
+ * a specifier or default identifier, makes its source name the canonical wrapper
+ * binding. Other exports retain their source binding and receive a separate
+ * wrapper at the export boundary, so the local `someValue` above remains the
+ * unwrapped value.
  *
  * Generated `$$module_*` names are not deconflicted from user bindings,
  * consistent with the other transform helpers.
@@ -115,6 +116,7 @@ export function transformModuleExportWrap(
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportWrapContext[] = []
   const wrappedBindingCode: string[] = []
+  const hoistedLocalFunctions = new Set<number>()
   const hoistPosition = getDirectivePrologueEnd(ast)
 
   function createContext(
@@ -237,7 +239,9 @@ export function transformModuleExportWrap(
       `\nconst ${implementation} = ${originalPrefix}`,
     )
     output.appendLeft(node.end, ';\n')
-    output.move(node.start, node.end, hoistPosition)
+    if (node.start !== hoistPosition) {
+      output.move(node.start, node.end, hoistPosition)
+    }
 
     const context = createContext(
       implementation,
@@ -246,6 +250,35 @@ export function transformModuleExportWrap(
       originalName,
     )
     return generate(context)
+  }
+
+  function hoistLocalFunction(
+    directFunction: ModuleExportDirectFunction,
+    sourceName: string,
+    exportName: string,
+    meta: ModuleExportMeta,
+  ): void {
+    if (hoistedLocalFunctions.has(directFunction.node.start)) {
+      throw Object.assign(
+        new Error('unsupported multiple exports for local function'),
+        { pos: directFunction.node.start },
+      )
+    }
+    hoistedLocalFunctions.add(directFunction.node.start)
+    const replacement = hoistFunction(
+      directFunction,
+      sourceName,
+      exportName,
+      meta,
+    )
+    output.appendLeft(
+      directFunction.node.start === hoistPosition
+        ? directFunction.node.end
+        : directFunction.node.start,
+      directFunction.node.type === 'FunctionDeclaration'
+        ? `const ${sourceName} = ${replacement};`
+        : replacement,
+    )
   }
 
   for (const group of scanModuleExports(viteAst)) {
@@ -352,7 +385,7 @@ export function transformModuleExportWrap(
       // export { $$module_0_binding_action as action }
       // export { skipped }
       const preserved: string[] = []
-      let selected = false
+      let rewrite = false
       for (const entry of group.exports) {
         tinyassert(entry.node.local.type === 'Identifier')
         if (entry.node.exported.type !== 'Identifier') {
@@ -362,15 +395,20 @@ export function transformModuleExportWrap(
           )
         }
         const { localName, exportName, meta } = entry
+        const specifier =
+          localName === exportName ? localName : `${localName} as ${exportName}`
         if (!filter(exportName, meta)) {
-          preserved.push(
-            localName === exportName
-              ? localName
-              : `${localName} as ${exportName}`,
-          )
+          preserved.push(specifier)
           continue
         }
-        selected = true
+
+        if (entry.directFunction) {
+          hoistLocalFunction(entry.directFunction, localName, exportName, meta)
+          preserved.push(specifier)
+          continue
+        }
+
+        rewrite = true
 
         let implementation = localName
         if (group.node.source) {
@@ -390,7 +428,7 @@ export function transformModuleExportWrap(
         emitWrappedBinding(implementation, exportName, meta)
       }
 
-      if (selected) {
+      if (rewrite) {
         output.remove(group.node.start, group.node.end)
         if (preserved.length > 0) {
           const source = group.node.source
@@ -411,7 +449,16 @@ export function transformModuleExportWrap(
     } else if (group.type === 'default') {
       let meta: ModuleExportMeta
 
-      if (group.directFunction) {
+      if (group.kind === 'identifier' && group.directFunction) {
+        meta = group.meta
+        if (!filter('default', meta)) continue
+        hoistLocalFunction(
+          group.directFunction,
+          group.directFunction.originalName,
+          'default',
+          meta,
+        )
+      } else if (group.directFunction) {
         const declaration = group.directFunction.node
         // export default async function Page() {}
         // ⬇️

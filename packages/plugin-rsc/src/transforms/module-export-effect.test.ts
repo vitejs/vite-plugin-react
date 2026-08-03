@@ -225,9 +225,18 @@ export default async function Page() {}
       [`export default 1`, [{ isFunction: false }]],
       [
         `const Page = () => {}; export default Page`,
-        [{ defaultExportIdentifierName: 'Page' }],
+        [
+          {
+            localName: 'Page',
+            isFunction: true,
+            defaultExportIdentifierName: 'Page',
+          },
+        ],
       ],
-      [`const id = async () => {}; export { id }`, [{}]],
+      [
+        `const id = async () => {}; export { id }`,
+        [{ localName: 'id', isFunction: true }],
+      ],
       [`export { id } from './dep'`, [{}]],
     ]
 

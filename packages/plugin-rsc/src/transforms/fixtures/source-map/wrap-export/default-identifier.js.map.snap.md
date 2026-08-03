@@ -29,11 +29,11 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:0) "async function defaultIdentifier() {\n" --> (2:0) "async function defaultIdentifier() {\n"
-(3:0) "  return 'default identifier called'\n" --> (3:0) "  return 'default identifier called'\n"
-(4:0) "}\n" --> (4:0) "}\n"
-(6:0) "export default " --> (6:0) "const $$module_0_implementation_default = "
-(6:15) "defaultIdentifier\n" --> (6:42) "defaultIdentifier\n"
-[unmapped] --> (8:0) "const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
-[unmapped] --> (9:0) "export { $$module_0_binding_default as default };\n"
+(2:0) "async function defaultIdentifier() {\n" --> (2:0) "\n"
+(2:0) "async function defaultIdentifier() " --> (3:0) "const $$module_0_implementation_defaultIdentifier = async function $$module_0_implementation_defaultIdentifier() "
+(2:35) "{\n" --> (3:113) "{\n"
+(3:0) "  return 'default identifier called'\n" --> (4:0) "  return 'default identifier called'\n"
+(4:0) "}\n" --> (5:0) "};\n"
+[unmapped] --> (6:0) "const defaultIdentifier = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_defaultIdentifier, \"name\", { value: \"defaultIdentifier\" }), \"default\");\n"
+(6:0) "export default defaultIdentifier\n" --> (8:0) "export default defaultIdentifier\n"
 ```

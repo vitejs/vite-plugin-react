@@ -59,8 +59,8 @@ export default async function Page() {}
         exportName: 'loader',
       },
       {
-        implementation: 'local',
-        originalName: undefined,
+        implementation: '$$module_2_implementation_local',
+        originalName: 'local',
         exportName: 'renamed',
       },
       {
@@ -123,6 +123,64 @@ export default async function Page() {}
     })
     expect(filtered.output.hasChanged()).toBe(false)
     expect(filtered.references).toEqual([])
+  })
+
+  test('uses canonical bindings for stable local function exports', async () => {
+    const named = await transform(`\
+const action = async () => {}
+export { action as renamed }
+`)
+    expect(named.output.toString()).toMatchInlineSnapshot(`
+      "
+      const $$module_0_implementation_action = async () => {};
+      const action = /* #__PURE__ */ wrap(Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"action\" }), \"renamed\")
+      export { action as renamed }
+      "
+    `)
+
+    const defaultExport = await transform(`\
+async function action() {}
+export default action
+`)
+    expect(defaultExport.output.toString()).toMatchInlineSnapshot(`
+      "
+      const $$module_0_implementation_action = async function $$module_0_implementation_action() {};
+      const action = /* #__PURE__ */ wrap(Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"action\" }), \"default\");
+      export default action
+      "
+    `)
+  })
+
+  test('keeps mutable and multiply exported locals on wrapped bindings', async () => {
+    const mutable = await transform(`\
+let action = async () => {}
+export { action }
+action = async () => {}
+`)
+    expect(mutable.references.map(formatContext)).toEqual([
+      {
+        implementation: 'action',
+        originalName: undefined,
+        exportName: 'action',
+      },
+    ])
+
+    const multiple = await transform(`\
+const action = async () => {}
+export { action, action as renamed }
+`)
+    expect(multiple.references.map(formatContext)).toEqual([
+      {
+        implementation: 'action',
+        originalName: undefined,
+        exportName: 'action',
+      },
+      {
+        implementation: 'action',
+        originalName: undefined,
+        exportName: 'renamed',
+      },
+    ])
   })
 
   test('controls export-all preservation', async () => {

@@ -48,14 +48,13 @@ registerServerReference(action, "action");
 
 **References:** action
 
-[Source map visualization](https://evanw.github.io/source-map-visualization/#MjAwACd1c2Ugc2VydmVyJwoKCmNvbnN0IGFjdGlvbiA9IGFzeW5jICgpID0+ICdhY3Rpb24gY2FsbGVkJwoKY29uc3QgJCRtb2R1bGVfMF9iaW5kaW5nX2FjdGlvbiA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShhY3Rpb24sICJhY3Rpb24iKTsKZXhwb3J0IHsgJCRtb2R1bGVfMF9iaW5kaW5nX2FjdGlvbiBhcyBhY3Rpb24gfTsKMjc5AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCB7IGFjdGlvbiB9XG5jb25zdCBhY3Rpb24gPSBhc3luYyAoKSA9PiAnYWN0aW9uIGNhbGxlZCdcbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOzs7QUFHWCxLQUFLLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxNQUFNLENBQUMsTUFBTTs7OzsifQ==)
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjU0ACd1c2Ugc2VydmVyJwoKCmNvbnN0ICQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fYWN0aW9uID0gYXN5bmMgKCkgPT4gJ2FjdGlvbiBjYWxsZWQnOwpleHBvcnQgeyBhY3Rpb24gfQpjb25zdCBhY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoT2JqZWN0LmRlZmluZVByb3BlcnR5KCQkbW9kdWxlXzBfaW1wbGVtZW50YXRpb25fYWN0aW9uLCAibmFtZSIsIHsgdmFsdWU6ICJhY3Rpb24iIH0pLCAiYWN0aW9uIikKMjgzAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCB7IGFjdGlvbiB9XG5jb25zdCBhY3Rpb24gPSBhc3luYyAoKSA9PiAnYWN0aW9uIGNhbGxlZCdcbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUdJO0FBQUEscURBQVksQ0FBQyxNQUFNLENBQUMsTUFBTTtBQUR6QyxNQUFNLENBQUMsQ0FBQyxDQUFDLE1BQU0sQ0FBQztBQUNoQixLQUFLLENBQUMsTUFBTSxDQUFDLENBQUM7In0=)
 
 ```js
 'use server'
 
 
-const action = async () => 'action called'
-
-const $$module_0_binding_action = /* #__PURE__ */ registerServerReference(action, "action");
-export { $$module_0_binding_action as action };
+const $$module_0_implementation_action = async () => 'action called';
+export { action }
+const action = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_action, "name", { value: "action" }), "action")
 ```

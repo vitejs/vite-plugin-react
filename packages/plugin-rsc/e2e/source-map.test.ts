@@ -65,8 +65,8 @@ const serverReferenceCases: {
   },
   {
     route: '/specifiers',
-    // Registration effects for export specifiers are appended without explicit
-    // mappings. These expectations record bundler-specific adjacent fallbacks.
+    // Re-export registration effects are appended without explicit mappings.
+    // These expectations record bundler-specific adjacent fallbacks.
     references: [
       {
         name: 'local-alias',

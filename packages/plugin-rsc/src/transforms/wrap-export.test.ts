@@ -452,11 +452,16 @@ export default cached;
         `const Page = () => {}; export default Page`,
         [
           {
+            isFunction: true,
+            declName: 'Page',
             defaultExportIdentifierName: 'Page',
           },
         ],
       ],
-      [`const id = async () => {}; export { id }`, [{}]],
+      [
+        `const id = async () => {}; export { id }`,
+        [{ isFunction: true, declName: 'id' }],
+      ],
       [`export { id } from './dep'`, [{}]],
     ]
 

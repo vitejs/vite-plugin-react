@@ -36,7 +36,8 @@ export type ModuleExportMeta = {
    * - `"Page"` for `export function Page() {}`
    * - `"Page"` for `export const Page = () => {}`
    * - `undefined` for `export default () => {}`
-   * - `undefined` for `export { Page }`
+   * - `"Page"` for `const Page = () => {}; export { Page }`
+   * - `undefined` for `export { imported }`
    */
   localName?: string
   /**
@@ -45,7 +46,8 @@ export type ModuleExportMeta = {
    * - `true` for `export const Page = () => {}`
    * - `false` for `export const value = 1`
    * - `undefined` for `export const value = getValue()`
-   * - `undefined` for `export default Page`
+   * - `true` for `const Page = () => {}; export default Page`
+   * - `undefined` for `export default imported`
    */
   isFunction?: boolean
   /**
@@ -68,6 +70,7 @@ export type ModuleExportSpecifier = {
   node: ExportSpecifier
   localName: string
   exportName: string
+  directFunction?: ModuleExportDirectFunction
   meta: ModuleExportMeta
 }
 
@@ -138,6 +141,7 @@ export function scanModuleExports(
 ): ModuleExportGroup[] {
   const ast = viteAst as unknown as Program
   const groups: ModuleExportGroup[] = []
+  const localBindings = scanLocalBindings(ast, countLocalExports(ast))
 
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
@@ -206,17 +210,22 @@ export function scanModuleExports(
           exports: node.specifiers.map((specifier) => {
             // String-literal export names are unsupported. Callers must check
             // the returned node's local and exported types before rewriting.
+            const localName =
+              specifier.local.type === 'Identifier'
+                ? specifier.local.name
+                : '__unsupported_string_export__'
+            const localBinding = node.source
+              ? undefined
+              : localBindings.get(localName)
             return {
               node: specifier,
-              localName:
-                specifier.local.type === 'Identifier'
-                  ? specifier.local.name
-                  : '__unsupported_string_export__',
+              localName,
               exportName:
                 specifier.exported.type === 'Identifier'
                   ? specifier.exported.name
                   : '__unsupported_string_export__',
-              meta: {},
+              directFunction: localBinding?.directFunction,
+              meta: localBinding?.meta ?? {},
             }
           }),
         })
@@ -231,7 +240,7 @@ export function scanModuleExports(
       let kind: ModuleExportDefaultKind
       let localName: string | undefined
       let meta: ModuleExportMeta
-      const directFunction = getDirectFunction(node.declaration, 'default')
+      let directFunction = getDirectFunction(node.declaration, 'default')
       if (
         (node.declaration.type === 'FunctionDeclaration' ||
           node.declaration.type === 'ClassDeclaration') &&
@@ -245,7 +254,12 @@ export function scanModuleExports(
         }
       } else if (node.declaration.type === 'Identifier') {
         kind = 'identifier'
-        meta = { defaultExportIdentifierName: node.declaration.name }
+        const localBinding = localBindings.get(node.declaration.name)
+        directFunction = localBinding?.directFunction
+        meta = {
+          ...localBinding?.meta,
+          defaultExportIdentifierName: node.declaration.name,
+        }
       } else {
         // export default function () {}
         // export default () => {}
@@ -264,6 +278,76 @@ export function scanModuleExports(
   }
 
   return groups
+}
+
+type ModuleLocalBinding = {
+  directFunction?: ModuleExportDirectFunction
+  meta: ModuleExportMeta
+}
+
+function countLocalExports(ast: Program): Map<string, number> {
+  const counts = new Map<string, number>()
+  const add = (name: string) => counts.set(name, (counts.get(name) ?? 0) + 1)
+  for (const node of ast.body) {
+    if (node.type === 'ExportNamedDeclaration' && !node.source) {
+      for (const specifier of node.specifiers) {
+        if (specifier.local.type === 'Identifier') add(specifier.local.name)
+      }
+    } else if (
+      node.type === 'ExportDefaultDeclaration' &&
+      node.declaration.type === 'Identifier'
+    ) {
+      add(node.declaration.name)
+    }
+  }
+  return counts
+}
+
+function scanLocalBindings(
+  ast: Program,
+  exportCounts: Map<string, number>,
+): Map<string, ModuleLocalBinding> {
+  const bindings = new Map<string, ModuleLocalBinding>()
+  for (const node of ast.body) {
+    if (
+      (node.type === 'FunctionDeclaration' ||
+        node.type === 'ClassDeclaration') &&
+      node.id
+    ) {
+      bindings.set(node.id.name, {
+        directFunction:
+          node.type === 'FunctionDeclaration' &&
+          exportCounts.get(node.id.name) === 1
+            ? getDirectFunction(node, node.id.name)
+            : undefined,
+        meta: {
+          localName: node.id.name,
+          isFunction: getIsFunction(node),
+        },
+      })
+    } else if (node.type === 'VariableDeclaration') {
+      for (const declarator of node.declarations) {
+        const directFunction =
+          node.kind === 'const' &&
+          declarator.id.type === 'Identifier' &&
+          exportCounts.get(declarator.id.name) === 1 &&
+          declarator.init
+            ? getDirectFunction(declarator.init, declarator.id.name)
+            : undefined
+        const isFunction =
+          declarator.id.type === 'Identifier' && declarator.init
+            ? getIsFunction(declarator.init)
+            : undefined
+        for (const name of extractNames(declarator.id)) {
+          bindings.set(name, {
+            directFunction,
+            meta: { localName: name, isFunction },
+          })
+        }
+      }
+    }
+  }
+  return bindings
 }
 
 function getIsFunction(
