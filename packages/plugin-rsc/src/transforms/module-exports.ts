@@ -100,8 +100,10 @@ export type ModuleExportGroup =
     }
   | {
       /**
-       * export default function foo() {}
-       * export default value
+       * `named-declaration`: export default function foo() {}
+       * `identifier`: export default value
+       * `other`: export default function () {}
+       * `other`: export default () => {}
        */
       type: 'default'
       kind: ModuleExportDefaultKind
@@ -214,6 +216,8 @@ export function scanModuleExports(
         kind = 'identifier'
         meta = { defaultExportIdentifierName: node.declaration.name }
       } else {
+        // export default function () {}
+        // export default () => {}
         kind = 'other'
         meta = { isFunction: getIsFunction(node.declaration) }
       }
