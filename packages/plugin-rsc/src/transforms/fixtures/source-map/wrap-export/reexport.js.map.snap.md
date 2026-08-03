@@ -12,8 +12,7 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:0) "export { reexportedAction } from './reexport-source'\n" --> (3:0) "\n"
-(2:0) "export { reexportedAction } from './reexport-source'\n" --> (4:0) "export { reexportedAction } from './reexport-source'\n"
-(2:0) "export { reexportedAction } from './reexport-source'\n" --> (5:0) "registerServerReference($$effect_import_reexportedAction, \"reexportedAction\");\n"
-[unmapped] --> (7:0) "import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';"
+(2:0) "export { reexportedAction } from './reexport-source'\n" --> (2:0) "export { reexportedAction } from './reexport-source'\n"
+[unmapped] --> (4:0) "import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';\n"
+[unmapped] --> (5:0) "registerServerReference($$effect_import_reexportedAction, \"reexportedAction\");"
 ```

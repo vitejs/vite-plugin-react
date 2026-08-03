@@ -87,10 +87,10 @@ export type TransformModuleExportEffectResult = {
  * `references` returns those contexts in generation order, while
  * `referenceNames` returns only their export names.
  *
- * The start of each generated runtime expression remains mapped to its original
- * Server Function export site. React captures the `registerServerReference`
- * caller as the reference source location, so unmapped generated code can fall
- * back to an adjacent location. Re-exports map to their export statement.
+ * Effects emitted through declaration and default-export rewrites remain mapped
+ * to their original export sites. Export-specifier effects are appended without
+ * explicit mappings and rely on adjacent-source fallback. React captures the
+ * `registerServerReference` caller as the reference source location.
  *
  * Generated bindings such as `$$effect_default` and `$$effect_import_*` are not
  * deconflicted from user bindings, consistent with the other transform helpers.
@@ -199,7 +199,6 @@ export function transformModuleExportEffect(
          * export { foo, bar as baz }
          * export { foo, bar as baz } from './dep'
          */
-        const effects: string[] = []
         for (const specifier of node.specifiers) {
           tinyassert(specifier.local.type === 'Identifier')
           if (specifier.exported.type !== 'Identifier') {
@@ -220,25 +219,7 @@ export function transformModuleExportEffect(
               `\nimport { ${specifier.local.name} as ${binding} } from ${node.source.raw};`,
             )
           }
-          effects.push(generate({ binding, exportName, meta }))
-        }
-        if (effects.length > 0) {
-          const originalExport = input.slice(node.start, node.end)
-          if (node.source) {
-            replaceAndMove(
-              node.start,
-              node.end,
-              input.length,
-              `${originalExport}\n${effects.join('\n')}`,
-            )
-          } else {
-            replaceAndMove(
-              node.start,
-              node.end,
-              input.length,
-              `${effects.join('\n')}\n${originalExport}`,
-            )
-          }
+          output.append(`\n${generate({ binding, exportName, meta })}`)
         }
       }
     } else if (node.type === 'ExportAllDeclaration') {

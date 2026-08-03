@@ -17,7 +17,6 @@
 (2:0) "async function localAlias() {\n" --> (2:0) "async function localAlias() {\n"
 (3:0) "  return 'local alias called'\n" --> (3:0) "  return 'local alias called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-(6:0) "export { localAlias as aliasedAction }\n" --> (7:0) "\n"
-(6:0) "export { localAlias as aliasedAction }\n" --> (8:0) "registerServerReference(localAlias, \"aliasedAction\");\n"
-(6:0) "export { localAlias as aliasedAction }\n" --> (9:0) "export { localAlias as aliasedAction }\n"
+(6:0) "export { localAlias as aliasedAction }\n" --> (6:0) "export { localAlias as aliasedAction }\n"
+[unmapped] --> (8:0) "registerServerReference(localAlias, \"aliasedAction\");"
 ```

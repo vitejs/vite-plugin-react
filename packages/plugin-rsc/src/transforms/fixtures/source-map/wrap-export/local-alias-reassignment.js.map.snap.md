@@ -14,8 +14,7 @@
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:0) "let action = async () => 'first'\n" --> (2:0) "let action = async () => 'first'\n"
+(3:0) "export { action as renamed }\n" --> (3:0) "export { action as renamed }\n"
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
-(3:0) "export { action as renamed }\n" --> (5:0) "\n"
-(3:0) "export { action as renamed }\n" --> (6:0) "registerServerReference(action, \"renamed\");\n"
-(3:0) "export { action as renamed }\n" --> (7:0) "export { action as renamed }\n"
+[unmapped] --> (6:0) "registerServerReference(action, \"renamed\");"
 ```
