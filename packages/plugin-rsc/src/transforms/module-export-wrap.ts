@@ -18,25 +18,25 @@ type FunctionNode =
   | FunctionExpression
   | ArrowFunctionExpression
 
-export type TransformModuleExportMeta = ModuleExportMeta & {
+export type TransformModuleExportWrapMeta = ModuleExportMeta & {
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
 }
 
-export type TransformModuleExportContext = {
+export type TransformModuleExportWrapContext = {
   implementation: string
   binding: string
   exportName: string
-  meta: TransformModuleExportMeta
+  meta: TransformModuleExportWrapMeta
 }
 
-export type TransformModuleExportFilter = (
+export type TransformModuleExportWrapFilter = (
   name: string,
-  meta: TransformModuleExportMeta,
+  meta: TransformModuleExportWrapMeta,
 ) => boolean
 
-export type TransformModuleExportOptions = {
-  runtime: (context: TransformModuleExportContext) => string
-  filter?: TransformModuleExportFilter
+export type TransformModuleExportWrapOptions = {
+  runtime: (context: TransformModuleExportWrapContext) => string
+  filter?: TransformModuleExportWrapFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
 }
@@ -46,13 +46,13 @@ export type TransformModuleExportOptions = {
  * and replaced at their original expression sites. Other selected exports keep
  * their source values and receive canonical bindings at the export boundary.
  */
-export function transformModuleExport(
+export function transformModuleExportWrap(
   source: string,
   viteAst: ESTree.Program,
-  options: TransformModuleExportOptions,
+  options: TransformModuleExportWrapOptions,
 ): {
   output: MagicString
-  references: TransformModuleExportContext[]
+  references: TransformModuleExportWrapContext[]
   referenceNames: string[]
 } {
   const ast = viteAst as unknown as Program
@@ -60,7 +60,7 @@ export function transformModuleExport(
   if (!input.endsWith('\n')) input += '\n'
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
-  const references: TransformModuleExportContext[] = []
+  const references: TransformModuleExportWrapContext[] = []
   const fallbackCode: string[] = []
   const hoistPosition = getHoistPosition(ast)
 
@@ -68,14 +68,14 @@ export function transformModuleExport(
     implementation: string,
     binding: string,
     exportName: string,
-    meta: TransformModuleExportMeta,
-  ): TransformModuleExportContext {
+    meta: TransformModuleExportWrapMeta,
+  ): TransformModuleExportWrapContext {
     const context = { implementation, binding, exportName, meta }
     references.push(context)
     return context
   }
 
-  function runtime(context: TransformModuleExportContext): string {
+  function runtime(context: TransformModuleExportWrapContext): string {
     return `/* #__PURE__ */ ${options.runtime(context)}`
   }
 
@@ -95,7 +95,7 @@ export function transformModuleExport(
   function emitFallback(
     implementation: string,
     exportName: string,
-    meta: TransformModuleExportMeta,
+    meta: TransformModuleExportWrapMeta,
   ): void {
     const binding = createName('binding', exportName)
     const context = createContext(implementation, binding, exportName, meta)
@@ -109,7 +109,7 @@ export function transformModuleExport(
     node: FunctionNode,
     sourceName: string,
     exportName: string,
-    meta: TransformModuleExportMeta,
+    meta: TransformModuleExportWrapMeta,
   ): string {
     validateNonAsyncFunction(options, node)
     const implementation = createName('implementation', sourceName)
@@ -143,7 +143,7 @@ export function transformModuleExport(
     if (group.type === 'declaration') {
       const [entry] = group.exports
       const { localName: name } = entry
-      const meta: TransformModuleExportMeta = {
+      const meta: TransformModuleExportWrapMeta = {
         ...entry.meta,
         declarationKind:
           group.declaration.type === 'FunctionDeclaration'
@@ -184,7 +184,7 @@ export function transformModuleExport(
         let validate = false
 
         for (const entry of declarator.exports) {
-          const meta: TransformModuleExportMeta = {
+          const meta: TransformModuleExportWrapMeta = {
             ...entry.meta,
             declarationKind: group.declaration.kind,
             isFunction: directFunction
@@ -274,7 +274,7 @@ export function transformModuleExport(
       }
     } else if (group.type === 'default') {
       const declaration = group.node.declaration
-      let meta: TransformModuleExportMeta
+      let meta: TransformModuleExportWrapMeta
 
       if (isFunctionNode(declaration)) {
         const sourceName =

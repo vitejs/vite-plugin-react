@@ -45,7 +45,7 @@ registerServerReference(second, "second");
 export { first, second };
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

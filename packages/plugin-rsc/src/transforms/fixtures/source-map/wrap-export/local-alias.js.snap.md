@@ -51,7 +51,7 @@ export { localAlias as aliasedAction }
 registerServerReference(localAlias, "aliasedAction");
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

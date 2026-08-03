@@ -42,7 +42,7 @@ const action = async () => 'action called'
 registerServerReference(action, "action");
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

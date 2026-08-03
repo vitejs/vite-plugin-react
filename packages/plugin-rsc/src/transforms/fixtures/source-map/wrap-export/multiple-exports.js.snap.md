@@ -62,7 +62,7 @@ registerServerReference(secondAction, "secondAction");
 export { secondAction };
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

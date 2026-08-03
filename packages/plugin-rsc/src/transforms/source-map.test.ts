@@ -2,8 +2,8 @@ import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
-import { transformModuleExport } from './module-export'
 import { transformModuleExportEffect } from './module-export-effect'
+import { transformModuleExportWrap } from './module-export-wrap'
 import {
   formatDecodedSourceMapMarkdown,
   formatSourceMapMarkdownFixture,
@@ -20,7 +20,7 @@ describe('source map fixtures', () => {
   // rely on adjacent-source fallback. React uses the `registerServerReference`
   // caller as the reference's source location.
   for (const [file, load] of Object.entries(wrapExportFixtures)) {
-    test(`module-export/${path.basename(file)}`, async () => {
+    test(`module-export-wrap/${path.basename(file)}`, async () => {
       const input = ((await load()) as any).default as string
       const ast = await parseAstAsync(input)
       const wrapResult = transformWrapExport(input, ast, {
@@ -31,7 +31,7 @@ describe('source map fixtures', () => {
         generate: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
-      const moduleResult = transformModuleExport(input, ast, {
+      const moduleResult = transformModuleExportWrap(input, ast, {
         runtime: ({ implementation, exportName }) =>
           `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
       })
@@ -47,7 +47,7 @@ describe('source map fixtures', () => {
           references: effectResult.referenceNames,
         },
         {
-          name: 'module-export',
+          name: 'module-export-wrap',
           output: moduleResult.output,
           references: moduleResult.referenceNames,
         },

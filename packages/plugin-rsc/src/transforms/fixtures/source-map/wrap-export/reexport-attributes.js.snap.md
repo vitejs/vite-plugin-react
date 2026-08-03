@@ -41,7 +41,7 @@ import { reexportedAction as $$effect_import_reexportedAction } from './reexport
 registerServerReference($$effect_import_reexportedAction, "reexportedAction");
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

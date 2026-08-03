@@ -21,7 +21,7 @@
 [unmapped] --> (8:0) "registerServerReference(localAlias, \"aliasedAction\");"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

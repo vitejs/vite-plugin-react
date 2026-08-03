@@ -1,23 +1,23 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import {
-  transformModuleExport,
-  type TransformModuleExportOptions,
-} from './module-export'
+  transformModuleExportWrap,
+  type TransformModuleExportWrapOptions,
+} from './module-export-wrap'
 
 async function transform(
   input: string,
-  options: Omit<TransformModuleExportOptions, 'runtime'> = {},
+  options: Omit<TransformModuleExportWrapOptions, 'runtime'> = {},
 ) {
   const ast = await parseAstAsync(input)
-  return transformModuleExport(input, ast, {
+  return transformModuleExportWrap(input, ast, {
     ...options,
     runtime: ({ implementation, exportName }) =>
       `wrap(${implementation}, ${JSON.stringify(exportName)})`,
   })
 }
 
-describe(transformModuleExport, () => {
+describe(transformModuleExportWrap, () => {
   test('hoists direct functions and replaces their original value sites', async () => {
     const result = await transform(`
 'use cache'
@@ -133,7 +133,7 @@ export function recursive(depth) {
 }
 `
     const ast = await parseAstAsync(input)
-    const result = transformModuleExport(input, ast, {
+    const result = transformModuleExportWrap(input, ast, {
       runtime: ({ implementation }) =>
         `Object.assign((...args) => ${implementation}(...args), { marker: "wrapped" })`,
     })

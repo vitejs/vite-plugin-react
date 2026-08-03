@@ -17,7 +17,7 @@
 [unmapped] --> (5:0) "registerServerReference($$effect_import_reexportedAction, \"reexportedAction\");"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

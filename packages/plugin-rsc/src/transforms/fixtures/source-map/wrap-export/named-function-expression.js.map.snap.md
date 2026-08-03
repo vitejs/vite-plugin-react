@@ -22,7 +22,7 @@
 (2:0) "export const action = async function actionImplementation() {\n" --> (7:0) "export { action };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

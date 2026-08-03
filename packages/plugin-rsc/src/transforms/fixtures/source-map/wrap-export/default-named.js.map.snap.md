@@ -22,7 +22,7 @@
 (2:0) "export default async function defaultNamedFunction() {\n" --> (7:0) "export default defaultNamedFunction;\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

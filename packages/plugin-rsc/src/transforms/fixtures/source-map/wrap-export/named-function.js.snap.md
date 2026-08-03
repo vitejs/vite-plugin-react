@@ -45,7 +45,7 @@ registerServerReference(namedFunction, "namedFunction");
 export { namedFunction };
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

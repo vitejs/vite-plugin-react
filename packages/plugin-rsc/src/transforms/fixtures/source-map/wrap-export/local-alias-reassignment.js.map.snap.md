@@ -19,7 +19,7 @@
 [unmapped] --> (6:0) "registerServerReference(action, \"renamed\");"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

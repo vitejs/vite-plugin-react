@@ -32,7 +32,7 @@
 (6:0) "export async function secondAction() {\n" --> (14:0) "export { secondAction };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

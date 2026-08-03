@@ -23,7 +23,7 @@
 (3:0) "export default action\n" --> (7:0) "export default $$effect_default;\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

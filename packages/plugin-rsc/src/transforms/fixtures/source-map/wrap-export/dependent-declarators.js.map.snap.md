@@ -23,7 +23,7 @@
 (2:0) "export const first = async () => 'first action called',\n" --> (7:0) "export { first, second };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

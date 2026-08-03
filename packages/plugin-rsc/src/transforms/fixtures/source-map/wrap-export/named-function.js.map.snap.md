@@ -21,7 +21,7 @@
 (2:0) "export async function namedFunction() {\n" --> (7:0) "export { namedFunction };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

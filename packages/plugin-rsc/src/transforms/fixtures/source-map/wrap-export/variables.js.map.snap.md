@@ -30,7 +30,7 @@
 (4:0) "export const functionExpression = async function () {\n" --> (12:0) "export { functionExpression };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

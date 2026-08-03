@@ -25,7 +25,7 @@
 (6:0) "export default defaultIdentifier\n" --> (9:0) "export default $$effect_default;\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

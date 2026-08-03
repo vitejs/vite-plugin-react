@@ -52,7 +52,7 @@ registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

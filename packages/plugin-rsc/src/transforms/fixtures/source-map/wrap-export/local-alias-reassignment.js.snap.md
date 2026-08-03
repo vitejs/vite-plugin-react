@@ -45,7 +45,7 @@ action = async () => 'second'
 registerServerReference(action, "renamed");
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

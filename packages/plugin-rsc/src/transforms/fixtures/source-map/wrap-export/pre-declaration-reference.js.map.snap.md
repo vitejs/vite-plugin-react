@@ -23,7 +23,7 @@
 (4:0) "export async function action() {\n" --> (9:0) "export { action };\n"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"

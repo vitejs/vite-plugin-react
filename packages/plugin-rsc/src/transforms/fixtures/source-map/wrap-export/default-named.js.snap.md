@@ -46,7 +46,7 @@ registerServerReference(defaultNamedFunction, "default");
 export default defaultNamedFunction;
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

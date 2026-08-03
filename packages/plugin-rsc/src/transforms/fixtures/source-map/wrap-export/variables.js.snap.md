@@ -56,7 +56,7 @@ registerServerReference(functionExpression, "functionExpression");
 export { functionExpression };
 ```
 
-## module-export
+## module-export-wrap
 
 **Status:** transformed
 

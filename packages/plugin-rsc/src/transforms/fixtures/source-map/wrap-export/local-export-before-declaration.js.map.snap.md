@@ -17,7 +17,7 @@
 [unmapped] --> (5:0) "registerServerReference(action, \"action\");"
 ```
 
-## module-export
+## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
