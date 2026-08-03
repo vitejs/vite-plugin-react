@@ -149,15 +149,32 @@ export function transformModuleExportWrap(
     return `$$module_${references.length}_${kind}_${name}`
   }
 
+  /**
+   * Wraps an export whose original local initialization must remain in place,
+   * such as a class, an arbitrary expression, or an export specifier. The
+   * generated wrapper is assigned to a separate binding and exported after the
+   * source declarations, leaving the original local binding unchanged.
+   *
+   * For `emitFallback('value', 'renamed', meta)`:
+   *
+   * ```js
+   * // Existing source initialization, left in place
+   * const value = init()
+   *
+   * // Code appended by emitFallback
+   * const $$module_0_binding_renamed = __WRAP__(value, 'renamed')
+   * export { $$module_0_binding_renamed as renamed }
+   * ```
+   *
+   * @param implementation Local expression to pass to the generated wrapper.
+   * @param exportName Public name for the generated export.
+   * @param meta Static metadata collected from the original export.
+   */
   function emitFallback(
     implementation: string,
     exportName: string,
     meta: ModuleExportMeta,
   ): void {
-    // const value = init()
-    // ⬇️ (append after source initialization)
-    // const $$module_0_binding_value = __WRAP__(value, 'value')
-    // export { $$module_0_binding_value as value }
     const binding = createName('binding', exportName)
     const context = createContext(implementation, exportName, meta)
     fallbackCode.push(
@@ -166,6 +183,36 @@ export function transformModuleExportWrap(
     )
   }
 
+  /**
+   * Splits a directly exported function into a private implementation and a
+   * generated wrapper expression. The implementation is moved after the
+   * directive prologue, while the caller inserts the wrapper at the original
+   * declaration site. The context includes the source-level function name so
+   * the generated expression can restore it on the exported callable.
+   *
+   * For `hoistFunction(node, 'action', 'action', meta)`:
+   *
+   * ```js
+   * // Before
+   * export async function action() {}
+   *
+   * // Moved into output by hoistFunction
+   * const $$module_0_implementation_action =
+   *   async function $$module_0_implementation_action() {}
+   *
+   * // Returned by hoistFunction
+   * __WRAP__($$module_0_implementation_action, 'action')
+   *
+   * // Final declaration assembled by the caller
+   * export const action = __WRAP__($$module_0_implementation_action, 'action')
+   * ```
+   *
+   * @param node Directly exported function node to move.
+   * @param sourceName Local declaration name used for the implementation binding.
+   * @param exportName Public name for the generated export.
+   * @param meta Static metadata collected from the original export.
+   * @returns Generated wrapper expression for the original declaration site.
+   */
   function hoistFunction(
     node: ModuleExportFunction,
     sourceName: string,
@@ -174,10 +221,6 @@ export function transformModuleExportWrap(
   ): string {
     validateNonAsyncFunction(options, node)
     const implementation = createName('implementation', sourceName)
-    // export async function action() {}
-    //              ^^^^^^
-    // ⬇️ (rename before moving)
-    // const $$module_0_implementation_action = async function $$module_0_implementation_action() {}
     const originalPrefix =
       node.type === 'FunctionDeclaration' && node.id
         ? input.slice(node.start, node.id.start) +
@@ -195,12 +238,6 @@ export function transformModuleExportWrap(
       `\nconst ${implementation} = ${originalPrefix}`,
     )
     output.appendLeft(node.end, ';\n')
-    // 'use server'
-    // export async function action() {}
-    // ⬇️ (move after directives and before the wrapper)
-    // 'use server'
-    // const $$module_0_implementation_action = async function ...
-    // export const action = __WRAP__($$module_0_implementation_action, 'action')
     output.move(node.start, node.end, hoistPosition)
 
     const context = createContext(
