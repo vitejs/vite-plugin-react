@@ -32,7 +32,6 @@
 (4:31) "{\n" --> (3:91) "{\n"
 (5:0) "  return 'action called'\n" --> (4:0) "  return 'action called'\n"
 (6:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"action\" });\n"
-(2:0) "void action\n" --> (7:0) "void action\n"
-[unmapped] --> (9:0) "export const action = /* #__PURE__ */ registerServerReference($$module_0_implementation_action, \"action\");\n"
+(2:0) "void action\n" --> (6:0) "void action\n"
+[unmapped] --> (8:0) "export const action = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"action\" }), \"action\");\n"
 ```

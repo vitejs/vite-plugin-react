@@ -12,17 +12,28 @@ async function transform(
 ) {
   const ast = await parseAstAsync(input)
   return transformModuleExportWrap(input, ast, {
-    generate: ({ implementation, exportName }) =>
-      `wrap(${implementation}, ${JSON.stringify(exportName)})`,
+    generate: ({ implementation, originalName, exportName }) =>
+      `wrap(${restoreFunctionName(implementation, originalName)}, ${JSON.stringify(exportName)})`,
     ...options,
   })
 }
 
 function formatContext({
   implementation,
+  originalName,
   exportName,
 }: TransformModuleExportWrapContext) {
-  return { implementation, exportName }
+  return {
+    implementation,
+    ...(originalName && { originalName }),
+    exportName,
+  }
+}
+
+function restoreFunctionName(value: string, name?: string): string {
+  return name
+    ? `Object.defineProperty(${value}, "name", { value: ${JSON.stringify(name)} })`
+    : value
 }
 
 describe(transformModuleExportWrap, () => {
@@ -39,10 +50,12 @@ export default async function Page() {}
     expect(result.references.map(formatContext)).toEqual([
       {
         implementation: '$$module_0_implementation_action',
+        originalName: 'action',
         exportName: 'action',
       },
       {
         implementation: '$$module_1_implementation_loader',
+        originalName: 'loader',
         exportName: 'loader',
       },
       { implementation: 'local', exportName: 'renamed' },
@@ -52,6 +65,7 @@ export default async function Page() {}
       },
       {
         implementation: '$$module_4_implementation_Page',
+        originalName: 'Page',
         exportName: 'default',
       },
     ])
@@ -73,6 +87,7 @@ export default async function Page() {}
     expect(result.references.map(formatContext)).toEqual([
       {
         implementation: '$$module_0_implementation_selected',
+        originalName: 'selected',
         exportName: 'selected',
       },
     ])
@@ -80,8 +95,7 @@ export default async function Page() {}
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
       const $$module_0_implementation_selected = async () => {};
-      /* #__PURE__ */ Object.defineProperty($$module_0_implementation_selected, "name", { value: "selected" });
-      export const selected = /* #__PURE__ */ wrap($$module_0_implementation_selected, "selected"), skipped = async () => {}
+      export const selected = /* #__PURE__ */ wrap(Object.defineProperty($$module_0_implementation_selected, "name", { value: "selected" }), "selected"), skipped = async () => {}
       "
     `)
 

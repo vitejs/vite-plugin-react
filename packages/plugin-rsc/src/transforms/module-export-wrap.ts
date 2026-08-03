@@ -11,6 +11,7 @@ import { getDirectivePrologueEnd, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportWrapContext = {
   implementation: string
+  originalName?: string
   exportName: string
   meta: ModuleExportMeta
 }
@@ -53,10 +54,12 @@ export type TransformModuleExportWrapResult = {
  * const $$module_0_implementation_action = async function $$module_0_implementation_action(value) {
  *   return value
  * }
- * Object.defineProperty($$module_0_implementation_action, 'name', {
- *   value: 'action',
- * })
- * export const action = __WRAP__($$module_0_implementation_action, 'action')
+ * export const action = __WRAP__(
+ *   Object.defineProperty($$module_0_implementation_action, 'name', {
+ *     value: 'action',
+ *   }),
+ *   'action',
+ * )
  * const loader = createLoader()
  *
  * const $$module_1_binding_loader = __WRAP__(loader, 'loader')
@@ -64,7 +67,9 @@ export type TransformModuleExportWrapResult = {
  * ```
  *
  * Here, `__WRAP__(...)` represents the expression returned by the `generate`
- * callback for each `{ implementation, exportName, meta }` context.
+ * callback for each `{ implementation, originalName, exportName, meta }`
+ * context. `originalName` is present for directly exported functions whose
+ * source name must be restored by the generated expression.
  * `references` returns those contexts in wrapper creation order, while
  * `referenceNames` returns only their export names.
  *
@@ -100,8 +105,14 @@ export function transformModuleExportWrap(
     implementation: string,
     exportName: string,
     meta: ModuleExportMeta,
+    originalName?: string,
   ): TransformModuleExportWrapContext {
-    const context = { implementation, exportName, meta }
+    const context = {
+      implementation,
+      exportName,
+      meta,
+      ...(originalName && { originalName }),
+    }
     references.push(context)
     return context
   }
@@ -168,10 +179,7 @@ export function transformModuleExportWrap(
       node.body.start,
       `\nconst ${implementation} = ${originalPrefix}`,
     )
-    output.appendLeft(
-      node.end,
-      `;\n/* #__PURE__ */ Object.defineProperty(${implementation}, "name", { value: ${JSON.stringify(originalName)} });\n`,
-    )
+    output.appendLeft(node.end, ';\n')
     // 'use server'
     // export async function action() {}
     // ⬇️ (move after directives and before the wrapper)
@@ -180,7 +188,12 @@ export function transformModuleExportWrap(
     // export const action = __WRAP__($$module_0_implementation_action, 'action')
     output.move(node.start, node.end, hoistPosition)
 
-    const context = createContext(implementation, exportName, meta)
+    const context = createContext(
+      implementation,
+      exportName,
+      meta,
+      originalName,
+    )
     return generate(context)
   }
 

@@ -32,8 +32,8 @@ describe('source map fixtures', () => {
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
       const moduleWrapResult = transformModuleExportWrap(input, ast, {
-        generate: ({ implementation, exportName }) =>
-          `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
+        generate: ({ implementation, originalName, exportName }) =>
+          `registerServerReference(${restoreFunctionName(implementation, originalName)}, ${JSON.stringify(exportName)})`,
       })
       await expect(
         parseAstAsync(moduleWrapResult.output.toString()),
@@ -96,3 +96,9 @@ describe('source map fixtures', () => {
     })
   }
 })
+
+function restoreFunctionName(value: string, name?: string): string {
+  return name
+    ? `Object.defineProperty(${value}, "name", { value: ${JSON.stringify(name)} })`
+    : value
+}

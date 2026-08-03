@@ -31,6 +31,5 @@
 (2:60) "{\n" --> (3:79) "{\n"
 (3:0) "  return 'named function expression called'\n" --> (4:0) "  return 'named function expression called'\n"
 (4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"actionImplementation\" });\n"
-(2:0) "export const action = async function actionImplementation() {\n" --> (7:0) "export const action = /* #__PURE__ */ registerServerReference($$module_0_implementation_action, \"action\")\n"
+(2:0) "export const action = async function actionImplementation() {\n" --> (6:0) "export const action = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_action, \"name\", { value: \"actionImplementation\" }), \"action\")\n"
 ```

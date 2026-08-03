@@ -30,6 +30,5 @@
 (2:38) "{\n" --> (3:105) "{\n"
 (3:0) "  return 'named function called'\n" --> (4:0) "  return 'named function called'\n"
 (4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_namedFunction, \"name\", { value: \"namedFunction\" });\n"
-[unmapped] --> (7:0) "export const namedFunction = /* #__PURE__ */ registerServerReference($$module_0_implementation_namedFunction, \"namedFunction\");\n"
+[unmapped] --> (6:0) "export const namedFunction = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_namedFunction, \"name\", { value: \"namedFunction\" }), \"namedFunction\");\n"
 ```

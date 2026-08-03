@@ -33,6 +33,5 @@
 (2:33) "{\n" --> (3:60) "{\n"
 (3:0) "  return 'default anonymous function called'\n" --> (4:0) "  return 'default anonymous function called'\n"
 (4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_default, \"name\", { value: \"default\" });\n"
-[unmapped] --> (7:0) "export default /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+[unmapped] --> (6:0) "export default /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_default, \"name\", { value: \"default\" }), \"default\");\n"
 ```

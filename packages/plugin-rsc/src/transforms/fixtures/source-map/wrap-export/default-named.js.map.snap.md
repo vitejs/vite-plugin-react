@@ -31,7 +31,6 @@
 (2:53) "{\n" --> (3:119) "{\n"
 (3:0) "  return 'default named function called'\n" --> (4:0) "  return 'default named function called'\n"
 (4:0) "}\n" --> (5:0) "};\n"
-[unmapped] --> (6:0) "/* #__PURE__ */ Object.defineProperty($$module_0_implementation_defaultNamedFunction, \"name\", { value: \"defaultNamedFunction\" });\n"
-[unmapped] --> (7:0) "const defaultNamedFunction = /* #__PURE__ */ registerServerReference($$module_0_implementation_defaultNamedFunction, \"default\");\n"
-[unmapped] --> (8:0) "export default defaultNamedFunction;\n"
+[unmapped] --> (6:0) "const defaultNamedFunction = /* #__PURE__ */ registerServerReference(Object.defineProperty($$module_0_implementation_defaultNamedFunction, \"name\", { value: \"defaultNamedFunction\" }), \"default\");\n"
+[unmapped] --> (7:0) "export default defaultNamedFunction;\n"
 ```
