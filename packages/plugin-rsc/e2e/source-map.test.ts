@@ -66,7 +66,7 @@ const serverReferenceCases: {
   {
     route: '/specifiers',
     // Registration effects for export specifiers are appended without explicit
-    // mappings. These expectations record Rolldown's adjacent-source fallback.
+    // mappings. These expectations record bundler-specific adjacent fallbacks.
     references: [
       {
         name: 'local-alias',
@@ -75,13 +75,13 @@ const serverReferenceCases: {
       {
         name: 're-export',
         rolldown: '/src/features/specifiers/reexport.ts:0:0',
-        rollup: null,
+        rollup: '/src/features/specifiers/reexport.ts:2:0',
         result: 're-export called',
       },
       {
         name: 'export-all',
         rolldown: '/src/features/specifiers/export-all.ts:0:0',
-        rollup: null,
+        rollup: '/src/features/specifiers/export-all.ts:2:0',
       },
     ],
   },
