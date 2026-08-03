@@ -207,9 +207,20 @@ export function transformWrapExport(
         group.node.declaration.id
       ) {
         // preserve name scope for `function foo() {}` and `class Foo {}`
+        // e.g.
+        //   export default foo() {}
+        //   ^^^^^^^^^^^^^^
+        //.  ⬇️ (remove `export default`)
+        //   function foo() {}
         output.remove(group.node.start, group.node.declaration.start)
       } else {
         // otherwise we can introduce new variable
+        // e.g.
+        //   export default foo
+        //   ^^^^^^^^^^^^^^
+        //.  ⬇️ (replace `export default`)
+        //   const $$default = foo
+        //   ^^^^^^^^^^^^^^^^^
         output.update(
           group.node.start,
           group.node.declaration.start,

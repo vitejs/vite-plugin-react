@@ -1,5 +1,5 @@
 export * from './hoist'
-export type { ModuleExportMeta } from './module-exports'
+export * from './module-exports'
 export * from './module-export-effect'
 export * from './wrap-export'
 export * from './proxy-export'
