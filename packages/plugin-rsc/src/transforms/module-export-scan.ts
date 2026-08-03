@@ -12,15 +12,13 @@ import type {
   Program,
   VariableDeclaration,
   VariableDeclarator,
+  MaybeNamedFunctionDeclaration,
 } from 'estree'
 import type { ESTree } from 'vite'
 import { extractNames } from './utils'
 
 export type ModuleExportFunction =
-  | Extract<
-      ExportDefaultDeclaration['declaration'],
-      { type: 'FunctionDeclaration' }
-    >
+  | MaybeNamedFunctionDeclaration
   | FunctionExpression
   | ArrowFunctionExpression
 
