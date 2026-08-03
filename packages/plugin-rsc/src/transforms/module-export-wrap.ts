@@ -1,21 +1,13 @@
 import { tinyassert } from '@hiogawa/utils'
-import type {
-  ExportDefaultDeclaration,
-  FunctionDeclaration,
-  FunctionExpression,
-  ArrowFunctionExpression,
-  Node,
-  Program,
-} from 'estree'
+import type { Program } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
+import {
+  scanModuleExports,
+  type ModuleExportFunction,
+  type ModuleExportMeta,
+} from './module-export-scan'
 import { validateNonAsyncFunction } from './utils'
-
-type FunctionNode =
-  | FunctionDeclaration
-  | FunctionExpression
-  | ArrowFunctionExpression
 
 export type TransformModuleExportWrapContext = {
   implementation: string
@@ -144,7 +136,7 @@ export function transformModuleExportWrap(
   }
 
   function hoistFunction(
-    node: FunctionNode,
+    node: ModuleExportFunction,
     sourceName: string,
     exportName: string,
     meta: ModuleExportMeta,
@@ -204,9 +196,9 @@ export function transformModuleExportWrap(
       const meta = entry.meta
       if (!filter(entry.exportName, meta)) continue
 
-      if (group.declaration.type === 'FunctionDeclaration') {
+      if (group.directFunction) {
         const replacement = hoistFunction(
-          group.declaration,
+          group.directFunction,
           name,
           entry.exportName,
           meta,
@@ -234,12 +226,7 @@ export function transformModuleExportWrap(
       )
 
       for (const declarator of group.declarators) {
-        const directFunction =
-          declarator.node.id.type === 'Identifier' &&
-          declarator.node.init &&
-          isFunctionNode(declarator.node.init)
-            ? declarator.node.init
-            : undefined
+        const directFunction = declarator.directFunction
         let validate = false
 
         for (const entry of declarator.exports) {
@@ -342,10 +329,10 @@ export function transformModuleExportWrap(
         })
       }
     } else if (group.type === 'default') {
-      const declaration = group.node.declaration
       let meta: ModuleExportMeta
 
-      if (isFunctionNode(declaration)) {
+      if (group.directFunction) {
+        const declaration = group.directFunction
         // export default async function Page() {}
         // ⬇️
         // const $$module_0_implementation_Page = async function ...
@@ -377,6 +364,7 @@ export function transformModuleExportWrap(
             : `export default ${replacement};`,
         )
       } else {
+        const declaration = group.node.declaration
         let implementation: string
         if (declaration.type === 'ClassDeclaration' && declaration.id) {
           // export default class Page {}
@@ -429,16 +417,6 @@ export function transformModuleExportWrap(
     references,
     referenceNames: references.map((reference) => reference.exportName),
   }
-}
-
-function isFunctionNode(
-  node: Node | ExportDefaultDeclaration['declaration'],
-): node is FunctionNode {
-  return (
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'FunctionExpression' ||
-    node.type === 'ArrowFunctionExpression'
-  )
 }
 
 function getHoistPosition(ast: Program): number {

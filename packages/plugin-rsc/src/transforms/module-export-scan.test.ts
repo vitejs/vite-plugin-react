@@ -19,6 +19,7 @@ export * from './all'
   expect(groups[0]).toMatchObject({
     type: 'declaration',
     declaration: { type: 'FunctionDeclaration' },
+    directFunction: { type: 'FunctionDeclaration' },
     exports: [
       {
         localName: 'action',
@@ -35,6 +36,7 @@ export * from './all'
     declaration: { kind: 'const' },
     declarators: [
       {
+        directFunction: { type: 'ArrowFunctionExpression' },
         exports: [
           {
             localName: 'loader',
@@ -47,6 +49,7 @@ export * from './all'
         ],
       },
       {
+        directFunction: undefined,
         exports: [
           {
             localName: 'value',
@@ -64,6 +67,7 @@ export * from './all'
     type: 'variable-declaration',
     declarators: [
       {
+        directFunction: undefined,
         exports: [
           {
             localName: 'item',
@@ -97,13 +101,23 @@ export * from './all'
 })
 
 test.each([
-  ['export default function action() {}', 'named-declaration'],
-  ['export default action', 'identifier'],
-  ['export default () => {}', 'other'],
-] as const)('classifies %s', async (source, kind) => {
+  [
+    'export default function action() {}',
+    'named-declaration',
+    'FunctionDeclaration',
+  ],
+  ['export default action', 'identifier', undefined],
+  ['export default () => {}', 'other', 'ArrowFunctionExpression'],
+] as const)('classifies %s', async (source, kind, functionType) => {
   const ast = await parseAstAsync(source)
 
-  expect(scanModuleExports(ast)).toMatchObject([{ type: 'default', kind }])
+  expect(scanModuleExports(ast)).toMatchObject([
+    {
+      type: 'default',
+      kind,
+      directFunction: functionType ? { type: functionType } : undefined,
+    },
+  ])
 })
 
 test('flags string literal export names as unsupported', async () => {

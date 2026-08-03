@@ -4,7 +4,9 @@ import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
   ExportSpecifier,
+  ArrowFunctionExpression,
   FunctionDeclaration,
+  FunctionExpression,
   ClassDeclaration,
   Node,
   Program,
@@ -13,6 +15,14 @@ import type {
 } from 'estree'
 import type { ESTree } from 'vite'
 import { extractNames } from './utils'
+
+export type ModuleExportFunction =
+  | Extract<
+      ExportDefaultDeclaration['declaration'],
+      { type: 'FunctionDeclaration' }
+    >
+  | FunctionExpression
+  | ArrowFunctionExpression
 
 export type ModuleExportMeta = {
   /**
@@ -67,6 +77,7 @@ export type ModuleExportGroup =
       type: 'declaration'
       node: ExportNamedDeclaration
       declaration: FunctionDeclaration | ClassDeclaration
+      directFunction?: FunctionDeclaration
       exports: [ModuleExportEntry]
     }
   | {
@@ -78,6 +89,7 @@ export type ModuleExportGroup =
       declaration: VariableDeclaration
       declarators: {
         node: VariableDeclarator
+        directFunction?: ModuleExportFunction
         exports: ModuleExportEntry[]
       }[]
     }
@@ -109,6 +121,7 @@ export type ModuleExportGroup =
       kind: ModuleExportDefaultKind
       node: ExportDefaultDeclaration
       localName?: string
+      directFunction?: ModuleExportFunction
       meta: ModuleExportMeta
     }
 
@@ -129,12 +142,17 @@ export function scanModuleExports(
             node,
             declaration,
             declarators: declaration.declarations.map((declarator) => {
+              const directFunction =
+                declarator.id.type === 'Identifier' && declarator.init
+                  ? getFunctionNode(declarator.init)
+                  : undefined
               const isFunction =
                 declarator.id.type === 'Identifier' && declarator.init
                   ? getIsFunction(declarator.init)
                   : undefined
               return {
                 node: declarator,
+                directFunction,
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,
@@ -155,6 +173,10 @@ export function scanModuleExports(
             type: 'declaration',
             node,
             declaration: node.declaration,
+            directFunction:
+              node.declaration.type === 'FunctionDeclaration'
+                ? node.declaration
+                : undefined,
             exports: [
               {
                 localName: name,
@@ -201,6 +223,7 @@ export function scanModuleExports(
       let kind: ModuleExportDefaultKind
       let localName: string | undefined
       let meta: ModuleExportMeta
+      const directFunction = getFunctionNode(node.declaration)
       if (
         (node.declaration.type === 'FunctionDeclaration' ||
           node.declaration.type === 'ClassDeclaration') &&
@@ -221,7 +244,14 @@ export function scanModuleExports(
         kind = 'other'
         meta = { isFunction: getIsFunction(node.declaration) }
       }
-      groups.push({ type: 'default', kind, node, localName, meta })
+      groups.push({
+        type: 'default',
+        kind,
+        node,
+        localName,
+        directFunction,
+        meta,
+      })
     }
   }
 
@@ -231,13 +261,7 @@ export function scanModuleExports(
 function getIsFunction(
   node: Node | ExportDefaultDeclaration['declaration'],
 ): boolean | undefined {
-  if (
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'ArrowFunctionExpression' ||
-    node.type === 'FunctionExpression'
-  ) {
-    return true
-  }
+  if (getFunctionNode(node)) return true
   if (
     node.type === 'ClassDeclaration' ||
     node.type === 'Literal' ||
@@ -246,5 +270,17 @@ function getIsFunction(
     node.type === 'ClassExpression'
   ) {
     return false
+  }
+}
+
+function getFunctionNode(
+  node: Node | ExportDefaultDeclaration['declaration'],
+): ModuleExportFunction | undefined {
+  if (
+    node.type === 'FunctionDeclaration' ||
+    node.type === 'ArrowFunctionExpression' ||
+    node.type === 'FunctionExpression'
+  ) {
+    return node
   }
 }
