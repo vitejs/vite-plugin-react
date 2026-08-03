@@ -11,7 +11,6 @@ import { validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportWrapContext = {
   implementation: string
-  binding: string
   exportName: string
   meta: ModuleExportMeta
 }
@@ -22,10 +21,16 @@ export type TransformModuleExportWrapFilter = (
 ) => boolean
 
 export type TransformModuleExportWrapOptions = {
-  runtime: (context: TransformModuleExportWrapContext) => string
+  generate: (context: TransformModuleExportWrapContext) => string
   filter?: TransformModuleExportWrapFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
+}
+
+export type TransformModuleExportWrapResult = {
+  output: MagicString
+  references: TransformModuleExportWrapContext[]
+  referenceNames: string[]
 }
 
 /**
@@ -58,8 +63,8 @@ export type TransformModuleExportWrapOptions = {
  * export { $$module_1_binding_loader as loader }
  * ```
  *
- * Here, `__WRAP__(...)` represents the expression returned by the `runtime`
- * callback for each `{ implementation, binding, exportName, meta }` context.
+ * Here, `__WRAP__(...)` represents the expression returned by the `generate`
+ * callback for each `{ implementation, exportName, meta }` context.
  * `references` returns those contexts in wrapper creation order, while
  * `referenceNames` returns only their export names.
  *
@@ -73,16 +78,11 @@ export type TransformModuleExportWrapOptions = {
  * consistent with the other transform helpers.
  */
 export function transformModuleExportWrap(
-  source: string,
+  input: string,
   viteAst: ESTree.Program,
   options: TransformModuleExportWrapOptions,
-): {
-  output: MagicString
-  references: TransformModuleExportWrapContext[]
-  referenceNames: string[]
-} {
+): TransformModuleExportWrapResult {
   const ast = viteAst as unknown as Program
-  let input = source
   if (!input.endsWith('\n')) input += '\n'
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
@@ -92,17 +92,16 @@ export function transformModuleExportWrap(
 
   function createContext(
     implementation: string,
-    binding: string,
     exportName: string,
     meta: ModuleExportMeta,
   ): TransformModuleExportWrapContext {
-    const context = { implementation, binding, exportName, meta }
+    const context = { implementation, exportName, meta }
     references.push(context)
     return context
   }
 
-  function runtime(context: TransformModuleExportWrapContext): string {
-    return `/* #__PURE__ */ ${options.runtime(context)}`
+  function generate(context: TransformModuleExportWrapContext): string {
+    return `/* #__PURE__ */ ${options.generate(context)}`
   }
 
   function exportBinding(binding: string, exportName: string): string {
@@ -128,9 +127,9 @@ export function transformModuleExportWrap(
     // const $$module_0_binding_value = __WRAP__(value, 'value')
     // export { $$module_0_binding_value as value }
     const binding = createName('binding', exportName)
-    const context = createContext(implementation, binding, exportName, meta)
+    const context = createContext(implementation, exportName, meta)
     fallbackCode.push(
-      `const ${binding} = ${runtime(context)};`,
+      `const ${binding} = ${generate(context)};`,
       exportBinding(binding, exportName),
     )
   }
@@ -175,8 +174,8 @@ export function transformModuleExportWrap(
     // export const action = __WRAP__($$module_0_implementation_action, 'action')
     output.move(node.start, node.end, hoistPosition)
 
-    const context = createContext(implementation, sourceName, exportName, meta)
-    return runtime(context)
+    const context = createContext(implementation, exportName, meta)
+    return generate(context)
   }
 
   for (const group of scanModuleExports(viteAst)) {

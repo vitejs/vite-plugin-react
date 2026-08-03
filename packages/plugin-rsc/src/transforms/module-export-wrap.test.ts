@@ -7,12 +7,12 @@ import {
 
 async function transform(
   input: string,
-  options: Omit<TransformModuleExportWrapOptions, 'runtime'> = {},
+  options: Omit<TransformModuleExportWrapOptions, 'generate'> = {},
 ) {
   const ast = await parseAstAsync(input)
   return transformModuleExportWrap(input, ast, {
     ...options,
-    runtime: ({ implementation, exportName }) =>
+    generate: ({ implementation, exportName }) =>
       `wrap(${implementation}, ${JSON.stringify(exportName)})`,
   })
 }
@@ -133,7 +133,7 @@ export function recursive(depth) {
 `
     const ast = await parseAstAsync(input)
     const result = transformModuleExportWrap(input, ast, {
-      runtime: ({ implementation }) =>
+      generate: ({ implementation }) =>
         `Object.assign((...args) => ${implementation}(...args), { marker: "wrapped" })`,
     })
 

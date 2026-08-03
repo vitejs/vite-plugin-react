@@ -31,8 +31,8 @@ describe('source map fixtures', () => {
         generate: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
-      const moduleResult = transformModuleExportWrap(input, ast, {
-        runtime: ({ implementation, exportName }) =>
+      const moduleWrapResult = transformModuleExportWrap(input, ast, {
+        generate: ({ implementation, exportName }) =>
           `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
       })
       const outputs = [
@@ -48,8 +48,8 @@ describe('source map fixtures', () => {
         },
         {
           name: 'module-export-wrap',
-          output: moduleResult.output,
-          references: moduleResult.referenceNames,
+          output: moduleWrapResult.output,
+          references: moduleWrapResult.referenceNames,
         },
       ]
       await expect(
