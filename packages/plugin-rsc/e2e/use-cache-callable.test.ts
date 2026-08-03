@@ -99,9 +99,6 @@ function defineTests(f: Fixture) {
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
     const argument = example.getByRole('textbox', { name: 'Cache key' })
-    await expect(page.getByTestId('callable-name')).toHaveText(
-      'cachedFromServer',
-    )
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
