@@ -246,15 +246,19 @@ export function transformModuleExportEffect(
           node.declaration.type === 'ClassDeclaration') &&
         node.declaration.id
       ) {
+        // export default function foo() {}
+        // export default class Foo {}
         binding = node.declaration.id.name
         meta = {
           localName: binding,
           isFunction: getIsFunction(node.declaration),
         }
       } else if (node.declaration.type === 'Identifier') {
+        // export default foo
         binding = '$$effect_default'
         meta = { defaultExportIdentifierName: node.declaration.name }
       } else {
+        // export default () => {}
         binding = '$$effect_default'
         meta = { isFunction: getIsFunction(node.declaration) }
       }
@@ -263,12 +267,23 @@ export function transformModuleExportEffect(
       const effect = generate({ binding, exportName: 'default', meta })
 
       if (node.declaration.type === 'Identifier') {
+        // export default foo
+        //        ^^^^^^^^^^^
+        // ⬇️ (replace `default foo`)
+        // export const $$effect_default = foo
+        //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         const exportTokenEnd = node.start + 'export'.length
         output.update(
           exportTokenEnd,
           node.end,
           `const ${binding} = ${node.declaration.name};`,
         )
+        // export const $$effect_default = foo
+        // ^^^^^^
+        // ⬇️ (replace `export`)
+        // const $$effect_default = foo;
+        // registerServerReference($$effect_default, 'default'); // << effect
+        // export default $$effect_default;                      // << export
         replaceAndMove(
           node.start,
           exportTokenEnd,
@@ -287,12 +302,23 @@ export function transformModuleExportEffect(
           `${effect}\nexport default ${binding};`,
         )
       } else {
+        // export default () => { ... }
+        //        ^^^^^^^
+        // ⬇️ (replace `default`)
+        // export const $$effect_default = () => { ... };
+        //        ^^^^^^^^^^^^^^^^^^^^^^^^^
         const exportTokenEnd = node.start + 'export'.length
         output.update(
           exportTokenEnd,
           node.declaration.start,
           `const ${binding} = `,
         )
+        // export const $$effect_default = () => { ... };
+        // ^^^^^^
+        // ⬇️ (replace `export`)
+        // const $$effect_default = () => { ... };
+        // registerServerReference($$effect_default, 'default'); // << effect
+        // export default $$effect_default;                      // << export
         replaceAndMove(
           node.start,
           exportTokenEnd,
