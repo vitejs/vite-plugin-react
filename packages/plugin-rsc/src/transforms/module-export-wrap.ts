@@ -10,9 +10,16 @@ import {
 import { getDirectivePrologueEnd, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportWrapContext = {
+  /** The local expression that evaluates to the exported implementation. */
   implementation: string
+  /**
+   * The function's runtime name before rewriting a direct function export.
+   * When present, the generated expression is responsible for restoring it.
+   */
   originalName?: string
+  /** The public export name, or `"default"` for a default export. */
   exportName: string
+  /** Static metadata collected from the original export declaration. */
   meta: ModuleExportMeta
 }
 
