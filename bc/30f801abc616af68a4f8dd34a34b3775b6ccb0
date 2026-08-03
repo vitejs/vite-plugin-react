@@ -1,0 +1,55 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.md
+  s_07a88dca7df1ae::t_76abfda8629661 36
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_07a88dca7df1ae::t_08e3f4d2138279 55,64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.md
+  s_07a88dca7df1ae::t_13ef55f3a2f686 34-35
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_07a88dca7df1ae::t_87452b7de8c665 55,64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.map.snap.md
+  s_07a88dca7df1ae::t_3fe8f29fbaf357 33-38
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_07a88dca7df1ae::t_fa9c3ede1a4d06 54,61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.map.snap.md
+  s_07a88dca7df1ae::t_879576b4b1beb7 44-50
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_07a88dca7df1ae::t_4facdb5c28b929 71,84,86
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.map.snap.md
+  s_07a88dca7df1ae::t_d4a7fb74f641a3 34
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_07a88dca7df1ae::t_742a7823be72ba 54,63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.md
+  s_07a88dca7df1ae::t_11b5c881c4b207 33
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_07a88dca7df1ae::t_fcae139fa3b47f 54,63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.map.snap.md
+  s_07a88dca7df1ae::t_74a4e2c1ee8ddf 35-36
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_07a88dca7df1ae::t_12e4f02759889d 60,71
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_07a88dca7df1ae::t_177ce408b1a02f 36
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_07a88dca7df1ae::t_1d46c97f7241eb 57,67
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.md
+  s_07a88dca7df1ae::t_7f7cd3dcfa9fb0 40-46
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_07a88dca7df1ae::t_97ce39bf4f277f 65,76,78
+packages/plugin-rsc/src/transforms/module-export-wrap.test.ts
+  s_07a88dca7df1ae::t_555d0ae97cd240 15-16,23,26-36,53,58,68,90,98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bc30f801abc616af68a4f8dd34a34b3775b6ccb0",
+  "prompts": {},
+  "sessions": {
+    "s_07a88dca7df1ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_039bcc133ffeXR1lF1qWwdTmEh",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
