@@ -35,6 +35,9 @@ describe('source map fixtures', () => {
         generate: ({ implementation, exportName }) =>
           `registerServerReference(${implementation}, ${JSON.stringify(exportName)})`,
       })
+      await expect(
+        parseAstAsync(moduleWrapResult.output.toString()),
+      ).resolves.toBeDefined()
       const outputs = [
         {
           name: 'wrap-export',

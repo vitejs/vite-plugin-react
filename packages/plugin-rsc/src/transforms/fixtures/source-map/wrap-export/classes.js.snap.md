@@ -1,0 +1,88 @@
+## Input
+
+```js
+'use server'
+
+export class NamedClass {}
+
+export const ClassExpression = class InnerClass {}
+
+export default class DefaultClass {}
+```
+
+## wrap-export
+
+**Status:** transformed
+
+**References:** NamedClass, ClassExpression, default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NDY1ACd1c2Ugc2VydmVyJwoKY2xhc3MgTmFtZWRDbGFzcyB7fQoKbGV0IENsYXNzRXhwcmVzc2lvbiA9IGNsYXNzIElubmVyQ2xhc3Mge30KCmNsYXNzIERlZmF1bHRDbGFzcyB7fQpOYW1lZENsYXNzID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKE5hbWVkQ2xhc3MsICJOYW1lZENsYXNzIik7CmV4cG9ydCB7IE5hbWVkQ2xhc3MgfTsKQ2xhc3NFeHByZXNzaW9uID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKENsYXNzRXhwcmVzc2lvbiwgIkNsYXNzRXhwcmVzc2lvbiIpOwpleHBvcnQgeyBDbGFzc0V4cHJlc3Npb24gfTsKOwpjb25zdCAkJHdyYXBfRGVmYXVsdENsYXNzID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKERlZmF1bHRDbGFzcywgImRlZmF1bHQiKTsKZXhwb3J0IHsgJCR3cmFwX0RlZmF1bHRDbGFzcyBhcyBkZWZhdWx0IH07CjM4NwB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgY2xhc3MgTmFtZWRDbGFzcyB7fVxuXG5leHBvcnQgY29uc3QgQ2xhc3NFeHByZXNzaW9uID0gY2xhc3MgSW5uZXJDbGFzcyB7fVxuXG5leHBvcnQgZGVmYXVsdCBjbGFzcyBEZWZhdWx0Q2xhc3Mge31cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVKLEtBQUssQ0FBQyxVQUFVLENBQUMsQ0FBQzs7QUFFbEIsR0FBSyxDQUFDLGVBQWUsQ0FBQyxDQUFDLENBQUMsS0FBSyxDQUFDLFVBQVUsQ0FBQyxDQUFDOztBQUVsQyxLQUFLLENBQUMsWUFBWSxDQUFDLENBQUM7QUFKbkM7QUFBQTtBQUVBO0FBQUE7Ozs7In0=)
+
+```js
+'use server'
+
+class NamedClass {}
+
+let ClassExpression = class InnerClass {}
+
+class DefaultClass {}
+NamedClass = /* #__PURE__ */ registerServerReference(NamedClass, "NamedClass");
+export { NamedClass };
+ClassExpression = /* #__PURE__ */ registerServerReference(ClassExpression, "ClassExpression");
+export { ClassExpression };
+;
+const $$wrap_DefaultClass = /* #__PURE__ */ registerServerReference(DefaultClass, "default");
+export { $$wrap_DefaultClass as default };
+```
+
+## module-export-effect
+
+**Status:** transformed
+
+**References:** NamedClass, ClassExpression, default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MzQ3ACd1c2Ugc2VydmVyJwoKY2xhc3MgTmFtZWRDbGFzcyB7fQoKY29uc3QgQ2xhc3NFeHByZXNzaW9uID0gY2xhc3MgSW5uZXJDbGFzcyB7fQoKY2xhc3MgRGVmYXVsdENsYXNzIHt9CgpyZWdpc3RlclNlcnZlclJlZmVyZW5jZShOYW1lZENsYXNzLCAiTmFtZWRDbGFzcyIpOwpleHBvcnQgeyBOYW1lZENsYXNzIH07CgpyZWdpc3RlclNlcnZlclJlZmVyZW5jZShDbGFzc0V4cHJlc3Npb24sICJDbGFzc0V4cHJlc3Npb24iKTsKZXhwb3J0IHsgQ2xhc3NFeHByZXNzaW9uIH07CgpyZWdpc3RlclNlcnZlclJlZmVyZW5jZShEZWZhdWx0Q2xhc3MsICJkZWZhdWx0Iik7CmV4cG9ydCBkZWZhdWx0IERlZmF1bHRDbGFzczsKNDA5AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBjbGFzcyBOYW1lZENsYXNzIHt9XG5cbmV4cG9ydCBjb25zdCBDbGFzc0V4cHJlc3Npb24gPSBjbGFzcyBJbm5lckNsYXNzIHt9XG5cbmV4cG9ydCBkZWZhdWx0IGNsYXNzIERlZmF1bHRDbGFzcyB7fVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRUosS0FBSyxDQUFDLFVBQVUsQ0FBQyxDQUFDOztBQUVsQixLQUFLLENBQUMsZUFBZSxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsVUFBVSxDQUFDLENBQUM7O0FBRWxDLEtBQUssQ0FBQyxZQUFZLENBQUMsQ0FBQztBQUpuQztBQUFBO0FBQUE7QUFFQTtBQUFBO0FBQUE7QUFFQTtBQUFBO0FBQUE7In0=)
+
+```js
+'use server'
+
+class NamedClass {}
+
+const ClassExpression = class InnerClass {}
+
+class DefaultClass {}
+
+registerServerReference(NamedClass, "NamedClass");
+export { NamedClass };
+
+registerServerReference(ClassExpression, "ClassExpression");
+export { ClassExpression };
+
+registerServerReference(DefaultClass, "default");
+export default DefaultClass;
+```
+
+## module-export-wrap
+
+**Status:** transformed
+
+**References:** NamedClass, ClassExpression, default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NjAxACd1c2Ugc2VydmVyJwoKY2xhc3MgTmFtZWRDbGFzcyB7fQoKY29uc3QgQ2xhc3NFeHByZXNzaW9uID0gY2xhc3MgSW5uZXJDbGFzcyB7fQoKY2xhc3MgRGVmYXVsdENsYXNzIHt9Cgpjb25zdCAkJG1vZHVsZV8wX2JpbmRpbmdfTmFtZWRDbGFzcyA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZShOYW1lZENsYXNzLCAiTmFtZWRDbGFzcyIpOwpleHBvcnQgeyAkJG1vZHVsZV8wX2JpbmRpbmdfTmFtZWRDbGFzcyBhcyBOYW1lZENsYXNzIH07CmNvbnN0ICQkbW9kdWxlXzFfYmluZGluZ19DbGFzc0V4cHJlc3Npb24gPSAvKiAjX19QVVJFX18gKi8gcmVnaXN0ZXJTZXJ2ZXJSZWZlcmVuY2UoQ2xhc3NFeHByZXNzaW9uLCAiQ2xhc3NFeHByZXNzaW9uIik7CmV4cG9ydCB7ICQkbW9kdWxlXzFfYmluZGluZ19DbGFzc0V4cHJlc3Npb24gYXMgQ2xhc3NFeHByZXNzaW9uIH07CmNvbnN0ICQkbW9kdWxlXzJfYmluZGluZ19kZWZhdWx0ID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKERlZmF1bHRDbGFzcywgImRlZmF1bHQiKTsKZXhwb3J0IHsgJCRtb2R1bGVfMl9iaW5kaW5nX2RlZmF1bHQgYXMgZGVmYXVsdCB9OwozNzAAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGNsYXNzIE5hbWVkQ2xhc3Mge31cblxuZXhwb3J0IGNvbnN0IENsYXNzRXhwcmVzc2lvbiA9IGNsYXNzIElubmVyQ2xhc3Mge31cblxuZXhwb3J0IGRlZmF1bHQgY2xhc3MgRGVmYXVsdENsYXNzIHt9XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFSixLQUFLLENBQUMsVUFBVSxDQUFDLENBQUM7O0FBRWxCLEtBQUssQ0FBQyxlQUFlLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxVQUFVLENBQUMsQ0FBQzs7QUFFbEMsS0FBSyxDQUFDLFlBQVksQ0FBQyxDQUFDOzs7Ozs7OzsifQ==)
+
+```js
+'use server'
+
+class NamedClass {}
+
+const ClassExpression = class InnerClass {}
+
+class DefaultClass {}
+
+const $$module_0_binding_NamedClass = /* #__PURE__ */ registerServerReference(NamedClass, "NamedClass");
+export { $$module_0_binding_NamedClass as NamedClass };
+const $$module_1_binding_ClassExpression = /* #__PURE__ */ registerServerReference(ClassExpression, "ClassExpression");
+export { $$module_1_binding_ClassExpression as ClassExpression };
+const $$module_2_binding_default = /* #__PURE__ */ registerServerReference(DefaultClass, "default");
+export { $$module_2_binding_default as default };
+```

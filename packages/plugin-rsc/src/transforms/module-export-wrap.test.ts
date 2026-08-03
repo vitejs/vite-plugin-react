@@ -2,181 +2,121 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import {
   transformModuleExportWrap,
+  type TransformModuleExportWrapContext,
   type TransformModuleExportWrapOptions,
 } from './module-export-wrap'
 
 async function transform(
   input: string,
-  options: Omit<TransformModuleExportWrapOptions, 'generate'> = {},
+  options: Partial<TransformModuleExportWrapOptions> = {},
 ) {
   const ast = await parseAstAsync(input)
   return transformModuleExportWrap(input, ast, {
-    ...options,
     generate: ({ implementation, exportName }) =>
       `wrap(${implementation}, ${JSON.stringify(exportName)})`,
+    ...options,
   })
+}
+
+function formatContext({
+  implementation,
+  exportName,
+}: TransformModuleExportWrapContext) {
+  return { implementation, exportName }
 }
 
 describe(transformModuleExportWrap, () => {
-  test('hoists direct functions and replaces their original value sites', async () => {
-    const result = await transform(`
-'use cache'
-export async function action(value) {
-  return value
-}
-export const first = async () => 1, second = first
-export const named = async function inner() {
-  return inner
-}
-export default async function Page() {
-  return 'page'
-}
+  test('returns generated export contexts in order', async () => {
+    const result = await transform(`\
+export async function action() {}
+export const loader = async () => {}
+const local = async () => {}
+export { local as renamed }
+export { remote as forwarded } from './dep'
+export default async function Page() {}
 `)
-    const code = result.output.toString()
 
-    await expect(parseAstAsync(code)).resolves.toBeDefined()
-    expect(result.referenceNames).toEqual([
-      'action',
-      'first',
-      'second',
-      'named',
-      'default',
-    ])
-    expect(code).toContain(
-      'export const action = /* #__PURE__ */ wrap($$module_0_implementation_action, "action");',
-    )
-    expect(code).toContain(
-      'const $$module_0_implementation_action = async function $$module_0_implementation_action(value)',
-    )
-    expect(code).toContain(
-      'const first = /* #__PURE__ */ wrap($$module_1_implementation_first, "first"), second = first',
-    )
-    expect(code).toContain('export { first };')
-    expect(code).toContain(
-      'export const named = /* #__PURE__ */ wrap($$module_3_implementation_named, "named")',
-    )
-    expect(code).toContain(
-      'const $$module_3_implementation_named = async function inner()',
-    )
-    expect(code).toContain('return inner')
-    expect(code).toContain(
-      'Object.defineProperty($$module_3_implementation_named, "name", { value: "inner" })',
-    )
-    expect(code).toContain(
-      'const Page = /* #__PURE__ */ wrap($$module_4_implementation_Page, "default");\nexport default Page;',
-    )
-    expect(code).toContain(
-      'const $$module_2_binding_second = /* #__PURE__ */ wrap(second, "second");',
-    )
-    expect(code.indexOf("'use cache'")).toBeLessThan(
-      code.indexOf('const $$module_0_implementation_action'),
-    )
-    expect(code.indexOf('const $$module_0_implementation_action')).toBeLessThan(
-      code.indexOf('wrap($$module_0_implementation_action'),
-    )
-  })
-
-  test('wraps unresolved values at export boundaries', async () => {
-    const result = await transform(
-      `
-const local = factory()
-export { local as action }
-let current = first
-export default current
-current = second
-export { remote as loader } from './dep'
-export const { item } = { item: 1 }
-export * from './all'
-`,
-      { exportAll: 'preserve' },
-    )
-    const code = result.output.toString()
-
-    await expect(parseAstAsync(code)).resolves.toBeDefined()
-    expect(result.referenceNames).toEqual([
-      'action',
-      'default',
-      'loader',
-      'item',
-    ])
-    expect(result.references[3]!.meta).toEqual({
-      localName: 'item',
-      isFunction: undefined,
-    })
-    expect(code).toContain('const $$module_1_implementation_default = current')
-    expect(
-      code.indexOf('const $$module_1_implementation_default = current'),
-    ).toBeLessThan(code.indexOf('current = second'))
-    expect(code).toContain(
-      'const $$module_0_binding_action = /* #__PURE__ */ wrap(local, "action");',
-    )
-    expect(code).toContain(
-      'const $$module_1_binding_default = /* #__PURE__ */ wrap($$module_1_implementation_default, "default");',
-    )
-    expect(code).toContain(
-      "import { remote as $$module_2_implementation_loader } from './dep';",
-    )
-    expect(code).toContain(
-      'const $$module_3_binding_item = /* #__PURE__ */ wrap(item, "item");',
-    )
-    expect(code).toContain("export * from './all'")
-    expect(code).not.toContain('export { local as action }')
-    expect(code).not.toContain('export const { item }')
-  })
-
-  test('initializes implementations before wrappers and routes recursion through the wrapper', async () => {
-    const input = `
-export function recursive(depth) {
-  if (depth > 0) return recursive(depth - 1)
-  return recursive.marker
-}
-`
-    const ast = await parseAstAsync(input)
-    const result = transformModuleExportWrap(input, ast, {
-      generate: ({ implementation }) =>
-        `Object.assign((...args) => ${implementation}(...args), { marker: "wrapped" })`,
-    })
-
-    const module = await import(
-      `data:text/javascript,${encodeURIComponent(result.output.toString())}`
-    )
-    expect(module.recursive(1)).toBe('wrapped')
-  })
-
-  test('filters exports and validates selected functions', async () => {
-    const result = await transform(
-      `export const Page = async () => {}, value = 1\nexport * from './dep'`,
+    expect(result.references.map(formatContext)).toEqual([
       {
-        exportAll: 'preserve',
-        filter: (_name, meta) => meta.isFunction !== false,
-        rejectNonAsyncFunction: true,
+        implementation: '$$module_0_implementation_action',
+        exportName: 'action',
       },
-    )
-    const code = result.output.toString()
+      {
+        implementation: '$$module_1_implementation_loader',
+        exportName: 'loader',
+      },
+      { implementation: 'local', exportName: 'renamed' },
+      {
+        implementation: '$$module_3_implementation_forwarded',
+        exportName: 'forwarded',
+      },
+      {
+        implementation: '$$module_4_implementation_Page',
+        exportName: 'default',
+      },
+    ])
+    expect(result.referenceNames).toEqual([
+      'action',
+      'loader',
+      'renamed',
+      'forwarded',
+      'default',
+    ])
+  })
 
-    await expect(parseAstAsync(code)).resolves.toBeDefined()
-    expect(result.referenceNames).toEqual(['Page'])
-    expect(code).toContain('export const Page = /* #__PURE__ */ wrap(')
-    expect(code).toContain('value = 1')
-    expect(code).toContain("export * from './dep'")
+  test('filters generated and reported exports', async () => {
+    const input = `export const selected = async () => {}, skipped = async () => {}`
+    const result = await transform(input, {
+      filter: (name) => name === 'selected',
+    })
+
+    expect(result.references.map(formatContext)).toEqual([
+      {
+        implementation: '$$module_0_implementation_selected',
+        exportName: 'selected',
+      },
+    ])
+    expect(result.referenceNames).toEqual(['selected'])
+
+    const filtered = await transform(input, { filter: () => false })
+    expect(filtered.output.hasChanged()).toBe(false)
+    expect(filtered.references).toEqual([])
+    expect(filtered.referenceNames).toEqual([])
+  })
+
+  test('only validates selected exports as async functions', async () => {
+    const input = `export function action() {}`
 
     await expect(
-      transform(`export function action() {}`, {
-        rejectNonAsyncFunction: true,
-      }),
+      transform(input, { rejectNonAsyncFunction: true }),
     ).rejects.toThrow('unsupported non async function')
-    await expect(transform(`export * from './dep'`)).rejects.toThrow(
+
+    const filtered = await transform(input, {
+      rejectNonAsyncFunction: true,
+      filter: () => false,
+    })
+    expect(filtered.output.hasChanged()).toBe(false)
+    expect(filtered.references).toEqual([])
+  })
+
+  test('controls export-all preservation', async () => {
+    const input = `export * from './dep'`
+
+    await expect(transform(input)).rejects.toThrow(
       'unsupported ExportAllDeclaration',
     )
 
-    const defaultClass = await transform(
-      `export default (class Named { static value = 1 })`,
-    )
-    await expect(
-      parseAstAsync(defaultClass.output.toString()),
-    ).resolves.toBeDefined()
-    expect(defaultClass.output.toString()).toContain(
-      'const $$module_0_implementation_default = (class Named',
-    )
+    const preserved = await transform(input, { exportAll: 'preserve' })
+    expect(preserved.output.hasChanged()).toBe(false)
+    expect(preserved.references).toEqual([])
+  })
+
+  test('rejects string literal export names', async () => {
+    const input = `const value = 0; export { value as "my value" }`
+
+    await expect(transform(input)).rejects.toMatchObject({
+      message: 'unsupported string literal export name',
+      pos: input.indexOf('"my value"'),
+    })
   })
 })
