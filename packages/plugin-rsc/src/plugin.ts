@@ -70,12 +70,12 @@ import {
   slash,
 } from './plugins/vite-utils'
 import {
-  type TransformWrapExportFilter,
+  type TransformModuleExportWrapFilter,
   hasDirective,
   transformDirectiveProxyExport,
   transformExpandExportAll,
   transformServerActionServer,
-  transformWrapExport,
+  transformModuleExportWrap,
   findDirectives,
   type TransformExpandExportAllContext,
 } from './transforms'
@@ -2419,7 +2419,7 @@ function vitePluginRscCss(
   }: {
     id: string
     code: string
-  }): false | TransformWrapExportFilter {
+  }): false | TransformModuleExportWrapFilter {
     const { filename, query } = parseIdQuery(id)
     if ('vite-rsc-css-export' in query) {
       const value = query['vite-rsc-css-export']
@@ -2451,7 +2451,7 @@ function vitePluginRscCss(
     //   export const Page = () => {}
     return (_name: string, meta) =>
       !!(
-        (meta.isFunction && meta.declName && /^[A-Z]/.test(meta.declName)) ||
+        (meta.isFunction && meta.localName && /^[A-Z]/.test(meta.localName)) ||
         (meta.defaultExportIdentifierName &&
           /^[A-Z]/.test(meta.defaultExportIdentifierName))
       )
@@ -2753,19 +2753,19 @@ export async function transformRscCssExport(options: {
   ast: Awaited<ReturnType<typeof parseAstAsync>>
   code: string
   id?: string
-  filter: TransformWrapExportFilter
+  filter: TransformModuleExportWrapFilter
 }): Promise<{ output: MagicString } | undefined> {
   if (hasDirective(options.ast.body, 'use client')) {
     return
   }
 
-  const result = transformWrapExport(options.code, options.ast, {
-    runtime: (value, name, meta) =>
-      `__vite_rsc_wrap_css__(${value}, ${JSON.stringify(
-        meta.defaultExportIdentifierName ?? name,
+  const result = transformModuleExportWrap(options.code, options.ast, {
+    generate: ({ implementation, exportName, meta }) =>
+      `__vite_rsc_wrap_css__(${implementation}, ${JSON.stringify(
+        meta.defaultExportIdentifierName ?? exportName,
       )})`,
     filter: options.filter,
-    ignoreExportAllDeclaration: true,
+    exportAll: 'preserve',
   })
   if (result.output.hasChanged()) {
     if (!options.code.includes('__vite_rsc_react__')) {

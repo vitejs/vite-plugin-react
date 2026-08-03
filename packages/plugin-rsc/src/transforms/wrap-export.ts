@@ -51,6 +51,10 @@ export type TransformWrapExportOptions = {
   filter?: TransformWrapExportFilter
 }
 
+/**
+ * @deprecated Use `transformModuleExportEffect` for registration side effects,
+ * or `transformModuleExportWrap` when the runtime returns a canonical wrapper.
+ */
 export function transformWrapExport(
   input: string,
   viteAst: ESTree.Program,
