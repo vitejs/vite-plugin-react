@@ -464,14 +464,10 @@ export function transformModuleExportWrap(
           meta = group.meta
           if (!filter('default', meta)) continue
           validateNonAsyncFunction(options, declaration)
-          const prefix = input.slice(group.node.start, declaration.start)
           output.update(
             group.node.start,
             declaration.start,
-            prefix.replace(
-              /^export\s+default/,
-              () => `const ${implementation} =`,
-            ),
+            `const ${implementation} = `,
           )
         }
         emitWrappedBinding(implementation, 'default', meta)
