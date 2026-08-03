@@ -53,29 +53,32 @@ export type TransformModuleExportWrapResult = {
  *
  * ```js
  * 'use server'
- * export async function action(value) {
+ *
+ * export async function someFn(value) {
  *   return value
  * }
- * export const loader = createLoader()
+ *
+ * export const someValue = createSomeValue()
  * ```
  *
  * becomes:
  *
  * ```js
  * 'use server'
- * const $$module_0_implementation_action = async function $$module_0_implementation_action(value) {
+ *
+ * const $$module_0_implementation_someFn = async function $$module_0_implementation_someFn(value) {
  *   return value
  * }
- * export const action = __WRAP__(
- *   Object.defineProperty($$module_0_implementation_action, 'name', {
- *     value: 'action',
+ * export const someFn = __WRAP__(
+ *   Object.defineProperty($$module_0_implementation_someFn, 'name', {
+ *     value: 'someFn',
  *   }),
- *   'action',
+ *   'someFn',
  * )
- * const loader = createLoader()
  *
- * const $$module_1_binding_loader = __WRAP__(loader, 'loader')
- * export { $$module_1_binding_loader as loader }
+ * const someValue = createSomeValue()
+ * const $$module_1_binding_someValue = __WRAP__(someValue, 'someValue')
+ * export { $$module_1_binding_someValue as someValue }
  * ```
  *
  * Here, `__WRAP__(...)` represents the expression returned by the `generate`
