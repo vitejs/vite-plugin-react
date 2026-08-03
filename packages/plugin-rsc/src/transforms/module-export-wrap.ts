@@ -173,14 +173,7 @@ export function transformModuleExportWrap(
         let validate = false
 
         for (const entry of declarator.exports) {
-          const meta: ModuleExportMeta = {
-            ...entry.meta,
-            isFunction: directFunction
-              ? true
-              : declarator.node.init
-                ? getIsFunction(declarator.node.init)
-                : undefined,
-          }
+          const meta = entry.meta
           if (!filter(entry.exportName, meta)) continue
           validate = true
 
@@ -331,21 +324,6 @@ function isFunctionNode(
     node.type === 'FunctionExpression' ||
     node.type === 'ArrowFunctionExpression'
   )
-}
-
-function getIsFunction(
-  node: Node | ExportDefaultDeclaration['declaration'],
-): boolean | undefined {
-  if (isFunctionNode(node)) return true
-  if (
-    node.type === 'ClassDeclaration' ||
-    node.type === 'Literal' ||
-    node.type === 'ObjectExpression' ||
-    node.type === 'ArrayExpression' ||
-    node.type === 'ClassExpression'
-  ) {
-    return false
-  }
 }
 
 function getHoistPosition(ast: Program): number {

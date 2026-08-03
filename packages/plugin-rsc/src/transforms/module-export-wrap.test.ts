@@ -101,7 +101,7 @@ export * from './all'
     ])
     expect(result.references[3]!.meta).toEqual({
       localName: 'item',
-      isFunction: false,
+      isFunction: undefined,
     })
     expect(code).toContain('const $$module_1_implementation_default = current')
     expect(
