@@ -50,6 +50,9 @@ export type TransformModuleExportEffectResult = {
  * Server Function export site. React captures the `registerServerReference`
  * caller as the reference source location, so unmapped generated code can fall
  * back to an adjacent location. Re-exports map to their export statement.
+ *
+ * Generated bindings such as `$$effect_default` and `$$effect_import_*` are not
+ * deconflicted from user bindings, consistent with the other transform helpers.
  */
 export function transformModuleExportEffect(
   input: string,
@@ -60,9 +63,6 @@ export function transformModuleExportEffect(
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportEffectContext[] = []
-
-  // Generated-name collision detection is intentionally out of scope, matching
-  // the other transform helpers.
 
   function generate(context: TransformModuleExportEffectContext): string {
     references.push(context)
