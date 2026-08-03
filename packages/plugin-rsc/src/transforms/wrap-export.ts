@@ -5,7 +5,7 @@ import {
   scanModuleExports,
   type ModuleExportEntry,
   type ModuleExportMeta,
-} from './module-exports'
+} from './module-export-scan'
 import { validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
