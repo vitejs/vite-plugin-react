@@ -215,11 +215,9 @@ export function transformModuleExportEffect(
           let binding = specifier.local.name
           if (node.source) {
             binding = `$$effect_import_${exportName}`
-            const sourceTail = input
-              .slice(node.source.end, node.end)
-              .replace(/;?\s*$/, ';')
+            // TODO: Preserve import attributes from the original re-export.
             output.append(
-              `\nimport { ${specifier.local.name} as ${binding} } from ${node.source.raw}${sourceTail}`,
+              `\nimport { ${specifier.local.name} as ${binding} } from ${node.source.raw};`,
             )
           }
           effects.push(generate({ binding, exportName, meta }))
