@@ -5,11 +5,17 @@ import { state } from './state'
 
 export function FileDirectiveFromServer() {
   return (
-    <FileDirectiveFromServerClient
-      action={cachedFromServer}
-      executionCount={state.executionCount}
-      resetAction={resetAction}
-      result={state.result}
-    />
+    <>
+      <p>
+        Callable name:{' '}
+        <output data-testid="callable-name">{cachedFromServer.name}</output>
+      </p>
+      <FileDirectiveFromServerClient
+        action={cachedFromServer}
+        executionCount={state.executionCount}
+        resetAction={resetAction}
+        result={state.result}
+      />
+    </>
   )
 }

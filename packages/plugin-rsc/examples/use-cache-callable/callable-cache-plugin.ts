@@ -29,21 +29,25 @@ export function callableCachePlugin(): Plugin {
       const environmentName = this.environment.name
 
       if (environmentName === 'rsc') {
-        const runtime = (value: string, name: string) =>
+        const runtime = (value: string, name: string, originalName?: string) =>
           `$$ReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}),` +
+          (originalName
+            ? `Object.defineProperty($$cacheWrapper(${value}), "name", { value: ${JSON.stringify(originalName)} }),`
+            : `$$cacheWrapper(${value}),`) +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
           ? transformModuleExportWrap(code, ast, {
-              generate: ({ implementation, exportName }) =>
-                runtime(implementation, exportName),
+              generate: ({ implementation, originalName, exportName }) =>
+                runtime(implementation, exportName, originalName ?? exportName),
               rejectNonAsyncFunction: true,
             })
           : transformHoistInlineDirective(code, ast, {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
+              // TODO: Preserve the source function name once the inline hoist
+              // runtime callback exposes it.
               runtime,
             })
         if (!result.output.hasChanged()) {
