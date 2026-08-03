@@ -1,10 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
-import type {
-  ExportDefaultDeclaration,
-  Node,
-  Program,
-  VariableDeclaration,
-} from 'estree'
+import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { extractNames, validateNonAsyncFunction } from './utils'
@@ -14,7 +9,6 @@ import { extractNames, validateNonAsyncFunction } from './utils'
 // module-export-effect consumer needs this API surface.
 export type TransformModuleExportEffectMeta = {
   localName?: string
-  declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
   isFunction?: boolean
   defaultExportIdentifierName?: string
 }
@@ -94,12 +88,7 @@ export function transformModuleExportEffect(
           const binding = node.declaration.id.name
           const meta: TransformModuleExportEffectMeta = {
             localName: binding,
-            declarationKind:
-              node.declaration.type === 'FunctionDeclaration'
-                ? 'function'
-                : 'class',
-            isFunction:
-              node.declaration.type === 'FunctionDeclaration' ? true : false,
+            isFunction: getIsFunction(node.declaration),
           }
           if (!filter(binding, meta)) continue
           validateNonAsyncFunction(options, node.declaration)
@@ -123,7 +112,6 @@ export function transformModuleExportEffect(
             for (const binding of names) {
               const meta: TransformModuleExportEffectMeta = {
                 localName: binding,
-                declarationKind: node.declaration.kind,
                 isFunction,
               }
               if (filter(binding, meta)) {
@@ -206,12 +194,7 @@ export function transformModuleExportEffect(
         binding = node.declaration.id.name
         meta = {
           localName: binding,
-          declarationKind:
-            node.declaration.type === 'FunctionDeclaration'
-              ? 'function'
-              : 'class',
-          isFunction:
-            node.declaration.type === 'FunctionDeclaration' ? true : false,
+          isFunction: getIsFunction(node.declaration),
         }
       } else if (node.declaration.type === 'Identifier') {
         binding = '$$effect_default'
