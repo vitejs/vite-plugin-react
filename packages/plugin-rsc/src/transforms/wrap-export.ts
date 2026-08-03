@@ -201,11 +201,7 @@ export function transformWrapExport(
       }
     } else if (group.type === 'default') {
       const localName = group.localName ?? '$$default'
-      if (
-        (group.node.declaration.type === 'FunctionDeclaration' ||
-          group.node.declaration.type === 'ClassDeclaration') &&
-        group.node.declaration.id
-      ) {
+      if (group.kind === 'named-declaration') {
         // preserve name scope for `function foo() {}` and `class Foo {}`
         // e.g.
         //   export default foo() {}

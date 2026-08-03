@@ -89,10 +89,21 @@ export * from './all'
   })
   expect(groups[5]).toMatchObject({
     type: 'default',
+    kind: 'identifier',
     localName: undefined,
     meta: { defaultExportIdentifierName: 'action' },
   })
   expect(groups[6]).toMatchObject({ type: 'export-all' })
+})
+
+test.each([
+  ['export default function action() {}', 'named-declaration'],
+  ['export default action', 'identifier'],
+  ['export default () => {}', 'other'],
+] as const)('classifies %s', async (source, kind) => {
+  const ast = await parseAstAsync(source)
+
+  expect(scanModuleExports(ast)).toMatchObject([{ type: 'default', kind }])
 })
 
 test('flags string literal export names as unsupported', async () => {

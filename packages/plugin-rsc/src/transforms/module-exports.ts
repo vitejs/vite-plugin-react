@@ -56,6 +56,8 @@ export type ModuleExportSpecifier = {
   meta: ModuleExportMeta
 }
 
+type ModuleExportDefaultKind = 'named-declaration' | 'identifier' | 'other'
+
 export type ModuleExportGroup =
   | {
       /**
@@ -102,6 +104,7 @@ export type ModuleExportGroup =
        * export default value
        */
       type: 'default'
+      kind: ModuleExportDefaultKind
       node: ExportDefaultDeclaration
       localName?: string
       meta: ModuleExportMeta
@@ -193,6 +196,7 @@ export function scanModuleExports(
     } else if (node.type === 'ExportDefaultDeclaration') {
       // export default function foo() {}
       // export default value
+      let kind: ModuleExportDefaultKind
       let localName: string | undefined
       let meta: ModuleExportMeta
       if (
@@ -200,18 +204,20 @@ export function scanModuleExports(
           node.declaration.type === 'ClassDeclaration') &&
         node.declaration.id
       ) {
+        kind = 'named-declaration'
         localName = node.declaration.id.name
         meta = {
           localName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
         }
+      } else if (node.declaration.type === 'Identifier') {
+        kind = 'identifier'
+        meta = { defaultExportIdentifierName: node.declaration.name }
       } else {
-        meta =
-          node.declaration.type === 'Identifier'
-            ? { defaultExportIdentifierName: node.declaration.name }
-            : { isFunction: getIsFunction(node.declaration) }
+        kind = 'other'
+        meta = { isFunction: getIsFunction(node.declaration) }
       }
-      groups.push({ type: 'default', node, localName, meta })
+      groups.push({ type: 'default', kind, node, localName, meta })
     }
   }
 

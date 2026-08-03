@@ -1,4 +1,5 @@
 import { tinyassert } from '@hiogawa/utils'
+import type { Identifier } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { scanModuleExports, type ModuleExportMeta } from './module-exports'
@@ -175,7 +176,8 @@ export function transformModuleExportEffect(
       validateNonAsyncFunction(options, node.declaration)
       const effect = generate({ binding, exportName: 'default', meta })
 
-      if (node.declaration.type === 'Identifier') {
+      if (group.kind === 'identifier') {
+        const declaration = node.declaration as Identifier
         // export default foo
         //        ^^^^^^^^^^^
         // ⬇️ (replace `default foo`)
@@ -185,7 +187,7 @@ export function transformModuleExportEffect(
         output.update(
           exportTokenEnd,
           node.end,
-          `const ${binding} = ${node.declaration.name};`,
+          `const ${binding} = ${declaration.name};`,
         )
         // export const $$effect_default = foo
         // ^^^^^^
@@ -199,11 +201,13 @@ export function transformModuleExportEffect(
           input.length,
           `${effect}\nexport default ${binding};`,
         )
-      } else if (
-        (node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration') &&
-        node.declaration.id
-      ) {
+      } else if (group.kind === 'named-declaration') {
+        // export default function foo() {}
+        // ^^^^^^^^^^^^^^
+        // ⬇️
+        // function foo() {}
+        // registerServerReference(foo, 'default'); // << effect
+        // export default foo;                      // << export
         replaceAndMove(
           node.start,
           node.declaration.start,
