@@ -216,7 +216,7 @@ export function transformWrapExport(
           'const $$default = ',
         )
       }
-      const meta = getExportMeta(group.meta, true)
+      const meta = getExportMeta(group.meta)
       if (filter('default', meta)) {
         validateNonAsyncFunction(options, group.node.declaration)
       }
@@ -231,14 +231,6 @@ export function transformWrapExport(
   return { exportNames, output }
 }
 
-function getExportMeta(meta: ModuleExportMeta, isDefault = false): ExportMeta {
-  return isDefault
-    ? {
-        isFunction: meta.isFunction,
-        declName: meta.localName,
-        defaultExportIdentifierName: meta.defaultExportIdentifierName,
-      }
-    : meta.localName
-      ? { isFunction: meta.isFunction, declName: meta.localName }
-      : {}
+function getExportMeta({ localName, ...meta }: ModuleExportMeta): ExportMeta {
+  return { ...meta, ...(localName && { declName: localName }) }
 }
