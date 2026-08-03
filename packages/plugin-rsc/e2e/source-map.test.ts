@@ -10,6 +10,7 @@ type ReferenceCase = {
   name: string
   rolldown: string
   rollup?: string | null
+  result?: string
 }
 
 // TODO: Add separate CDP stack coverage for Server Action and Server Component
@@ -64,20 +65,23 @@ const serverReferenceCases: {
   },
   {
     route: '/specifiers',
+    // Registration effects for export specifiers are appended without explicit
+    // mappings. These expectations record bundler-specific adjacent fallbacks.
     references: [
       {
         name: 'local-alias',
-        rolldown: '/src/features/specifiers/local-alias.ts:6:0',
+        rolldown: '/src/features/specifiers/local-alias.ts:4:0',
       },
       {
         name: 're-export',
-        rolldown: '/src/features/specifiers/reexport.ts:2:0',
-        rollup: null,
+        rolldown: '/src/features/specifiers/reexport.ts:0:0',
+        rollup: '/src/features/specifiers/reexport.ts:2:0',
+        result: 're-export called',
       },
       {
         name: 'export-all',
-        rolldown: '/src/features/specifiers/export-all.ts:2:0',
-        rollup: null,
+        rolldown: '/src/features/specifiers/export-all.ts:0:0',
+        rollup: '/src/features/specifiers/export-all.ts:2:0',
       },
     ],
   },
@@ -181,6 +185,14 @@ test.describe('source map', () => {
             ? reference.rolldown
             : reference.rollup
         expect.soft(actual).toBe(expected)
+
+        if (reference.result) {
+          const button = page.getByRole('button', {
+            name: new RegExp(`^${reference.name}:`),
+          })
+          await button.click()
+          await expect(button).toContainText(reference.result)
+        }
       }
     })
   }

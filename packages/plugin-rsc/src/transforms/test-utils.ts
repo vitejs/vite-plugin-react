@@ -10,14 +10,25 @@ export function formatSourceMapMarkdownFixture(
   input: string,
   outputs: readonly SourceMapFixtureOutput[],
 ): string {
-  const sections = [`## Input\n\n${formatCodeBlock('js', input)}`]
+  const sections = []
+  sections.push(`\
+## Input
+
+${formatCodeBlock('js', input)}`)
   for (const { name, output, references } of outputs) {
     const code = output.toString()
     const map = output.generateMap({ includeContent: true, hires: 'boundary' })
     const visualization = generateVisualizationLink(code, map.toString())
-    sections.push(
-      `## ${name}\n\n**Status:** ${output.hasChanged() ? 'transformed' : 'unchanged'}\n\n**References:** ${references?.join(', ') || '(none)'}\n\n[Source map visualization](${visualization})\n\n${formatCodeBlock('js', code)}`,
-    )
+    sections.push(`\
+## ${name}
+
+**Status:** ${output.hasChanged() ? 'transformed' : 'unchanged'}
+
+**References:** ${references?.join(', ') || '(none)'}
+
+[Source map visualization](${visualization})
+
+${formatCodeBlock('js', code)}`)
   }
   return sections.join('\n\n') + '\n'
 }
@@ -29,7 +40,10 @@ export function formatDecodedSourceMapMarkdown(
     outputs
       .map(
         ({ name, output }) =>
-          `## ${name}\n\n${formatCodeBlock('txt', formatDecodedSourceMap(output))}`,
+          `\
+## ${name}
+
+${formatCodeBlock('txt', formatDecodedSourceMap(output))}`,
       )
       .join('\n\n') + '\n'
   )

@@ -8,7 +8,6 @@ export function transformServerActionServer(
   input: string,
   ast: ESTree.Program,
   options: {
-    /** Must register the supplied function operationally for module directives. */
     runtime: (value: string, name: string) => string
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
@@ -29,7 +28,7 @@ export function transformServerActionServer(
   if (hasDirective(ast.body, 'use server')) {
     const result = transformModuleExportEffect(input, ast, {
       rejectNonAsyncFunction: options.rejectNonAsyncFunction,
-      runtime: ({ binding, exportName }) =>
+      generate: ({ binding, exportName }) =>
         options.runtime(binding, exportName),
     })
     return { ...result, exportNames: result.referenceNames }

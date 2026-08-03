@@ -39,7 +39,7 @@ export function customServerFunctionPlugin(): Plugin {
         const result = hasDirective(ast.body, directive)
           ? transformModuleExportEffect(code, ast, {
               rejectNonAsyncFunction: true,
-              runtime: ({ binding, exportName }) =>
+              generate: ({ binding, exportName }) =>
                 runtime(binding, exportName),
             })
           : transformHoistInlineDirective(code, ast, {
