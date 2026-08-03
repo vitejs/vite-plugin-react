@@ -25,7 +25,6 @@ export * from './all'
         exportName: 'action',
         meta: {
           localName: 'action',
-          declarationKind: 'function',
           isFunction: true,
         },
       },
@@ -42,7 +41,6 @@ export * from './all'
             exportName: 'loader',
             meta: {
               localName: 'loader',
-              declarationKind: 'const',
               isFunction: true,
             },
           },
@@ -55,7 +53,6 @@ export * from './all'
             exportName: 'value',
             meta: {
               localName: 'value',
-              declarationKind: 'const',
               isFunction: false,
             },
           },
@@ -73,7 +70,6 @@ export * from './all'
             exportName: 'item',
             meta: {
               localName: 'item',
-              declarationKind: 'const',
               isFunction: undefined,
             },
           },

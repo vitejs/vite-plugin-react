@@ -7,7 +7,6 @@ import type {
   ClassDeclaration,
   Node,
   Program,
-  VariableDeclaration,
   VariableDeclarator,
 } from 'estree'
 import type { ESTree } from 'vite'
@@ -23,8 +22,6 @@ export type ModuleExportMeta = {
    * - `undefined` for `export { Page }`
    */
   localName?: string
-  /** The source declaration kind when statically available. */
-  declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
   /**
    * Whether the exported value is statically known to be a function.
    *
@@ -122,7 +119,6 @@ export function scanModuleExports(
                   exportName: name,
                   meta: {
                     localName: name,
-                    declarationKind: declaration.kind,
                     isFunction,
                   },
                 })),
@@ -146,10 +142,6 @@ export function scanModuleExports(
                 exportName: name,
                 meta: {
                   localName: name,
-                  declarationKind:
-                    node.declaration.type === 'FunctionDeclaration'
-                      ? 'function'
-                      : 'class',
                   isFunction: getIsFunction(node.declaration),
                 },
               },
@@ -202,10 +194,6 @@ export function scanModuleExports(
         localName = node.declaration.id.name
         meta = {
           localName: node.declaration.id.name,
-          declarationKind:
-            node.declaration.type === 'FunctionDeclaration'
-              ? 'function'
-              : 'class',
           isFunction: getIsFunction(node.declaration),
         }
       } else {
