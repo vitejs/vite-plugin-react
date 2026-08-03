@@ -77,6 +77,13 @@ export default async function Page() {}
       },
     ])
     expect(result.referenceNames).toEqual(['selected'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "
+      const $$module_0_implementation_selected = async () => {};
+      /* #__PURE__ */ Object.defineProperty($$module_0_implementation_selected, "name", { value: "selected" });
+      export const selected = /* #__PURE__ */ wrap($$module_0_implementation_selected, "selected"), skipped = async () => {}
+      "
+    `)
 
     const filtered = await transform(input, { filter: () => false })
     expect(filtered.output.hasChanged()).toBe(false)
