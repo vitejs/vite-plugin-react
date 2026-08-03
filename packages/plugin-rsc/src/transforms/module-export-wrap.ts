@@ -59,6 +59,8 @@ export type TransformModuleExportWrapResult = {
  * }
  *
  * export const someValue = createSomeValue()
+ *
+ * consume(someFn, someValue)
  * ```
  *
  * becomes:
@@ -77,6 +79,9 @@ export type TransformModuleExportWrapResult = {
  * )
  *
  * const someValue = createSomeValue()
+ *
+ * consume(someFn, someValue)
+ *
  * const $$module_1_binding_someValue = __WRAP__(someValue, 'someValue')
  * export { $$module_1_binding_someValue as someValue }
  * ```
@@ -88,11 +93,10 @@ export type TransformModuleExportWrapResult = {
  * `references` returns those contexts in wrapper creation order, while
  * `referenceNames` returns only their export names.
  *
- * Direct function implementations move after leading directives and before
- * their wrappers. This avoids initialization-order issues and makes recursive
- * references resolve through the exported wrapper. Other values retain their
- * source initialization and receive a separate canonical binding at the export
- * boundary.
+ * A direct function export makes its source name the canonical wrapper binding,
+ * so local and imported reads of `someFn` receive the same value. Other exports
+ * retain their source binding and receive a separate wrapper at the export
+ * boundary, so the local `someValue` above remains the unwrapped value.
  *
  * Generated `$$module_*` names are not deconflicted from user bindings,
  * consistent with the other transform helpers.
