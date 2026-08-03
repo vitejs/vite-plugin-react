@@ -192,6 +192,9 @@ export function transformWrapExport(
         }
       }
     } else if (group.type === 'export-all') {
+      // Vue SFC uses ExportAllDeclaration to re-export its setup script, so
+      // consumers can opt out of rejecting this form.
+      // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
       if (!options.ignoreExportAllDeclaration) {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
           pos: group.node.start,

@@ -80,6 +80,9 @@ export function scanModuleExports(
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
         if (node.declaration.type === 'VariableDeclaration') {
+          /**
+           * export const foo = 1, bar = 2
+           */
           const declaration = node.declaration
           groups.push({
             type: 'variable-declaration',
@@ -105,6 +108,10 @@ export function scanModuleExports(
             }),
           })
         } else {
+          /**
+           * export function foo() {}
+           * export class Foo {}
+           */
           tinyassert(node.declaration.id)
           const name = node.declaration.id.name
           groups.push({
@@ -128,6 +135,10 @@ export function scanModuleExports(
           })
         }
       } else {
+        /**
+         * export { foo, bar as baz }
+         * export { foo, bar as baz } from './dep'
+         */
         groups.push({
           type: 'specifiers',
           node,
@@ -148,8 +159,17 @@ export function scanModuleExports(
         })
       }
     } else if (node.type === 'ExportAllDeclaration') {
+      /**
+       * export * as ns from './dep'
+       * export * from './dep'
+       */
       groups.push({ type: 'export-all', node })
     } else if (node.type === 'ExportDefaultDeclaration') {
+      /**
+       * export default function foo() {}
+       * export default class Foo {}
+       * export default () => {}
+       */
       let localName: string | undefined
       let meta: ModuleExportMeta
       if (
