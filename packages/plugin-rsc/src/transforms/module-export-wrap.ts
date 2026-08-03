@@ -15,6 +15,11 @@ export type TransformModuleExportWrapContext = {
   /**
    * The function's runtime name before rewriting a direct function export.
    * When present, the generated expression is responsible for restoring it.
+   *
+   * - `"action"` for `export const action = () => {}`
+   * - `"implementation"` for `export const action = function implementation() {}`
+   * - `"default"` for `export default () => {}`
+   * - `undefined` for an indirect export such as `export { action }`
    */
   originalName?: string
   /** The public export name, or `"default"` for a default export. */
