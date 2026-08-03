@@ -472,37 +472,4 @@ export default cached;
       expect(actual).toEqual(expected)
     }
   })
-
-  test('reuses export meta across callbacks', async () => {
-    const input =
-      'export const action = async () => {}; export default async () => {}'
-    const ast = await parseAstAsync(input)
-    const filtered: unknown[] = []
-    const runtime: unknown[] = []
-
-    transformWrapExport(input, ast, {
-      filter(_name, meta) {
-        filtered.push(meta)
-        return true
-      },
-      runtime(value, _name, meta) {
-        runtime.push(meta)
-        return value
-      },
-    })
-
-    expect(filtered[0]).toBe(filtered[1])
-    expect(filtered[0]).toBe(runtime[0])
-    expect(Object.keys(filtered[0] as object)).toEqual([
-      'isFunction',
-      'declName',
-    ])
-    expect(filtered[2]).toBe(filtered[3])
-    expect(filtered[2]).toBe(runtime[1])
-    expect(Object.keys(filtered[2] as object)).toEqual([
-      'isFunction',
-      'declName',
-      'defaultExportIdentifierName',
-    ])
-  })
 })

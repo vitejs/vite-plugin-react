@@ -63,7 +63,6 @@ export function transformWrapExport(
   const exportNames: string[] = []
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
-  const exportMeta = new WeakMap<ModuleExportMeta, ExportMeta>()
 
   function wrapSimple(
     start: number,
@@ -230,24 +229,16 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
+}
 
-  function getExportMeta(
-    meta: ModuleExportMeta,
-    isDefault = false,
-  ): ExportMeta {
-    let result = exportMeta.get(meta)
-    if (!result) {
-      result = isDefault
-        ? {
-            isFunction: meta.isFunction,
-            declName: meta.localName,
-            defaultExportIdentifierName: meta.defaultExportIdentifierName,
-          }
-        : meta.localName
-          ? { isFunction: meta.isFunction, declName: meta.localName }
-          : {}
-      exportMeta.set(meta, result)
-    }
-    return result
-  }
+function getExportMeta(meta: ModuleExportMeta, isDefault = false): ExportMeta {
+  return isDefault
+    ? {
+        isFunction: meta.isFunction,
+        declName: meta.localName,
+        defaultExportIdentifierName: meta.defaultExportIdentifierName,
+      }
+    : meta.localName
+      ? { isFunction: meta.isFunction, declName: meta.localName }
+      : {}
 }
