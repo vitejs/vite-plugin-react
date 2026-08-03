@@ -56,12 +56,19 @@ export type ModuleExportSpecifier = {
 
 export type ModuleExportGroup =
   | {
+      /**
+       * export function foo() {}
+       * export class Foo {}
+       */
       type: 'declaration'
       node: ExportNamedDeclaration
       declaration: FunctionDeclaration | ClassDeclaration
       exports: [ModuleExportEntry]
     }
   | {
+      /**
+       * export const foo = 1, bar = 2
+       */
       type: 'variable-declaration'
       node: ExportNamedDeclaration
       declaration: Extract<
@@ -74,15 +81,27 @@ export type ModuleExportGroup =
       }[]
     }
   | {
+      /**
+       * export { foo as bar }
+       * export { foo as bar } from './dep'
+       */
       type: 'specifiers'
       node: ExportNamedDeclaration
       exports: ModuleExportSpecifier[]
     }
   | {
+      /**
+       * export * from './dep'
+       * export * as ns from './dep'
+       */
       type: 'export-all'
       node: Extract<Program['body'][number], { type: 'ExportAllDeclaration' }>
     }
   | {
+      /**
+       * export default function foo() {}
+       * export default value
+       */
       type: 'default'
       node: ExportDefaultDeclaration
       localName?: string
@@ -99,9 +118,6 @@ export function scanModuleExports(
     if (node.type === 'ExportNamedDeclaration') {
       if (node.declaration) {
         if (node.declaration.type === 'VariableDeclaration') {
-          /**
-           * export const foo = 1, bar = 2
-           */
           const declaration = node.declaration
           groups.push({
             type: 'variable-declaration',
@@ -126,10 +142,6 @@ export function scanModuleExports(
             }),
           })
         } else {
-          /**
-           * export function foo() {}
-           * export class Foo {}
-           */
           tinyassert(node.declaration.id)
           const name = node.declaration.id.name
           groups.push({
@@ -149,10 +161,6 @@ export function scanModuleExports(
           })
         }
       } else {
-        /**
-         * export { foo, bar as baz }
-         * export { foo, bar as baz } from './dep'
-         */
         groups.push({
           type: 'specifiers',
           node,
@@ -173,17 +181,8 @@ export function scanModuleExports(
         })
       }
     } else if (node.type === 'ExportAllDeclaration') {
-      /**
-       * export * as ns from './dep'
-       * export * from './dep'
-       */
       groups.push({ type: 'export-all', node })
     } else if (node.type === 'ExportDefaultDeclaration') {
-      /**
-       * export default function foo() {}
-       * export default class Foo {}
-       * export default () => {}
-       */
       let localName: string | undefined
       let meta: ModuleExportMeta
       if (
