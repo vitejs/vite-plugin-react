@@ -6,7 +6,6 @@ import type {
   ArrowFunctionExpression,
   Node,
   Program,
-  VariableDeclaration,
 } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
@@ -18,20 +17,16 @@ type FunctionNode =
   | FunctionExpression
   | ArrowFunctionExpression
 
-export type TransformModuleExportWrapMeta = ModuleExportMeta & {
-  declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
-}
-
 export type TransformModuleExportWrapContext = {
   implementation: string
   binding: string
   exportName: string
-  meta: TransformModuleExportWrapMeta
+  meta: ModuleExportMeta
 }
 
 export type TransformModuleExportWrapFilter = (
   name: string,
-  meta: TransformModuleExportWrapMeta,
+  meta: ModuleExportMeta,
 ) => boolean
 
 export type TransformModuleExportWrapOptions = {
@@ -68,7 +63,7 @@ export function transformModuleExportWrap(
     implementation: string,
     binding: string,
     exportName: string,
-    meta: TransformModuleExportWrapMeta,
+    meta: ModuleExportMeta,
   ): TransformModuleExportWrapContext {
     const context = { implementation, binding, exportName, meta }
     references.push(context)
@@ -95,7 +90,7 @@ export function transformModuleExportWrap(
   function emitFallback(
     implementation: string,
     exportName: string,
-    meta: TransformModuleExportWrapMeta,
+    meta: ModuleExportMeta,
   ): void {
     const binding = createName('binding', exportName)
     const context = createContext(implementation, binding, exportName, meta)
@@ -109,7 +104,7 @@ export function transformModuleExportWrap(
     node: FunctionNode,
     sourceName: string,
     exportName: string,
-    meta: TransformModuleExportWrapMeta,
+    meta: ModuleExportMeta,
   ): string {
     validateNonAsyncFunction(options, node)
     const implementation = createName('implementation', sourceName)
@@ -143,13 +138,7 @@ export function transformModuleExportWrap(
     if (group.type === 'declaration') {
       const [entry] = group.exports
       const { localName: name } = entry
-      const meta: TransformModuleExportWrapMeta = {
-        ...entry.meta,
-        declarationKind:
-          group.declaration.type === 'FunctionDeclaration'
-            ? 'function'
-            : 'class',
-      }
+      const meta = entry.meta
       if (!filter(entry.exportName, meta)) continue
 
       if (group.declaration.type === 'FunctionDeclaration') {
@@ -184,9 +173,8 @@ export function transformModuleExportWrap(
         let validate = false
 
         for (const entry of declarator.exports) {
-          const meta: TransformModuleExportWrapMeta = {
+          const meta: ModuleExportMeta = {
             ...entry.meta,
-            declarationKind: group.declaration.kind,
             isFunction: directFunction
               ? true
               : declarator.node.init
@@ -274,18 +262,14 @@ export function transformModuleExportWrap(
       }
     } else if (group.type === 'default') {
       const declaration = group.node.declaration
-      let meta: TransformModuleExportWrapMeta
+      let meta: ModuleExportMeta
 
       if (isFunctionNode(declaration)) {
         const sourceName =
           declaration.type !== 'ArrowFunctionExpression' && declaration.id
             ? declaration.id.name
             : 'default'
-        meta = {
-          ...group.meta,
-          declarationKind:
-            declaration.type === 'FunctionDeclaration' ? 'function' : undefined,
-        }
+        meta = group.meta
         if (!filter('default', meta)) continue
 
         const replacement = hoistFunction(
@@ -305,10 +289,7 @@ export function transformModuleExportWrap(
         let implementation: string
         if (declaration.type === 'ClassDeclaration' && declaration.id) {
           implementation = declaration.id.name
-          meta = {
-            ...group.meta,
-            declarationKind: 'class',
-          }
+          meta = group.meta
           if (!filter('default', meta)) continue
           output.remove(group.node.start, declaration.start)
         } else {
