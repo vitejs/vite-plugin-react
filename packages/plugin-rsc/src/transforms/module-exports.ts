@@ -1,5 +1,6 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
+  ExportAllDeclaration,
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
   ExportSpecifier,
@@ -7,6 +8,7 @@ import type {
   ClassDeclaration,
   Node,
   Program,
+  VariableDeclaration,
   VariableDeclarator,
 } from 'estree'
 import type { ESTree } from 'vite'
@@ -71,10 +73,7 @@ export type ModuleExportGroup =
        */
       type: 'variable-declaration'
       node: ExportNamedDeclaration
-      declaration: Extract<
-        ExportNamedDeclaration['declaration'],
-        { type: 'VariableDeclaration' }
-      >
+      declaration: VariableDeclaration
       declarators: {
         node: VariableDeclarator
         exports: ModuleExportEntry[]
@@ -95,7 +94,7 @@ export type ModuleExportGroup =
        * export * as ns from './dep'
        */
       type: 'export-all'
-      node: Extract<Program['body'][number], { type: 'ExportAllDeclaration' }>
+      node: ExportAllDeclaration
     }
   | {
       /**
