@@ -113,7 +113,7 @@ export function transformModuleExportWrap(
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportWrapContext[] = []
-  const fallbackCode: string[] = []
+  const wrappedBindingCode: string[] = []
   const hoistPosition = getDirectivePrologueEnd(ast)
 
   function createContext(
@@ -155,13 +155,13 @@ export function transformModuleExportWrap(
    * generated wrapper is assigned to a separate binding and exported after the
    * source declarations, leaving the original local binding unchanged.
    *
-   * For `emitFallback('value', 'renamed', meta)`:
+   * For `emitWrappedBinding('value', 'renamed', meta)`:
    *
    * ```js
    * // Existing source initialization, left in place
    * const value = init()
    *
-   * // Code appended by emitFallback
+   * // Code appended by emitWrappedBinding
    * const $$module_0_binding_renamed = __WRAP__(value, 'renamed')
    * export { $$module_0_binding_renamed as renamed }
    * ```
@@ -170,14 +170,14 @@ export function transformModuleExportWrap(
    * @param exportName Public name for the generated export.
    * @param meta Static metadata collected from the original export.
    */
-  function emitFallback(
+  function emitWrappedBinding(
     implementation: string,
     exportName: string,
     meta: ModuleExportMeta,
   ): void {
     const binding = createName('binding', exportName)
     const context = createContext(implementation, exportName, meta)
-    fallbackCode.push(
+    wrappedBindingCode.push(
       `const ${binding} = ${generate(context)};`,
       exportBinding(binding, exportName),
     )
@@ -251,36 +251,36 @@ export function transformModuleExportWrap(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      // export function f() {}
-      // ⬇️ (hoist implementation and replace declaration)
-      // const $$module_0_implementation_f = function ...
-      // export const f = __WRAP__($$module_0_implementation_f, 'f')
-      //
-      // export class C {}
-      // ⬇️ (keep initialization in place and append fallback)
-      // class C {}
-      // const $$module_0_binding_C = __WRAP__(C, 'C')
-      // export { $$module_0_binding_C as C }
       const [entry] = group.exports
       const { localName: name } = entry
       const meta = entry.meta
       if (!filter(entry.exportName, meta)) continue
 
       if (group.directFunction) {
+        // export function f() {}
+        // ⬇️ (hoist implementation and replace declaration)
+        // const $$module_0_implementation_f = function ...
+        // export const f = __WRAP__($$module_0_implementation_f, 'f')
         const replacement = hoistFunction(
           group.directFunction,
           name,
           entry.exportName,
           meta,
         )
+        // strip `export`
         output.remove(group.node.start, group.declaration.start)
         output.appendLeft(
           group.declaration.start,
           `export const ${name} = ${replacement};`,
         )
       } else {
+        // export class C {}
+        // ⬇️ (keep initialization in place and append wrapped binding)
+        // class C {}
+        // const $$module_0_binding_C = __WRAP__(C, 'C')
+        // export { $$module_0_binding_C as C }
         output.remove(group.node.start, group.declaration.start)
-        emitFallback(name, entry.exportName, meta)
+        emitWrappedBinding(name, entry.exportName, meta)
       }
     } else if (group.type === 'variable-declaration') {
       // export const action = async () => {}, value = init()
@@ -290,7 +290,7 @@ export function transformModuleExportWrap(
       // const $$module_1_binding_value = __WRAP__(value, 'value')
       // export { $$module_1_binding_value as value }
       // export { action }
-      const fallbackNames = new Set<string>()
+      const wrappedBindingNames = new Set<string>()
       const exportNames = group.declarators.flatMap((item) =>
         item.exports.map((entry) => entry.exportName),
       )
@@ -305,6 +305,11 @@ export function transformModuleExportWrap(
           validate = true
 
           if (directFunction) {
+            // export const action = async () => {}
+            // ⬇️
+            // const $$module_0_implementation_action = async () => {}
+            // const action = __WRAP__($$module_0_implementation_action, 'action')
+            // export { action }
             const replacement = hoistFunction(
               directFunction,
               entry.localName,
@@ -313,8 +318,13 @@ export function transformModuleExportWrap(
             )
             output.appendLeft(directFunction.start, replacement)
           } else {
-            fallbackNames.add(entry.exportName)
-            emitFallback(entry.localName, entry.exportName, meta)
+            // export const value = init()
+            // ⬇️
+            // const value = init()
+            // const $$module_1_binding_value = __WRAP__(value, 'value')
+            // export { $$module_1_binding_value as value }
+            wrappedBindingNames.add(entry.exportName)
+            emitWrappedBinding(entry.localName, entry.exportName, meta)
           }
         }
 
@@ -323,7 +333,7 @@ export function transformModuleExportWrap(
         }
       }
 
-      if (fallbackNames.size > 0) {
+      if (wrappedBindingNames.size > 0) {
         // export const selected = init(), skipped = init()
         // ^^^^^^
         // ⬇️ (remove `export` and restore the unwrapped export separately)
@@ -331,8 +341,9 @@ export function transformModuleExportWrap(
         // export { skipped }
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
-          if (!fallbackNames.has(name))
-            fallbackCode.push(exportBinding(name, name))
+          if (!wrappedBindingNames.has(name)) {
+            wrappedBindingCode.push(exportBinding(name, name))
+          }
         }
       }
     } else if (group.type === 'specifiers') {
@@ -373,11 +384,11 @@ export function transformModuleExportWrap(
           const sourceTail = input
             .slice(group.node.source.end, group.node.end)
             .replace(/;?\s*$/, ';')
-          fallbackCode.push(
+          wrappedBindingCode.push(
             `import { ${localName} as ${implementation} } from ${group.node.source.raw}${sourceTail}`,
           )
         }
-        emitFallback(implementation, exportName, meta)
+        emitWrappedBinding(implementation, exportName, meta)
       }
 
       if (selected) {
@@ -386,13 +397,13 @@ export function transformModuleExportWrap(
           const source = group.node.source
             ? ` from ${group.node.source.raw}`
             : ''
-          fallbackCode.push(`export { ${preserved.join(', ')} }${source};`)
+          wrappedBindingCode.push(
+            `export { ${preserved.join(', ')} }${source};`,
+          )
         }
       }
     } else if (group.type === 'export-all') {
       // export * from './dep'
-      // ⬇️ (unless `exportAll: 'preserve'`)
-      // throw new Error('unsupported ExportAllDeclaration')
       if (options.exportAll !== 'preserve') {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
           pos: group.node.start,
@@ -439,7 +450,7 @@ export function transformModuleExportWrap(
         if (declaration.type === 'ClassDeclaration' && declaration.id) {
           // export default class Page {}
           // ^^^^^^^^^^^^^^
-          // ⬇️ (remove `export default` and append fallback)
+          // ⬇️ (remove `export default` and append wrapped binding)
           // class Page {}
           // const $$module_0_binding_default = __WRAP__(Page, 'default')
           // export { $$module_0_binding_default as default }
@@ -469,17 +480,17 @@ export function transformModuleExportWrap(
             ),
           )
         }
-        emitFallback(implementation, 'default', meta)
+        emitWrappedBinding(implementation, 'default', meta)
       }
     }
   }
 
-  if (fallbackCode.length > 0) {
+  if (wrappedBindingCode.length > 0) {
     // const value = init()
     // ⬇️ (append)
     // const $$module_0_binding_value = __WRAP__(value, 'value')
     // export { $$module_0_binding_value as value }
-    output.append(`\n${fallbackCode.join('\n')}\n`)
+    output.append(`\n${wrappedBindingCode.join('\n')}\n`)
   }
 
   return {
