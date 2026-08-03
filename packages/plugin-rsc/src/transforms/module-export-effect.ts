@@ -63,6 +63,30 @@ export type TransformModuleExportEffectResult = {
 /**
  * Preserves source bindings and emits registration effects at module end.
  *
+ * Conceptually:
+ *
+ * ```js
+ * export async function action() {}
+ * export default async () => {}
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * async function action() {}
+ * const $$effect_default = async () => {}
+ *
+ * __GENERATE__(action, 'action')
+ * export { action }
+ * __GENERATE__($$effect_default, 'default')
+ * export default $$effect_default
+ * ```
+ *
+ * Here, `__GENERATE__(...)` represents the expression returned by the
+ * `generate` callback for each `{ binding, exportName, meta }` context.
+ * `references` returns those contexts in generation order, while
+ * `referenceNames` returns only their export names.
+ *
  * The start of each generated runtime expression remains mapped to its original
  * Server Function export site. React captures the `registerServerReference`
  * caller as the reference source location, so unmapped generated code can fall
