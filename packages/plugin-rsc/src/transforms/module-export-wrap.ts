@@ -4,7 +4,7 @@ import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import {
   scanModuleExports,
-  type ModuleExportFunction,
+  type ModuleExportDirectFunction,
   type ModuleExportMeta,
 } from './module-export-scan'
 import { getDirectivePrologueEnd, validateNonAsyncFunction } from './utils'
@@ -192,7 +192,7 @@ export function transformModuleExportWrap(
    * declaration site. The context includes the source-level function name so
    * the generated expression can restore it on the exported callable.
    *
-   * For `hoistFunction(node, 'action', 'action', meta)`:
+   * For `hoistFunction({ node, originalName: 'action' }, 'action', 'action', meta)`:
    *
    * ```js
    * // Before
@@ -209,18 +209,19 @@ export function transformModuleExportWrap(
    * export const action = __WRAP__($$module_0_implementation_action, 'action')
    * ```
    *
-   * @param node Directly exported function node to move.
+   * @param directFunction Scanner metadata for the function to move.
    * @param sourceName Local declaration name used for the implementation binding.
    * @param exportName Public name for the generated export.
    * @param meta Static metadata collected from the original export.
    * @returns Generated wrapper expression for the original declaration site.
    */
   function hoistFunction(
-    node: ModuleExportFunction,
+    directFunction: ModuleExportDirectFunction,
     sourceName: string,
     exportName: string,
     meta: ModuleExportMeta,
   ): string {
+    const { node, originalName } = directFunction
     validateNonAsyncFunction(options, node)
     const implementation = createName('implementation', sourceName)
     const originalPrefix =
@@ -229,11 +230,6 @@ export function transformModuleExportWrap(
           implementation +
           input.slice(node.id.end, node.body.start)
         : input.slice(node.start, node.body.start)
-    const originalName =
-      node.type !== 'ArrowFunctionExpression' && node.id
-        ? node.id.name
-        : sourceName
-
     output.update(
       node.start,
       node.body.start,
@@ -318,7 +314,7 @@ export function transformModuleExportWrap(
               entry.exportName,
               meta,
             )
-            output.appendLeft(directFunction.start, replacement)
+            output.appendLeft(directFunction.node.start, replacement)
           } else {
             // export const value = init()
             // ⬇️
@@ -415,7 +411,7 @@ export function transformModuleExportWrap(
       let meta: ModuleExportMeta
 
       if (group.directFunction) {
-        const declaration = group.directFunction
+        const declaration = group.directFunction.node
         // export default async function Page() {}
         // ⬇️
         // const $$module_0_implementation_Page = async function ...
@@ -426,15 +422,12 @@ export function transformModuleExportWrap(
         // ⬇️
         // const $$module_0_implementation_default = async () => {}
         // export default __WRAP__($$module_0_implementation_default, 'default')
-        const sourceName =
-          declaration.type !== 'ArrowFunctionExpression' && declaration.id
-            ? declaration.id.name
-            : 'default'
+        const sourceName = group.directFunction.originalName
         meta = group.meta
         if (!filter('default', meta)) continue
 
         const replacement = hoistFunction(
-          declaration,
+          group.directFunction,
           sourceName,
           'default',
           meta,

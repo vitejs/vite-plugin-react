@@ -22,6 +22,13 @@ export type ModuleExportFunction =
   | FunctionExpression
   | ArrowFunctionExpression
 
+export type ModuleExportDirectFunction = {
+  /** The directly exported function node. */
+  node: ModuleExportFunction
+  /** The function's runtime name before rewriting. */
+  originalName: string
+}
+
 export type ModuleExportMeta = {
   /**
    * The local declaration name when statically available.
@@ -75,8 +82,8 @@ export type ModuleExportGroup =
       type: 'declaration'
       node: ExportNamedDeclaration
       declaration: FunctionDeclaration | ClassDeclaration
-      /** The function node for `export function foo() {}`. */
-      directFunction?: FunctionDeclaration
+      /** Direct function metadata for `export function foo() {}`. */
+      directFunction?: ModuleExportDirectFunction
       exports: [ModuleExportEntry]
     }
   | {
@@ -88,8 +95,8 @@ export type ModuleExportGroup =
       declaration: VariableDeclaration
       declarators: {
         node: VariableDeclarator
-        /** The function node for `export const foo = () => {}`. */
-        directFunction?: ModuleExportFunction
+        /** Direct function metadata for `export const foo = () => {}`. */
+        directFunction?: ModuleExportDirectFunction
         exports: ModuleExportEntry[]
       }[]
     }
@@ -121,8 +128,8 @@ export type ModuleExportGroup =
       kind: ModuleExportDefaultKind
       node: ExportDefaultDeclaration
       localName?: string
-      /** The function node for `export default function () {}`. */
-      directFunction?: ModuleExportFunction
+      /** Direct function metadata for `export default function () {}`. */
+      directFunction?: ModuleExportDirectFunction
       meta: ModuleExportMeta
     }
 
@@ -145,7 +152,7 @@ export function scanModuleExports(
             declarators: declaration.declarations.map((declarator) => {
               const directFunction =
                 declarator.id.type === 'Identifier' && declarator.init
-                  ? getFunctionNode(declarator.init)
+                  ? getDirectFunction(declarator.init, declarator.id.name)
                   : undefined
               const isFunction =
                 declarator.id.type === 'Identifier' && declarator.init
@@ -176,7 +183,7 @@ export function scanModuleExports(
             declaration: node.declaration,
             directFunction:
               node.declaration.type === 'FunctionDeclaration'
-                ? node.declaration
+                ? getDirectFunction(node.declaration, name)
                 : undefined,
             exports: [
               {
@@ -224,7 +231,7 @@ export function scanModuleExports(
       let kind: ModuleExportDefaultKind
       let localName: string | undefined
       let meta: ModuleExportMeta
-      const directFunction = getFunctionNode(node.declaration)
+      const directFunction = getDirectFunction(node.declaration, 'default')
       if (
         (node.declaration.type === 'FunctionDeclaration' ||
           node.declaration.type === 'ClassDeclaration') &&
@@ -283,5 +290,20 @@ function getFunctionNode(
     node.type === 'FunctionExpression'
   ) {
     return node
+  }
+}
+
+function getDirectFunction(
+  node: Node | ExportDefaultDeclaration['declaration'],
+  fallbackName: string,
+): ModuleExportDirectFunction | undefined {
+  const functionNode = getFunctionNode(node)
+  if (!functionNode) return
+  return {
+    node: functionNode,
+    originalName:
+      functionNode.type !== 'ArrowFunctionExpression' && functionNode.id
+        ? functionNode.id.name
+        : fallbackName,
   }
 }

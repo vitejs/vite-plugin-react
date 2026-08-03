@@ -19,7 +19,10 @@ export * from './all'
   expect(groups[0]).toMatchObject({
     type: 'declaration',
     declaration: { type: 'FunctionDeclaration' },
-    directFunction: { type: 'FunctionDeclaration' },
+    directFunction: {
+      node: { type: 'FunctionDeclaration' },
+      originalName: 'action',
+    },
     exports: [
       {
         localName: 'action',
@@ -36,7 +39,10 @@ export * from './all'
     declaration: { kind: 'const' },
     declarators: [
       {
-        directFunction: { type: 'ArrowFunctionExpression' },
+        directFunction: {
+          node: { type: 'ArrowFunctionExpression' },
+          originalName: 'loader',
+        },
         exports: [
           {
             localName: 'loader',
@@ -105,17 +111,43 @@ test.each([
     'export default function action() {}',
     'named-declaration',
     'FunctionDeclaration',
+    'action',
   ],
-  ['export default action', 'identifier', undefined],
-  ['export default () => {}', 'other', 'ArrowFunctionExpression'],
-] as const)('classifies %s', async (source, kind, functionType) => {
-  const ast = await parseAstAsync(source)
+  ['export default action', 'identifier', undefined, undefined],
+  ['export default () => {}', 'other', 'ArrowFunctionExpression', 'default'],
+] as const)(
+  'classifies %s',
+  async (source, kind, functionType, originalName) => {
+    const ast = await parseAstAsync(source)
+
+    expect(scanModuleExports(ast)).toMatchObject([
+      {
+        type: 'default',
+        kind,
+        directFunction: functionType
+          ? { node: { type: functionType }, originalName }
+          : undefined,
+      },
+    ])
+  },
+)
+
+test('records explicit function expression names', async () => {
+  const ast = await parseAstAsync(
+    `export const action = function implementation() {}`,
+  )
 
   expect(scanModuleExports(ast)).toMatchObject([
     {
-      type: 'default',
-      kind,
-      directFunction: functionType ? { type: functionType } : undefined,
+      type: 'variable-declaration',
+      declarators: [
+        {
+          directFunction: {
+            node: { type: 'FunctionExpression' },
+            originalName: 'implementation',
+          },
+        },
+      ],
     },
   ])
 })
