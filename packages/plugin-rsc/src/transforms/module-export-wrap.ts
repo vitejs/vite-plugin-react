@@ -132,6 +132,7 @@ export function transformModuleExportWrap(
     return context
   }
 
+  // TODO: should we move PURE annotation to user side responsibility?
   function generate(context: TransformModuleExportWrapContext): string {
     return `/* #__PURE__ */ ${options.generate(context)}`
   }
@@ -142,6 +143,7 @@ export function transformModuleExportWrap(
       : `export { ${binding} as ${exportName} };`
   }
 
+  // TODO: maybe too long?
   function createName(
     kind: 'implementation' | 'binding',
     name: string,
@@ -155,15 +157,15 @@ export function transformModuleExportWrap(
    * generated wrapper is assigned to a separate binding and exported after the
    * source declarations, leaving the original local binding unchanged.
    *
-   * For `emitWrappedBinding('value', 'renamed', meta)`:
+   * For `emitWrappedBinding('value', 'value', meta)`:
    *
    * ```js
    * // Existing source initialization, left in place
-   * const value = init()
+   * export const value = init()
    *
    * // Code appended by emitWrappedBinding
-   * const $$module_0_binding_renamed = __WRAP__(value, 'renamed')
-   * export { $$module_0_binding_renamed as renamed }
+   * const $$module_0_binding_value = __WRAP__(value, 'value')
+   * export { $$module_0_binding_value as value }
    * ```
    *
    * @param implementation Local expression to pass to the generated wrapper.
