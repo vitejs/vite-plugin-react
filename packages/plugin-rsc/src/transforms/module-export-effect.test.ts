@@ -12,7 +12,7 @@ async function transform(
 ) {
   const ast = await parseAstAsync(input)
   return transformModuleExportEffect(input, ast, {
-    runtime: ({ binding }) => `register(${binding})`,
+    generate: ({ binding }) => `register(${binding})`,
     ...options,
   })
 }

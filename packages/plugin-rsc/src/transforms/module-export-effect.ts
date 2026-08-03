@@ -31,10 +31,16 @@ export type TransformModuleExportEffectContext = {
 }
 
 export type TransformModuleExportEffectOptions = {
-  runtime: (context: TransformModuleExportEffectContext) => string
+  generate: (context: TransformModuleExportEffectContext) => string
   filter?: TransformModuleExportEffectFilter
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
+}
+
+export type TransformModuleExportEffectResult = {
+  output: MagicString
+  references: TransformModuleExportEffectContext[]
+  referenceNames: string[]
 }
 
 /**
@@ -49,11 +55,7 @@ export function transformModuleExportEffect(
   input: string,
   viteAst: ESTree.Program,
   options: TransformModuleExportEffectOptions,
-): {
-  output: MagicString
-  references: TransformModuleExportEffectContext[]
-  referenceNames: string[]
-} {
+): TransformModuleExportEffectResult {
   const ast = viteAst as unknown as Program
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
@@ -64,7 +66,7 @@ export function transformModuleExportEffect(
 
   function generate(context: TransformModuleExportEffectContext): string {
     references.push(context)
-    return `${options.runtime(context)};`
+    return `${options.generate(context)};`
   }
 
   // Rewrite and move an existing source range so the generated runtime

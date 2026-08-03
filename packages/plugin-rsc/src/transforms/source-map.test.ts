@@ -26,7 +26,7 @@ describe('source map fixtures', () => {
           `registerServerReference(${value}, ${JSON.stringify(name)})`,
       })
       const effectResult = transformModuleExportEffect(input, ast, {
-        runtime: ({ binding, exportName }) =>
+        generate: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
       const outputs = [

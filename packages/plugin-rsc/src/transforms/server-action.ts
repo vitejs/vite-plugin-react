@@ -28,7 +28,7 @@ export function transformServerActionServer(
   if (hasDirective(ast.body, 'use server')) {
     const result = transformModuleExportEffect(input, ast, {
       rejectNonAsyncFunction: options.rejectNonAsyncFunction,
-      runtime: ({ binding, exportName }) =>
+      generate: ({ binding, exportName }) =>
         options.runtime(binding, exportName),
     })
     return { ...result, exportNames: result.referenceNames }
