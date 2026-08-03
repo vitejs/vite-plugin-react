@@ -101,6 +101,15 @@ export default async function Page() {}
     expect(preserved.references).toEqual([])
   })
 
+  test('rejects string literal export names', async () => {
+    const input = `const value = 0; export { value as "my value" }`
+
+    await expect(transform(input)).rejects.toMatchObject({
+      message: 'unsupported string literal export name',
+      pos: input.indexOf('"my value"'),
+    })
+  })
+
   test('runtime export meta', async () => {
     const examples: [input: string, expected: unknown[]][] = [
       [
