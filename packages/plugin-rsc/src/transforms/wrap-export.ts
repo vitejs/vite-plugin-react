@@ -1,8 +1,12 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { ExportDefaultDeclaration, Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { extractNames, validateNonAsyncFunction } from './utils'
+import {
+  scanModuleExports,
+  type ModuleExportEntry,
+  type ModuleExportMeta,
+} from './module-exports'
+import { validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
   /**
@@ -35,8 +39,6 @@ type ExportMeta = {
   defaultExportIdentifierName?: string
 }
 
-type ExportWithMeta = { name: string; meta: ExportMeta }
-
 export type TransformWrapExportFilter = (
   name: string,
   meta: ExportMeta,
@@ -57,21 +59,28 @@ export function transformWrapExport(
   exportNames: string[]
   output: MagicString
 } {
-  const ast = viteAst as unknown as Program
   const output = new MagicString(input)
   const exportNames: string[] = []
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
 
-  function wrapSimple(start: number, end: number, exports: ExportWithMeta[]) {
-    const filteredExports = exports.map((item) => ({
-      ...item,
-      shouldWrap: filter(item.name, item.meta),
-    }))
+  function wrapSimple(
+    start: number,
+    end: number,
+    exports: ModuleExportEntry[],
+  ) {
+    const filteredExports = exports.map((item) => {
+      const meta = getExportMeta(item.meta)
+      return {
+        ...item,
+        meta,
+        shouldWrap: filter(item.exportName, meta),
+      }
+    })
     exportNames.push(
       ...filteredExports
         .filter((item) => item.shouldWrap)
-        .map((item) => item.name),
+        .map((item) => item.exportName),
     )
     // update code and move to preserve `registerServerReference` position
     // e.g.
@@ -85,12 +94,12 @@ export function transformWrapExport(
     const newCode = filteredExports
       .map((e) => [
         e.shouldWrap &&
-          `${e.name} = /* #__PURE__ */ ${options.runtime(
-            e.name,
-            e.name,
+          `${e.localName} = /* #__PURE__ */ ${options.runtime(
+            e.localName,
+            e.exportName,
             e.meta,
           )};\n`,
-        `export { ${e.name} };\n`,
+        `export { ${e.localName} };\n`,
       ])
       .flat()
       .filter(Boolean)
@@ -116,154 +125,109 @@ export function transformWrapExport(
     )
   }
 
-  for (const node of ast.body) {
-    // named exports
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
+  for (const group of scanModuleExports(viteAst)) {
+    if (group.type === 'declaration') {
+      const [entry] = group.exports
+      if (filter(entry.exportName, getExportMeta(entry.meta))) {
+        validateNonAsyncFunction(options, group.declaration)
+      }
+      wrapSimple(group.node.start, group.declaration.start, group.exports)
+    } else if (group.type === 'variable-declaration') {
+      if (group.declaration.kind === 'const') {
+        output.update(
+          group.declaration.start,
+          group.declaration.start + 5,
+          'let',
+        )
+      }
+      const exports: ModuleExportEntry[] = []
+      for (const declarator of group.declarators) {
+        exports.push(...declarator.exports)
         if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
+          declarator.node.init &&
+          declarator.exports.some(({ exportName, meta }) =>
+            filter(exportName, getExportMeta(meta)),
+          )
         ) {
-          /**
-           * export function foo() {}
-           */
-          const name = node.declaration.id.name
-          const meta: ExportMeta = {
-            isFunction: getIsFunction(node.declaration),
-            declName: name,
-          }
-          if (filter(name, meta)) {
-            validateNonAsyncFunction(options, node.declaration)
-          }
-          wrapSimple(node.start, node.declaration.start, [{ name, meta }])
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          /**
-           * export const foo = 1, bar = 2
-           */
-          if (node.declaration.kind === 'const') {
-            output.update(
-              node.declaration.start,
-              node.declaration.start + 5,
-              'let',
-            )
-          }
-          const exports: ExportWithMeta[] = []
-          for (const decl of node.declaration.declarations) {
-            const isFunction =
-              decl.id.type === 'Identifier' && decl.init
-                ? getIsFunction(decl.init)
-                : undefined
-            const declarationExports: ExportWithMeta[] = extractNames(
-              decl.id,
-            ).map((name) => ({
-              name,
-              meta: { isFunction, declName: name },
-            }))
-            exports.push(...declarationExports)
-            if (
-              decl.init &&
-              declarationExports.some(({ name, meta }) => filter(name, meta))
-            ) {
-              validateNonAsyncFunction(options, decl.init)
-            }
-          }
-          wrapSimple(node.start, node.declaration.start, exports)
-        } else {
-          node.declaration satisfies never
-        }
-      } else {
-        if (node.source) {
-          /**
-           * export { foo, bar as car } from './foo'
-           */
-          output.remove(node.start, node.end)
-          for (const spec of node.specifiers) {
-            tinyassert(spec.local.type === 'Identifier')
-            if (spec.exported.type !== 'Identifier') {
-              throw Object.assign(
-                new Error('unsupported string literal export name'),
-                { pos: spec.exported.start },
-              )
-            }
-            const name = spec.local.name
-            toAppend.push(
-              `import { ${name} as $$import_${name} } from ${node.source.raw}`,
-            )
-            wrapExport(`$$import_${name}`, spec.exported.name)
-          }
-        } else {
-          /**
-           * export { foo, bar as car }
-           */
-          output.remove(node.start, node.end)
-          for (const spec of node.specifiers) {
-            tinyassert(spec.local.type === 'Identifier')
-            if (spec.exported.type !== 'Identifier') {
-              throw Object.assign(
-                new Error('unsupported string literal export name'),
-                { pos: spec.exported.start },
-              )
-            }
-            wrapExport(spec.local.name, spec.exported.name)
-          }
+          validateNonAsyncFunction(options, declarator.node.init)
         }
       }
-    }
-
-    /**
-     * export * as ns from './foo'
-     * export * from './foo'
-     */
-    // vue sfc uses ExportAllDeclaration to re-export setup script.
-    // for now we just give an option to not throw for this case.
-    // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
-    if (node.type === 'ExportAllDeclaration') {
+      wrapSimple(group.node.start, group.declaration.start, exports)
+    } else if (group.type === 'specifiers') {
+      if (group.node.source) {
+        output.remove(group.node.start, group.node.end)
+        for (const entry of group.exports) {
+          tinyassert(entry.node.local.type === 'Identifier')
+          if (entry.node.exported.type !== 'Identifier') {
+            throw Object.assign(
+              new Error('unsupported string literal export name'),
+              { pos: entry.node.exported.start },
+            )
+          }
+          toAppend.push(
+            `import { ${entry.localName} as $$import_${entry.localName} } from ${group.node.source.raw}`,
+          )
+          wrapExport(
+            `$$import_${entry.localName}`,
+            entry.exportName,
+            getExportMeta(entry.meta),
+          )
+        }
+      } else {
+        output.remove(group.node.start, group.node.end)
+        for (const entry of group.exports) {
+          tinyassert(entry.node.local.type === 'Identifier')
+          if (entry.node.exported.type !== 'Identifier') {
+            throw Object.assign(
+              new Error('unsupported string literal export name'),
+              { pos: entry.node.exported.start },
+            )
+          }
+          wrapExport(
+            entry.localName,
+            entry.exportName,
+            getExportMeta(entry.meta),
+          )
+        }
+      }
+    } else if (group.type === 'export-all') {
+      // Vue SFC uses ExportAllDeclaration to re-export its setup script, so
+      // consumers can opt out of rejecting this form.
+      // https://github.com/vitejs/vite-plugin-vue/blob/30a97c1ddbdfb0e23b7dc14a1d2fb609668b9987/packages/plugin-vue/src/main.ts#L372
       if (!options.ignoreExportAllDeclaration) {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
-          pos: node.start,
+          pos: group.node.start,
         })
       }
-    }
-
-    /**
-     * export default function foo() {}
-     * export default class Foo {}
-     * export default () => {}
-     */
-    if (node.type === 'ExportDefaultDeclaration') {
-      let localName: string
-      let isFunction: boolean | undefined
-      let declName: string | undefined
-      let defaultExportIdentifierName: string | undefined
-      if (
-        (node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration') &&
-        node.declaration.id
-      ) {
+    } else if (group.type === 'default') {
+      const localName = group.localName ?? '$$default'
+      if (group.kind === 'named-declaration') {
         // preserve name scope for `function foo() {}` and `class Foo {}`
-        localName = node.declaration.id.name
-        output.remove(node.start, node.declaration.start)
-        isFunction = getIsFunction(node.declaration)
-        declName = node.declaration.id.name
+        // e.g.
+        //   export default foo() {}
+        //   ^^^^^^^^^^^^^^
+        //.  ⬇️ (remove `export default`)
+        //   function foo() {}
+        output.remove(group.node.start, group.node.declaration.start)
       } else {
         // otherwise we can introduce new variable
-        localName = '$$default'
-        output.update(node.start, node.declaration.start, 'const $$default = ')
-        if (node.declaration.type === 'Identifier') {
-          defaultExportIdentifierName = node.declaration.name
-        } else {
-          isFunction = getIsFunction(node.declaration)
-        }
+        // e.g.
+        //   export default foo
+        //   ^^^^^^^^^^^^^^
+        //.  ⬇️ (replace `export default`)
+        //   const $$default = foo
+        //   ^^^^^^^^^^^^^^^^^
+        output.update(
+          group.node.start,
+          group.node.declaration.start,
+          'const $$default = ',
+        )
       }
-      const defaultMeta: ExportMeta = {
-        isFunction,
-        declName,
-        defaultExportIdentifierName,
+      const meta = getExportMeta(group.meta)
+      if (filter('default', meta)) {
+        validateNonAsyncFunction(options, group.node.declaration)
       }
-      if (filter('default', defaultMeta)) {
-        validateNonAsyncFunction(options, node.declaration)
-      }
-      wrapExport(localName, 'default', defaultMeta)
+      wrapExport(localName, 'default', meta)
     }
   }
 
@@ -274,23 +238,6 @@ export function transformWrapExport(
   return { exportNames, output }
 }
 
-function getIsFunction(
-  node: Node | ExportDefaultDeclaration['declaration'],
-): boolean | undefined {
-  if (
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'ArrowFunctionExpression' ||
-    node.type === 'FunctionExpression'
-  ) {
-    return true
-  }
-  if (
-    node.type === 'ClassDeclaration' ||
-    node.type === 'Literal' ||
-    node.type === 'ObjectExpression' ||
-    node.type === 'ArrayExpression' ||
-    node.type === 'ClassExpression'
-  ) {
-    return false
-  }
+function getExportMeta({ localName, ...meta }: ModuleExportMeta): ExportMeta {
+  return { ...meta, ...(localName && { declName: localName }) }
 }
