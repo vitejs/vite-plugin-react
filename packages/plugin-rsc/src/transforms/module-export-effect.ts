@@ -1,50 +1,22 @@
 import { tinyassert } from '@hiogawa/utils'
-import type { ExportDefaultDeclaration, Node, Program } from 'estree'
+import type { Identifier } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { extractNames, validateNonAsyncFunction } from './utils'
+import { scanModuleExports, type ModuleExportMeta } from './module-exports'
+import { validateNonAsyncFunction } from './utils'
 
 // TODO: Metadata, filtering, and returned reference contexts are currently
 // ported only for transformWrapExport compatibility. Remove them if no
 // module-export-effect consumer needs this API surface.
-export type TransformModuleExportEffectMeta = {
-  /**
-   * The local declaration name when statically available.
-   *
-   * - `"Page"` for `export function Page() {}`
-   * - `"Page"` for `export const Page = () => {}`
-   * - `undefined` for `export default () => {}`
-   * - `undefined` for `export { Page }`
-   */
-  localName?: string
-  /**
-   * Whether the exported value is statically known to be a function.
-   *
-   * - `true` for `export const Page = () => {}`
-   * - `false` for `export const value = 1`
-   * - `undefined` for `export const value = getValue()`
-   * - `undefined` for `export default Page`
-   */
-  isFunction?: boolean
-  /**
-   * The local identifier referenced by a default export.
-   *
-   * - `"Page"` for `const Page = () => {}; export default Page`
-   * - `undefined` for `export default function Page() {}`
-   * - `undefined` for `export default () => {}`
-   */
-  defaultExportIdentifierName?: string
-}
-
 export type TransformModuleExportEffectFilter = (
   name: string,
-  meta: TransformModuleExportEffectMeta,
+  meta: ModuleExportMeta,
 ) => boolean
 
 export type TransformModuleExportEffectContext = {
   binding: string
   exportName: string
-  meta: TransformModuleExportEffectMeta
+  meta: ModuleExportMeta
 }
 
 export type TransformModuleExportEffectOptions = {
@@ -100,7 +72,6 @@ export function transformModuleExportEffect(
   viteAst: ESTree.Program,
   options: TransformModuleExportEffectOptions,
 ): TransformModuleExportEffectResult {
-  const ast = viteAst as unknown as Program
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportEffectContext[] = []
@@ -132,141 +103,81 @@ export function transformModuleExportEffect(
     }
   }
 
-  for (const node of ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
-        ) {
-          /**
-           * export function foo() {}
-           * export class Foo {}
-           */
-          tinyassert(node.declaration.id)
-          const binding = node.declaration.id.name
-          const meta: TransformModuleExportEffectMeta = {
-            localName: binding,
-            isFunction: getIsFunction(node.declaration),
-          }
-          if (!filter(binding, meta)) continue
-          validateNonAsyncFunction(options, node.declaration)
-          replaceAndMove(
-            node.start,
-            node.declaration.start,
-            input.length,
-            `${generate({ binding, exportName: binding, meta })}\nexport { ${binding} };`,
-          )
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          /**
-           * export const foo = 1, bar = 2
-           */
-          const exportNames: string[] = []
-          const effects: string[] = []
-          for (const declaration of node.declaration.declarations) {
-            const names = extractNames(declaration.id)
-            exportNames.push(...names)
-            const isFunction =
-              declaration.id.type === 'Identifier' && declaration.init
-                ? getIsFunction(declaration.init)
-                : undefined
-            let validate = false
-            for (const binding of names) {
-              const meta: TransformModuleExportEffectMeta = {
-                localName: binding,
-                isFunction,
-              }
-              if (filter(binding, meta)) {
-                validate = true
-                effects.push(generate({ binding, exportName: binding, meta }))
-              }
-            }
-            if (validate && declaration.init) {
-              validateNonAsyncFunction(options, declaration.init)
-            }
-          }
-          if (effects.length > 0) {
-            replaceAndMove(
-              node.start,
-              node.declaration.start,
-              input.length,
-              `${effects.join('\n')}\nexport { ${exportNames.join(', ')} };`,
-            )
+  for (const group of scanModuleExports(viteAst)) {
+    if (group.type === 'declaration') {
+      const [entry] = group.exports
+      const { localName: binding, exportName, meta } = entry
+      if (!filter(exportName, meta)) continue
+      validateNonAsyncFunction(options, group.declaration)
+      replaceAndMove(
+        group.node.start,
+        group.declaration.start,
+        input.length,
+        `${generate({ binding, exportName, meta })}\nexport { ${binding} };`,
+      )
+    } else if (group.type === 'variable-declaration') {
+      const exportNames: string[] = []
+      const effects: string[] = []
+      for (const declarator of group.declarators) {
+        let validate = false
+        for (const entry of declarator.exports) {
+          const { localName: binding, exportName, meta } = entry
+          exportNames.push(exportName)
+          if (filter(exportName, meta)) {
+            validate = true
+            effects.push(generate({ binding, exportName, meta }))
           }
         }
-      } else {
-        /**
-         * export { foo, bar as baz }
-         * export { foo, bar as baz } from './dep'
-         */
-        for (const specifier of node.specifiers) {
-          tinyassert(specifier.local.type === 'Identifier')
-          if (specifier.exported.type !== 'Identifier') {
-            throw Object.assign(
-              new Error('unsupported string literal export name'),
-              { pos: specifier.exported.start },
-            )
-          }
-          const exportName = specifier.exported.name
-          const meta: TransformModuleExportEffectMeta = {}
-          if (!filter(exportName, meta)) continue
-
-          let binding = specifier.local.name
-          if (node.source) {
-            binding = `$$effect_import_${exportName}`
-            // TODO: Preserve import attributes from the original re-export.
-            output.append(
-              `\nimport { ${specifier.local.name} as ${binding} } from ${node.source.raw};`,
-            )
-          }
-          output.append(`\n${generate({ binding, exportName, meta })}`)
+        if (validate && declarator.node.init) {
+          validateNonAsyncFunction(options, declarator.node.init)
         }
       }
-    } else if (node.type === 'ExportAllDeclaration') {
-      /**
-       * export * as ns from './dep'
-       * export * from './dep'
-       */
+      if (effects.length > 0) {
+        replaceAndMove(
+          group.node.start,
+          group.declaration.start,
+          input.length,
+          `${effects.join('\n')}\nexport { ${exportNames.join(', ')} };`,
+        )
+      }
+    } else if (group.type === 'specifiers') {
+      for (const entry of group.exports) {
+        tinyassert(entry.node.local.type === 'Identifier')
+        if (entry.node.exported.type !== 'Identifier') {
+          throw Object.assign(
+            new Error('unsupported string literal export name'),
+            { pos: entry.node.exported.start },
+          )
+        }
+        const { exportName, meta } = entry
+        if (!filter(exportName, meta)) continue
+
+        let binding = entry.localName
+        if (group.node.source) {
+          binding = `$$effect_import_${exportName}`
+          // TODO: Preserve import attributes from the original re-export.
+          output.append(
+            `\nimport { ${entry.localName} as ${binding} } from ${group.node.source.raw};`,
+          )
+        }
+        output.append(`\n${generate({ binding, exportName, meta })}`)
+      }
+    } else if (group.type === 'export-all') {
       if (options.exportAll !== 'preserve') {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
-          pos: node.start,
+          pos: group.node.start,
         })
       }
-    } else if (node.type === 'ExportDefaultDeclaration') {
-      /**
-       * export default function foo() {}
-       * export default class Foo {}
-       * export default foo
-       * export default () => {}
-       */
-      let binding: string
-      let meta: TransformModuleExportEffectMeta
-      if (
-        (node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration') &&
-        node.declaration.id
-      ) {
-        // export default function foo() {}
-        // export default class Foo {}
-        binding = node.declaration.id.name
-        meta = {
-          localName: binding,
-          isFunction: getIsFunction(node.declaration),
-        }
-      } else if (node.declaration.type === 'Identifier') {
-        // export default foo
-        binding = '$$effect_default'
-        meta = { defaultExportIdentifierName: node.declaration.name }
-      } else {
-        // export default () => {}
-        binding = '$$effect_default'
-        meta = { isFunction: getIsFunction(node.declaration) }
-      }
+    } else if (group.type === 'default') {
+      const node = group.node
+      const binding = group.localName ?? '$$effect_default'
+      const meta = group.meta
       if (!filter('default', meta)) continue
       validateNonAsyncFunction(options, node.declaration)
       const effect = generate({ binding, exportName: 'default', meta })
 
-      if (node.declaration.type === 'Identifier') {
+      if (group.kind === 'identifier') {
+        const declaration = node.declaration as Identifier
         // export default foo
         //        ^^^^^^^^^^^
         // ⬇️ (replace `default foo`)
@@ -276,7 +187,7 @@ export function transformModuleExportEffect(
         output.update(
           exportTokenEnd,
           node.end,
-          `const ${binding} = ${node.declaration.name};`,
+          `const ${binding} = ${declaration.name};`,
         )
         // export const $$effect_default = foo
         // ^^^^^^
@@ -290,11 +201,13 @@ export function transformModuleExportEffect(
           input.length,
           `${effect}\nexport default ${binding};`,
         )
-      } else if (
-        (node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration') &&
-        node.declaration.id
-      ) {
+      } else if (group.kind === 'named-declaration') {
+        // export default function foo() {}
+        // ^^^^^^^^^^^^^^
+        // ⬇️
+        // function foo() {}
+        // registerServerReference(foo, 'default'); // << effect
+        // export default foo;                      // << export
         replaceAndMove(
           node.start,
           node.declaration.start,
@@ -333,26 +246,5 @@ export function transformModuleExportEffect(
     output,
     references,
     referenceNames: references.map((reference) => reference.exportName),
-  }
-}
-
-function getIsFunction(
-  node: Node | ExportDefaultDeclaration['declaration'],
-): boolean | undefined {
-  if (
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'FunctionExpression' ||
-    node.type === 'ArrowFunctionExpression'
-  ) {
-    return true
-  }
-  if (
-    node.type === 'ClassDeclaration' ||
-    node.type === 'Literal' ||
-    node.type === 'ObjectExpression' ||
-    node.type === 'ArrayExpression' ||
-    node.type === 'ClassExpression'
-  ) {
-    return false
   }
 }

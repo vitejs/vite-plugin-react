@@ -10,18 +10,16 @@ import type {
 } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { extractNames, validateNonAsyncFunction } from './utils'
+import { scanModuleExports, type ModuleExportMeta } from './module-exports'
+import { validateNonAsyncFunction } from './utils'
 
 type FunctionNode =
   | FunctionDeclaration
   | FunctionExpression
   | ArrowFunctionExpression
 
-export type TransformModuleExportMeta = {
-  localName?: string
+export type TransformModuleExportMeta = ModuleExportMeta & {
   declarationKind?: 'function' | 'class' | VariableDeclaration['kind']
-  isFunction?: boolean
-  defaultExportIdentifierName?: string
 }
 
 export type TransformModuleExportContext = {
@@ -141,146 +139,141 @@ export function transformModuleExport(
     return runtime(context)
   }
 
-  for (const node of ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (node.declaration.type === 'FunctionDeclaration') {
-          tinyassert(node.declaration.id)
-          const name = node.declaration.id.name
+  for (const group of scanModuleExports(viteAst)) {
+    if (group.type === 'declaration') {
+      const [entry] = group.exports
+      const { localName: name } = entry
+      const meta: TransformModuleExportMeta = {
+        ...entry.meta,
+        declarationKind:
+          group.declaration.type === 'FunctionDeclaration'
+            ? 'function'
+            : 'class',
+      }
+      if (!filter(entry.exportName, meta)) continue
+
+      if (group.declaration.type === 'FunctionDeclaration') {
+        const replacement = hoistFunction(
+          group.declaration,
+          name,
+          entry.exportName,
+          meta,
+        )
+        output.remove(group.node.start, group.declaration.start)
+        output.appendLeft(
+          group.declaration.start,
+          `export const ${name} = ${replacement};`,
+        )
+      } else {
+        output.remove(group.node.start, group.declaration.start)
+        emitFallback(name, entry.exportName, meta)
+      }
+    } else if (group.type === 'variable-declaration') {
+      const fallbackNames = new Set<string>()
+      const exportNames = group.declarators.flatMap((item) =>
+        item.exports.map((entry) => entry.exportName),
+      )
+
+      for (const declarator of group.declarators) {
+        const directFunction =
+          declarator.node.id.type === 'Identifier' &&
+          declarator.node.init &&
+          isFunctionNode(declarator.node.init)
+            ? declarator.node.init
+            : undefined
+        let validate = false
+
+        for (const entry of declarator.exports) {
           const meta: TransformModuleExportMeta = {
-            localName: name,
-            declarationKind: 'function',
-            isFunction: true,
+            ...entry.meta,
+            declarationKind: group.declaration.kind,
+            isFunction: directFunction
+              ? true
+              : declarator.node.init
+                ? getIsFunction(declarator.node.init)
+                : undefined,
           }
-          if (!filter(name, meta)) continue
+          if (!filter(entry.exportName, meta)) continue
+          validate = true
 
-          const replacement = hoistFunction(node.declaration, name, name, meta)
-          output.remove(node.start, node.declaration.start)
-          output.appendLeft(
-            node.declaration.start,
-            `export const ${name} = ${replacement};`,
-          )
-        } else if (node.declaration.type === 'ClassDeclaration') {
-          tinyassert(node.declaration.id)
-          const name = node.declaration.id.name
-          const meta: TransformModuleExportMeta = {
-            localName: name,
-            declarationKind: 'class',
-            isFunction: false,
-          }
-          if (!filter(name, meta)) continue
-
-          output.remove(node.start, node.declaration.start)
-          emitFallback(name, name, meta)
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          const declaration = node.declaration
-          const fallbackNames = new Set<string>()
-          const exportNames: string[] = []
-
-          for (const declarator of declaration.declarations) {
-            const names = extractNames(declarator.id)
-            exportNames.push(...names)
-            const directFunction =
-              declarator.id.type === 'Identifier' &&
-              declarator.init &&
-              isFunctionNode(declarator.init)
-                ? declarator.init
-                : undefined
-            let validate = false
-
-            for (const name of names) {
-              const meta: TransformModuleExportMeta = {
-                localName: name,
-                declarationKind: declaration.kind,
-                isFunction: directFunction
-                  ? true
-                  : declarator.init
-                    ? getIsFunction(declarator.init)
-                    : undefined,
-              }
-              if (!filter(name, meta)) continue
-              validate = true
-
-              if (directFunction && declarator.id.type === 'Identifier') {
-                const replacement = hoistFunction(
-                  directFunction,
-                  name,
-                  name,
-                  meta,
-                )
-                output.appendLeft(directFunction.start, replacement)
-              } else {
-                fallbackNames.add(name)
-                emitFallback(name, name, meta)
-              }
-            }
-
-            if (validate && declarator.init && !directFunction) {
-              validateNonAsyncFunction(options, declarator.init)
-            }
-          }
-
-          if (fallbackNames.size > 0) {
-            output.remove(node.start, declaration.start)
-            for (const name of exportNames) {
-              if (!fallbackNames.has(name))
-                fallbackCode.push(exportBinding(name, name))
-            }
+          if (directFunction) {
+            const replacement = hoistFunction(
+              directFunction,
+              entry.localName,
+              entry.exportName,
+              meta,
+            )
+            output.appendLeft(directFunction.start, replacement)
+          } else {
+            fallbackNames.add(entry.exportName)
+            emitFallback(entry.localName, entry.exportName, meta)
           }
         }
-      } else if (node.specifiers.length > 0) {
-        const preserved: string[] = []
-        let selected = false
-        for (const specifier of node.specifiers) {
-          tinyassert(specifier.local.type === 'Identifier')
-          if (specifier.exported.type !== 'Identifier') {
-            throw Object.assign(
-              new Error('unsupported string literal export name'),
-              { pos: specifier.exported.start },
-            )
-          }
-          const localName = specifier.local.name
-          const exportName = specifier.exported.name
-          const meta: TransformModuleExportMeta = {}
-          if (!filter(exportName, meta)) {
-            preserved.push(
-              localName === exportName
-                ? localName
-                : `${localName} as ${exportName}`,
-            )
-            continue
-          }
-          selected = true
 
-          let implementation = localName
-          if (node.source) {
-            implementation = createName('implementation', exportName)
-            const sourceTail = input
-              .slice(node.source.end, node.end)
-              .replace(/;?\s*$/, ';')
-            fallbackCode.push(
-              `import { ${localName} as ${implementation} } from ${node.source.raw}${sourceTail}`,
-            )
-          }
-          emitFallback(implementation, exportName, meta)
-        }
-
-        if (selected) {
-          output.remove(node.start, node.end)
-          if (preserved.length > 0) {
-            const source = node.source ? ` from ${node.source.raw}` : ''
-            fallbackCode.push(`export { ${preserved.join(', ')} }${source};`)
-          }
+        if (validate && declarator.node.init && !directFunction) {
+          validateNonAsyncFunction(options, declarator.node.init)
         }
       }
-    } else if (node.type === 'ExportAllDeclaration') {
+
+      if (fallbackNames.size > 0) {
+        output.remove(group.node.start, group.declaration.start)
+        for (const name of exportNames) {
+          if (!fallbackNames.has(name))
+            fallbackCode.push(exportBinding(name, name))
+        }
+      }
+    } else if (group.type === 'specifiers') {
+      const preserved: string[] = []
+      let selected = false
+      for (const entry of group.exports) {
+        tinyassert(entry.node.local.type === 'Identifier')
+        if (entry.node.exported.type !== 'Identifier') {
+          throw Object.assign(
+            new Error('unsupported string literal export name'),
+            { pos: entry.node.exported.start },
+          )
+        }
+        const { localName, exportName, meta } = entry
+        if (!filter(exportName, meta)) {
+          preserved.push(
+            localName === exportName
+              ? localName
+              : `${localName} as ${exportName}`,
+          )
+          continue
+        }
+        selected = true
+
+        let implementation = localName
+        if (group.node.source) {
+          implementation = createName('implementation', exportName)
+          const sourceTail = input
+            .slice(group.node.source.end, group.node.end)
+            .replace(/;?\s*$/, ';')
+          fallbackCode.push(
+            `import { ${localName} as ${implementation} } from ${group.node.source.raw}${sourceTail}`,
+          )
+        }
+        emitFallback(implementation, exportName, meta)
+      }
+
+      if (selected) {
+        output.remove(group.node.start, group.node.end)
+        if (preserved.length > 0) {
+          const source = group.node.source
+            ? ` from ${group.node.source.raw}`
+            : ''
+          fallbackCode.push(`export { ${preserved.join(', ')} }${source};`)
+        }
+      }
+    } else if (group.type === 'export-all') {
       if (options.exportAll !== 'preserve') {
         throw Object.assign(new Error('unsupported ExportAllDeclaration'), {
-          pos: node.start,
+          pos: group.node.start,
         })
       }
-    } else if (node.type === 'ExportDefaultDeclaration') {
-      const declaration = node.declaration
+    } else if (group.type === 'default') {
+      const declaration = group.node.declaration
       let meta: TransformModuleExportMeta
 
       if (isFunctionNode(declaration)) {
@@ -289,10 +282,9 @@ export function transformModuleExport(
             ? declaration.id.name
             : 'default'
         meta = {
-          localName: sourceName === 'default' ? undefined : sourceName,
+          ...group.meta,
           declarationKind:
             declaration.type === 'FunctionDeclaration' ? 'function' : undefined,
-          isFunction: true,
         }
         if (!filter('default', meta)) continue
 
@@ -302,7 +294,7 @@ export function transformModuleExport(
           'default',
           meta,
         )
-        output.remove(node.start, declaration.start)
+        output.remove(group.node.start, declaration.start)
         output.appendLeft(
           declaration.start,
           declaration.type === 'FunctionDeclaration' && declaration.id
@@ -314,25 +306,19 @@ export function transformModuleExport(
         if (declaration.type === 'ClassDeclaration' && declaration.id) {
           implementation = declaration.id.name
           meta = {
-            localName: declaration.id.name,
-            declarationKind:
-              declaration.type === 'ClassDeclaration' ? 'class' : undefined,
-            isFunction: false,
+            ...group.meta,
+            declarationKind: 'class',
           }
           if (!filter('default', meta)) continue
-          output.remove(node.start, declaration.start)
+          output.remove(group.node.start, declaration.start)
         } else {
           implementation = createName('implementation', 'default')
-          meta = {
-            defaultExportIdentifierName:
-              declaration.type === 'Identifier' ? declaration.name : undefined,
-            isFunction: getIsFunction(declaration),
-          }
+          meta = group.meta
           if (!filter('default', meta)) continue
           validateNonAsyncFunction(options, declaration)
-          const prefix = input.slice(node.start, declaration.start)
+          const prefix = input.slice(group.node.start, declaration.start)
           output.update(
-            node.start,
+            group.node.start,
             declaration.start,
             prefix.replace(
               /^export\s+default/,

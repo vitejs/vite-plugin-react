@@ -1,5 +1,6 @@
 export * from './hoist'
 export * from './module-export'
+export * from './module-exports'
 export * from './module-export-effect'
 export * from './wrap-export'
 export * from './proxy-export'

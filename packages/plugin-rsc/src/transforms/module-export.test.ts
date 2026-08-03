@@ -85,7 +85,7 @@ let current = first
 export default current
 current = second
 export { remote as loader } from './dep'
-export const { item } = data
+export const { item } = { item: 1 }
 export * from './all'
 `,
       { exportAll: 'preserve' },
@@ -99,6 +99,11 @@ export * from './all'
       'loader',
       'item',
     ])
+    expect(result.references[3]!.meta).toEqual({
+      localName: 'item',
+      declarationKind: 'const',
+      isFunction: false,
+    })
     expect(code).toContain('const $$module_1_implementation_default = current')
     expect(
       code.indexOf('const $$module_1_implementation_default = current'),
