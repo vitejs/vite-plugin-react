@@ -207,6 +207,8 @@ export function transformWrapExport(
       // ⬇️
       // const $$wrap_selected = __WRAP__(selected, 'renamed')
       // export { $$wrap_selected as renamed, skipped }
+      const skippedExports: string[] = []
+      let selected = false
       for (const entry of group.exports) {
         tinyassert(entry.node.local.type === 'Identifier')
         if (entry.node.exported.type !== 'Identifier') {
@@ -215,17 +217,7 @@ export function transformWrapExport(
             { pos: entry.node.exported.start },
           )
         }
-      }
-      const selectedExports = group.exports.filter((entry) =>
-        filter(entry.exportName, entry.meta),
-      )
-      if (selectedExports.length === 0) continue
-
-      // remove entire original export statement
-      output.remove(group.node.start, group.node.end)
-      const skippedExports: string[] = []
-      for (const entry of group.exports) {
-        if (!selectedExports.includes(entry)) {
+        if (!filter(entry.exportName, entry.meta)) {
           skippedExports.push(
             entry.localName === entry.exportName
               ? entry.localName
@@ -233,6 +225,8 @@ export function transformWrapExport(
           )
           continue
         }
+        selected = true
+
         let binding = entry.localName
         const source = group.node.source
         if (source) {
@@ -248,9 +242,14 @@ export function transformWrapExport(
         }
         emitWrappedBinding(binding, entry.exportName, entry.meta)
       }
-      if (skippedExports.length > 0) {
-        const source = group.node.source ? ` from ${group.node.source.raw}` : ''
-        appendedCode.push(`export { ${skippedExports.join(', ')} }${source}`)
+      if (selected) {
+        output.remove(group.node.start, group.node.end)
+        if (skippedExports.length > 0) {
+          const source = group.node.source
+            ? ` from ${group.node.source.raw}`
+            : ''
+          appendedCode.push(`export { ${skippedExports.join(', ')} }${source}`)
+        }
       }
     } else if (group.type === 'export-all') {
       // Vue SFC uses ExportAllDeclaration to re-export its setup script, so
