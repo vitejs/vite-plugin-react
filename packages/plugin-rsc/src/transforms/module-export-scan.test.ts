@@ -213,3 +213,16 @@ export default local
   expect(renamed.exports[0]?.meta.parameters).toBeUndefined()
   expect(defaultExport.meta.parameters).toBeUndefined()
 })
+
+test('does not assign initializer parameters to destructured exports', async () => {
+  const ast = await parseAstAsync(
+    `export const { fn } = async (first, second) => {}`,
+  )
+
+  const [group] = scanModuleExports(ast)
+  expect(group?.type).toBe('variable-declaration')
+  if (group?.type !== 'variable-declaration') {
+    throw new Error('unexpected export group')
+  }
+  expect(group.declarators[0]?.exports[0]?.meta.parameters).toBeUndefined()
+})

@@ -172,7 +172,8 @@ export function scanModuleExports(
                     declName: name,
                     isFunction,
                     valueNode: declarator.init ?? undefined,
-                    ...(reassignedNames.has(name)
+                    ...(declarator.id.type !== 'Identifier' ||
+                    reassignedNames.has(name)
                       ? {}
                       : getFunctionParametersMeta(declarator.init)),
                   },
