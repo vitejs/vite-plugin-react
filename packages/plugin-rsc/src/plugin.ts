@@ -2451,7 +2451,7 @@ function vitePluginRscCss(
     //   export const Page = () => {}
     return (_name: string, meta) =>
       !!(
-        (meta.isFunction && meta.localName && /^[A-Z]/.test(meta.localName)) ||
+        (meta.isFunction && meta.declName && /^[A-Z]/.test(meta.declName)) ||
         (meta.defaultExportIdentifierName &&
           /^[A-Z]/.test(meta.defaultExportIdentifierName))
       )

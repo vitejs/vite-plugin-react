@@ -465,7 +465,8 @@ export default cached;
       const ast = await parseAstAsync(input)
       transformWrapExport(input, ast, {
         runtime(value, _name, meta) {
-          actual.push(meta)
+          const { valueNode: _, ...rest } = meta
+          actual.push(rest)
           return value
         },
       })
