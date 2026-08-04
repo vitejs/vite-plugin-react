@@ -4,6 +4,7 @@ import {
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
   transformWrapExport,
+  type FunctionParameters,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
 
@@ -29,9 +30,19 @@ export function callableCachePlugin(): Plugin {
       const environmentName = this.environment.name
 
       if (environmentName === 'rsc') {
-        const runtime = (value: string, name: string) =>
+        const runtime = (
+          value: string,
+          name: string,
+          meta: {
+            parameters?: FunctionParameters
+            boundArgumentCount?: number
+          },
+        ) =>
           `$$ReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}),` +
+          `$$cacheWrapper(${value}, ${JSON.stringify({
+            parameters: meta.parameters,
+            boundArgumentCount: meta.boundArgumentCount ?? 0,
+          })}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
@@ -51,6 +62,10 @@ export function callableCachePlugin(): Plugin {
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
               runtime,
+              encode: (value) =>
+                `$$Encryption.encryptActionBoundArgs(${value})`,
+              decode: (value) =>
+                `await $$Encryption.decryptActionBoundArgs(${value})`,
             })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
@@ -63,6 +78,7 @@ export function callableCachePlugin(): Plugin {
         })
         result.output.prepend(
           `import $$cacheWrapper from "/src/framework/use-cache-runtime";\n` +
+            `import * as $$Encryption from "@vitejs/plugin-rsc/utils/encryption-runtime";\n` +
             `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )
         return {

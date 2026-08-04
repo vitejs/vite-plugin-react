@@ -1,3 +1,4 @@
+import { decryptActionBoundArgs } from '@vitejs/plugin-rsc/rsc'
 import {
   createClientTemporaryReferenceSet,
   createFromReadableStream,
@@ -19,7 +20,15 @@ let cachedFnCacheEntries = new WeakMap<
   Record<string, Promise<StreamCacher>>
 >()
 
-export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
+type CacheFunctionMetadata = {
+  parameters?: { count: number; hasRest: boolean }
+  boundArgumentCount: number
+}
+
+export default function cacheWrapper(
+  fn: (...args: any[]) => Promise<unknown>,
+  metadata: CacheFunctionMetadata,
+) {
   if (cachedFnMap.has(fn)) {
     return cachedFnMap.get(fn)!
   }
@@ -31,17 +40,36 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
       cachedFnCacheEntries.set(cachedFn, cacheEntries)
     }
 
-    // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
+    const boundArguments = args.slice(0, metadata.boundArgumentCount)
+    const invocationArguments = args.slice(metadata.boundArgumentCount)
+    const decodedBoundArguments =
+      metadata.boundArgumentCount === 0
+        ? []
+        : ((await decryptActionBoundArgs(boundArguments[0])) as unknown[])
+    const admittedInvocationArguments =
+      !metadata.parameters || metadata.parameters.hasRest
+        ? invocationArguments
+        : invocationArguments.slice(0, metadata.parameters.count)
+
+    // Serialize admitted arguments to a cache key via `encodeReply` from `react-server-dom/client`.
     // NOTE: using `renderToReadableStream` here for arguments serialization would end up
     // serializing react elements (e.g. children props), which causes
     // those arguments to be included as a cache key and it doesn't achieve
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
+    const encodedCacheKey = await encodeReply(
+      [...decodedBoundArguments, ...admittedInvocationArguments],
+      {
+        temporaryReferences: clientTemporaryReferences,
+      },
+    )
+    const serializedCacheKey = await replyToCacheKey(encodedCacheKey)
+
+    // Keep the complete generated argument list for implementation invocation.
     const encodedArguments = await encodeReply(args, {
       temporaryReferences: clientTemporaryReferences,
     })
-    const serializedCacheKey = await replyToCacheKey(encodedArguments)
 
     // cache `fn` result as stream
     // (cache value is promise so that it dedupes concurrent async calls)

@@ -1,8 +1,16 @@
+import { ArgumentAdmission } from './features/argument-admission/server'
 import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirective } from './features/inline-directive/server'
 
 const routes = [
+  {
+    path: '/argument-admission',
+    title: 'Argument admission',
+    description:
+      'Source parameters and decoded closure captures determine cache identity.',
+    Component: ArgumentAdmission,
+  },
   {
     path: '/inline-directive',
     title: 'Inline directive',

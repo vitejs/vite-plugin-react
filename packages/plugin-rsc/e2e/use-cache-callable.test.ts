@@ -13,6 +13,20 @@ test.describe('build', () => {
 })
 
 function defineTests(f: Fixture) {
+  test('argument admission and capture identity', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/argument-admission'))
+
+    await expect(page.getByTestId('fixed-extra-admission')).toHaveText(
+      'excluded',
+    )
+    await expect(page.getByTestId('fixed-declared-admission')).toHaveText(
+      'included',
+    )
+    await expect(page.getByTestId('rest-admission')).toHaveText('included')
+    await expect(page.getByTestId('capture-admission')).toHaveText('included')
+  })
+
   test('inline directive', async ({ page }) => {
     using _errors = expectNoPageError(page)
     await page.goto(f.url())

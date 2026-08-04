@@ -9,7 +9,15 @@ import type {
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
+import type { FunctionParameters } from './module-export-scan'
 import { buildScopeTree, type ScopeTree } from './scope'
+
+export type InlineDirectiveMeta = {
+  directiveMatch: RegExpMatchArray
+  parameters: FunctionParameters
+  /** Number of generated leading arguments bound before source arguments. */
+  boundArgumentCount: number
+}
 
 /**
  * Turns an inline directive function into a module-level registered function.
@@ -90,11 +98,7 @@ export function transformHoistInlineDirective(
     rejectNonAsyncFunction,
     ...options
   }: {
-    runtime: (
-      value: string,
-      name: string,
-      meta: { directiveMatch: RegExpMatchArray },
-    ) => string
+    runtime: (value: string, name: string, meta: InlineDirectiveMeta) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
     encode?: (value: string) => string
@@ -166,6 +170,14 @@ export function transformHoistInlineDirective(
         // function. At the original call site, registration below binds the
         // corresponding values in the same order.
         const bindVars = getBindVars(node, scopeTree)
+        const parameters: FunctionParameters = {
+          count: node.params.length,
+          hasRest: node.params.some(
+            (parameter) => parameter.type === 'RestElement',
+          ),
+        }
+        const boundArgumentCount =
+          bindVars.length > 0 ? (options.encode ? 1 : bindVars.length) : 0
         let newParams = [
           ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -206,7 +218,7 @@ export function transformHoistInlineDirective(
         const runtimeCode = `/* #__PURE__ */ ${runtime(
           implementationName,
           newName,
-          { directiveMatch: match },
+          { directiveMatch: match, parameters, boundArgumentCount },
         )}`
         if (options.hoistRuntime) {
           runtimeHoists.push(

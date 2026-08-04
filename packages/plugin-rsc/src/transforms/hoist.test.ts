@@ -493,11 +493,11 @@ export async function kv() {
       }),
     ).toMatchInlineSnapshot(`
       "
-      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null]});
+      export const none = /* #__PURE__ */ $$register($$hoist_0_none, "<id>", "$$hoist_0_none", {"directiveMatch":["use cache",null],"parameters":{"count":0,"hasRest":false},"boundArgumentCount":0});
 
-      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"]});
+      export const fs = /* #__PURE__ */ $$register($$hoist_1_fs, "<id>", "$$hoist_1_fs", {"directiveMatch":["use cache: fs",": fs"],"parameters":{"count":0,"hasRest":false},"boundArgumentCount":0});
 
-      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"]});
+      export const kv = /* #__PURE__ */ $$register($$hoist_2_kv, "<id>", "$$hoist_2_kv", {"directiveMatch":["use cache: kv",": kv"],"parameters":{"count":0,"hasRest":false},"boundArgumentCount":0});
 
       ;async function $$hoist_0_none() {
         "use cache";
@@ -518,6 +518,69 @@ export async function kv() {
       /* #__PURE__ */ Object.defineProperty($$hoist_2_kv, "name", { value: "kv" });
       "
     `)
+  })
+
+  it('reports source parameters and generated bound argument count', async () => {
+    const input = `
+async function noCapture(first = 1, { second }) {
+  "use server";
+}
+
+function outer(firstCapture, secondCapture) {
+  async function fixed(first = 1, { second }) {
+    "use server";
+    return [firstCapture, secondCapture, first, second];
+  }
+  async function rest(first, ...remaining) {
+    "use server";
+    return [firstCapture, first, remaining];
+  }
+}
+`
+    const ast = await parseAstAsync(input)
+
+    function collect(encoded: boolean) {
+      const metadata: unknown[] = []
+      transformHoistInlineDirective(input, ast, {
+        directive: 'use server',
+        runtime: (value, _name, meta) => {
+          metadata.push(meta)
+          return value
+        },
+        encode: encoded ? (value) => `encode(${value})` : undefined,
+        decode: encoded ? (value) => `decode(${value})` : undefined,
+      })
+      return metadata.map(({ directiveMatch: _, ...meta }: any) => meta)
+    }
+
+    expect(collect(false)).toEqual([
+      {
+        parameters: { count: 2, hasRest: false },
+        boundArgumentCount: 0,
+      },
+      {
+        parameters: { count: 2, hasRest: false },
+        boundArgumentCount: 2,
+      },
+      {
+        parameters: { count: 2, hasRest: true },
+        boundArgumentCount: 1,
+      },
+    ])
+    expect(collect(true)).toEqual([
+      {
+        parameters: { count: 2, hasRest: false },
+        boundArgumentCount: 0,
+      },
+      {
+        parameters: { count: 2, hasRest: false },
+        boundArgumentCount: 1,
+      },
+      {
+        parameters: { count: 2, hasRest: true },
+        boundArgumentCount: 1,
+      },
+    ])
   })
 
   it('no ending new line', async () => {

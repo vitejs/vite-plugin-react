@@ -14,6 +14,11 @@ import type {
 import type { ESTree } from 'vite'
 import { extractNames } from './utils'
 
+export type FunctionParameters = {
+  count: number
+  hasRest: boolean
+}
+
 export type ModuleExportMeta = {
   /**
    * The source node that evaluates to the exported value when directly
@@ -25,6 +30,8 @@ export type ModuleExportMeta = {
    * - `undefined` for export specifiers and re-exports.
    */
   valueNode?: Node | ExportDefaultDeclaration['declaration']
+  /** Source parameter shape when the exported function is statically known. */
+  parameters?: FunctionParameters
   // TODO: followings are used only for internal `transformRscCssExport`.
   // should probably simplify to use `valueNode` directly and remove these.
   /**
@@ -129,6 +136,7 @@ export function scanModuleExports(
 ): ModuleExportGroup[] {
   const ast = viteAst as unknown as Program
   const groups: ModuleExportGroup[] = []
+  const localFunctionParameters = getLocalFunctionParameters(ast)
 
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
@@ -157,6 +165,7 @@ export function scanModuleExports(
                     declName: name,
                     isFunction,
                     valueNode: declarator.init ?? undefined,
+                    ...getFunctionParametersMeta(declarator.init),
                   },
                 })),
               }
@@ -178,6 +187,7 @@ export function scanModuleExports(
                 declName: name,
                 isFunction: getIsFunction(node.declaration),
                 valueNode: node.declaration,
+                ...getFunctionParametersMeta(node.declaration),
               },
             },
           })
@@ -201,7 +211,15 @@ export function scanModuleExports(
                 specifier.exported.type === 'Identifier'
                   ? specifier.exported.name
                   : '__unsupported_string_export__',
-              meta: {},
+              meta: groupParametersMeta(
+                node.source
+                  ? undefined
+                  : localFunctionParameters.get(
+                      specifier.local.type === 'Identifier'
+                        ? specifier.local.name
+                        : '',
+                    ),
+              ),
             }
           }),
         })
@@ -227,12 +245,16 @@ export function scanModuleExports(
           declName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
           valueNode: node.declaration,
+          ...getFunctionParametersMeta(node.declaration),
         }
       } else if (node.declaration.type === 'Identifier') {
         kind = 'identifier'
         meta = {
           defaultExportIdentifierName: node.declaration.name,
           valueNode: node.declaration,
+          ...groupParametersMeta(
+            localFunctionParameters.get(node.declaration.name),
+          ),
         }
       } else {
         // export default function () {}
@@ -241,6 +263,7 @@ export function scanModuleExports(
         meta = {
           isFunction: getIsFunction(node.declaration),
           valueNode: node.declaration,
+          ...getFunctionParametersMeta(node.declaration),
         }
       }
       groups.push({ type: 'default', kind, node, localName, meta })
@@ -248,6 +271,60 @@ export function scanModuleExports(
   }
 
   return groups
+}
+
+function getLocalFunctionParameters(
+  ast: Program,
+): Map<string, FunctionParameters> {
+  const result = new Map<string, FunctionParameters>()
+
+  for (const statement of ast.body) {
+    const declaration =
+      statement.type === 'ExportNamedDeclaration' ||
+      statement.type === 'ExportDefaultDeclaration'
+        ? statement.declaration
+        : statement
+    if (declaration?.type === 'FunctionDeclaration' && declaration.id) {
+      result.set(declaration.id.name, getFunctionParameters(declaration)!)
+    } else if (declaration?.type === 'VariableDeclaration') {
+      for (const declarator of declaration.declarations) {
+        const parameters = getFunctionParameters(declarator.init)
+        if (declarator.id.type === 'Identifier' && parameters) {
+          result.set(declarator.id.name, parameters)
+        }
+      }
+    }
+  }
+
+  return result
+}
+
+function getFunctionParametersMeta(
+  node: Node | ExportDefaultDeclaration['declaration'] | null | undefined,
+): { parameters?: FunctionParameters } {
+  return groupParametersMeta(getFunctionParameters(node))
+}
+
+function groupParametersMeta(parameters: FunctionParameters | undefined): {
+  parameters?: FunctionParameters
+} {
+  return parameters ? { parameters } : {}
+}
+
+function getFunctionParameters(
+  node: Node | ExportDefaultDeclaration['declaration'] | null | undefined,
+): FunctionParameters | undefined {
+  if (
+    node?.type !== 'FunctionDeclaration' &&
+    node?.type !== 'FunctionExpression' &&
+    node?.type !== 'ArrowFunctionExpression'
+  ) {
+    return
+  }
+  return {
+    count: node.params.length,
+    hasRest: node.params.some((parameter) => parameter.type === 'RestElement'),
+  }
 }
 
 function getIsFunction(

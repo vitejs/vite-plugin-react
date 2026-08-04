@@ -140,3 +140,48 @@ export { "remote name" as remote } from './dep'
     },
   ])
 })
+
+test('reports statically known source parameters', async () => {
+  const ast = await parseAstAsync(`
+export async function declared(value = 1, { nested }) {}
+export const rest = async (value, ...remaining) => {}
+async function local(value) {}
+export { local as renamed }
+export default local
+export { remote } from './dep'
+export const unknown = getValue()
+`)
+
+  const parameters = scanModuleExports(ast).flatMap((group) => {
+    if (group.type === 'declaration') {
+      return [[group.export.exportName, group.export.meta.parameters]] as const
+    }
+    if (group.type === 'variable-declaration') {
+      return group.declarators.flatMap((declarator) =>
+        declarator.exports.map(
+          (entry) => [entry.exportName, entry.meta.parameters] as const,
+        ),
+      )
+    }
+    if (group.type === 'specifiers') {
+      return group.exports.map(
+        (entry) => [entry.exportName, entry.meta.parameters] as const,
+      )
+    }
+    if (group.type === 'default') {
+      return [['default', group.meta.parameters]] as const
+    }
+    return []
+  })
+
+  expect(new Map(parameters)).toEqual(
+    new Map([
+      ['declared', { count: 2, hasRest: false }],
+      ['rest', { count: 2, hasRest: true }],
+      ['renamed', { count: 1, hasRest: false }],
+      ['default', { count: 1, hasRest: false }],
+      ['remote', undefined],
+      ['unknown', undefined],
+    ]),
+  )
+})

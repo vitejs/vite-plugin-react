@@ -122,6 +122,7 @@ export default async function Page() {}
   })
 
   test('runtime export meta', async () => {
+    const parameters = { count: 0, hasRest: false }
     const examples: [input: string, expected: unknown[]][] = [
       [
         `export function Fn() {}`,
@@ -129,6 +130,7 @@ export default async function Page() {}
           {
             declName: 'Fn',
             isFunction: true,
+            parameters,
           },
         ],
       ],
@@ -147,6 +149,7 @@ export default async function Page() {}
           {
             declName: 'Arrow',
             isFunction: true,
+            parameters,
           },
         ],
       ],
@@ -156,6 +159,7 @@ export default async function Page() {}
           {
             declName: 'FnExpression',
             isFunction: true,
+            parameters,
           },
         ],
       ],
@@ -204,6 +208,7 @@ export default async function Page() {}
           {
             declName: 'MultiFn',
             isFunction: true,
+            parameters,
           },
           {
             declName: 'MultiValue',
@@ -218,10 +223,11 @@ export default async function Page() {}
           {
             declName: 'Page',
             isFunction: true,
+            parameters,
           },
         ],
       ],
-      [`export default function () {}`, [{ isFunction: true }]],
+      [`export default function () {}`, [{ isFunction: true, parameters }]],
       [
         `export default class Page {}`,
         [
@@ -232,13 +238,13 @@ export default async function Page() {}
         ],
       ],
       [`export default class {}`, [{ isFunction: false }]],
-      [`export default () => {}`, [{ isFunction: true }]],
+      [`export default () => {}`, [{ isFunction: true, parameters }]],
       [`export default 1`, [{ isFunction: false }]],
       [
         `const Page = () => {}; export default Page`,
-        [{ defaultExportIdentifierName: 'Page' }],
+        [{ defaultExportIdentifierName: 'Page', parameters }],
       ],
-      [`const id = async () => {}; export { id }`, [{}]],
+      [`const id = async () => {}; export { id }`, [{ parameters }]],
       [`export { id } from './dep'`, [{}]],
     ]
 
