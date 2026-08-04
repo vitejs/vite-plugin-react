@@ -40,6 +40,10 @@ export function callableCachePlugin(): Plugin {
           ? transformModuleExportWrap(code, ast, {
               generate: ({ implementation, originalName, exportName }) =>
                 `/* #__PURE__ */ ${runtime(implementation, exportName, originalName ?? exportName)}`,
+              // Next.js calls rejecting primitive literals while permitting
+              // objects and arrays arbitrary, but keeps the latter for metadata
+              // and viewport exports.
+              // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1914-L1919
               filter: (_name, meta) =>
                 meta.valueNode?.type !== 'ObjectExpression' &&
                 meta.valueNode?.type !== 'ArrayExpression',
