@@ -167,6 +167,9 @@ export function scanModuleExports(
               return {
                 node: declarator,
                 directFunction,
+                // uniformly handle destructured exports such as:
+                //   export const { foo, bar } = ...
+                // though associated `meta` likely doesn't make sense.
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,
