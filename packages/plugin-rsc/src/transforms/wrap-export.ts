@@ -6,7 +6,7 @@ import {
   type ModuleExportEntry,
   type ModuleExportMeta,
 } from './module-export-scan'
-import { validateNonAsyncFunction } from './utils'
+import { rejectNonAsyncFunction, validateNonAsyncFunction } from './utils'
 
 export type TransformWrapExportFilter = (
   name: string,
@@ -20,6 +20,43 @@ export type TransformWrapExportOptions = {
   filter?: TransformWrapExportFilter
 }
 
+/**
+ * Replaces selected module-local export bindings with runtime wrappers.
+ *
+ * Conceptually:
+ *
+ * ```js
+ * export async function action() {}
+ * export const loader = async () => {}
+ * export default function Page() {}
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * async function action() {}
+ * let loader = async () => {}
+ * function Page() {}
+ *
+ * action = __WRAP__(action, 'action')
+ * export { action }
+ * loader = __WRAP__(loader, 'loader')
+ * export { loader }
+ * const $$wrap_Page = __WRAP__(Page, 'default')
+ * export { $$wrap_Page as default }
+ * ```
+ *
+ * Here, `__WRAP__(...)` represents the expression returned by `runtime`.
+ * Unlike `transformModuleExportWrap`, direct local references observe the
+ * wrapped value because the original binding itself is reassigned.
+ *
+ * Declaration rewrites are moved to the end of the module so each generated
+ * runtime call retains the original export token's source mapping. Wrappers for
+ * export specifiers and default exports are appended without explicit mappings.
+ *
+ * Generated `$$wrap_*` and `$$import_*` names are not deconflicted from user
+ * bindings, consistent with the other transform helpers.
+ */
 export function transformWrapExport(
   input: string,
   viteAst: ESTree.Program,
@@ -30,63 +67,75 @@ export function transformWrapExport(
 } {
   const output = new MagicString(input)
   const exportNames: string[] = []
-  const toAppend: string[] = []
+  const appendedCode: string[] = []
   const filter = options.filter ?? (() => true)
 
-  function wrapSimple(
+  /**
+   * Strips a direct export declaration and emits assignments and exports at
+   * module end. All bindings are re-exported, but only selected bindings are
+   * assigned runtime wrappers.
+   *
+   * The rewritten source range is moved so generated runtime calls borrow the
+   * original export site's mapping:
+   *
+   * ```js
+   * // input
+   * export async function action() {}
+   * ^^^^^^
+   *
+   * // output
+   * async function action() {}
+   * action = __WRAP__(action, 'action')  << maps to the `export` token
+   * export { action }                    <<
+   * ```
+   */
+  function emitWrappedAssignments(
+    // start/end represents original `export` token range
     start: number,
     end: number,
     exports: ModuleExportEntry[],
+    selectedExportNames: Set<string>,
   ) {
-    const filteredExports = exports.map((item) => {
-      return {
-        ...item,
-        shouldWrap: filter(item.exportName, item.meta),
-      }
-    })
-    exportNames.push(
-      ...filteredExports
-        .filter((item) => item.shouldWrap)
-        .map((item) => item.exportName),
-    )
-    // update code and move to preserve `registerServerReference` position
-    // e.g.
-    // input
-    //   export async function f() {}
-    //   ^^^^^^
-    // output
-    //   async function f() {}
-    //   f = registerServerReference(f, ...)   << maps to original "export" token
-    //   export { f }                          <<
-    const newCode = filteredExports
-      .map((e) => [
-        e.shouldWrap &&
-          `${e.localName} = /* #__PURE__ */ ${options.runtime(
-            e.localName,
-            e.exportName,
-            e.meta,
-          )};\n`,
-        `export { ${e.localName} };\n`,
-      ])
-      .flat()
-      .filter(Boolean)
-      .join('')
+    exportNames.push(...selectedExportNames)
+    const newCode =
+      exports
+        .map(
+          (e) =>
+            selectedExportNames.has(e.exportName) &&
+            `${e.localName} = /* #__PURE__ */ ${options.runtime(
+              e.localName,
+              e.exportName,
+              e.meta,
+            )};\n`,
+        )
+        .filter(Boolean)
+        .join('') +
+      `export { ${exports.map((e) => e.localName).join(', ')} };\n`
     output.update(start, end, newCode)
     output.move(start, end, input.length)
   }
 
-  function wrapExport(
+  /**
+   * Emits a separate wrapper binding for exports that cannot reassign an
+   * existing direct declaration, such as export specifiers and defaults.
+   *
+   * ```js
+   * // existing source binding remains unchanged
+   * const local = init()
+   * export { local as renamed }  // caller removes the original export
+   *
+   * // appended code
+   * const $$wrap_local = __WRAP__(local, 'renamed')
+   * export { $$wrap_local as renamed }
+   * ```
+   */
+  function emitWrappedBinding(
     name: string,
     exportName: string,
     meta: ModuleExportMeta = {},
   ) {
-    if (!filter(exportName, meta)) {
-      toAppend.push(`export { ${name} as ${exportName} }`)
-      return
-    }
     exportNames.push(exportName)
-
-    toAppend.push(
+    appendedCode.push(
       `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
         name,
         exportName,
@@ -98,12 +147,35 @@ export function transformWrapExport(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
+      // export function f() {}
+      // ⬇️
+      // function f() {}        << strip export
+      // f = __WRAP__(f, 'f')   << emit
+      // export { f }           << emit
       const entry = group.export
-      if (filter(entry.exportName, entry.meta)) {
-        validateNonAsyncFunction(options, group.declaration)
-      }
-      wrapSimple(group.node.start, group.declaration.start, [entry])
+      if (!filter(entry.exportName, entry.meta)) continue
+      validateNonAsyncFunction(options, group.declaration)
+      emitWrappedAssignments(
+        group.node.start,
+        group.declaration.start,
+        [entry],
+        new Set([entry.exportName]),
+      )
     } else if (group.type === 'variable-declaration') {
+      // export const selected = init(), skipped = init()
+      // ⬇️
+      // let selected = init(), skipped = init()    << strip export
+      // selected = __WRAP__(selected, 'selected')  << emit
+      // export { selected, skipped }               << emit
+      const exports = group.declarators.flatMap((item) => item.exports)
+      const selectedExportNames = new Set(
+        exports
+          .filter((entry) => filter(entry.exportName, entry.meta))
+          .map((entry) => entry.exportName),
+      )
+      if (selectedExportNames.size === 0) continue
+
+      // change `const` to `let` to reassign local name
       if (group.declaration.kind === 'const') {
         output.update(
           group.declaration.start,
@@ -111,50 +183,72 @@ export function transformWrapExport(
           'let',
         )
       }
-      const exports: ModuleExportEntry[] = []
       for (const declarator of group.declarators) {
-        exports.push(...declarator.exports)
         if (
-          declarator.node.init &&
-          declarator.exports.some(({ exportName, meta }) =>
-            filter(exportName, meta),
+          declarator.exports.some(({ exportName }) =>
+            selectedExportNames.has(exportName),
           )
         ) {
-          validateNonAsyncFunction(options, declarator.node.init)
+          if (declarator.node.init) {
+            validateNonAsyncFunction(options, declarator.node.init)
+          } else {
+            rejectNonAsyncFunction(options, declarator.node.start)
+          }
         }
       }
-      wrapSimple(group.node.start, group.declaration.start, exports)
+      emitWrappedAssignments(
+        group.node.start,
+        group.declaration.start,
+        exports,
+        selectedExportNames,
+      )
     } else if (group.type === 'specifiers') {
-      if (group.node.source) {
-        output.remove(group.node.start, group.node.end)
-        for (const entry of group.exports) {
-          tinyassert(entry.node.local.type === 'Identifier')
-          if (entry.node.exported.type !== 'Identifier') {
-            throw Object.assign(
-              new Error('unsupported string literal export name'),
-              { pos: entry.node.exported.start },
-            )
-          }
-          toAppend.push(
-            `import { ${entry.localName} as $$import_${entry.localName} } from ${group.node.source.raw}`,
-          )
-          wrapExport(
-            `$$import_${entry.localName}`,
-            entry.exportName,
-            entry.meta,
+      // export { selected as renamed, skipped }
+      // ⬇️
+      // const $$wrap_selected = __WRAP__(selected, 'renamed')
+      // export { $$wrap_selected as renamed, skipped }
+      const skippedExports: string[] = []
+      let selected = false
+      for (const entry of group.exports) {
+        tinyassert(entry.node.local.type === 'Identifier')
+        if (entry.node.exported.type !== 'Identifier') {
+          throw Object.assign(
+            new Error('unsupported string literal export name'),
+            { pos: entry.node.exported.start },
           )
         }
-      } else {
+        if (!filter(entry.exportName, entry.meta)) {
+          skippedExports.push(
+            entry.localName === entry.exportName
+              ? entry.localName
+              : `${entry.localName} as ${entry.exportName}`,
+          )
+          continue
+        }
+        selected = true
+
+        let binding = entry.localName
+        const source = group.node.source
+        if (source) {
+          // introduce local variable via renamed import
+          // export { remote as action } from './dep'
+          // ⬇️
+          // import { remote as $$import_remote } from './dep'
+          binding = `$$import_${entry.localName}`
+          appendedCode.push(
+            // TODO: Preserve import attributes from the original re-export.
+            `import { ${entry.localName} as ${binding} } from ${source.raw}`,
+          )
+        }
+        emitWrappedBinding(binding, entry.exportName, entry.meta)
+      }
+      if (selected) {
         output.remove(group.node.start, group.node.end)
-        for (const entry of group.exports) {
-          tinyassert(entry.node.local.type === 'Identifier')
-          if (entry.node.exported.type !== 'Identifier') {
-            throw Object.assign(
-              new Error('unsupported string literal export name'),
-              { pos: entry.node.exported.start },
-            )
-          }
-          wrapExport(entry.localName, entry.exportName, entry.meta)
+        if (skippedExports.length > 0) {
+          const source = group.node.source
+            ? ` from ${group.node.source.raw}`
+            : ''
+          appendedCode.push(`export { ${skippedExports.join(', ')} }${source}`)
         }
       }
     } else if (group.type === 'export-all') {
@@ -167,39 +261,34 @@ export function transformWrapExport(
         })
       }
     } else if (group.type === 'default') {
+      const meta = group.meta
+      if (!filter('default', meta)) continue
+
       const localName = group.localName ?? '$$default'
       if (group.kind === 'named-declaration') {
-        // preserve name scope for `function foo() {}` and `class Foo {}`
-        // e.g.
-        //   export default foo() {}
-        //   ^^^^^^^^^^^^^^
-        //.  ⬇️ (remove `export default`)
-        //   function foo() {}
+        // export default function Page() {}
+        // ⬇️
+        // function Page() {}
         output.remove(group.node.start, group.node.declaration.start)
       } else {
-        // otherwise we can introduce new variable
-        // e.g.
-        //   export default foo
-        //   ^^^^^^^^^^^^^^
-        //.  ⬇️ (replace `export default`)
-        //   const $$default = foo
-        //   ^^^^^^^^^^^^^^^^^
+        // export default expression
+        // ⬇️
+        // const $$default = expression
         output.update(
           group.node.start,
           group.node.declaration.start,
           'const $$default = ',
         )
       }
-      const meta = group.meta
-      if (filter('default', meta)) {
-        validateNonAsyncFunction(options, group.node.declaration)
-      }
-      wrapExport(localName, 'default', meta)
+      validateNonAsyncFunction(options, group.node.declaration)
+      emitWrappedBinding(localName, 'default', meta)
     }
   }
 
-  if (toAppend.length > 0) {
-    output.append(['', ...toAppend, ''].join(';\n'))
+  // Emit wrapper bindings, reconstructed skipped exports, and imports for
+  // selected forwarded exports in their discovery order.
+  if (appendedCode.length > 0) {
+    output.append(['', ...appendedCode, ''].join(';\n'))
   }
 
   return { exportNames, output }
