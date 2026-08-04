@@ -327,19 +327,19 @@ export function transformModuleExportWrap(
         declaration.id
       if (namedDeclaration) {
         // export default function Page() {}
-        // export default class Page {}
+        // ^^^^^^^^^^^^^^
         // ⬇️ (keep named declarations in place and append wrapped binding)
         // function Page() {}
-        // class Page {}
         // const $$module_0_binding_default = __WRAP__(Page, 'default')
         // export { $$module_0_binding_default as default }
         implementation = namedDeclaration.name
         output.remove(group.node.start, declaration.start)
       } else {
         // export default current
-        // export default async () => {}
+        // ^^^^^^^^^^^^^^
         // ⬇️ (snapshot at the original export site)
         // const $$module_0_implementation_default = current
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // const $$module_0_binding_default = __WRAP__($$module_0_implementation_default, 'default')
         // export { $$module_0_binding_default as default }
         implementation = createName('implementation', 'default')
