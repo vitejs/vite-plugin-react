@@ -89,6 +89,16 @@ export default async function Page() {}
     expect(filtered.references).toEqual([])
   })
 
+  test.each([
+    ['literal', `export const action = 1`],
+    ['object', `export const action = {}`],
+    ['array', `export const action = []`],
+  ])('rejects %s exports', async (_name, input) => {
+    await expect(
+      transform(input, { rejectNonAsyncFunction: true }),
+    ).rejects.toThrow('unsupported non async function')
+  })
+
   test('controls export-all preservation', async () => {
     const input = `export * from './dep'`
 
