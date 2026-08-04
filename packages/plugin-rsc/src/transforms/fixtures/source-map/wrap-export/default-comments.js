@@ -1,5 +1,5 @@
 'use server'
 
-export default /* before */ /* after */ async function () {
+export /* before */ default /* after */ async function () {
   return 'default comments called'
 }

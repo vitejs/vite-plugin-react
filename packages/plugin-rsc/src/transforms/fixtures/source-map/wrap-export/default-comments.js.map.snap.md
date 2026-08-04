@@ -2,7 +2,7 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:0) "export default /* before */ /* after */ " --> (2:0) "const $$default = "
+(2:0) "export /* before */ default /* after */ " --> (2:0) "const $$default = "
 (2:40) "async function () {\n" --> (2:18) "async function () {\n"
 (3:0) "  return 'default comments called'\n" --> (3:0) "  return 'default comments called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
@@ -15,20 +15,20 @@
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:6) " default /* before */ /* after */ " --> (2:0) "const $$effect_default = "
+(2:6) " /* before */ default /* after */ " --> (2:0) "const $$effect_default = "
 (2:40) "async function () {\n" --> (2:25) "async function () {\n"
 (3:0) "  return 'default comments called'\n" --> (3:0) "  return 'default comments called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-(2:0) "export default /* before */ /* after */ async function () {\n" --> (5:0) "\n"
-(2:0) "export default /* before */ /* after */ async function () {\n" --> (6:0) "registerServerReference($$effect_default, \"default\");\n"
-(2:0) "export default /* before */ /* after */ async function () {\n" --> (7:0) "export default $$effect_default;\n"
+(2:0) "export /* before */ default /* after */ async function () {\n" --> (5:0) "\n"
+(2:0) "export /* before */ default /* after */ async function () {\n" --> (6:0) "registerServerReference($$effect_default, \"default\");\n"
+(2:0) "export /* before */ default /* after */ async function () {\n" --> (7:0) "export default $$effect_default;\n"
 ```
 
 ## module-export-wrap
 
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
-(2:0) "export default /* before */ /* after */ " --> (2:0) "const $$module_0_implementation_default = "
+(2:0) "export /* before */ default /* after */ " --> (2:0) "const $$module_0_implementation_default = "
 (2:40) "async function () {\n" --> (2:42) "async function () {\n"
 (3:0) "  return 'default comments called'\n" --> (3:0) "  return 'default comments called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
