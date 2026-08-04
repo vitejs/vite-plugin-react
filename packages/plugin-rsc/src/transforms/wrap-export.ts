@@ -133,24 +133,28 @@ export function transformWrapExport(
       }
       wrapSimple(group.node.start, group.declaration.start, group.exports)
     } else if (group.type === 'variable-declaration') {
+      const exports: ModuleExportEntry[] = []
+      let shouldWrap = false
+      for (const declarator of group.declarators) {
+        exports.push(...declarator.exports)
+        const shouldWrapDeclarator = declarator.exports.some(
+          ({ exportName, meta }) => filter(exportName, getExportMeta(meta)),
+        )
+        if (shouldWrapDeclarator) {
+          shouldWrap = true
+        }
+        if (declarator.node.init && shouldWrapDeclarator) {
+          validateNonAsyncFunction(options, declarator.node.init)
+        }
+      }
+      if (!shouldWrap) continue
+
       if (group.declaration.kind === 'const') {
         output.update(
           group.declaration.start,
           group.declaration.start + 5,
           'let',
         )
-      }
-      const exports: ModuleExportEntry[] = []
-      for (const declarator of group.declarators) {
-        exports.push(...declarator.exports)
-        if (
-          declarator.node.init &&
-          declarator.exports.some(({ exportName, meta }) =>
-            filter(exportName, getExportMeta(meta)),
-          )
-        ) {
-          validateNonAsyncFunction(options, declarator.node.init)
-        }
       }
       wrapSimple(group.node.start, group.declaration.start, exports)
     } else if (group.type === 'specifiers') {

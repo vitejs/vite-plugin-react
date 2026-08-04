@@ -259,11 +259,10 @@ export default function d() {}
     })
     expect(result).toMatchInlineSnapshot(`
       "
-      let a = 0;
+      export const a = 0;
       let b = function() {}
       let c = () => {}
       function d() {}
-      export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
       export { b };
       c = /* #__PURE__ */ $$wrap(c, "<id>", "c");
@@ -325,9 +324,8 @@ export default async function Page() {}
     expect(result.exportNames).toEqual(['default'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
-      let revalidate = 1;
+      export const revalidate = 1;
       async function Page() {}
-      export { revalidate };
       ;
       const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
       export { $$wrap_Page as default };
