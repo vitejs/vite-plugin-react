@@ -10,6 +10,7 @@
   },
   "ignorePatterns": [
     "*.snap.*",
+    "packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js",
     "typescript-eslint/",
     "packages/*/CHANGELOG.md",
     "playground-temp/",

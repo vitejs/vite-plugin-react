@@ -310,6 +310,32 @@ export default Page;
     `)
   })
 
+  test('filter value node', async () => {
+    const input = `\
+export const action = async () => {}
+export const metadata = {}
+export const tags = []
+`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: (_name, meta) =>
+        meta.valueNode?.type !== 'ObjectExpression' &&
+        meta.valueNode?.type !== 'ArrayExpression',
+    })
+
+    expect(result.exportNames).toEqual(['action'])
+    expect(result.output.toString()).toMatchInlineSnapshot(`
+      "let action = async () => {}
+      export const metadata = {}
+      export const tags = []
+      action = /* #__PURE__ */ $$wrap(action, "action");
+      export { action };
+      "
+    `)
+  })
+
   test('filtered exports are not validated or reported', async () => {
     const input = `
 export const revalidate = 1;
@@ -463,7 +489,8 @@ export default cached;
       const ast = await parseAstAsync(input)
       transformWrapExport(input, ast, {
         runtime(value, _name, meta) {
-          actual.push(meta)
+          const { valueNode: _, ...rest } = meta
+          actual.push(rest)
           return value
         },
       })
