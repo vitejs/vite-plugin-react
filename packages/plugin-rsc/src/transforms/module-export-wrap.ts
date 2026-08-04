@@ -101,7 +101,7 @@ export function transformModuleExportWrap(
   const output = new MagicString(input)
   const filter = options.filter ?? (() => true)
   const references: TransformModuleExportWrapContext[] = []
-  const wrappedBindingCode: string[] = []
+  const appendedCode: string[] = []
 
   function createContext(
     implementation: string,
@@ -173,7 +173,7 @@ export function transformModuleExportWrap(
       originalName,
     )
     // TODO: preserve original export location for generated code? (update + move trick)
-    wrappedBindingCode.push(
+    appendedCode.push(
       `const ${binding} = ${generate(context)};`,
       exportBinding(binding, exportName),
     )
@@ -251,7 +251,7 @@ export function transformModuleExportWrap(
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
           if (!wrappedBindingNames.has(name)) {
-            wrappedBindingCode.push(exportBinding(name, name))
+            appendedCode.push(exportBinding(name, name))
           }
         }
       }
@@ -261,7 +261,7 @@ export function transformModuleExportWrap(
       // const $$module_0_binding_action = __WRAP__(selected, 'action')
       // export { $$module_0_binding_action as action }
       // export { skipped }
-      const preserved: string[] = []
+      const skippedExports: string[] = []
       let selected = false
       for (const entry of group.exports) {
         tinyassert(entry.node.local.type === 'Identifier')
@@ -273,7 +273,7 @@ export function transformModuleExportWrap(
         }
         const { localName, exportName, meta } = entry
         if (!filter(exportName, meta)) {
-          preserved.push(
+          skippedExports.push(
             localName === exportName
               ? localName
               : `${localName} as ${exportName}`,
@@ -288,9 +288,8 @@ export function transformModuleExportWrap(
           // ⬇️
           // import { $$module_0_implementation_action } from './dep'   << emit import at the end
           implementation = createName('implementation', exportName)
-          // TODO: shouldn't call it wrappedBindingCode?
           // TODO: Preserve import attributes from the original re-export.
-          wrappedBindingCode.push(
+          appendedCode.push(
             `import { ${localName} as ${implementation} } from ${group.node.source.raw};`,
           )
         }
@@ -298,14 +297,14 @@ export function transformModuleExportWrap(
       }
 
       if (selected) {
+        // remove original export statement
         output.remove(group.node.start, group.node.end)
-        if (preserved.length > 0) {
+        // re-emit skipped exports
+        if (skippedExports.length > 0) {
           const source = group.node.source
             ? ` from ${group.node.source.raw}`
             : ''
-          wrappedBindingCode.push(
-            `export { ${preserved.join(', ')} }${source};`,
-          )
+          appendedCode.push(`export { ${skippedExports.join(', ')} }${source};`)
         }
       }
     } else if (group.type === 'export-all') {
@@ -359,8 +358,8 @@ export function transformModuleExportWrap(
   // emit accumulated wrap + export statements at the end, e.g.
   // const $$module_0_binding_action = __WRAP__(action, 'action')
   // export { $$module_0_binding_action as action }
-  if (wrappedBindingCode.length > 0) {
-    output.append(`\n${wrappedBindingCode.join('\n')}\n`)
+  if (appendedCode.length > 0) {
+    output.append(`\n${appendedCode.join('\n')}\n`)
   }
 
   return {
