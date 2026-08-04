@@ -80,6 +80,9 @@ export function validateNonAsyncFunction(
 ): void {
   if (!opts.rejectNonAsyncFunction) return
   if (
+    node.type === 'Literal' ||
+    node.type === 'ObjectExpression' ||
+    node.type === 'ArrayExpression' ||
     node.type === 'ClassDeclaration' ||
     node.type === 'ClassExpression' ||
     ((node.type === 'FunctionDeclaration' ||
