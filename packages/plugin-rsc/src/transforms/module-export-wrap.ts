@@ -323,18 +323,15 @@ export function transformModuleExportWrap(
       if (!filter('default', meta)) continue
 
       let implementation: string
-      const namedDeclaration =
-        (declaration.type === 'FunctionDeclaration' ||
-          declaration.type === 'ClassDeclaration') &&
-        declaration.id
-      if (namedDeclaration) {
+      if (group.kind === 'named-declaration') {
         // export default function Page() {}
         // ^^^^^^^^^^^^^^
         // ⬇️
         // function Page() {}
         // const $$module_0_binding_default = __WRAP__(Page, 'default')
         // export { $$module_0_binding_default as default }
-        implementation = namedDeclaration.name
+        tinyassert(group.localName)
+        implementation = group.localName
         output.remove(group.node.start, declaration.start)
       } else {
         // export default current
