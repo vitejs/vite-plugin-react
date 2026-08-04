@@ -234,6 +234,7 @@ export function transformModuleExportWrap(
           )
         }
 
+        // TODO: should reject without `declarator.node.init`?
         if (selected && declarator.node.init) {
           validateNonAsyncFunction(options, declarator.node.init)
         }
