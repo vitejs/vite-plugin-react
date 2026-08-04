@@ -29,6 +29,7 @@ export type ModuleExportDirectFunction = {
   originalName: string
 }
 
+// TODO: include raw `Node` so caller have move control?
 export type ModuleExportMeta = {
   /*
    * TODO: Track `isAsyncFunction` here so module export transforms can share
@@ -98,6 +99,7 @@ export type ModuleExportGroup =
       declaration: FunctionDeclaration | ClassDeclaration
       /** Direct function metadata for `export function foo() {}`. */
       directFunction?: ModuleExportDirectFunction
+      // TODO: just `export: ModuleExportEntry` pls
       exports: [ModuleExportEntry]
     }
   | {

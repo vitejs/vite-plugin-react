@@ -31,6 +31,10 @@ export type TransformModuleExportWrapFilter = (
 export type TransformModuleExportWrapOptions = {
   generate: (context: TransformModuleExportWrapContext) => string
   filter?: TransformModuleExportWrapFilter
+  // TODO: Replace this boolean with a rejection-policy callback receiving the
+  // normalized export metadata and optional value node. The async-function
+  // check can then be a reusable policy that directive consumers opt into,
+  // while consumers such as CSS wrapping omit it.
   rejectNonAsyncFunction?: boolean
   exportAll?: 'error' | 'preserve'
 }
