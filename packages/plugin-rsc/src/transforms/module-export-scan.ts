@@ -32,7 +32,16 @@ export type ModuleExportDirectFunction = {
 export type ModuleExportMeta = {
   /**
    * The source node that evaluates to the exported value when directly
-   * available. Indirect exports such as specifiers and re-exports omit it.
+   * available. Filters and generators can use it for syntax-sensitive policy.
+   *
+   * - The declaration for a function or class export.
+   * - The initializer for a variable export.
+   * - The declaration expression for a default export.
+   * - `undefined` for export specifiers and re-exports.
+   *
+   * The callable `"use cache"` example uses this to preserve object and array
+   * exports, matching an intentionally arbitrary Next.js exception without
+   * encoding that policy in the generic transform.
    */
   valueNode?: Node | ExportDefaultDeclaration['declaration']
   // TODO: followings are used only for internal `transformRscCssExport`.
