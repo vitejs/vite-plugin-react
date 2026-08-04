@@ -247,6 +247,70 @@ export { a as aa };
     `)
   })
 
+  test.each([
+    `export function action() {}`,
+    `export const action = () => {}`,
+    `const action = () => {}; export { action }`,
+    `export { action } from './dep'`,
+    `export default () => {}`,
+  ])('does not rewrite fully filtered export groups: %s', async (input) => {
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value) => `$$wrap(${value})`,
+      filter: () => false,
+    })
+
+    expect(result.exportNames).toEqual([])
+    expect(result.output.hasChanged()).toBe(false)
+    expect(result.output.toString()).toBe(input)
+  })
+
+  test('preserves filtered export specifiers', async () => {
+    const input = `\
+const selected = 0, skipped = 1
+export { selected, skipped as renamed }
+export { remote, ignored as forwarded } from './dep'
+`
+    const result = await testTransform(input, {
+      filter: (name) => name === 'selected' || name === 'remote',
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      "const selected = 0, skipped = 1
+
+
+      ;
+      const $$wrap_selected = /* #__PURE__ */ $$wrap(selected, \"<id>\", \"selected\");
+      export { $$wrap_selected as selected };
+      export { skipped as renamed };
+      import { remote as $$import_remote } from './dep';
+      const $$wrap_$$import_remote = /* #__PURE__ */ $$wrap($$import_remote, \"<id>\", \"remote\");
+      export { $$wrap_$$import_remote as remote };
+      export { ignored as forwarded } from './dep';
+      "
+    `)
+  })
+
+  test('rejects selected uninitialized variables', async () => {
+    const input = `export let selected, skipped`
+    const ast = await parseAstAsync(input)
+
+    expect(() =>
+      transformWrapExport(input, ast, {
+        runtime: (value) => `$$wrap(${value})`,
+        rejectNonAsyncFunction: true,
+        filter: (name) => name === 'selected',
+      }),
+    ).toThrow('unsupported non async function')
+
+    const filtered = transformWrapExport(input, ast, {
+      runtime: (value) => `$$wrap(${value})`,
+      rejectNonAsyncFunction: true,
+      filter: () => false,
+    })
+    expect(filtered.output.hasChanged()).toBe(false)
+  })
+
   test('filter meta', async () => {
     const input = `
 export const a = 0;
@@ -259,11 +323,10 @@ export default function d() {}
     })
     expect(result).toMatchInlineSnapshot(`
       "
-      let a = 0;
+      export const a = 0;
       let b = function() {}
       let c = () => {}
       function d() {}
-      export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
       export { b };
       c = /* #__PURE__ */ $$wrap(c, "<id>", "c");
@@ -282,13 +345,7 @@ export default () => {}
     const result = await testTransform(input, {
       filter: (_name, meta) => !!(meta.isFunction && meta.declName),
     })
-    expect(result).toMatchInlineSnapshot(`
-      "
-      const $$default = () => {}
-      ;
-      export { $$default as default };
-      "
-    `)
+    expect(result).toMatchInlineSnapshot(`false`)
   })
 
   test('filter defaultExportIdentifierName', async () => {
@@ -329,12 +386,10 @@ export const tags = []
     expect(result.exportNames).toEqual(['action'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "let action = async () => {}
-      let metadata = {}
-      let tags = []
+      export const metadata = {}
+      export const tags = []
       action = /* #__PURE__ */ $$wrap(action, "action");
       export { action };
-      export { metadata };
-      export { tags };
       "
     `)
   })
@@ -353,9 +408,8 @@ export default async function Page() {}
     expect(result.exportNames).toEqual(['default'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
-      let revalidate = 1;
+      export const revalidate = 1;
       async function Page() {}
-      export { revalidate };
       ;
       const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
       export { $$wrap_Page as default };
@@ -372,11 +426,8 @@ export default async function Page() {}
       filter: () => false,
     })
     expect(result.exportNames).toEqual([])
-    expect(result.output.toString()).toMatchInlineSnapshot(`
-      "const $$default = 1;;
-      export { $$default as default };
-      "
-    `)
+    expect(result.output.hasChanged()).toBe(false)
+    expect(result.output.toString()).toBe(input)
   })
 
   test('unknown identifier exports remain eligible for wrapping', async () => {
