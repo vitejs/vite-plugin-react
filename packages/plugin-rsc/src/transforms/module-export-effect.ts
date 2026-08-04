@@ -3,7 +3,7 @@ import type { Identifier } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
-import { validateNonAsyncFunction } from './utils'
+import { rejectNonAsyncFunction, validateNonAsyncFunction } from './utils'
 
 // TODO: Metadata, filtering, and returned reference contexts are currently
 // ported only for transformWrapExport compatibility. Remove them if no
@@ -128,8 +128,13 @@ export function transformModuleExportEffect(
             effects.push(generate({ binding, exportName, meta }))
           }
         }
-        if (validate && declarator.node.init) {
-          validateNonAsyncFunction(options, declarator.node.init)
+        if (validate) {
+          const init = declarator.node.init
+          if (init) {
+            validateNonAsyncFunction(options, init)
+          } else {
+            rejectNonAsyncFunction(options, declarator.node.start)
+          }
         }
       }
       if (effects.length > 0) {
