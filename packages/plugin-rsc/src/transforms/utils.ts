@@ -89,7 +89,6 @@ export function validateNonAsyncFunction(
   // export default function/class can be unnamed
   node: Node | ExportDefaultDeclaration['declaration'],
 ): void {
-  if (!opts.rejectNonAsyncFunction) return
   if (
     node.type === 'ClassDeclaration' ||
     node.type === 'ClassExpression' ||
@@ -98,8 +97,15 @@ export function validateNonAsyncFunction(
       node.type === 'ArrowFunctionExpression') &&
       !node.async)
   ) {
-    throw Object.assign(new Error(`unsupported non async function`), {
-      pos: node.start,
-    })
+    rejectNonAsyncFunction(opts, node.start)
+  }
+}
+
+export function rejectNonAsyncFunction(
+  opts: { rejectNonAsyncFunction?: boolean },
+  pos: number,
+): void {
+  if (opts.rejectNonAsyncFunction) {
+    throw Object.assign(new Error(`unsupported non async function`), { pos })
   }
 }

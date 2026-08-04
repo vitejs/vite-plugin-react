@@ -2,7 +2,7 @@ import { tinyassert } from '@hiogawa/utils'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
-import { validateNonAsyncFunction } from './utils'
+import { rejectNonAsyncFunction, validateNonAsyncFunction } from './utils'
 
 export type TransformModuleExportWrapContext = {
   /** The local expression that evaluates to the exported implementation. */
@@ -234,9 +234,13 @@ export function transformModuleExportWrap(
           )
         }
 
-        // TODO: should reject without `declarator.node.init`?
-        if (selected && declarator.node.init) {
-          validateNonAsyncFunction(options, declarator.node.init)
+        if (selected) {
+          const init = declarator.node.init
+          if (!init) {
+            rejectNonAsyncFunction(options, declarator.node.start)
+          } else {
+            validateNonAsyncFunction(options, init)
+          }
         }
       }
 
