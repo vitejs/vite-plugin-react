@@ -29,6 +29,6 @@
 (2:15) "async function defaultNamedFunction() {\n" --> (2:0) "async function defaultNamedFunction() {\n"
 (3:0) "  return 'default named function called'\n" --> (3:0) "  return 'default named function called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (6:0) "const $$module_0_binding_default = /* #__PURE__ */ Object.defineProperty(registerServerReference(defaultNamedFunction, \"default\"), \"name\", { value: \"defaultNamedFunction\" });\n"
+[unmapped] --> (6:0) "const $$module_0_binding_default = Object.defineProperty(registerServerReference(defaultNamedFunction, \"default\"), \"name\", { value: \"defaultNamedFunction\" });\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_default as default };\n"
 ```

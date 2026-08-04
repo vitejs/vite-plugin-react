@@ -32,6 +32,6 @@
 (2:15) "async function () {\n" --> (2:42) "async function () {\n"
 (3:0) "  return 'default anonymous function called'\n" --> (3:0) "  return 'default anonymous function called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (6:0) "const $$module_0_binding_default = /* #__PURE__ */ Object.defineProperty(registerServerReference($$module_0_implementation_default, \"default\"), \"name\", { value: \"default\" });\n"
+[unmapped] --> (6:0) "const $$module_0_binding_default = Object.defineProperty(registerServerReference($$module_0_implementation_default, \"default\"), \"name\", { value: \"default\" });\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_default as default };\n"
 ```

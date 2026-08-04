@@ -31,6 +31,6 @@
 (4:7) "async function action() {\n" --> (4:0) "async function action() {\n"
 (5:0) "  return 'action called'\n" --> (5:0) "  return 'action called'\n"
 (6:0) "}\n" --> (6:0) "}\n"
-[unmapped] --> (8:0) "const $$module_0_binding_action = /* #__PURE__ */ Object.defineProperty(registerServerReference(action, \"action\"), \"name\", { value: \"action\" });\n"
+[unmapped] --> (8:0) "const $$module_0_binding_action = Object.defineProperty(registerServerReference(action, \"action\"), \"name\", { value: \"action\" });\n"
 [unmapped] --> (9:0) "export { $$module_0_binding_action as action };\n"
 ```

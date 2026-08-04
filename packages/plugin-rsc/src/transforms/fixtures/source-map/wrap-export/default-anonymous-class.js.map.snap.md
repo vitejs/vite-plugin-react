@@ -26,6 +26,6 @@
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:0) "export default " --> (2:0) "const $$module_0_implementation_default = "
 (2:15) "class {}\n" --> (2:42) "class {}\n"
-[unmapped] --> (4:0) "const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+[unmapped] --> (4:0) "const $$module_0_binding_default = registerServerReference($$module_0_implementation_default, \"default\");\n"
 [unmapped] --> (5:0) "export { $$module_0_binding_default as default };\n"
 ```

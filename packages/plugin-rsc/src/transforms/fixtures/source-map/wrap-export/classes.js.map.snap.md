@@ -40,10 +40,10 @@
 (2:7) "class NamedClass {}\n" --> (2:0) "class NamedClass {}\n"
 (4:7) "const ClassExpression = class InnerClass {}\n" --> (4:0) "const ClassExpression = class InnerClass {}\n"
 (6:15) "class DefaultClass {}\n" --> (6:0) "class DefaultClass {}\n"
-[unmapped] --> (8:0) "const $$module_0_binding_NamedClass = /* #__PURE__ */ registerServerReference(NamedClass, \"NamedClass\");\n"
+[unmapped] --> (8:0) "const $$module_0_binding_NamedClass = registerServerReference(NamedClass, \"NamedClass\");\n"
 [unmapped] --> (9:0) "export { $$module_0_binding_NamedClass as NamedClass };\n"
-[unmapped] --> (10:0) "const $$module_1_binding_ClassExpression = /* #__PURE__ */ registerServerReference(ClassExpression, \"ClassExpression\");\n"
+[unmapped] --> (10:0) "const $$module_1_binding_ClassExpression = registerServerReference(ClassExpression, \"ClassExpression\");\n"
 [unmapped] --> (11:0) "export { $$module_1_binding_ClassExpression as ClassExpression };\n"
-[unmapped] --> (12:0) "const $$module_2_binding_default = /* #__PURE__ */ registerServerReference(DefaultClass, \"default\");\n"
+[unmapped] --> (12:0) "const $$module_2_binding_default = registerServerReference(DefaultClass, \"default\");\n"
 [unmapped] --> (13:0) "export { $$module_2_binding_default as default };\n"
 ```

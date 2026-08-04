@@ -34,6 +34,6 @@
 (4:0) "}\n" --> (4:0) "}\n"
 (6:0) "export default " --> (6:0) "const $$module_0_implementation_default = "
 (6:15) "defaultIdentifier\n" --> (6:42) "defaultIdentifier\n"
-[unmapped] --> (8:0) "const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+[unmapped] --> (8:0) "const $$module_0_binding_default = registerServerReference($$module_0_implementation_default, \"default\");\n"
 [unmapped] --> (9:0) "export { $$module_0_binding_default as default };\n"
 ```

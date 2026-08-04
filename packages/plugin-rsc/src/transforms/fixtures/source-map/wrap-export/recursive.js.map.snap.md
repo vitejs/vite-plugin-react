@@ -31,6 +31,6 @@
 (3:0) "  if (depth > 0) return recursive(depth - 1)\n" --> (3:0) "  if (depth > 0) return recursive(depth - 1)\n"
 (4:0) "  return recursive.marker\n" --> (4:0) "  return recursive.marker\n"
 (5:0) "}\n" --> (5:0) "}\n"
-[unmapped] --> (7:0) "const $$module_0_binding_recursive = /* #__PURE__ */ Object.defineProperty(registerServerReference(recursive, \"recursive\"), \"name\", { value: \"recursive\" });\n"
+[unmapped] --> (7:0) "const $$module_0_binding_recursive = Object.defineProperty(registerServerReference(recursive, \"recursive\"), \"name\", { value: \"recursive\" });\n"
 [unmapped] --> (8:0) "export { $$module_0_binding_recursive as recursive };\n"
 ```

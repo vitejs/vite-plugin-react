@@ -25,6 +25,6 @@
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:0) "let action = async () => 'first'\n" --> (2:0) "let action = async () => 'first'\n"
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
-[unmapped] --> (6:0) "const $$module_0_binding_renamed = /* #__PURE__ */ registerServerReference(action, \"renamed\");\n"
+[unmapped] --> (6:0) "const $$module_0_binding_renamed = registerServerReference(action, \"renamed\");\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_renamed as renamed };\n"
 ```

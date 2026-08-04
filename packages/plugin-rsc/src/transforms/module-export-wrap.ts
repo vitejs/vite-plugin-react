@@ -77,6 +77,7 @@ export type TransformModuleExportWrapResult = {
  * callback for each `{ implementation, originalName, exportName, meta }`
  * context. `originalName` is present for directly exported functions whose
  * name should be assigned to the generated wrapper.
+ * The callback is responsible for marking its expression as pure when needed.
  * `references` returns those contexts in wrapper creation order, while
  * `referenceNames` returns only their export names.
  *
@@ -117,11 +118,6 @@ export function transformModuleExportWrap(
     }
     references.push(context)
     return context
-  }
-
-  // TODO: should we move PURE annotation to user side responsibility?
-  function generate(context: TransformModuleExportWrapContext): string {
-    return `/* #__PURE__ */ ${options.generate(context)}`
   }
 
   function exportBinding(binding: string, exportName: string): string {
@@ -174,7 +170,7 @@ export function transformModuleExportWrap(
     )
     // TODO: preserve original export location for generated code? (update + move trick)
     appendedCode.push(
-      `const ${binding} = ${generate(context)};`,
+      `const ${binding} = ${options.generate(context)};`,
       exportBinding(binding, exportName),
     )
   }

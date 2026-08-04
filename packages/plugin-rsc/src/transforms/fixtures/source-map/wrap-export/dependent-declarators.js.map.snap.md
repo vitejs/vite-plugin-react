@@ -29,8 +29,8 @@
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:7) "const first = async () => 'first action called',\n" --> (2:0) "const first = async () => 'first action called',\n"
 (3:0) "  second = first\n" --> (3:0) "  second = first\n"
-[unmapped] --> (5:0) "const $$module_0_binding_first = /* #__PURE__ */ Object.defineProperty(registerServerReference(first, \"first\"), \"name\", { value: \"first\" });\n"
+[unmapped] --> (5:0) "const $$module_0_binding_first = Object.defineProperty(registerServerReference(first, \"first\"), \"name\", { value: \"first\" });\n"
 [unmapped] --> (6:0) "export { $$module_0_binding_first as first };\n"
-[unmapped] --> (7:0) "const $$module_1_binding_second = /* #__PURE__ */ registerServerReference(second, \"second\");\n"
+[unmapped] --> (7:0) "const $$module_1_binding_second = registerServerReference(second, \"second\");\n"
 [unmapped] --> (8:0) "export { $$module_1_binding_second as second };\n"
 ```

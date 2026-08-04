@@ -28,6 +28,6 @@
 (2:7) "async function namedFunction() {\n" --> (2:0) "async function namedFunction() {\n"
 (3:0) "  return 'named function called'\n" --> (3:0) "  return 'named function called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (6:0) "const $$module_0_binding_namedFunction = /* #__PURE__ */ Object.defineProperty(registerServerReference(namedFunction, \"namedFunction\"), \"name\", { value: \"namedFunction\" });\n"
+[unmapped] --> (6:0) "const $$module_0_binding_namedFunction = Object.defineProperty(registerServerReference(namedFunction, \"namedFunction\"), \"name\", { value: \"namedFunction\" });\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_namedFunction as namedFunction };\n"
 ```

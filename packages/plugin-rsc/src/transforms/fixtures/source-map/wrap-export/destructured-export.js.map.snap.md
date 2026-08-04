@@ -26,6 +26,6 @@
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:0) "const source = async () => 'destructured export called'\n" --> (2:0) "const source = async () => 'destructured export called'\n"
 (4:7) "const { action } = { action: source }\n" --> (4:0) "const { action } = { action: source }\n"
-[unmapped] --> (6:0) "const $$module_0_binding_action = /* #__PURE__ */ registerServerReference(action, \"action\");\n"
+[unmapped] --> (6:0) "const $$module_0_binding_action = registerServerReference(action, \"action\");\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_action as action };\n"
 ```

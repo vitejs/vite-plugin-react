@@ -31,8 +31,8 @@
 (2:0) "async function value() {\n" --> (2:0) "async function value() {\n"
 (3:0) "  return 'multiple aliases called'\n" --> (3:0) "  return 'multiple aliases called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (8:0) "const $$module_0_binding_first = /* #__PURE__ */ registerServerReference(value, \"first\");\n"
+[unmapped] --> (8:0) "const $$module_0_binding_first = registerServerReference(value, \"first\");\n"
 [unmapped] --> (9:0) "export { $$module_0_binding_first as first };\n"
-[unmapped] --> (10:0) "const $$module_1_binding_second = /* #__PURE__ */ registerServerReference(value, \"second\");\n"
+[unmapped] --> (10:0) "const $$module_1_binding_second = registerServerReference(value, \"second\");\n"
 [unmapped] --> (11:0) "export { $$module_1_binding_second as second };\n"
 ```

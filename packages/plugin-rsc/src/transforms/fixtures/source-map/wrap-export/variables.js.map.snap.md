@@ -38,8 +38,8 @@
 (4:7) "const functionExpression = async function () {\n" --> (4:0) "const functionExpression = async function () {\n"
 (5:0) "  return 'function expression called'\n" --> (5:0) "  return 'function expression called'\n"
 (6:0) "}\n" --> (6:0) "}\n"
-[unmapped] --> (8:0) "const $$module_0_binding_arrowFunction = /* #__PURE__ */ Object.defineProperty(registerServerReference(arrowFunction, \"arrowFunction\"), \"name\", { value: \"arrowFunction\" });\n"
+[unmapped] --> (8:0) "const $$module_0_binding_arrowFunction = Object.defineProperty(registerServerReference(arrowFunction, \"arrowFunction\"), \"name\", { value: \"arrowFunction\" });\n"
 [unmapped] --> (9:0) "export { $$module_0_binding_arrowFunction as arrowFunction };\n"
-[unmapped] --> (10:0) "const $$module_1_binding_functionExpression = /* #__PURE__ */ Object.defineProperty(registerServerReference(functionExpression, \"functionExpression\"), \"name\", { value: \"functionExpression\" });\n"
+[unmapped] --> (10:0) "const $$module_1_binding_functionExpression = Object.defineProperty(registerServerReference(functionExpression, \"functionExpression\"), \"name\", { value: \"functionExpression\" });\n"
 [unmapped] --> (11:0) "export { $$module_1_binding_functionExpression as functionExpression };\n"
 ```

@@ -22,6 +22,6 @@
 ```txt
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (3:0) "const action = async () => 'action called'\n" --> (3:0) "const action = async () => 'action called'\n"
-[unmapped] --> (5:0) "const $$module_0_binding_action = /* #__PURE__ */ registerServerReference(action, \"action\");\n"
+[unmapped] --> (5:0) "const $$module_0_binding_action = registerServerReference(action, \"action\");\n"
 [unmapped] --> (6:0) "export { $$module_0_binding_action as action };\n"
 ```

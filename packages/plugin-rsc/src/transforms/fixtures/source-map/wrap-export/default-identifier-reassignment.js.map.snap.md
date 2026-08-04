@@ -31,6 +31,6 @@
 (3:0) "export default " --> (3:0) "const $$module_0_implementation_default = "
 (3:15) "action\n" --> (3:42) "action\n"
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
-[unmapped] --> (6:0) "const $$module_0_binding_default = /* #__PURE__ */ registerServerReference($$module_0_implementation_default, \"default\");\n"
+[unmapped] --> (6:0) "const $$module_0_binding_default = registerServerReference($$module_0_implementation_default, \"default\");\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_default as default };\n"
 ```

@@ -42,8 +42,8 @@
 (6:7) "async function secondAction() {\n" --> (6:0) "async function secondAction() {\n"
 (7:0) "  return 'second action called'\n" --> (7:0) "  return 'second action called'\n"
 (8:0) "}\n" --> (8:0) "}\n"
-[unmapped] --> (10:0) "const $$module_0_binding_firstAction = /* #__PURE__ */ Object.defineProperty(registerServerReference(firstAction, \"firstAction\"), \"name\", { value: \"firstAction\" });\n"
+[unmapped] --> (10:0) "const $$module_0_binding_firstAction = Object.defineProperty(registerServerReference(firstAction, \"firstAction\"), \"name\", { value: \"firstAction\" });\n"
 [unmapped] --> (11:0) "export { $$module_0_binding_firstAction as firstAction };\n"
-[unmapped] --> (12:0) "const $$module_1_binding_secondAction = /* #__PURE__ */ Object.defineProperty(registerServerReference(secondAction, \"secondAction\"), \"name\", { value: \"secondAction\" });\n"
+[unmapped] --> (12:0) "const $$module_1_binding_secondAction = Object.defineProperty(registerServerReference(secondAction, \"secondAction\"), \"name\", { value: \"secondAction\" });\n"
 [unmapped] --> (13:0) "export { $$module_1_binding_secondAction as secondAction };\n"
 ```

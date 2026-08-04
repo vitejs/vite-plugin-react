@@ -39,7 +39,7 @@ export function callableCachePlugin(): Plugin {
         const result = hasDirective(ast.body, directive)
           ? transformModuleExportWrap(code, ast, {
               generate: ({ implementation, originalName, exportName }) =>
-                runtime(implementation, exportName, originalName ?? exportName),
+                `/* #__PURE__ */ ${runtime(implementation, exportName, originalName ?? exportName)}`,
               rejectNonAsyncFunction: true,
             })
           : transformHoistInlineDirective(code, ast, {

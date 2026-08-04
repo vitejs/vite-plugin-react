@@ -29,6 +29,6 @@
 (2:7) "const action = async function actionImplementation() {\n" --> (2:0) "const action = async function actionImplementation() {\n"
 (3:0) "  return 'named function expression called'\n" --> (3:0) "  return 'named function expression called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (6:0) "const $$module_0_binding_action = /* #__PURE__ */ Object.defineProperty(registerServerReference(action, \"action\"), \"name\", { value: \"actionImplementation\" });\n"
+[unmapped] --> (6:0) "const $$module_0_binding_action = Object.defineProperty(registerServerReference(action, \"action\"), \"name\", { value: \"actionImplementation\" });\n"
 [unmapped] --> (7:0) "export { $$module_0_binding_action as action };\n"
 ```

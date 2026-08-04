@@ -103,7 +103,7 @@ export default async function Page() {}
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "const selected = async () => {}, skipped = async () => {}
 
-      const $$module_0_binding_selected = /* #__PURE__ */ Object.defineProperty(wrap(selected, "selected"), "name", { value: "selected" });
+      const $$module_0_binding_selected = Object.defineProperty(wrap(selected, "selected"), "name", { value: "selected" });
       export { $$module_0_binding_selected as selected };
       export { skipped };
       "
