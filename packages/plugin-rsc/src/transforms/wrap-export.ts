@@ -171,9 +171,6 @@ export function transformWrapExport(
       // selected = __WRAP__(selected, 'selected')
       // export { selected }
       // export { skipped }
-      //
-      // `const` must become `let` because selected bindings are reassigned. If
-      // the entire declaration is filtered out, it remains unchanged.
       const exports = group.declarators.flatMap((item) => item.exports)
       const selectedExportNames = new Set(
         exports
@@ -182,6 +179,7 @@ export function transformWrapExport(
       )
       if (selectedExportNames.size === 0) continue
 
+      // change `const` to `let` to reassign local name
       if (group.declaration.kind === 'const') {
         output.update(
           group.declaration.start,
