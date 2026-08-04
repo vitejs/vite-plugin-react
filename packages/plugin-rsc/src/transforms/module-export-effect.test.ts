@@ -85,18 +85,22 @@ export default async function Page() {}
       transform(`export let action`, { rejectNonAsyncFunction: true }),
     ).rejects.toThrow('unsupported non async function')
 
-    await expect(
-      transform(`export const action = 1`, {
-        rejectNonAsyncFunction: true,
-      }),
-    ).rejects.toThrow('unsupported non async function')
-
     const filtered = await transform(input, {
       rejectNonAsyncFunction: true,
       filter: () => false,
     })
     expect(filtered.output.hasChanged()).toBe(false)
     expect(filtered.references).toEqual([])
+  })
+
+  test.each([
+    ['literal', `export const action = 1`],
+    ['object', `export const action = {}`],
+    ['array', `export const action = []`],
+  ])('rejects %s exports', async (_name, input) => {
+    await expect(
+      transform(input, { rejectNonAsyncFunction: true }),
+    ).rejects.toThrow('unsupported non async function')
   })
 
   test('controls export-all preservation', async () => {

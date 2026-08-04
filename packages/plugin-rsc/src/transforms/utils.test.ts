@@ -35,6 +35,9 @@ describe(validateNonAsyncFunction, () => {
     `export const value = 1`,
     `export const value = {}`,
     `export const value = []`,
+    `export default 1`,
+    `export default {}`,
+    `export default []`,
   ]
 
   test(transformWrapExport, async () => {
