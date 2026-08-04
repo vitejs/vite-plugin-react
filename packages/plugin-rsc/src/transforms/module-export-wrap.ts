@@ -284,12 +284,11 @@ export function transformModuleExportWrap(
 
         let implementation = localName
         if (group.node.source) {
-          // export { remote as action } from './dep'
+          // export { action } from './dep'
           // ⬇️
-          // import { remote as $$module_0_implementation_action } from './dep'
-          // const $$module_0_binding_action = __WRAP__($$module_0_implementation_action, 'action')
-          // export { $$module_0_binding_action as action }
+          // import { $$module_0_implementation_action } from './dep'   << emit import at the end
           implementation = createName('implementation', exportName)
+          // TODO: shouldn't call it wrappedBindingCode?
           // TODO: Preserve import attributes from the original re-export.
           wrappedBindingCode.push(
             `import { ${localName} as ${implementation} } from ${group.node.source.raw};`,
