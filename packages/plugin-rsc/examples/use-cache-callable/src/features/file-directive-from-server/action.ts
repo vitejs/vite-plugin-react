@@ -2,6 +2,8 @@
 
 import { state } from './state'
 
+// Next.js permits object and array values as ordinary exports from "use cache"
+// modules, primarily for metadata and viewport objects.
 export const metadata = {}
 export const tags: string[] = []
 
