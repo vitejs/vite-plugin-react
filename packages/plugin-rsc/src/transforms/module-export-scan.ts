@@ -35,6 +35,8 @@ export type ModuleExportMeta = {
    * available. Indirect exports such as specifiers and re-exports omit it.
    */
   valueNode?: Node | ExportDefaultDeclaration['declaration']
+  // TODO: followings are used only for internal `transformRscCssExport`.
+  // should probably simplify to use `valueNode` directly and remove these.
   /**
    * The local declaration name when statically available.
    *
