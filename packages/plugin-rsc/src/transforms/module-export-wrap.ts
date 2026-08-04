@@ -351,11 +351,7 @@ export function transformModuleExportWrap(
           `const ${implementation} = `,
         )
       }
-      if (group.directFunction) {
-        validateNonAsyncFunction(options, group.directFunction.node)
-      } else if (!namedDeclaration) {
-        validateNonAsyncFunction(options, declaration)
-      }
+      validateNonAsyncFunction(options, declaration)
       emitWrappedBinding(
         implementation,
         'default',
