@@ -97,19 +97,20 @@ export function transformWrapExport(
     selectedExportNames: Set<string>,
   ) {
     exportNames.push(...selectedExportNames)
-    const newCode = exports
-      .map((e) => [
-        selectedExportNames.has(e.exportName) &&
-          `${e.localName} = /* #__PURE__ */ ${options.runtime(
-            e.localName,
-            e.exportName,
-            e.meta,
-          )};\n`,
-        `export { ${e.localName} };\n`,
-      ])
-      .flat()
-      .filter(Boolean)
-      .join('')
+    const newCode =
+      exports
+        .map(
+          (e) =>
+            selectedExportNames.has(e.exportName) &&
+            `${e.localName} = /* #__PURE__ */ ${options.runtime(
+              e.localName,
+              e.exportName,
+              e.meta,
+            )};\n`,
+        )
+        .filter(Boolean)
+        .join('') +
+      `export { ${exports.map((e) => e.localName).join(', ')} };\n`
     output.update(start, end, newCode)
     output.move(start, end, input.length)
   }

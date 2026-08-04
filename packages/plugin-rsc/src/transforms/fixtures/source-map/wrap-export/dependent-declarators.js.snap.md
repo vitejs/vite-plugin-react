@@ -13,7 +13,7 @@ export const first = async () => 'first action called',
 
 **References:** first, second
 
-[Source map visualization](https://evanw.github.io/source-map-visualization/#MjQ4ACd1c2Ugc2VydmVyJwoKbGV0IGZpcnN0ID0gYXN5bmMgKCkgPT4gJ2ZpcnN0IGFjdGlvbiBjYWxsZWQnLAogIHNlY29uZCA9IGZpcnN0CmZpcnN0ID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKGZpcnN0LCAiZmlyc3QiKTsKZXhwb3J0IHsgZmlyc3QgfTsKc2Vjb25kID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKHNlY29uZCwgInNlY29uZCIpOwpleHBvcnQgeyBzZWNvbmQgfTsKMzU4AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBjb25zdCBmaXJzdCA9IGFzeW5jICgpID0+ICdmaXJzdCBhY3Rpb24gY2FsbGVkJyxcbiAgc2Vjb25kID0gZmlyc3RcbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVKLEdBQUssQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxNQUFNLENBQUMsTUFBTSxDQUFDO0FBQ3RELENBQUMsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDO0FBRFg7QUFBQTtBQUFBO0FBQUE7In0=)
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjM3ACd1c2Ugc2VydmVyJwoKbGV0IGZpcnN0ID0gYXN5bmMgKCkgPT4gJ2ZpcnN0IGFjdGlvbiBjYWxsZWQnLAogIHNlY29uZCA9IGZpcnN0CmZpcnN0ID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKGZpcnN0LCAiZmlyc3QiKTsKc2Vjb25kID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKHNlY29uZCwgInNlY29uZCIpOwpleHBvcnQgeyBmaXJzdCwgc2Vjb25kIH07CjM1MwB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgY29uc3QgZmlyc3QgPSBhc3luYyAoKSA9PiAnZmlyc3QgYWN0aW9uIGNhbGxlZCcsXG4gIHNlY29uZCA9IGZpcnN0XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFSixHQUFLLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsTUFBTSxDQUFDLE1BQU0sQ0FBQztBQUN0RCxDQUFDLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQztBQURYO0FBQUE7QUFBQTsifQ==)
 
 ```js
 'use server'
@@ -21,9 +21,8 @@ export const first = async () => 'first action called',
 let first = async () => 'first action called',
   second = first
 first = /* #__PURE__ */ registerServerReference(first, "first");
-export { first };
 second = /* #__PURE__ */ registerServerReference(second, "second");
-export { second };
+export { first, second };
 ```
 
 ## module-export-effect

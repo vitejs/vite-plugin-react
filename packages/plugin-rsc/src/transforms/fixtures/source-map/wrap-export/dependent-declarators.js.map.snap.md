@@ -6,9 +6,8 @@
 (2:12) " first = async () => 'first action called',\n" --> (2:3) " first = async () => 'first action called',\n"
 (3:0) "  second = first\n" --> (3:0) "  second = first\n"
 (2:0) "export const first = async () => 'first action called',\n" --> (4:0) "first = /* #__PURE__ */ registerServerReference(first, \"first\");\n"
-(2:0) "export const first = async () => 'first action called',\n" --> (5:0) "export { first };\n"
-(2:0) "export const first = async () => 'first action called',\n" --> (6:0) "second = /* #__PURE__ */ registerServerReference(second, \"second\");\n"
-(2:0) "export const first = async () => 'first action called',\n" --> (7:0) "export { second };\n"
+(2:0) "export const first = async () => 'first action called',\n" --> (5:0) "second = /* #__PURE__ */ registerServerReference(second, \"second\");\n"
+(2:0) "export const first = async () => 'first action called',\n" --> (6:0) "export { first, second };\n"
 ```
 
 ## module-export-effect

@@ -99,9 +99,8 @@ export const { x, y: [z] } = { x: 0, y: [1] };
       "
       let { x, y: [z] } = { x: 0, y: [1] };
       x = /* #__PURE__ */ $$wrap(x, "<id>", "x");
-      export { x };
       z = /* #__PURE__ */ $$wrap(z, "<id>", "z");
-      export { z };
+      export { x, z };
       "
     `)
   })
@@ -235,8 +234,7 @@ export { a as aa };
       a = /* #__PURE__ */ $$wrap(a, "<id>", "a");
       export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
-      export { b };
-      export { b_no };
+      export { b, b_no };
       ;
       import { c as $$import_c } from "./c";
       const $$wrap_$$import_c = /* #__PURE__ */ $$wrap($$import_c, "<id>", "c");
