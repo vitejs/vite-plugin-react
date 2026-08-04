@@ -10,7 +10,6 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
-import { getDirectivePrologueEnd } from './utils'
 
 /**
  * Turns an inline directive function into a module-level registered function.
@@ -248,7 +247,7 @@ export function transformHoistInlineDirective(
 
   if (runtimeHoists.length > 0) {
     // Define hoisted runtime wrappers after leading directives.
-    output.prependLeft(getDirectivePrologueEnd(ast), runtimeHoists.join(''))
+    output.prependLeft(getRuntimeHoistPosition(ast), runtimeHoists.join(''))
   }
 
   // Expose the canonical generated names. They identify the moved functions by
@@ -258,6 +257,21 @@ export function transformHoistInlineDirective(
     output,
     names,
   }
+}
+
+function getRuntimeHoistPosition(ast: Program): number {
+  // Preserve leading directives so directive-based transforms can
+  // still compose just in case.
+  for (const statement of ast.body) {
+    const isDirective =
+      statement.type === 'ExpressionStatement' &&
+      statement.expression.type === 'Literal' &&
+      typeof statement.expression.value === 'string'
+    if (!isDirective) {
+      return statement.start
+    }
+  }
+  return 0
 }
 
 const exactRegex = (s: string): RegExp =>
