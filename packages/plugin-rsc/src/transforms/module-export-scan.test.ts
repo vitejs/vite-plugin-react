@@ -226,3 +226,22 @@ test('does not assign initializer parameters to destructured exports', async () 
   }
   expect(group.declarators[0]?.exports[0]?.meta.parameters).toBeUndefined()
 })
+
+test('omits parameters for module var rebinding', async () => {
+  const ast = await parseAstAsync(`
+var repeated = async (value) => {}
+var repeated = async (value, extra) => {}
+export { repeated }
+
+var iterated = async (value) => {}
+for (var iterated of source) {}
+export { iterated }
+`)
+
+  const groups = scanModuleExports(ast).filter(
+    (group) => group.type === 'specifiers',
+  )
+  expect(groups).toHaveLength(2)
+  expect(groups[0]?.exports[0]?.meta.parameters).toBeUndefined()
+  expect(groups[1]?.exports[0]?.meta.parameters).toBeUndefined()
+})

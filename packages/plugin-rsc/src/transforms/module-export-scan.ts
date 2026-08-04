@@ -323,6 +323,8 @@ function getLocalFunctionParameters(
 function getReassignedModuleBindings(ast: Program): Set<string> {
   const scopeTree = buildScopeTree(ast)
   const result = new Set<string>()
+  const moduleVarNames = new Set<string>()
+  let functionDepth = 0
 
   function add(ids: Identifier[]) {
     for (const id of ids) {
@@ -336,6 +338,32 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
 
   walk(ast, {
     enter(node) {
+      if (
+        (node.type === 'ForInStatement' || node.type === 'ForOfStatement') &&
+        node.left.type === 'VariableDeclaration' &&
+        node.left.kind === 'var' &&
+        functionDepth === 0
+      ) {
+        for (const declarator of node.left.declarations) {
+          for (const name of extractNames(declarator.id)) {
+            result.add(name)
+          }
+        }
+      }
+      if (
+        node.type === 'VariableDeclaration' &&
+        node.kind === 'var' &&
+        functionDepth === 0
+      ) {
+        for (const declarator of node.declarations) {
+          for (const name of extractNames(declarator.id)) {
+            if (moduleVarNames.has(name)) {
+              result.add(name)
+            }
+            moduleVarNames.add(name)
+          }
+        }
+      }
       if (node.type === 'AssignmentExpression') {
         add(getAssignedIdentifiers(node.left))
       } else if (
@@ -348,6 +376,22 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
         node.left.type !== 'VariableDeclaration'
       ) {
         add(getAssignedIdentifiers(node.left))
+      }
+      if (
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression'
+      ) {
+        functionDepth++
+      }
+    },
+    leave(node) {
+      if (
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression'
+      ) {
+        functionDepth--
       }
     },
   })
