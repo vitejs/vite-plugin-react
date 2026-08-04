@@ -82,6 +82,8 @@ export type TransformModuleExportWrapResult = {
  *
  * Local references to both `someFn` and `someValue` retain their original
  * values. Importers receive the generated wrapper bindings.
+ * See `fixtures/source-map/wrap-export/local-binding-preservation.js.snap.md`
+ * for a side-by-side comparison with `transformWrapExport`.
  *
  * Generated `$$module_*` names are not deconflicted from user bindings,
  * consistent with the other transform helpers.
