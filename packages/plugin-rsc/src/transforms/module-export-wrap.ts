@@ -192,9 +192,7 @@ export function transformModuleExportWrap(
       // function f() {}.                               << strip export
       // const $$module_0_binding_f = __WRAP__(f, 'f')  << emit wrapper
       // export { $$module_0_binding_f as f }           << emit export
-      if (group.directFunction) {
-        validateNonAsyncFunction(options, group.directFunction.node)
-      }
+      validateNonAsyncFunction(options, group.declaration)
       output.remove(group.node.start, group.declaration.start)
       emitWrappedBinding(
         name,

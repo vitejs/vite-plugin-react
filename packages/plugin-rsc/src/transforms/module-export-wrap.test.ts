@@ -126,6 +126,10 @@ export default async function Page() {}
       transform(`export let action`, { rejectNonAsyncFunction: true }),
     ).rejects.toThrow('unsupported non async function')
 
+    await expect(
+      transform(`export class Action {}`, { rejectNonAsyncFunction: true }),
+    ).rejects.toThrow('unsupported non async function')
+
     const filtered = await transform(input, {
       rejectNonAsyncFunction: true,
       filter: () => false,
