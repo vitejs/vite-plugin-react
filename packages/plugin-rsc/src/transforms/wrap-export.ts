@@ -146,13 +146,11 @@ export function transformWrapExport(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      // // input:
       // export function f() {}
-      //
-      // // output:
+      // ⬇️
       // function f() {}                      << strip export
-      // f = __WRAP__(f, 'f')                 << emit wrapper
-      // export { $$module_0_binding_f as f } << emit export
+      // f = __WRAP__(f, 'f')                 << emit
+      // export { $$module_0_binding_f as f } << emit
       const [entry] = group.exports
       if (!filter(entry.exportName, entry.meta)) continue
       validateNonAsyncFunction(options, group.declaration)
@@ -163,14 +161,11 @@ export function transformWrapExport(
         new Set([entry.exportName]),
       )
     } else if (group.type === 'variable-declaration') {
-      // // input:
       // export const selected = init(), skipped = init()
-      //
-      // // output:
+      // ⬇️
       // let selected = init(), skipped = init()    << strip export
-      // selected = __WRAP__(selected, 'selected')
-      // export { selected }
-      // export { skipped }
+      // selected = __WRAP__(selected, 'selected')  << emit
+      // export { selected, skipped }               << emit
       const exports = group.declarators.flatMap((item) => item.exports)
       const selectedExportNames = new Set(
         exports
@@ -207,10 +202,10 @@ export function transformWrapExport(
         selectedExportNames,
       )
     } else if (group.type === 'specifiers') {
-      // export { selected as action, skipped }
-      // becomes an appended wrapper export for `action` plus a preserved export
-      // for `skipped`. Filtered specifiers are not routed through generated
-      // bindings, and a fully filtered statement remains untouched.
+      // export { selected as renamed, skipped }
+      // ⬇️
+      // const $$wrap_selected = __WRAP__(selected, 'renamed')
+      // export { $$wrap_selected as renamed, skipped }
       for (const entry of group.exports) {
         tinyassert(entry.node.local.type === 'Identifier')
         if (entry.node.exported.type !== 'Identifier') {
@@ -225,6 +220,7 @@ export function transformWrapExport(
       )
       if (selectedExports.length === 0) continue
 
+      // remove entire original export statement
       output.remove(group.node.start, group.node.end)
       const skippedExports: string[] = []
       for (const entry of group.exports) {
@@ -237,10 +233,12 @@ export function transformWrapExport(
           continue
         }
         if (group.node.source) {
+          // introduce local variable via renamed import
           // export { remote as action } from './dep'
-          // becomes an import binding followed by its wrapped export. Importing
-          // gives the runtime callback a local implementation expression.
+          // ⬇️
+          // import { remote as $$import_remote } from './dep'
           appendedCode.push(
+            // TODO: Preserve import attributes from the original re-export.
             `import { ${entry.localName} as $$import_${entry.localName} } from ${group.node.source.raw}`,
           )
           emitWrappedBinding(
@@ -272,16 +270,13 @@ export function transformWrapExport(
       const localName = group.localName ?? '$$default'
       if (group.kind === 'named-declaration') {
         // export default function Page() {}
-        // ^^^^^^^^^^^^^^^
-        // becomes a named local declaration followed by a separate wrapper
-        // binding and default export. Keeping the declaration preserves its
-        // module-local name and scope.
+        // ⬇️
+        // function Page() {}
         output.remove(group.node.start, group.node.declaration.start)
       } else {
         // export default expression
-        // ^^^^^^^^^^^^^^^
-        // becomes `const $$default = expression`, which gives anonymous and
-        // arbitrary default values a local implementation binding to wrap.
+        // ⬇️
+        // const $$default = expression
         output.update(
           group.node.start,
           group.node.declaration.start,
