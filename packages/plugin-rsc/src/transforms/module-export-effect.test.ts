@@ -126,7 +126,7 @@ export default async function Page() {}
         `export function Fn() {}`,
         [
           {
-            localName: 'Fn',
+            declName: 'Fn',
             isFunction: true,
           },
         ],
@@ -135,7 +135,7 @@ export default async function Page() {}
         `export class Cls {}`,
         [
           {
-            localName: 'Cls',
+            declName: 'Cls',
             isFunction: false,
           },
         ],
@@ -144,7 +144,7 @@ export default async function Page() {}
         `export const Arrow = () => {}`,
         [
           {
-            localName: 'Arrow',
+            declName: 'Arrow',
             isFunction: true,
           },
         ],
@@ -153,7 +153,7 @@ export default async function Page() {}
         `export const FnExpression = function () {}`,
         [
           {
-            localName: 'FnExpression',
+            declName: 'FnExpression',
             isFunction: true,
           },
         ],
@@ -162,7 +162,7 @@ export default async function Page() {}
         `export const Literal = 1`,
         [
           {
-            localName: 'Literal',
+            declName: 'Literal',
             isFunction: false,
           },
         ],
@@ -171,7 +171,7 @@ export default async function Page() {}
         `export const ObjectValue = {}`,
         [
           {
-            localName: 'ObjectValue',
+            declName: 'ObjectValue',
             isFunction: false,
           },
         ],
@@ -180,7 +180,7 @@ export default async function Page() {}
         `export const ArrayValue = []`,
         [
           {
-            localName: 'ArrayValue',
+            declName: 'ArrayValue',
             isFunction: false,
           },
         ],
@@ -189,33 +189,33 @@ export default async function Page() {}
         `export const ClassValue = class {}`,
         [
           {
-            localName: 'ClassValue',
+            declName: 'ClassValue',
             isFunction: false,
           },
         ],
       ],
-      [`export const Unknown = getValue()`, [{ localName: 'Unknown' }]],
-      [`export const { id } = getValue()`, [{ localName: 'id' }]],
-      [`export const [a, b] = []`, [{ localName: 'a' }, { localName: 'b' }]],
+      [`export const Unknown = getValue()`, [{ declName: 'Unknown' }]],
+      [`export const { id } = getValue()`, [{ declName: 'id' }]],
+      [`export const [a, b] = []`, [{ declName: 'a' }, { declName: 'b' }]],
       [
         `export const MultiFn = () => {}, MultiValue = 1, MultiUnknown = getValue()`,
         [
           {
-            localName: 'MultiFn',
+            declName: 'MultiFn',
             isFunction: true,
           },
           {
-            localName: 'MultiValue',
+            declName: 'MultiValue',
             isFunction: false,
           },
-          { localName: 'MultiUnknown' },
+          { declName: 'MultiUnknown' },
         ],
       ],
       [
         `export default function Page() {}`,
         [
           {
-            localName: 'Page',
+            declName: 'Page',
             isFunction: true,
           },
         ],
@@ -225,7 +225,7 @@ export default async function Page() {}
         `export default class Page {}`,
         [
           {
-            localName: 'Page',
+            declName: 'Page',
             isFunction: false,
           },
         ],

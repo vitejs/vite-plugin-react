@@ -33,7 +33,7 @@ export type ModuleExportMeta = {
    * - `undefined` for `export default () => {}`
    * - `undefined` for `export { Page }`
    */
-  localName?: string
+  declName?: string
   /**
    * Whether the exported value is statically known to be a function.
    *
@@ -149,7 +149,7 @@ export function scanModuleExports(
                   localName: name,
                   exportName: name,
                   meta: {
-                    localName: name,
+                    declName: name,
                     isFunction,
                     valueNode: declarator.init ?? undefined,
                   },
@@ -171,7 +171,7 @@ export function scanModuleExports(
                 localName: name,
                 exportName: name,
                 meta: {
-                  localName: name,
+                  declName: name,
                   isFunction: getIsFunction(node.declaration),
                   valueNode: node.declaration,
                 },
@@ -221,7 +221,7 @@ export function scanModuleExports(
         kind = 'named-declaration'
         localName = node.declaration.id.name
         meta = {
-          localName: node.declaration.id.name,
+          declName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
           valueNode: node.declaration,
         }
