@@ -233,23 +233,20 @@ export function transformWrapExport(
           )
           continue
         }
-        if (group.node.source) {
+        let binding = entry.localName
+        const source = group.node.source
+        if (source) {
           // introduce local variable via renamed import
           // export { remote as action } from './dep'
           // ⬇️
           // import { remote as $$import_remote } from './dep'
+          binding = `$$import_${entry.localName}`
           appendedCode.push(
             // TODO: Preserve import attributes from the original re-export.
-            `import { ${entry.localName} as $$import_${entry.localName} } from ${group.node.source.raw}`,
+            `import { ${entry.localName} as ${binding} } from ${source.raw}`,
           )
-          emitWrappedBinding(
-            `$$import_${entry.localName}`,
-            entry.exportName,
-            entry.meta,
-          )
-        } else {
-          emitWrappedBinding(entry.localName, entry.exportName, entry.meta)
         }
+        emitWrappedBinding(binding, entry.exportName, entry.meta)
       }
       if (skippedExports.length > 0) {
         const source = group.node.source ? ` from ${group.node.source.raw}` : ''
