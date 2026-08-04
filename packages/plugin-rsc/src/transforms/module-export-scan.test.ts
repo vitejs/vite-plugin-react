@@ -185,3 +185,31 @@ export const unknown = getValue()
     ]),
   )
 })
+
+test('omits parameters for reassigned function bindings', async () => {
+  const ast = await parseAstAsync(`
+export let direct = async (value) => {}
+direct = async (value, extra) => {}
+
+async function local(value) {}
+local = async (value, extra) => {}
+export { local as renamed }
+export default local
+`)
+
+  const groups = scanModuleExports(ast)
+  const [direct, renamed, defaultExport] = groups
+  expect(direct?.type).toBe('variable-declaration')
+  expect(renamed?.type).toBe('specifiers')
+  expect(defaultExport?.type).toBe('default')
+  if (
+    direct?.type !== 'variable-declaration' ||
+    renamed?.type !== 'specifiers' ||
+    defaultExport?.type !== 'default'
+  ) {
+    throw new Error('unexpected export groups')
+  }
+  expect(direct.declarators[0]?.exports[0]?.meta.parameters).toBeUndefined()
+  expect(renamed.exports[0]?.meta.parameters).toBeUndefined()
+  expect(defaultExport.meta.parameters).toBeUndefined()
+})

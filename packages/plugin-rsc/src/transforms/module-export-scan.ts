@@ -5,13 +5,16 @@ import type {
   ExportNamedDeclaration,
   ExportSpecifier,
   FunctionDeclaration,
+  Identifier,
   ClassDeclaration,
   Node,
   Program,
   VariableDeclaration,
   VariableDeclarator,
 } from 'estree'
+import { walk } from 'estree-walker'
 import type { ESTree } from 'vite'
+import { buildScopeTree } from './scope'
 import { extractNames } from './utils'
 
 export type FunctionParameters = {
@@ -136,7 +139,11 @@ export function scanModuleExports(
 ): ModuleExportGroup[] {
   const ast = viteAst as unknown as Program
   const groups: ModuleExportGroup[] = []
-  const localFunctionParameters = getLocalFunctionParameters(ast)
+  const reassignedNames = getReassignedModuleBindings(ast)
+  const localFunctionParameters = getLocalFunctionParameters(
+    ast,
+    reassignedNames,
+  )
 
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
@@ -165,7 +172,9 @@ export function scanModuleExports(
                     declName: name,
                     isFunction,
                     valueNode: declarator.init ?? undefined,
-                    ...getFunctionParametersMeta(declarator.init),
+                    ...(reassignedNames.has(name)
+                      ? {}
+                      : getFunctionParametersMeta(declarator.init)),
                   },
                 })),
               }
@@ -187,7 +196,9 @@ export function scanModuleExports(
                 declName: name,
                 isFunction: getIsFunction(node.declaration),
                 valueNode: node.declaration,
-                ...getFunctionParametersMeta(node.declaration),
+                ...(reassignedNames.has(name)
+                  ? {}
+                  : getFunctionParametersMeta(node.declaration)),
               },
             },
           })
@@ -245,7 +256,9 @@ export function scanModuleExports(
           declName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
           valueNode: node.declaration,
-          ...getFunctionParametersMeta(node.declaration),
+          ...(reassignedNames.has(node.declaration.id.name)
+            ? {}
+            : getFunctionParametersMeta(node.declaration)),
         }
       } else if (node.declaration.type === 'Identifier') {
         kind = 'identifier'
@@ -275,6 +288,7 @@ export function scanModuleExports(
 
 function getLocalFunctionParameters(
   ast: Program,
+  reassignedNames: Set<string>,
 ): Map<string, FunctionParameters> {
   const result = new Map<string, FunctionParameters>()
 
@@ -285,11 +299,17 @@ function getLocalFunctionParameters(
         ? statement.declaration
         : statement
     if (declaration?.type === 'FunctionDeclaration' && declaration.id) {
-      result.set(declaration.id.name, getFunctionParameters(declaration)!)
+      if (!reassignedNames.has(declaration.id.name)) {
+        result.set(declaration.id.name, getFunctionParameters(declaration)!)
+      }
     } else if (declaration?.type === 'VariableDeclaration') {
       for (const declarator of declaration.declarations) {
         const parameters = getFunctionParameters(declarator.init)
-        if (declarator.id.type === 'Identifier' && parameters) {
+        if (
+          declarator.id.type === 'Identifier' &&
+          parameters &&
+          !reassignedNames.has(declarator.id.name)
+        ) {
           result.set(declarator.id.name, parameters)
         }
       }
@@ -297,6 +317,68 @@ function getLocalFunctionParameters(
   }
 
   return result
+}
+
+function getReassignedModuleBindings(ast: Program): Set<string> {
+  const scopeTree = buildScopeTree(ast)
+  const result = new Set<string>()
+
+  function add(ids: Identifier[]) {
+    for (const id of ids) {
+      if (
+        scopeTree.referenceToDeclaredScope.get(id) === scopeTree.moduleScope
+      ) {
+        result.add(id.name)
+      }
+    }
+  }
+
+  walk(ast, {
+    enter(node) {
+      if (node.type === 'AssignmentExpression') {
+        add(getAssignedIdentifiers(node.left))
+      } else if (
+        node.type === 'UpdateExpression' &&
+        node.argument.type === 'Identifier'
+      ) {
+        add([node.argument])
+      } else if (
+        (node.type === 'ForInStatement' || node.type === 'ForOfStatement') &&
+        node.left.type !== 'VariableDeclaration'
+      ) {
+        add(getAssignedIdentifiers(node.left))
+      }
+    },
+  })
+
+  return result
+}
+
+function getAssignedIdentifiers(
+  pattern: import('estree').Pattern,
+): Identifier[] {
+  if (pattern.type === 'Identifier') {
+    return [pattern]
+  }
+  if (pattern.type === 'ObjectPattern') {
+    return pattern.properties.flatMap((property) =>
+      getAssignedIdentifiers(
+        property.type === 'RestElement' ? property : property.value,
+      ),
+    )
+  }
+  if (pattern.type === 'ArrayPattern') {
+    return pattern.elements.flatMap((element) =>
+      element ? getAssignedIdentifiers(element) : [],
+    )
+  }
+  if (pattern.type === 'RestElement') {
+    return getAssignedIdentifiers(pattern.argument)
+  }
+  if (pattern.type === 'AssignmentPattern') {
+    return getAssignedIdentifiers(pattern.left)
+  }
+  return []
 }
 
 function getFunctionParametersMeta(
