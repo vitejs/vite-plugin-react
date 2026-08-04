@@ -16,6 +16,16 @@ import { extractNames } from './utils'
 
 export type ModuleExportMeta = {
   /**
+   * The source node that evaluates to the exported value when directly
+   * available.
+   *
+   * - The declaration for a function or class export.
+   * - The initializer for a variable export.
+   * - The declaration expression for a default export.
+   * - `undefined` for export specifiers and re-exports.
+   */
+  valueNode?: Node | ExportDefaultDeclaration['declaration']
+  /**
    * The local declaration name when statically available.
    *
    * - `"Page"` for `export function Page() {}`
@@ -141,6 +151,7 @@ export function scanModuleExports(
                   meta: {
                     localName: name,
                     isFunction,
+                    valueNode: declarator.init ?? undefined,
                   },
                 })),
               }
@@ -162,6 +173,7 @@ export function scanModuleExports(
                 meta: {
                   localName: name,
                   isFunction: getIsFunction(node.declaration),
+                  valueNode: node.declaration,
                 },
               },
             ],
@@ -211,15 +223,22 @@ export function scanModuleExports(
         meta = {
           localName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
+          valueNode: node.declaration,
         }
       } else if (node.declaration.type === 'Identifier') {
         kind = 'identifier'
-        meta = { defaultExportIdentifierName: node.declaration.name }
+        meta = {
+          defaultExportIdentifierName: node.declaration.name,
+          valueNode: node.declaration,
+        }
       } else {
         // export default function () {}
         // export default () => {}
         kind = 'other'
-        meta = { isFunction: getIsFunction(node.declaration) }
+        meta = {
+          isFunction: getIsFunction(node.declaration),
+          valueNode: node.declaration,
+        }
       }
       groups.push({ type: 'default', kind, node, localName, meta })
     }

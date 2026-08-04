@@ -243,7 +243,9 @@ export default async function Page() {}
 
     for (const [input, expected] of examples) {
       const result = await transform(input)
-      expect(result.references.map((context) => context.meta)).toEqual(expected)
+      expect(
+        result.references.map(({ meta: { valueNode: _, ...meta } }) => meta),
+      ).toEqual(expected)
     }
   })
 })

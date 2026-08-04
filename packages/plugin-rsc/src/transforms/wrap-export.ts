@@ -9,6 +9,8 @@ import {
 import { validateNonAsyncFunction } from './utils'
 
 type ExportMeta = {
+  /** The directly exported declaration or value expression, when available. */
+  valueNode?: ModuleExportMeta['valueNode']
   /**
    * The local declaration name when statically available.
    *
@@ -133,6 +135,13 @@ export function transformWrapExport(
       }
       wrapSimple(group.node.start, group.declaration.start, group.exports)
     } else if (group.type === 'variable-declaration') {
+      const shouldWrap = group.declarators.some((declarator) =>
+        declarator.exports.some(({ exportName, meta }) =>
+          filter(exportName, getExportMeta(meta)),
+        ),
+      )
+      if (!shouldWrap) continue
+
       if (group.declaration.kind === 'const') {
         output.update(
           group.declaration.start,

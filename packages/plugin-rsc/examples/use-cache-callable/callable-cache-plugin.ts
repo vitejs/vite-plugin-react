@@ -37,6 +37,11 @@ export function callableCachePlugin(): Plugin {
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
               runtime,
+              // Next.js permits object and array exports for metadata and
+              // viewport values in "use cache" modules.
+              filter: (_name, meta) =>
+                meta.valueNode?.type !== 'ObjectExpression' &&
+                meta.valueNode?.type !== 'ArrayExpression',
               rejectNonAsyncFunction: true,
             })
           : transformHoistInlineDirective(code, ast, {
