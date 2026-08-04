@@ -361,11 +361,10 @@ export function transformModuleExportWrap(
     }
   }
 
+  // emit accumulated wrap + export statements at the end, e.g.
+  // const $$module_0_binding_action = __WRAP__(action, 'action')
+  // export { $$module_0_binding_action as action }
   if (wrappedBindingCode.length > 0) {
-    // const value = init()
-    // ⬇️ (append)
-    // const $$module_0_binding_value = __WRAP__(value, 'value')
-    // export { $$module_0_binding_value as value }
     output.append(`\n${wrappedBindingCode.join('\n')}\n`)
   }
 
