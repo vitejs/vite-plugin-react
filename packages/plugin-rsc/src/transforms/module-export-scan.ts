@@ -30,6 +30,20 @@ export type ModuleExportDirectFunction = {
 }
 
 export type ModuleExportMeta = {
+  /*
+   * TODO: Track `isAsyncFunction` here so module export transforms can share
+   * static validation without probing export nodes themselves.
+   *
+   * | Export value                  | `isAsyncFunction` | Validation change |
+   * | ----------------------------- | ----------------- | ----------------- |
+   * | Async function or arrow       | `true`            | None              |
+   * | Sync function                 | `false`           | None              |
+   * | Class                         | `false`           | None              |
+   * | Literal, object, or array     | `false`           | Accept -> reject  |
+   * | Missing initializer           | `false`           | None              |
+   * | Identifier or call expression | `undefined`       | None              |
+   * | Export specifier or re-export | `undefined`       | None              |
+   */
   /**
    * The local declaration name when statically available.
    *
