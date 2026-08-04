@@ -23,6 +23,9 @@ function defineTests(f: Fixture) {
     await expect(page.getByTestId('fixed-declared-admission')).toHaveText(
       'included',
     )
+    await expect(page.getByTestId('fixed-implementation-arguments')).toHaveText(
+      'preserved',
+    )
     await expect(page.getByTestId('rest-admission')).toHaveText('included')
     await expect(page.getByTestId('capture-admission')).toHaveText('included')
   })

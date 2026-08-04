@@ -1,6 +1,6 @@
 async function fixed(declared = 'default') {
   'use cache'
-  return `${declared}:${crypto.randomUUID()}`
+  return `${declared}:${String(arguments[1])}:${crypto.randomUUID()}`
 }
 
 async function rest(declared: string, ...remaining: string[]) {
@@ -40,6 +40,10 @@ export async function ArgumentAdmission() {
       <dt>Declared fixed-signature arguments</dt>
       <dd data-testid="fixed-declared-admission">
         {fixedSecond !== fixedDifferent ? 'included' : 'excluded'}
+      </dd>
+      <dt>Complete implementation arguments</dt>
+      <dd data-testid="fixed-implementation-arguments">
+        {fixedFirst.startsWith('same:first extra:') ? 'preserved' : 'truncated'}
       </dd>
       <dt>Rest arguments</dt>
       <dd data-testid="rest-admission">
