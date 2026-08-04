@@ -343,15 +343,10 @@ export function transformModuleExportWrap(
         // const $$module_0_binding_default = __WRAP__($$module_0_implementation_default, 'default')
         // export { $$module_0_binding_default as default }
         implementation = createName('implementation', 'default')
-        const prefix = input.slice(group.node.start, declaration.start)
         output.update(
           group.node.start,
           declaration.start,
-          prefix.replace(
-            /^export((?:\s|\/\*[\s\S]*?\*\/|\/\/[^\n]*(?:\n|$))*)default/,
-            (_, trivia: string) =>
-              `${trivia.replace(/^\s+/, '')}const ${implementation} =`,
-          ),
+          `const ${implementation} = `,
         )
       }
       if (group.directFunction) {

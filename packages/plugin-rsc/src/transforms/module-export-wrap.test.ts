@@ -130,20 +130,6 @@ export default async function Page() {}
     expect(filtered.references).toEqual([])
   })
 
-  test('preserves comments around default export keywords', async () => {
-    const result = await transform(
-      `export /* before */ default /* after */ async () => {}`,
-    )
-
-    expect(result.output.toString()).toMatchInlineSnapshot(`
-      "/* before */ const $$module_0_implementation_default = /* after */ async () => {}
-
-      const $$module_0_binding_default = /* #__PURE__ */ Object.defineProperty(wrap($$module_0_implementation_default, \"default\"), \"name\", { value: \"default\" });
-      export { $$module_0_binding_default as default };
-      "
-    `)
-  })
-
   test('controls export-all preservation', async () => {
     const input = `export * from './dep'`
 
