@@ -98,11 +98,11 @@ export function transformWrapExport(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      const [entry] = group.exports
+      const entry = group.export
       if (filter(entry.exportName, entry.meta)) {
         validateNonAsyncFunction(options, group.declaration)
       }
-      wrapSimple(group.node.start, group.declaration.start, group.exports)
+      wrapSimple(group.node.start, group.declaration.start, [entry])
     } else if (group.type === 'variable-declaration') {
       if (group.declaration.kind === 'const') {
         output.update(

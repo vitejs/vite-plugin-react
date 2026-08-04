@@ -105,8 +105,7 @@ export function transformModuleExportEffect(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      const [entry] = group.exports
-      const { localName: binding, exportName, meta } = entry
+      const { localName: binding, exportName, meta } = group.export
       if (!filter(exportName, meta)) continue
       validateNonAsyncFunction(options, group.declaration)
       replaceAndMove(
