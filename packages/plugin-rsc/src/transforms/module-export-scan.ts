@@ -79,7 +79,7 @@ export type ModuleExportGroup =
       type: 'declaration'
       node: ExportNamedDeclaration
       declaration: FunctionDeclaration | ClassDeclaration
-      exports: [ModuleExportEntry]
+      export: ModuleExportEntry
     }
   | {
       /**
@@ -168,17 +168,15 @@ export function scanModuleExports(
             type: 'declaration',
             node,
             declaration: node.declaration,
-            exports: [
-              {
-                localName: name,
-                exportName: name,
-                meta: {
-                  declName: name,
-                  isFunction: getIsFunction(node.declaration),
-                  valueNode: node.declaration,
-                },
+            export: {
+              localName: name,
+              exportName: name,
+              meta: {
+                declName: name,
+                isFunction: getIsFunction(node.declaration),
+                valueNode: node.declaration,
               },
-            ],
+            },
           })
         }
       } else {

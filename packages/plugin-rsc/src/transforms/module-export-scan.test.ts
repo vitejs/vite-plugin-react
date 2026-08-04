@@ -19,17 +19,15 @@ export * from './all'
   expect(groups[0]).toMatchObject({
     type: 'declaration',
     declaration: { type: 'FunctionDeclaration' },
-    exports: [
-      {
-        localName: 'action',
-        exportName: 'action',
-        meta: {
-          declName: 'action',
-          isFunction: true,
-          valueNode: { type: 'FunctionDeclaration' },
-        },
+    export: {
+      localName: 'action',
+      exportName: 'action',
+      meta: {
+        declName: 'action',
+        isFunction: true,
+        valueNode: { type: 'FunctionDeclaration' },
       },
-    ],
+    },
   })
   expect(groups[1]).toMatchObject({
     type: 'variable-declaration',
