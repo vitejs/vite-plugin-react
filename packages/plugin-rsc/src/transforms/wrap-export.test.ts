@@ -259,10 +259,11 @@ export default function d() {}
     })
     expect(result).toMatchInlineSnapshot(`
       "
-      export const a = 0;
+      let a = 0;
       let b = function() {}
       let c = () => {}
       function d() {}
+      export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
       export { b };
       c = /* #__PURE__ */ $$wrap(c, "<id>", "c");
@@ -328,10 +329,12 @@ export const tags = []
     expect(result.exportNames).toEqual(['action'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "let action = async () => {}
-      export const metadata = {}
-      export const tags = []
-      action = /* #__PURE__ */ $$wrap(action, \"action\");
+      let metadata = {}
+      let tags = []
+      action = /* #__PURE__ */ $$wrap(action, "action");
       export { action };
+      export { metadata };
+      export { tags };
       "
     `)
   })
@@ -350,8 +353,9 @@ export default async function Page() {}
     expect(result.exportNames).toEqual(['default'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "
-      export const revalidate = 1;
+      let revalidate = 1;
       async function Page() {}
+      export { revalidate };
       ;
       const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
       export { $$wrap_Page as default };

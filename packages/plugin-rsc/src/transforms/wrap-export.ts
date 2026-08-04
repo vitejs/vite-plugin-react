@@ -104,13 +104,6 @@ export function transformWrapExport(
       }
       wrapSimple(group.node.start, group.declaration.start, group.exports)
     } else if (group.type === 'variable-declaration') {
-      const shouldWrap = group.declarators.some((declarator) =>
-        declarator.exports.some(({ exportName, meta }) =>
-          filter(exportName, meta),
-        ),
-      )
-      if (!shouldWrap) continue
-
       if (group.declaration.kind === 'const') {
         output.update(
           group.declaration.start,
