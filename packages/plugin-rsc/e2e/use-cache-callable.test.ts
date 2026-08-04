@@ -97,11 +97,13 @@ function defineTests(f: Fixture) {
     const example = page.getByTestId('file-directive-from-server')
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
+    const ordinaryExports = example.getByTestId('ordinary-exports')
     const result = example.getByTestId('result')
     const argument = example.getByRole('textbox', { name: 'Cache key' })
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
+    await expect(ordinaryExports).toHaveText('cached metadata: cache')
     await expect(result).toHaveText('not called')
 
     // The wrapped export is passed from a Server Component to a Client Component.

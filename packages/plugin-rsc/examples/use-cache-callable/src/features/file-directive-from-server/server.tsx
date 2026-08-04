@@ -1,4 +1,4 @@
-import { cachedFromServer } from './action'
+import { cachedFromServer, metadata, tags } from './action'
 import { FileDirectiveFromServerClient } from './client'
 import { resetAction } from './reset'
 import { state } from './state'
@@ -8,6 +8,7 @@ export function FileDirectiveFromServer() {
     <FileDirectiveFromServerClient
       action={cachedFromServer}
       executionCount={state.executionCount}
+      ordinaryExports={`${metadata.title}: ${tags.join(', ')}`}
       resetAction={resetAction}
       result={state.result}
     />

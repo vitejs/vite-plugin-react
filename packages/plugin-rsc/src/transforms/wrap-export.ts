@@ -8,44 +8,13 @@ import {
 } from './module-export-scan'
 import { validateNonAsyncFunction } from './utils'
 
-type ExportMeta = {
-  /**
-   * The local declaration name when statically available.
-   *
-   * - `"Page"` for `export function Page() {}`
-   * - `"Page"` for `export const Page = () => {}`
-   * - `undefined` for `export default () => {}`
-   * - `undefined` for `export { Page }`
-   */
-  declName?: string
-  /**
-   * Whether the exported value is statically known to be a function.
-   *
-   * - `true` for `export const Page = () => {}`
-   * - `false` for `export const value = 1`
-   * - `undefined` for `export const value = getValue()`
-   * - `undefined` for `export default Page`
-   */
-  isFunction?: boolean
-  /**
-   * The local identifier referenced by a default export.
-   * The RSC CSS transform uses this to detect a component by its capitalized
-   * local name and preserve that name on the generated wrapper.
-   *
-   * - `"Page"` for `const Page = () => {}; export default Page`
-   * - `undefined` for `export default function Page() {}`
-   * - `undefined` for `export default () => {}`
-   */
-  defaultExportIdentifierName?: string
-}
-
 export type TransformWrapExportFilter = (
   name: string,
-  meta: ExportMeta,
+  meta: ModuleExportMeta,
 ) => boolean
 
 export type TransformWrapExportOptions = {
-  runtime: (value: string, name: string, meta: ExportMeta) => string
+  runtime: (value: string, name: string, meta: ModuleExportMeta) => string
   ignoreExportAllDeclaration?: boolean
   rejectNonAsyncFunction?: boolean
   filter?: TransformWrapExportFilter
@@ -70,11 +39,9 @@ export function transformWrapExport(
     exports: ModuleExportEntry[],
   ) {
     const filteredExports = exports.map((item) => {
-      const meta = getExportMeta(item.meta)
       return {
         ...item,
-        meta,
-        shouldWrap: filter(item.exportName, meta),
+        shouldWrap: filter(item.exportName, item.meta),
       }
     })
     exportNames.push(
@@ -108,7 +75,11 @@ export function transformWrapExport(
     output.move(start, end, input.length)
   }
 
-  function wrapExport(name: string, exportName: string, meta: ExportMeta = {}) {
+  function wrapExport(
+    name: string,
+    exportName: string,
+    meta: ModuleExportMeta = {},
+  ) {
     if (!filter(exportName, meta)) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
@@ -128,7 +99,7 @@ export function transformWrapExport(
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
       const [entry] = group.exports
-      if (filter(entry.exportName, getExportMeta(entry.meta))) {
+      if (filter(entry.exportName, entry.meta)) {
         validateNonAsyncFunction(options, group.declaration)
       }
       wrapSimple(group.node.start, group.declaration.start, group.exports)
@@ -146,7 +117,7 @@ export function transformWrapExport(
         if (
           declarator.node.init &&
           declarator.exports.some(({ exportName, meta }) =>
-            filter(exportName, getExportMeta(meta)),
+            filter(exportName, meta),
           )
         ) {
           validateNonAsyncFunction(options, declarator.node.init)
@@ -170,7 +141,7 @@ export function transformWrapExport(
           wrapExport(
             `$$import_${entry.localName}`,
             entry.exportName,
-            getExportMeta(entry.meta),
+            entry.meta,
           )
         }
       } else {
@@ -183,11 +154,7 @@ export function transformWrapExport(
               { pos: entry.node.exported.start },
             )
           }
-          wrapExport(
-            entry.localName,
-            entry.exportName,
-            getExportMeta(entry.meta),
-          )
+          wrapExport(entry.localName, entry.exportName, entry.meta)
         }
       }
     } else if (group.type === 'export-all') {
@@ -223,7 +190,7 @@ export function transformWrapExport(
           'const $$default = ',
         )
       }
-      const meta = getExportMeta(group.meta)
+      const meta = group.meta
       if (filter('default', meta)) {
         validateNonAsyncFunction(options, group.node.declaration)
       }
@@ -236,8 +203,4 @@ export function transformWrapExport(
   }
 
   return { exportNames, output }
-}
-
-function getExportMeta({ localName, ...meta }: ModuleExportMeta): ExportMeta {
-  return { ...meta, ...(localName && { declName: localName }) }
 }
