@@ -172,6 +172,7 @@ export function transformModuleExportWrap(
       meta,
       originalName,
     )
+    // TODO: preserve original export location for generated code? (update + move trick)
     wrappedBindingCode.push(
       `const ${binding} = ${generate(context)};`,
       exportBinding(binding, exportName),
@@ -237,6 +238,7 @@ export function transformModuleExportWrap(
         if (selected && declarator.node.init) {
           validateNonAsyncFunction(
             options,
+            // TODO: just declarator.node.init?
             directFunction?.node ?? declarator.node.init,
           )
         }
@@ -251,6 +253,7 @@ export function transformModuleExportWrap(
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
           if (!wrappedBindingNames.has(name)) {
+            // TODO: inline exportBinding?
             wrappedBindingCode.push(exportBinding(name, name))
           }
         }
@@ -329,7 +332,7 @@ export function transformModuleExportWrap(
       if (namedDeclaration) {
         // export default function Page() {}
         // ^^^^^^^^^^^^^^
-        // ⬇️ (keep named declarations in place and append wrapped binding)
+        // ⬇️
         // function Page() {}
         // const $$module_0_binding_default = __WRAP__(Page, 'default')
         // export { $$module_0_binding_default as default }
@@ -338,7 +341,7 @@ export function transformModuleExportWrap(
       } else {
         // export default current
         // ^^^^^^^^^^^^^^
-        // ⬇️ (snapshot at the original export site)
+        // ⬇️
         // const $$module_0_implementation_default = current
         // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // const $$module_0_binding_default = __WRAP__($$module_0_implementation_default, 'default')
