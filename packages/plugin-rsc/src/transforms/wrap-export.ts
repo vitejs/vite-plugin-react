@@ -89,7 +89,7 @@ export function transformWrapExport(
    * export { action }                    <<
    * ```
    */
-  function rewriteDirectExports(
+  function emitWrappedAssignments(
     // start/end represents original `export` token range
     start: number,
     end: number,
@@ -153,7 +153,7 @@ export function transformWrapExport(
       const [entry] = group.exports
       if (!filter(entry.exportName, entry.meta)) continue
       validateNonAsyncFunction(options, group.declaration)
-      rewriteDirectExports(
+      emitWrappedAssignments(
         group.node.start,
         group.declaration.start,
         group.exports,
@@ -198,7 +198,7 @@ export function transformWrapExport(
           }
         }
       }
-      rewriteDirectExports(
+      emitWrappedAssignments(
         group.node.start,
         group.declaration.start,
         exports,
