@@ -115,33 +115,24 @@ export default async function Page() {}
     expect(filtered.referenceNames).toEqual([])
   })
 
-  test('only validates selected exports as async functions', async () => {
-    const input = `export function action() {}`
-
+  test.each([
+    `export function action() {}`,
+    `export let action`,
+    `export class Action {}`,
+    `export default class Action {}`,
+  ])('rejects non-async function export: %s', async (input) => {
     await expect(
       transform(input, { rejectNonAsyncFunction: true }),
     ).rejects.toThrow('unsupported non async function')
+  })
 
-    await expect(
-      transform(`export let action`, { rejectNonAsyncFunction: true }),
-    ).rejects.toThrow('unsupported non async function')
-
-    await expect(
-      transform(`export class Action {}`, { rejectNonAsyncFunction: true }),
-    ).rejects.toThrow('unsupported non async function')
-
-    await expect(
-      transform(`export default class Action {}`, {
-        rejectNonAsyncFunction: true,
-      }),
-    ).rejects.toThrow('unsupported non async function')
-
-    const filtered = await transform(input, {
+  test('only validates selected exports', async () => {
+    const result = await transform(`export function action() {}`, {
       rejectNonAsyncFunction: true,
       filter: () => false,
     })
-    expect(filtered.output.hasChanged()).toBe(false)
-    expect(filtered.references).toEqual([])
+    expect(result.output.hasChanged()).toBe(false)
+    expect(result.references).toEqual([])
   })
 
   test('controls export-all preservation', async () => {
