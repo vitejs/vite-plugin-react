@@ -218,7 +218,6 @@ export function transformModuleExportWrap(
       )
 
       for (const declarator of group.declarators) {
-        const directFunction = declarator.directFunction
         let selected = false
 
         for (const entry of declarator.exports) {
@@ -231,16 +230,12 @@ export function transformModuleExportWrap(
             entry.localName,
             entry.exportName,
             meta,
-            directFunction?.originalName,
+            declarator.directFunction?.originalName,
           )
         }
 
         if (selected && declarator.node.init) {
-          validateNonAsyncFunction(
-            options,
-            // TODO: just declarator.node.init?
-            directFunction?.node ?? declarator.node.init,
-          )
+          validateNonAsyncFunction(options, declarator.node.init)
         }
       }
 
