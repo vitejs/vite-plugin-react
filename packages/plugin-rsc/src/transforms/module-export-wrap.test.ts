@@ -120,6 +120,9 @@ export default async function Page() {}
     `export let action`,
     `export class Action {}`,
     `export default class Action {}`,
+    `export const action = 1`,
+    `export const action = {}`,
+    `export const action = []`,
   ])('rejects non-async function export: %s', async (input) => {
     await expect(
       transform(input, { rejectNonAsyncFunction: true }),
@@ -127,12 +130,23 @@ export default async function Page() {}
   })
 
   test('only validates selected exports', async () => {
-    const result = await transform(`export function action() {}`, {
+    const result = await transform(
+      `export const action = async () => {}, object = {}, array = []`,
+      {
+        rejectNonAsyncFunction: true,
+        filter: (_name, meta) =>
+          meta.valueNode?.type !== 'ObjectExpression' &&
+          meta.valueNode?.type !== 'ArrayExpression',
+      },
+    )
+    expect(result.referenceNames).toEqual(['action'])
+
+    const filtered = await transform(`export function action() {}`, {
       rejectNonAsyncFunction: true,
       filter: () => false,
     })
-    expect(result.output.hasChanged()).toBe(false)
-    expect(result.references).toEqual([])
+    expect(filtered.output.hasChanged()).toBe(false)
+    expect(filtered.references).toEqual([])
   })
 
   test('controls export-all preservation', async () => {

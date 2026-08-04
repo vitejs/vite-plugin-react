@@ -242,6 +242,10 @@ export function transformWrapExport(
   return { exportNames, output }
 }
 
-function getExportMeta({ localName, ...meta }: ModuleExportMeta): ExportMeta {
+function getExportMeta({
+  localName,
+  valueNode: _,
+  ...meta
+}: ModuleExportMeta): ExportMeta {
   return { ...meta, ...(localName && { declName: localName }) }
 }

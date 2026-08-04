@@ -40,6 +40,9 @@ export function callableCachePlugin(): Plugin {
           ? transformModuleExportWrap(code, ast, {
               generate: ({ implementation, originalName, exportName }) =>
                 `/* #__PURE__ */ ${runtime(implementation, exportName, originalName ?? exportName)}`,
+              filter: (_name, meta) =>
+                meta.valueNode?.type !== 'ObjectExpression' &&
+                meta.valueNode?.type !== 'ArrayExpression',
               rejectNonAsyncFunction: true,
             })
           : transformHoistInlineDirective(code, ast, {

@@ -85,6 +85,12 @@ export default async function Page() {}
       transform(`export let action`, { rejectNonAsyncFunction: true }),
     ).rejects.toThrow('unsupported non async function')
 
+    await expect(
+      transform(`export const action = 1`, {
+        rejectNonAsyncFunction: true,
+      }),
+    ).rejects.toThrow('unsupported non async function')
+
     const filtered = await transform(input, {
       rejectNonAsyncFunction: true,
       filter: () => false,
@@ -237,7 +243,9 @@ export default async function Page() {}
 
     for (const [input, expected] of examples) {
       const result = await transform(input)
-      expect(result.references.map((context) => context.meta)).toEqual(expected)
+      expect(
+        result.references.map(({ meta: { valueNode: _, ...meta } }) => meta),
+      ).toEqual(expected)
     }
   })
 })

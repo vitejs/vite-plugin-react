@@ -29,22 +29,12 @@ export type ModuleExportDirectFunction = {
   originalName: string
 }
 
-// TODO: include raw `Node` so caller have move control?
 export type ModuleExportMeta = {
-  /*
-   * TODO: Track `isAsyncFunction` here so module export transforms can share
-   * static validation without probing export nodes themselves.
-   *
-   * | Export value                  | `isAsyncFunction` | Validation change |
-   * | ----------------------------- | ----------------- | ----------------- |
-   * | Async function or arrow       | `true`            | None              |
-   * | Sync function                 | `false`           | None              |
-   * | Class                         | `false`           | None              |
-   * | Literal, object, or array     | `false`           | Accept -> reject  |
-   * | Missing initializer           | `false`           | None              |
-   * | Identifier or call expression | `undefined`       | None              |
-   * | Export specifier or re-export | `undefined`       | None              |
+  /**
+   * The source node that evaluates to the exported value when directly
+   * available. Indirect exports such as specifiers and re-exports omit it.
    */
+  valueNode?: Node | ExportDefaultDeclaration['declaration']
   /**
    * The local declaration name when statically available.
    *
@@ -183,6 +173,7 @@ export function scanModuleExports(
                   meta: {
                     localName: name,
                     isFunction,
+                    valueNode: declarator.init ?? undefined,
                   },
                 })),
               }
@@ -208,6 +199,7 @@ export function scanModuleExports(
                 meta: {
                   localName: name,
                   isFunction: getIsFunction(node.declaration),
+                  valueNode: node.declaration,
                 },
               },
             ],
@@ -258,15 +250,22 @@ export function scanModuleExports(
         meta = {
           localName: node.declaration.id.name,
           isFunction: getIsFunction(node.declaration),
+          valueNode: node.declaration,
         }
       } else if (node.declaration.type === 'Identifier') {
         kind = 'identifier'
-        meta = { defaultExportIdentifierName: node.declaration.name }
+        meta = {
+          defaultExportIdentifierName: node.declaration.name,
+          valueNode: node.declaration,
+        }
       } else {
         // export default function () {}
         // export default () => {}
         kind = 'other'
-        meta = { isFunction: getIsFunction(node.declaration) }
+        meta = {
+          isFunction: getIsFunction(node.declaration),
+          valueNode: node.declaration,
+        }
       }
       groups.push({
         type: 'default',

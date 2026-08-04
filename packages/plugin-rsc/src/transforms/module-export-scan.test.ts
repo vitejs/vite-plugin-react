@@ -30,6 +30,7 @@ export * from './all'
         meta: {
           localName: 'action',
           isFunction: true,
+          valueNode: { type: 'FunctionDeclaration' },
         },
       },
     ],
@@ -50,6 +51,7 @@ export * from './all'
             meta: {
               localName: 'loader',
               isFunction: true,
+              valueNode: { type: 'ArrowFunctionExpression' },
             },
           },
         ],
@@ -63,6 +65,7 @@ export * from './all'
             meta: {
               localName: 'value',
               isFunction: false,
+              valueNode: { type: 'Literal' },
             },
           },
         ],
@@ -81,6 +84,7 @@ export * from './all'
             meta: {
               localName: 'item',
               isFunction: undefined,
+              valueNode: { type: 'Identifier', name: 'source' },
             },
           },
         ],
@@ -101,7 +105,10 @@ export * from './all'
     type: 'default',
     kind: 'identifier',
     localName: undefined,
-    meta: { defaultExportIdentifierName: 'action' },
+    meta: {
+      defaultExportIdentifierName: 'action',
+      valueNode: { type: 'Identifier', name: 'action' },
+    },
   })
   expect(groups[6]).toMatchObject({ type: 'export-all' })
 })

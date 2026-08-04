@@ -92,6 +92,9 @@ export function validateNonAsyncFunction(
   if (
     node.type === 'ClassDeclaration' ||
     node.type === 'ClassExpression' ||
+    node.type === 'Literal' ||
+    node.type === 'ObjectExpression' ||
+    node.type === 'ArrayExpression' ||
     ((node.type === 'FunctionDeclaration' ||
       node.type === 'FunctionExpression' ||
       node.type === 'ArrowFunctionExpression') &&
