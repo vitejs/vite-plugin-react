@@ -147,6 +147,9 @@ export function scanModuleExports(
                   : undefined
               return {
                 node: declarator,
+                // uniformly handle destructured exports such as
+                //   export const { foo, bar } = ...
+                // even though associated `meta` doesn't make sense anymore
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,

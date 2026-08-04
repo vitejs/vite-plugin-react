@@ -146,10 +146,13 @@ export function transformWrapExport(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      // export async function action() {}
-      // ^^^^^^
-      // becomes a local declaration followed by a wrapper assignment and
-      // re-export at module end. A filtered declaration remains untouched.
+      // // input:
+      // export function f() {}
+      //
+      // // output:
+      // function f() {}                      << strip export
+      // f = __WRAP__(f, 'f')                 << emit wrapper
+      // export { $$module_0_binding_f as f } << emit export
       const [entry] = group.exports
       if (!filter(entry.exportName, entry.meta)) continue
       validateNonAsyncFunction(options, group.declaration)
@@ -160,10 +163,11 @@ export function transformWrapExport(
         new Set([entry.exportName]),
       )
     } else if (group.type === 'variable-declaration') {
+      // // input:
       // export const selected = init(), skipped = init()
-      // ^^^^^^^^^^^^
-      // becomes:
-      // let selected = init(), skipped = init()
+      //
+      // // output:
+      // let selected = init(), skipped = init()    << strip export
       // selected = __WRAP__(selected, 'selected')
       // export { selected }
       // export { skipped }
