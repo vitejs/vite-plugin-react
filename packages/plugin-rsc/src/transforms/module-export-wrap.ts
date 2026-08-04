@@ -184,12 +184,11 @@ export function transformModuleExportWrap(
       if (!filter(entry.exportName, meta)) continue
 
       // export function f() {}
-      // export class C {}
-      // ⬇️ (keep declarations in place and append wrapped bindings)
-      // function f() {}
-      // class C {}
-      // const $$module_0_binding_f = __WRAP__(f, 'f')
-      // export { $$module_0_binding_f as f }
+      // ^^^^^^
+      // ⬇️
+      // function f() {}.                               << strip export
+      // const $$module_0_binding_f = __WRAP__(f, 'f')  << emit wrapper
+      // export { $$module_0_binding_f as f }           << emit export
       if (group.directFunction) {
         validateNonAsyncFunction(options, group.directFunction.node)
       }
@@ -201,13 +200,15 @@ export function transformModuleExportWrap(
         group.directFunction?.originalName,
       )
     } else if (group.type === 'variable-declaration') {
-      // export const action = async () => {}, value = init()
-      // ⬇️ (keep initializers in place and append wrapped bindings)
-      // const action = async () => {}, value = init()
-      // const $$module_0_binding_action = __WRAP__(action, 'action')
-      // export { $$module_0_binding_action as action }
-      // const $$module_1_binding_value = __WRAP__(value, 'value')
-      // export { $$module_1_binding_value as value }
+      // export const first = async () => {}, second = init()
+      // ^^^^^^
+      // ⬇️
+      // const first = async () => {}, second = init()                 << strip export
+      // const $$module_0_binding_first = __WRAP__(first, 'first')     << emit wrapper
+      // export { $$module_0_binding_first as first }                  << emit export
+      // const $$module_1_binding_second = __WRAP__(second, 'second')  << emit wrapper
+      // export { $$module_1_binding_second as second }                << emit export
+
       const wrappedBindingNames = new Set<string>()
       const exportNames = group.declarators.flatMap((item) =>
         item.exports.map((entry) => entry.exportName),
@@ -240,11 +241,11 @@ export function transformModuleExportWrap(
       }
 
       if (wrappedBindingNames.size > 0) {
-        // export const selected = init(), skipped = init()
+        // export const selected = x, skipped = y
         // ^^^^^^
-        // ⬇️ (remove `export` and restore the unwrapped export separately)
-        // const selected = init(), skipped = init()
-        // export { skipped }
+        // ⬇️
+        // const selected = x, skipped = y  << strip export
+        // export { skipped }               << add back filtered-out exports
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
           if (!wrappedBindingNames.has(name)) {
