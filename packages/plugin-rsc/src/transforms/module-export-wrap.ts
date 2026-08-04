@@ -282,17 +282,15 @@ export function transformModuleExportWrap(
 
         let implementation = localName
         if (group.node.source) {
-          // export { remote as action } from './dep' with { type: 'json' }
-          // ⬇️ (preserve the source tail, including attributes)
-          // import { remote as $$module_0_implementation_action } from './dep' with { type: 'json' }
+          // export { remote as action } from './dep'
+          // ⬇️
+          // import { remote as $$module_0_implementation_action } from './dep'
           // const $$module_0_binding_action = __WRAP__($$module_0_implementation_action, 'action')
           // export { $$module_0_binding_action as action }
           implementation = createName('implementation', exportName)
-          const sourceTail = input
-            .slice(group.node.source.end, group.node.end)
-            .replace(/;?\s*$/, ';')
+          // TODO: Preserve import attributes from the original re-export.
           wrappedBindingCode.push(
-            `import { ${localName} as ${implementation} } from ${group.node.source.raw}${sourceTail}`,
+            `import { ${localName} as ${implementation} } from ${group.node.source.raw};`,
           )
         }
         emitWrappedBinding(implementation, exportName, meta)
