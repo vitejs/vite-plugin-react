@@ -149,16 +149,16 @@ export function transformWrapExport(
     if (group.type === 'declaration') {
       // export function f() {}
       // ⬇️
-      // function f() {}                      << strip export
-      // f = __WRAP__(f, 'f')                 << emit
-      // export { $$module_0_binding_f as f } << emit
-      const [entry] = group.exports
+      // function f() {}        << strip export
+      // f = __WRAP__(f, 'f')   << emit
+      // export { f }           << emit
+      const entry = group.export
       if (!filter(entry.exportName, entry.meta)) continue
       validateNonAsyncFunction(options, group.declaration)
       emitWrappedAssignments(
         group.node.start,
         group.declaration.start,
-        group.exports,
+        [entry],
         new Set([entry.exportName]),
       )
     } else if (group.type === 'variable-declaration') {
