@@ -245,3 +245,27 @@ export { iterated }
   expect(groups[0]?.exports[0]?.meta.parameters).toBeUndefined()
   expect(groups[1]?.exports[0]?.meta.parameters).toBeUndefined()
 })
+
+test('omits parameters for assignments from default parameter scope', async () => {
+  const ast = await parseAstAsync(`
+const reassigned = async (value) => {}
+function trigger(value = (reassigned = async (value, extra) => {})) {
+  var reassigned
+}
+export { reassigned }
+
+const stable = async (value) => {}
+function shadow(stable = (stable = other)) {}
+export { stable }
+`)
+
+  const groups = scanModuleExports(ast).filter(
+    (group) => group.type === 'specifiers',
+  )
+  expect(groups).toHaveLength(2)
+  expect(groups[0]?.exports[0]?.meta.parameters).toBeUndefined()
+  expect(groups[1]?.exports[0]?.meta.parameters).toEqual({
+    count: 1,
+    hasRest: false,
+  })
+})

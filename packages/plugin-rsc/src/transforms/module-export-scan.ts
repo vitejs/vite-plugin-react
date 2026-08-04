@@ -4,7 +4,9 @@ import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
   ExportSpecifier,
+  ArrowFunctionExpression,
   FunctionDeclaration,
+  FunctionExpression,
   Identifier,
   ClassDeclaration,
   Node,
@@ -324,12 +326,35 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
   const scopeTree = buildScopeTree(ast)
   const result = new Set<string>()
   const moduleVarNames = new Set<string>()
-  let functionDepth = 0
+  const functionStack: (
+    | FunctionDeclaration
+    | FunctionExpression
+    | ArrowFunctionExpression
+  )[] = []
 
   function add(ids: Identifier[]) {
     for (const id of ids) {
+      const declaredScope = scopeTree.referenceToDeclaredScope.get(id)
+      if (declaredScope === scopeTree.moduleScope) {
+        result.add(id.name)
+        continue
+      }
+
+      // The shared scope tree currently resolves default parameter expressions
+      // against body `var` declarations. Conservatively treat that ambiguous
+      // binding as the same-named module binding unless a parameter shadows it.
+      const parameterOwner = functionStack.findLast((fn) =>
+        fn.params.some(
+          (parameter) => parameter.start <= id.start && id.end <= parameter.end,
+        ),
+      )
       if (
-        scopeTree.referenceToDeclaredScope.get(id) === scopeTree.moduleScope
+        parameterOwner &&
+        declaredScope === scopeTree.nodeScope.get(parameterOwner) &&
+        scopeTree.moduleScope.declarations.has(id.name) &&
+        !parameterOwner.params.some((parameter) =>
+          extractNames(parameter).includes(id.name),
+        )
       ) {
         result.add(id.name)
       }
@@ -342,7 +367,7 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
         (node.type === 'ForInStatement' || node.type === 'ForOfStatement') &&
         node.left.type === 'VariableDeclaration' &&
         node.left.kind === 'var' &&
-        functionDepth === 0
+        functionStack.length === 0
       ) {
         for (const declarator of node.left.declarations) {
           for (const name of extractNames(declarator.id)) {
@@ -353,7 +378,7 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
       if (
         node.type === 'VariableDeclaration' &&
         node.kind === 'var' &&
-        functionDepth === 0
+        functionStack.length === 0
       ) {
         for (const declarator of node.declarations) {
           for (const name of extractNames(declarator.id)) {
@@ -382,7 +407,7 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
         node.type === 'FunctionExpression' ||
         node.type === 'ArrowFunctionExpression'
       ) {
-        functionDepth++
+        functionStack.push(node)
       }
     },
     leave(node) {
@@ -391,7 +416,7 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
         node.type === 'FunctionExpression' ||
         node.type === 'ArrowFunctionExpression'
       ) {
-        functionDepth--
+        functionStack.pop()
       }
     },
   })
