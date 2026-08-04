@@ -25,9 +25,10 @@ export async function ArgumentAdmission() {
   const restSecond = await rest('same', 'second extra')
 
   const capturedAlpha = withCapture('alpha')
+  const capturedAlphaAgain = withCapture('alpha')
   const capturedBeta = withCapture('beta')
   const captureFirst = await capturedAlpha('same')
-  const captureSecond = await capturedAlpha('same')
+  const captureSecond = await capturedAlphaAgain('same')
   const captureDifferent = await capturedBeta('same')
 
   return (
