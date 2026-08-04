@@ -251,7 +251,6 @@ export function transformModuleExportWrap(
         output.remove(group.node.start, group.declaration.start)
         for (const name of exportNames) {
           if (!wrappedBindingNames.has(name)) {
-            // TODO: inline exportBinding?
             wrappedBindingCode.push(exportBinding(name, name))
           }
         }
