@@ -269,3 +269,34 @@ export { stable }
     hasRest: false,
   })
 })
+
+test('omits parameters when direct eval can reassign module bindings', async () => {
+  const directEvalAst = await parseAstAsync(`
+const mutable = async (value) => {}
+eval(source)
+export { mutable }
+`)
+  const shadowedEvalAst = await parseAstAsync(`
+const stable = async (value) => {}
+function run(eval) {
+  eval(source)
+}
+export { stable }
+`)
+
+  const [directEval] = scanModuleExports(directEvalAst)
+  const [shadowedEval] = scanModuleExports(shadowedEvalAst)
+  expect(directEval?.type).toBe('specifiers')
+  expect(shadowedEval?.type).toBe('specifiers')
+  if (
+    directEval?.type !== 'specifiers' ||
+    shadowedEval?.type !== 'specifiers'
+  ) {
+    throw new Error('unexpected export groups')
+  }
+  expect(directEval.exports[0]?.meta.parameters).toBeUndefined()
+  expect(shadowedEval.exports[0]?.meta.parameters).toEqual({
+    count: 1,
+    hasRest: false,
+  })
+})

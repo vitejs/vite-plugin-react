@@ -392,6 +392,15 @@ function getReassignedModuleBindings(ast: Program): Set<string> {
       if (node.type === 'AssignmentExpression') {
         add(getAssignedIdentifiers(node.left))
       } else if (
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'eval' &&
+        !scopeTree.referenceToDeclaredScope.has(node.callee)
+      ) {
+        for (const name of scopeTree.moduleScope.declarations) {
+          result.add(name)
+        }
+      } else if (
         node.type === 'UpdateExpression' &&
         node.argument.type === 'Identifier'
       ) {
