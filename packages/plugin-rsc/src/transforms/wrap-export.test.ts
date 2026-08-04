@@ -281,13 +281,7 @@ export default () => {}
     const result = await testTransform(input, {
       filter: (_name, meta) => !!(meta.isFunction && meta.declName),
     })
-    expect(result).toMatchInlineSnapshot(`
-      "
-      const $$default = () => {}
-      ;
-      export { $$default as default };
-      "
-    `)
+    expect(result).toMatchInlineSnapshot(`false`)
   })
 
   test('filter defaultExportIdentifierName', async () => {
@@ -359,20 +353,30 @@ export default async function Page() {}
     `)
   })
 
-  test('filtered default exports are not validated or reported', async () => {
-    const input = `export default 1;`
+  test.each([
+    `export function action() {}`,
+    `export class Action {}`,
+    `export const action = 1`,
+    `const action = 1; export { action }`,
+    `export { action } from './dep'`,
+    `export default function action() {}`,
+    `export default function () {}`,
+    `export default class {}`,
+    `export default action`,
+    `export default 1`,
+  ])('fully filtered export is unchanged: %s', async (input) => {
     const ast = await parseAstAsync(input)
     const result = transformWrapExport(input, ast, {
-      runtime: (value, name) => `$$wrap(${value}, ${JSON.stringify(name)})`,
+      runtime: () => {
+        throw new Error('runtime called for filtered export')
+      },
       rejectNonAsyncFunction: true,
       filter: () => false,
     })
+
     expect(result.exportNames).toEqual([])
-    expect(result.output.toString()).toMatchInlineSnapshot(`
-      "const $$default = 1;;
-      export { $$default as default };
-      "
-    `)
+    expect(result.output.hasChanged()).toBe(false)
+    expect(result.output.toString()).toBe(input)
   })
 
   test('unknown identifier exports remain eligible for wrapping', async () => {

@@ -33,17 +33,18 @@ export function transformWrapExport(
   const toAppend: string[] = []
   const filter = options.filter ?? (() => true)
 
+  function filterExports<T extends ModuleExportEntry>(exports: T[]) {
+    return exports.map((item) => ({
+      ...item,
+      shouldWrap: filter(item.exportName, item.meta),
+    }))
+  }
+
   function wrapSimple(
     start: number,
     end: number,
-    exports: ModuleExportEntry[],
+    filteredExports: (ModuleExportEntry & { shouldWrap: boolean })[],
   ) {
-    const filteredExports = exports.map((item) => {
-      return {
-        ...item,
-        shouldWrap: filter(item.exportName, item.meta),
-      }
-    })
     exportNames.push(
       ...filteredExports
         .filter((item) => item.shouldWrap)
@@ -78,9 +79,10 @@ export function transformWrapExport(
   function wrapExport(
     name: string,
     exportName: string,
-    meta: ModuleExportMeta = {},
+    meta: ModuleExportMeta,
+    shouldWrap: boolean,
   ) {
-    if (!filter(exportName, meta)) {
+    if (!shouldWrap) {
       toAppend.push(`export { ${name} as ${exportName} }`)
       return
     }
@@ -98,18 +100,19 @@ export function transformWrapExport(
 
   for (const group of scanModuleExports(viteAst)) {
     if (group.type === 'declaration') {
-      const [entry] = group.exports
-      if (filter(entry.exportName, entry.meta)) {
-        validateNonAsyncFunction(options, group.declaration)
-      }
-      wrapSimple(group.node.start, group.declaration.start, group.exports)
+      const exports = filterExports(group.exports)
+      if (!exports.some((entry) => entry.shouldWrap)) continue
+
+      validateNonAsyncFunction(options, group.declaration)
+      wrapSimple(group.node.start, group.declaration.start, exports)
     } else if (group.type === 'variable-declaration') {
-      const exports: ModuleExportEntry[] = []
+      const exports: (ModuleExportEntry & { shouldWrap: boolean })[] = []
       let shouldWrap = false
       for (const declarator of group.declarators) {
-        exports.push(...declarator.exports)
-        const shouldWrapDeclarator = declarator.exports.some(
-          ({ exportName, meta }) => filter(exportName, meta),
+        const declaratorExports = filterExports(declarator.exports)
+        exports.push(...declaratorExports)
+        const shouldWrapDeclarator = declaratorExports.some(
+          (entry) => entry.shouldWrap,
         )
         if (shouldWrapDeclarator) {
           shouldWrap = true
@@ -129,9 +132,12 @@ export function transformWrapExport(
       }
       wrapSimple(group.node.start, group.declaration.start, exports)
     } else if (group.type === 'specifiers') {
+      const exports = filterExports(group.exports)
+      if (!exports.some((entry) => entry.shouldWrap)) continue
+
       if (group.node.source) {
         output.remove(group.node.start, group.node.end)
-        for (const entry of group.exports) {
+        for (const entry of exports) {
           tinyassert(entry.node.local.type === 'Identifier')
           if (entry.node.exported.type !== 'Identifier') {
             throw Object.assign(
@@ -146,11 +152,12 @@ export function transformWrapExport(
             `$$import_${entry.localName}`,
             entry.exportName,
             entry.meta,
+            entry.shouldWrap,
           )
         }
       } else {
         output.remove(group.node.start, group.node.end)
-        for (const entry of group.exports) {
+        for (const entry of exports) {
           tinyassert(entry.node.local.type === 'Identifier')
           if (entry.node.exported.type !== 'Identifier') {
             throw Object.assign(
@@ -158,7 +165,12 @@ export function transformWrapExport(
               { pos: entry.node.exported.start },
             )
           }
-          wrapExport(entry.localName, entry.exportName, entry.meta)
+          wrapExport(
+            entry.localName,
+            entry.exportName,
+            entry.meta,
+            entry.shouldWrap,
+          )
         }
       }
     } else if (group.type === 'export-all') {
@@ -171,6 +183,9 @@ export function transformWrapExport(
         })
       }
     } else if (group.type === 'default') {
+      const meta = group.meta
+      if (!filter('default', meta)) continue
+
       const localName = group.localName ?? '$$default'
       if (group.kind === 'named-declaration') {
         // preserve name scope for `function foo() {}` and `class Foo {}`
@@ -194,11 +209,8 @@ export function transformWrapExport(
           'const $$default = ',
         )
       }
-      const meta = group.meta
-      if (filter('default', meta)) {
-        validateNonAsyncFunction(options, group.node.declaration)
-      }
-      wrapExport(localName, 'default', meta)
+      validateNonAsyncFunction(options, group.node.declaration)
+      wrapExport(localName, 'default', meta, true)
     }
   }
 
