@@ -85,11 +85,12 @@ export function transformWrapExport(
    *
    * // output
    * async function action() {}
-   * action = __WRAP__(action, 'action') // maps to the `export` token
-   * export { action }
+   * action = __WRAP__(action, 'action')  << maps to the `export` token
+   * export { action }                    <<
    * ```
    */
   function rewriteDirectExports(
+    // start/end represents original `export` token range
     start: number,
     end: number,
     exports: ModuleExportEntry[],
@@ -120,6 +121,7 @@ export function transformWrapExport(
    * ```js
    * // existing source binding remains unchanged
    * const local = init()
+   * export { local as renamed }  // caller removes the original export
    *
    * // appended code
    * const $$wrap_local = __WRAP__(local, 'renamed')
@@ -132,7 +134,6 @@ export function transformWrapExport(
     meta: ModuleExportMeta = {},
   ) {
     exportNames.push(exportName)
-
     appendedCode.push(
       `const $$wrap_${name} = /* #__PURE__ */ ${options.runtime(
         name,
