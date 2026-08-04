@@ -93,6 +93,7 @@ export default async function Page() {}
     ['literal', `export const action = 1`],
     ['object', `export const action = {}`],
     ['array', `export const action = []`],
+    ['uninitialized variable', `export let action`],
   ])('rejects %s exports', async (_name, input) => {
     await expect(
       transform(input, { rejectNonAsyncFunction: true }),
