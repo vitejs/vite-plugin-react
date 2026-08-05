@@ -19,12 +19,17 @@ let cachedFnCacheEntries = new WeakMap<
   Record<string, Promise<StreamCacher>>
 >()
 
-export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
+export default function cacheWrapper(
+  fn: (...args: any[]) => Promise<unknown>,
+  argumentCount?: number,
+) {
   if (cachedFnMap.has(fn)) {
     return cachedFnMap.get(fn)!
   }
 
   async function cachedFn(...args: any[]): Promise<unknown> {
+    const admittedArgs =
+      argumentCount === undefined ? args : args.slice(0, argumentCount)
     let cacheEntries = cachedFnCacheEntries.get(cachedFn)
     if (!cacheEntries) {
       cacheEntries = {}
@@ -38,7 +43,7 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
-    const encodedArguments = await encodeReply(args, {
+    const encodedArguments = await encodeReply(admittedArgs, {
       temporaryReferences: clientTemporaryReferences,
     })
     const serializedCacheKey = await replyToCacheKey(encodedArguments)

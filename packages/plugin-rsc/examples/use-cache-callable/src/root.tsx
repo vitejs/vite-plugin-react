@@ -1,3 +1,4 @@
+import { FileDirectiveArgumentAdmissionServer } from './features/file-directive-argument-admission/server'
 import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirective } from './features/inline-directive/server'
@@ -9,6 +10,13 @@ const routes = [
     description:
       'This Server Component defines an inline cached function, captures a value, and passes the function to the client form.',
     Component: InlineDirective,
+  },
+  {
+    path: '/file-directive-argument-admission',
+    title: 'File directive argument admission',
+    description:
+      'A zero-parameter cached module export ignores FormData supplied by React.',
+    Component: FileDirectiveArgumentAdmissionServer,
   },
   {
     path: '/file-directive-from-server',

@@ -244,6 +244,35 @@ function defineTests(f: Fixture) {
       await expect(result).toHaveText('client import + beta')
     },
   )
+
+  test('file directive argument admission', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/file-directive-argument-admission'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('file-directive-argument-admission')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Ignored argument' })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // React supplies FormData to the zero-parameter function, but it does not
+    // participate in the cache key or invocation.
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('cached result')
+
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('cached result')
+  })
 }
 
 async function submit(page: Page, form: Locator) {
