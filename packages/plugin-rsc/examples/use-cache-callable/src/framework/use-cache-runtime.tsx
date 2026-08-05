@@ -32,6 +32,8 @@ export default function cacheWrapper(
   }
 
   async function cachedFn(...args: any[]): Promise<unknown> {
+    // Cache identity and execution must use the same admitted arguments so an
+    // omitted value cannot affect a result stored under another invocation's key.
     const admittedArgs =
       options.argumentCount === undefined
         ? args
