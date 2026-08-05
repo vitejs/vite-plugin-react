@@ -4,20 +4,45 @@ import type { ESTree } from 'vite'
 import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
 import { hasDirective, validateNonAsyncFunction } from './utils'
 
+/** Selects which statically discovered exports become proxies. */
 export type TransformProxyExportFilter = (
   name: string,
   meta: ModuleExportMeta,
 ) => boolean
 
 export type TransformProxyExportOptions = {
-  /** Required for source map and `keep` options */
+  /**
+   * Original module source used to preserve source mappings and initializer
+   * text. Required by `keep`.
+   */
   code?: string
+  /**
+   * Returns the proxy expression for an export name. In `keep` mode, `value`
+   * contains the original initializer for a single identifier declaration.
+   */
   runtime: (name: string, meta?: { value: string }) => string
+  /**
+   * Removes a bare `export *` instead of rejecting it. With `keep`, the
+   * declaration is retained.
+   * @default false
+   */
   ignoreExportAllDeclaration?: boolean
+  /** Rejects statically known values that are not async functions. */
   rejectNonAsyncFunction?: boolean
+  /**
+   * Selects exports before validation and proxy generation. Filtered exports
+   * are omitted from both the generated module and `exportNames`.
+   *
+   * Cannot be combined with `keep`.
+   * @default () => true
+   */
   filter?: TransformProxyExportFilter
   /**
-   * escape hatch for Waku's `allowServer`
+   * Retains non-export implementation code and passes a single identifier
+   * declaration's initializer to `runtime`. This is an escape hatch for Waku's
+   * `allowServer` transform.
+   *
+   * Requires `code` and cannot be combined with `filter`.
    * @default false
    */
   keep?: boolean
