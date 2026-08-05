@@ -1,0 +1,241 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js
+  s_21766829880a9d::t_be52c6355ca2b8 1
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.map.snap.md
+  s_21766829880a9d::t_cfd7375fc33fe2 1-10
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.snap.md
+  s_21766829880a9d::t_bb4ec28a2a1ea7 1-23
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js
+  s_21766829880a9d::t_66490c8e053fac 1-9
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.map.snap.md
+  s_21766829880a9d::t_5f09be295772ab 1-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.snap.md
+  s_21766829880a9d::t_6bbb46fd19e733 1-43
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js
+  s_21766829880a9d::t_906353de3b7db2 1-4
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.map.snap.md
+  s_21766829880a9d::t_9102da0290e99b 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.snap.md
+  s_21766829880a9d::t_970f9dcf47dd16 1-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js
+  s_21766829880a9d::t_6facb005ba4b0f 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.map.snap.md
+  s_21766829880a9d::t_293f22ac83b4c6 1-18
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.snap.md
+  s_21766829880a9d::t_a8e974d3dc4f2a 1-36
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js
+  s_21766829880a9d::t_4bce27cce9c743 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.map.snap.md
+  s_21766829880a9d::t_69c24244d1aac4 1-17
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.snap.md
+  s_21766829880a9d::t_ece334578b36f9 1-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js
+  s_21766829880a9d::t_24846b20659d0f 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js.map.snap.md
+  s_21766829880a9d::t_9ab073993214be 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js.snap.md
+  s_21766829880a9d::t_cdba5b0c6c8d10 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js
+  s_21766829880a9d::t_eaf2ee2c6ca5a3 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.map.snap.md
+  s_21766829880a9d::t_4a760a2bba298c 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.snap.md
+  s_21766829880a9d::t_e44913b37d25af 1-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js
+  s_21766829880a9d::t_7fbc24bc237e8f 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js.map.snap.md
+  s_21766829880a9d::t_b14e03ab73b8b8 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js.snap.md
+  s_21766829880a9d::t_97453887f14ddb 1-21
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js
+  s_21766829880a9d::t_bf271dafde528c 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js.map.snap.md
+  s_21766829880a9d::t_8d1ffa6308092e 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js.snap.md
+  s_21766829880a9d::t_ffb848ed1d841e 1-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js
+  s_21766829880a9d::t_8e58c91ffe02dd 1-12
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.map.snap.md
+  s_21766829880a9d::t_40309f354b9db1 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.snap.md
+  s_21766829880a9d::t_f5770d474278c8 1-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js
+  s_21766829880a9d::t_771c6d943ff926 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js.map.snap.md
+  s_21766829880a9d::t_3fa57fc000cb51 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js.snap.md
+  s_21766829880a9d::t_e9cc2a586f08e2 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js
+  s_21766829880a9d::t_94d0d321cd14e7 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js.map.snap.md
+  s_21766829880a9d::t_01d9291a0ce47d 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js.snap.md
+  s_21766829880a9d::t_a92d6faf19256a 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.map.snap.md
+  s_21766829880a9d::t_3d44f7721936b2 35-42
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.snap.md
+  s_21766829880a9d::t_86b76702c8eb17 64-84
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.map.snap.md
+  s_21766829880a9d::t_7cf6ef00abf111 22-27
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.snap.md
+  s_21766829880a9d::t_5ec0715d074e9c 42-56
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.md
+  s_21766829880a9d::t_83c25654b7d67a 26-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_21766829880a9d::t_ad0c87a2f68765 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.map.snap.md
+  s_21766829880a9d::t_ef6d76a04c3a5e 26-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.snap.md
+  s_21766829880a9d::t_9ef73d458fd8ab 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier-reassignment.js.map.snap.md
+  s_21766829880a9d::t_da9209fda70002 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier-reassignment.js.snap.md
+  s_21766829880a9d::t_5bd823ba29603a 48-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.map.snap.md
+  s_21766829880a9d::t_2c5a0f7b067a07 27-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_21766829880a9d::t_fd4f6a9b5cee67 54-70
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.md
+  s_21766829880a9d::t_6560255a236ffe 24-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_21766829880a9d::t_889915e08cf96f 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.map.snap.md
+  s_21766829880a9d::t_f5f80b596b83eb 24-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_21766829880a9d::t_632b08d1c8267f 46-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.map.snap.md
+  s_21766829880a9d::t_45d80bbe605b56 22-27
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.snap.md
+  s_21766829880a9d::t_1839a249834e83 47-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias-reassignment.js.map.snap.md
+  s_21766829880a9d::t_b3e3a79e26b594 21-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias-reassignment.js.snap.md
+  s_21766829880a9d::t_03ebafcc0a5d69 47-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.map.snap.md
+  s_21766829880a9d::t_153517d4f925c9 23-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_21766829880a9d::t_35a7fea71ba1fd 53-69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.map.snap.md
+  s_21766829880a9d::t_d8300645776604 26-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.snap.md
+  s_21766829880a9d::t_46f19801747f74 54-72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.map.snap.md
+  s_21766829880a9d::t_c27bb227494af2 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.snap.md
+  s_21766829880a9d::t_babdd96ff078a1 44-59
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.map.snap.md
+  s_21766829880a9d::t_636c279dee7e6e 26-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.snap.md
+  s_21766829880a9d::t_310220122e770b 56-73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.map.snap.md
+  s_21766829880a9d::t_af44464ef67c53 34-40
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_21766829880a9d::t_7950df54f65ea0 64-81
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.map.snap.md
+  s_21766829880a9d::t_e47bec6abd097b 24-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_21766829880a9d::t_01df4834d0ae16 47-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.md
+  s_21766829880a9d::t_d241bb461d1d52 23-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_21766829880a9d::t_938ec8ed1e24b2 47-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.map.snap.md
+  s_21766829880a9d::t_d51b9f606e0750 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_21766829880a9d::t_ba519cc6386c01 53-69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_21766829880a9d::t_375c703d528133 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_21766829880a9d::t_f93a7c60aa7aca 50-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport-attributes.js.map.snap.md
+  s_21766829880a9d::t_c5a9e11939169f 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport-attributes.js.snap.md
+  s_21766829880a9d::t_a1a64706f95bac 43-57
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.map.snap.md
+  s_21766829880a9d::t_f272a0a39c6346 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.md
+  s_21766829880a9d::t_2dc18d0a4db6c4 43-57
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.md
+  s_21766829880a9d::t_768f810733d50a 32-38
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_21766829880a9d::t_8336cac8236b95 58-75
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js
+  s_21766829880a9d::t_7c34b808b3cc9f 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js.snap.md
+  s_21766829880a9d::t_157575e748662a 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js
+  s_21766829880a9d::t_cfa5b995ea450b 1-9
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js.snap.md
+  s_21766829880a9d::t_dbaa670c239716 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js
+  s_21766829880a9d::t_279174ec187cfa 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js.snap.md
+  s_21766829880a9d::t_6ce694265d52b8 1-47
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js
+  s_21766829880a9d::t_da7b057c1edd6f 1-7
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js.snap.md
+  s_21766829880a9d::t_2815e61e32f3e5 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js
+  s_21766829880a9d::t_0fd0e48eb982ee 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js.snap.md
+  s_21766829880a9d::t_bea2dc4ce8b761 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js
+  s_21766829880a9d::t_b2f0f72e9fe9b1 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js.snap.md
+  s_21766829880a9d::t_242562d3a10a4e 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js
+  s_21766829880a9d::t_41fa8eda59996b 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js.snap.md
+  s_21766829880a9d::t_a34dccde59fdb8 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js
+  s_21766829880a9d::t_974a251f1aefe4 1-28
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js.snap.md
+  s_21766829880a9d::t_1863d081008cd8 1-84
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js
+  s_21766829880a9d::t_bfee27d5ed5c3b 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js.snap.md
+  s_21766829880a9d::t_3424a5a563fc3d 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js
+  s_21766829880a9d::t_042d13973369cb 1-12
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js.snap.md
+  s_21766829880a9d::t_5b857baa953095 1-40
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js
+  s_21766829880a9d::t_a0afa0228d556d 1-17
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js.snap.md
+  s_21766829880a9d::t_fbba7099556f05 1-53
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js
+  s_21766829880a9d::t_b932ee67fcde63 1-15
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js.snap.md
+  s_21766829880a9d::t_90f763b92993c9 1-52
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js
+  s_21766829880a9d::t_4e37afe11baf58 1-42
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js.snap.md
+  s_21766829880a9d::t_39dea0fb24b143 1-92
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_21766829880a9d::t_4bfcfbda0607c1 4,131-167
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_21766829880a9d::t_394ed62620894e 13,267,282-287
+packages/plugin-rsc/src/transforms/test-utils.ts
+  s_21766829880a9d::t_082662e87b630e 9-41
+packages/plugin-rsc/src/transforms/utils.test.ts
+  s_21766829880a9d::t_c2e0f1baefe36b 4,7-21
+packages/plugin-rsc/src/transforms/utils.ts
+  s_21766829880a9d::t_c766219af56352 1,5-10,16
+packages/plugin-rsc/src/transforms/waku.test.ts
+  s_21766829880a9d::t_b1f5caa1f1e81c 1,3,6,8,11-17,23-29,31-32,36-62,66-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "792e8ed2448ade0b49c15b2abac57893e58d6425",
+  "prompts": {},
+  "sessions": {
+    "s_21766829880a9d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_030c640c4ffeLAAQkhurJOPX1O",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
