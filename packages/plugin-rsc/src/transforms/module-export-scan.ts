@@ -150,8 +150,9 @@ export function scanModuleExports(
                 // uniformly handle destructured exports such as
                 //   export const { foo, bar } = ...
                 // even though associated `meta` doesn't make sense anymore
-                // TODO: Treat destructured bindings as unknown instead of
-                // using the container initializer as each `valueNode`.
+                // TODO: Treat destructured bindings as unknown for both
+                // "use server" and "use cache" instead of using the container
+                // initializer as each binding's `valueNode`.
                 // See the destructured-binding proxy export regression test.
                 // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1787-L1815
                 exports: extractNames(declarator.id).map((name) => ({
