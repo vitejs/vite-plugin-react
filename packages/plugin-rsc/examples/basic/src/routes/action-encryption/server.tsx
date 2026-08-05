@@ -1,11 +1,12 @@
 let result = 'not called'
+const expectedSecret = 'server-action-capture-secret'
 
 function isValidSecret(value: string) {
-  return value.length === 28
+  return value === expectedSecret
 }
 
 export function TestServerActionEncryption() {
-  const secret = 'server-action-capture-secret'
+  const secret = expectedSecret
 
   return (
     <form
