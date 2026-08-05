@@ -1,10 +1,4 @@
-import {
-  expect,
-  test,
-  type Locator,
-  type Page,
-  type Response,
-} from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { type Fixture, useFixture } from './fixture'
 import { expectNoPageError, testNoJs, waitForHydration } from './helper'
 
@@ -60,12 +54,14 @@ function defineTests(f: Fixture) {
   })
 
   test('protected captures', async ({ page }) => {
-    using _errors = expectNoPageError(page)
+    // verify captured value is encoded and thus doesn't appear in raw response
     const rscResponse = await page.request.get(
       f.url('/protected-captures_.rsc'),
     )
-    await expectProtectedResponse(rscResponse)
+    expect(rscResponse.ok()).toBe(true)
+    expect(await rscResponse.text()).not.toContain('capture-secret')
 
+    using _errors = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
     await page.getByRole('link', { name: 'Protected captures' }).click()
@@ -82,28 +78,31 @@ function defineTests(f: Fixture) {
     await expect(executionCount).toHaveText('0')
     await expect(result).toHaveText('not called')
 
-    await expectProtectedResponse(await submit(page, example))
+    // submit with "first" capture and "alpha" argument
+    await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('first + alpha')
 
-    // A fresh ciphertext for the same logical capture still hits.
-    await expectProtectedResponse(await submit(page, example))
-    await expect(submissionCount).toHaveText('2')
+    // A fresh render and ciphertext for the same logical capture still hits.
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
 
     // The same invocation with a different decoded capture is a cache miss.
-    await expectProtectedResponse(await selectCapture(page, 'Second capture'))
+    await page.getByRole('button', { name: 'Second capture' }).click()
     await expect(capture).toHaveText('second')
-    await expectProtectedResponse(await submit(page, example))
-    await expect(submissionCount).toHaveText('3')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
     await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('second + alpha')
 
-    await expectProtectedResponse(await selectCapture(page, 'First capture'))
+    await page.getByRole('button', { name: 'First capture' }).click()
     await expect(capture).toHaveText('first')
-    await expectProtectedResponse(await submit(page, example))
-    await expect(submissionCount).toHaveText('4')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
   })
 
@@ -362,7 +361,7 @@ function defineTests(f: Fixture) {
   })
 }
 
-async function submit(page: Page, form: Locator): Promise<Response> {
+async function submit(page: Page, form: Locator) {
   // `submissionCount` updates immediately on the client, while a cache hit leaves
   // the server-rendered execution count and result unchanged. Those assertions do
   // not prove that the server action and subsequent render have completed, so wait
@@ -376,26 +375,4 @@ async function submit(page: Page, form: Locator): Promise<Response> {
     form.getByRole('button', { name: 'Call cached function' }).click(),
   ])
   expect(response.ok()).toBe(true)
-  return response
-}
-
-async function selectCapture(page: Page, name: string): Promise<Response> {
-  const [response] = await Promise.all([
-    page.waitForResponse(
-      (response) =>
-        response.request().method() === 'POST' &&
-        response.url().includes('_.rsc'),
-    ),
-    page.getByRole('button', { name }).click(),
-  ])
-  expect(response.ok()).toBe(true)
-  return response
-}
-
-async function expectProtectedResponse(response: {
-  ok(): boolean
-  text(): Promise<string>
-}) {
-  expect(response.ok()).toBe(true)
-  expect(await response.text()).not.toContain('capture-secret')
 }

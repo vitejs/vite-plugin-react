@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 export function ProtectedCapturesClient(props: {
-  action: (formData: FormData) => Promise<void>
+  action: (argument: string) => Promise<void>
   executionCount: number
   resetAction: () => Promise<void>
   result: string
@@ -13,7 +13,7 @@ export function ProtectedCapturesClient(props: {
   return (
     <>
       <form
-        action={props.action}
+        action={(formData) => props.action(String(formData.get('argument')))}
         data-testid="protected-captures"
         onSubmit={() => setSubmissions((value) => value + 1)}
       >

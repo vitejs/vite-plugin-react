@@ -6,9 +6,8 @@ export function ProtectedCaptures() {
   const captured =
     state.capture === 'first' ? 'capture-secret-one' : 'capture-secret-two'
 
-  async function cachedAction(formData: FormData) {
+  async function cachedAction(argument: string) {
     'use cache'
-    const argument = String(formData.get('argument'))
     state.executionCount++
     state.result = `${captured.endsWith('one') ? 'first' : 'second'} + ${argument}`
   }
