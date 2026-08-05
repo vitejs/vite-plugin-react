@@ -3,6 +3,8 @@ import type { Identifier, Node, Pattern, Program } from 'estree'
 import type { ESTree } from 'vite'
 
 export function isDirective(node: Node): node is Directive {
+  // Directive is not its own `type`
+  // https://github.com/estree/estree/blob/master/es5.md#directive
   return node.type === 'ExpressionStatement' && 'directive' in node
 }
 

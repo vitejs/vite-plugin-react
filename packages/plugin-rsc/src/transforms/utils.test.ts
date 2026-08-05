@@ -11,6 +11,8 @@ describe(hasDirective, () => {
     [`import './setup.js'; 'use server'; export {};`, false],
     [`('use server'); export {};`, false],
     [`; 'use server'; export {};`, false],
+    [`'use client'; export {};`, false],
+    [`'use strict'; 'use client'; export {};`, false],
   ])('recognizes directive prologues', async (input, expected) => {
     const ast = await parseAstAsync(input)
     expect(hasDirective(ast.body, 'use server')).toBe(expected)
