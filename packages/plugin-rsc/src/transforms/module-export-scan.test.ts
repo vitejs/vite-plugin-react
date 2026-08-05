@@ -72,7 +72,7 @@ export * from './all'
             meta: {
               declName: 'item',
               isFunction: undefined,
-              valueNode: { type: 'Identifier', name: 'source' },
+              valueNode: undefined,
             },
           },
         ],

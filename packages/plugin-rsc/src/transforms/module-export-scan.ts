@@ -20,7 +20,7 @@ export type ModuleExportMeta = {
    * available.
    *
    * - The declaration for a function or class export.
-   * - The initializer for a variable export.
+   * - The initializer for a direct identifier variable export.
    * - The declaration expression for a default export.
    * - `undefined` for export specifiers and re-exports.
    */
@@ -147,16 +147,18 @@ export function scanModuleExports(
                   : undefined
               return {
                 node: declarator,
-                // uniformly handle destructured exports such as
-                //   export const { foo, bar } = ...
-                // even though associated `meta` doesn't make sense anymore
+                // Destructured bindings remain statically unknown because the
+                // initializer is not the value of each individual export.
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,
                   meta: {
                     declName: name,
                     isFunction,
-                    valueNode: declarator.init ?? undefined,
+                    valueNode:
+                      declarator.id.type === 'Identifier'
+                        ? (declarator.init ?? undefined)
+                        : undefined,
                   },
                 })),
               }

@@ -392,6 +392,18 @@ export const tags = []
     `)
   })
 
+  test('filter treats destructured bindings as unknown', async () => {
+    const input = `export const { cached } = { cached: async () => {} }`
+    const ast = await parseAstAsync(input)
+    const result = transformWrapExport(input, ast, {
+      runtime: (value) => `$$wrap(${value})`,
+      rejectNonAsyncFunction: true,
+      filter: (_name, meta) => meta.valueNode?.type !== 'ObjectExpression',
+    })
+
+    expect(result.exportNames).toEqual(['cached'])
+  })
+
   test('filtered exports are not validated or reported', async () => {
     const input = `
 export const revalidate = 1;

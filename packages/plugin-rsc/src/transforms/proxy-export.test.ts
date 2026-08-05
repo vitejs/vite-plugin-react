@@ -1,11 +1,14 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
-import { transformProxyExport } from './proxy-export'
+import {
+  transformProxyExport,
+  type TransformProxyExportOptions,
+} from './proxy-export'
 import { transformWrapExport } from './wrap-export'
 
 async function testTransform(
   input: string,
-  options?: { keep?: boolean; ignoreExportAllDeclaration?: boolean },
+  options?: Partial<TransformProxyExportOptions>,
 ) {
   const ast = await parseAstAsync(input)
   const result = transformProxyExport(ast, {
@@ -82,6 +85,62 @@ export const { x, y: [z] } = { x: 0, y: [1] };
       ",
       }
     `)
+  })
+
+  test('filter value node', async () => {
+    const input = `\
+export const cached = async () => {}, metadata = {}, tags = []
+export const unknown = createCached()
+export const primitive = 0
+`
+    const result = await testTransform(input, {
+      filter: (_name, meta) =>
+        meta.valueNode?.type !== 'ObjectExpression' &&
+        meta.valueNode?.type !== 'ArrayExpression',
+    })
+
+    expect(result.exportNames).toEqual(['cached', 'unknown', 'primitive'])
+    expect(result.output).toMatchInlineSnapshot(`
+      "export const cached = /* #__PURE__ */ $$proxy("<id>", "cached");
+
+      export const unknown = /* #__PURE__ */ $$proxy("<id>", "unknown");
+
+      export const primitive = /* #__PURE__ */ $$proxy("<id>", "primitive");
+
+      "
+    `)
+  })
+
+  test('filter runs before validation', async () => {
+    const input = `export const cached = async () => {}, metadata = {}`
+    const ast = await parseAstAsync(input)
+    const options: TransformProxyExportOptions = {
+      code: input,
+      runtime: (name) => `$$proxy(${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: (_name, meta) => meta.valueNode?.type !== 'ObjectExpression',
+    }
+
+    expect(() => transformProxyExport(ast, options)).not.toThrow()
+
+    const invalidInput = `${input}, primitive = 0`
+    const invalidAst = await parseAstAsync(invalidInput)
+    expect(() =>
+      transformProxyExport(invalidAst, { ...options, code: invalidInput }),
+    ).toThrow('unsupported non async function')
+  })
+
+  test('filter treats destructured bindings as unknown', async () => {
+    const input = `export const { cached } = { cached: async () => {} }`
+    const ast = await parseAstAsync(input)
+    const result = transformProxyExport(ast, {
+      code: input,
+      runtime: (name) => `$$proxy(${JSON.stringify(name)})`,
+      rejectNonAsyncFunction: true,
+      filter: (_name, meta) => meta.valueNode?.type !== 'ObjectExpression',
+    })
+
+    expect(result.exportNames).toEqual(['cached'])
   })
 
   test('default function', async () => {

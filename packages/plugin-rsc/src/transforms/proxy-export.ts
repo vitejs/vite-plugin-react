@@ -1,7 +1,13 @@
 import type { Node, Program } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
-import { extractNames, hasDirective, validateNonAsyncFunction } from './utils'
+import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
+import { hasDirective, validateNonAsyncFunction } from './utils'
+
+export type TransformProxyExportFilter = (
+  name: string,
+  meta: ModuleExportMeta,
+) => boolean
 
 export type TransformProxyExportOptions = {
   /** Required for source map and `keep` options */
@@ -9,6 +15,7 @@ export type TransformProxyExportOptions = {
   runtime: (name: string, meta?: { value: string }) => string
   ignoreExportAllDeclaration?: boolean
   rejectNonAsyncFunction?: boolean
+  filter?: TransformProxyExportFilter
   /**
    * escape hatch for Waku's `allowServer`
    * @default false
@@ -46,6 +53,7 @@ export function transformProxyExport(
   }
   const output = new MagicString(options.code ?? ' '.repeat(ast.end))
   const exportNames: string[] = []
+  const filter = options.filter ?? (() => true)
 
   function createExport(node: Node, names: string[]) {
     exportNames.push(...names)
@@ -59,97 +67,89 @@ export function transformProxyExport(
     output.update(node.start, node.end, newCode)
   }
 
-  for (const node of ast.body) {
-    if (node.type === 'ExportNamedDeclaration') {
-      if (node.declaration) {
-        if (
-          node.declaration.type === 'FunctionDeclaration' ||
-          node.declaration.type === 'ClassDeclaration'
-        ) {
-          /**
-           * export function foo() {}
-           */
-          validateNonAsyncFunction(options, node.declaration)
-          createExport(node, [node.declaration.id.name])
-        } else if (node.declaration.type === 'VariableDeclaration') {
-          /**
-           * export const foo = 1, bar = 2
-           */
-          for (const decl of node.declaration.declarations) {
-            if (decl.init) validateNonAsyncFunction(options, decl.init)
-          }
-          if (options.keep && options.code) {
-            if (node.declaration.declarations.length === 1) {
-              const decl = node.declaration.declarations[0]!
-              if (decl.id.type === 'Identifier' && decl.init) {
-                const name = decl.id.name
-                const value = options.code.slice(decl.init.start, decl.init.end)
-                const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
-                  name,
-                  { value },
-                )};`
-                output.update(node.start, node.end, newCode)
-                exportNames.push(name)
-                continue
-              }
-            }
-          }
-          const names = node.declaration.declarations.flatMap((decl) =>
-            extractNames(decl.id),
-          )
-          createExport(node, names)
-        } else {
-          node.declaration satisfies never
-        }
+  const exportNodes = new Set<Node>()
+  for (const group of scanModuleExports(viteAst)) {
+    const node = group.node as Node
+    exportNodes.add(node)
+
+    if (group.type === 'declaration') {
+      const entry = group.export
+      if (filter(entry.exportName, entry.meta)) {
+        validateNonAsyncFunction(options, group.declaration)
+        createExport(node, [entry.exportName])
       } else {
-        /**
-         * export { foo, bar as car } from './foo'
-         * export { foo, bar as car }
-         */
-        const names: string[] = []
-        for (const spec of node.specifiers) {
-          if (spec.exported.type !== 'Identifier') {
+        createExport(node, [])
+      }
+    } else if (group.type === 'variable-declaration') {
+      const selectedNames: string[] = []
+      for (const declarator of group.declarators) {
+        const names = declarator.exports
+          .filter((entry) => filter(entry.exportName, entry.meta))
+          .map((entry) => entry.exportName)
+        if (
+          names.length > 0 &&
+          declarator.node.id.type === 'Identifier' &&
+          declarator.node.init
+        ) {
+          validateNonAsyncFunction(options, declarator.node.init)
+        }
+        selectedNames.push(...names)
+      }
+      if (options.keep && options.code && selectedNames.length === 1) {
+        if (group.declaration.declarations.length === 1) {
+          const decl = group.declaration.declarations[0]!
+          if (decl.id.type === 'Identifier' && decl.init) {
+            const name = decl.id.name
+            const value = options.code.slice(decl.init.start, decl.init.end)
+            const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
+              name,
+              { value },
+            )};`
+            output.update(node.start, node.end, newCode)
+            exportNames.push(name)
+            continue
+          }
+        }
+      }
+      createExport(node, selectedNames)
+    } else if (group.type === 'specifiers') {
+      const names = group.exports
+        .filter((entry) => {
+          if (entry.node.exported.type !== 'Identifier') {
             throw Object.assign(
               new Error('unsupported string literal export name'),
-              { pos: spec.exported.start },
+              { pos: entry.node.exported.start },
             )
           }
-          names.push(spec.exported.name)
-        }
-        createExport(node, names)
-      }
-      continue
-    }
-
-    /**
-     * export * as ns from './foo'
-     * export * from './foo'
-     */
-    if (node.type === 'ExportAllDeclaration') {
-      if (node.exported?.type === 'Identifier') {
-        createExport(node, [node.exported.name])
-        continue
-      }
-      if (!options.ignoreExportAllDeclaration) {
+          return filter(entry.exportName, entry.meta)
+        })
+        .map((entry) => entry.exportName)
+      createExport(node, names)
+    } else if (group.type === 'export-all') {
+      if (group.node.exported?.type === 'Identifier') {
+        const name = group.node.exported.name
+        createExport(node, filter(name, {}) ? [name] : [])
+      } else if (!options.ignoreExportAllDeclaration) {
         throw new Error('unsupported ExportAllDeclaration')
+      } else if (!options.keep) {
+        output.remove(node.start, node.end)
+      }
+    } else if (group.type === 'default') {
+      if (filter('default', group.meta)) {
+        validateNonAsyncFunction(options, group.node.declaration)
+        createExport(node, ['default'])
+      } else {
+        createExport(node, [])
       }
     }
+  }
 
-    /**
-     * export default function foo() {}
-     * export default class Foo {}
-     * export default () => {}
-     */
-    if (node.type === 'ExportDefaultDeclaration') {
-      validateNonAsyncFunction(options, node.declaration)
-      createExport(node, ['default'])
-      continue
+  if (!options.keep) {
+    for (const node of ast.body) {
+      if (!exportNodes.has(node)) {
+        output.remove(node.start, node.end)
+      }
     }
-
-    if (options.keep) continue
-
-    // remove all other nodes
-    output.remove(node.start, node.end)
   }
 
   return { exportNames, output }

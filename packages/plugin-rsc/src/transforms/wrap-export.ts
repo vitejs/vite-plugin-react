@@ -189,10 +189,12 @@ export function transformWrapExport(
             selectedExportNames.has(exportName),
           )
         ) {
-          if (declarator.node.init) {
-            validateNonAsyncFunction(options, declarator.node.init)
-          } else {
-            rejectNonAsyncFunction(options, declarator.node.start)
+          if (declarator.node.id.type === 'Identifier') {
+            if (declarator.node.init) {
+              validateNonAsyncFunction(options, declarator.node.init)
+            } else {
+              rejectNonAsyncFunction(options, declarator.node.start)
+            }
           }
         }
       }
