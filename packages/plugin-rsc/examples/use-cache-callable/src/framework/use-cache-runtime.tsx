@@ -61,20 +61,20 @@ export default function cacheWrapper(
     const encodedArguments = await encodeReply(admittedArgs, {
       temporaryReferences: clientTemporaryReferences,
     })
+    let encodedCacheArguments = encodedArguments
     const firstArgument = admittedArgs[0]
-    const cacheArguments = isCacheCaptureEnvelope(firstArgument)
-      ? [
-          cacheCaptureType,
-          ...(await decodeCacheCaptures(firstArgument)),
-          ...admittedArgs.slice(1),
-        ]
-      : admittedArgs
-    const encodedCacheArguments =
-      cacheArguments === admittedArgs
-        ? encodedArguments
-        : await encodeReply(cacheArguments, {
-            temporaryReferences: createClientTemporaryReferenceSet(),
-          })
+    if (isCacheCaptureEnvelope(firstArgument)) {
+      const cacheArguments = [
+        cacheCaptureType,
+        ...(await decodeCacheCaptures(firstArgument)),
+        ...admittedArgs.slice(1),
+      ]
+      // Re-encode decoded captures so cache identity reflects their logical values
+      // rather than the randomized ciphertext used by the transport arguments.
+      encodedCacheArguments = await encodeReply(cacheArguments, {
+        temporaryReferences: createClientTemporaryReferenceSet(),
+      })
+    }
     const serializedCacheKey = await replyToCacheKey(encodedCacheArguments)
 
     // cache `fn` result as stream
