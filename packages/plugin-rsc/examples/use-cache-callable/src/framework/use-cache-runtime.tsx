@@ -57,20 +57,22 @@ export default function cacheWrapper(
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
-    const encodedArguments = await encodeReply(admittedArgs, {
+    let executionArguments = admittedArgs
+    let cacheArguments = admittedArgs
+    const firstArgument = admittedArgs[0]
+    if (isCacheCaptureEnvelope(firstArgument)) {
+      const captures = await decryptCacheCaptures(firstArgument)
+      const invocationArguments = admittedArgs.slice(1)
+      // The private implementation receives the decoded capture array, while the
+      // cache key retains the same flattened logical argument shape as direct captures.
+      executionArguments = [captures, ...invocationArguments]
+      cacheArguments = [...captures, ...invocationArguments]
+    }
+    const encodedArguments = await encodeReply(executionArguments, {
       temporaryReferences: clientTemporaryReferences,
     })
     let encodedCacheArguments = encodedArguments
-    // Re-encode decrypted captures so cache identity reflects their logical values
-    // rather than the randomized ciphertext used by the transport arguments.
-    const firstArgument = admittedArgs[0]
-    if (isCacheCaptureEnvelope(firstArgument)) {
-      // TODO: On a cache miss, the hoister-generated implementation decrypts the
-      // original envelope again. A tighter adapter could reuse these captures.
-      const cacheArguments = [
-        ...(await decryptCacheCaptures(firstArgument)),
-        ...admittedArgs.slice(1),
-      ]
+    if (cacheArguments !== executionArguments) {
       encodedCacheArguments = await encodeReply(cacheArguments, {
         temporaryReferences: createClientTemporaryReferenceSet(),
       })
@@ -174,7 +176,7 @@ export function encryptCacheCaptures(
   }
 }
 
-export async function decryptCacheCaptures(
+async function decryptCacheCaptures(
   envelope: CacheCaptureEnvelope,
 ): Promise<unknown[]> {
   const { encrypted } = envelope
