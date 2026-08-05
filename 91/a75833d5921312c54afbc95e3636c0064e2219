@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/waku.test.ts
+  s_0ed0e786e10e04::t_43e95b88f63fb4 1,15-18,23-34,41-44,52-65,72-75,82-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "91a75833d5921312c54afbc95e3636c0064e2219",
+  "prompts": {},
+  "sessions": {
+    "s_0ed0e786e10e04": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0306c7980ffeGs4CSWDQ0xqGmD",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
