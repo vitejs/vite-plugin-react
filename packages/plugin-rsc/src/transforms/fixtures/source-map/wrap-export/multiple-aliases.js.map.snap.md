@@ -23,3 +23,10 @@
 [unmapped] --> (8:0) "registerServerReference(value, \"first\");\n"
 [unmapped] --> (9:0) "registerServerReference(value, \"second\");"
 ```
+
+## proxy-export
+
+```txt
+(6:0) "export { value as first, value as second }\n" --> (4:0) "export const first = /* #__PURE__ */ createServerReference(\"first\");\n"
+(6:0) "export { value as first, value as second }\n" --> (5:0) "export const second = /* #__PURE__ */ createServerReference(\"second\");\n"
+```

@@ -50,3 +50,20 @@ async function action() {
 registerServerReference(action, "action");
 export { action };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** action
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzYACgoKCmV4cG9ydCBjb25zdCBhY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJhY3Rpb24iKTsKCjE3OQB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG52b2lkIGFjdGlvblxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gYWN0aW9uKCkge1xuICByZXR1cm4gJ2FjdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7OztBQUlBOzsifQ==)
+
+```js
+
+
+
+
+export const action = /* #__PURE__ */ createServerReference("action");
+
+```

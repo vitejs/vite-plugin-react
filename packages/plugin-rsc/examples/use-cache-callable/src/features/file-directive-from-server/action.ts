@@ -2,10 +2,10 @@
 
 import { state } from './state'
 
-// Ordinary values remain available from "use cache" modules without becoming
-// callable server references.
-export const metadata = { title: 'cached metadata' }
-export const tags = ['cache']
+// Next.js excludes statically known object and array exports from "use cache"
+// server-reference handling. The transform filter mirrors that narrow case.
+export const objectValue = { text: 'object' }
+export const arrayValue = ['array']
 
 export async function cachedFromServer(formData: FormData) {
   const argument = String(formData.get('argument'))

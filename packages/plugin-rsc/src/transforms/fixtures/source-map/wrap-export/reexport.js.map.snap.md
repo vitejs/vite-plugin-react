@@ -16,3 +16,9 @@
 [unmapped] --> (4:0) "import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';\n"
 [unmapped] --> (5:0) "registerServerReference($$effect_import_reexportedAction, \"reexportedAction\");"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export { reexportedAction } from './reexport-source'\n" --> (2:0) "export const reexportedAction = /* #__PURE__ */ createServerReference(\"reexportedAction\");\n"
+```

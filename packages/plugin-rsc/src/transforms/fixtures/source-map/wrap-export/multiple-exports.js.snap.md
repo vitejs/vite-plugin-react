@@ -61,3 +61,21 @@ export { firstAction };
 registerServerReference(secondAction, "secondAction");
 export { secondAction };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** firstAction, secondAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTY5AAoKZXhwb3J0IGNvbnN0IGZpcnN0QWN0aW9uID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgiZmlyc3RBY3Rpb24iKTsKCgpleHBvcnQgY29uc3Qgc2Vjb25kQWN0aW9uID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgic2Vjb25kQWN0aW9uIik7CgoyNTgAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGZpcnN0QWN0aW9uKCkge1xuICByZXR1cm4gJ2ZpcnN0IGFjdGlvbiBjYWxsZWQnXG59XG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBzZWNvbmRBY3Rpb24oKSB7XG4gIHJldHVybiAnc2Vjb25kIGFjdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQTs7O0FBSUE7OyJ9)
+
+```js
+
+
+export const firstAction = /* #__PURE__ */ createServerReference("firstAction");
+
+
+export const secondAction = /* #__PURE__ */ createServerReference("secondAction");
+
+```

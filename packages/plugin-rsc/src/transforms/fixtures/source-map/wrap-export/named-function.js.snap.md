@@ -44,3 +44,18 @@ async function namedFunction() {
 registerServerReference(namedFunction, "namedFunction");
 export { namedFunction };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** namedFunction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#ODgACgpleHBvcnQgY29uc3QgbmFtZWRGdW5jdGlvbiA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoIm5hbWVkRnVuY3Rpb24iKTsKCjE3NwB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gbmFtZWRGdW5jdGlvbigpIHtcbiAgcmV0dXJuICduYW1lZCBmdW5jdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQTs7In0=)
+
+```js
+
+
+export const namedFunction = /* #__PURE__ */ createServerReference("namedFunction");
+
+```

@@ -81,6 +81,9 @@ export function callableCachePlugin(): Plugin {
       const result = transformDirectiveProxyExport(ast, {
         code,
         directive,
+        filter: (_name, meta) =>
+          meta.valueNode?.type !== 'ObjectExpression' &&
+          meta.valueNode?.type !== 'ArrayExpression',
         rejectNonAsyncFunction: true,
         runtime: (name) =>
           `$$ReactClient.createServerReference(` +

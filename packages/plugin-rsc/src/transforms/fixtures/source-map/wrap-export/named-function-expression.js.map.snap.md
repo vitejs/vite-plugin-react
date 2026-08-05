@@ -21,3 +21,9 @@
 (2:0) "export const action = async function actionImplementation() {\n" --> (6:0) "registerServerReference(action, \"action\");\n"
 (2:0) "export const action = async function actionImplementation() {\n" --> (7:0) "export { action };\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export const action = async function actionImplementation() {\n" --> (2:0) "export const action = /* #__PURE__ */ createServerReference(\"action\");\n"
+```

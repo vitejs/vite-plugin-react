@@ -8,6 +8,7 @@ import {
   TestServerActionBindSimple,
   TestServerActionBindMember,
 } from './action-bind/server'
+import { TestServerActionEncryption } from './action-encryption/server'
 import { TestServerActionError } from './action-error/server'
 import { TestActionExportAll } from './action-export-all/server'
 import {
@@ -106,6 +107,7 @@ export function Root(props: { url: URL }) {
         <TestUseActionState />
         <TestNonFormActionError />
         <TestNonFormActionArgs />
+        <TestServerActionEncryption />
         <TestPayloadServer url={props.url} />
         <TestServerActionBindReset />
         <TestServerActionBindSimple />

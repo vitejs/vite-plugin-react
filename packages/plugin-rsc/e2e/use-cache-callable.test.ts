@@ -105,7 +105,7 @@ function defineTests(f: Fixture) {
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
-    await expect(ordinaryExports).toHaveText('cached metadata: cache')
+    await expect(ordinaryExports).toHaveText('object: array')
     await expect(result).toHaveText('not called')
 
     // The wrapped export is passed from a Server Component to a Client Component.

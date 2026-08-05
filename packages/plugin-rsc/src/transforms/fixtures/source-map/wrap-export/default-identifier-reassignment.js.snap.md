@@ -45,3 +45,20 @@ action = async () => 'second'
 registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzAACgoKZXhwb3J0IGRlZmF1bHQgLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgiZGVmYXVsdCIpOwoKCjE4OQB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5sZXQgYWN0aW9uID0gYXN5bmMgKCkgPT4gJ2ZpcnN0J1xuZXhwb3J0IGRlZmF1bHQgYWN0aW9uXG5hY3Rpb24gPSBhc3luYyAoKSA9PiAnc2Vjb25kJ1xuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7OztBQUdBOzs7In0=)
+
+```js
+
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+
+```
