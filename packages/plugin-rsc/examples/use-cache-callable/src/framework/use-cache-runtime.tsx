@@ -62,6 +62,8 @@ export default function cacheWrapper(
       temporaryReferences: clientTemporaryReferences,
     })
     let encodedCacheArguments = encodedArguments
+    // Re-encode decrypted captures so cache identity reflects their logical values
+    // rather than the randomized ciphertext used by the transport arguments.
     const firstArgument = admittedArgs[0]
     if (isCacheCaptureEnvelope(firstArgument)) {
       const cacheArguments = [
@@ -69,8 +71,6 @@ export default function cacheWrapper(
         ...(await decodeCacheCaptures(firstArgument)),
         ...admittedArgs.slice(1),
       ]
-      // Re-encode decoded captures so cache identity reflects their logical values
-      // rather than the randomized ciphertext used by the transport arguments.
       encodedCacheArguments = await encodeReply(cacheArguments, {
         temporaryReferences: createClientTemporaryReferenceSet(),
       })
