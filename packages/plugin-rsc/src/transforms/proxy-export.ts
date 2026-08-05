@@ -121,6 +121,10 @@ export function transformProxyExport(
     output.update(node.start, node.end, newCode)
   }
 
+  function removeNode(node: Node) {
+    output.remove(node.start, node.end)
+  }
+
   const exportNodes = new Set<Node>()
   for (const group of scanModuleExports(viteAst)) {
     const node = group.node as Node
@@ -134,7 +138,7 @@ export function transformProxyExport(
         validateNonAsyncFunction(options, group.declaration)
         createExport(node, [entry.exportName])
       } else {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     } else if (group.type === 'variable-declaration') {
       // export const selected = init(), skipped = {}
@@ -176,7 +180,7 @@ export function transformProxyExport(
       if (selectedNames.length > 0) {
         createExport(node, selectedNames)
       } else {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     } else if (group.type === 'specifiers') {
       // export { local as renamed } from './dep'
@@ -195,7 +199,7 @@ export function transformProxyExport(
       if (names.length > 0) {
         createExport(node, names)
       } else {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     } else if (group.type === 'export-all') {
       // A namespace re-export has one known name. A bare export-all cannot be
@@ -209,12 +213,12 @@ export function transformProxyExport(
         if (filter(name, {})) {
           createExport(node, [name])
         } else {
-          output.remove(node.start, node.end)
+          removeNode(node)
         }
       } else if (!options.ignoreExportAllDeclaration) {
         throw new Error('unsupported ExportAllDeclaration')
       } else if (!options.keep) {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     } else if (group.type === 'default') {
       // export default async () => {}
@@ -223,7 +227,7 @@ export function transformProxyExport(
         validateNonAsyncFunction(options, group.node.declaration)
         createExport(node, ['default'])
       } else {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     }
   }
@@ -233,7 +237,7 @@ export function transformProxyExport(
     // the graph that consumes these proxies.
     for (const node of ast.body) {
       if (!exportNodes.has(node)) {
-        output.remove(node.start, node.end)
+        removeNode(node)
       }
     }
   }
