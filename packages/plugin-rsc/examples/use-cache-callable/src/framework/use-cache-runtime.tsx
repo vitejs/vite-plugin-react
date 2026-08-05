@@ -67,7 +67,6 @@ export default function cacheWrapper(
     const firstArgument = admittedArgs[0]
     if (isCacheCaptureEnvelope(firstArgument)) {
       const cacheArguments = [
-        cacheCaptureType,
         ...(await decryptCacheCaptures(firstArgument)),
         ...admittedArgs.slice(1),
       ]
