@@ -102,8 +102,7 @@ describe('source map fixtures', () => {
     ],
   }
   for (const [file, load] of Object.entries(proxyExportFixtures)) {
-    const fixtureName = file.slice('./fixtures/source-map/proxy-export/'.length)
-    test(`proxy-export/${fixtureName}`, async () => {
+    test(`proxy-export/${path.basename(file)}`, async () => {
       const input = ((await load()) as any).default as string
       const ast = await parseAstAsync(input)
       const variants = proxyExportFixtureVariants[file] ?? [
