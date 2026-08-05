@@ -65,7 +65,9 @@ function defineTests(f: Fixture) {
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(executionCount).toHaveText('0')
 
-    // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
+    // Unlike current Next.js behavior, this framework strips React's `$ACTION_*`
+    // fields from cache identity, so a fresh SSR form preserves the cache hit.
+    // https://github.com/hi-ogawa/reproductions/tree/main/next-use-cache-form-reload
     // alpha (cache miss)
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')

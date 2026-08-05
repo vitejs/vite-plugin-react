@@ -153,8 +153,11 @@ function toCacheArgument(value: unknown): unknown {
   }
   const result = new FormData()
   for (const [name, entry] of value) {
-    // Hydrated forms retain React's server-reference transport fields. Bound
-    // captures can give those fields fresh ciphertext without changing user input.
+    // Hydrated forms retain React's server-reference transport fields. Unlike
+    // current Next.js behavior, exclude them from this cache-key-only copy because
+    // bound captures can give them fresh ciphertext without changing user input.
+    // The implementation still receives the original FormData via encodedArguments.
+    // https://github.com/hi-ogawa/reproductions/tree/main/next-use-cache-form-reload
     if (!name.startsWith('$ACTION_')) {
       result.append(name, entry)
     }
