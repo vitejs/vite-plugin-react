@@ -5,7 +5,7 @@ const now = Date.now()
 export default function App() {
   return (mesg) => {
     'use server'
-    console.log(mesg, now)
+    console.log('%s', mesg, now)
   }
 }
 ```
@@ -24,7 +24,7 @@ export default function App() {
 
 ;export function $$hoist_0_anonymous_server_function(mesg) {
     'use server'
-    console.log(mesg, now)
+    console.log('%s', mesg, now)
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
 ```

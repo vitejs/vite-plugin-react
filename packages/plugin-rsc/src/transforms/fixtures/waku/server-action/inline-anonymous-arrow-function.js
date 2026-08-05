@@ -2,6 +2,6 @@ const now = Date.now()
 export default function App() {
   return (mesg) => {
     'use server'
-    console.log(mesg, now)
+    console.log('%s', mesg, now)
   }
 }

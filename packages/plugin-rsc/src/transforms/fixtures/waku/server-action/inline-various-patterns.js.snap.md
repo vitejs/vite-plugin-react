@@ -4,28 +4,28 @@
 const actions = {
   log: async (mesg) => {
     'use server'
-    console.log(mesg)
+    console.log('%s', mesg)
   },
 }
 
 async function log2(mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 
 const log3 = async function (mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 
 const log4 = async (mesg) => {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 
 const defaultFn = async function (mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 
 export default defaultFn
@@ -54,31 +54,31 @@ export default defaultFn
 
 ;export async function $$hoist_0_anonymous_server_function(mesg) {
     'use server'
-    console.log(mesg)
+    console.log('%s', mesg)
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_1_log2(mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 };
 /* #__PURE__ */ Object.defineProperty($$hoist_1_log2, "name", { value: "log2" });
 
 ;export async function $$hoist_2_log3(mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 };
 /* #__PURE__ */ Object.defineProperty($$hoist_2_log3, "name", { value: "log3" });
 
 ;export async function $$hoist_3_log4(mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 };
 /* #__PURE__ */ Object.defineProperty($$hoist_3_log4, "name", { value: "log4" });
 
 ;export async function $$hoist_4_defaultFn(mesg) {
   'use server'
-  console.log(mesg)
+  console.log('%s', mesg)
 };
 /* #__PURE__ */ Object.defineProperty($$hoist_4_defaultFn, "name", { value: "defaultFn" });
 ```

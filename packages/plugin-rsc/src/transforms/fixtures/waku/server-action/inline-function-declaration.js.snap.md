@@ -5,7 +5,7 @@ export default function App() {
   const a = 'test'
   async function log(mesg) {
     'use server'
-    console.log(mesg, a)
+    console.log('%s', mesg, a)
   }
   return log
 }
@@ -26,7 +26,7 @@ export default function App() {
 
 ;export async function $$hoist_0_log(a, mesg) {
     'use server'
-    console.log(mesg, a)
+    console.log('%s', mesg, a)
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
 ```

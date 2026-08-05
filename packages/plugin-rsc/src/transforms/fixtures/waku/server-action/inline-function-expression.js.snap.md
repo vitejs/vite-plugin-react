@@ -5,7 +5,7 @@ export default function App() {
   const rand = Math.random()
   const log = async function (mesg) {
     'use server'
-    console.log(mesg, rand)
+    console.log('%s', mesg, rand)
   }
   return log
 }
@@ -26,7 +26,7 @@ export default function App() {
 
 ;export async function $$hoist_0_log(rand, mesg) {
     'use server'
-    console.log(mesg, rand)
+    console.log('%s', mesg, rand)
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
 ```

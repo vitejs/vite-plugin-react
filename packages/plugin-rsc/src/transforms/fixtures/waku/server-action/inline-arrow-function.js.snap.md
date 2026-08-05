@@ -5,7 +5,7 @@ const now = Date.now()
 export default function App() {
   const log = async (mesg) => {
     'use server'
-    console.log(mesg, now)
+    console.log('%s', mesg, now)
   }
   return log
 }
@@ -26,7 +26,7 @@ export default function App() {
 
 ;export async function $$hoist_0_log(mesg) {
     'use server'
-    console.log(mesg, now)
+    console.log('%s', mesg, now)
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_log, "name", { value: "log" });
 ```

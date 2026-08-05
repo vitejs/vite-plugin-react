@@ -3,7 +3,7 @@
 const privateFunction = () => 'Secret'
 
 export const log = async (mesg) => {
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 
 export async function greet(name) {

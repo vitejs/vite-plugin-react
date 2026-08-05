@@ -2,7 +2,7 @@
 
 ```js
 export const log = (mesg) => {
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 ```
 
@@ -14,6 +14,6 @@ export const log = (mesg) => {
 
 ```js
 export const log = (mesg) => {
-  console.log(mesg)
+  console.log('%s', mesg)
 }
 ```
