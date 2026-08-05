@@ -53,6 +53,34 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('captured + beta')
   })
 
+  test('inline directive cache hit after hydrated reload', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/inline-directive'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('inline-directive')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
+
+    // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
+    // alpha (cache miss)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
+
+    // alpha after reload (cache hit)
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
+  })
+
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
     await page.goto(f.url('/inline-directive'))
 
@@ -127,6 +155,34 @@ function defineTests(f: Fixture) {
     await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('server import + beta')
+  })
+
+  test('file directive cache hit after hydrated reload', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/file-directive-from-server'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('file-directive-from-server')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
+
+    // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
+    // alpha (cache miss)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
+
+    // alpha after reload (cache hit)
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
   })
 
   testNoJs(
