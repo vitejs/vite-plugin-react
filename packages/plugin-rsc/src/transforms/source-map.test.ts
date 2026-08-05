@@ -6,7 +6,7 @@ import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
 import {
   transformProxyExport,
-  type TransformProxyExportFilter,
+  type TransformProxyExportOptions,
 } from './proxy-export'
 import {
   formatDecodedSourceMapMarkdown,
@@ -92,24 +92,27 @@ describe('source map fixtures', () => {
     string,
     {
       name: string
-      keep?: boolean
-      ignoreExportAllDeclaration?: boolean
-      filter?: TransformProxyExportFilter
+      options?: Partial<TransformProxyExportOptions>
     }[]
   > = {
     './fixtures/source-map/proxy-export/export-all-ignore.js': [
-      { name: 'proxy-export', ignoreExportAllDeclaration: true },
+      {
+        name: 'proxy-export',
+        options: { ignoreExportAllDeclaration: true },
+      },
     ],
     './fixtures/source-map/proxy-export/keep.js': [
       { name: 'proxy-export' },
-      { name: 'proxy-export-keep', keep: true },
+      { name: 'proxy-export-keep', options: { keep: true } },
     ],
     './fixtures/source-map/proxy-export/filter-value-node.js': [
       {
         name: 'proxy-export-filtered',
-        filter: (_name, meta) =>
-          meta.valueNode?.type !== 'ObjectExpression' &&
-          meta.valueNode?.type !== 'ArrayExpression',
+        options: {
+          filter: (_name, meta) =>
+            meta.valueNode?.type !== 'ObjectExpression' &&
+            meta.valueNode?.type !== 'ArrayExpression',
+        },
       },
     ],
   }
@@ -120,7 +123,7 @@ describe('source map fixtures', () => {
       const variants = proxyExportFixtureVariants[file] ?? [
         { name: 'proxy-export' },
       ]
-      const outputs = variants.map(({ name, ...options }) => {
+      const outputs = variants.map(({ name, options }) => {
         const result = transformProxyExport(ast, {
           code: input,
           ...options,
