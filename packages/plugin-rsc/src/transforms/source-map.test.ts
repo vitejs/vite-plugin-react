@@ -4,7 +4,10 @@ import { describe, expect, test } from 'vitest'
 import { transformCjsToEsm } from './cjs'
 import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
-import { transformProxyExport } from './proxy-export'
+import {
+  transformProxyExport,
+  type TransformProxyExportOptions,
+} from './proxy-export'
 import {
   formatDecodedSourceMapMarkdown,
   formatSourceMapMarkdownFixture,
@@ -89,16 +92,28 @@ describe('source map fixtures', () => {
     string,
     {
       name: string
-      keep?: boolean
-      ignoreExportAllDeclaration?: boolean
+      options?: Partial<TransformProxyExportOptions>
     }[]
   > = {
     './fixtures/source-map/proxy-export/export-all-ignore.js': [
-      { name: 'proxy-export', ignoreExportAllDeclaration: true },
+      {
+        name: 'proxy-export',
+        options: { ignoreExportAllDeclaration: true },
+      },
     ],
     './fixtures/source-map/proxy-export/keep.js': [
       { name: 'proxy-export' },
-      { name: 'proxy-export-keep', keep: true },
+      { name: 'proxy-export-keep', options: { keep: true } },
+    ],
+    './fixtures/source-map/proxy-export/filter-value-node.js': [
+      {
+        name: 'proxy-export-filtered',
+        options: {
+          filter: (_name, meta) =>
+            meta.valueNode?.type !== 'ObjectExpression' &&
+            meta.valueNode?.type !== 'ArrayExpression',
+        },
+      },
     ],
   }
   for (const [file, load] of Object.entries(proxyExportFixtures)) {
@@ -108,7 +123,7 @@ describe('source map fixtures', () => {
       const variants = proxyExportFixtureVariants[file] ?? [
         { name: 'proxy-export' },
       ]
-      const outputs = variants.map(({ name, ...options }) => {
+      const outputs = variants.map(({ name, options }) => {
         const result = transformProxyExport(ast, {
           code: input,
           ...options,
