@@ -415,7 +415,8 @@ function defineTests(f: Fixture) {
     await submit(page, example)
     await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('first + alpha')
+    // A cache hit skips the implementation, so its previous display side effect remains.
+    await expect(result).toHaveText('second + alpha')
   })
 }
 

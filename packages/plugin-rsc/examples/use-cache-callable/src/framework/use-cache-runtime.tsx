@@ -66,9 +66,9 @@ export default function cacheWrapper(
       ? [
           cacheCaptureType,
           ...(await decodeCacheCaptures(firstArgument)),
-          ...admittedArgs.slice(1),
+          ...toCacheArguments(admittedArgs.slice(1)),
         ]
-      : admittedArgs
+      : toCacheArguments(admittedArgs)
     const encodedCacheArguments =
       cacheArguments === admittedArgs
         ? encodedArguments
@@ -145,6 +145,28 @@ function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
     'encrypted' in value &&
     typeof value.encrypted === 'string'
   )
+}
+
+function toCacheArgument(value: unknown): unknown {
+  if (!(value instanceof FormData)) {
+    return value
+  }
+  const result = new FormData()
+  for (const [name, entry] of value) {
+    // Hydrated forms retain React's server-reference transport fields. Bound
+    // captures can give those fields fresh ciphertext without changing user input.
+    if (!name.startsWith('$ACTION_')) {
+      result.append(name, entry)
+    }
+  }
+  return result
+}
+
+function toCacheArguments(values: any[]): any[] {
+  const result = values.map(toCacheArgument)
+  return result.every((value, index) => value === values[index])
+    ? values
+    : result
 }
 
 export function revalidateCache(cachedFn: Function) {
