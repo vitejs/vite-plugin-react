@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { expect, test } from 'vitest'
 import { transformDirectiveProxyExport } from './proxy-export'
@@ -7,13 +8,12 @@ import { formatTransformMarkdownFixture } from './test-utils'
 // Fixtures copied from
 // https://github.com/wakujs/waku/blob/55cc5fb3c74b1cd9fa5dac5b20b8626c4d5043ff/packages/waku/tests/vite-plugin-rsc-transform-internals.test.ts
 
-const serverActionRoot = './fixtures/waku/server-action/'
 const serverActionFixtures = import.meta.glob(
   ['./fixtures/waku/server-action/**/*.js', '!**/*.snap.*'],
   { query: 'raw' },
 )
 for (const [file, load] of Object.entries(serverActionFixtures)) {
-  test(`server action/${file.slice(serverActionRoot.length)}`, async () => {
+  test(`server action/${path.basename(file)}`, async () => {
     const input = ((await load()) as any).default as string
     const ast = await parseAstAsync(input)
     const result = transformServerActionServer(input, ast, {
@@ -33,13 +33,12 @@ for (const [file, load] of Object.entries(serverActionFixtures)) {
   })
 }
 
-const serverClientProxyRoot = './fixtures/waku/server-client-proxy/'
 const serverClientProxyFixtures = import.meta.glob(
   ['./fixtures/waku/server-client-proxy/**/*.js', '!**/*.snap.*'],
   { query: 'raw' },
 )
 for (const [file, load] of Object.entries(serverClientProxyFixtures)) {
-  test(`server client proxy/${file.slice(serverClientProxyRoot.length)}`, async () => {
+  test(`server client proxy/${path.basename(file)}`, async () => {
     const input = ((await load()) as any).default as string
     const ast = await parseAstAsync(input)
     const result = transformDirectiveProxyExport(ast, {
@@ -64,13 +63,12 @@ for (const [file, load] of Object.entries(serverClientProxyFixtures)) {
   })
 }
 
-const clientServerProxyRoot = './fixtures/waku/client-server-proxy/'
 const clientServerProxyFixtures = import.meta.glob(
   ['./fixtures/waku/client-server-proxy/**/*.js', '!**/*.snap.*'],
   { query: 'raw' },
 )
 for (const [file, load] of Object.entries(clientServerProxyFixtures)) {
-  test(`client server proxy/${file.slice(clientServerProxyRoot.length)}`, async () => {
+  test(`client server proxy/${path.basename(file)}`, async () => {
     const input = ((await load()) as any).default as string
     const ast = await parseAstAsync(input)
     const result = transformDirectiveProxyExport(ast, {
