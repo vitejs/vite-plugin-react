@@ -62,25 +62,25 @@ function defineTests(f: Fixture) {
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
-    const argument = example.getByRole('textbox', { name: 'Cache key' })
-    const initialExecutionCount = Number(await executionCount.textContent())
-    const cacheKey = `hydrated-reload-${Date.now()}`
-
-    // Hydrated SSR form (cache miss)
-    await argument.fill(cacheKey)
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
-    await expect(result).toHaveText(`captured + ${cacheKey}`)
-
-    // Hydrated SSR form after reload (cache hit)
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
     await page.reload()
     await waitForHydration(page)
-    await argument.fill(cacheKey)
+
+    // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
+    // alpha (cache miss)
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
-    await expect(result).toHaveText(`captured + ${cacheKey}`)
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
+
+    // alpha after reload (cache hit)
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('captured + alpha')
   })
 
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
@@ -168,25 +168,25 @@ function defineTests(f: Fixture) {
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
-    const argument = example.getByRole('textbox', { name: 'Cache key' })
-    const initialExecutionCount = Number(await executionCount.textContent())
-    const cacheKey = `hydrated-reload-${Date.now()}`
-
-    // Hydrated SSR form (cache miss)
-    await argument.fill(cacheKey)
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
-    await expect(result).toHaveText(`server import + ${cacheKey}`)
-
-    // Hydrated SSR form after reload (cache hit)
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
     await page.reload()
     await waitForHydration(page)
-    await argument.fill(cacheKey)
+
+    // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
+    // alpha (cache miss)
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
-    await expect(result).toHaveText(`server import + ${cacheKey}`)
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
+
+    // alpha after reload (cache hit)
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('server import + alpha')
   })
 
   testNoJs(
