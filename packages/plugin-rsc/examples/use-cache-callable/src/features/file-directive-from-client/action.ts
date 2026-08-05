@@ -2,6 +2,8 @@
 
 import { state } from './state'
 
+// Ordinary values remain available from "use cache" modules without becoming
+// callable server references.
 export const metadata = { title: 'cached metadata' }
 export const tags = ['cache']
 
