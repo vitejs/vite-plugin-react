@@ -16,3 +16,9 @@
 (3:0) "const action = async () => 'action called'\n" --> (3:0) "const action = async () => 'action called'\n"
 [unmapped] --> (5:0) "registerServerReference(action, \"action\");"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export { action }\n" --> (2:0) "export const action = /* #__PURE__ */ createServerReference(\"action\");\n"
+```

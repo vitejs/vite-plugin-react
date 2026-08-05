@@ -55,3 +55,21 @@ export { arrowFunction };
 registerServerReference(functionExpression, "functionExpression");
 export { functionExpression };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** arrowFunction, functionExpression
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTg1AAoKZXhwb3J0IGNvbnN0IGFycm93RnVuY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJhcnJvd0Z1bmN0aW9uIik7CgoKZXhwb3J0IGNvbnN0IGZ1bmN0aW9uRXhwcmVzc2lvbiA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoImZ1bmN0aW9uRXhwcmVzc2lvbiIpOwoKMjcxAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmV4cG9ydCBjb25zdCBhcnJvd0Z1bmN0aW9uID0gYXN5bmMgKCkgPT4gJ2Fycm93IGZ1bmN0aW9uIGNhbGxlZCdcblxuZXhwb3J0IGNvbnN0IGZ1bmN0aW9uRXhwcmVzc2lvbiA9IGFzeW5jIGZ1bmN0aW9uICgpIHtcbiAgcmV0dXJuICdmdW5jdGlvbiBleHByZXNzaW9uIGNhbGxlZCdcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBOzs7QUFFQTs7In0=)
+
+```js
+
+
+export const arrowFunction = /* #__PURE__ */ createServerReference("arrowFunction");
+
+
+export const functionExpression = /* #__PURE__ */ createServerReference("functionExpression");
+
+```

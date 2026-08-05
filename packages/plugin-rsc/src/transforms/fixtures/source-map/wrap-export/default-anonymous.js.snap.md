@@ -45,3 +45,18 @@ const $$effect_default = async function () {
 registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NjgACgpleHBvcnQgZGVmYXVsdCAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJkZWZhdWx0Iik7CgoxODQAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gKCkge1xuICByZXR1cm4gJ2RlZmF1bHQgYW5vbnltb3VzIGZ1bmN0aW9uIGNhbGxlZCdcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBOzsifQ==)
+
+```js
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+```

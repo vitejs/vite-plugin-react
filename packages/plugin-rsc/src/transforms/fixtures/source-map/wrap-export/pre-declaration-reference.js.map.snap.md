@@ -22,3 +22,9 @@
 (4:0) "export async function action() {\n" --> (8:0) "registerServerReference(action, \"action\");\n"
 (4:0) "export async function action() {\n" --> (9:0) "export { action };\n"
 ```
+
+## proxy-export
+
+```txt
+(4:0) "export async function action() {\n" --> (4:0) "export const action = /* #__PURE__ */ createServerReference(\"action\");\n"
+```

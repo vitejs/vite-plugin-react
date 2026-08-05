@@ -24,3 +24,9 @@
 (6:0) "export default defaultIdentifier\n" --> (8:0) "registerServerReference($$effect_default, \"default\");\n"
 (6:0) "export default defaultIdentifier\n" --> (9:0) "export default $$effect_default;\n"
 ```
+
+## proxy-export
+
+```txt
+(6:0) "export default defaultIdentifier\n" --> (4:0) "export default /* #__PURE__ */ createServerReference(\"default\");\n"
+```

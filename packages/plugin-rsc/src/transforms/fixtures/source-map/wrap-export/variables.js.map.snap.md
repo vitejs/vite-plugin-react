@@ -29,3 +29,10 @@
 (4:0) "export const functionExpression = async function () {\n" --> (11:0) "registerServerReference(functionExpression, \"functionExpression\");\n"
 (4:0) "export const functionExpression = async function () {\n" --> (12:0) "export { functionExpression };\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export const arrowFunction = async () => 'arrow function called'\n" --> (2:0) "export const arrowFunction = /* #__PURE__ */ createServerReference(\"arrowFunction\");\n"
+(4:0) "export const functionExpression = async function () {\n" --> (5:0) "export const functionExpression = /* #__PURE__ */ createServerReference(\"functionExpression\");\n"
+```

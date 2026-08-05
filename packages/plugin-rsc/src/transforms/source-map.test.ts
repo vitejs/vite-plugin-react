@@ -1,8 +1,10 @@
 import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
+import { transformCjsToEsm } from './cjs'
 import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
+import { transformProxyExport } from './proxy-export'
 import {
   formatDecodedSourceMapMarkdown,
   formatSourceMapMarkdownFixture,
@@ -10,6 +12,25 @@ import {
 import { transformWrapExport } from './wrap-export'
 
 describe('source map fixtures', () => {
+  const cjsFixtures = import.meta.glob(
+    ['./fixtures/source-map/cjs/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+  for (const [file, load] of Object.entries(cjsFixtures)) {
+    test(`cjs/${path.basename(file)}`, async () => {
+      const input = ((await load()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const result = transformCjsToEsm(input, ast, { id: '/test.js' })
+      const outputs = [{ name: 'cjs-to-esm', output: result.output }]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
+      )
+    })
+  }
+
   const wrapExportFixtures = import.meta.glob(
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
@@ -30,6 +51,10 @@ describe('source map fixtures', () => {
         generate: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
+      const proxyResult = transformProxyExport(ast, {
+        code: input,
+        runtime: (name) => `createServerReference(${JSON.stringify(name)})`,
+      })
       const outputs = [
         {
           name: 'wrap-export',
@@ -41,7 +66,63 @@ describe('source map fixtures', () => {
           output: effectResult.output,
           references: effectResult.referenceNames,
         },
+        {
+          name: 'proxy-export',
+          output: proxyResult.output,
+          references: proxyResult.exportNames,
+        },
       ]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
+      )
+    })
+  }
+
+  const proxyExportFixtures = import.meta.glob(
+    ['./fixtures/source-map/proxy-export/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+  const proxyExportFixtureVariants: Record<
+    string,
+    {
+      name: string
+      keep?: boolean
+      ignoreExportAllDeclaration?: boolean
+    }[]
+  > = {
+    './fixtures/source-map/proxy-export/export-all-ignore.js': [
+      { name: 'proxy-export', ignoreExportAllDeclaration: true },
+    ],
+    './fixtures/source-map/proxy-export/keep.js': [
+      { name: 'proxy-export' },
+      { name: 'proxy-export-keep', keep: true },
+    ],
+  }
+  for (const [file, load] of Object.entries(proxyExportFixtures)) {
+    test(`proxy-export/${path.basename(file)}`, async () => {
+      const input = ((await load()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const variants = proxyExportFixtureVariants[file] ?? [
+        { name: 'proxy-export' },
+      ]
+      const outputs = variants.map(({ name, ...options }) => {
+        const result = transformProxyExport(ast, {
+          code: input,
+          ...options,
+          runtime: (name, meta) =>
+            meta?.value
+              ? `createServerReference(${meta.value}, ${JSON.stringify(name)})`
+              : `createServerReference(${JSON.stringify(name)})`,
+        })
+        return {
+          name,
+          output: result.output,
+          references: result.exportNames,
+        }
+      })
       await expect(
         formatSourceMapMarkdownFixture(input, outputs),
       ).toMatchFileSnapshot(file + '.snap.md')

@@ -40,3 +40,18 @@ export { reexportedAction } from './reexport-source'
 import { reexportedAction as $$effect_import_reexportedAction } from './reexport-source';
 registerServerReference($$effect_import_reexportedAction, "reexportedAction");
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** reexportedAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#OTQACgpleHBvcnQgY29uc3QgcmVleHBvcnRlZEFjdGlvbiA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoInJlZXhwb3J0ZWRBY3Rpb24iKTsKCjE1MwB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgeyByZWV4cG9ydGVkQWN0aW9uIH0gZnJvbSAnLi9yZWV4cG9ydC1zb3VyY2UnXG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQTs7In0=)
+
+```js
+
+
+export const reexportedAction = /* #__PURE__ */ createServerReference("reexportedAction");
+
+```
