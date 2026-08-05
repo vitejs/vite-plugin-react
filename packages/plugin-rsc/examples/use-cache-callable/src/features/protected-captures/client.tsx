@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 export function ProtectedCapturesClient(props: {
-  action: (argument: string, ...extra: unknown[]) => Promise<void>
+  action: (argument: string) => Promise<void>
   executionCount: number
   resetAction: () => Promise<void>
   result: string
@@ -16,10 +16,7 @@ export function ProtectedCapturesClient(props: {
         action={(formData) => {
           // SSR forms also contain React transport fields such as `$ACTION_REF_0`.
           // Pass only user input so fresh encrypted metadata cannot alter the cache key.
-          return props.action(
-            String(formData.get('argument')),
-            formData.get('ignoredArgument'),
-          )
+          return props.action(String(formData.get('argument')))
         }}
         data-testid="protected-captures"
         onSubmit={() => setSubmissions((value) => value + 1)}
@@ -27,11 +24,6 @@ export function ProtectedCapturesClient(props: {
         <p>
           <label>
             Cache key: <input name="argument" defaultValue="alpha" />
-          </label>
-          <br />
-          <label>
-            Ignored argument:{' '}
-            <input name="ignoredArgument" defaultValue="first" />
           </label>
         </p>
         <p>

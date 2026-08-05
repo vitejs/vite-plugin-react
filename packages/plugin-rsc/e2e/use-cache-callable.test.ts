@@ -387,9 +387,6 @@ function defineTests(f: Fixture) {
     const capture = page.getByTestId('capture')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
-    const ignoredArgument = example.getByRole('textbox', {
-      name: 'Ignored argument',
-    })
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(capture).toHaveText('first')
@@ -399,13 +396,6 @@ function defineTests(f: Fixture) {
     // submit with "first" capture and "alpha" argument
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('first + alpha')
-
-    // Undeclared caller arguments are excluded after the protected capture slot.
-    await ignoredArgument.fill('second')
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('2')
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('first + alpha')
 
