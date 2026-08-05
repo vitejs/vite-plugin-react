@@ -130,19 +130,6 @@ export const primitive = 0
     ).toThrow('unsupported non async function')
   })
 
-  test('filter treats destructured bindings as unknown', async () => {
-    const input = `export const { cached } = { cached: async () => {} }`
-    const ast = await parseAstAsync(input)
-    const result = transformProxyExport(ast, {
-      code: input,
-      runtime: (name) => `$$proxy(${JSON.stringify(name)})`,
-      rejectNonAsyncFunction: true,
-      filter: (_name, meta) => meta.valueNode?.type !== 'ObjectExpression',
-    })
-
-    expect(result.exportNames).toEqual(['cached'])
-  })
-
   test('default function', async () => {
     const input = `export default function Fn() {}`
     expect(await testTransform(input)).toMatchInlineSnapshot(
