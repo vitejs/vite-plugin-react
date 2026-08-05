@@ -108,7 +108,7 @@ export function transformProxyExport(
   const exportNames: string[] = []
   const filter = options.filter ?? (() => true)
 
-  /** Replaces one complete export statement with zero or more proxy exports. */
+  /** Replaces one complete export statement with proxy exports. */
   function createExport(node: Node, names: string[]) {
     exportNames.push(...names)
     const newCode = names
@@ -134,7 +134,7 @@ export function transformProxyExport(
         validateNonAsyncFunction(options, group.declaration)
         createExport(node, [entry.exportName])
       } else {
-        createExport(node, [])
+        output.remove(node.start, node.end)
       }
     } else if (group.type === 'variable-declaration') {
       // export const selected = init(), skipped = {}
@@ -173,7 +173,11 @@ export function transformProxyExport(
           }
         }
       }
-      createExport(node, selectedNames)
+      if (selectedNames.length > 0) {
+        createExport(node, selectedNames)
+      } else {
+        output.remove(node.start, node.end)
+      }
     } else if (group.type === 'specifiers') {
       // export { local as renamed } from './dep'
       // -> export const renamed = __PROXY__('renamed')
@@ -188,13 +192,21 @@ export function transformProxyExport(
           return filter(entry.exportName, entry.meta)
         })
         .map((entry) => entry.exportName)
-      createExport(node, names)
+      if (names.length > 0) {
+        createExport(node, names)
+      } else {
+        output.remove(node.start, node.end)
+      }
     } else if (group.type === 'export-all') {
       // A namespace re-export has one known name. A bare export-all cannot be
       // represented without resolving the dependency's export names.
       if (group.node.exported?.type === 'Identifier') {
         const name = group.node.exported.name
-        createExport(node, filter(name, {}) ? [name] : [])
+        if (filter(name, {})) {
+          createExport(node, [name])
+        } else {
+          output.remove(node.start, node.end)
+        }
       } else if (!options.ignoreExportAllDeclaration) {
         throw new Error('unsupported ExportAllDeclaration')
       } else if (!options.keep) {
@@ -207,7 +219,7 @@ export function transformProxyExport(
         validateNonAsyncFunction(options, group.node.declaration)
         createExport(node, ['default'])
       } else {
-        createExport(node, [])
+        output.remove(node.start, node.end)
       }
     }
   }
