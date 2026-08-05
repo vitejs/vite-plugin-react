@@ -19,3 +19,9 @@
 (4:0) "export const { action } = { action: source }\n" --> (6:0) "registerServerReference(action, \"action\");\n"
 (4:0) "export const { action } = { action: source }\n" --> (7:0) "export { action };\n"
 ```
+
+## proxy-export
+
+```txt
+(4:0) "export const { action } = { action: source }\n" --> (4:0) "export const action = /* #__PURE__ */ createServerReference(\"action\");\n"
+```

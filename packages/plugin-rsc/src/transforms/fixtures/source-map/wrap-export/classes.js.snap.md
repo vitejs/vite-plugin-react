@@ -61,3 +61,24 @@ export { ClassExpression };
 registerServerReference(DefaultClass, "default");
 export default DefaultClass;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** NamedClass, ClassExpression, default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjQwAAoKZXhwb3J0IGNvbnN0IE5hbWVkQ2xhc3MgPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJOYW1lZENsYXNzIik7CgoKZXhwb3J0IGNvbnN0IENsYXNzRXhwcmVzc2lvbiA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoIkNsYXNzRXhwcmVzc2lvbiIpOwoKCmV4cG9ydCBkZWZhdWx0IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoImRlZmF1bHQiKTsKCjIzNQB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgY2xhc3MgTmFtZWRDbGFzcyB7fVxuXG5leHBvcnQgY29uc3QgQ2xhc3NFeHByZXNzaW9uID0gY2xhc3MgSW5uZXJDbGFzcyB7fVxuXG5leHBvcnQgZGVmYXVsdCBjbGFzcyBEZWZhdWx0Q2xhc3Mge31cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBOzs7QUFFQTs7O0FBRUE7OyJ9)
+
+```js
+
+
+export const NamedClass = /* #__PURE__ */ createServerReference("NamedClass");
+
+
+export const ClassExpression = /* #__PURE__ */ createServerReference("ClassExpression");
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+```

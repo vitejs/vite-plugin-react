@@ -23,3 +23,9 @@
 (2:0) "export default async function () {\n" --> (6:0) "registerServerReference($$effect_default, \"default\");\n"
 (2:0) "export default async function () {\n" --> (7:0) "export default $$effect_default;\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export default async function () {\n" --> (2:0) "export default /* #__PURE__ */ createServerReference(\"default\");\n"
+```

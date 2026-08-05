@@ -32,3 +32,11 @@
 (6:0) "export default class DefaultClass {}\n" --> (14:0) "registerServerReference(DefaultClass, \"default\");\n"
 (6:0) "export default class DefaultClass {}\n" --> (15:0) "export default DefaultClass;\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export class NamedClass {}\n" --> (2:0) "export const NamedClass = /* #__PURE__ */ createServerReference(\"NamedClass\");\n"
+(4:0) "export const ClassExpression = class InnerClass {}\n" --> (5:0) "export const ClassExpression = /* #__PURE__ */ createServerReference(\"ClassExpression\");\n"
+(6:0) "export default class DefaultClass {}\n" --> (8:0) "export default /* #__PURE__ */ createServerReference(\"default\");\n"
+```

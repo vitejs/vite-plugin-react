@@ -20,3 +20,9 @@
 (2:0) "export async function namedFunction() {\n" --> (6:0) "registerServerReference(namedFunction, \"namedFunction\");\n"
 (2:0) "export async function namedFunction() {\n" --> (7:0) "export { namedFunction };\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export async function namedFunction() {\n" --> (2:0) "export const namedFunction = /* #__PURE__ */ createServerReference(\"namedFunction\");\n"
+```

@@ -39,3 +39,18 @@ const $$effect_default = class {}
 registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NjgACgpleHBvcnQgZGVmYXVsdCAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJkZWZhdWx0Iik7CgoxMjQAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGRlZmF1bHQgY2xhc3Mge31cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBOzsifQ==)
+
+```js
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+```

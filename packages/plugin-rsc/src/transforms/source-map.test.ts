@@ -3,6 +3,7 @@ import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
+import { transformProxyExport } from './proxy-export'
 import {
   formatDecodedSourceMapMarkdown,
   formatSourceMapMarkdownFixture,
@@ -30,6 +31,10 @@ describe('source map fixtures', () => {
         generate: ({ binding, exportName }) =>
           `registerServerReference(${binding}, ${JSON.stringify(exportName)})`,
       })
+      const proxyResult = transformProxyExport(ast, {
+        code: input,
+        runtime: (name) => `createServerReference(${JSON.stringify(name)})`,
+      })
       const outputs = [
         {
           name: 'wrap-export',
@@ -40,6 +45,45 @@ describe('source map fixtures', () => {
           name: 'module-export-effect',
           output: effectResult.output,
           references: effectResult.referenceNames,
+        },
+        {
+          name: 'proxy-export',
+          output: proxyResult.output,
+          references: proxyResult.exportNames,
+        },
+      ]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
+      )
+    })
+  }
+
+  const proxyExportFixtures = import.meta.glob(
+    ['./fixtures/source-map/proxy-export/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+  for (const [file, load] of Object.entries(proxyExportFixtures)) {
+    test(`proxy-export/${path.basename(file)}`, async () => {
+      const input = ((await load()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const result = transformProxyExport(ast, {
+        code: input,
+        keep: path.basename(file) === 'keep.js',
+        ignoreExportAllDeclaration:
+          path.basename(file) === 'export-all-ignore.js',
+        runtime: (name, meta) =>
+          meta?.value
+            ? `createServerReference(${meta.value}, ${JSON.stringify(name)})`
+            : `createServerReference(${JSON.stringify(name)})`,
+      })
+      const outputs = [
+        {
+          name: 'proxy-export',
+          output: result.output,
+          references: result.exportNames,
         },
       ]
       await expect(
