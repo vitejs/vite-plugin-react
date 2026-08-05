@@ -245,12 +245,12 @@ function defineTests(f: Fixture) {
     },
   )
 
-  test('file directive argument admission', async ({ page }) => {
+  test('file directive extra arguments', async ({ page }) => {
     using _errors = expectNoPageError(page)
-    await page.goto(f.url('/file-directive-argument-admission'))
+    await page.goto(f.url('/file-directive-extra-arguments'))
     await waitForHydration(page)
 
-    const example = page.getByTestId('file-directive-argument-admission')
+    const example = page.getByTestId('file-directive-extra-arguments')
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
@@ -274,12 +274,12 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('arguments: 0')
   })
 
-  test('inline argument admission gap', async ({ page }) => {
+  test('inline directive extra arguments', async ({ page }) => {
     using _errors = expectNoPageError(page)
-    await page.goto(f.url('/inline-argument-admission-gap'))
+    await page.goto(f.url('/inline-directive-extra-arguments'))
     await waitForHydration(page)
 
-    const example = page.getByTestId('inline-argument-admission-gap')
+    const example = page.getByTestId('inline-directive-extra-arguments')
     const submissionCount = example.getByTestId('submission-count')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')

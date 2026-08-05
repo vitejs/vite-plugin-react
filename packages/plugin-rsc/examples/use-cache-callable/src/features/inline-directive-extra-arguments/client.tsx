@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export function InlineArgumentAdmissionGap(props: {
+export function InlineDirectiveExtraArguments(props: {
   action: () => Promise<void>
   executionCount: number
   resetAction: () => Promise<void>
@@ -14,7 +14,7 @@ export function InlineArgumentAdmissionGap(props: {
     <>
       <form
         action={props.action}
-        data-testid="inline-argument-admission-gap"
+        data-testid="inline-directive-extra-arguments"
         onSubmit={() => setSubmissions((value) => value + 1)}
       >
         <p>

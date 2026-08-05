@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { cachedWithoutArguments } from './action'
 
-export function FileDirectiveArgumentAdmission(props: {
+export function FileDirectiveExtraArguments(props: {
   executionCount: number
   resetAction: () => Promise<void>
   result: string
@@ -14,7 +14,7 @@ export function FileDirectiveArgumentAdmission(props: {
     <>
       <form
         action={cachedWithoutArguments}
-        data-testid="file-directive-argument-admission"
+        data-testid="file-directive-extra-arguments"
         onSubmit={() => setSubmissions((value) => value + 1)}
       >
         <p>

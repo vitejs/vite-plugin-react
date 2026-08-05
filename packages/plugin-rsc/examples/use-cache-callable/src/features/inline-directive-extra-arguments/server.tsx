@@ -1,8 +1,8 @@
-import { InlineArgumentAdmissionGap } from './client'
+import { InlineDirectiveExtraArguments } from './client'
 import { resetAction } from './reset'
 import { state } from './state'
 
-export function InlineArgumentAdmissionGapServer() {
+export function InlineDirectiveExtraArgumentsServer() {
   async function cachedWithoutArguments() {
     'use cache'
     state.executionCount++
@@ -10,7 +10,7 @@ export function InlineArgumentAdmissionGapServer() {
   }
 
   return (
-    <InlineArgumentAdmissionGap
+    <InlineDirectiveExtraArguments
       action={cachedWithoutArguments}
       executionCount={state.executionCount}
       resetAction={resetAction}
