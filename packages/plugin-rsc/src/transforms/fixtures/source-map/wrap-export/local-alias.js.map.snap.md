@@ -20,3 +20,9 @@
 (6:0) "export { localAlias as aliasedAction }\n" --> (6:0) "export { localAlias as aliasedAction }\n"
 [unmapped] --> (8:0) "registerServerReference(localAlias, \"aliasedAction\");"
 ```
+
+## proxy-export
+
+```txt
+(6:0) "export { localAlias as aliasedAction }\n" --> (4:0) "export const aliasedAction = /* #__PURE__ */ createServerReference(\"aliasedAction\");\n"
+```

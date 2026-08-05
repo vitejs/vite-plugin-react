@@ -51,3 +51,20 @@ const $$effect_default = defaultIdentifier;
 registerServerReference($$effect_default, "default");
 export default $$effect_default;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzAACgoKCmV4cG9ydCBkZWZhdWx0IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoImRlZmF1bHQiKTsKCjIxNgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5hc3luYyBmdW5jdGlvbiBkZWZhdWx0SWRlbnRpZmllcigpIHtcbiAgcmV0dXJuICdkZWZhdWx0IGlkZW50aWZpZXIgY2FsbGVkJ1xufVxuXG5leHBvcnQgZGVmYXVsdCBkZWZhdWx0SWRlbnRpZmllclxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7QUFNQTs7In0=)
+
+```js
+
+
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+```

@@ -53,3 +53,21 @@ export { value as first, value as second }
 registerServerReference(value, "first");
 registerServerReference(value, "second");
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** first, second
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTQ1AAoKCgpleHBvcnQgY29uc3QgZmlyc3QgPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJmaXJzdCIpOwpleHBvcnQgY29uc3Qgc2Vjb25kID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgic2Vjb25kIik7CgoyMTcAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuYXN5bmMgZnVuY3Rpb24gdmFsdWUoKSB7XG4gIHJldHVybiAnbXVsdGlwbGUgYWxpYXNlcyBjYWxsZWQnXG59XG5cbmV4cG9ydCB7IHZhbHVlIGFzIGZpcnN0LCB2YWx1ZSBhcyBzZWNvbmQgfVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7QUFNQTtBQUFBOzsifQ==)
+
+```js
+
+
+
+
+export const first = /* #__PURE__ */ createServerReference("first");
+export const second = /* #__PURE__ */ createServerReference("second");
+
+```

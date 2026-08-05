@@ -6,6 +6,39 @@ type SourceMapFixtureOutput = {
   references?: readonly string[]
 }
 
+type TransformFixtureOutput = {
+  name: string
+  output?: MagicString
+  references?: readonly string[]
+}
+
+export function formatTransformMarkdownFixture(
+  input: string,
+  outputs: readonly TransformFixtureOutput[],
+): string {
+  const sections = []
+  sections.push(`\
+## Input
+
+${formatCodeBlock('js', input)}`)
+  for (const { name, output, references } of outputs) {
+    const status = output
+      ? output.hasChanged()
+        ? 'transformed'
+        : 'unchanged'
+      : 'skipped'
+    sections.push(`\
+## ${name}
+
+**Status:** ${status}
+
+**References:** ${references?.join(', ') || '(none)'}
+
+${formatCodeBlock('js', output?.toString() ?? input)}`)
+  }
+  return sections.join('\n\n') + '\n'
+}
+
 export function formatSourceMapMarkdownFixture(
   input: string,
   outputs: readonly SourceMapFixtureOutput[],

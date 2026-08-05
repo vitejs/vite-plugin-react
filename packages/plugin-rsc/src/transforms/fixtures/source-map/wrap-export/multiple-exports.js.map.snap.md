@@ -31,3 +31,10 @@
 (6:0) "export async function secondAction() {\n" --> (13:0) "registerServerReference(secondAction, \"secondAction\");\n"
 (6:0) "export async function secondAction() {\n" --> (14:0) "export { secondAction };\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export async function firstAction() {\n" --> (2:0) "export const firstAction = /* #__PURE__ */ createServerReference(\"firstAction\");\n"
+(6:0) "export async function secondAction() {\n" --> (5:0) "export const secondAction = /* #__PURE__ */ createServerReference(\"secondAction\");\n"
+```

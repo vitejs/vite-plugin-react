@@ -1,11 +1,13 @@
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import {
   hasDirective,
+  type ModuleExportMeta,
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
   transformWrapExport,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
+import type { CacheWrapperOptions } from './src/framework/use-cache-runtime'
 
 const directive = 'use cache'
 const pluginName = 'example:use-cache-callable'
@@ -29,14 +31,19 @@ export function callableCachePlugin(): Plugin {
       const environmentName = this.environment.name
 
       if (environmentName === 'rsc') {
-        const runtime = (value: string, name: string) =>
+        const runtime = (
+          value: string,
+          name: string,
+          options: CacheWrapperOptions,
+        ) =>
           `$$ReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}),` +
+          `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
-              runtime,
+              runtime: (value, name, meta) =>
+                runtime(value, name, getCacheWrapperOptions(meta)),
               // Next.js calls rejecting primitive literals while permitting
               // objects and arrays arbitrary, but keeps the latter for metadata
               // and viewport exports.
@@ -50,7 +57,7 @@ export function callableCachePlugin(): Plugin {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
-              runtime,
+              runtime: (value, name) => runtime(value, name, {}),
               encode: (value) => `$$encodeCacheCaptures(${value})`,
               decode: (value) => `await $$decodeCacheCaptures(${value})`,
             })
@@ -76,6 +83,9 @@ export function callableCachePlugin(): Plugin {
       const result = transformDirectiveProxyExport(ast, {
         code,
         directive,
+        filter: (_name, meta) =>
+          meta.valueNode?.type !== 'ObjectExpression' &&
+          meta.valueNode?.type !== 'ArrayExpression',
         rejectNonAsyncFunction: true,
         runtime: (name) =>
           `$$ReactClient.createServerReference(` +
@@ -107,4 +117,18 @@ export function callableCachePlugin(): Plugin {
       }
     },
   }
+}
+
+function getCacheWrapperOptions(meta: ModuleExportMeta): CacheWrapperOptions {
+  const node = meta.valueNode
+  if (
+    node?.type !== 'FunctionDeclaration' &&
+    node?.type !== 'FunctionExpression' &&
+    node?.type !== 'ArrowFunctionExpression'
+  ) {
+    return {}
+  }
+  return node.params.at(-1)?.type === 'RestElement'
+    ? {}
+    : { argumentCount: node.params.length }
 }

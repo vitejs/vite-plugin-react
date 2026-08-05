@@ -23,7 +23,9 @@ function defineTests(f: Fixture) {
     using _errors = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
-    await page.getByRole('link', { name: 'Inline directive' }).click()
+    await page
+      .getByRole('link', { name: 'Inline directive', exact: true })
+      .click()
     await expect(page).toHaveURL(f.url('/inline-directive'))
 
     const example = page.getByTestId('inline-directive')
@@ -157,7 +159,7 @@ function defineTests(f: Fixture) {
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('0')
-    await expect(ordinaryExports).toHaveText('cached metadata: cache')
+    await expect(ordinaryExports).toHaveText('object: array')
     await expect(result).toHaveText('not called')
 
     // The wrapped export is passed from a Server Component to a Client Component.
@@ -298,6 +300,66 @@ function defineTests(f: Fixture) {
       await expect(result).toHaveText('client import + beta')
     },
   )
+
+  test('file directive extra arguments', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/file-directive-extra-arguments'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('file-directive-extra-arguments')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Ignored argument' })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // React supplies FormData to the zero-parameter function, but it does not
+    // participate in the cache key or invocation.
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('arguments: 0')
+
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('arguments: 0')
+  })
+
+  test('inline directive extra arguments', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/inline-directive-extra-arguments'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('inline-directive-extra-arguments')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', {
+      name: 'Undeclared argument',
+    })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // Inline transform metadata does not yet expose the source parameters, so
+    // React's FormData still participates in the cache key and invocation.
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('arguments: 1')
+
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('arguments: 1')
+  })
 }
 
 async function submit(page: Page, form: Locator): Promise<Response> {

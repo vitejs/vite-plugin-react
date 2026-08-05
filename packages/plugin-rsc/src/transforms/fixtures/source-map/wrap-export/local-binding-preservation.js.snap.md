@@ -52,3 +52,22 @@ export { direct };
 
 registerServerReference(indirect, "indirect");
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** direct, indirect
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTUyAGV4cG9ydCBjb25zdCBkaXJlY3QgPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJkaXJlY3QiKTsKCgoKZXhwb3J0IGNvbnN0IGluZGlyZWN0ID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgiaW5kaXJlY3QiKTsKCgoKMjExAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGRpcmVjdCgpIHt9XG5cbmNvbnN0IGluZGlyZWN0ID0gYXN5bmMgKCkgPT4ge31cbmV4cG9ydCB7IGluZGlyZWN0IH1cblxuY29uc3VtZShkaXJlY3QsIGluZGlyZWN0KVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBOzs7O0FBR0E7Ozs7In0=)
+
+```js
+export const direct = /* #__PURE__ */ createServerReference("direct");
+
+
+
+export const indirect = /* #__PURE__ */ createServerReference("indirect");
+
+
+
+```

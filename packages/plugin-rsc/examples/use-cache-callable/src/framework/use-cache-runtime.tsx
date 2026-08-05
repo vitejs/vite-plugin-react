@@ -17,6 +17,10 @@ import {
 // https://github.com/vercel/next.js/pull/70435
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
+export type CacheWrapperOptions = {
+  argumentCount?: number
+}
+
 const cachedFnMap = new WeakMap<Function, unknown>()
 const cacheCaptureType = 'use-cache-captures'
 let cachedFnCacheEntries = new WeakMap<
@@ -24,12 +28,23 @@ let cachedFnCacheEntries = new WeakMap<
   Record<string, Promise<StreamCacher>>
 >()
 
-export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
+export default function cacheWrapper(
+  fn: (...args: any[]) => Promise<unknown>,
+  options: CacheWrapperOptions,
+) {
   if (cachedFnMap.has(fn)) {
     return cachedFnMap.get(fn)!
   }
 
   async function cachedFn(...args: any[]): Promise<unknown> {
+    // Callers can supply more arguments than a cached function declares. For example,
+    // `useActionState(fn)` passes state and form data even to `function fn() {}`.
+    // Strip those extras so they affect neither the cache key nor execution.
+    // https://github.com/vercel/next.js/pull/72506
+    const admittedArgs =
+      options.argumentCount === undefined
+        ? args
+        : args.slice(0, options.argumentCount)
     let cacheEntries = cachedFnCacheEntries.get(cachedFn)
     if (!cacheEntries) {
       cacheEntries = {}
@@ -43,19 +58,19 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
-    const encodedArguments = await encodeReply(args, {
+    const encodedArguments = await encodeReply(admittedArgs, {
       temporaryReferences: clientTemporaryReferences,
     })
-    const firstArgument = await args[0]
+    const firstArgument = await admittedArgs[0]
     const cacheArguments = isCacheCaptureEnvelope(firstArgument)
       ? [
           cacheCaptureType,
           ...(await decodeCacheCaptures(firstArgument)),
-          ...args.slice(1),
+          ...admittedArgs.slice(1),
         ]
-      : args
+      : admittedArgs
     const encodedCacheArguments =
-      cacheArguments === args
+      cacheArguments === admittedArgs
         ? encodedArguments
         : await encodeReply(cacheArguments, {
             temporaryReferences: createClientTemporaryReferenceSet(),
