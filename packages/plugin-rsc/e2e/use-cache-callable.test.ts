@@ -53,61 +53,6 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('captured + beta')
   })
 
-  test('protected captures', async ({ page }) => {
-    // verify captured value is encoded and thus doesn't appear in raw response
-    const rscResponse = await page.request.get(
-      f.url('/protected-captures_.rsc'),
-    )
-    expect(rscResponse.ok()).toBe(true)
-    expect(await rscResponse.text()).not.toContain('capture-secret')
-
-    using _errors = expectNoPageError(page)
-    await page.goto(f.url())
-    await waitForHydration(page)
-    await page.getByRole('link', { name: 'Protected captures' }).click()
-    await expect(page).toHaveURL(f.url('/protected-captures'))
-
-    const example = page.getByTestId('protected-captures')
-    const submissionCount = example.getByTestId('submission-count')
-    const capture = page.getByTestId('capture')
-    const executionCount = example.getByTestId('execution-count')
-    const result = example.getByTestId('result')
-    await page.getByRole('button', { name: 'Reset' }).click()
-    await expect(submissionCount).toHaveText('0')
-    await expect(capture).toHaveText('first')
-    await expect(executionCount).toHaveText('0')
-    await expect(result).toHaveText('not called')
-
-    // submit with "first" capture and "alpha" argument
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('first + alpha')
-
-    // A fresh render and ciphertext for the same logical capture still hits.
-    await page.reload()
-    await waitForHydration(page)
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('first + alpha')
-
-    // The same invocation with a different decoded capture is a cache miss.
-    await page.getByRole('button', { name: 'Second capture' }).click()
-    await expect(capture).toHaveText('second')
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('2')
-    await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('second + alpha')
-
-    await page.getByRole('button', { name: 'First capture' }).click()
-    await expect(capture).toHaveText('first')
-    await submit(page, example)
-    await expect(submissionCount).toHaveText('3')
-    await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('first + alpha')
-  })
-
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
     await page.goto(f.url('/inline-directive'))
 
@@ -360,6 +305,61 @@ function defineTests(f: Fixture) {
     await expect(submissionCount).toHaveText('2')
     await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('arguments: 1')
+  })
+
+  test('protected captures', async ({ page }) => {
+    // verify captured value is encoded and thus doesn't appear in raw response
+    const rscResponse = await page.request.get(
+      f.url('/protected-captures_.rsc'),
+    )
+    expect(rscResponse.ok()).toBe(true)
+    expect(await rscResponse.text()).not.toContain('capture-secret')
+
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await page.getByRole('link', { name: 'Protected captures' }).click()
+    await expect(page).toHaveURL(f.url('/protected-captures'))
+
+    const example = page.getByTestId('protected-captures')
+    const submissionCount = example.getByTestId('submission-count')
+    const capture = page.getByTestId('capture')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(capture).toHaveText('first')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // submit with "first" capture and "alpha" argument
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('first + alpha')
+
+    // A fresh render and ciphertext for the same logical capture still hits.
+    await page.reload()
+    await waitForHydration(page)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('first + alpha')
+
+    // The same invocation with a different decoded capture is a cache miss.
+    await page.getByRole('button', { name: 'Second capture' }).click()
+    await expect(capture).toHaveText('second')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('second + alpha')
+
+    await page.getByRole('button', { name: 'First capture' }).click()
+    await expect(capture).toHaveText('first')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('first + alpha')
   })
 }
 
