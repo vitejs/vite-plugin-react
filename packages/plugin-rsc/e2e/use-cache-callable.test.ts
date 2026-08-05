@@ -265,13 +265,13 @@ function defineTests(f: Fixture) {
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('cached result')
+    await expect(result).toHaveText('arguments: 0')
 
     await argument.fill('beta')
     await submit(page, example)
     await expect(submissionCount).toHaveText('2')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('cached result')
+    await expect(result).toHaveText('arguments: 0')
   })
 }
 

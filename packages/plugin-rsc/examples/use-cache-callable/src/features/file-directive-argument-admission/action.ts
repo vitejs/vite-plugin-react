@@ -4,5 +4,5 @@ import { state } from './state'
 
 export async function cachedWithoutArguments() {
   state.executionCount++
-  state.result = 'cached result'
+  state.result = `arguments: ${arguments.length}`
 }
