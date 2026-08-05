@@ -13,7 +13,11 @@ export function ProtectedCapturesClient(props: {
   return (
     <>
       <form
-        action={(formData) => props.action(String(formData.get('argument')))}
+        action={(formData) => {
+          // SSR forms also contain React transport fields such as `$ACTION_REF_0`.
+          // Pass only user input so fresh encrypted metadata cannot alter the cache key.
+          return props.action(String(formData.get('argument')))
+        }}
         data-testid="protected-captures"
         onSubmit={() => setSubmissions((value) => value + 1)}
       >
