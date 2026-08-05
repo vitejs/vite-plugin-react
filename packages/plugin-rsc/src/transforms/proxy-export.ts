@@ -51,6 +51,9 @@ export function transformProxyExport(
   if (options.keep && typeof options.code !== 'string') {
     throw new Error('`keep` option requires `code`')
   }
+  if (options.keep && options.filter) {
+    throw new Error('`filter` option is not supported with `keep`')
+  }
   const output = new MagicString(options.code ?? ' '.repeat(ast.end))
   const exportNames: string[] = []
   const filter = options.filter ?? (() => true)

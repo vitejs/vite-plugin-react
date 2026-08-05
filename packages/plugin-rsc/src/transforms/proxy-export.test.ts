@@ -343,4 +343,13 @@ export const MyClientComp = () => { throw new Error('...') }
       }
     `)
   })
+
+  test('filter with keep throws', async () => {
+    await expect(
+      testTransform(`export const action = () => {}`, {
+        keep: true,
+        filter: () => true,
+      }),
+    ).rejects.toThrow('`filter` option is not supported with `keep`')
+  })
 })
