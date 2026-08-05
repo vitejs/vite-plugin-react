@@ -32,8 +32,9 @@ export default function cacheWrapper(
   }
 
   async function cachedFn(...args: any[]): Promise<unknown> {
-    // Cache identity and execution must use the same admitted arguments so an
-    // omitted value cannot affect a result stored under another invocation's key.
+    // Callers can supply more arguments than a cached function declares. For example,
+    // `useActionState(fn)` passes state and form data even to `function fn() {}`.
+    // Strip those extras so they affect neither the cache key nor execution.
     const admittedArgs =
       options.argumentCount === undefined
         ? args
