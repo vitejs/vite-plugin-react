@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-directive/client.tsx
+  s_a761931df6ecdc::t_a06333c3998e38 7,11,17-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8732f56b786c8f9e0fb077ba6c3b9913ee318faf",
+  "prompts": {},
+  "sessions": {
+    "s_a761931df6ecdc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_030c5e8f2ffefc5ZrqSFcIeC2E",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
