@@ -8,6 +8,10 @@ import {
   decodeReply,
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc/server'
+import {
+  decryptActionBoundArgs,
+  encryptActionBoundArgs,
+} from '@vitejs/plugin-rsc/utils/encryption-runtime'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435
@@ -56,7 +60,22 @@ export default function cacheWrapper(
     const encodedArguments = await encodeReply(admittedArgs, {
       temporaryReferences: clientTemporaryReferences,
     })
-    const serializedCacheKey = await replyToCacheKey(encodedArguments)
+    let encodedCacheArguments = encodedArguments
+    // Re-encode decrypted captures so cache identity reflects their logical values
+    // rather than the randomized ciphertext used by the transport arguments.
+    const firstArgument = admittedArgs[0]
+    if (isCacheCaptureEnvelope(firstArgument)) {
+      // TODO: On a cache miss, the hoister-generated implementation decrypts the
+      // original envelope again. A tighter adapter could reuse these captures.
+      const cacheArguments = [
+        ...(await decryptCacheCaptures(firstArgument)),
+        ...admittedArgs.slice(1),
+      ]
+      encodedCacheArguments = await encodeReply(cacheArguments, {
+        temporaryReferences: createClientTemporaryReferenceSet(),
+      })
+    }
+    const serializedCacheKey = await replyToCacheKey(encodedCacheArguments)
 
     // cache `fn` result as stream
     // (cache value is promise so that it dedupes concurrent async calls)
@@ -133,4 +152,53 @@ async function replyToCacheKey(reply: string | FormData) {
     await new Blob(parts).arrayBuffer(),
   )
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+}
+
+// use fixed sentinel value to detect the existence of cache captures via runtime logic
+// without transform-informed metadata
+const CACHE_CAPTURE_TYPE = 'use-cache-captures'
+
+type CacheCaptureEnvelope = {
+  type: typeof CACHE_CAPTURE_TYPE
+  encrypted: string | PromiseLike<string>
+}
+
+export function encryptCacheCaptures(
+  captures: unknown[],
+): CacheCaptureEnvelope {
+  // Keep the sentinel envelope synchronous so the cache wrapper can identify it
+  // without awaiting the argument; only the encrypted payload needs to be async.
+  return {
+    type: CACHE_CAPTURE_TYPE,
+    encrypted: encryptActionBoundArgs(captures),
+  }
+}
+
+export async function decryptCacheCaptures(
+  envelope: CacheCaptureEnvelope,
+): Promise<unknown[]> {
+  const { encrypted } = envelope
+  const captures = await decryptActionBoundArgs(Promise.resolve(encrypted))
+  if (!Array.isArray(captures)) {
+    throw new Error('Invalid cache capture payload')
+  }
+  return captures
+}
+
+function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
+  const encrypted =
+    typeof value === 'object' && value !== null && 'encrypted' in value
+      ? value.encrypted
+      : undefined
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === CACHE_CAPTURE_TYPE &&
+    (typeof encrypted === 'string' ||
+      (typeof encrypted === 'object' &&
+        encrypted !== null &&
+        'then' in encrypted &&
+        typeof encrypted.then === 'function'))
+  )
 }

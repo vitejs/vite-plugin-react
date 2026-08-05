@@ -3,6 +3,7 @@ import { FileDirectiveFromClientServer } from './features/file-directive-from-cl
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirectiveExtraArgumentsServer } from './features/inline-directive-extra-arguments/server'
 import { InlineDirective } from './features/inline-directive/server'
+import { ProtectedCaptures } from './features/protected-captures/server'
 
 const routes = [
   {
@@ -39,6 +40,13 @@ const routes = [
     description:
       'A zero-parameter inline cached function currently includes FormData supplied by React.',
     Component: InlineDirectiveExtraArgumentsServer,
+  },
+  {
+    path: '/protected-captures',
+    title: 'Protected captures',
+    description:
+      'This inline cached function transports encrypted captures while using their decoded values for cache identity.',
+    Component: ProtectedCaptures,
   },
 ]
 
