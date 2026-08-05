@@ -53,6 +53,34 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('captured + beta')
   })
 
+  test('inline directive cache hit after hydrated reload', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/inline-directive'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('inline-directive')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    const initialExecutionCount = Number(await executionCount.textContent())
+    const cacheKey = `hydrated-reload-${Date.now()}`
+
+    await argument.fill(cacheKey)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
+    await expect(result).toHaveText(`captured + ${cacheKey}`)
+
+    await page.reload()
+    await waitForHydration(page)
+    await argument.fill(cacheKey)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
+    await expect(result).toHaveText(`captured + ${cacheKey}`)
+  })
+
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
     await page.goto(f.url('/inline-directive'))
 
@@ -127,6 +155,34 @@ function defineTests(f: Fixture) {
     await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('server import + beta')
+  })
+
+  test('file directive cache hit after hydrated reload', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/file-directive-from-server'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('file-directive-from-server')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', { name: 'Cache key' })
+    const initialExecutionCount = Number(await executionCount.textContent())
+    const cacheKey = `hydrated-reload-${Date.now()}`
+
+    await argument.fill(cacheKey)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
+    await expect(result).toHaveText(`server import + ${cacheKey}`)
+
+    await page.reload()
+    await waitForHydration(page)
+    await argument.fill(cacheKey)
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText(`${initialExecutionCount + 1}`)
+    await expect(result).toHaveText(`server import + ${cacheKey}`)
   })
 
   testNoJs(
