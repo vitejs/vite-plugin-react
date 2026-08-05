@@ -150,6 +150,8 @@ export function scanModuleExports(
                 // uniformly handle destructured exports such as
                 //   export const { foo, bar } = ...
                 // even though associated `meta` doesn't make sense anymore
+                // TODO: Treat destructured bindings as unknown instead of
+                // using the container initializer as each `valueNode`.
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,

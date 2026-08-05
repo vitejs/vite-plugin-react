@@ -83,8 +83,6 @@ export function transformProxyExport(
     } else if (group.type === 'variable-declaration') {
       const selectedNames: string[] = []
       for (const declarator of group.declarators) {
-        // TODO: Treat destructured bindings as unknown instead of classifying
-        // each binding from the container initializer's `valueNode`.
         const names = declarator.exports
           .filter((entry) => filter(entry.exportName, entry.meta))
           .map((entry) => entry.exportName)
