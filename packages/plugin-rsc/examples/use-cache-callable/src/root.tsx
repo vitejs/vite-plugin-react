@@ -1,6 +1,7 @@
 import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
 import { InlineDirective } from './features/inline-directive/server'
+import { ProtectedCaptures } from './features/protected-captures/server'
 
 const routes = [
   {
@@ -9,6 +10,13 @@ const routes = [
     description:
       'This Server Component defines an inline cached function, captures a value, and passes the function to the client form.',
     Component: InlineDirective,
+  },
+  {
+    path: '/protected-captures',
+    title: 'Protected captures',
+    description:
+      'This inline cached function transports encrypted captures while using their decoded values for cache identity.',
+    Component: ProtectedCaptures,
   },
   {
     path: '/file-directive-from-server',
