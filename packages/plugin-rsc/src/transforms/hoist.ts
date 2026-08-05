@@ -10,6 +10,7 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
+import { isDirective } from './utils'
 
 /**
  * Turns an inline directive function into a module-level registered function.
@@ -263,11 +264,7 @@ function getRuntimeHoistPosition(ast: Program): number {
   // Preserve leading directives so directive-based transforms can
   // still compose just in case.
   for (const statement of ast.body) {
-    const isDirective =
-      statement.type === 'ExpressionStatement' &&
-      statement.expression.type === 'Literal' &&
-      typeof statement.expression.value === 'string'
-    if (!isDirective) {
+    if (!isDirective(statement)) {
       return statement.start
     }
   }
@@ -282,15 +279,12 @@ function matchDirective(
   directive: RegExp,
 ): { match: RegExpMatchArray; node: Literal } | undefined {
   for (const stmt of body) {
-    if (
-      stmt.type === 'ExpressionStatement' &&
-      stmt.expression.type === 'Literal' &&
-      typeof stmt.expression.value === 'string'
-    ) {
-      const match = stmt.expression.value.match(directive)
-      if (match) {
-        return { match, node: stmt.expression }
-      }
+    if (!isDirective(stmt)) {
+      return
+    }
+    const match = stmt.directive.match(directive)
+    if (match) {
+      return { match, node: stmt.expression }
     }
   }
 }

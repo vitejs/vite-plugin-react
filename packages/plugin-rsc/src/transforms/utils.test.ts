@@ -1,8 +1,23 @@
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
 import { transformProxyExport } from './proxy-export'
-import { validateNonAsyncFunction } from './utils'
+import { hasDirective, validateNonAsyncFunction } from './utils'
 import { transformWrapExport } from './wrap-export'
+
+describe(hasDirective, () => {
+  test.each([
+    [`'use server'; export {};`, true],
+    [`'use strict'; 'use server'; export {};`, true],
+    [`import './setup.js'; 'use server'; export {};`, false],
+    [`('use server'); export {};`, false],
+    [`; 'use server'; export {};`, false],
+    [`'use client'; export {};`, false],
+    [`'use strict'; 'use client'; export {};`, false],
+  ])('recognizes directive prologues', async (input, expected) => {
+    const ast = await parseAstAsync(input)
+    expect(hasDirective(ast.body, 'use server')).toBe(expected)
+  })
+})
 
 describe(validateNonAsyncFunction, () => {
   // next.js's validation isn't entirely consistent.
