@@ -130,6 +130,16 @@ export const primitive = 0
     ).toThrow('unsupported non async function')
   })
 
+  test.todo('filter treats destructured bindings as unknown', async () => {
+    const input = `export const { cached } = { cached: async () => {} }`
+    const result = await testTransform(input, {
+      rejectNonAsyncFunction: true,
+      filter: (_name, meta) => meta.valueNode?.type !== 'ObjectExpression',
+    })
+
+    expect(result.exportNames).toEqual(['cached'])
+  })
+
   test.each([
     ['{}', undefined],
     ['[]', undefined],

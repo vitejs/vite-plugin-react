@@ -152,6 +152,7 @@ export function scanModuleExports(
                 // even though associated `meta` doesn't make sense anymore
                 // TODO: Treat destructured bindings as unknown instead of
                 // using the container initializer as each `valueNode`.
+                // See the pending destructured-binding proxy export test.
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,
