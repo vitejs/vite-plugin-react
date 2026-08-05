@@ -48,17 +48,17 @@ export type TransformProxyExportOptions = {
   keep?: boolean
 }
 
+export type TransformProxyExportResult = {
+  exportNames: string[]
+  output: MagicString
+}
+
 export function transformDirectiveProxyExport(
   ast: ESTree.Program,
   options: {
     directive: string
   } & TransformProxyExportOptions,
-):
-  | {
-      exportNames: string[]
-      output: MagicString
-    }
-  | undefined {
+): TransformProxyExportResult | undefined {
   if (!hasDirective(ast.body, options.directive)) {
     return
   }
@@ -96,10 +96,7 @@ export function transformDirectiveProxyExport(
 export function transformProxyExport(
   viteAst: ESTree.Program,
   options: TransformProxyExportOptions,
-): {
-  exportNames: string[]
-  output: MagicString
-} {
+): TransformProxyExportResult {
   const ast = viteAst as unknown as Program
   if (options.keep && typeof options.code !== 'string') {
     throw new Error('`keep` option requires `code`')
