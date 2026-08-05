@@ -17,7 +17,9 @@ function defineTests(f: Fixture) {
     using _errors = expectNoPageError(page)
     await page.goto(f.url())
     await waitForHydration(page)
-    await page.getByRole('link', { name: 'Inline directive' }).click()
+    await page
+      .getByRole('link', { name: 'Inline directive', exact: true })
+      .click()
     await expect(page).toHaveURL(f.url('/inline-directive'))
 
     const example = page.getByTestId('inline-directive')
