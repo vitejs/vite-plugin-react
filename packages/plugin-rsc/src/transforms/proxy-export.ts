@@ -40,6 +40,34 @@ export function transformDirectiveProxyExport(
   return transformProxyExport(ast, options)
 }
 
+/**
+ * Replaces selected exports with proxies created by `runtime` and removes the
+ * original module implementation.
+ *
+ * Conceptually, with a filter that excludes `objectValue`:
+ *
+ * ```js
+ * import { dependency } from './dep'
+ * export async function action() {}
+ * export const objectValue = {}
+ * export { dependency as renamed }
+ * export default async () => {}
+ * ```
+ *
+ * becomes:
+ *
+ * ```js
+ * export const action = __PROXY__('action')
+ * export const renamed = __PROXY__('renamed')
+ * export default __PROXY__('default')
+ * ```
+ *
+ * Unlike `transformWrapExport`, this transform does not evaluate the original
+ * exports. Unknown values are represented only by their export names, so the
+ * caller must filter solely from the available static `ModuleExportMeta`.
+ * `keep` is a specialized mode that retains non-export implementation code and
+ * passes a single variable initializer to `runtime`.
+ */
 export function transformProxyExport(
   viteAst: ESTree.Program,
   options: TransformProxyExportOptions,
@@ -58,6 +86,7 @@ export function transformProxyExport(
   const exportNames: string[] = []
   const filter = options.filter ?? (() => true)
 
+  /** Replaces one complete export statement with zero or more proxy exports. */
   function createExport(node: Node, names: string[]) {
     exportNames.push(...names)
     const newCode = names
@@ -76,6 +105,8 @@ export function transformProxyExport(
     exportNodes.add(node)
 
     if (group.type === 'declaration') {
+      // export function action() {}
+      // -> export const action = __PROXY__('action')
       const entry = group.export
       if (filter(entry.exportName, entry.meta)) {
         validateNonAsyncFunction(options, group.declaration)
@@ -84,6 +115,8 @@ export function transformProxyExport(
         createExport(node, [])
       }
     } else if (group.type === 'variable-declaration') {
+      // export const selected = init(), skipped = {}
+      // -> export const selected = __PROXY__('selected')
       const selectedNames: string[] = []
       for (const declarator of group.declarators) {
         const names = declarator.exports
@@ -100,6 +133,9 @@ export function transformProxyExport(
         selectedNames.push(...names)
       }
       if (options.keep && options.code && selectedNames.length === 1) {
+        // Waku's `keep` mode retains the initializer as the proxy value:
+        // export const value = init()
+        // -> export const value = __PROXY__(init(), 'value')
         if (group.declaration.declarations.length === 1) {
           const decl = group.declaration.declarations[0]!
           if (decl.id.type === 'Identifier' && decl.init) {
@@ -117,6 +153,8 @@ export function transformProxyExport(
       }
       createExport(node, selectedNames)
     } else if (group.type === 'specifiers') {
+      // export { local as renamed } from './dep'
+      // -> export const renamed = __PROXY__('renamed')
       const names = group.exports
         .filter((entry) => {
           if (entry.node.exported.type !== 'Identifier') {
@@ -130,6 +168,8 @@ export function transformProxyExport(
         .map((entry) => entry.exportName)
       createExport(node, names)
     } else if (group.type === 'export-all') {
+      // A namespace re-export has one known name. A bare export-all cannot be
+      // represented without resolving the dependency's export names.
       if (group.node.exported?.type === 'Identifier') {
         const name = group.node.exported.name
         createExport(node, filter(name, {}) ? [name] : [])
@@ -139,6 +179,8 @@ export function transformProxyExport(
         output.remove(node.start, node.end)
       }
     } else if (group.type === 'default') {
+      // export default async () => {}
+      // -> export default __PROXY__('default')
       if (filter('default', group.meta)) {
         validateNonAsyncFunction(options, group.node.declaration)
         createExport(node, ['default'])
@@ -149,6 +191,8 @@ export function transformProxyExport(
   }
 
   if (!options.keep) {
+    // Imports, directives, and implementation statements must not execute in
+    // the graph that consumes these proxies.
     for (const node of ast.body) {
       if (!exportNodes.has(node)) {
         output.remove(node.start, node.end)
