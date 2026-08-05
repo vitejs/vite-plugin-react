@@ -61,7 +61,7 @@ export default function cacheWrapper(
     const encodedArguments = await encodeReply(admittedArgs, {
       temporaryReferences: clientTemporaryReferences,
     })
-    const firstArgument = await admittedArgs[0]
+    const firstArgument = admittedArgs[0]
     const cacheArguments = isCacheCaptureEnvelope(firstArgument)
       ? [
           cacheCaptureType,
@@ -113,22 +113,22 @@ export default function cacheWrapper(
 
 type CacheCaptureEnvelope = {
   type: typeof cacheCaptureType
-  encrypted: string
+  encrypted: string | PromiseLike<string>
 }
 
-export async function encodeCacheCaptures(
-  captures: unknown[],
-): Promise<CacheCaptureEnvelope> {
+export function encodeCacheCaptures(captures: unknown[]): CacheCaptureEnvelope {
+  // Keep the sentinel envelope synchronous so the cache wrapper can identify it
+  // without awaiting the argument; only the encrypted payload needs to be async.
   return {
     type: cacheCaptureType,
-    encrypted: await encryptActionBoundArgs(captures),
+    encrypted: encryptActionBoundArgs(captures),
   }
 }
 
 export async function decodeCacheCaptures(
-  envelope: CacheCaptureEnvelope | Promise<CacheCaptureEnvelope>,
+  envelope: CacheCaptureEnvelope,
 ): Promise<unknown[]> {
-  const { encrypted } = await envelope
+  const { encrypted } = envelope
   const captures = await decryptActionBoundArgs(Promise.resolve(encrypted))
   if (!Array.isArray(captures)) {
     throw new Error('Invalid cache capture payload')
@@ -137,13 +137,20 @@ export async function decodeCacheCaptures(
 }
 
 function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
+  const encrypted =
+    typeof value === 'object' && value !== null && 'encrypted' in value
+      ? value.encrypted
+      : undefined
   return (
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
     value.type === cacheCaptureType &&
-    'encrypted' in value &&
-    typeof value.encrypted === 'string'
+    (typeof encrypted === 'string' ||
+      (typeof encrypted === 'object' &&
+        encrypted !== null &&
+        'then' in encrypted &&
+        typeof encrypted.then === 'function'))
   )
 }
 
