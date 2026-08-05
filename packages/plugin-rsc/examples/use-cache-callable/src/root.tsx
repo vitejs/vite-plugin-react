@@ -1,5 +1,7 @@
+import { FileDirectiveExtraArgumentsServer } from './features/file-directive-extra-arguments/server'
 import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
+import { InlineDirectiveExtraArgumentsServer } from './features/inline-directive-extra-arguments/server'
 import { InlineDirective } from './features/inline-directive/server'
 
 const routes = [
@@ -23,6 +25,20 @@ const routes = [
     description:
       'A client component imports a cached module export through its generated proxy.',
     Component: FileDirectiveFromClientServer,
+  },
+  {
+    path: '/file-directive-extra-arguments',
+    title: 'File directive extra arguments',
+    description:
+      'A zero-parameter cached module export ignores FormData supplied by React.',
+    Component: FileDirectiveExtraArgumentsServer,
+  },
+  {
+    path: '/inline-directive-extra-arguments',
+    title: 'Inline directive extra arguments',
+    description:
+      'A zero-parameter inline cached function currently includes FormData supplied by React.',
+    Component: InlineDirectiveExtraArgumentsServer,
   },
 ]
 
