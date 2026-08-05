@@ -4,28 +4,14 @@ import { useState } from 'react'
 
 export function ProtectedCapturesClient(props: {
   action: (formData: FormData) => Promise<void>
-  capture: string
   executionCount: number
   resetAction: () => Promise<void>
   result: string
-  selectCaptureAction: (formData: FormData) => Promise<void>
 }) {
   const [submissions, setSubmissions] = useState(0)
 
   return (
     <>
-      <form action={props.selectCaptureAction}>
-        <button name="capture" value="first">
-          First capture
-        </button>{' '}
-        <button name="capture" value="second">
-          Second capture
-        </button>
-        <p>
-          Selected capture:{' '}
-          <output data-testid="capture">{props.capture}</output>
-        </p>
-      </form>
       <form
         action={props.action}
         data-testid="protected-captures"

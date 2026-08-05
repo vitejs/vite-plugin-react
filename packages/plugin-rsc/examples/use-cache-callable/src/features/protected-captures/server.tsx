@@ -14,13 +14,25 @@ export function ProtectedCaptures() {
   }
 
   return (
-    <ProtectedCapturesClient
-      action={cachedAction}
-      capture={state.capture}
-      executionCount={state.executionCount}
-      resetAction={resetAction}
-      result={state.result}
-      selectCaptureAction={selectCaptureAction}
-    />
+    <>
+      <form action={selectCaptureAction}>
+        <button name="capture" value="first">
+          First capture
+        </button>{' '}
+        <button name="capture" value="second">
+          Second capture
+        </button>
+        <p>
+          Selected capture:{' '}
+          <output data-testid="capture">{state.capture}</output>
+        </p>
+      </form>
+      <ProtectedCapturesClient
+        action={cachedAction}
+        executionCount={state.executionCount}
+        resetAction={resetAction}
+        result={state.result}
+      />
+    </>
   )
 }
