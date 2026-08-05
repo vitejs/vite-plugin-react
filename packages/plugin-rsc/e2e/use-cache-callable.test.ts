@@ -53,7 +53,9 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('captured + beta')
   })
 
-  test('inline directive cache hit after hydrated reload', async ({ page }) => {
+  test('inline directive cache miss after hydrated reload', async ({
+    page,
+  }) => {
     using _errors = expectNoPageError(page)
     await page.goto(f.url('/inline-directive'))
     await waitForHydration(page)
@@ -65,8 +67,9 @@ function defineTests(f: Fixture) {
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(executionCount).toHaveText('0')
 
-    // Unlike current Next.js behavior, this framework strips React's `$ACTION_*`
-    // fields from cache identity, so a fresh SSR form preserves the cache hit.
+    // A fresh SSR form has new encrypted `$ACTION_*` fields, so the FormData cache
+    // argument changes. A framework can avoid this with custom form handling that
+    // passes only application fields, as the protected-captures example does.
     // https://github.com/hi-ogawa/reproductions/tree/main/next-use-cache-form-reload
     // alpha (cache miss)
     await submit(page, example)
@@ -74,12 +77,12 @@ function defineTests(f: Fixture) {
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('captured + alpha')
 
-    // alpha after reload (cache hit)
+    // alpha after reload (cache miss)
     await page.reload()
     await waitForHydration(page)
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
-    await expect(executionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('2')
     await expect(result).toHaveText('captured + alpha')
   })
 
