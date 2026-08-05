@@ -43,7 +43,7 @@ export function callableCachePlugin(): Plugin {
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
               runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta.valueNode)),
+                runtime(value, name, getCacheWrapperOptions(meta)),
               // Next.js calls rejecting primitive literals while permitting
               // objects and arrays arbitrary, but keeps the latter for metadata
               // and viewport exports.
@@ -58,7 +58,7 @@ export function callableCachePlugin(): Plugin {
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
               runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta.valueNode)),
+                runtime(value, name, getCacheWrapperOptions(meta)),
               encode: (value) => `$$encryptCacheCaptures(${value})`,
               decode: (value) => `await $$decryptCacheCaptures(${value})`,
             })
@@ -121,8 +121,9 @@ export function callableCachePlugin(): Plugin {
 }
 
 function getCacheWrapperOptions(
-  node: ModuleExportMeta['valueNode'],
+  meta: Pick<ModuleExportMeta, 'valueNode'>,
 ): CacheWrapperOptions {
+  const node = meta.valueNode
   if (
     node?.type !== 'FunctionDeclaration' &&
     node?.type !== 'FunctionExpression' &&
