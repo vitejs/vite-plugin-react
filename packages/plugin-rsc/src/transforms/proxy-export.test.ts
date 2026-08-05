@@ -130,16 +130,19 @@ export const primitive = 0
     ).toThrow('unsupported non async function')
   })
 
-  test.each(['{}', '[]'])(
-    'validates empty binding %s without filter',
-    async (id) => {
-      await expect(
-        testTransform(`export const ${id} = ${id}`, {
-          rejectNonAsyncFunction: true,
-        }),
-      ).rejects.toThrow('unsupported non async function')
-    },
-  )
+  test.each([
+    ['{}', undefined],
+    ['[]', undefined],
+    ['{}', () => true],
+    ['[]', () => true],
+  ])('validates empty binding %s with filter %s', async (id, filter) => {
+    await expect(
+      testTransform(`export const ${id} = ${id}`, {
+        rejectNonAsyncFunction: true,
+        filter,
+      }),
+    ).rejects.toThrow('unsupported non async function')
+  })
 
   test('default function', async () => {
     const input = `export default function Fn() {}`
