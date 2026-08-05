@@ -1,19 +1,17 @@
-import type { ExportDefaultDeclaration } from 'estree'
+import type { Directive, ExportDefaultDeclaration } from 'estree'
 import type { Identifier, Node, Pattern, Program } from 'estree'
 import type { ESTree } from 'vite'
+
+export function isDirective(node: Node): node is Directive {
+  return node.type === 'ExpressionStatement' && 'directive' in node
+}
 
 export function hasDirective(
   viteBody: ESTree.Program['body'],
   directive: string,
 ): boolean {
   const body = viteBody as unknown as Program['body']
-  return !!body.find(
-    (stmt) =>
-      stmt.type === 'ExpressionStatement' &&
-      stmt.expression.type === 'Literal' &&
-      typeof stmt.expression.value === 'string' &&
-      stmt.expression.value === directive,
-  )
+  return body.some((stmt) => isDirective(stmt) && stmt.directive === directive)
 }
 
 // Copied from periscopic `extract_names` / `extract_identifiers`

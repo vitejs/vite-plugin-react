@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { transformHoistInlineDirective } from './hoist'
+import { findDirectives, transformHoistInlineDirective } from './hoist'
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob(
@@ -126,6 +126,43 @@ async function f() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('ignores strings outside a function directive prologue', async () => {
+    const input = `
+async function initialized() {
+  initialize();
+  "use server";
+}
+
+async function parenthesized() {
+  ("use server");
+}
+`
+    expect(await testTransform(input)).toBeUndefined()
+  })
+
+  it('recognizes a directive after another prologue directive', async () => {
+    const input = `
+async function action() {
+  "use strict";
+  "use server";
+}
+`
+    expect(await testTransformNames(input)).toEqual(['$$hoist_0_action'])
+  })
+
+  it('finds directives only in directive-capable bodies', async () => {
+    const input = `
+{
+  "use server";
+}
+async function action() {
+  "use server";
+}
+`
+    const ast = await parseAstAsync(input)
+    expect(findDirectives(ast, 'use server')).toHaveLength(1)
   })
 
   it('top level', async () => {
