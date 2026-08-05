@@ -153,6 +153,7 @@ export function scanModuleExports(
                 // TODO: Treat destructured bindings as unknown instead of
                 // using the container initializer as each `valueNode`.
                 // See the destructured-binding proxy export regression test.
+                // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1787-L1815
                 exports: extractNames(declarator.id).map((name) => ({
                   localName: name,
                   exportName: name,
