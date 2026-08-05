@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/use-cache-callable/src/features/protected-captures/client.tsx
+  s_ffbf457ad007b1::t_07eaf22a45f98e 6,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f572f1a9c1e7fcb08bbb2fc346567577910886be",
+  "prompts": {},
+  "sessions": {
+    "s_ffbf457ad007b1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02ffb3fa6ffeO4sB59WNCNmVfj",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
