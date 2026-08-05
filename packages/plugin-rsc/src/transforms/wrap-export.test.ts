@@ -369,8 +369,8 @@ export default Page;
   test('filter value node', async () => {
     const input = `\
 export const action = async () => {}
-export const metadata = {}
-export const tags = []
+export const objectValue = {}
+export const arrayValue = []
 `
     const ast = await parseAstAsync(input)
     const result = transformWrapExport(input, ast, {
@@ -384,8 +384,8 @@ export const tags = []
     expect(result.exportNames).toEqual(['action'])
     expect(result.output.toString()).toMatchInlineSnapshot(`
       "let action = async () => {}
-      export const metadata = {}
-      export const tags = []
+      export const objectValue = {}
+      export const arrayValue = []
       action = /* #__PURE__ */ $$wrap(action, "action");
       export { action };
       "

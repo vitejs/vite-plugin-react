@@ -89,7 +89,7 @@ export const { x, y: [z] } = { x: 0, y: [1] };
 
   test('filter value node', async () => {
     const input = `\
-export const cached = async () => {}, metadata = {}, tags = []
+export const cached = async () => {}, objectValue = {}, arrayValue = []
 export const unknown = createCached()
 export const primitive = 0
 `
@@ -112,7 +112,7 @@ export const primitive = 0
   })
 
   test('filter runs before validation', async () => {
-    const input = `export const cached = async () => {}, metadata = {}`
+    const input = `export const cached = async () => {}, objectValue = {}`
     const ast = await parseAstAsync(input)
     const options: TransformProxyExportOptions = {
       code: input,
