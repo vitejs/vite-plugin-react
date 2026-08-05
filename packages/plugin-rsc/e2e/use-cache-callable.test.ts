@@ -90,6 +90,7 @@ function defineTests(f: Fixture) {
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('first + alpha')
 
     // The same invocation with a different decoded capture is a cache miss.
     await page.getByRole('button', { name: 'Second capture' }).click()
@@ -104,6 +105,7 @@ function defineTests(f: Fixture) {
     await submit(page, example)
     await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('first + alpha')
   })
 
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
