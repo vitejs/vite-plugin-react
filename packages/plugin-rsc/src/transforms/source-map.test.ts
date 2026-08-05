@@ -65,27 +65,45 @@ describe('source map fixtures', () => {
     ['./fixtures/source-map/proxy-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
   )
+  const proxyExportFixtureVariants: Record<
+    string,
+    {
+      name: string
+      keep?: boolean
+      ignoreExportAllDeclaration?: boolean
+    }[]
+  > = {
+    './fixtures/source-map/proxy-export/export-all-ignore.js': [
+      { name: 'proxy-export', ignoreExportAllDeclaration: true },
+    ],
+    './fixtures/source-map/proxy-export/keep.js': [
+      { name: 'proxy-export' },
+      { name: 'proxy-export-keep', keep: true },
+    ],
+  }
   for (const [file, load] of Object.entries(proxyExportFixtures)) {
-    test(`proxy-export/${path.basename(file)}`, async () => {
+    const fixtureName = file.slice('./fixtures/source-map/proxy-export/'.length)
+    test(`proxy-export/${fixtureName}`, async () => {
       const input = ((await load()) as any).default as string
       const ast = await parseAstAsync(input)
-      const result = transformProxyExport(ast, {
-        code: input,
-        keep: path.basename(file) === 'keep.js',
-        ignoreExportAllDeclaration:
-          path.basename(file) === 'export-all-ignore.js',
-        runtime: (name, meta) =>
-          meta?.value
-            ? `createServerReference(${meta.value}, ${JSON.stringify(name)})`
-            : `createServerReference(${JSON.stringify(name)})`,
-      })
-      const outputs = [
-        {
-          name: 'proxy-export',
+      const variants = proxyExportFixtureVariants[file] ?? [
+        { name: 'proxy-export' },
+      ]
+      const outputs = variants.map(({ name, ...options }) => {
+        const result = transformProxyExport(ast, {
+          code: input,
+          ...options,
+          runtime: (name, meta) =>
+            meta?.value
+              ? `createServerReference(${meta.value}, ${JSON.stringify(name)})`
+              : `createServerReference(${JSON.stringify(name)})`,
+        })
+        return {
+          name,
           output: result.output,
           references: result.exportNames,
-        },
-      ]
+        }
+      })
       await expect(
         formatSourceMapMarkdownFixture(input, outputs),
       ).toMatchFileSnapshot(file + '.snap.md')

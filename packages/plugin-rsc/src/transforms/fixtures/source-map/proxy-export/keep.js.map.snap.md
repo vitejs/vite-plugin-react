@@ -1,6 +1,15 @@
 ## proxy-export
 
 ```txt
+(2:0) "// This represents Waku's output after its DCE retains the dependencies and\n" --> (2:0) "// This represents Waku's output after its DCE retains the dependencies and\n"
+(3:0) "// initializers that need to survive proxy generation.\n" --> (3:0) "// initializers that need to survive proxy generation.\n"
+(7:0) "export const countAtom = atom(local)\n" --> (7:0) "export const countAtom = /* #__PURE__ */ createServerReference(\"countAtom\");\n"
+(9:0) "export const Component = () => {\n" --> (10:0) "export const Component = /* #__PURE__ */ createServerReference(\"Component\");\n"
+```
+
+## proxy-export-keep
+
+```txt
 (0:0) "'use client'\n" --> (0:0) "'use client'\n"
 (2:0) "// This represents Waku's output after its DCE retains the dependencies and\n" --> (2:0) "// This represents Waku's output after its DCE retains the dependencies and\n"
 (3:0) "// initializers that need to survive proxy generation.\n" --> (3:0) "// initializers that need to survive proxy generation.\n"
