@@ -38,7 +38,7 @@ const routes = [
     path: '/inline-directive-extra-arguments',
     title: 'Inline directive extra arguments',
     description:
-      'A zero-parameter inline cached function currently includes FormData supplied by React.',
+      'A zero-parameter inline cached function ignores FormData supplied by React.',
     Component: InlineDirectiveExtraArgumentsServer,
   },
   {

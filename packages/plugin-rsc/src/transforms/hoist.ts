@@ -1,5 +1,8 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
+  ArrowFunctionExpression,
+  FunctionDeclaration,
+  FunctionExpression,
   Program,
   Literal,
   Node,
@@ -94,7 +97,13 @@ export function transformHoistInlineDirective(
     runtime: (
       value: string,
       name: string,
-      meta: { directiveMatch: RegExpMatchArray },
+      meta: {
+        directiveMatch: RegExpMatchArray
+        valueNode:
+          | ArrowFunctionExpression
+          | FunctionDeclaration
+          | FunctionExpression
+      },
     ) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
@@ -207,7 +216,7 @@ export function transformHoistInlineDirective(
         const runtimeCode = `/* #__PURE__ */ ${runtime(
           implementationName,
           newName,
-          { directiveMatch: match },
+          { directiveMatch: match, valueNode: node },
         )}`
         if (options.hoistRuntime) {
           runtimeHoists.push(

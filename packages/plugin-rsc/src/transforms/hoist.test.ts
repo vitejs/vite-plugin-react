@@ -91,7 +91,7 @@ describe(transformHoistInlineDirective, () => {
         `$$register(${value}, "<id>", ${JSON.stringify(name)}` +
         `${
           options?.directive instanceof RegExp
-            ? `, ${JSON.stringify(meta)}`
+            ? `, ${JSON.stringify({ directiveMatch: meta.directiveMatch })}`
             : ''
         })`,
       directive: options?.directive ?? 'use server',
@@ -126,6 +126,35 @@ async function f() {
 }
 `
     expect(await testTransform(input)).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('exposes the source function node to the runtime', async () => {
+    const input = `
+async function cached(value, { offset }, ...rest) {
+  "use cache";
+  return [value, offset, rest];
+}
+`
+    const ast = await parseAstAsync(input)
+    const valueNodes: unknown[] = []
+    transformHoistInlineDirective(input, ast, {
+      directive: 'use cache',
+      runtime: (value, _name, meta) => {
+        valueNodes.push(meta.valueNode)
+        return value
+      },
+    })
+
+    expect(valueNodes).toMatchObject([
+      {
+        type: 'FunctionDeclaration',
+        params: [
+          { type: 'Identifier', name: 'value' },
+          { type: 'ObjectPattern' },
+          { type: 'RestElement' },
+        ],
+      },
+    ])
   })
 
   it('ignores strings outside a function directive prologue', async () => {
