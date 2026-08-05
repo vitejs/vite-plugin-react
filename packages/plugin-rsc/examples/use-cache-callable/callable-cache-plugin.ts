@@ -58,8 +58,8 @@ export function callableCachePlugin(): Plugin {
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
               runtime: (value, name) => runtime(value, name, {}),
-              encode: (value) => `$$encodeCacheCaptures(${value})`,
-              decode: (value) => `await $$decodeCacheCaptures(${value})`,
+              encode: (value) => `$$encryptCacheCaptures(${value})`,
+              decode: (value) => `await $$decryptCacheCaptures(${value})`,
             })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
@@ -71,7 +71,7 @@ export function callableCachePlugin(): Plugin {
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
         result.output.prepend(
-          `import $$cacheWrapper, { encodeCacheCaptures as $$encodeCacheCaptures, decodeCacheCaptures as $$decodeCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
+          `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures, decryptCacheCaptures as $$decryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
             `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )
         return {

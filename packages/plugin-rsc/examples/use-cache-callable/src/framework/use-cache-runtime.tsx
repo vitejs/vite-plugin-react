@@ -68,7 +68,7 @@ export default function cacheWrapper(
     if (isCacheCaptureEnvelope(firstArgument)) {
       const cacheArguments = [
         cacheCaptureType,
-        ...(await decodeCacheCaptures(firstArgument)),
+        ...(await decryptCacheCaptures(firstArgument)),
         ...admittedArgs.slice(1),
       ]
       encodedCacheArguments = await encodeReply(cacheArguments, {
@@ -116,7 +116,9 @@ type CacheCaptureEnvelope = {
   encrypted: string | PromiseLike<string>
 }
 
-export function encodeCacheCaptures(captures: unknown[]): CacheCaptureEnvelope {
+export function encryptCacheCaptures(
+  captures: unknown[],
+): CacheCaptureEnvelope {
   // Keep the sentinel envelope synchronous so the cache wrapper can identify it
   // without awaiting the argument; only the encrypted payload needs to be async.
   return {
@@ -125,7 +127,7 @@ export function encodeCacheCaptures(captures: unknown[]): CacheCaptureEnvelope {
   }
 }
 
-export async function decodeCacheCaptures(
+export async function decryptCacheCaptures(
   envelope: CacheCaptureEnvelope,
 ): Promise<unknown[]> {
   const { encrypted } = envelope
