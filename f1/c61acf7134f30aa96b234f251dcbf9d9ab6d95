@@ -1,0 +1,21 @@
+packages/plugin-rsc/e2e/use-cache-callable.test.ts
+  s_975761c42dddcd::t_f6800afe47a641 276-306
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-argument-admission-gap/client.tsx
+  s_975761c42dddcd::t_75a33baba2ddc4 1-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f1c61acf7134f30aa96b234f251dcbf9d9ab6d95",
+  "prompts": {},
+  "sessions": {
+    "s_975761c42dddcd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03011a159ffeRgXpz6nZx1yOoJ",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
