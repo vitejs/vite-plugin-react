@@ -111,6 +111,51 @@ export default function cacheWrapper(
   return cachedFn
 }
 
+export function revalidateCache(cachedFn: Function) {
+  cachedFnCacheEntries.delete(cachedFn)
+}
+
+export function resetCache() {
+  cachedFnCacheEntries = new WeakMap()
+}
+
+class StreamCacher {
+  constructor(private stream: ReadableStream<Uint8Array>) {}
+  get(): ReadableStream<Uint8Array> {
+    const [returnStream, savedStream] = this.stream.tee()
+    this.stream = savedStream
+    return returnStream
+  }
+}
+
+async function replyToCacheKey(reply: string | FormData) {
+  if (typeof reply === 'string') {
+    return reply
+  }
+  // `new Response(reply).arrayBuffer()` would serialize FormData with a random
+  // multipart boundary, so encode entries directly to keep cache keys stable.
+  const parts: BlobPart[] = []
+  for (const [name, value] of reply) {
+    if (typeof value === 'string') {
+      parts.push(JSON.stringify([name, 'string', value]), '\0')
+    } else {
+      parts.push(
+        JSON.stringify([name, 'file']),
+        '\0',
+        await value.arrayBuffer(),
+        '\0',
+      )
+    }
+  }
+  const buffer = await crypto.subtle.digest(
+    'SHA-256',
+    await new Blob(parts).arrayBuffer(),
+  )
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+}
+
+// use fixed sentinel value to detect the existence of cache captures via runtime logic
+// without transform-informed metadata
 type CacheCaptureEnvelope = {
   type: typeof cacheCaptureType
   encrypted: string | PromiseLike<string>
@@ -154,47 +199,4 @@ function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
         'then' in encrypted &&
         typeof encrypted.then === 'function'))
   )
-}
-
-export function revalidateCache(cachedFn: Function) {
-  cachedFnCacheEntries.delete(cachedFn)
-}
-
-export function resetCache() {
-  cachedFnCacheEntries = new WeakMap()
-}
-
-class StreamCacher {
-  constructor(private stream: ReadableStream<Uint8Array>) {}
-  get(): ReadableStream<Uint8Array> {
-    const [returnStream, savedStream] = this.stream.tee()
-    this.stream = savedStream
-    return returnStream
-  }
-}
-
-async function replyToCacheKey(reply: string | FormData) {
-  if (typeof reply === 'string') {
-    return reply
-  }
-  // `new Response(reply).arrayBuffer()` would serialize FormData with a random
-  // multipart boundary, so encode entries directly to keep cache keys stable.
-  const parts: BlobPart[] = []
-  for (const [name, value] of reply) {
-    if (typeof value === 'string') {
-      parts.push(JSON.stringify([name, 'string', value]), '\0')
-    } else {
-      parts.push(
-        JSON.stringify([name, 'file']),
-        '\0',
-        await value.arrayBuffer(),
-        '\0',
-      )
-    }
-  }
-  const buffer = await crypto.subtle.digest(
-    'SHA-256',
-    await new Blob(parts).arrayBuffer(),
-  )
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
 }
