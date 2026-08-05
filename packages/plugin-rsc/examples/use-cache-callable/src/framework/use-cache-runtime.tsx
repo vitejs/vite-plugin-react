@@ -8,12 +8,17 @@ import {
   decodeReply,
   renderToReadableStream,
 } from '@vitejs/plugin-rsc/rsc/server'
+import {
+  decryptActionBoundArgs,
+  encryptActionBoundArgs,
+} from '@vitejs/plugin-rsc/utils/encryption-runtime'
 
 // based on
 // https://github.com/vercel/next.js/pull/70435
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
 const cachedFnMap = new WeakMap<Function, unknown>()
+const cacheCaptureType = 'use-cache-captures'
 let cachedFnCacheEntries = new WeakMap<
   Function,
   Record<string, Promise<StreamCacher>>
@@ -41,7 +46,21 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
     const encodedArguments = await encodeReply(args, {
       temporaryReferences: clientTemporaryReferences,
     })
-    const serializedCacheKey = await replyToCacheKey(encodedArguments)
+    const firstArgument = await args[0]
+    const cacheArguments = isCacheCaptureEnvelope(firstArgument)
+      ? [
+          cacheCaptureType,
+          ...(await decodeCacheCaptures(firstArgument)),
+          ...args.slice(1),
+        ]
+      : args
+    const encodedCacheArguments =
+      cacheArguments === args
+        ? encodedArguments
+        : await encodeReply(cacheArguments, {
+            temporaryReferences: createClientTemporaryReferenceSet(),
+          })
+    const serializedCacheKey = await replyToCacheKey(encodedCacheArguments)
 
     // cache `fn` result as stream
     // (cache value is promise so that it dedupes concurrent async calls)
@@ -75,6 +94,42 @@ export default function cacheWrapper(fn: (...args: any[]) => Promise<unknown>) {
   cachedFnMap.set(fn, cachedFn)
 
   return cachedFn
+}
+
+type CacheCaptureEnvelope = {
+  type: typeof cacheCaptureType
+  encrypted: string
+}
+
+export async function encodeCacheCaptures(
+  captures: unknown[],
+): Promise<CacheCaptureEnvelope> {
+  return {
+    type: cacheCaptureType,
+    encrypted: await encryptActionBoundArgs(captures),
+  }
+}
+
+export async function decodeCacheCaptures(
+  envelope: CacheCaptureEnvelope | Promise<CacheCaptureEnvelope>,
+): Promise<unknown[]> {
+  const { encrypted } = await envelope
+  const captures = await decryptActionBoundArgs(Promise.resolve(encrypted))
+  if (!Array.isArray(captures)) {
+    throw new Error('Invalid cache capture payload')
+  }
+  return captures
+}
+
+function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === cacheCaptureType &&
+    'encrypted' in value &&
+    typeof value.encrypted === 'string'
+  )
 }
 
 export function revalidateCache(cachedFn: Function) {

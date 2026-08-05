@@ -15,6 +15,10 @@ test.describe('build', () => {
 function defineTests(f: Fixture) {
   test('inline directive', async ({ page }) => {
     using _errors = expectNoPageError(page)
+    const rscResponse = await page.request.get(f.url('/inline-directive_.rsc'))
+    expect(rscResponse.ok()).toBe(true)
+    expect(await rscResponse.text()).not.toContain('capture-secret')
+
     await page.goto(f.url())
     await waitForHydration(page)
     await page.getByRole('link', { name: 'Inline directive' }).click()
@@ -22,11 +26,13 @@ function defineTests(f: Fixture) {
 
     const example = page.getByTestId('inline-directive')
     const submissionCount = example.getByTestId('submission-count')
+    const capture = page.getByTestId('capture')
     const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
     const argument = example.getByRole('textbox', { name: 'Cache key' })
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(submissionCount).toHaveText('0')
+    await expect(capture).toHaveText('first')
     await expect(executionCount).toHaveText('0')
     await expect(result).toHaveText('not called')
 
@@ -35,20 +41,36 @@ function defineTests(f: Fixture) {
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('captured + alpha')
+    await expect(result).toHaveText('first + alpha')
 
     // alpha (cache hit)
     await submit(page, example)
     await expect(submissionCount).toHaveText('2')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('captured + alpha')
+    await expect(result).toHaveText('first + alpha')
 
     // beta (cache miss)
     await argument.fill('beta')
     await submit(page, example)
     await expect(submissionCount).toHaveText('3')
     await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('captured + beta')
+    await expect(result).toHaveText('first + beta')
+
+    // The same invocation with a different decoded capture is a cache miss.
+    await argument.fill('alpha')
+    await selectCapture(page, 'Second capture')
+    await expect(capture).toHaveText('second')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('4')
+    await expect(executionCount).toHaveText('3')
+    await expect(result).toHaveText('second + alpha')
+
+    // Re-encrypting the first logical capture still addresses its existing entry.
+    await selectCapture(page, 'First capture')
+    await expect(capture).toHaveText('first')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('5')
+    await expect(executionCount).toHaveText('3')
   })
 
   testNoJs('inline directive progressive enhancement', async ({ page }) => {
@@ -72,21 +94,21 @@ function defineTests(f: Fixture) {
     await call.click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('captured + alpha')
+    await expect(result).toHaveText('first + alpha')
 
     // alpha (cache hit)
     await argument.fill('alpha')
     await call.click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('captured + alpha')
+    await expect(result).toHaveText('first + alpha')
 
     // beta (cache miss)
     await argument.fill('beta')
     await call.click()
     await expect(submissionCount).toHaveText('0')
     await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('captured + beta')
+    await expect(result).toHaveText('first + beta')
   })
 
   test('file directive from server', async ({ page }) => {
@@ -251,7 +273,7 @@ async function submit(page: Page, form: Locator) {
   // the server-rendered execution count and result unchanged. Those assertions do
   // not prove that the server action and subsequent render have completed, so wait
   // for the action response before proceeding.
-  await Promise.all([
+  const [response] = await Promise.all([
     page.waitForResponse(
       (response) =>
         response.request().method() === 'POST' &&
@@ -259,4 +281,19 @@ async function submit(page: Page, form: Locator) {
     ),
     form.getByRole('button', { name: 'Call cached function' }).click(),
   ])
+  expect(response.ok()).toBe(true)
+  expect(await response.text()).not.toContain('capture-secret')
+}
+
+async function selectCapture(page: Page, name: string) {
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('_.rsc'),
+    ),
+    page.getByRole('button', { name }).click(),
+  ])
+  expect(response.ok()).toBe(true)
+  expect(await response.text()).not.toContain('capture-secret')
 }
