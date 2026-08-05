@@ -14,13 +14,6 @@ const routes = [
     Component: InlineDirective,
   },
   {
-    path: '/protected-captures',
-    title: 'Protected captures',
-    description:
-      'This inline cached function transports encrypted captures while using their decoded values for cache identity.',
-    Component: ProtectedCaptures,
-  },
-  {
     path: '/file-directive-from-server',
     title: 'File directive from server',
     description:
@@ -47,6 +40,13 @@ const routes = [
     description:
       'A zero-parameter inline cached function currently includes FormData supplied by React.',
     Component: InlineDirectiveExtraArgumentsServer,
+  },
+  {
+    path: '/protected-captures',
+    title: 'Protected captures',
+    description:
+      'This inline cached function transports encrypted captures while using their decoded values for cache identity.',
+    Component: ProtectedCaptures,
   },
 ]
 
