@@ -108,8 +108,16 @@ export function transformProxyExport(
   const exportNames: string[] = []
   const filter = options.filter ?? (() => true)
 
-  /** Replaces one complete export statement with proxy exports. */
+  function removeNode(node: Node) {
+    output.remove(node.start, node.end)
+  }
+
+  /** Replaces one complete export statement with the selected proxy exports. */
   function createExport(node: Node, names: string[]) {
+    if (names.length === 0) {
+      removeNode(node)
+      return
+    }
     exportNames.push(...names)
     const newCode = names
       .map(
@@ -119,10 +127,6 @@ export function transformProxyExport(
       )
       .join('')
     output.update(node.start, node.end, newCode)
-  }
-
-  function removeNode(node: Node) {
-    output.remove(node.start, node.end)
   }
 
   const exportNodes = new Set<Node>()
@@ -177,11 +181,7 @@ export function transformProxyExport(
           }
         }
       }
-      if (selectedNames.length > 0) {
-        createExport(node, selectedNames)
-      } else {
-        removeNode(node)
-      }
+      createExport(node, selectedNames)
     } else if (group.type === 'specifiers') {
       // export { local as renamed } from './dep'
       // -> export const renamed = __PROXY__('renamed')
@@ -196,11 +196,7 @@ export function transformProxyExport(
           return filter(entry.exportName, entry.meta)
         })
         .map((entry) => entry.exportName)
-      if (names.length > 0) {
-        createExport(node, names)
-      } else {
-        removeNode(node)
-      }
+      createExport(node, names)
     } else if (group.type === 'export-all') {
       // A namespace re-export has one known name. A bare export-all cannot be
       // represented without resolving the dependency's export names.
