@@ -35,6 +35,7 @@ export default function cacheWrapper(
     // Callers can supply more arguments than a cached function declares. For example,
     // `useActionState(fn)` passes state and form data even to `function fn() {}`.
     // Strip those extras so they affect neither the cache key nor execution.
+    // https://github.com/vercel/next.js/pull/72506
     const admittedArgs =
       options.argumentCount === undefined
         ? args
