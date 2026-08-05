@@ -22,7 +22,6 @@ export type CacheWrapperOptions = {
 }
 
 const cachedFnMap = new WeakMap<Function, unknown>()
-const cacheCaptureType = 'use-cache-captures'
 let cachedFnCacheEntries = new WeakMap<
   Function,
   Record<string, Promise<StreamCacher>>
@@ -155,8 +154,10 @@ async function replyToCacheKey(reply: string | FormData) {
 
 // use fixed sentinel value to detect the existence of cache captures via runtime logic
 // without transform-informed metadata
+const CACHE_CAPTURE_TYPE = 'use-cache-captures'
+
 type CacheCaptureEnvelope = {
-  type: typeof cacheCaptureType
+  type: typeof CACHE_CAPTURE_TYPE
   encrypted: string | PromiseLike<string>
 }
 
@@ -166,7 +167,7 @@ export function encryptCacheCaptures(
   // Keep the sentinel envelope synchronous so the cache wrapper can identify it
   // without awaiting the argument; only the encrypted payload needs to be async.
   return {
-    type: cacheCaptureType,
+    type: CACHE_CAPTURE_TYPE,
     encrypted: encryptActionBoundArgs(captures),
   }
 }
@@ -191,7 +192,7 @@ function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
-    value.type === cacheCaptureType &&
+    value.type === CACHE_CAPTURE_TYPE &&
     (typeof encrypted === 'string' ||
       (typeof encrypted === 'object' &&
         encrypted !== null &&
