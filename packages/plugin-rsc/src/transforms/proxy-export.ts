@@ -89,7 +89,7 @@ export function transformProxyExport(
         const names = declarator.exports
           .filter((entry) => filter(entry.exportName, entry.meta))
           .map((entry) => entry.exportName)
-        if (names.length > 0 && declarator.node.init) {
+        if (declarator.node.init && (!options.filter || names.length > 0)) {
           validateNonAsyncFunction(options, declarator.node.init)
         }
         selectedNames.push(...names)
