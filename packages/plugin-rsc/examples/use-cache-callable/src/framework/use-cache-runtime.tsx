@@ -65,6 +65,8 @@ export default function cacheWrapper(
     // rather than the randomized ciphertext used by the transport arguments.
     const firstArgument = admittedArgs[0]
     if (isCacheCaptureEnvelope(firstArgument)) {
+      // TODO: On a cache miss, the hoister-generated implementation decrypts the
+      // original envelope again. A tighter adapter could reuse these captures.
       const cacheArguments = [
         ...(await decryptCacheCaptures(firstArgument)),
         ...admittedArgs.slice(1),
