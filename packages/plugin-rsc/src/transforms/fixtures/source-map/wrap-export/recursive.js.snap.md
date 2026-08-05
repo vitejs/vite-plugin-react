@@ -47,3 +47,18 @@ function recursive(depth) {
 registerServerReference(recursive, "recursive");
 export { recursive };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** recursive
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#ODAACgpleHBvcnQgY29uc3QgcmVjdXJzaXZlID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgicmVjdXJzaXZlIik7CgoyMTEAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGZ1bmN0aW9uIHJlY3Vyc2l2ZShkZXB0aCkge1xuICBpZiAoZGVwdGggPiAwKSByZXR1cm4gcmVjdXJzaXZlKGRlcHRoIC0gMSlcbiAgcmV0dXJuIHJlY3Vyc2l2ZS5tYXJrZXJcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUVBOzsifQ==)
+
+```js
+
+
+export const recursive = /* #__PURE__ */ createServerReference("recursive");
+
+```

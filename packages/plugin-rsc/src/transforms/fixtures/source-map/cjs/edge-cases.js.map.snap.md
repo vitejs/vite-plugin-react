@@ -1,0 +1,28 @@
+## cjs-to-esm
+
+```txt
+[unmapped] --> (0:0) "let __filename = \"/test.js\"; let __dirname = \"/\";\n"
+[unmapped] --> (1:0) "let exports = {}; const module = { exports };\n"
+[unmapped] --> (2:0) "function __cjs_interop__(m) {return m.__cjs_module_runner_transform || \"default\" in m && Object.keys(m).every((k) => k === \"default\" || m[k] === m.default[k]) ? m.default : m;}\n"
+[unmapped] --> (3:0) "const __cjs_to_esm_hoist_0 = __cjs_interop__(await import('te' + 'st'));\n"
+[unmapped] --> (4:0) "const __cjs_to_esm_hoist_1 = __cjs_interop__(await import('test'));\n"
+[unmapped] --> (5:0) "const __cjs_to_esm_hoist_2 = __cjs_interop__(await import('test'));\n"
+(0:0) "const x1 = require" --> (6:0) "const x1 = (__cjs_interop__(await import"
+(0:18) "('te' + 'st')\n" --> (6:40) "('te' + 'st')))\n"
+(1:0) "const x2 = require" --> (7:0) "const x2 = (__cjs_interop__(await import"
+(1:18) "('test')" --> (7:40) "('test')))"
+(1:26) "().test\n" --> (7:50) "().test\n"
+(2:0) "console.log(require" --> (8:0) "console.log((__cjs_interop__(await import"
+(2:19) "('test')" --> (8:41) "('test')))"
+(2:27) ")\n" --> (8:51) ")\n"
+(4:0) "function test() {\n" --> (10:0) "function test() {\n"
+(5:0) "  const y1 = require('te' + 'st')\n" --> (11:0) "  const y1 = __cjs_to_esm_hoist_0\n"
+(6:0) "  const y2 = require('test')" --> (12:0) "  const y2 = __cjs_to_esm_hoist_1"
+(6:28) "().test\n" --> (12:33) "().test\n"
+(7:0) "  consoe.log(require('test')" --> (13:0) "  consoe.log(__cjs_to_esm_hoist_2"
+(7:28) ")\n" --> (13:33) ")\n"
+(8:0) "}\n" --> (14:0) "}\n"
+[unmapped] --> (16:0) ";__vite_ssr_exportAll__(module.exports);\n"
+[unmapped] --> (17:0) "export default module.exports;\n"
+[unmapped] --> (18:0) "export const __cjs_module_runner_transform = true;\n"
+```

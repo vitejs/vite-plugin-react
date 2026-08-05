@@ -45,3 +45,18 @@ async function defaultNamedFunction() {
 registerServerReference(defaultNamedFunction, "default");
 export default defaultNamedFunction;
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** default
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NjgACgpleHBvcnQgZGVmYXVsdCAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJkZWZhdWx0Iik7CgoyMDAAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gZGVmYXVsdE5hbWVkRnVuY3Rpb24oKSB7XG4gIHJldHVybiAnZGVmYXVsdCBuYW1lZCBmdW5jdGlvbiBjYWxsZWQnXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQTs7In0=)
+
+```js
+
+
+export default /* #__PURE__ */ createServerReference("default");
+
+```

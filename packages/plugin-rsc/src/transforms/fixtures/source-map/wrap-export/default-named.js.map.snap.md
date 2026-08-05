@@ -21,3 +21,9 @@
 (2:0) "export default async function defaultNamedFunction() {\n" --> (6:0) "registerServerReference(defaultNamedFunction, \"default\");\n"
 (2:0) "export default async function defaultNamedFunction() {\n" --> (7:0) "export default defaultNamedFunction;\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export default async function defaultNamedFunction() {\n" --> (2:0) "export default /* #__PURE__ */ createServerReference(\"default\");\n"
+```

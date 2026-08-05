@@ -23,3 +23,10 @@
 (0:0) "export async function direct() {}\n" --> (8:0) "export { direct };\n"
 [unmapped] --> (10:0) "registerServerReference(indirect, \"indirect\");"
 ```
+
+## proxy-export
+
+```txt
+(0:0) "export async function direct() {}\n" --> (0:0) "export const direct = /* #__PURE__ */ createServerReference(\"direct\");\n"
+(3:0) "export { indirect }\n" --> (4:0) "export const indirect = /* #__PURE__ */ createServerReference(\"indirect\");\n"
+```

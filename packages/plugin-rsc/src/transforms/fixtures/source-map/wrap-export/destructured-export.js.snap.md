@@ -44,3 +44,20 @@ const { action } = { action: source }
 registerServerReference(action, "action");
 export { action };
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** action
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzYACgoKCmV4cG9ydCBjb25zdCBhY3Rpb24gPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJhY3Rpb24iKTsKCjIwNgB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5jb25zdCBzb3VyY2UgPSBhc3luYyAoKSA9PiAnZGVzdHJ1Y3R1cmVkIGV4cG9ydCBjYWxsZWQnXG5cbmV4cG9ydCBjb25zdCB7IGFjdGlvbiB9ID0geyBhY3Rpb246IHNvdXJjZSB9XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7OztBQUlBOzsifQ==)
+
+```js
+
+
+
+
+export const action = /* #__PURE__ */ createServerReference("action");
+
+```

@@ -18,3 +18,9 @@
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
 [unmapped] --> (6:0) "registerServerReference(action, \"renamed\");"
 ```
+
+## proxy-export
+
+```txt
+(3:0) "export { action as renamed }\n" --> (3:0) "export const renamed = /* #__PURE__ */ createServerReference(\"renamed\");\n"
+```

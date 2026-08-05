@@ -44,3 +44,20 @@ action = async () => 'second'
 
 registerServerReference(action, "renamed");
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** renamed
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NzgACgoKZXhwb3J0IGNvbnN0IHJlbmFtZWQgPSAvKiAjX19QVVJFX18gKi8gY3JlYXRlU2VydmVyUmVmZXJlbmNlKCJyZW5hbWVkIik7CgoKMTk2AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmxldCBhY3Rpb24gPSBhc3luYyAoKSA9PiAnZmlyc3QnXG5leHBvcnQgeyBhY3Rpb24gYXMgcmVuYW1lZCB9XG5hY3Rpb24gPSBhc3luYyAoKSA9PiAnc2Vjb25kJ1xuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7OztBQUdBOzs7In0=)
+
+```js
+
+
+
+export const renamed = /* #__PURE__ */ createServerReference("renamed");
+
+
+```

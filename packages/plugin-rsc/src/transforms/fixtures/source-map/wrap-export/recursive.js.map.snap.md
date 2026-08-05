@@ -22,3 +22,9 @@
 (2:0) "export function recursive(depth) {\n" --> (7:0) "registerServerReference(recursive, \"recursive\");\n"
 (2:0) "export function recursive(depth) {\n" --> (8:0) "export { recursive };\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export function recursive(depth) {\n" --> (2:0) "export const recursive = /* #__PURE__ */ createServerReference(\"recursive\");\n"
+```

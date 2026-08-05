@@ -50,3 +50,20 @@ export { localAlias as aliasedAction }
 
 registerServerReference(localAlias, "aliasedAction");
 ```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** aliasedAction
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#OTAACgoKCmV4cG9ydCBjb25zdCBhbGlhc2VkQWN0aW9uID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgiYWxpYXNlZEFjdGlvbiIpOwoKMjA4AHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzZXJ2ZXInXG5cbmFzeW5jIGZ1bmN0aW9uIGxvY2FsQWxpYXMoKSB7XG4gIHJldHVybiAnbG9jYWwgYWxpYXMgY2FsbGVkJ1xufVxuXG5leHBvcnQgeyBsb2NhbEFsaWFzIGFzIGFsaWFzZWRBY3Rpb24gfVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7QUFNQTs7In0=)
+
+```js
+
+
+
+
+export const aliasedAction = /* #__PURE__ */ createServerReference("aliasedAction");
+
+```

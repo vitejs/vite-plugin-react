@@ -1,0 +1,62 @@
+## Input
+
+```js
+'use client'
+
+// This represents Waku's output after its DCE retains the dependencies and
+// initializers that need to survive proxy generation.
+import { atom } from 'jotai/vanilla'
+
+const local = 1
+export const countAtom = atom(local)
+
+export const Component = () => {
+  throw new Error('not available on the server')
+}
+```
+
+## proxy-export
+
+**Status:** transformed
+
+**References:** countAtom, Component
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MjkzAAoKLy8gVGhpcyByZXByZXNlbnRzIFdha3UncyBvdXRwdXQgYWZ0ZXIgaXRzIERDRSByZXRhaW5zIHRoZSBkZXBlbmRlbmNpZXMgYW5kCi8vIGluaXRpYWxpemVycyB0aGF0IG5lZWQgdG8gc3Vydml2ZSBwcm94eSBnZW5lcmF0aW9uLgoKCgpleHBvcnQgY29uc3QgY291bnRBdG9tID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZSgiY291bnRBdG9tIik7CgoKZXhwb3J0IGNvbnN0IENvbXBvbmVudCA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoIkNvbXBvbmVudCIpOwoKNjQzAHsidmVyc2lvbiI6Mywic291cmNlcyI6WyIiXSwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBjbGllbnQnXG5cbi8vIFRoaXMgcmVwcmVzZW50cyBXYWt1J3Mgb3V0cHV0IGFmdGVyIGl0cyBEQ0UgcmV0YWlucyB0aGUgZGVwZW5kZW5jaWVzIGFuZFxuLy8gaW5pdGlhbGl6ZXJzIHRoYXQgbmVlZCB0byBzdXJ2aXZlIHByb3h5IGdlbmVyYXRpb24uXG5pbXBvcnQgeyBhdG9tIH0gZnJvbSAnam90YWkvdmFuaWxsYSdcblxuY29uc3QgbG9jYWwgPSAxXG5leHBvcnQgY29uc3QgY291bnRBdG9tID0gYXRvbShsb2NhbClcblxuZXhwb3J0IGNvbnN0IENvbXBvbmVudCA9ICgpID0+IHtcbiAgdGhyb3cgbmV3IEVycm9yKCdub3QgYXZhaWxhYmxlIG9uIHRoZSBzZXJ2ZXInKVxufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBRUEsQ0FBQyxDQUFDLENBQUMsSUFBSSxDQUFDLFVBQVUsQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQyxPQUFPLENBQUMsR0FBRyxDQUFDLFlBQVksQ0FBQztBQUN4RSxDQUFDLENBQUMsQ0FBQyxZQUFZLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxFQUFFLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxVQUFVOzs7O0FBSXJEOzs7QUFFQTs7In0=)
+
+```js
+
+
+// This represents Waku's output after its DCE retains the dependencies and
+// initializers that need to survive proxy generation.
+
+
+
+export const countAtom = /* #__PURE__ */ createServerReference("countAtom");
+
+
+export const Component = /* #__PURE__ */ createServerReference("Component");
+
+```
+
+## proxy-export-keep
+
+**Status:** transformed
+
+**References:** countAtom, Component
+
+[Source map visualization](https://evanw.github.io/source-map-visualization/#NDI3ACd1c2UgY2xpZW50JwoKLy8gVGhpcyByZXByZXNlbnRzIFdha3UncyBvdXRwdXQgYWZ0ZXIgaXRzIERDRSByZXRhaW5zIHRoZSBkZXBlbmRlbmNpZXMgYW5kCi8vIGluaXRpYWxpemVycyB0aGF0IG5lZWQgdG8gc3Vydml2ZSBwcm94eSBnZW5lcmF0aW9uLgppbXBvcnQgeyBhdG9tIH0gZnJvbSAnam90YWkvdmFuaWxsYScKCmNvbnN0IGxvY2FsID0gMQpleHBvcnQgY29uc3QgY291bnRBdG9tID0gLyogI19fUFVSRV9fICovIGNyZWF0ZVNlcnZlclJlZmVyZW5jZShhdG9tKGxvY2FsKSwgImNvdW50QXRvbSIpOwoKZXhwb3J0IGNvbnN0IENvbXBvbmVudCA9IC8qICNfX1BVUkVfXyAqLyBjcmVhdGVTZXJ2ZXJSZWZlcmVuY2UoKCkgPT4gewogIHRocm93IG5ldyBFcnJvcignbm90IGF2YWlsYWJsZSBvbiB0aGUgc2VydmVyJykKfSwgIkNvbXBvbmVudCIpOwo3ODQAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGNsaWVudCdcblxuLy8gVGhpcyByZXByZXNlbnRzIFdha3UncyBvdXRwdXQgYWZ0ZXIgaXRzIERDRSByZXRhaW5zIHRoZSBkZXBlbmRlbmNpZXMgYW5kXG4vLyBpbml0aWFsaXplcnMgdGhhdCBuZWVkIHRvIHN1cnZpdmUgcHJveHkgZ2VuZXJhdGlvbi5cbmltcG9ydCB7IGF0b20gfSBmcm9tICdqb3RhaS92YW5pbGxhJ1xuXG5jb25zdCBsb2NhbCA9IDFcbmV4cG9ydCBjb25zdCBjb3VudEF0b20gPSBhdG9tKGxvY2FsKVxuXG5leHBvcnQgY29uc3QgQ29tcG9uZW50ID0gKCkgPT4ge1xuICB0aHJvdyBuZXcgRXJyb3IoJ25vdCBhdmFpbGFibGUgb24gdGhlIHNlcnZlcicpXG59XG4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQ0FBQyxHQUFHLENBQUMsTUFBTTs7QUFFWCxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsVUFBVSxDQUFDLElBQUksQ0FBQyxDQUFDLENBQUMsTUFBTSxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsR0FBRyxDQUFDLE9BQU8sQ0FBQyxHQUFHLENBQUMsWUFBWSxDQUFDO0FBQ3hFLENBQUMsQ0FBQyxDQUFDLFlBQVksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxPQUFPLENBQUMsS0FBSyxDQUFDLFVBQVU7QUFDckQsTUFBTSxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDLElBQUksQ0FBQyxDQUFDLEtBQUssQ0FBQyxPQUFPOztBQUVuQyxLQUFLLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQztBQUNkOztBQUVBO0FBQUE7QUFBQTsifQ==)
+
+```js
+'use client'
+
+// This represents Waku's output after its DCE retains the dependencies and
+// initializers that need to survive proxy generation.
+import { atom } from 'jotai/vanilla'
+
+const local = 1
+export const countAtom = /* #__PURE__ */ createServerReference(atom(local), "countAtom");
+
+export const Component = /* #__PURE__ */ createServerReference(() => {
+  throw new Error('not available on the server')
+}, "Component");
+```

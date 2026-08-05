@@ -19,3 +19,9 @@
 (2:0) "export default class {}\n" --> (4:0) "registerServerReference($$effect_default, \"default\");\n"
 (2:0) "export default class {}\n" --> (5:0) "export default $$effect_default;\n"
 ```
+
+## proxy-export
+
+```txt
+(2:0) "export default class {}\n" --> (2:0) "export default /* #__PURE__ */ createServerReference(\"default\");\n"
+```
