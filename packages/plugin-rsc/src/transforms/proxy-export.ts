@@ -114,10 +114,6 @@ export function transformProxyExport(
 
   /** Replaces one complete export statement with the selected proxy exports. */
   function createExport(node: Node, names: string[]) {
-    if (names.length === 0) {
-      removeNode(node)
-      return
-    }
     exportNames.push(...names)
     const newCode = names
       .map(
