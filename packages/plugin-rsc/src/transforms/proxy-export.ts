@@ -200,7 +200,11 @@ export function transformProxyExport(
     } else if (group.type === 'export-all') {
       // A namespace re-export has one known name. A bare export-all cannot be
       // represented without resolving the dependency's export names.
+      // TODO: Reject `export * as "name"` as an unsupported string literal
+      // export name instead of handling it like a bare `export *`.
       if (group.node.exported?.type === 'Identifier') {
+        // export * as dep from './dep'
+        // -> export const dep = __PROXY__('dep')
         const name = group.node.exported.name
         if (filter(name, {})) {
           createExport(node, [name])
