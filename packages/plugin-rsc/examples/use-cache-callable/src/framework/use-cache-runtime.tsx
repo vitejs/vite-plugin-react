@@ -45,17 +45,12 @@ export default function cacheWrapper(
     const captureEnvelope = isCacheCaptureEnvelope(firstArgument)
       ? firstArgument
       : undefined
-    const captureArgumentCount = captureEnvelope ? 1 : 0
     const admittedArgs =
       options.argumentCount === undefined
         ? args
-        : [
-            ...args.slice(0, captureArgumentCount),
-            ...args.slice(
-              captureArgumentCount,
-              captureArgumentCount + options.argumentCount,
-            ),
-          ]
+        : captureEnvelope
+          ? [captureEnvelope, ...args.slice(1, 1 + options.argumentCount)]
+          : args.slice(0, options.argumentCount)
     let cacheEntries = cachedFnCacheEntries.get(cachedFn)
     if (!cacheEntries) {
       cacheEntries = {}
