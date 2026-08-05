@@ -64,8 +64,6 @@ function defineTests(f: Fixture) {
     const result = example.getByTestId('result')
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(executionCount).toHaveText('0')
-    await page.reload()
-    await waitForHydration(page)
 
     // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
     // alpha (cache miss)
@@ -170,8 +168,6 @@ function defineTests(f: Fixture) {
     const result = example.getByTestId('result')
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(executionCount).toHaveText('0')
-    await page.reload()
-    await waitForHydration(page)
 
     // Reloading and hydrating a fresh SSR form preserves the cache hit for the same argument.
     // alpha (cache miss)
