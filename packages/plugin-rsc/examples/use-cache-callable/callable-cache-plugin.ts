@@ -7,6 +7,7 @@ import {
   transformWrapExport,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
+import type { CacheWrapperOptions } from './src/framework/use-cache-runtime'
 
 const directive = 'use cache'
 const pluginName = 'example:use-cache-callable'
@@ -30,15 +31,19 @@ export function callableCachePlugin(): Plugin {
       const environmentName = this.environment.name
 
       if (environmentName === 'rsc') {
-        const runtime = (value: string, name: string, argumentCount?: number) =>
+        const runtime = (
+          value: string,
+          name: string,
+          options: CacheWrapperOptions,
+        ) =>
           `$$ReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}, ${argumentCount}),` +
+          `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
               runtime: (value, name, meta) =>
-                runtime(value, name, getArgumentCount(meta)),
+                runtime(value, name, getCacheWrapperOptions(meta)),
               // Next.js calls rejecting primitive literals while permitting
               // objects and arrays arbitrary, but keeps the latter for metadata
               // and viewport exports.
@@ -52,7 +57,7 @@ export function callableCachePlugin(): Plugin {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
-              runtime: (value, name) => runtime(value, name),
+              runtime: (value, name) => runtime(value, name, {}),
             })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
@@ -109,16 +114,16 @@ export function callableCachePlugin(): Plugin {
   }
 }
 
-function getArgumentCount(meta: ModuleExportMeta): number | undefined {
+function getCacheWrapperOptions(meta: ModuleExportMeta): CacheWrapperOptions {
   const node = meta.valueNode
   if (
     node?.type !== 'FunctionDeclaration' &&
     node?.type !== 'FunctionExpression' &&
     node?.type !== 'ArrowFunctionExpression'
   ) {
-    return
+    return {}
   }
   return node.params.at(-1)?.type === 'RestElement'
-    ? undefined
-    : node.params.length
+    ? {}
+    : { argumentCount: node.params.length }
 }
