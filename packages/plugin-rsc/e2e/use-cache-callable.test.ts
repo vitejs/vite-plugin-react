@@ -273,6 +273,37 @@ function defineTests(f: Fixture) {
     await expect(executionCount).toHaveText('1')
     await expect(result).toHaveText('arguments: 0')
   })
+
+  test('inline argument admission gap', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/inline-argument-admission-gap'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('inline-argument-admission-gap')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    const argument = example.getByRole('textbox', {
+      name: 'Undeclared argument',
+    })
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
+    await expect(result).toHaveText('not called')
+
+    // Inline transform metadata does not yet expose the source parameters, so
+    // React's FormData still participates in the cache key and invocation.
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('arguments: 1')
+
+    await argument.fill('beta')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('2')
+    await expect(result).toHaveText('arguments: 1')
+  })
 }
 
 async function submit(page: Page, form: Locator) {

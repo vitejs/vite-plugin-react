@@ -1,6 +1,7 @@
 import { FileDirectiveArgumentAdmissionServer } from './features/file-directive-argument-admission/server'
 import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
+import { InlineArgumentAdmissionGapServer } from './features/inline-argument-admission-gap/server'
 import { InlineDirective } from './features/inline-directive/server'
 
 const routes = [
@@ -17,6 +18,13 @@ const routes = [
     description:
       'A zero-parameter cached module export ignores FormData supplied by React.',
     Component: FileDirectiveArgumentAdmissionServer,
+  },
+  {
+    path: '/inline-argument-admission-gap',
+    title: 'Inline argument admission gap',
+    description:
+      'A zero-parameter inline cached function currently includes FormData supplied by React.',
+    Component: InlineArgumentAdmissionGapServer,
   },
   {
     path: '/file-directive-from-server',
