@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, test } from 'vitest'
+import { transformCjsToEsm } from './cjs'
 import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
 import { transformProxyExport } from './proxy-export'
@@ -11,6 +12,25 @@ import {
 import { transformWrapExport } from './wrap-export'
 
 describe('source map fixtures', () => {
+  const cjsFixtures = import.meta.glob(
+    ['./fixtures/source-map/cjs/**/*.js', '!**/*.snap.*'],
+    { query: 'raw' },
+  )
+  for (const [file, load] of Object.entries(cjsFixtures)) {
+    test(`cjs/${path.basename(file)}`, async () => {
+      const input = ((await load()) as any).default as string
+      const ast = await parseAstAsync(input)
+      const result = transformCjsToEsm(input, ast, { id: '/test.js' })
+      const outputs = [{ name: 'cjs-to-esm', output: result.output }]
+      await expect(
+        formatSourceMapMarkdownFixture(input, outputs),
+      ).toMatchFileSnapshot(file + '.snap.md')
+      await expect(formatDecodedSourceMapMarkdown(outputs)).toMatchFileSnapshot(
+        file + '.map.snap.md',
+      )
+    })
+  }
+
   const wrapExportFixtures = import.meta.glob(
     ['./fixtures/source-map/wrap-export/**/*.js', '!**/*.snap.*'],
     { query: 'raw' },
