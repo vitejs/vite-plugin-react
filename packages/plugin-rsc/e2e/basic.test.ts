@@ -1518,6 +1518,31 @@ function defineTest(f: Fixture) {
     )
   })
 
+  test('server action encrypts closure captures', async ({ page }) => {
+    const secret = 'server-action-capture-secret'
+    const initialResponse = await page.request.get(f.url('_.rsc'))
+    expect(initialResponse.ok()).toBe(true)
+    expect(await initialResponse.text()).not.toContain(secret)
+
+    await page.goto(f.url())
+    await waitForHydration(page)
+
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('_.rsc'),
+    )
+    await page
+      .getByRole('button', { name: 'test-server-action-encryption' })
+      .click()
+    const actionResponse = await responsePromise
+    expect(actionResponse.ok()).toBe(true)
+    expect(await actionResponse.text()).not.toContain(secret)
+    await expect(page.getByTestId('test-server-action-encryption')).toHaveText(
+      'decoded',
+    )
+  })
+
   test('action bind simple @js', async ({ page }) => {
     await page.goto(f.url())
     await waitForHydration(page)
