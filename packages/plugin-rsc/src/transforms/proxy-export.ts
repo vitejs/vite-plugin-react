@@ -158,23 +158,21 @@ export function transformProxyExport(
         }
         selectedNames.push(...names)
       }
-      if (options.keep && options.code && selectedNames.length === 1) {
+      if (options.keep && group.declaration.declarations.length === 1) {
         // Waku's `keep` mode retains the initializer as the proxy value:
         // export const value = init()
         // -> export const value = __PROXY__(init(), 'value')
-        if (group.declaration.declarations.length === 1) {
-          const decl = group.declaration.declarations[0]!
-          if (decl.id.type === 'Identifier' && decl.init) {
-            const name = decl.id.name
-            const value = options.code.slice(decl.init.start, decl.init.end)
-            const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
-              name,
-              { value },
-            )};`
-            output.update(node.start, node.end, newCode)
-            exportNames.push(name)
-            continue
-          }
+        const decl = group.declaration.declarations[0]!
+        if (decl.id.type === 'Identifier' && decl.init) {
+          const name = decl.id.name
+          const value = options.code!.slice(decl.init.start, decl.init.end)
+          const newCode = `export const ${name} = /* #__PURE__ */ ${options.runtime(
+            name,
+            { value },
+          )};`
+          output.update(node.start, node.end, newCode)
+          exportNames.push(name)
+          continue
         }
       }
       createExport(node, selectedNames)
