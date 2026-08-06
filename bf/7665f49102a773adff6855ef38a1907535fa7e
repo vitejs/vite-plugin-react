@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/action.ts
+  s_72a38ba69015ea::t_f568d66dbfeec2 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bf7665f49102a773adff6855ef38a1907535fa7e",
+  "prompts": {},
+  "sessions": {
+    "s_72a38ba69015ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3f20e2ffemLmgO71DIqRvPW",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
