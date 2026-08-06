@@ -308,10 +308,16 @@ export function transformHoistInlineDirective(
           )
         } else if (isClassMethod) {
           const key = input.slice(parent.key.start, parent.key.end)
+          const isConstructor =
+            !parent.computed &&
+            ((parent.key.type === 'Identifier' &&
+              parent.key.name === 'constructor') ||
+              (parent.key.type === 'Literal' &&
+                parent.key.value === 'constructor'))
           output.update(
             parent.start,
             node.start,
-            `static ${parent.computed ? `[${key}]` : key} = `,
+            `static ${isConstructor ? '["constructor"]' : parent.computed ? `[${key}]` : key} = `,
           )
           newCode += ';'
         } else if (declName) {

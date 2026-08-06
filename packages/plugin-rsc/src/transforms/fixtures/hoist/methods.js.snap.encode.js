@@ -14,6 +14,8 @@ export class Actions {
   static action = /* #__PURE__ */ $$register($$hoist_5_action, "<id>", "$$hoist_5_action");
 
   static ['computed'] = /* #__PURE__ */ $$register($$hoist_6_computed, "<id>", "$$hoist_6_computed");
+
+  static ["constructor"] = /* #__PURE__ */ $$register($$hoist_7_constructor, "<id>", "$$hoist_7_constructor");
 }
 
 ;export async function $$hoist_0_action($$hoist_encoded) {
@@ -62,3 +64,9 @@ export class Actions {
     return 2
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_6_computed, "name", { value: "computed" });
+
+;export async function $$hoist_7_constructor() {
+    'use server'
+    return 3
+  };
+/* #__PURE__ */ Object.defineProperty($$hoist_7_constructor, "name", { value: "constructor" });

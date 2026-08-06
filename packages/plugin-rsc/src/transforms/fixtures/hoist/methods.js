@@ -35,4 +35,9 @@ export class Actions {
     'use server'
     return 2
   }
+
+  static async constructor() {
+    'use server'
+    return 3
+  }
 }
