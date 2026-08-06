@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/directive-function.test.ts
+  s_0a4d21d55bfef5::t_81e6f5d3bf5488 79-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0e0488ae879430eb9e004a02cdc2fecf26a96798",
+  "prompts": {},
+  "sessions": {
+    "s_0a4d21d55bfef5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3e313affeOEJNoxMUS3W7a1",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
