@@ -161,7 +161,7 @@ export function transformHoistInlineDirective(
         if (!match) return
 
         const method = analyzeMethod(node, parent)
-        if (method?.kind === 'class' && !method.node.static) {
+        if (method?.node.type === 'MethodDefinition' && !method.node.static) {
           throw Object.assign(
             new Error(
               `It is not allowed to define inline ${JSON.stringify(match[0])} class instance methods.`,
@@ -170,7 +170,7 @@ export function transformHoistInlineDirective(
           )
         }
         if (
-          method?.kind === 'class' &&
+          method?.node.type === 'MethodDefinition' &&
           method.node.key.type === 'PrivateIdentifier'
         ) {
           throw Object.assign(
@@ -181,8 +181,9 @@ export function transformHoistInlineDirective(
           )
         }
         if (
-          (method?.kind === 'object' && method.node.kind !== 'init') ||
-          (method?.kind === 'class' && method.node.kind !== 'method')
+          (method?.node.type === 'Property' && method.node.kind !== 'init') ||
+          (method?.node.type === 'MethodDefinition' &&
+            method.node.kind !== 'method')
         ) {
           throw Object.assign(
             new Error(
@@ -287,19 +288,19 @@ export function transformHoistInlineDirective(
           output.update(
             method.node.start,
             method.node.key.start,
-            `${method.kind === 'class' ? 'static ' : ''}[${
+            `${method.node.type === 'MethodDefinition' ? 'static ' : ''}[${
               quoteKey ? '"' : ''
             }`,
           )
           const suffix = `${quoteKey ? '"' : ''}]${
-            method.kind === 'class' ? ' = ' : ': '
+            method.node.type === 'MethodDefinition' ? ' = ' : ': '
           }`
           if (method.node.key.end === node.start) {
             output.appendLeft(node.start, suffix)
           } else {
             output.update(method.node.key.end, node.start, suffix)
           }
-          if (method.kind === 'class') newCode += ';'
+          if (method.node.type === 'MethodDefinition') newCode += ';'
         } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
@@ -328,17 +329,8 @@ export function transformHoistInlineDirective(
   }
 }
 
-type Method =
-  | {
-      kind: 'object'
-      node: Property
-    }
-  | {
-      kind: 'class'
-      node: MethodDefinition
-    }
-
-type MethodAnalysis = Method & {
+type MethodAnalysis = {
+  node: Property | MethodDefinition
   name: string | undefined
 }
 
@@ -348,30 +340,28 @@ function analyzeMethod(
 ): MethodAnalysis | undefined {
   if (node.type !== 'FunctionExpression') return
 
-  let method: Method
+  let method: Property | MethodDefinition
   if (
     parent?.type === 'Property' &&
     parent.value === node &&
     (parent.method || parent.kind !== 'init')
   ) {
-    method = { kind: 'object', node: parent }
+    method = parent
   } else if (parent?.type === 'MethodDefinition') {
-    method = { kind: 'class', node: parent }
+    method = parent
   } else {
     return
   }
 
   const keyName =
-    method.node.key.type === 'Literal' ||
-    (!method.node.computed && method.node.key.type === 'Identifier')
+    method.key.type === 'Literal' ||
+    (!method.computed && method.key.type === 'Identifier')
       ? String(
-          method.node.key.type === 'Identifier'
-            ? method.node.key.name
-            : method.node.key.value,
+          method.key.type === 'Identifier' ? method.key.name : method.key.value,
         )
       : undefined
   return {
-    ...method,
+    node: method,
     name: keyName && /^[$A-Z_a-z][$\w]*$/.test(keyName) ? keyName : undefined,
   }
 }
