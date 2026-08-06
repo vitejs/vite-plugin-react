@@ -156,7 +156,16 @@ async function replyToCacheKey(reply: string | FormData) {
     } else {
       appendLengthPrefixedPart(
         parts,
-        encoder.encode(JSON.stringify([name, 'file', value.type, value.size])),
+        encoder.encode(
+          JSON.stringify([
+            name,
+            'file',
+            value.name,
+            value.type,
+            value.size,
+            value.lastModified,
+          ]),
+        ),
       )
       appendLengthPrefixedPart(parts, new Uint8Array(await value.arrayBuffer()))
     }
