@@ -35,19 +35,19 @@ The cache wrapper uses `encodeReply()` to serialize call arguments into the same
 
 Results are retained as Flight streams. `StreamCacher` duplicates the stored stream for every read, and `createFromReadableStream()` decodes each branch with the temporary-reference set from that invocation. This preserves RSC serialization semantics when cached output contains React nodes or references.
 
-## Demonstrated cases
+## Examples
 
-| Case             | Behavior                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| Cached function  | Equal arguments reuse an entry; `revalidateCache()` clears every entry associated with the wrapped function. |
-| Cached component | The component shell stays stable while temporary-reference `children` receive fresh values on each render.   |
-| Captured closure | Hoisted closure captures and call-time arguments both participate in cache identity.                         |
+| Route               | Demonstrates                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/cached-function`  | Equal arguments reuse an entry; `revalidateCache()` clears every entry associated with the wrapped function. |
+| `/cached-component` | The component shell stays stable while temporary-reference `children` receive fresh values on each render.   |
+| `/captured-values`  | Hoisted captured values and call-time arguments both participate in cache identity.                          |
 
-The page exposes action and execution counts for the function and closure cases. An action runs on every submission, while the cached implementation runs only on a miss.
+The cached-function and captured-values routes display call and execution counts. Every submission calls the function, while the cached implementation runs only on a miss.
 
 ## Static shell and dynamic children
 
-`TestComponent` receives its changing `children` inside a React element. With a temporary-reference set, `encodeReply()` records a reference marker rather than serializing that concrete element into the key. The cached Flight stream retains the corresponding placeholder, so replay can supply the current invocation's child while preserving the cached shell timestamp.
+`CachedShell` receives its changing `children` inside a React element. With a temporary-reference set, `encodeReply()` records a reference marker rather than serializing that concrete element into the key. The cached Flight stream retains the corresponding placeholder, so replay can supply the current invocation's child while preserving the cached shell timestamp.
 
 The wrapper element is intentional. A raw string child is serializable by value, so changing it would change the cache key and rerun the component instead of demonstrating a stable shell with a dynamic slot.
 
@@ -69,5 +69,6 @@ pnpm preview
 | ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | [`vite.config.ts`](./vite.config.ts)                                           | Inline directive transform and runtime wrapping.                  |
 | [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx) | Argument keys, miss execution, Flight stream storage, and replay. |
-| [`src/root.tsx`](./src/root.tsx)                                               | Function, component shell, closure, and invalidation scenarios.   |
+| [`src/root.tsx`](./src/root.tsx)                                               | Scenario routing, navigation, and descriptions.                   |
+| [`src/features`](./src/features)                                               | Cached function, component shell, and captured-value scenarios.   |
 | [`../../e2e/use-cache.test.ts`](../../e2e/use-cache.test.ts)                   | Development and production behavioral coverage.                   |
