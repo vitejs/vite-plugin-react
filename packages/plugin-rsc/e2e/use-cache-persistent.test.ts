@@ -24,7 +24,9 @@ function defineTests(f: Fixture) {
     fs.rmSync(cacheDirectory, { recursive: true, force: true }),
   )
 
-  test('file directive persists across server restart', async ({ page }) => {
+  test('file directive scopes persistence across server restart', async ({
+    page,
+  }) => {
     using _errors = expectNoPageError(page)
     await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
@@ -49,7 +51,9 @@ function defineTests(f: Fixture) {
 
     await submit(page, example)
     await expect(example.getByTestId('submission-count')).toHaveText('1')
-    await expect(example.getByTestId('execution-count')).toHaveText('0')
+    await expect(example.getByTestId('execution-count')).toHaveText(
+      f.mode === 'dev' ? '1' : '0',
+    )
   })
 
   test('encrypted captures use their decoded values as persistent keys', async ({
@@ -147,6 +151,19 @@ function defineDevTests(f: Fixture) {
         page,
         example,
         result,
+        'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
+      )
+
+      await page.goto('about:blank')
+      await f.restart()
+      await page.goto(f.url('/file-directive-from-server'))
+      await waitForHydration(page)
+      const restartedExample = page.getByTestId('file-directive-from-server')
+      await submit(page, restartedExample)
+      await expect(restartedExample.getByTestId('execution-count')).toHaveText(
+        '1',
+      )
+      await expect(restartedExample.getByTestId('result')).toHaveText(
         'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
       )
     } finally {

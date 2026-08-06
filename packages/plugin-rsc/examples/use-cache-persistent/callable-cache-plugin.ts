@@ -37,7 +37,7 @@ export function callableCachePlugin(): Plugin {
       if (environmentName === 'rsc') {
         const generation =
           this.environment.mode === 'dev'
-            ? (cacheModuleGenerations.get(id) ?? 0) + 1
+            ? (cacheModuleGenerations.get(id) ?? Date.now()) + 1
             : undefined
         if (generation !== undefined) {
           cacheModuleGenerations.set(id, generation)
