@@ -9,21 +9,23 @@ Unlike the sibling [`use-cache-callable`](../use-cache-callable) example, these 
 [`vite.config.ts`](./vite.config.ts) uses `transformHoistInlineDirective()` to move each async function containing `"use cache"` to module scope. Closure captures become leading arguments, and the transformed function is wrapped by [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx):
 
 ```js
-function createReader(prefix) {
-  async function read(value) {
+// -- input --
+function Component(prefix) {
+  async function cachedFn(value) {
     'use cache'
     return `${prefix}: ${value}`
   }
-  return read
+  /// ...
 }
 
-// Conceptual output
-async function $$read(prefix, value) {
+// -- output --
+async function $$hoist_cachedFn(prefix, value) {
   return `${prefix}: ${value}`
 }
 
-function createReader(prefix) {
-  return cacheWrapper($$read).bind(null, prefix)
+function Component(prefix) {
+  const cachedFn = $$framework_cacheRuntime($$hoist_cachedFn).bind(null, prefix)
+  /// ...
 }
 ```
 

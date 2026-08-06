@@ -11,29 +11,34 @@ Unlike the sibling [`use-cache`](../use-cache) example, these cached functions c
 [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx) owns argument admission, cache identity, execution, and result replay:
 
 ```tsx
+// -- input --
 function Component() {
   const captured = 'value'
   async function cachedAction(argument: string) {
     'use cache'
     return `${captured}: ${argument}`
   }
-  return <Client action={cachedAction} />
+  /// ...
 }
 
-// Conceptual output
-async function $$implementation(captures: unknown[], argument: string) {
+// -- output ---
+async function $$hoist_cachedAction(captures: unknown[], argument: string) {
   const [captured] = captures
   return `${captured}: ${argument}`
 }
 
-const $$reference = registerServerReference(
-  cacheWrapper($$implementation, { argumentCount: 1 }),
+// callable externally as server function
+export const $$hoist_reference_cachedAction = registerServerReference(
+  $$framework_cacheRuntime($$hoist_cachedAction, { argumentCount: 1 }),
 )
 
 function Component() {
   const captured = 'value'
-  const cachedAction = $$reference.bind(null, encryptCacheCaptures([captured]))
-  return <Client action={cachedAction} />
+  const cachedAction = $$reference.bind(
+    null,
+    $$framework_encryptCacheCaptures([captured]),
+  )
+  /// ...
 }
 ```
 
