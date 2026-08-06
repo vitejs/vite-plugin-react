@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/use-cache-runtime.tsx
+  s_72a38ba69015ea::t_e085644e970dba 159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cb7d18940ba626756cff1de6923021eef1972254",
+  "prompts": {},
+  "sessions": {
+    "s_72a38ba69015ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3f20e2ffemLmgO71DIqRvPW",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
