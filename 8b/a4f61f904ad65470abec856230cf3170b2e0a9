@@ -1,0 +1,89 @@
+packages/plugin-rsc/examples/use-cache-persistent/README.md
+  s_72a38ba69015ea::t_8addd49a5afab8 1-43
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-extra-arguments/action.ts
+  s_72a38ba69015ea::t_f31402677e3886 1-8
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-extra-arguments/client.tsx
+  s_72a38ba69015ea::t_7cde926993f66a 1-47
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-extra-arguments/server.tsx
+  s_72a38ba69015ea::t_881e78449cf0af 1-13
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-extra-arguments/state.ts
+  s_72a38ba69015ea::t_1c5a492f9b7f75 1-4
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-client/action.ts
+  s_72a38ba69015ea::t_6ca92a8ce4d164 1-14
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-client/client.tsx
+  s_72a38ba69015ea::t_8b31df5eacc788 1-47
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-client/server.tsx
+  s_72a38ba69015ea::t_15b6dc30973ed8 1-13
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-client/state.ts
+  s_72a38ba69015ea::t_0050bac6beeca0 1-4
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/action.ts
+  s_cefee2686e5f49::t_fbb4b19c01727c 1-15
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/client.tsx
+  s_72a38ba69015ea::t_a124365b6021c9 1-53
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/direct.ts
+  s_cefee2686e5f49::t_95eeccfb3b1085 1-5
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/server.tsx
+  s_72a38ba69015ea::t_bc9922adfaee98 1-16
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/state.ts
+  s_72a38ba69015ea::t_5da0c62991d9bd 1-4
+packages/plugin-rsc/examples/use-cache-persistent/src/features/file-directive-from-server/transitive.ts
+  s_cefee2686e5f49::t_47d5daba01e2ed 1
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive-extra-arguments/client.tsx
+  s_72a38ba69015ea::t_2f44407f59d1da 1-47
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive-extra-arguments/server.tsx
+  s_72a38ba69015ea::t_00cb1bb7a14be6 1-20
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive-extra-arguments/state.ts
+  s_72a38ba69015ea::t_3eee5c7a74f1fd 1-4
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive/client.tsx
+  s_72a38ba69015ea::t_4cb382af8fb857 1-47
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive/server.tsx
+  s_72a38ba69015ea::t_9f4e6eb394d5c7 1-23
+packages/plugin-rsc/examples/use-cache-persistent/src/features/inline-directive/state.ts
+  s_72a38ba69015ea::t_20368f4e83252d 1-4
+packages/plugin-rsc/examples/use-cache-persistent/src/features/protected-captures/client.tsx
+  s_72a38ba69015ea::t_f20f8c578cd6f6 1-51
+packages/plugin-rsc/examples/use-cache-persistent/src/features/protected-captures/server.tsx
+  s_72a38ba69015ea::t_8d226137aee315 1-37
+packages/plugin-rsc/examples/use-cache-persistent/src/features/protected-captures/state.ts
+  s_72a38ba69015ea::t_39311cffd953fc 1-5
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/entry.browser.tsx
+  s_72a38ba69015ea::t_f3bd83e8d0ec92 1-124
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/entry.rsc.tsx
+  s_72a38ba69015ea::t_fd14c39edcb6eb 1-94
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/entry.ssr.tsx
+  s_72a38ba69015ea::t_167e8a5153748a 1-65
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/error-boundary.tsx
+  s_72a38ba69015ea::t_598cd6aff4d211 1-76
+packages/plugin-rsc/examples/use-cache-persistent/src/framework/request.tsx
+  s_72a38ba69015ea::t_ebdf278fae1d62 1-53
+packages/plugin-rsc/examples/use-cache-persistent/tsconfig.json
+  s_72a38ba69015ea::t_013e782b73b837 1-16
+packages/plugin-rsc/examples/use-cache-persistent/vite.config.ts
+  s_72a38ba69015ea::t_d11a7edb643783 1-18
+pnpm-lock.yaml
+  s_72a38ba69015ea::t_56e66eaeb104f8 1077-1104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8ba4f61f904ad65470abec856230cf3170b2e0a9",
+  "prompts": {},
+  "sessions": {
+    "s_72a38ba69015ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3f20e2ffemLmgO71DIqRvPW",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    },
+    "s_cefee2686e5f49": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a1fbfb9ffecszaI2rdvGzowj",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
