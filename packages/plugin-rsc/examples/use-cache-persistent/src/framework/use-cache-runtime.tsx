@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   createClientTemporaryReferenceSet,
   createFromReadableStream,
@@ -29,6 +30,7 @@ export type CacheWrapperOptions = {
 }
 
 const pendingEntries = new Map<string, Promise<Uint8Array>>()
+const cacheExecutionEpoch = new AsyncLocalStorage<number>()
 let cacheEpoch = 0
 let resetPromise: Promise<void> | undefined
 
@@ -37,8 +39,9 @@ export default function cacheWrapper(
   options: CacheWrapperOptions,
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
-    if (resetPromise) await resetPromise
-    const invocationEpoch = cacheEpoch
+    const inheritedEpoch = cacheExecutionEpoch.getStore()
+    if (inheritedEpoch === undefined && resetPromise) await resetPromise
+    const invocationEpoch = inheritedEpoch ?? cacheEpoch
     // Callers can supply more arguments than a cached function declares. For example,
     // `useActionState(fn)` passes state and form data even to `function fn() {}`.
     // Preserve the bound capture envelope, then strip extras from caller arguments
@@ -78,17 +81,20 @@ export default function cacheWrapper(
       options.generation,
       serializedCacheKey,
     ])
+    const pendingKey = JSON.stringify([invocationEpoch, cacheKey])
 
     let bytes = await getPersistentCache(cacheKey)
     if (!bytes) {
-      let pending = pendingEntries.get(cacheKey)
+      let pending = pendingEntries.get(pendingKey)
       if (!pending) {
         pending = (async () => {
           const temporaryReferences = createTemporaryReferenceSet()
           const decodedArgs = await decodeReply(encodedArguments, {
             temporaryReferences,
           })
-          const result = await fn(...decodedArgs)
+          const result = await cacheExecutionEpoch.run(invocationEpoch, () =>
+            fn(...decodedArgs),
+          )
           const stream = renderToReadableStream(result, {
             environmentName: 'Cache',
           })
@@ -98,13 +104,13 @@ export default function cacheWrapper(
           }
           return value
         })()
-        pendingEntries.set(cacheKey, pending)
+        pendingEntries.set(pendingKey, pending)
       }
       try {
         bytes = await pending
       } finally {
-        if (pendingEntries.get(cacheKey) === pending) {
-          pendingEntries.delete(cacheKey)
+        if (pendingEntries.get(pendingKey) === pending) {
+          pendingEntries.delete(pendingKey)
         }
       }
     }
