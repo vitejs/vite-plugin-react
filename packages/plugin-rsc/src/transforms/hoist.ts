@@ -300,7 +300,9 @@ export function transformHoistInlineDirective(
           } else {
             output.update(method.node.key.end, node.start, suffix)
           }
-          if (method.node.type === 'MethodDefinition') newCode += ';'
+          if (method.node.type === 'MethodDefinition') {
+            newCode += ';'
+          }
         } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
@@ -331,7 +333,7 @@ export function transformHoistInlineDirective(
 
 type MethodAnalysis = {
   node: Property | MethodDefinition
-  name: string | undefined
+  name?: string
 }
 
 function analyzeMethod(
