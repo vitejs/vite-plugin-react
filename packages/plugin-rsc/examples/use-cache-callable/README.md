@@ -14,7 +14,7 @@ Unlike the sibling [`use-cache`](../use-cache) example, these cached functions c
 source cached function
   -> directive transform
   -> registered cache wrapper
-  -> encrypted captures + invocation arguments
+  -> optional encrypted captures + invocation arguments
   -> admitted and decoded execution arguments
   -> RSC-serialized cache key
   -> cached Flight result
@@ -73,4 +73,11 @@ pnpm build
 pnpm preview
 ```
 
-The development and production scenarios are covered by [`../../e2e/use-cache-callable.test.ts`](../../e2e/use-cache-callable.test.ts).
+## Source map
+
+| Source                                                                         | Responsibility                                                               |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| [`callable-cache-plugin.ts`](./callable-cache-plugin.ts)                       | Directive transforms, argument metadata, registration, and proxy generation. |
+| [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx) | Capture adaptation, argument admission, cache keys, execution, and replay.   |
+| [`src/features`](./src/features)                                               | Inline, file-level, caller-argument, and protected-capture scenarios.        |
+| [`../../e2e/use-cache-callable.test.ts`](../../e2e/use-cache-callable.test.ts) | Hydrated, progressive, development, and production behavioral coverage.      |
