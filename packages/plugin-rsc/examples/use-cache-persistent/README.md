@@ -1,6 +1,6 @@
 # Persistent callable `"use cache"` example
 
-This example extends the sibling [`use-cache-callable`](../use-cache-callable) example with cache entries that are independent of transformed function objects. It combines framework-owned inline and file-level directives, callable React server references, encrypted closure captures, self-contained Flight serialization, and a filesystem-backed cache.
+This example extends the sibling [`use-cache-callable`](../use-cache-callable) example with cache entries that are independent of transformed function objects. It combines framework-owned inline and file-level directives, encrypted closure captures, self-contained Flight serialization, and a filesystem-backed cache.
 
 Neither React nor `@vitejs/plugin-rsc` defines `"use cache"`. The example composes plugin-rsc's public directive transforms and server-reference registry to demonstrate the framework integration.
 
@@ -18,7 +18,7 @@ The filesystem handler is intentionally minimal. It stands in for an external ke
 
 ## Examples
 
-The routes are inherited from `use-cache-callable` so both file-level and inline transforms, client invocation, argument admission, and encrypted captures remain exercised. The file-directive-from-server route additionally imports direct and transitive dependencies for development invalidation coverage.
+The file-level route demonstrates persistent Flight value replay and imports direct and transitive dependencies for development invalidation coverage. The inline route keeps callability only where it is required to exercise encrypted captures and their decoded cache identity.
 
 ## Scope
 

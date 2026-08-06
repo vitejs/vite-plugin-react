@@ -1,45 +1,13 @@
-import { FileDirectiveExtraArgumentsServer } from './features/file-directive-extra-arguments/server'
-import { FileDirectiveFromClientServer } from './features/file-directive-from-client/server'
 import { FileDirectiveFromServer } from './features/file-directive-from-server/server'
-import { InlineDirectiveExtraArgumentsServer } from './features/inline-directive-extra-arguments/server'
-import { InlineDirective } from './features/inline-directive/server'
 import { ProtectedCaptures } from './features/protected-captures/server'
 
 const routes = [
-  {
-    path: '/inline-directive',
-    title: 'Inline directive',
-    description:
-      'This Server Component defines an inline cached function, captures a value, and passes the function to the client form.',
-    Component: InlineDirective,
-  },
   {
     path: '/file-directive-from-server',
     title: 'File directive from server',
     description:
       'A cached module export is imported by a server component and passed to a client component.',
     Component: FileDirectiveFromServer,
-  },
-  {
-    path: '/file-directive-from-client',
-    title: 'File directive from client',
-    description:
-      'A client component imports a cached module export through its generated proxy.',
-    Component: FileDirectiveFromClientServer,
-  },
-  {
-    path: '/file-directive-extra-arguments',
-    title: 'File directive extra arguments',
-    description:
-      'A zero-parameter cached module export ignores FormData supplied by React.',
-    Component: FileDirectiveExtraArgumentsServer,
-  },
-  {
-    path: '/inline-directive-extra-arguments',
-    title: 'Inline directive extra arguments',
-    description:
-      'A zero-parameter inline cached function ignores FormData supplied by React.',
-    Component: InlineDirectiveExtraArgumentsServer,
   },
   {
     path: '/protected-captures',

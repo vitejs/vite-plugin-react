@@ -5,7 +5,6 @@ import { useActionState, useState } from 'react'
 export function FileDirectiveFromServerClient(props: {
   action: (formData: FormData) => Promise<string>
   executionCount: number
-  ordinaryExports: string
   resetAction: () => Promise<void>
   result: string
 }) {
@@ -38,11 +37,6 @@ export function FileDirectiveFromServerClient(props: {
             Execution count:{' '}
             <output data-testid="execution-count">
               {props.executionCount}
-            </output>
-            <br />
-            Ordinary exports:{' '}
-            <output data-testid="ordinary-exports">
-              {props.ordinaryExports}
             </output>
             <br />
             Result: <output data-testid="result">{result}</output>
