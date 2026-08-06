@@ -215,6 +215,17 @@ class Actions {
     expect(transformed).toContain('static [key] = /* #__PURE__ */')
   })
 
+  it('preserves __proto__ as an own object property', async () => {
+    const transformed = await testTransform(`
+const object = {
+  async __proto__() {
+    "use server";
+  },
+};
+`)
+    expect(transformed).toContain('["__proto__"]: /* #__PURE__ */')
+  })
+
   it('rejects unsupported method forms', async () => {
     for (const input of [
       `class Actions { async action() { "use server" } }`,

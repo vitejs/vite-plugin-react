@@ -10,6 +10,10 @@ export function createObject(value) {
       'use server'
       return value + 1
     },
+    async __proto__() {
+      'use server'
+      return value + 2
+    },
   }
 }
 

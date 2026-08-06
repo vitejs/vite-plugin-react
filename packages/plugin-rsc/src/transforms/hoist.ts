@@ -294,10 +294,14 @@ export function transformHoistInlineDirective(
         }
         if (isObjectMethod) {
           const key = input.slice(parent.key.start, parent.key.end)
+          const isProto =
+            (parent.key.type === 'Identifier' &&
+              parent.key.name === '__proto__') ||
+            (parent.key.type === 'Literal' && parent.key.value === '__proto__')
           output.update(
             parent.start,
             node.start,
-            `${parent.computed ? `[${key}]` : key}: `,
+            `${isProto ? '["__proto__"]' : parent.computed ? `[${key}]` : key}: `,
           )
         } else if (isClassMethod) {
           const key = input.slice(parent.key.start, parent.key.end)
