@@ -4,7 +4,6 @@ import {
   hasDirective,
   type ModuleExportMeta,
   transformDirectiveProxyExport,
-  transformHoistInlineDirective,
   transformWrapExport,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type EnvironmentModuleNode, type Plugin } from 'vite'
@@ -35,6 +34,11 @@ export function callableCachePlugin(): Plugin {
       const reference = manager.serverReferences.resolve(id, 'rsc')
       const ast = await parseAstAsync(code)
       const environmentName = this.environment.name
+      if (!hasDirective(ast.body, directive)) {
+        manager.serverReferences.deleteClaim(pluginName, id)
+        if (environmentName === 'rsc') cacheModuleGenerations.delete(id)
+        return
+      }
 
       if (environmentName === 'rsc') {
         const generation =
@@ -53,43 +57,21 @@ export function callableCachePlugin(): Plugin {
           `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
-        const result = hasDirective(ast.body, directive)
-          ? transformWrapExport(code, ast, {
-              runtime: (value, name, meta) =>
-                runtime(
-                  value,
-                  name,
-                  getCacheWrapperOptions(
-                    meta,
-                    `${reference.referenceKey}#${name}`,
-                    generation === undefined
-                      ? undefined
-                      : `${developmentEpoch}:${generation}`,
-                  ),
-                ),
-              rejectNonAsyncFunction: true,
-            })
-          : transformHoistInlineDirective(code, ast, {
-              directive,
-              rejectNonAsyncFunction: true,
-              hoistRuntime: true,
-              runtime: (value, name, meta) =>
-                runtime(
-                  value,
-                  name,
-                  getCacheWrapperOptions(
-                    meta,
-                    `${reference.referenceKey}#${name}`,
-                    generation === undefined
-                      ? undefined
-                      : `${developmentEpoch}:${generation}`,
-                  ),
-                ),
-              encode: (value) => `$$encryptCacheCaptures(${value})`,
-              // The cache runtime replaces the envelope with decoded captures
-              // before invoking this private implementation.
-              decode: (value) => value,
-            })
+        const result = transformWrapExport(code, ast, {
+          runtime: (value, name, meta) =>
+            runtime(
+              value,
+              name,
+              getCacheWrapperOptions(
+                meta,
+                `${reference.referenceKey}#${name}`,
+                generation === undefined
+                  ? undefined
+                  : `${developmentEpoch}:${generation}`,
+              ),
+            ),
+          rejectNonAsyncFunction: true,
+        })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
           return
@@ -97,10 +79,10 @@ export function callableCachePlugin(): Plugin {
 
         manager.serverReferences.replaceClaim(pluginName, id, {
           ...reference,
-          exportNames: 'names' in result ? result.names : result.exportNames,
+          exportNames: result.exportNames,
         })
         result.output.prepend(
-          `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
+          `import $$cacheWrapper from "/src/framework/use-cache-runtime";\n` +
             `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )
         return {

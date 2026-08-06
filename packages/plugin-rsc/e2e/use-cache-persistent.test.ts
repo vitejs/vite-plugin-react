@@ -58,37 +58,6 @@ function defineTests(f: Fixture) {
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
     )
   })
-
-  test('encrypted captures use their decoded values as persistent keys', async ({
-    page,
-  }) => {
-    const rscResponse = await page.request.get(
-      f.url('/protected-captures_.rsc'),
-    )
-    expect(rscResponse.ok()).toBe(true)
-    expect(await rscResponse.text()).not.toContain('capture-secret')
-
-    using _errors = expectNoPageError(page)
-    await page.goto(f.url('/protected-captures'))
-    await waitForHydration(page)
-    const example = page.getByTestId('protected-captures')
-    const executionCount = example.getByTestId('execution-count')
-    await reset(page)
-
-    await submit(page, example)
-    await expect(executionCount).toHaveText('1')
-    await expect(example.getByTestId('result')).toHaveText('first + alpha')
-
-    await page.reload()
-    await waitForHydration(page)
-    await submit(page, example)
-    await expect(executionCount).toHaveText('1')
-
-    await page.getByRole('button', { name: 'Second capture' }).click()
-    await submit(page, example)
-    await expect(executionCount).toHaveText('2')
-    await expect(example.getByTestId('result')).toHaveText('second + alpha')
-  })
 }
 
 function defineDevTests(f: Fixture) {
