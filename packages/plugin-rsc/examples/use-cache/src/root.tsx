@@ -2,7 +2,34 @@ import { CachedComponent } from './features/cached-component/server'
 import { CachedFunction } from './features/cached-function/server'
 import { CapturedValues } from './features/captured-values/server'
 
-export function Root(_props: { url: URL }) {
+const routes = [
+  {
+    path: '/cached-function',
+    title: 'Cached function',
+    description:
+      'Call the function repeatedly with the same cache key. Calls increase every time, while executions increase only on a cache miss.',
+    Component: CachedFunction,
+  },
+  {
+    path: '/cached-component',
+    title: 'Cached component',
+    description:
+      'Reload the page. The cached timestamp stays the same, while the dynamic child gets a new timestamp.',
+    Component: CachedComponent,
+  },
+  {
+    path: '/captured-values',
+    title: 'Captured values',
+    description:
+      'Both the value captured by the inner function and its argument participate in the cache key.',
+    Component: CapturedValues,
+  },
+]
+
+export function Root({ url }: { url: URL }) {
+  const route = routes.find((item) => item.path === url.pathname)
+  const Example = route?.Component
+
   return (
     <html>
       <head>
@@ -15,32 +42,30 @@ export function Root(_props: { url: URL }) {
           These examples show how arguments, dynamic children, and captured
           values interact with a cached function.
         </p>
+        <nav aria-label="Examples">
+          <ul>
+            {routes.map((item) => (
+              <li key={item.path}>
+                <a
+                  href={item.path}
+                  aria-current={route === item ? 'page' : undefined}
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
         <main>
-          <section>
-            <h2>Cached function</h2>
-            <p>
-              Call the function repeatedly with the same cache key. Calls
-              increase every time, while executions increase only on a cache
-              miss.
-            </p>
-            <CachedFunction />
-          </section>
-          <section>
-            <h2>Cached component</h2>
-            <p>
-              Reload the page. The cached timestamp stays the same, while the
-              dynamic child gets a new timestamp.
-            </p>
-            <CachedComponent />
-          </section>
-          <section>
-            <h2>Captured values</h2>
-            <p>
-              Both the value captured by the inner function and its argument
-              participate in the cache key.
-            </p>
-            <CapturedValues />
-          </section>
+          {route && Example ? (
+            <>
+              <h2>{route.title}</h2>
+              <p>{route.description}</p>
+              <Example />
+            </>
+          ) : (
+            <p>Select an example.</p>
+          )}
         </main>
       </body>
     </html>

@@ -14,7 +14,7 @@ test.describe('build', () => {
 
 function defineTests(f: Fixture) {
   test('use cache function', async ({ page }) => {
-    await page.goto(f.url())
+    await page.goto(f.url('/cached-function'))
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-fn')
     const callCount = locator.getByTestId('call-count')
@@ -56,7 +56,7 @@ function defineTests(f: Fixture) {
   })
 
   test('use cache component', async ({ page }) => {
-    await page.goto(f.url())
+    await page.goto(f.url('/cached-component'))
     await waitForHydration(page)
     const static1 = await page
       .getByTestId('test-use-cache-component-static')
@@ -81,7 +81,7 @@ function defineTests(f: Fixture) {
   })
 
   test('use cache captured values', async ({ page }) => {
-    await page.goto(f.url())
+    await page.goto(f.url('/captured-values'))
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-closure')
     const callCount = locator.getByTestId('call-count')
