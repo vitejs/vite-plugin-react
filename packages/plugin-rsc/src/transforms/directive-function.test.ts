@@ -76,6 +76,17 @@ async function action() {
     ).not.toThrow()
   })
 
+  test('ignores arguments labels', async () => {
+    const node = await getFunction(`
+async function action() {
+  arguments: while (true) {
+    break arguments
+  }
+}
+`)
+    expect(() => validateDirectiveFunction(node, 'use server')).not.toThrow()
+  })
+
   test.each([
     `custom_jsxDEV(this)`,
     `_jsxDEV(this)`,

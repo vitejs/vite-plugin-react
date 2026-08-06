@@ -98,5 +98,13 @@ function isReferenceIdentifier(node: Identifier, parent: Node | null): boolean {
   ) {
     return false
   }
+  if (
+    (parent.type === 'LabeledStatement' ||
+      parent.type === 'BreakStatement' ||
+      parent.type === 'ContinueStatement') &&
+    parent.label === node
+  ) {
+    return false
+  }
   return true
 }
