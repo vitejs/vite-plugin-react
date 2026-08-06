@@ -3,17 +3,17 @@ const __proto__ = 'computed-proto'
 
 export function createObject(value) {
   return {
-    action: /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, __enc([value])),
+    ["action"]: /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, __enc([value])),
     [key]: /* #__PURE__ */ $$register($$hoist_1_anonymous_server_function, "<id>", "$$hoist_1_anonymous_server_function").bind(null, __enc([value])),
     ["__proto__"]: /* #__PURE__ */ $$register($$hoist_2___proto__, "<id>", "$$hoist_2___proto__").bind(null, __enc([value])),
     [__proto__]: /* #__PURE__ */ $$register($$hoist_3_anonymous_server_function, "<id>", "$$hoist_3_anonymous_server_function").bind(null, __enc([value])),
-    'foo-bar': /* #__PURE__ */ $$register($$hoist_4_anonymous_server_function, "<id>", "$$hoist_4_anonymous_server_function").bind(null, __enc([value])),
-    1.5: /* #__PURE__ */ $$register($$hoist_5_anonymous_server_function, "<id>", "$$hoist_5_anonymous_server_function").bind(null, __enc([value])),
+    ['foo-bar']: /* #__PURE__ */ $$register($$hoist_4_anonymous_server_function, "<id>", "$$hoist_4_anonymous_server_function").bind(null, __enc([value])),
+    [1.5]: /* #__PURE__ */ $$register($$hoist_5_anonymous_server_function, "<id>", "$$hoist_5_anonymous_server_function").bind(null, __enc([value])),
   }
 }
 
 export class Actions {
-  static action = /* #__PURE__ */ $$register($$hoist_6_action, "<id>", "$$hoist_6_action");
+  static ["action"] = /* #__PURE__ */ $$register($$hoist_6_action, "<id>", "$$hoist_6_action");
 
   static ['computed'] = /* #__PURE__ */ $$register($$hoist_7_computed, "<id>", "$$hoist_7_computed");
 
@@ -24,7 +24,7 @@ export class Actions {
 
 export function createActions(value) {
   return class Actions {
-    static action = /* #__PURE__ */ $$register($$hoist_10_action, "<id>", "$$hoist_10_action").bind(null, __enc([value]));
+    static ["action"] = /* #__PURE__ */ $$register($$hoist_10_action, "<id>", "$$hoist_10_action").bind(null, __enc([value]));
   }
 }
 

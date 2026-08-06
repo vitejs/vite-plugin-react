@@ -281,47 +281,25 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (method?.kind === 'object') {
-          if (method.forceComputed) {
-            output.update(
-              method.node.start,
-              node.start,
-              `[${JSON.stringify(method.keyName)}]: `,
-            )
+        if (method) {
+          const quoteKey =
+            !method.node.computed && method.node.key.type === 'Identifier'
+          output.update(
+            method.node.start,
+            method.node.key.start,
+            `${method.kind === 'class' ? 'static ' : ''}[${
+              quoteKey ? '"' : ''
+            }`,
+          )
+          const suffix = `${quoteKey ? '"' : ''}]${
+            method.kind === 'class' ? ' = ' : ': '
+          }`
+          if (method.node.key.end === node.start) {
+            output.appendLeft(node.start, suffix)
           } else {
-            output.update(
-              method.node.start,
-              method.node.key.start,
-              method.node.computed ? '[' : '',
-            )
-            const suffix = method.node.computed ? ']: ' : ': '
-            if (method.node.key.end === node.start) {
-              output.appendLeft(node.start, suffix)
-            } else {
-              output.update(method.node.key.end, node.start, suffix)
-            }
+            output.update(method.node.key.end, node.start, suffix)
           }
-        } else if (method?.kind === 'class') {
-          if (method.forceComputed) {
-            output.update(
-              method.node.start,
-              node.start,
-              `static [${JSON.stringify(method.keyName)}] = `,
-            )
-          } else {
-            output.update(
-              method.node.start,
-              method.node.key.start,
-              method.node.computed ? 'static [' : 'static ',
-            )
-            const suffix = method.node.computed ? '] = ' : ' = '
-            if (method.node.key.end === node.start) {
-              output.appendLeft(node.start, suffix)
-            } else {
-              output.update(method.node.key.end, node.start, suffix)
-            }
-          }
-          newCode += ';'
+          if (method.kind === 'class') newCode += ';'
         } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
@@ -362,8 +340,6 @@ type Method =
 
 type MethodAnalysis = Method & {
   name: string | undefined
-  keyName: string | undefined
-  forceComputed: boolean
 }
 
 function analyzeMethod(
@@ -397,11 +373,6 @@ function analyzeMethod(
   return {
     ...method,
     name: keyName && /^[$A-Z_a-z][$\w]*$/.test(keyName) ? keyName : undefined,
-    keyName,
-    forceComputed:
-      !method.node.computed &&
-      ((method.kind === 'object' && keyName === '__proto__') ||
-        (method.kind === 'class' && keyName === 'constructor')),
   }
 }
 
