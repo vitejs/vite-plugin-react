@@ -38,12 +38,19 @@ export default function cacheWrapper(
   async function cachedFn(...args: any[]): Promise<unknown> {
     // Callers can supply more arguments than a cached function declares. For example,
     // `useActionState(fn)` passes state and form data even to `function fn() {}`.
-    // Strip those extras so they affect neither the cache key nor execution.
+    // Preserve the bound capture envelope, then strip extras from caller arguments
+    // so they affect neither the cache key nor execution.
     // https://github.com/vercel/next.js/pull/72506
+    const firstArgument = args[0]
+    const captureEnvelope = isCacheCaptureEnvelope(firstArgument)
+      ? firstArgument
+      : undefined
     const admittedArgs =
       options.argumentCount === undefined
         ? args
-        : args.slice(0, options.argumentCount)
+        : captureEnvelope
+          ? [captureEnvelope, ...args.slice(1, 1 + options.argumentCount)]
+          : args.slice(0, options.argumentCount)
     let cacheEntries = cachedFnCacheEntries.get(cachedFn)
     if (!cacheEntries) {
       cacheEntries = {}
@@ -63,12 +70,11 @@ export default function cacheWrapper(
     let encodedCacheArguments = encodedArguments
     // Re-encode decrypted captures so cache identity reflects their logical values
     // rather than the randomized ciphertext used by the transport arguments.
-    const firstArgument = admittedArgs[0]
-    if (isCacheCaptureEnvelope(firstArgument)) {
+    if (captureEnvelope) {
       // TODO: On a cache miss, the hoister-generated implementation decrypts the
       // original envelope again. A tighter adapter could reuse these captures.
       const cacheArguments = [
-        ...(await decryptCacheCaptures(firstArgument)),
+        ...(await decryptCacheCaptures(captureEnvelope)),
         ...admittedArgs.slice(1),
       ]
       encodedCacheArguments = await encodeReply(cacheArguments, {

@@ -354,18 +354,18 @@ function defineTests(f: Fixture) {
     await expect(executionCount).toHaveText('0')
     await expect(result).toHaveText('not called')
 
-    // Inline transform metadata does not yet expose the source parameters, so
-    // React's FormData still participates in the cache key and invocation.
+    // React supplies FormData to the zero-parameter function, but it does not
+    // participate in the cache key or invocation.
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')
-    await expect(result).toHaveText('arguments: 1')
+    await expect(result).toHaveText('arguments: 0')
 
     await argument.fill('beta')
     await submit(page, example)
     await expect(submissionCount).toHaveText('2')
-    await expect(executionCount).toHaveText('2')
-    await expect(result).toHaveText('arguments: 1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('arguments: 0')
   })
 
   test('protected captures', async ({ page }) => {

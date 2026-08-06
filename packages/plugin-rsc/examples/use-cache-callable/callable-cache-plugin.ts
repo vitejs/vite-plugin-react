@@ -57,7 +57,8 @@ export function callableCachePlugin(): Plugin {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
-              runtime: (value, name) => runtime(value, name, {}),
+              runtime: (value, name, meta) =>
+                runtime(value, name, getCacheWrapperOptions(meta)),
               encode: (value) => `$$encryptCacheCaptures(${value})`,
               decode: (value) => `await $$decryptCacheCaptures(${value})`,
             })
@@ -119,7 +120,9 @@ export function callableCachePlugin(): Plugin {
   }
 }
 
-function getCacheWrapperOptions(meta: ModuleExportMeta): CacheWrapperOptions {
+function getCacheWrapperOptions(
+  meta: Pick<ModuleExportMeta, 'valueNode'>,
+): CacheWrapperOptions {
   const node = meta.valueNode
   if (
     node?.type !== 'FunctionDeclaration' &&
