@@ -3,7 +3,7 @@ const key = 'computed'
 export function createObject(value) {
   return {
     action: /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, value),
-    [key]: /* #__PURE__ */ $$register($$hoist_1_key, "<id>", "$$hoist_1_key").bind(null, value),
+    [key]: /* #__PURE__ */ $$register($$hoist_1_anonymous_server_function, "<id>", "$$hoist_1_anonymous_server_function").bind(null, value),
     ["__proto__"]: /* #__PURE__ */ $$register($$hoist_2___proto__, "<id>", "$$hoist_2___proto__").bind(null, value),
     'foo-bar': /* #__PURE__ */ $$register($$hoist_3_anonymous_server_function, "<id>", "$$hoist_3_anonymous_server_function").bind(null, value),
     1.5: /* #__PURE__ */ $$register($$hoist_4_anonymous_server_function, "<id>", "$$hoist_4_anonymous_server_function").bind(null, value),
@@ -30,11 +30,11 @@ export function createActions(value) {
     };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
 
-;export async function $$hoist_1_key(value) {
+;export async function $$hoist_1_anonymous_server_function(value) {
       'use server'
       return value + 1
     };
-/* #__PURE__ */ Object.defineProperty($$hoist_1_key, "name", { value: "key" });
+/* #__PURE__ */ Object.defineProperty($$hoist_1_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_2___proto__(value) {
       'use server'

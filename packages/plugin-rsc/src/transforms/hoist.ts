@@ -208,7 +208,8 @@ export function transformHoistInlineDirective(
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const methodName =
           (isObjectMethod || isClassMethod) &&
-          (parent.key.type === 'Identifier' || parent.key.type === 'Literal')
+          (parent.key.type === 'Literal' ||
+            (!parent.computed && parent.key.type === 'Identifier'))
             ? String(
                 parent.key.type === 'Identifier'
                   ? parent.key.name

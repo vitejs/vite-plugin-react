@@ -3,7 +3,7 @@ const key = 'computed'
 export function createObject(value) {
   return {
     action: /* #__PURE__ */ $$register($$hoist_0_action, "<id>", "$$hoist_0_action").bind(null, __enc([value])),
-    [key]: /* #__PURE__ */ $$register($$hoist_1_key, "<id>", "$$hoist_1_key").bind(null, __enc([value])),
+    [key]: /* #__PURE__ */ $$register($$hoist_1_anonymous_server_function, "<id>", "$$hoist_1_anonymous_server_function").bind(null, __enc([value])),
     ["__proto__"]: /* #__PURE__ */ $$register($$hoist_2___proto__, "<id>", "$$hoist_2___proto__").bind(null, __enc([value])),
     'foo-bar': /* #__PURE__ */ $$register($$hoist_3_anonymous_server_function, "<id>", "$$hoist_3_anonymous_server_function").bind(null, __enc([value])),
     1.5: /* #__PURE__ */ $$register($$hoist_4_anonymous_server_function, "<id>", "$$hoist_4_anonymous_server_function").bind(null, __enc([value])),
@@ -31,12 +31,12 @@ export function createActions(value) {
     };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
 
-;export async function $$hoist_1_key($$hoist_encoded) {
+;export async function $$hoist_1_anonymous_server_function($$hoist_encoded) {
       const [value] = __dec($$hoist_encoded);
 'use server'
       return value + 1
     };
-/* #__PURE__ */ Object.defineProperty($$hoist_1_key, "name", { value: "key" });
+/* #__PURE__ */ Object.defineProperty($$hoist_1_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_2___proto__($$hoist_encoded) {
       const [value] = __dec($$hoist_encoded);
