@@ -1,0 +1,53 @@
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js
+  s_4f8a325e5a6f47::t_3bbc8cc9b336c8 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.encode.js
+  s_4f8a325e5a6f47::t_bb1ca2077bd6db 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.js
+  s_4f8a325e5a6f47::t_adc54bd41ad807 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js
+  s_4f8a325e5a6f47::t_a48b9e198e29dd 1-12
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.encode.js
+  s_4f8a325e5a6f47::t_fb31a3409e7e81 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.js
+  s_4f8a325e5a6f47::t_d7773b33ab7234 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js
+  s_4f8a325e5a6f47::t_f960a41a724671 1-10
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.encode.js
+  s_4f8a325e5a6f47::t_e12a6f54d714d9 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.js
+  s_4f8a325e5a6f47::t_488a7d214ec779 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js
+  s_4f8a325e5a6f47::t_91dd51d02f2265 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.encode.js
+  s_4f8a325e5a6f47::t_da3a2639016157 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.js
+  s_4f8a325e5a6f47::t_6d25160388fc3b 1-21
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js
+  s_4f8a325e5a6f47::t_a4e3884ee5d79f 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.encode.js
+  s_4f8a325e5a6f47::t_b651634c527595 1-25
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.js
+  s_4f8a325e5a6f47::t_c4f4e7c3d004ac 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js
+  s_4f8a325e5a6f47::t_b4d3922acdea10 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.encode.js
+  s_4f8a325e5a6f47::t_460ecceb3125c3 1-27
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.js
+  s_4f8a325e5a6f47::t_08fb680d16b6c9 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "19fc786de940684331023b6e4a655418b5419daa",
+  "prompts": {},
+  "sessions": {
+    "s_4f8a325e5a6f47": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02b9a41daffeajBZr5DX44xPqk",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
