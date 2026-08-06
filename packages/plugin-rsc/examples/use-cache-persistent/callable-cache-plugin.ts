@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import {
   hasDirective,
@@ -14,6 +15,7 @@ const pluginName = 'example:use-cache-persistent'
 
 export function callableCachePlugin(): Plugin {
   let manager: RscPluginManager
+  const developmentEpoch = randomUUID()
   const cacheModuleGenerations = new Map<string, number>()
 
   return {
@@ -37,7 +39,7 @@ export function callableCachePlugin(): Plugin {
       if (environmentName === 'rsc') {
         const generation =
           this.environment.mode === 'dev'
-            ? (cacheModuleGenerations.get(id) ?? Date.now()) + 1
+            ? (cacheModuleGenerations.get(id) ?? 0) + 1
             : undefined
         if (generation !== undefined) {
           cacheModuleGenerations.set(id, generation)
@@ -60,7 +62,9 @@ export function callableCachePlugin(): Plugin {
                   getCacheWrapperOptions(
                     meta,
                     `${reference.referenceKey}#${name}`,
-                    generation,
+                    generation === undefined
+                      ? undefined
+                      : `${developmentEpoch}:${generation}`,
                   ),
                 ),
               // Next.js calls rejecting primitive literals while permitting
@@ -83,7 +87,9 @@ export function callableCachePlugin(): Plugin {
                   getCacheWrapperOptions(
                     meta,
                     `${reference.referenceKey}#${name}`,
-                    generation,
+                    generation === undefined
+                      ? undefined
+                      : `${developmentEpoch}:${generation}`,
                   ),
                 ),
               encode: (value) => `$$encryptCacheCaptures(${value})`,
@@ -161,7 +167,7 @@ export function callableCachePlugin(): Plugin {
 function getCacheWrapperOptions(
   meta: Pick<ModuleExportMeta, 'valueNode'>,
   cacheId: string,
-  generation: number | undefined,
+  generation: string | undefined,
 ): CacheWrapperOptions {
   const node = meta.valueNode
   if (

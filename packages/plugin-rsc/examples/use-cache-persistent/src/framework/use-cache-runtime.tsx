@@ -25,7 +25,7 @@ import {
 export type CacheWrapperOptions = {
   argumentCount?: number
   cacheId: string
-  generation?: number
+  generation?: string
 }
 
 const pendingEntries = new Map<string, Promise<Uint8Array>>()
