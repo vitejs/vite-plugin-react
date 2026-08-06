@@ -157,6 +157,42 @@ export function transformHoistInlineDirective(
         // directive. Other function shapes cannot contain directive prologues.
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
+
+        const isObjectMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'Property' &&
+          parent.value === node &&
+          (parent.method || parent.kind !== 'init')
+        const isClassMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'MethodDefinition'
+        if (isClassMethod && !parent.static) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} class instance methods.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (isClassMethod && parent.key.type === 'PrivateIdentifier') {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} private class methods.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (
+          (isObjectMethod && parent.kind !== 'init') ||
+          (isClassMethod && parent.kind !== 'method')
+        ) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} getters or setters.`,
+            ),
+            { pos: parent.start },
+          )
+        }
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
             new Error(`"${directive}" doesn't allow non async function`),
@@ -170,12 +206,26 @@ export function transformHoistInlineDirective(
         // with Object.defineProperty below. Anonymous functions get a stable
         // fallback for registration and diagnostics.
         const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const methodName =
+          (isObjectMethod || isClassMethod) &&
+          (parent.key.type === 'Literal' ||
+            (!parent.computed && parent.key.type === 'Identifier'))
+            ? String(
+                parent.key.type === 'Identifier'
+                  ? parent.key.name
+                  : parent.key.value,
+              )
+            : undefined
         const originalName =
           declName ||
+          methodName ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
           'anonymous_server_function'
+        const generatedName = /^[$A-Z_a-z][$\w]*$/.test(originalName)
+          ? originalName
+          : 'anonymous_server_function'
 
         // Convert closure captures into leading parameters of the hoisted
         // function. At the original call site, registration below binds the
@@ -203,7 +253,7 @@ export function transformHoistInlineDirective(
         // Rewrite and hoist the original function range into its module-level form.
         // These edits must happen before `.move()` (hoist) so they travel with the range.
         const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+          `$$hoist_${names.length}` + (generatedName ? `_${generatedName}` : '')
         names.push(newName)
         // Hoisted runtimes need two module bindings: a private function for the
         // original body and a canonical binding for the runtime result. The
@@ -246,7 +296,52 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (declName) {
+        if (isObjectMethod) {
+          const isProto =
+            !parent.computed &&
+            ((parent.key.type === 'Identifier' &&
+              parent.key.name === '__proto__') ||
+              (parent.key.type === 'Literal' &&
+                parent.key.value === '__proto__'))
+          if (isProto) {
+            output.update(parent.start, node.start, '["__proto__"]: ')
+          } else {
+            output.update(
+              parent.start,
+              parent.key.start,
+              parent.computed ? '[' : '',
+            )
+            const suffix = parent.computed ? ']: ' : ': '
+            if (parent.key.end === node.start) {
+              output.appendLeft(node.start, suffix)
+            } else {
+              output.update(parent.key.end, node.start, suffix)
+            }
+          }
+        } else if (isClassMethod) {
+          const isConstructor =
+            !parent.computed &&
+            ((parent.key.type === 'Identifier' &&
+              parent.key.name === 'constructor') ||
+              (parent.key.type === 'Literal' &&
+                parent.key.value === 'constructor'))
+          if (isConstructor) {
+            output.update(parent.start, node.start, 'static ["constructor"] = ')
+          } else {
+            output.update(
+              parent.start,
+              parent.key.start,
+              parent.computed ? 'static [' : 'static ',
+            )
+            const suffix = parent.computed ? '] = ' : ' = '
+            if (parent.key.end === node.start) {
+              output.appendLeft(node.start, suffix)
+            } else {
+              output.update(parent.key.end, node.start, suffix)
+            }
+          }
+          newCode += ';'
+        } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
           newCode = `const ${declName} = ${newCode};`

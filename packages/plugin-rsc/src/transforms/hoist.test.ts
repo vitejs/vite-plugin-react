@@ -83,6 +83,7 @@ describe(transformHoistInlineDirective, () => {
       encode?: boolean
       noExport?: boolean
       directive?: string | RegExp
+      rejectNonAsyncFunction?: boolean
     },
   ) {
     const ast = await parseAstAsync(input)
@@ -98,6 +99,7 @@ describe(transformHoistInlineDirective, () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
       noExport: options?.noExport,
+      rejectNonAsyncFunction: options?.rejectNonAsyncFunction,
     })
     if (!output.hasChanged()) {
       return
@@ -194,6 +196,67 @@ async function action() {
 }
 `
     expect(await testTransformNames(input)).toEqual(['$$hoist_0_action'])
+  })
+
+  it('preserves arbitrary computed method keys', async () => {
+    const input = `
+const key = getKey();
+const object = {
+  async [key]() {
+    "use server";
+  },
+};
+class Actions {
+  static async [key]() {
+    "use server";
+  }
+}
+`
+    const transformed = await testTransform(input)
+    expect(transformed).toContain('[key]: /* #__PURE__ */')
+    expect(transformed).toContain('static [key] = /* #__PURE__ */')
+  })
+
+  it('preserves __proto__ as an own object property', async () => {
+    const transformed = await testTransform(`
+const object = {
+  async __proto__() {
+    "use server";
+  },
+};
+`)
+    expect(transformed).toContain('["__proto__"]: /* #__PURE__ */')
+  })
+
+  it('preserves computed __proto__ expressions', async () => {
+    const transformed = await testTransform(`
+const __proto__ = getKey();
+const object = {
+  async [__proto__]() {
+    "use server";
+  },
+};
+`)
+    expect(transformed).toContain('[__proto__]: /* #__PURE__ */')
+  })
+
+  it('rejects unsupported method forms', async () => {
+    for (const input of [
+      `class Actions { async action() { "use server" } }`,
+      `class Actions { static async #action() { "use server" } }`,
+      `const actions = { get action() { "use server" } }`,
+      `class Actions { static set action(value) { "use server" } }`,
+    ]) {
+      await expect(testTransform(input)).rejects.toThrow(/not allowed/)
+    }
+  })
+
+  it('reports unsupported methods before async policy', async () => {
+    await expect(
+      testTransform(`const actions = { get action() { "use server" } }`, {
+        rejectNonAsyncFunction: true,
+      }),
+    ).rejects.toThrow(/getters or setters/)
   })
 
   it('finds directives only in directive-capable bodies', async () => {
