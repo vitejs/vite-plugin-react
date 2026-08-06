@@ -54,6 +54,9 @@ function defineTests(f: Fixture) {
     await expect(example.getByTestId('execution-count')).toHaveText(
       f.mode === 'dev' ? '1' : '0',
     )
+    await expect(example.getByTestId('result')).toHaveText(
+      'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
+    )
   })
 
   test('encrypted captures use their decoded values as persistent keys', async ({

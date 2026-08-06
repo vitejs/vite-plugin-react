@@ -1,20 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState, useState } from 'react'
 
 export function FileDirectiveFromServerClient(props: {
-  action: (formData: FormData) => Promise<void>
+  action: (formData: FormData) => Promise<string>
   executionCount: number
   ordinaryExports: string
   resetAction: () => Promise<void>
   result: string
 }) {
   const [submissions, setSubmissions] = useState(0)
+  const [result, action] = useActionState(
+    (_previousResult: string, formData: FormData) => props.action(formData),
+    props.result,
+  )
 
   return (
     <>
       <form
-        action={props.action}
+        action={action}
         data-testid="file-directive-from-server"
         onSubmit={() => setSubmissions((value) => value + 1)}
       >
@@ -41,7 +45,7 @@ export function FileDirectiveFromServerClient(props: {
               {props.ordinaryExports}
             </output>
             <br />
-            Result: <output data-testid="result">{props.result}</output>
+            Result: <output data-testid="result">{result}</output>
           </span>
         </p>
       </form>
