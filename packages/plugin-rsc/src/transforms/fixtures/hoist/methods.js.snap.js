@@ -56,13 +56,13 @@ export function createActions(value) {
       'use server'
       return value + 4
     };
-/* #__PURE__ */ Object.defineProperty($$hoist_4_anonymous_server_function, "name", { value: "foo-bar" });
+/* #__PURE__ */ Object.defineProperty($$hoist_4_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_5_anonymous_server_function(value) {
       'use server'
       return value + 5
     };
-/* #__PURE__ */ Object.defineProperty($$hoist_5_anonymous_server_function, "name", { value: "1.5" });
+/* #__PURE__ */ Object.defineProperty($$hoist_5_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_6_action() {
     'use server'
