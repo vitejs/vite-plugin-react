@@ -4,16 +4,14 @@ import { transformHoistInlineDirective } from './hoist'
 import { transformModuleExportEffect } from './module-export-effect'
 import { hasDirective } from './utils'
 
-export function transformServerActionServer(
-  input: string,
-  ast: ESTree.Program,
-  options: {
-    runtime: (value: string, name: string) => string
-    rejectNonAsyncFunction?: boolean
-    encode?: (value: string) => string
-    decode?: (value: string) => string
-  },
-):
+export type TransformServerActionServerOptions = {
+  runtime: (value: string, name: string) => string
+  rejectNonAsyncFunction?: boolean
+  encode?: (value: string) => string
+  decode?: (value: string) => string
+}
+
+export type TransformServerActionServerResult =
   | {
       exportNames: string[]
       output: MagicString
@@ -23,7 +21,13 @@ export function transformServerActionServer(
       output: MagicString
       names: string[]
       referenceNames: string[]
-    } {
+    }
+
+export function transformServerActionServer(
+  input: string,
+  ast: ESTree.Program,
+  options: TransformServerActionServerOptions,
+): TransformServerActionServerResult {
   // TODO: unify (generalize transformHoistInlineDirective to support top-level directive cases)
   if (hasDirective(ast.body, 'use server')) {
     const result = transformModuleExportEffect(input, ast, {

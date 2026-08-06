@@ -20,6 +20,11 @@ export type TransformWrapExportOptions = {
   filter?: TransformWrapExportFilter
 }
 
+export type TransformWrapExportResult = {
+  exportNames: string[]
+  output: MagicString
+}
+
 /**
  * Replaces selected module-local export bindings with runtime wrappers.
  *
@@ -61,10 +66,7 @@ export function transformWrapExport(
   input: string,
   viteAst: ESTree.Program,
   options: TransformWrapExportOptions,
-): {
-  exportNames: string[]
-  output: MagicString
-} {
+): TransformWrapExportResult {
   const output = new MagicString(input)
   const exportNames: string[] = []
   const appendedCode: string[] = []
