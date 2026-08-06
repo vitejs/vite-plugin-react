@@ -8,6 +8,8 @@ import type {
   Node,
   MemberExpression,
   Identifier,
+  MethodDefinition,
+  Property,
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -158,39 +160,35 @@ export function transformHoistInlineDirective(
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
 
-        const isObjectMethod =
-          node.type === 'FunctionExpression' &&
-          parent?.type === 'Property' &&
-          parent.value === node &&
-          (parent.method || parent.kind !== 'init')
-        const isClassMethod =
-          node.type === 'FunctionExpression' &&
-          parent?.type === 'MethodDefinition'
-        if (isClassMethod && !parent.static) {
+        const method = analyzeMethod(node, parent)
+        if (method?.kind === 'class' && !method.node.static) {
           throw Object.assign(
             new Error(
               `It is not allowed to define inline ${JSON.stringify(match[0])} class instance methods.`,
             ),
-            { pos: parent.start },
+            { pos: method.node.start },
           )
         }
-        if (isClassMethod && parent.key.type === 'PrivateIdentifier') {
+        if (
+          method?.kind === 'class' &&
+          method.node.key.type === 'PrivateIdentifier'
+        ) {
           throw Object.assign(
             new Error(
               `It is not allowed to define inline ${JSON.stringify(match[0])} private class methods.`,
             ),
-            { pos: parent.start },
+            { pos: method.node.start },
           )
         }
         if (
-          (isObjectMethod && parent.kind !== 'init') ||
-          (isClassMethod && parent.kind !== 'method')
+          (method?.kind === 'object' && method.node.kind !== 'init') ||
+          (method?.kind === 'class' && method.node.kind !== 'method')
         ) {
           throw Object.assign(
             new Error(
               `It is not allowed to define inline ${JSON.stringify(match[0])} getters or setters.`,
             ),
-            { pos: parent.start },
+            { pos: method.node.start },
           )
         }
         if (!node.async && rejectNonAsyncFunction) {
@@ -206,21 +204,9 @@ export function transformHoistInlineDirective(
         // with Object.defineProperty below. Anonymous functions get a stable
         // fallback for registration and diagnostics.
         const declName = node.type === 'FunctionDeclaration' && node.id.name
-        const methodName =
-          (isObjectMethod || isClassMethod) &&
-          (parent.key.type === 'Literal' ||
-            (!parent.computed && parent.key.type === 'Identifier'))
-            ? String(
-                parent.key.type === 'Identifier'
-                  ? parent.key.name
-                  : parent.key.value,
-              )
-            : undefined
         const originalName =
           declName ||
-          (methodName && /^[$A-Z_a-z][$\w]*$/.test(methodName)
-            ? methodName
-            : undefined) ||
+          method?.name ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
@@ -295,48 +281,44 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (isObjectMethod) {
-          const isProto =
-            !parent.computed &&
-            ((parent.key.type === 'Identifier' &&
-              parent.key.name === '__proto__') ||
-              (parent.key.type === 'Literal' &&
-                parent.key.value === '__proto__'))
-          if (isProto) {
-            output.update(parent.start, node.start, '["__proto__"]: ')
+        if (method?.kind === 'object') {
+          if (method.forceComputed) {
+            output.update(
+              method.node.start,
+              node.start,
+              `[${JSON.stringify(method.keyName)}]: `,
+            )
           } else {
             output.update(
-              parent.start,
-              parent.key.start,
-              parent.computed ? '[' : '',
+              method.node.start,
+              method.node.key.start,
+              method.node.computed ? '[' : '',
             )
-            const suffix = parent.computed ? ']: ' : ': '
-            if (parent.key.end === node.start) {
+            const suffix = method.node.computed ? ']: ' : ': '
+            if (method.node.key.end === node.start) {
               output.appendLeft(node.start, suffix)
             } else {
-              output.update(parent.key.end, node.start, suffix)
+              output.update(method.node.key.end, node.start, suffix)
             }
           }
-        } else if (isClassMethod) {
-          const isConstructor =
-            !parent.computed &&
-            ((parent.key.type === 'Identifier' &&
-              parent.key.name === 'constructor') ||
-              (parent.key.type === 'Literal' &&
-                parent.key.value === 'constructor'))
-          if (isConstructor) {
-            output.update(parent.start, node.start, 'static ["constructor"] = ')
+        } else if (method?.kind === 'class') {
+          if (method.forceComputed) {
+            output.update(
+              method.node.start,
+              node.start,
+              `static [${JSON.stringify(method.keyName)}] = `,
+            )
           } else {
             output.update(
-              parent.start,
-              parent.key.start,
-              parent.computed ? 'static [' : 'static ',
+              method.node.start,
+              method.node.key.start,
+              method.node.computed ? 'static [' : 'static ',
             )
-            const suffix = parent.computed ? '] = ' : ' = '
-            if (parent.key.end === node.start) {
+            const suffix = method.node.computed ? '] = ' : ' = '
+            if (method.node.key.end === node.start) {
               output.appendLeft(node.start, suffix)
             } else {
-              output.update(parent.key.end, node.start, suffix)
+              output.update(method.node.key.end, node.start, suffix)
             }
           }
           newCode += ';'
@@ -365,6 +347,61 @@ export function transformHoistInlineDirective(
   return {
     output,
     names,
+  }
+}
+
+type Method =
+  | {
+      kind: 'object'
+      node: Property
+    }
+  | {
+      kind: 'class'
+      node: MethodDefinition
+    }
+
+type MethodAnalysis = Method & {
+  name: string | undefined
+  keyName: string | undefined
+  forceComputed: boolean
+}
+
+function analyzeMethod(
+  node: Node,
+  parent: Node | null,
+): MethodAnalysis | undefined {
+  if (node.type !== 'FunctionExpression') return
+
+  let method: Method
+  if (
+    parent?.type === 'Property' &&
+    parent.value === node &&
+    (parent.method || parent.kind !== 'init')
+  ) {
+    method = { kind: 'object', node: parent }
+  } else if (parent?.type === 'MethodDefinition') {
+    method = { kind: 'class', node: parent }
+  } else {
+    return
+  }
+
+  const keyName =
+    method.node.key.type === 'Literal' ||
+    (!method.node.computed && method.node.key.type === 'Identifier')
+      ? String(
+          method.node.key.type === 'Identifier'
+            ? method.node.key.name
+            : method.node.key.value,
+        )
+      : undefined
+  return {
+    ...method,
+    name: keyName && /^[$A-Z_a-z][$\w]*$/.test(keyName) ? keyName : undefined,
+    keyName,
+    forceComputed:
+      !method.node.computed &&
+      ((method.kind === 'object' && keyName === '__proto__') ||
+        (method.kind === 'class' && keyName === 'constructor')),
   }
 }
 
