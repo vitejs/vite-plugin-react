@@ -33,12 +33,15 @@ function defineTests(f: Fixture) {
 
     let example = page.getByTestId('file-directive-from-server')
     await reset(page)
+
+    // The first invocation executes and persists a self-contained Flight value.
     await submit(page, example)
     await expect(example.getByTestId('execution-count')).toHaveText('1')
     await expect(example.getByTestId('result')).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
     )
 
+    // The same key replays the persisted value without executing again.
     await submit(page, example)
     await expect(example.getByTestId('execution-count')).toHaveText('1')
 
@@ -49,6 +52,8 @@ function defineTests(f: Fixture) {
     example = page.getByTestId('file-directive-from-server')
     await expect(example.getByTestId('execution-count')).toHaveText('0')
 
+    // Production reuses the same build-scoped entry after restart. Development
+    // starts a new epoch so edits made while the server was stopped cannot be stale.
     await submit(page, example)
     await expect(example.getByTestId('submission-count')).toHaveText('1')
     await expect(example.getByTestId('execution-count')).toHaveText(
@@ -88,6 +93,8 @@ function defineDevTests(f: Fixture) {
     const example = page.getByTestId('file-directive-from-server')
     const result = example.getByTestId('result')
     await reset(page)
+
+    // Warm one persistent entry and prove the second invocation is a cache hit.
     await submit(page, example)
     await expect(result).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
@@ -95,6 +102,7 @@ function defineDevTests(f: Fixture) {
     await submit(page, example)
     await expect(example.getByTestId('execution-count')).toHaveText('1')
 
+    // Editing the cached function advances its module generation.
     action.edit((code) => code.replace('body-v1', 'body-v2'))
     await page.reload()
     await waitForHydration(page)
@@ -105,6 +113,7 @@ function defineDevTests(f: Fixture) {
       'server import + body-v2 + direct-v1 + transitive-v1 + alpha',
     )
 
+    // Editing a direct dependency invalidates the importing cache module.
     direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
     await page.reload()
     await waitForHydration(page)
@@ -115,6 +124,7 @@ function defineDevTests(f: Fixture) {
       'server import + body-v2 + direct-v2 + transitive-v1 + alpha',
     )
 
+    // Reverse-importer traversal also reaches transitive dependencies.
     transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2'))
     await page.reload()
     await waitForHydration(page)
@@ -125,6 +135,7 @@ function defineDevTests(f: Fixture) {
       'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
     )
 
+    // A development restart uses a fresh epoch and executes the current source.
     await page.goto('about:blank')
     await f.restart()
     await page.goto(f.url('/file-directive-from-server'))
