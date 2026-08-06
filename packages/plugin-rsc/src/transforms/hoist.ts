@@ -15,13 +15,6 @@ import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
 import { isDirective } from './utils'
 
-export type TransformHoistInlineDirectiveMeta = {
-  /** Match result for the source function directive. */
-  directiveMatch: RegExpMatchArray
-  /** Original source function before closure captures are added as parameters. */
-  valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
-}
-
 export type TransformHoistInlineDirectiveOptions = {
   runtime: (
     value: string,
@@ -40,6 +33,13 @@ export type TransformHoistInlineDirectiveOptions = {
    * must not depend on other module-local initialization.
    */
   hoistRuntime?: boolean
+}
+
+export type TransformHoistInlineDirectiveMeta = {
+  /** Match result for the source function directive. */
+  directiveMatch: RegExpMatchArray
+  /** Original source function before closure captures are added as parameters. */
+  valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
 }
 
 export type TransformHoistInlineDirectiveResult = {
