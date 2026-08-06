@@ -41,3 +41,12 @@ export class Actions {
     return 3
   }
 }
+
+export function createActions(value) {
+  return class Actions {
+    static async action() {
+      'use server'
+      return value
+    }
+  }
+}
