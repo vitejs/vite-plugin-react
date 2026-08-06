@@ -7,6 +7,11 @@ import {
   type TransformHoistInlineDirectiveOptions,
 } from './hoist'
 
+type TestTransformOptions = Omit<
+  Partial<TransformHoistInlineDirectiveOptions>,
+  'encode'
+> & { encode?: boolean }
+
 describe('fixtures', () => {
   const fixtures = import.meta.glob(
     ['./fixtures/hoist/**/*.js', '!**/*.snap.*'],
@@ -17,7 +22,7 @@ describe('fixtures', () => {
 
   async function transformFixture(
     input: string,
-    options?: { encode?: boolean },
+    options?: TestTransformOptions,
   ) {
     const ast = await parseAstAsync(input)
     const { output } = transformHoistInlineDirective(input, ast, {
@@ -81,12 +86,7 @@ describe('hoistRuntime fixtures', () => {
 })
 
 describe(transformHoistInlineDirective, () => {
-  async function testTransform(
-    input: string,
-    options?: Omit<Partial<TransformHoistInlineDirectiveOptions>, 'encode'> & {
-      encode?: boolean
-    },
-  ) {
+  async function testTransform(input: string, options?: TestTransformOptions) {
     const { encode, ...transformOptions } = options ?? {}
     const ast = await parseAstAsync(input)
     const { output } = transformHoistInlineDirective(input, ast, {
@@ -303,35 +303,35 @@ export async function test() {
       "
     `)
   })
-})
 
-it.each([
-  [
-    `class Actions { async action() { "use server" } }`,
-    `It is not allowed to define inline "use server" class instance methods.`,
-  ],
-  [
-    `class Actions { static async #action() { "use server" } }`,
-    `It is not allowed to define inline "use server" private class methods.`,
-  ],
-  [
-    `const actions = { get action() { "use server" } }`,
-    `It is not allowed to define inline "use server" getters or setters.`,
-  ],
-  [
-    `class Actions { static set action(value) { "use server" } }`,
-    `It is not allowed to define inline "use server" getters or setters.`,
-  ],
-])('rejects unsupported method form in %s', async (input, message) => {
-  await expect(testTransform(input)).rejects.toThrow(message)
-})
+  it.each([
+    [
+      `class Actions { async action() { "use server" } }`,
+      `It is not allowed to define inline "use server" class instance methods.`,
+    ],
+    [
+      `class Actions { static async #action() { "use server" } }`,
+      `It is not allowed to define inline "use server" private class methods.`,
+    ],
+    [
+      `const actions = { get action() { "use server" } }`,
+      `It is not allowed to define inline "use server" getters or setters.`,
+    ],
+    [
+      `class Actions { static set action(value) { "use server" } }`,
+      `It is not allowed to define inline "use server" getters or setters.`,
+    ],
+  ])('rejects unsupported method form in %s', async (input, message) => {
+    await expect(testTransform(input)).rejects.toThrow(message)
+  })
 
-it('reports unsupported methods before async policy', async () => {
-  await expect(
-    testTransform(`const actions = { get action() { "use server" } }`, {
-      rejectNonAsyncFunction: true,
-    }),
-  ).rejects.toThrow(
-    `It is not allowed to define inline "use server" getters or setters.`,
-  )
+  it('reports unsupported methods before async policy', async () => {
+    await expect(
+      testTransform(`const actions = { get action() { "use server" } }`, {
+        rejectNonAsyncFunction: true,
+      }),
+    ).rejects.toThrow(
+      `It is not allowed to define inline "use server" getters or setters.`,
+    )
+  })
 })
