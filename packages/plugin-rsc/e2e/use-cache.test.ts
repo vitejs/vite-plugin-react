@@ -14,48 +14,49 @@ test.describe('build', () => {
 
 function defineTests(f: Fixture) {
   test('use cache function', async ({ page }) => {
-    await page.goto(f.url())
+    await page.goto(f.url('/cached-function'))
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-fn')
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 0, cacheFnCount: 0)',
-    )
+    const callCount = locator.getByTestId('call-count')
+    const executionCount = locator.getByTestId('execution-count')
+    const cacheKey = locator.getByRole('textbox', { name: 'Cache key' })
+    const call = locator.getByRole('button', {
+      name: 'Call cached function',
+    })
+    await expect(callCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
 
     // The action runs on every submit, but the cached function runs once per argument.
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 1, cacheFnCount: 1)',
-    )
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 2, cacheFnCount: 1)',
-    )
-    await locator.getByRole('textbox').fill('test')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 3, cacheFnCount: 2)',
-    )
-    await locator.getByRole('textbox').fill('test')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 4, cacheFnCount: 2)',
-    )
+    await call.click()
+    await expect(callCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await call.click()
+    await expect(callCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
+    await cacheKey.fill('beta')
+    await call.click()
+    await expect(callCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
+    await call.click()
+    await expect(callCount).toHaveText('4')
+    await expect(executionCount).toHaveText('2')
 
-    // revalidate cache
-    await locator.getByRole('textbox').fill('revalidate')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 5, cacheFnCount: 3)',
-    )
-    await locator.getByRole('textbox').fill('test')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 6, cacheFnCount: 4)',
-    )
+    // Clearing the cache makes the same key execute again.
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === 'POST' &&
+          response.url().includes('_.rsc'),
+      ),
+      locator.getByRole('button', { name: 'Clear function cache' }).click(),
+    ])
+    await call.click()
+    await expect(callCount).toHaveText('5')
+    await expect(executionCount).toHaveText('3')
   })
 
   test('use cache component', async ({ page }) => {
-    await page.goto(f.url())
+    await page.goto(f.url('/cached-component'))
     await waitForHydration(page)
     const static1 = await page
       .getByTestId('test-use-cache-component-static')
@@ -79,53 +80,50 @@ function defineTests(f: Fixture) {
     })
   })
 
-  test('use cache closure', async ({ page }) => {
-    await page.goto(f.url())
+  test('use cache captured values', async ({ page }) => {
+    await page.goto(f.url('/captured-values'))
     await waitForHydration(page)
     const locator = page.getByTestId('test-use-cache-closure')
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 0, innerFnCount: 0)',
-    )
+    const callCount = locator.getByTestId('call-count')
+    const executionCount = locator.getByTestId('execution-count')
+    const capturedValue = locator.getByRole('textbox', {
+      name: 'Captured value',
+    })
+    const argument = locator.getByRole('textbox', {
+      name: 'Function argument',
+    })
+    const call = locator.getByRole('button', {
+      name: 'Call cached function',
+    })
+    await expect(callCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
 
     // Both the captured outer value and call-time inner argument form the cache key.
     // (x, y)
-    await locator.getByPlaceholder('outer').fill('x')
-    await locator.getByPlaceholder('inner').fill('y')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 1, innerFnCount: 1)',
-    )
+    await call.click()
+    await expect(callCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
 
     // (x, y)
-    await locator.getByPlaceholder('outer').fill('x')
-    await locator.getByPlaceholder('inner').fill('y')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 2, innerFnCount: 1)',
-    )
+    await call.click()
+    await expect(callCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
 
     // (xx, y)
-    await locator.getByPlaceholder('outer').fill('xx')
-    await locator.getByPlaceholder('inner').fill('y')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 3, innerFnCount: 2)',
-    )
+    await capturedValue.fill('xx')
+    await call.click()
+    await expect(callCount).toHaveText('3')
+    await expect(executionCount).toHaveText('2')
 
     // (xx, y)
-    await locator.getByPlaceholder('outer').fill('xx')
-    await locator.getByPlaceholder('inner').fill('y')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 4, innerFnCount: 2)',
-    )
+    await call.click()
+    await expect(callCount).toHaveText('4')
+    await expect(executionCount).toHaveText('2')
 
     // (xx, yy)
-    await locator.getByPlaceholder('outer').fill('xx')
-    await locator.getByPlaceholder('inner').fill('yy')
-    await locator.getByRole('button').click()
-    await expect(locator.locator('span')).toHaveText(
-      '(actionCount: 5, innerFnCount: 3)',
-    )
+    await argument.fill('yy')
+    await call.click()
+    await expect(callCount).toHaveText('5')
+    await expect(executionCount).toHaveText('3')
   })
 }
