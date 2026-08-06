@@ -128,6 +128,21 @@ async function f() {
     expect(await testTransform(input)).toBeUndefined()
   })
 
+  it('returns generated names in order', async () => {
+    const input = `
+async function first() {
+  "use server";
+}
+async function second() {
+  "use server";
+}
+`
+    expect(await testTransformNames(input)).toEqual([
+      '$$hoist_0_first',
+      '$$hoist_1_second',
+    ])
+  })
+
   it('ignores strings outside a function directive prologue', async () => {
     const input = `
 async function initialized() {
@@ -150,21 +165,6 @@ async function action() {
 }
 `
     expect(await testTransformNames(input)).toEqual(['$$hoist_0_action'])
-  })
-
-  it('returns generated names in order', async () => {
-    const input = `
-async function first() {
-  "use server";
-}
-async function second() {
-  "use server";
-}
-`
-    expect(await testTransformNames(input)).toEqual([
-      '$$hoist_0_first',
-      '$$hoist_1_second',
-    ])
   })
 
   it('finds directives only in directive-capable bodies', async () => {
