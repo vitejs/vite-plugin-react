@@ -66,6 +66,8 @@ export default function cacheWrapper(
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
     let executionArguments = admittedArgs
     if (captureEnvelope) {
+      // Decrypt in the framework runtime so cache identity and execution share
+      // these values; the transformed implementation only destructures the array.
       const captures = await decryptCacheCaptures(captureEnvelope)
       const invocationArguments = admittedArgs.slice(1)
       executionArguments = [captures, ...invocationArguments]
