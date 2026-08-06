@@ -76,6 +76,15 @@ async function action() {
     ).not.toThrow()
   })
 
+  test.each([
+    `custom_jsxDEV(this)`,
+    `_jsxDEV(this)`,
+    `_jsxDEV(Component, {}, undefined, false, this, undefined)`,
+  ])('does not exempt user this expressions: %s', async (expression) => {
+    const node = await getFunction(`async function action() { ${expression} }`)
+    expect(() => validateDirectiveFunction(node, 'use server')).toThrow(/this/)
+  })
+
   test('stops at nested classes', async () => {
     const node = await getFunction(`
 async function action() {

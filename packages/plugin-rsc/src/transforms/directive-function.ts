@@ -72,9 +72,10 @@ function isJsxDevSourceThis(node: Node, parent: Node | null): boolean {
   return (
     node.type === 'ThisExpression' &&
     parent?.type === 'CallExpression' &&
-    parent.arguments.at(-1) === node &&
+    parent.arguments.length === 6 &&
+    parent.arguments[5] === node &&
     parent.callee.type === 'Identifier' &&
-    /(?:^|_)jsxDEV$/.test(parent.callee.name)
+    (parent.callee.name === 'jsxDEV' || parent.callee.name === '_jsxDEV')
   )
 }
 
