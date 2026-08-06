@@ -29,12 +29,16 @@ export type CacheWrapperOptions = {
 }
 
 const pendingEntries = new Map<string, Promise<Uint8Array>>()
+let cacheEpoch = 0
+let resetPromise: Promise<void> | undefined
 
 export default function cacheWrapper(
   fn: (...args: any[]) => Promise<unknown>,
   options: CacheWrapperOptions,
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
+    if (resetPromise) await resetPromise
+    const invocationEpoch = cacheEpoch
     // Callers can supply more arguments than a cached function declares. For example,
     // `useActionState(fn)` passes state and form data even to `function fn() {}`.
     // Preserve the bound capture envelope, then strip extras from caller arguments
@@ -89,7 +93,9 @@ export default function cacheWrapper(
             environmentName: 'Cache',
           })
           const value = new Uint8Array(await new Response(stream).arrayBuffer())
-          await setPersistentCache(cacheKey, value)
+          if (invocationEpoch === cacheEpoch) {
+            await setPersistentCache(cacheKey, value)
+          }
           return value
         })()
         pendingEntries.set(cacheKey, pending)
@@ -115,8 +121,18 @@ export default function cacheWrapper(
 }
 
 export async function resetCache() {
-  pendingEntries.clear()
-  await resetPersistentCache()
+  if (resetPromise) await resetPromise
+  cacheEpoch++
+  const pending = [...pendingEntries.values()]
+  resetPromise = (async () => {
+    await Promise.allSettled(pending)
+    await resetPersistentCache()
+  })()
+  try {
+    await resetPromise
+  } finally {
+    resetPromise = undefined
+  }
 }
 
 async function replyToCacheKey(reply: string | FormData) {
