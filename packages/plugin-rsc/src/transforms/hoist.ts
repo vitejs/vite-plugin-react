@@ -222,6 +222,9 @@ export function transformHoistInlineDirective(
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
           'anonymous_server_function'
+        const generatedName = /^[$A-Z_a-z][$\w]*$/.test(originalName)
+          ? originalName
+          : 'anonymous_server_function'
 
         // Convert closure captures into leading parameters of the hoisted
         // function. At the original call site, registration below binds the
@@ -249,7 +252,7 @@ export function transformHoistInlineDirective(
         // Rewrite and hoist the original function range into its module-level form.
         // These edits must happen before `.move()` (hoist) so they travel with the range.
         const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+          `$$hoist_${names.length}` + (generatedName ? `_${generatedName}` : '')
         names.push(newName)
         // Hoisted runtimes need two module bindings: a private function for the
         // original body and a canonical binding for the runtime result. The

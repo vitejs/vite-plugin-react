@@ -14,6 +14,14 @@ export function createObject(value) {
       'use server'
       return value + 2
     },
+    async 'foo-bar'() {
+      'use server'
+      return value + 3
+    },
+    async 1.5() {
+      'use server'
+      return value + 4
+    },
   }
 }
 
