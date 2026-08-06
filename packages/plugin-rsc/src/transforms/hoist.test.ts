@@ -83,6 +83,7 @@ describe(transformHoistInlineDirective, () => {
       encode?: boolean
       noExport?: boolean
       directive?: string | RegExp
+      rejectNonAsyncFunction?: boolean
     },
   ) {
     const ast = await parseAstAsync(input)
@@ -98,6 +99,7 @@ describe(transformHoistInlineDirective, () => {
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
       noExport: options?.noExport,
+      rejectNonAsyncFunction: options?.rejectNonAsyncFunction,
     })
     if (!output.hasChanged()) {
       return
@@ -247,6 +249,14 @@ const object = {
     ]) {
       await expect(testTransform(input)).rejects.toThrow(/not allowed/)
     }
+  })
+
+  it('reports unsupported methods before async policy', async () => {
+    await expect(
+      testTransform(`const actions = { get action() { "use server" } }`, {
+        rejectNonAsyncFunction: true,
+      }),
+    ).rejects.toThrow(/getters or setters/)
   })
 
   it('finds directives only in directive-capable bodies', async () => {

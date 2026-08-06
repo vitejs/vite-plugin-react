@@ -157,14 +157,6 @@ export function transformHoistInlineDirective(
         // directive. Other function shapes cannot contain directive prologues.
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
-        if (!node.async && rejectNonAsyncFunction) {
-          throw Object.assign(
-            new Error(`"${directive}" doesn't allow non async function`),
-            {
-              pos: node.start,
-            },
-          )
-        }
 
         const isObjectMethod =
           node.type === 'FunctionExpression' &&
@@ -199,6 +191,14 @@ export function transformHoistInlineDirective(
               `It is not allowed to define inline ${JSON.stringify(match[0])} getters or setters.`,
             ),
             { pos: parent.start },
+          )
+        }
+        if (!node.async && rejectNonAsyncFunction) {
+          throw Object.assign(
+            new Error(`"${directive}" doesn't allow non async function`),
+            {
+              pos: node.start,
+            },
           )
         }
 
