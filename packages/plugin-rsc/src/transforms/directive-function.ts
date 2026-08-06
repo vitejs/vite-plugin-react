@@ -30,7 +30,9 @@ export function validateDirectiveFunction(
       if (
         child !== node &&
         (child.type === 'FunctionDeclaration' ||
-          child.type === 'FunctionExpression')
+          child.type === 'FunctionExpression' ||
+          child.type === 'ClassDeclaration' ||
+          child.type === 'ClassExpression')
       ) {
         this.skip()
         return

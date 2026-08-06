@@ -75,4 +75,17 @@ async function action() {
       validateDirectiveFunction(undefined, 'use server'),
     ).not.toThrow()
   })
+
+  test('stops at nested classes', async () => {
+    const node = await getFunction(`
+async function action() {
+  class Nested extends Base {
+    value = this.value
+    method() { return super.method() }
+    static { this.initialize() }
+  }
+}
+`)
+    expect(() => validateDirectiveFunction(node, 'use server')).not.toThrow()
+  })
 })
