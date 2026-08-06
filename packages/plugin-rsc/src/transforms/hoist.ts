@@ -22,6 +22,31 @@ export type TransformHoistInlineDirectiveMeta = {
   valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
 }
 
+export type TransformHoistInlineDirectiveOptions = {
+  runtime: (
+    value: string,
+    name: string,
+    meta: TransformHoistInlineDirectiveMeta,
+  ) => string
+  directive: string | RegExp
+  rejectNonAsyncFunction?: boolean
+  encode?: (value: string) => string
+  decode?: (value: string) => string
+  /** Keep generated hoisted declarations module-local instead of exporting them. */
+  noExport?: boolean
+  /**
+   * Evaluate the runtime expression once during module initialization.
+   * The expression can reference imports and the hoisted implementation, but
+   * must not depend on other module-local initialization.
+   */
+  hoistRuntime?: boolean
+}
+
+export type TransformHoistInlineDirectiveResult = {
+  output: MagicString
+  names: string[]
+}
+
 /**
  * Turns an inline directive function into a module-level registered function.
  * Conceptually:
@@ -100,29 +125,8 @@ export function transformHoistInlineDirective(
     runtime,
     rejectNonAsyncFunction,
     ...options
-  }: {
-    runtime: (
-      value: string,
-      name: string,
-      meta: TransformHoistInlineDirectiveMeta,
-    ) => string
-    directive: string | RegExp
-    rejectNonAsyncFunction?: boolean
-    encode?: (value: string) => string
-    decode?: (value: string) => string
-    /** Keep generated hoisted declarations module-local instead of exporting them. */
-    noExport?: boolean
-    /**
-     * Evaluate the runtime expression once during module initialization.
-     * The expression can reference imports and the hoisted implementation, but
-     * must not depend on other module-local initialization.
-     */
-    hoistRuntime?: boolean
-  },
-): {
-  output: MagicString
-  names: string[]
-} {
+  }: TransformHoistInlineDirectiveOptions,
+): TransformHoistInlineDirectiveResult {
   const ast = viteAst as unknown as Program
   // MagicString needs an existing boundary at the move destination. The newline
   // also keeps the first appended declaration separate from the original source.
