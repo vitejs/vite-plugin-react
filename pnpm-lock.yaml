@@ -18,8 +18,8 @@ importers:
         specifier: ^24.13.3
         version: 24.13.3
       '@vitejs/release-scripts':
-        specifier: ^1.8.0
-        version: 1.8.0(conventional-commits-filter@6.0.1)
+        specifier: ^1.9.1
+        version: 1.9.1(conventional-commits-filter@6.0.1)
       eslint:
         specifier: ^9.39.5
         version: 9.39.5(jiti@2.7.0)
@@ -2968,8 +2968,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@vitejs/release-scripts@1.8.0':
-    resolution: {integrity: sha512-onsGGV08sBfuV78buZUg0GpJU5iFOoxpxgi66pp5IFtbONPUQOq/9dDUx6QPJJjUovDNftg9QfYe0t9PZt/g6w==}
+  '@vitejs/release-scripts@1.9.1':
+    resolution: {integrity: sha512-QWtOm5A9JPRqmfMhVv+zgppLwNwxq+FTPP8ibIV65WxclzNQ76tvQtML/DOstiDv4SJac/9IDpYQQKyNCdOoTw==}
 
   '@vitejs/test-dep-cjs-events-extend@file:packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend':
     resolution: {directory: packages/plugin-rsc/examples/basic/test-dep/cjs-events-extend, type: directory}
@@ -6298,7 +6298,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.9.2':
     optional: true
 
-  '@vitejs/release-scripts@1.8.0(conventional-commits-filter@6.0.1)':
+  '@vitejs/release-scripts@1.9.1(conventional-commits-filter@6.0.1)':
     dependencies:
       '@conventional-changelog/template': 1.2.1
       conventional-changelog: 8.1.0(conventional-commits-filter@6.0.1)
