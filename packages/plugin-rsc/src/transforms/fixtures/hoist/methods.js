@@ -1,4 +1,5 @@
 const key = 'computed'
+const __proto__ = 'computed-proto'
 
 export function createObject(value) {
   return {
@@ -14,13 +15,17 @@ export function createObject(value) {
       'use server'
       return value + 2
     },
-    async 'foo-bar'() {
+    async [__proto__]() {
       'use server'
       return value + 3
     },
-    async 1.5() {
+    async 'foo-bar'() {
       'use server'
       return value + 4
+    },
+    async 1.5() {
+      'use server'
+      return value + 5
     },
   }
 }
@@ -36,9 +41,14 @@ export class Actions {
     return 2
   }
 
-  static async constructor() {
+  static async [key]() {
     'use server'
     return 3
+  }
+
+  static async constructor() {
+    'use server'
+    return 4
   }
 }
 
