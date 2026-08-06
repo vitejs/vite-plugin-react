@@ -1,0 +1,25 @@
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.encode.js
+  s_e51c5aefd6e356::t_4a39eead41035b 6,10-11,16,27
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.js
+  s_e51c5aefd6e356::t_8a94585dd404fb 6,10-11,16,27
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/methods.js.map.snap.md
+  s_e51c5aefd6e356::t_5503ed07a70ec2 13-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/methods.js.snap.md
+  s_e51c5aefd6e356::t_a324eb6f307f29 29,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3dad30dc50bcaca8c03e74239b6423ebacaf3d4b",
+  "prompts": {},
+  "sessions": {
+    "s_e51c5aefd6e356": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_029e65702ffe2Z1FFzxR6jPxWT",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
