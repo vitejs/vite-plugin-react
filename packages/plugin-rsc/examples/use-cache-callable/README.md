@@ -6,18 +6,14 @@ Unlike the sibling [`use-cache`](../use-cache) example, these cached functions c
 
 ## Architecture
 
+<!-- TODO: mention transform and plugin API -->
+
 [`callable-cache-plugin.ts`](./callable-cache-plugin.ts) owns the directive policy. In the RSC environment it wraps module-level exports or hoists inline functions, registers the cached wrapper as a server reference, and reports that reference to `@vitejs/plugin-rsc`. In browser and SSR environments it generates the corresponding server-reference proxies.
 
 [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx) owns argument admission, cache identity, execution, and result replay:
 
-```text
-source cached function
-  -> directive transform
-  -> registered cache wrapper
-  -> optional encrypted captures + invocation arguments
-  -> admitted and decoded execution arguments
-  -> RSC-serialized cache key
-  -> cached Flight result
+```js
+// TODO: illustrative example
 ```
 
 Arguments are serialized with React's `encodeReply()` so values supported by the RSC protocol can participate in cache identity. On a miss, the runtime decodes those same arguments, invokes the private implementation, and stores its result as a replayable Flight stream.
@@ -56,6 +52,8 @@ The transformed private implementation receives the decoded capture array and on
 The plugin derives `argumentCount` from function AST metadata. The runtime preserves an inline function's bound capture envelope, then admits only the declared invocation arguments. This prevents arguments supplied by helpers such as `useActionState()` from changing either cache identity or execution when the source function does not declare them. Functions with a rest parameter keep unrestricted argument admission.
 
 ## Form caveat
+
+<!-- TODO: report next.js issue -->
 
 Hydrated forms rendered by SSR can retain React's `$ACTION_*` transport fields in their `FormData`. For an inline reference, those fields can include freshly encrypted bound captures, so submitting an unchanged direct form after a reload can miss the cache. This matches the behavior isolated by the [Next.js form reload reproduction](https://github.com/hi-ogawa/reproductions/tree/main/next-use-cache-form-reload).
 
