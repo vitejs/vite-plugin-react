@@ -196,6 +196,36 @@ async function action() {
     expect(await testTransformNames(input)).toEqual(['$$hoist_0_action'])
   })
 
+  it('preserves arbitrary computed method keys', async () => {
+    const input = `
+const key = getKey();
+const object = {
+  async [key]() {
+    "use server";
+  },
+};
+class Actions {
+  static async [key]() {
+    "use server";
+  }
+}
+`
+    const transformed = await testTransform(input)
+    expect(transformed).toContain('[key]: /* #__PURE__ */')
+    expect(transformed).toContain('static [key] = /* #__PURE__ */')
+  })
+
+  it('rejects unsupported method forms', async () => {
+    for (const input of [
+      `class Actions { async action() { "use server" } }`,
+      `class Actions { static async #action() { "use server" } }`,
+      `const actions = { get action() { "use server" } }`,
+      `class Actions { static set action(value) { "use server" } }`,
+    ]) {
+      await expect(testTransform(input)).rejects.toThrow(/not allowed/)
+    }
+  })
+
   it('finds directives only in directive-capable bodies', async () => {
     const input = `
 {

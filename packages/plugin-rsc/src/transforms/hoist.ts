@@ -166,12 +166,58 @@ export function transformHoistInlineDirective(
           )
         }
 
+        const isObjectMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'Property' &&
+          parent.value === node &&
+          (parent.method || parent.kind !== 'init')
+        const isClassMethod =
+          node.type === 'FunctionExpression' &&
+          parent?.type === 'MethodDefinition'
+        if (isClassMethod && !parent.static) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} class instance methods.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (isClassMethod && parent.key.type === 'PrivateIdentifier') {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} private class methods.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+        if (
+          (isObjectMethod && parent.kind !== 'init') ||
+          (isClassMethod && parent.kind !== 'method')
+        ) {
+          throw Object.assign(
+            new Error(
+              `It is not allowed to define inline ${JSON.stringify(match[0])} getters or setters.`,
+            ),
+            { pos: parent.start },
+          )
+        }
+
         // Capture the source-level name so the hoisted function can preserve it
         // with Object.defineProperty below. Anonymous functions get a stable
         // fallback for registration and diagnostics.
         const declName = node.type === 'FunctionDeclaration' && node.id.name
+        const methodName =
+          (isObjectMethod || isClassMethod) &&
+          (parent.key.type === 'Identifier' || parent.key.type === 'Literal')
+            ? String(
+                parent.key.type === 'Identifier'
+                  ? parent.key.name
+                  : parent.key.value,
+              )
+            : undefined
         const originalName =
           declName ||
+          methodName ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
@@ -246,7 +292,22 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (declName) {
+        if (isObjectMethod) {
+          const key = input.slice(parent.key.start, parent.key.end)
+          output.update(
+            parent.start,
+            node.start,
+            `${parent.computed ? `[${key}]` : key}: `,
+          )
+        } else if (isClassMethod) {
+          const key = input.slice(parent.key.start, parent.key.end)
+          output.update(
+            parent.start,
+            node.start,
+            `static ${parent.computed ? `[${key}]` : key} = `,
+          )
+          newCode += ';'
+        } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
           newCode = `const ${declName} = ${newCode};`
