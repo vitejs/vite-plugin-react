@@ -1,0 +1,59 @@
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js
+  s_9566ba58dcd60a::t_30d714f7a1b8a9 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.encode.js
+  s_9566ba58dcd60a::t_b1839285bcf33f 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.js
+  s_9566ba58dcd60a::t_fc0397cdd47a58 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js
+  s_9566ba58dcd60a::t_f527ad015de135 1-12
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.encode.js
+  s_9566ba58dcd60a::t_a288385037bc7f 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.js
+  s_9566ba58dcd60a::t_30819c5f29a0fe 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js
+  s_9566ba58dcd60a::t_cbd3207cbc9ef6 1-10
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.encode.js
+  s_9566ba58dcd60a::t_128891826aed4a 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.js
+  s_9566ba58dcd60a::t_39454aae460efa 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js
+  s_9566ba58dcd60a::t_901bb0e79e6906 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.encode.js
+  s_9566ba58dcd60a::t_53920ac6459749 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.js
+  s_9566ba58dcd60a::t_351547c2b3d559 1-21
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js
+  s_9566ba58dcd60a::t_d4622a0b0093cc 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.encode.js
+  s_9566ba58dcd60a::t_4ef7dba710a4de 1-25
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.js
+  s_9566ba58dcd60a::t_1a8bae1256c4d0 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js
+  s_9566ba58dcd60a::t_5fc9a786ce3702 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.encode.js
+  s_9566ba58dcd60a::t_6cfcf01b3a3b2d 1-27
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.js
+  s_9566ba58dcd60a::t_d1d334ab64c903 1-27
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_9566ba58dcd60a::t_f0194ec42ec5c5 128-143
+packages/plugin-rsc/src/transforms/server-action.ts
+  s_9566ba58dcd60a::t_6d5bc0ec496fa1 7-14,24-30
+packages/plugin-rsc/src/transforms/wrap-export.ts
+  s_9566ba58dcd60a::t_ae3caf29d37375 23-27,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "99c4960970dab38b3d0b1441541f795e26e64f2a",
+  "prompts": {},
+  "sessions": {
+    "s_9566ba58dcd60a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0300610beffeRzirleKG5Nd0Mb",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
