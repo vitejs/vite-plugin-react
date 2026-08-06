@@ -86,19 +86,19 @@ describe('hoistRuntime fixtures', () => {
 })
 
 describe(transformHoistInlineDirective, () => {
-  async function testTransform(input: string, options?: TestTransformOptions) {
-    const { encode, ...transformOptions } = options ?? {}
+  async function testTransform(input: string, options_?: TestTransformOptions) {
+    const { encode, ...options } = options_ ?? {}
     const ast = await parseAstAsync(input)
     const { output } = transformHoistInlineDirective(input, ast, {
-      ...transformOptions,
+      ...options,
       runtime: (value, name, meta) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)}` +
         `${
-          transformOptions.directive instanceof RegExp
+          options.directive instanceof RegExp
             ? `, ${JSON.stringify({ directiveMatch: meta.directiveMatch })}`
             : ''
         })`,
-      directive: transformOptions.directive ?? 'use server',
+      directive: options.directive ?? 'use server',
       encode: encode ? (v) => `__enc(${v})` : undefined,
       decode: encode ? (v) => `__dec(${v})` : undefined,
     })
