@@ -79,8 +79,6 @@ The plugin derives `argumentCount` from function AST metadata. The runtime prese
 
 ## Form caveat
 
-<!-- TODO: report next.js issue -->
-
 Hydrated forms rendered by SSR can retain React's `$ACTION_*` transport fields in their `FormData`. For an inline reference, those fields can include freshly encrypted bound captures, so submitting an unchanged direct form after a reload can miss the cache. This matches the behavior isolated by the [Next.js form reload reproduction](https://github.com/hi-ogawa/reproductions/tree/main/next-use-cache-form-reload).
 
 Framework-specific form handling can avoid making React transport fields part of application cache identity. The protected-captures route demonstrates the small adapter approach by extracting its user field before calling the cached reference.
