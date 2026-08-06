@@ -199,6 +199,7 @@ async function submit(page: Page, form: Locator) {
     form.getByRole('button', { name: 'Call cached function' }).click(),
   ])
   expect(response.ok()).toBe(true)
+  await response.finished()
 }
 
 async function reset(page: Page) {
@@ -211,4 +212,5 @@ async function reset(page: Page) {
     page.getByRole('button', { name: 'Reset' }).click(),
   ])
   expect(response.ok()).toBe(true)
+  await response.finished()
 }

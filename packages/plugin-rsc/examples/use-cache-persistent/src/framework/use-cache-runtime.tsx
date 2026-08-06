@@ -41,7 +41,7 @@ export default function cacheWrapper(
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
     const inheritedEpoch = cacheExecutionEpoch.getStore()
-    if (inheritedEpoch === undefined && resetPromise) await resetPromise
+    while (inheritedEpoch === undefined && resetPromise) await resetPromise
     const invocationEpoch = inheritedEpoch ?? cacheEpoch
     let finishInvocation: (() => void) | undefined
     const activeInvocation =
@@ -143,6 +143,9 @@ export default function cacheWrapper(
 }
 
 export async function resetCache() {
+  if (cacheExecutionEpoch.getStore() !== undefined) {
+    throw new Error('Cannot reset the cache inside a cached function')
+  }
   if (resetPromise) await resetPromise
   cacheEpoch++
   const active = [...activeInvocations]
