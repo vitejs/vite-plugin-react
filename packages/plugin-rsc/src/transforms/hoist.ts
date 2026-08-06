@@ -297,9 +297,11 @@ export function transformHoistInlineDirective(
         }
         if (isObjectMethod) {
           const isProto =
-            (parent.key.type === 'Identifier' &&
+            !parent.computed &&
+            ((parent.key.type === 'Identifier' &&
               parent.key.name === '__proto__') ||
-            (parent.key.type === 'Literal' && parent.key.value === '__proto__')
+              (parent.key.type === 'Literal' &&
+                parent.key.value === '__proto__'))
           if (isProto) {
             output.update(parent.start, node.start, '["__proto__"]: ')
           } else {

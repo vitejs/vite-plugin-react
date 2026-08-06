@@ -226,6 +226,18 @@ const object = {
     expect(transformed).toContain('["__proto__"]: /* #__PURE__ */')
   })
 
+  it('preserves computed __proto__ expressions', async () => {
+    const transformed = await testTransform(`
+const __proto__ = getKey();
+const object = {
+  async [__proto__]() {
+    "use server";
+  },
+};
+`)
+    expect(transformed).toContain('[__proto__]: /* #__PURE__ */')
+  })
+
   it('rejects unsupported method forms', async () => {
     for (const input of [
       `class Actions { async action() { "use server" } }`,
