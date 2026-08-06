@@ -65,25 +65,15 @@ export default function cacheWrapper(
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
     let executionArguments = admittedArgs
-    let cacheArguments = admittedArgs
     if (captureEnvelope) {
       const captures = await decryptCacheCaptures(captureEnvelope)
       const invocationArguments = admittedArgs.slice(1)
-      // The private implementation receives the decoded capture array, while the
-      // cache key retains the same flattened logical argument shape as direct captures.
       executionArguments = [captures, ...invocationArguments]
-      cacheArguments = [...captures, ...invocationArguments]
     }
     const encodedArguments = await encodeReply(executionArguments, {
       temporaryReferences: clientTemporaryReferences,
     })
-    let encodedCacheArguments = encodedArguments
-    if (cacheArguments !== executionArguments) {
-      encodedCacheArguments = await encodeReply(cacheArguments, {
-        temporaryReferences: createClientTemporaryReferenceSet(),
-      })
-    }
-    const serializedCacheKey = await replyToCacheKey(encodedCacheArguments)
+    const serializedCacheKey = await replyToCacheKey(encodedArguments)
 
     // cache `fn` result as stream
     // (cache value is promise so that it dedupes concurrent async calls)
