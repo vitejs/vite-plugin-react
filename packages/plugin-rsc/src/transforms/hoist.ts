@@ -15,6 +15,11 @@ import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
 import { isDirective } from './utils'
 
+export type TransformHoistInlineDirectiveMeta = {
+  directiveMatch: RegExpMatchArray
+  valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
+}
+
 /**
  * Turns an inline directive function into a module-level registered function.
  * Conceptually:
@@ -97,13 +102,7 @@ export function transformHoistInlineDirective(
     runtime: (
       value: string,
       name: string,
-      meta: {
-        directiveMatch: RegExpMatchArray
-        valueNode:
-          | ArrowFunctionExpression
-          | FunctionDeclaration
-          | FunctionExpression
-      },
+      meta: TransformHoistInlineDirectiveMeta,
     ) => string
     directive: string | RegExp
     rejectNonAsyncFunction?: boolean
