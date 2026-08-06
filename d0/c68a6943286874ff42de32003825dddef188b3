@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/use-cache/src/features/cached-function/server.tsx
+  s_48263331d0aacb::t_73a637800af949 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d0c68a6943286874ff42de32003825dddef188b3",
+  "prompts": {},
+  "sessions": {
+    "s_48263331d0aacb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a7c6c34ffeukoxcA3BU8kGl4",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
