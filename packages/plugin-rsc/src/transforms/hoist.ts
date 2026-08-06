@@ -1,5 +1,8 @@
 import { tinyassert } from '@hiogawa/utils'
 import type {
+  ArrowFunctionExpression,
+  FunctionDeclaration,
+  FunctionExpression,
   Program,
   Literal,
   Node,
@@ -11,6 +14,38 @@ import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { buildScopeTree, type ScopeTree } from './scope'
 import { isDirective } from './utils'
+
+export type TransformHoistInlineDirectiveOptions = {
+  runtime: (
+    value: string,
+    name: string,
+    meta: TransformHoistInlineDirectiveMeta,
+  ) => string
+  directive: string | RegExp
+  rejectNonAsyncFunction?: boolean
+  encode?: (value: string) => string
+  decode?: (value: string) => string
+  /** Keep generated hoisted declarations module-local instead of exporting them. */
+  noExport?: boolean
+  /**
+   * Evaluate the runtime expression once during module initialization.
+   * The expression can reference imports and the hoisted implementation, but
+   * must not depend on other module-local initialization.
+   */
+  hoistRuntime?: boolean
+}
+
+export type TransformHoistInlineDirectiveMeta = {
+  /** Match result for the source function directive. */
+  directiveMatch: RegExpMatchArray
+  /** Original source function before closure captures are added as parameters. */
+  valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
+}
+
+export type TransformHoistInlineDirectiveResult = {
+  output: MagicString
+  names: string[]
+}
 
 /**
  * Turns an inline directive function into a module-level registered function.
@@ -90,29 +125,8 @@ export function transformHoistInlineDirective(
     runtime,
     rejectNonAsyncFunction,
     ...options
-  }: {
-    runtime: (
-      value: string,
-      name: string,
-      meta: { directiveMatch: RegExpMatchArray },
-    ) => string
-    directive: string | RegExp
-    rejectNonAsyncFunction?: boolean
-    encode?: (value: string) => string
-    decode?: (value: string) => string
-    /** Keep generated hoisted declarations module-local instead of exporting them. */
-    noExport?: boolean
-    /**
-     * Evaluate the runtime expression once during module initialization.
-     * The expression can reference imports and the hoisted implementation, but
-     * must not depend on other module-local initialization.
-     */
-    hoistRuntime?: boolean
-  },
-): {
-  output: MagicString
-  names: string[]
-} {
+  }: TransformHoistInlineDirectiveOptions,
+): TransformHoistInlineDirectiveResult {
   const ast = viteAst as unknown as Program
   // MagicString needs an existing boundary at the move destination. The newline
   // also keeps the first appended declaration separate from the original source.
@@ -207,7 +221,7 @@ export function transformHoistInlineDirective(
         const runtimeCode = `/* #__PURE__ */ ${runtime(
           implementationName,
           newName,
-          { directiveMatch: match },
+          { directiveMatch: match, valueNode: node },
         )}`
         if (options.hoistRuntime) {
           runtimeHoists.push(
