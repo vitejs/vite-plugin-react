@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   createClientTemporaryReferenceSet,
   createFromReadableStream,
@@ -30,134 +29,93 @@ export type CacheWrapperOptions = {
 }
 
 const pendingEntries = new Map<string, Promise<Uint8Array>>()
-const activeInvocations = new Set<Promise<void>>()
-const cacheExecutionEpoch = new AsyncLocalStorage<number>()
-let cacheEpoch = 0
-let resetPromise: Promise<void> | undefined
 
 export default function cacheWrapper(
   fn: (...args: any[]) => Promise<unknown>,
   options: CacheWrapperOptions,
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
-    const inheritedEpoch = cacheExecutionEpoch.getStore()
-    while (inheritedEpoch === undefined && resetPromise) await resetPromise
-    const invocationEpoch = inheritedEpoch ?? cacheEpoch
-    let finishInvocation: (() => void) | undefined
-    const activeInvocation =
-      inheritedEpoch === undefined
-        ? new Promise<void>((resolve) => {
-            finishInvocation = resolve
-          })
-        : undefined
-    if (activeInvocation) activeInvocations.add(activeInvocation)
-    try {
-      // Callers can supply more arguments than a cached function declares. For example,
-      // `useActionState(fn)` passes state and form data even to `function fn() {}`.
-      // Preserve the bound capture envelope, then strip extras from caller arguments
-      // so they affect neither the cache key nor execution.
-      // https://github.com/vercel/next.js/pull/72506
-      const firstArgument = args[0]
-      const captureEnvelope = isCacheCaptureEnvelope(firstArgument)
-        ? firstArgument
-        : undefined
-      const admittedArgs =
-        options.argumentCount === undefined
-          ? args
-          : captureEnvelope
-            ? [captureEnvelope, ...args.slice(1, 1 + options.argumentCount)]
-            : args.slice(0, options.argumentCount)
-      // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
-      // NOTE: using `renderToReadableStream` here for arguments serialization would end up
-      // serializing react elements (e.g. children props), which causes
-      // those arguments to be included as a cache key and it doesn't achieve
-      // "use cache static shell + dynamic children props" pattern.
-      // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
-      const clientTemporaryReferences = createClientTemporaryReferenceSet()
-      let executionArguments = admittedArgs
-      if (captureEnvelope) {
-        // Decrypt in the framework runtime so cache identity and execution share
-        // these values; the transformed implementation only destructures the array.
-        const captures = await decryptCacheCaptures(captureEnvelope)
-        const invocationArguments = admittedArgs.slice(1)
-        executionArguments = [captures, ...invocationArguments]
-      }
-      const encodedArguments = await encodeReply(executionArguments, {
-        temporaryReferences: clientTemporaryReferences,
-      })
-      const serializedCacheKey = await replyToCacheKey(encodedArguments)
-      const cacheKey = JSON.stringify([
-        options.cacheId,
-        options.generation,
-        serializedCacheKey,
-      ])
-      const pendingKey = JSON.stringify([invocationEpoch, cacheKey])
-
-      let bytes = await getPersistentCache(cacheKey)
-      if (!bytes) {
-        let pending = pendingEntries.get(pendingKey)
-        if (!pending) {
-          pending = (async () => {
-            const temporaryReferences = createTemporaryReferenceSet()
-            const decodedArgs = await decodeReply(encodedArguments, {
-              temporaryReferences,
-            })
-            const result = await cacheExecutionEpoch.run(invocationEpoch, () =>
-              fn(...decodedArgs),
-            )
-            const stream = renderToReadableStream(result, {
-              environmentName: 'Cache',
-            })
-            const value = new Uint8Array(
-              await new Response(stream).arrayBuffer(),
-            )
-            if (invocationEpoch === cacheEpoch) {
-              await setPersistentCache(cacheKey, value)
-            }
-            return value
-          })()
-          pendingEntries.set(pendingKey, pending)
-        }
-        try {
-          bytes = await pending
-        } finally {
-          if (pendingEntries.get(pendingKey) === pending) {
-            pendingEntries.delete(pendingKey)
-          }
-        }
-      }
-
-      const stream = new Blob([Uint8Array.from(bytes)]).stream()
-      const result = createFromReadableStream(stream, {
-        environmentName: 'Cache',
-        replayConsoleLogs: true,
-      })
-      return result
-    } finally {
-      finishInvocation?.()
-      if (activeInvocation) activeInvocations.delete(activeInvocation)
+    // Callers can supply more arguments than a cached function declares. For example,
+    // `useActionState(fn)` passes state and form data even to `function fn() {}`.
+    // Preserve the bound capture envelope, then strip extras from caller arguments
+    // so they affect neither the cache key nor execution.
+    // https://github.com/vercel/next.js/pull/72506
+    const firstArgument = args[0]
+    const captureEnvelope = isCacheCaptureEnvelope(firstArgument)
+      ? firstArgument
+      : undefined
+    const admittedArgs =
+      options.argumentCount === undefined
+        ? args
+        : captureEnvelope
+          ? [captureEnvelope, ...args.slice(1, 1 + options.argumentCount)]
+          : args.slice(0, options.argumentCount)
+    // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
+    // NOTE: using `renderToReadableStream` here for arguments serialization would end up
+    // serializing react elements (e.g. children props), which causes
+    // those arguments to be included as a cache key and it doesn't achieve
+    // "use cache static shell + dynamic children props" pattern.
+    // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
+    const clientTemporaryReferences = createClientTemporaryReferenceSet()
+    let executionArguments = admittedArgs
+    if (captureEnvelope) {
+      // Decrypt in the framework runtime so cache identity and execution share
+      // these values; the transformed implementation only destructures the array.
+      const captures = await decryptCacheCaptures(captureEnvelope)
+      const invocationArguments = admittedArgs.slice(1)
+      executionArguments = [captures, ...invocationArguments]
     }
+    const encodedArguments = await encodeReply(executionArguments, {
+      temporaryReferences: clientTemporaryReferences,
+    })
+    const serializedCacheKey = await replyToCacheKey(encodedArguments)
+    const cacheKey = JSON.stringify([
+      options.cacheId,
+      options.generation,
+      serializedCacheKey,
+    ])
+    let bytes = await getPersistentCache(cacheKey)
+    if (!bytes) {
+      let pending = pendingEntries.get(cacheKey)
+      if (!pending) {
+        pending = (async () => {
+          const temporaryReferences = createTemporaryReferenceSet()
+          const decodedArgs = await decodeReply(encodedArguments, {
+            temporaryReferences,
+          })
+          const result = await fn(...decodedArgs)
+          const stream = renderToReadableStream(result, {
+            environmentName: 'Cache',
+          })
+          const value = new Uint8Array(await new Response(stream).arrayBuffer())
+          await setPersistentCache(cacheKey, value)
+          return value
+        })()
+        pendingEntries.set(cacheKey, pending)
+      }
+      try {
+        bytes = await pending
+      } finally {
+        if (pendingEntries.get(cacheKey) === pending) {
+          pendingEntries.delete(cacheKey)
+        }
+      }
+    }
+
+    const stream = new Blob([Uint8Array.from(bytes)]).stream()
+    const result = createFromReadableStream(stream, {
+      environmentName: 'Cache',
+      replayConsoleLogs: true,
+    })
+    return result
   }
 
   return cachedFn
 }
 
 export async function resetCache() {
-  if (cacheExecutionEpoch.getStore() !== undefined) {
-    throw new Error('Cannot reset the cache inside a cached function')
-  }
-  if (resetPromise) await resetPromise
-  cacheEpoch++
-  const active = [...activeInvocations]
-  resetPromise = (async () => {
-    await Promise.allSettled(active)
-    await resetPersistentCache()
-  })()
-  try {
-    await resetPromise
-  } finally {
-    resetPromise = undefined
-  }
+  pendingEntries.clear()
+  await resetPersistentCache()
 }
 
 async function replyToCacheKey(reply: string | FormData) {
