@@ -95,54 +95,48 @@ function defineDevTests(f: Fixture) {
     await submit(page, example)
     await expect(example.getByTestId('execution-count')).toHaveText('1')
 
-    try {
-      action.edit((code) => code.replace('body-v1', 'body-v2'))
-      await page.reload()
-      await waitForHydration(page)
-      await expectResultAfterUpdate(
-        page,
-        example,
-        result,
-        'server import + body-v2 + direct-v1 + transitive-v1 + alpha',
-      )
+    action.edit((code) => code.replace('body-v1', 'body-v2'))
+    await page.reload()
+    await waitForHydration(page)
+    await expectResultAfterUpdate(
+      page,
+      example,
+      result,
+      'server import + body-v2 + direct-v1 + transitive-v1 + alpha',
+    )
 
-      direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
-      await page.reload()
-      await waitForHydration(page)
-      await expectResultAfterUpdate(
-        page,
-        example,
-        result,
-        'server import + body-v2 + direct-v2 + transitive-v1 + alpha',
-      )
+    direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
+    await page.reload()
+    await waitForHydration(page)
+    await expectResultAfterUpdate(
+      page,
+      example,
+      result,
+      'server import + body-v2 + direct-v2 + transitive-v1 + alpha',
+    )
 
-      transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2'))
-      await page.reload()
-      await waitForHydration(page)
-      await expectResultAfterUpdate(
-        page,
-        example,
-        result,
-        'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
-      )
+    transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2'))
+    await page.reload()
+    await waitForHydration(page)
+    await expectResultAfterUpdate(
+      page,
+      example,
+      result,
+      'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
+    )
 
-      await page.goto('about:blank')
-      await f.restart()
-      await page.goto(f.url('/file-directive-from-server'))
-      await waitForHydration(page)
-      const restartedExample = page.getByTestId('file-directive-from-server')
-      await submit(page, restartedExample)
-      await expect(restartedExample.getByTestId('execution-count')).toHaveText(
-        '1',
-      )
-      await expect(restartedExample.getByTestId('result')).toHaveText(
-        'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
-      )
-    } finally {
-      action.reset()
-      direct.reset()
-      transitive.reset()
-    }
+    await page.goto('about:blank')
+    await f.restart()
+    await page.goto(f.url('/file-directive-from-server'))
+    await waitForHydration(page)
+    const restartedExample = page.getByTestId('file-directive-from-server')
+    await submit(page, restartedExample)
+    await expect(restartedExample.getByTestId('execution-count')).toHaveText(
+      '1',
+    )
+    await expect(restartedExample.getByTestId('result')).toHaveText(
+      'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
+    )
   })
 }
 
