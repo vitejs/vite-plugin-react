@@ -1,0 +1,33 @@
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.encode.js
+  s_0a4d21d55bfef5::t_340684c20abee4 7,12,14,31-38,42,44,48
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.js
+  s_0a4d21d55bfef5::t_08a2250ed51b40 7,12,14,29-35,39,41,45
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_72a38ba69015ea::t_c5a5abb46352d3 218-228
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_72a38ba69015ea::t_bf66b9dc477583 297-300,304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ac815e791edd1d67ae7f587d22e5780203e1d30d",
+  "prompts": {},
+  "sessions": {
+    "s_0a4d21d55bfef5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3e313affeOEJNoxMUS3W7a1",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    },
+    "s_72a38ba69015ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3f20e2ffemLmgO71DIqRvPW",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
