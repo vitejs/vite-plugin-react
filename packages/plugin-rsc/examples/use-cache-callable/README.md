@@ -6,14 +6,35 @@ Unlike the sibling [`use-cache`](../use-cache) example, these cached functions c
 
 ## Architecture
 
-<!-- TODO: mention transform and plugin API -->
-
-[`callable-cache-plugin.ts`](./callable-cache-plugin.ts) owns the directive policy. In the RSC environment it wraps module-level exports or hoists inline functions, registers the cached wrapper as a server reference, and reports that reference to `@vitejs/plugin-rsc`. In browser and SSR environments it generates the corresponding server-reference proxies.
+[`callable-cache-plugin.ts`](./callable-cache-plugin.ts) owns the directive policy by composing the public `transformWrapExport()`, `transformHoistInlineDirective()`, and `transformDirectiveProxyExport()` helpers. In the RSC environment it wraps module-level exports or hoists inline functions, registers the cached wrapper with React, and reports the reference through `getPluginApi().manager.serverReferences`. In browser and SSR environments it generates the corresponding server-reference proxies.
 
 [`src/framework/use-cache-runtime.tsx`](./src/framework/use-cache-runtime.tsx) owns argument admission, cache identity, execution, and result replay:
 
-```js
-// TODO: illustrative example
+```tsx
+function Component() {
+  const captured = 'value'
+  async function cachedAction(argument: string) {
+    'use cache'
+    return `${captured}: ${argument}`
+  }
+  return <Client action={cachedAction} />
+}
+
+// Conceptual output
+async function $$implementation(captures: unknown[], argument: string) {
+  const [captured] = captures
+  return `${captured}: ${argument}`
+}
+
+const $$reference = registerServerReference(
+  cacheWrapper($$implementation, { argumentCount: 1 }),
+)
+
+function Component() {
+  const captured = 'value'
+  const cachedAction = $$reference.bind(null, encryptCacheCaptures([captured]))
+  return <Client action={cachedAction} />
+}
 ```
 
 Arguments are serialized with React's `encodeReply()` so values supported by the RSC protocol can participate in cache identity. On a miss, the runtime decodes those same arguments, invokes the private implementation, and stores its result as a replayable Flight stream.
