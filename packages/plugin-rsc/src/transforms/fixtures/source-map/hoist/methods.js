@@ -2,7 +2,7 @@ const key = 'computed'
 
 export function createObject(value) {
   return {
-    async [key]() {
+    async [getKey(key, value)]() {
       'use server'
       return value
     },

@@ -296,29 +296,47 @@ export function transformHoistInlineDirective(
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (isObjectMethod) {
-          const key = input.slice(parent.key.start, parent.key.end)
           const isProto =
             (parent.key.type === 'Identifier' &&
               parent.key.name === '__proto__') ||
             (parent.key.type === 'Literal' && parent.key.value === '__proto__')
-          output.update(
-            parent.start,
-            node.start,
-            `${isProto ? '["__proto__"]' : parent.computed ? `[${key}]` : key}: `,
-          )
+          if (isProto) {
+            output.update(parent.start, node.start, '["__proto__"]: ')
+          } else {
+            output.update(
+              parent.start,
+              parent.key.start,
+              parent.computed ? '[' : '',
+            )
+            const suffix = parent.computed ? ']: ' : ': '
+            if (parent.key.end === node.start) {
+              output.appendLeft(node.start, suffix)
+            } else {
+              output.update(parent.key.end, node.start, suffix)
+            }
+          }
         } else if (isClassMethod) {
-          const key = input.slice(parent.key.start, parent.key.end)
           const isConstructor =
             !parent.computed &&
             ((parent.key.type === 'Identifier' &&
               parent.key.name === 'constructor') ||
               (parent.key.type === 'Literal' &&
                 parent.key.value === 'constructor'))
-          output.update(
-            parent.start,
-            node.start,
-            `static ${isConstructor ? '["constructor"]' : parent.computed ? `[${key}]` : key} = `,
-          )
+          if (isConstructor) {
+            output.update(parent.start, node.start, 'static ["constructor"] = ')
+          } else {
+            output.update(
+              parent.start,
+              parent.key.start,
+              parent.computed ? 'static [' : 'static ',
+            )
+            const suffix = parent.computed ? '] = ' : ' = '
+            if (parent.key.end === node.start) {
+              output.appendLeft(node.start, suffix)
+            } else {
+              output.update(parent.key.end, node.start, suffix)
+            }
+          }
           newCode += ';'
         } else if (declName) {
           // A function declaration becomes a const declaration. For a default
