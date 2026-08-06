@@ -32,7 +32,7 @@ function defineTests(f: Fixture) {
     await waitForHydration(page)
 
     let example = page.getByTestId('file-directive-from-server')
-    await page.getByRole('button', { name: 'Reset' }).click()
+    await reset(page)
     await submit(page, example)
     await expect(example.getByTestId('execution-count')).toHaveText('1')
     await expect(example.getByTestId('result')).toHaveText(
@@ -73,7 +73,7 @@ function defineTests(f: Fixture) {
     await waitForHydration(page)
     const example = page.getByTestId('protected-captures')
     const executionCount = example.getByTestId('execution-count')
-    await page.getByRole('button', { name: 'Reset' }).click()
+    await reset(page)
 
     await submit(page, example)
     await expect(executionCount).toHaveText('1')
@@ -118,7 +118,7 @@ function defineDevTests(f: Fixture) {
     await waitForHydration(page)
     const example = page.getByTestId('file-directive-from-server')
     const result = example.getByTestId('result')
-    await page.getByRole('button', { name: 'Reset' }).click()
+    await reset(page)
     await submit(page, example)
     await expect(result).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
@@ -197,6 +197,18 @@ async function submit(page: Page, form: Locator) {
         response.url().includes('_.rsc'),
     ),
     form.getByRole('button', { name: 'Call cached function' }).click(),
+  ])
+  expect(response.ok()).toBe(true)
+}
+
+async function reset(page: Page) {
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('_.rsc'),
+    ),
+    page.getByRole('button', { name: 'Reset' }).click(),
   ])
   expect(response.ok()).toBe(true)
 }
