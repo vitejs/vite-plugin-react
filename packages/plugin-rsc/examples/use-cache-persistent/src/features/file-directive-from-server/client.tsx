@@ -3,14 +3,15 @@
 import { useActionState, useState } from 'react'
 
 export function FileDirectiveFromServerClient(props: {
-  action: (formData: FormData) => Promise<string>
+  action: (argument: string) => Promise<string>
   executionCount: number
   resetAction: () => Promise<void>
   result: string
 }) {
   const [submissions, setSubmissions] = useState(0)
   const [result, action] = useActionState(
-    (_previousResult: string, formData: FormData) => props.action(formData),
+    (_previousResult: string, formData: FormData) =>
+      props.action(String(formData.get('argument'))),
     props.result,
   )
 
