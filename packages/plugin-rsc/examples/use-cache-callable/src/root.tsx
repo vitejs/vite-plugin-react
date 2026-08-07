@@ -63,14 +63,14 @@ const routes = [
     path: '/use-server-in-use-cache-from-client',
     title: 'Use server in use cache from client',
     description:
-      'A Client Component imports an inline server export from a cached function module.',
+      'A Client Component imports an uncached inline server export from a cached function module.',
     Component: UseServerInUseCacheFromClientServer,
   },
   {
     path: '/use-server-in-use-cache-from-server',
     title: 'Use server in use cache from server',
     description:
-      'A Server Component passes an inline server export from a cached function module to a Client Component.',
+      'A Server Component passes an uncached inline server export from a cached function module to a Client Component.',
     Component: UseServerInUseCacheFromServerServer,
   },
   {

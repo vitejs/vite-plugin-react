@@ -377,12 +377,12 @@ function defineTests(f: Fixture) {
     {
       route: 'use-server-in-use-cache-from-client',
       defaultExecutions: 1,
-      overrideExecutions: 1,
+      overrideExecutions: 2,
     },
     {
       route: 'use-server-in-use-cache-from-server',
       defaultExecutions: 1,
-      overrideExecutions: 1,
+      overrideExecutions: 2,
     },
   ]) {
     test(testCase.route.replaceAll('-', ' '), async ({ page }) => {
@@ -403,8 +403,7 @@ function defineTests(f: Fixture) {
         String(testCase.defaultExecutions),
       )
 
-      // "use server" inside a cached module currently retains the file-level
-      // cache wrapper, while "use cache" inside a server module overrides it.
+      // An inline directive overrides the behavior inherited from the file.
       await callAction(page, example, 'Call override action')
       await callAction(page, example, 'Call override action')
       await expect(overrideExecutions).toHaveText(

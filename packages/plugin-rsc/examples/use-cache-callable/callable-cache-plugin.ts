@@ -49,6 +49,7 @@ export function callableCachePlugin(): Plugin {
               // and viewport exports.
               // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1914-L1919
               filter: (_name, meta) =>
+                !hasFunctionDirective(meta, 'use server') &&
                 meta.valueNode?.type !== 'ObjectExpression' &&
                 meta.valueNode?.type !== 'ArrayExpression',
               rejectNonAsyncFunction: true,
@@ -120,6 +121,27 @@ export function callableCachePlugin(): Plugin {
       }
     },
   }
+}
+
+function hasFunctionDirective(
+  meta: Pick<ModuleExportMeta, 'valueNode'>,
+  directive: string,
+): boolean {
+  const node = meta.valueNode
+  if (
+    (node?.type !== 'FunctionDeclaration' &&
+      node?.type !== 'FunctionExpression' &&
+      node?.type !== 'ArrowFunctionExpression') ||
+    node.body.type !== 'BlockStatement'
+  ) {
+    return false
+  }
+  return node.body.body.some(
+    (statement) =>
+      statement.type === 'ExpressionStatement' &&
+      'directive' in statement &&
+      statement.directive === directive,
+  )
 }
 
 function getCacheWrapperOptions(
