@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import {
   hasDirective,
-  type ModuleExportMeta,
   transformDirectiveProxyExport,
   transformWrapExport,
 } from '@vitejs/plugin-rsc/transforms'
@@ -58,18 +57,14 @@ export function callableCachePlugin(): Plugin {
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
         const result = transformWrapExport(code, ast, {
-          runtime: (value, name, meta) =>
-            runtime(
-              value,
-              name,
-              getCacheWrapperOptions(
-                meta,
-                `${reference.referenceKey}#${name}`,
+          runtime: (value, name) =>
+            runtime(value, name, {
+              cacheId: `${reference.referenceKey}#${name}`,
+              generation:
                 generation === undefined
                   ? undefined
                   : `${developmentEpoch}:${generation}`,
-              ),
-            ),
+            }),
           rejectNonAsyncFunction: true,
         })
         if (!result.output.hasChanged()) {
@@ -133,28 +128,6 @@ export function callableCachePlugin(): Plugin {
         }
       }
     },
-  }
-}
-
-function getCacheWrapperOptions(
-  meta: Pick<ModuleExportMeta, 'valueNode'>,
-  cacheId: string,
-  generation: string | undefined,
-): CacheWrapperOptions {
-  const node = meta.valueNode
-  if (
-    node?.type !== 'FunctionDeclaration' &&
-    node?.type !== 'FunctionExpression' &&
-    node?.type !== 'ArrowFunctionExpression'
-  ) {
-    return { cacheId, generation }
-  }
-  return {
-    cacheId,
-    generation,
-    ...(node.params.at(-1)?.type === 'RestElement'
-      ? {}
-      : { argumentCount: node.params.length }),
   }
 }
 

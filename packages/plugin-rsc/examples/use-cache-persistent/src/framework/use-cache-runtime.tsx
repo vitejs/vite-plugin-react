@@ -19,7 +19,6 @@ import {
 // https://github.com/vercel/next.js/blob/09a2167b0a970757606b7f91ff2d470f77f13f8c/packages/next/src/server/use-cache/use-cache-wrapper.ts
 
 export type CacheWrapperOptions = {
-  argumentCount?: number
   cacheId: string
   generation?: string
 }
@@ -31,14 +30,6 @@ export default function cacheWrapper(
   options: CacheWrapperOptions,
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
-    // Callers can supply more arguments than a cached function declares. For example,
-    // `useActionState(fn)` passes state and form data even to `function fn() {}`.
-    // Strip extra caller arguments so they affect neither the cache key nor execution.
-    // https://github.com/vercel/next.js/pull/72506
-    const admittedArgs =
-      options.argumentCount === undefined
-        ? args
-        : args.slice(0, options.argumentCount)
     // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
     // NOTE: using `renderToReadableStream` here for arguments serialization would end up
     // serializing react elements (e.g. children props), which causes
@@ -46,7 +37,7 @@ export default function cacheWrapper(
     // "use cache static shell + dynamic children props" pattern.
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
-    const encodedArguments = await encodeReply(admittedArgs, {
+    const encodedArguments = await encodeReply(args, {
       temporaryReferences: clientTemporaryReferences,
     })
     const serializedCacheKey = await replyToCacheKey(encodedArguments)
