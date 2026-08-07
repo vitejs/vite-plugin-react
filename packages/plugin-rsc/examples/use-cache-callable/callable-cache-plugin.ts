@@ -49,6 +49,8 @@ export function callableCachePlugin(): Plugin {
               // and viewport exports.
               // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1914-L1919
               filter: (_name, meta) =>
+                // Inline "use server" overrides the file-level cache role and
+                // is left for the built-in transform.
                 !hasFunctionDirective(meta, 'use server') &&
                 meta.valueNode?.type !== 'ObjectExpression' &&
                 meta.valueNode?.type !== 'ArrayExpression',
@@ -74,6 +76,8 @@ export function callableCachePlugin(): Plugin {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
+        // Preserve leading directives so a later transform can still recognize
+        // a file-level role such as "use server".
         const importPosition =
           ast.body.find((node) => !('directive' in node))?.start ?? code.length
         result.output.prependLeft(
