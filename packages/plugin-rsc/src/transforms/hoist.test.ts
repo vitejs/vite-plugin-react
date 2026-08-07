@@ -1,7 +1,16 @@
 import path from 'node:path'
 import { parseAstAsync } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { findDirectives, transformHoistInlineDirective } from './hoist'
+import {
+  findDirectives,
+  transformHoistInlineDirective,
+  type TransformHoistInlineDirectiveOptions,
+} from './hoist'
+
+type TestTransformOptions = Omit<
+  Partial<TransformHoistInlineDirectiveOptions>,
+  'encode'
+> & { encode?: boolean }
 
 describe('fixtures', () => {
   const fixtures = import.meta.glob(
@@ -13,7 +22,7 @@ describe('fixtures', () => {
 
   async function transformFixture(
     input: string,
-    options?: { encode?: boolean },
+    options?: TestTransformOptions,
   ) {
     const ast = await parseAstAsync(input)
     const { output } = transformHoistInlineDirective(input, ast, {
@@ -77,16 +86,10 @@ describe('hoistRuntime fixtures', () => {
 })
 
 describe(transformHoistInlineDirective, () => {
-  async function testTransform(
-    input: string,
-    options?: {
-      encode?: boolean
-      noExport?: boolean
-      directive?: string | RegExp
-    },
-  ) {
+  async function testTransform(input: string, options?: TestTransformOptions) {
     const ast = await parseAstAsync(input)
     const { output } = transformHoistInlineDirective(input, ast, {
+      ...{ ...options, encode: undefined },
       runtime: (value, name, meta) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)}` +
         `${
@@ -97,7 +100,6 @@ describe(transformHoistInlineDirective, () => {
       directive: options?.directive ?? 'use server',
       encode: options?.encode ? (v) => `__enc(${v})` : undefined,
       decode: options?.encode ? (v) => `__dec(${v})` : undefined,
-      noExport: options?.noExport,
     })
     if (!output.hasChanged()) {
       return
@@ -299,5 +301,36 @@ export async function test() {
       /* #__PURE__ */ Object.defineProperty($$hoist_0_test, "name", { value: "test" });
       "
     `)
+  })
+
+  it.each([
+    [
+      `class Actions { async action() { "use server" } }`,
+      `It is not allowed to define inline "use server" class instance methods.`,
+    ],
+    [
+      `class Actions { static async #action() { "use server" } }`,
+      `It is not allowed to define inline "use server" private class methods.`,
+    ],
+    [
+      `const actions = { get action() { "use server" } }`,
+      `It is not allowed to define inline "use server" getters or setters.`,
+    ],
+    [
+      `class Actions { static set action(value) { "use server" } }`,
+      `It is not allowed to define inline "use server" getters or setters.`,
+    ],
+  ])('rejects unsupported method form in %s', async (input, message) => {
+    await expect(testTransform(input)).rejects.toThrow(message)
+  })
+
+  it('reports unsupported methods before async policy', async () => {
+    await expect(
+      testTransform(`const actions = { get action() { "use server" } }`, {
+        rejectNonAsyncFunction: true,
+      }),
+    ).rejects.toThrow(
+      `It is not allowed to define inline "use server" getters or setters.`,
+    )
   })
 })

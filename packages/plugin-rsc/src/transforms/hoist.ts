@@ -8,6 +8,8 @@ import type {
   Node,
   MemberExpression,
   Identifier,
+  MethodDefinition,
+  Property,
 } from 'estree'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -157,6 +159,8 @@ export function transformHoistInlineDirective(
         // directive. Other function shapes cannot contain directive prologues.
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
+
+        const methodInfo = getMethodInfo(node, parent, match[0])
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
             new Error(`"${directive}" doesn't allow non async function`),
@@ -172,6 +176,7 @@ export function transformHoistInlineDirective(
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
+          methodInfo?.name ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
@@ -239,6 +244,11 @@ export function transformHoistInlineDirective(
         // Replace the original function with either the hoisted runtime result
         // or the runtime expression for its hoisted declaration. Bind closure
         // captures to the prepended parameters (or one encoded parameter).
+        // example:
+        //   const someFn = () => { .... }
+        //     ⬇️
+        //   const someFn = __WRAP__($$hoist_0_someFn).bind(null, x, y)
+        //   const someFn = $$hoist_0_someFn.bind(null, x, y)           // with hoistRuntime
         let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
@@ -246,7 +256,36 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (declName) {
+        if (methodInfo) {
+          // example:
+          //   { async someFn() { ... } }
+          //     ⬇️
+          //   { ["someFn"]: __WRAP__($$hoist_0_someFn) }
+          // example:
+          //   class C { static async someFn() { ... } }
+          //     ⬇️
+          //   class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
+
+          const isStatic = methodInfo.node.type === 'MethodDefinition'
+          const key = input.slice(
+            methodInfo.node.key.start,
+            methodInfo.node.key.end,
+          )
+          // always quote identifier method name for edge cases like `constructor` or `__proto__`
+          const propertyKey =
+            !methodInfo.node.computed &&
+            methodInfo.node.key.type === 'Identifier'
+              ? `["${key}"]`
+              : `[${key}]`
+          output.update(
+            methodInfo.node.start,
+            node.start,
+            `${isStatic ? 'static ' : ''}${propertyKey}${isStatic ? ' = ' : ': '}`,
+          )
+          if (isStatic) {
+            newCode += ';'
+          }
+        } else if (declName) {
           // A function declaration becomes a const declaration. For a default
           // export, retain the export as a separate statement after that const.
           newCode = `const ${declName} = ${newCode};`
@@ -271,6 +310,80 @@ export function transformHoistInlineDirective(
   return {
     output,
     names,
+  }
+}
+
+type MethodInfo = {
+  /** The object property or class method containing the function expression. */
+  node: Property | MethodDefinition
+  /** The name of a non-computed identifier method. */
+  name?: string
+}
+
+function getMethodInfo(
+  node: Node,
+  parent: Node | null,
+  directive: string,
+): MethodInfo | undefined {
+  if (node.type !== 'FunctionExpression') return
+
+  let method: Property | MethodDefinition
+  if (
+    parent?.type === 'Property' &&
+    parent.value === node &&
+    (parent.method || parent.kind !== 'init')
+  ) {
+    method = parent
+  } else if (parent?.type === 'MethodDefinition') {
+    method = parent
+  } else {
+    return
+  }
+
+  // Next.js error fixture 25 rejects directive-bearing instance methods:
+  // https://github.com/vercel/next.js/tree/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/tests/errors/server-actions/server-graph/25
+  if (method.type === 'MethodDefinition' && !method.static) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} class instance methods.`,
+      ),
+      { pos: method.start },
+    )
+  }
+  // No Next.js error fixture covers this. Private methods cannot be replaced
+  // with public callable fields.
+  if (
+    method.type === 'MethodDefinition' &&
+    method.key.type === 'PrivateIdentifier'
+  ) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} private class methods.`,
+      ),
+      { pos: method.start },
+    )
+  }
+  // No Next.js error fixture covers this. Accessors cannot be replaced with
+  // value properties without changing their contract.
+  if (
+    (method.type === 'Property' && method.kind !== 'init') ||
+    (method.type === 'MethodDefinition' && method.kind !== 'method')
+  ) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} getters or setters.`,
+      ),
+      { pos: method.start },
+    )
+  }
+
+  const keyName =
+    !method.computed && method.key.type === 'Identifier'
+      ? method.key.name
+      : undefined
+  return {
+    node: method,
+    name: keyName,
   }
 }
 
