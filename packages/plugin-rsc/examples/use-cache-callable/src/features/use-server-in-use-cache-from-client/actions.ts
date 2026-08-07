@@ -2,13 +2,11 @@
 
 import { state } from './state'
 
-// Variable exports stay assignable when the file-level cache wrapper runs
-// before the inline server transform.
-export const defaultAction = async () => {
+export async function defaultAction() {
   state.defaultExecutions++
 }
 
-export const overrideAction = async () => {
+export async function overrideAction() {
   'use server'
   state.overrideExecutions++
 }
