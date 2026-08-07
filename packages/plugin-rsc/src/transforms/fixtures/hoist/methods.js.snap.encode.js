@@ -15,7 +15,7 @@ export function createObject(value) {
 export class Actions {
   static ["action"] = /* #__PURE__ */ $$register($$hoist_6_action, "<id>", "$$hoist_6_action");
 
-  static ['computed'] = /* #__PURE__ */ $$register($$hoist_7_computed, "<id>", "$$hoist_7_computed");
+  static ['computed'] = /* #__PURE__ */ $$register($$hoist_7_anonymous_server_function, "<id>", "$$hoist_7_anonymous_server_function");
 
   static [key] = /* #__PURE__ */ $$register($$hoist_8_anonymous_server_function, "<id>", "$$hoist_8_anonymous_server_function");
 
@@ -76,11 +76,11 @@ export function createActions(value) {
   };
 /* #__PURE__ */ Object.defineProperty($$hoist_6_action, "name", { value: "action" });
 
-;export async function $$hoist_7_computed() {
+;export async function $$hoist_7_anonymous_server_function() {
     'use server'
     return 2
   };
-/* #__PURE__ */ Object.defineProperty($$hoist_7_computed, "name", { value: "computed" });
+/* #__PURE__ */ Object.defineProperty($$hoist_7_anonymous_server_function, "name", { value: "anonymous_server_function" });
 
 ;export async function $$hoist_8_anonymous_server_function() {
     'use server'

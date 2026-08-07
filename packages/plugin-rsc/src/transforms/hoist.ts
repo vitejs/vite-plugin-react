@@ -160,7 +160,7 @@ export function transformHoistInlineDirective(
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
 
-        const method = analyzeMethod(node, parent, match[0])
+        const methodInfo = getMethodInfo(node, parent, match[0])
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
             new Error(`"${directive}" doesn't allow non async function`),
@@ -176,7 +176,7 @@ export function transformHoistInlineDirective(
         const declName = node.type === 'FunctionDeclaration' && node.id.name
         const originalName =
           declName ||
-          method?.name ||
+          methodInfo?.name ||
           (parent?.type === 'VariableDeclarator' &&
             parent.id.type === 'Identifier' &&
             parent.id.name) ||
@@ -256,7 +256,7 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
-        if (method) {
+        if (methodInfo) {
           // example:
           //   { async someFn() { ... } }
           //     ⬇️
@@ -268,19 +268,24 @@ export function transformHoistInlineDirective(
 
           // always quote method name for cases like `constructor` or `__proto__`
           const quoteKey =
-            !method.node.computed && method.node.key.type === 'Identifier'
+            !methodInfo.node.computed &&
+            methodInfo.node.key.type === 'Identifier'
 
           // class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
           //           ^^^^^^^^^      ^^^^^
           //           prefix         suffix
-          const isStatic = method.node.type === 'MethodDefinition'
+          const isStatic = methodInfo.node.type === 'MethodDefinition'
           const prefix = `${isStatic ? 'static ' : ''}[${quoteKey ? '"' : ''}`
           const suffix = `${quoteKey ? '"' : ''}]${isStatic ? ' = ' : ': '}`
-          output.update(method.node.start, method.node.key.start, prefix)
-          if (method.node.key.end === node.start) {
+          output.update(
+            methodInfo.node.start,
+            methodInfo.node.key.start,
+            prefix,
+          )
+          if (methodInfo.node.key.end === node.start) {
             output.appendLeft(node.start, suffix)
           } else {
-            output.update(method.node.key.end, node.start, suffix)
+            output.update(methodInfo.node.key.end, node.start, suffix)
           }
           if (isStatic) {
             newCode += ';'
@@ -313,18 +318,18 @@ export function transformHoistInlineDirective(
   }
 }
 
-type MethodAnalysis = {
+type MethodInfo = {
   /** The object property or class method containing the function expression. */
   node: Property | MethodDefinition
-  /** A valid identifier name inferred from a non-computed method key. */
+  /** The name of a non-computed identifier method. */
   name?: string
 }
 
-function analyzeMethod(
+function getMethodInfo(
   node: Node,
   parent: Node | null,
   directive: string,
-): MethodAnalysis | undefined {
+): MethodInfo | undefined {
   if (node.type !== 'FunctionExpression') return
 
   let method: Property | MethodDefinition
@@ -372,15 +377,12 @@ function analyzeMethod(
   }
 
   const keyName =
-    method.key.type === 'Literal' ||
-    (!method.computed && method.key.type === 'Identifier')
-      ? String(
-          method.key.type === 'Identifier' ? method.key.name : method.key.value,
-        )
+    !method.computed && method.key.type === 'Identifier'
+      ? method.key.name
       : undefined
   return {
     node: method,
-    name: keyName && /^[$A-Z_a-z][$\w]*$/.test(keyName) ? keyName : undefined,
+    name: keyName,
   }
 }
 
