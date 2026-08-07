@@ -2,12 +2,12 @@
 
 import { defaultAction, overrideAction, resetAction } from './actions'
 
-export function UseCacheInUseServerClient(props: {
+export function UseCacheInUseServerFromClient(props: {
   defaultExecutions: number
   overrideExecutions: number
 }) {
   return (
-    <div data-testid="use-cache-in-use-server">
+    <div data-testid="use-cache-in-use-server-from-client">
       <form action={defaultAction.bind(null, 'same-key')}>
         <button>Call default action</button>
       </form>

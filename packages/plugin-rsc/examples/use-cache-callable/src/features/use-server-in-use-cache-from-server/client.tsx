@@ -1,18 +1,20 @@
 'use client'
 
-import { defaultAction, overrideAction } from './actions'
-import { resetAction } from './reset'
+type Action = (key: string) => Promise<void>
 
-export function UseServerInUseCacheClient(props: {
+export function UseServerInUseCacheFromServer(props: {
+  defaultAction: Action
   defaultExecutions: number
+  overrideAction: Action
   overrideExecutions: number
+  resetAction: () => Promise<void>
 }) {
   return (
-    <div data-testid="use-server-in-use-cache">
-      <form action={defaultAction.bind(null, 'same-key')}>
+    <div data-testid="use-server-in-use-cache-from-server">
+      <form action={props.defaultAction.bind(null, 'same-key')}>
         <button>Call default action</button>
       </form>
-      <form action={overrideAction.bind(null, 'same-key')}>
+      <form action={props.overrideAction.bind(null, 'same-key')}>
         <button>Call override action</button>
       </form>
       <p>
@@ -26,7 +28,7 @@ export function UseServerInUseCacheClient(props: {
           {props.overrideExecutions}
         </output>
       </p>
-      <form action={resetAction}>
+      <form action={props.resetAction}>
         <button>Reset</button>
       </form>
     </div>

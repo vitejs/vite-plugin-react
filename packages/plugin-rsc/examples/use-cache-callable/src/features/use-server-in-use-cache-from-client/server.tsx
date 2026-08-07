@@ -1,9 +1,9 @@
-import { UseCacheInUseServerClient } from './client'
+import { UseServerInUseCacheFromClient } from './client'
 import { state } from './state'
 
-export function UseCacheInUseServer() {
+export function UseServerInUseCacheFromClientServer() {
   return (
-    <UseCacheInUseServerClient
+    <UseServerInUseCacheFromClient
       defaultExecutions={state.defaultExecutions}
       overrideExecutions={state.overrideExecutions}
     />

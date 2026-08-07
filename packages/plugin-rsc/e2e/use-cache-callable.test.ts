@@ -368,50 +368,64 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('arguments: 0')
   })
 
-  test('use cache in use server', async ({ page }) => {
-    using _errors = expectNoPageError(page)
-    await page.goto(f.url('/use-cache-in-use-server'))
-    await waitForHydration(page)
+  for (const testCase of [
+    {
+      route: 'use-cache-in-use-server-from-client',
+      defaultExecutions: 2,
+      overrideExecutions: 1,
+    },
+    {
+      route: 'use-server-in-use-cache-from-client',
+      defaultExecutions: 1,
+      overrideExecutions: 1,
+    },
+    {
+      route: 'use-server-in-use-cache-from-server',
+      defaultExecutions: 1,
+      overrideExecutions: 1,
+    },
+  ]) {
+    test(testCase.route.replaceAll('-', ' '), async ({ page }) => {
+      using _errors = expectNoPageError(page)
+      await page.goto(f.url('/' + testCase.route))
+      await waitForHydration(page)
 
-    const example = page.getByTestId('use-cache-in-use-server')
-    const defaultExecutions = example.getByTestId('default-executions')
-    const overrideExecutions = example.getByTestId('override-executions')
-    await example.getByRole('button', { name: 'Reset' }).click()
-    await expect(defaultExecutions).toHaveText('0')
-    await expect(overrideExecutions).toHaveText('0')
+      const example = page.getByTestId(testCase.route)
+      const defaultExecutions = example.getByTestId('default-executions')
+      const overrideExecutions = example.getByTestId('override-executions')
+      await example.getByRole('button', { name: 'Reset' }).click()
+      await expect(defaultExecutions).toHaveText('0')
+      await expect(overrideExecutions).toHaveText('0')
 
-    // The file directive supplies ordinary server behavior by default.
-    await callAction(page, example, 'Call default action')
-    await callAction(page, example, 'Call default action')
-    await expect(defaultExecutions).toHaveText('2')
+      await callAction(page, example, 'Call default action')
+      await callAction(page, example, 'Call default action')
+      await expect(defaultExecutions).toHaveText(
+        String(testCase.defaultExecutions),
+      )
 
-    // The inline cache wrapper runs once for the same argument.
-    await callAction(page, example, 'Call override action')
-    await callAction(page, example, 'Call override action')
-    await expect(overrideExecutions).toHaveText('1')
-  })
+      // "use server" inside a cached module currently retains the file-level
+      // cache wrapper, while "use cache" inside a server module overrides it.
+      await callAction(page, example, 'Call override action')
+      await callAction(page, example, 'Call override action')
+      await expect(overrideExecutions).toHaveText(
+        String(testCase.overrideExecutions),
+      )
+    })
+  }
 
-  test('use server in use cache', async ({ page }) => {
-    using _errors = expectNoPageError(page)
-    await page.goto(f.url('/use-server-in-use-cache'))
-    await waitForHydration(page)
+  test('use cache in use server from server', async ({ page }) => {
+    await page.goto(f.url('/use-cache-in-use-server-from-server'))
 
-    const example = page.getByTestId('use-server-in-use-cache')
-    const defaultExecutions = example.getByTestId('default-executions')
-    const overrideExecutions = example.getByTestId('override-executions')
-    await example.getByRole('button', { name: 'Reset' }).click()
-    await expect(defaultExecutions).toHaveText('0')
-    await expect(overrideExecutions).toHaveText('0')
-
-    await callAction(page, example, 'Call default action')
-    await callAction(page, example, 'Call default action')
-    await expect(defaultExecutions).toHaveText('1')
-
-    // This characterizes the current transform order: the file-level cache
-    // wrapper is applied before the built-in transform sees "use server".
-    await callAction(page, example, 'Call override action')
-    await callAction(page, example, 'Call override action')
-    await expect(overrideExecutions).toHaveText('1')
+    // The source-facing exports currently reach Flight without server reference
+    // registration when this mixed module stays out of the client graph.
+    await expect(page.getByText('Caught an unexpected error')).toBeVisible()
+    if (f.mode === 'dev') {
+      await expect(
+        page.getByText(
+          /Functions cannot be passed directly to Client Components/,
+        ),
+      ).toBeVisible()
+    }
   })
 
   test('protected captures', async ({ page }) => {

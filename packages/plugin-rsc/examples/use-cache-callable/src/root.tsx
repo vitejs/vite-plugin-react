@@ -4,8 +4,10 @@ import { FileDirectiveFromServer } from './features/file-directive-from-server/s
 import { InlineDirectiveExtraArgumentsServer } from './features/inline-directive-extra-arguments/server'
 import { InlineDirective } from './features/inline-directive/server'
 import { ProtectedCaptures } from './features/protected-captures/server'
-import { UseCacheInUseServer } from './features/use-cache-in-use-server/server'
-import { UseServerInUseCache } from './features/use-server-in-use-cache/server'
+import { UseCacheInUseServerFromClientServer } from './features/use-cache-in-use-server-from-client/server'
+import { UseCacheInUseServerFromServerServer } from './features/use-cache-in-use-server-from-server/server'
+import { UseServerInUseCacheFromClientServer } from './features/use-server-in-use-cache-from-client/server'
+import { UseServerInUseCacheFromServerServer } from './features/use-server-in-use-cache-from-server/server'
 
 const routes = [
   {
@@ -44,18 +46,32 @@ const routes = [
     Component: InlineDirectiveExtraArgumentsServer,
   },
   {
-    path: '/use-cache-in-use-server',
-    title: 'Use cache in use server',
+    path: '/use-cache-in-use-server-from-client',
+    title: 'Use cache in use server from client',
     description:
-      'An inline cached export overrides the default behavior of a server function module.',
-    Component: UseCacheInUseServer,
+      'A Client Component imports an inline cached export from a server function module.',
+    Component: UseCacheInUseServerFromClientServer,
   },
   {
-    path: '/use-server-in-use-cache',
-    title: 'Use server in use cache',
+    path: '/use-cache-in-use-server-from-server',
+    title: 'Use cache in use server from server',
     description:
-      'An inline server export currently retains the default behavior of a cached function module.',
-    Component: UseServerInUseCache,
+      'A Server Component passes exports from the mixed module, currently exposing missing server reference registration.',
+    Component: UseCacheInUseServerFromServerServer,
+  },
+  {
+    path: '/use-server-in-use-cache-from-client',
+    title: 'Use server in use cache from client',
+    description:
+      'A Client Component imports an inline server export from a cached function module.',
+    Component: UseServerInUseCacheFromClientServer,
+  },
+  {
+    path: '/use-server-in-use-cache-from-server',
+    title: 'Use server in use cache from server',
+    description:
+      'A Server Component passes an inline server export from a cached function module to a Client Component.',
+    Component: UseServerInUseCacheFromServerServer,
   },
   {
     path: '/protected-captures',
