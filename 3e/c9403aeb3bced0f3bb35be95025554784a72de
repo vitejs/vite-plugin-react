@@ -1,0 +1,23 @@
+packages/plugin-rsc/src/transforms/fixtures/mixed-directives/use-cache-in-use-server.js.snap.md
+  s_6c4cedfb1483d9::t_3b5a1dfb66a89f 1-78
+packages/plugin-rsc/src/transforms/fixtures/mixed-directives/use-server-in-use-cache.js.snap.md
+  s_6c4cedfb1483d9::t_a854a32351641b 1-68
+packages/plugin-rsc/src/transforms/mixed-directives.test.ts
+  s_6c4cedfb1483d9::t_a7a3f263b15f9f 1-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3ec9403aeb3bced0f3bb35be95025554784a72de",
+  "prompts": {},
+  "sessions": {
+    "s_6c4cedfb1483d9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02536166bffejSqoWPFOK28I5x",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
