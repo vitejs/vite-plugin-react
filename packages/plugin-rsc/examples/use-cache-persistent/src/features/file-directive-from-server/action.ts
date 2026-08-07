@@ -1,9 +1,9 @@
-'use cache'
+'use server'
 
-import { getDirectLabel } from './direct'
+import { resetCache } from '../../framework/use-cache-runtime'
 import { state } from './state'
 
-export async function cachedFromServer(argument: string) {
-  state.executionCount++
-  return `server import + body-v1 + ${getDirectLabel()} + ${argument}`
+export async function resetAction() {
+  await resetCache()
+  state.executionCount = 0
 }

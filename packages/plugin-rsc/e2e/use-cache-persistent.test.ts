@@ -79,7 +79,7 @@ function defineDevTests(f: Fixture) {
   }) => {
     using _errors = expectNoPageError(page)
     const action = f.createEditor(
-      'src/features/file-directive-from-server/action.ts',
+      'src/features/file-directive-from-server/action-cached.ts',
     )
     const direct = f.createEditor(
       'src/features/file-directive-from-server/direct.ts',

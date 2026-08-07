@@ -1,6 +1,6 @@
-import { cachedFromServer } from './action'
+import { resetAction } from './action'
+import { cachedFromServer } from './action-cached'
 import { FileDirectiveFromServerClient } from './client'
-import { resetAction } from './reset'
 import { state } from './state'
 
 export function FileDirectiveFromServer() {
