@@ -18,6 +18,8 @@ export function callableCachePlugin(): Plugin {
   // A dev restart gets a new epoch, while an HMR update advances each affected
   // cache module's generation. Both enter the cache key so stale disk entries miss.
   const developmentEpoch = randomUUID()
+  // TODO: An owner-aware `serverReferences.hasClaim()` could identify cache
+  // modules during hot updates without using this map for membership as well.
   const cacheModuleGenerations = new Map<string, number>()
 
   return {
