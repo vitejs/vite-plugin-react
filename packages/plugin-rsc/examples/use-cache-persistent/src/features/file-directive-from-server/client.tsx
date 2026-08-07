@@ -44,7 +44,7 @@ export function FileDirectiveFromServerClient(props: {
         </p>
       </form>
       <form action={props.resetAction}>
-        <button>Reset</button>
+        <button>Reset cache</button>
       </form>
     </>
   )

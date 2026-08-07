@@ -183,7 +183,7 @@ async function reset(page: Page) {
         response.request().method() === 'POST' &&
         response.url().includes('_.rsc'),
     ),
-    page.getByRole('button', { name: 'Reset' }).click(),
+    page.getByRole('button', { name: 'Reset cache' }).click(),
   ])
   expect(response.ok()).toBe(true)
   await response.finished()
