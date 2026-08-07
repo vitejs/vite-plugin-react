@@ -368,6 +368,55 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('arguments: 0')
   })
 
+  for (const testCase of [
+    {
+      route: 'use-cache-in-use-server-from-client',
+      defaultExecutions: 2,
+      overrideExecutions: 1,
+    },
+    {
+      route: 'use-cache-in-use-server-from-server',
+      defaultExecutions: 2,
+      overrideExecutions: 1,
+    },
+    {
+      route: 'use-server-in-use-cache-from-client',
+      defaultExecutions: 1,
+      overrideExecutions: 2,
+    },
+    {
+      route: 'use-server-in-use-cache-from-server',
+      defaultExecutions: 1,
+      overrideExecutions: 2,
+    },
+  ]) {
+    test(testCase.route.replaceAll('-', ' '), async ({ page }) => {
+      using _errors = expectNoPageError(page)
+      await page.goto(f.url('/' + testCase.route))
+      await waitForHydration(page)
+
+      const example = page.getByTestId(testCase.route)
+      const defaultExecutions = example.getByTestId('default-executions')
+      const overrideExecutions = example.getByTestId('override-executions')
+      await example.getByRole('button', { name: 'Reset' }).click()
+      await expect(defaultExecutions).toHaveText('0')
+      await expect(overrideExecutions).toHaveText('0')
+
+      await callAction(page, example, 'Call default action')
+      await callAction(page, example, 'Call default action')
+      await expect(defaultExecutions).toHaveText(
+        String(testCase.defaultExecutions),
+      )
+
+      // An inline directive overrides the behavior inherited from the file.
+      await callAction(page, example, 'Call override action')
+      await callAction(page, example, 'Call override action')
+      await expect(overrideExecutions).toHaveText(
+        String(testCase.overrideExecutions),
+      )
+    })
+  }
+
   test('protected captures', async ({ page }) => {
     // verify captured value is encoded and thus doesn't appear in raw response
     const rscResponse = await page.request.get(
@@ -423,6 +472,18 @@ function defineTests(f: Fixture) {
     // A cache hit skips the implementation, so its previous display side effect remains.
     await expect(result).toHaveText('second + alpha')
   })
+}
+
+async function callAction(page: Page, example: Locator, name: string) {
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('_.rsc'),
+    ),
+    example.getByRole('button', { name }).click(),
+  ])
+  expect(response.ok()).toBe(true)
 }
 
 async function submit(page: Page, form: Locator) {

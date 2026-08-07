@@ -110,13 +110,14 @@ function aggregateClaims(
       )
     }
     for (const name of claim.exportNames) {
+      // An inline "use cache" transform followed by a file-level "use server"
+      // transform can intentionally claim the same generated export. The
+      // identity checks above ensure they contribute to one manifest entry, so
+      // only the export name needs to be retained.
       const existingOwner = exportOwners.get(name)
-      if (existingOwner && existingOwner !== claimOwner) {
-        throw new Error(
-          `[vite-rsc] server reference '${claim.referenceKey}#${name}' is claimed by both '${existingOwner}' and '${claimOwner}'`,
-        )
+      if (!existingOwner) {
+        exportOwners.set(name, claimOwner)
       }
-      exportOwners.set(name, claimOwner)
     }
   }
   assert(aggregate)
