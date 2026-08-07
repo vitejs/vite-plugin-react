@@ -166,29 +166,19 @@ async function replyToCacheKey(reply: string | FormData) {
   if (typeof reply === 'string') {
     return reply
   }
-  const encoder = new TextEncoder()
-  const parts: Uint8Array<ArrayBuffer>[] = []
+  // `new Response(reply).arrayBuffer()` would serialize FormData with a random
+  // multipart boundary, so encode entries directly to keep cache keys stable.
+  const parts: BlobPart[] = []
   for (const [name, value] of reply) {
     if (typeof value === 'string') {
-      appendLengthPrefixedPart(
-        parts,
-        encoder.encode(JSON.stringify([name, 'string', value])),
-      )
+      parts.push(JSON.stringify([name, 'string', value]), '\0')
     } else {
-      appendLengthPrefixedPart(
-        parts,
-        encoder.encode(
-          JSON.stringify([
-            name,
-            'file',
-            value.name,
-            value.type,
-            value.size,
-            value.lastModified,
-          ]),
-        ),
+      parts.push(
+        JSON.stringify([name, 'file']),
+        '\0',
+        await value.arrayBuffer(),
+        '\0',
       )
-      appendLengthPrefixedPart(parts, new Uint8Array(await value.arrayBuffer()))
     }
   }
   const buffer = await crypto.subtle.digest(
@@ -196,13 +186,4 @@ async function replyToCacheKey(reply: string | FormData) {
     await new Blob(parts).arrayBuffer(),
   )
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-}
-
-function appendLengthPrefixedPart(
-  parts: Uint8Array<ArrayBuffer>[],
-  value: Uint8Array<ArrayBuffer>,
-) {
-  const length = new Uint8Array(8)
-  new DataView(length.buffer).setBigUint64(0, BigInt(value.byteLength))
-  parts.push(length, value)
 }
