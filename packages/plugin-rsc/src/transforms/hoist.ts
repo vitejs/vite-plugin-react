@@ -271,22 +271,17 @@ export function transformHoistInlineDirective(
             !methodInfo.node.computed &&
             methodInfo.node.key.type === 'Identifier'
 
-          // class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
-          //           ^^^^^^^^^      ^^^^^
-          //           prefix         suffix
           const isStatic = methodInfo.node.type === 'MethodDefinition'
-          const prefix = `${isStatic ? 'static ' : ''}[${quoteKey ? '"' : ''}`
-          const suffix = `${quoteKey ? '"' : ''}]${isStatic ? ' = ' : ': '}`
+          const key = input.slice(
+            methodInfo.node.key.start,
+            methodInfo.node.key.end,
+          )
+          const propertyKey = quoteKey ? `["${key}"]` : `[${key}]`
           output.update(
             methodInfo.node.start,
-            methodInfo.node.key.start,
-            prefix,
+            node.start,
+            `${isStatic ? 'static ' : ''}${propertyKey}${isStatic ? ' = ' : ': '}`,
           )
-          if (methodInfo.node.key.end === node.start) {
-            output.appendLeft(node.start, suffix)
-          } else {
-            output.update(methodInfo.node.key.end, node.start, suffix)
-          }
           if (isStatic) {
             newCode += ';'
           }
@@ -345,6 +340,8 @@ function getMethodInfo(
     return
   }
 
+  // Next.js error fixture 25 rejects directive-bearing instance methods:
+  // https://github.com/vercel/next.js/tree/153bf8ac5fa00888ef5fbb2b65cac12f0942a44f/crates/next-custom-transforms/tests/errors/server-actions/server-graph/25
   if (method.type === 'MethodDefinition' && !method.static) {
     throw Object.assign(
       new Error(
@@ -353,6 +350,8 @@ function getMethodInfo(
       { pos: method.start },
     )
   }
+  // No Next.js error fixture covers this. Private methods cannot be replaced
+  // with public callable fields.
   if (
     method.type === 'MethodDefinition' &&
     method.key.type === 'PrivateIdentifier'
@@ -364,6 +363,8 @@ function getMethodInfo(
       { pos: method.start },
     )
   }
+  // No Next.js error fixture covers this. Accessors cannot be replaced with
+  // value properties without changing their contract.
   if (
     (method.type === 'Property' && method.kind !== 'init') ||
     (method.type === 'MethodDefinition' && method.kind !== 'method')
