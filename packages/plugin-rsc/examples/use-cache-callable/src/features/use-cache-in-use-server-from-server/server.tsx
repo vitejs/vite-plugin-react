@@ -1,5 +1,6 @@
-import { defaultAction, overrideAction, resetAction } from './actions'
+import { defaultAction, overrideAction } from './actions'
 import { UseCacheInUseServerFromServer } from './client'
+import { resetAction } from './reset'
 import { state } from './state'
 
 export function UseCacheInUseServerFromServerServer() {

@@ -1,6 +1,7 @@
 'use client'
 
-import { defaultAction, overrideAction, resetAction } from './actions'
+import { defaultAction, overrideAction } from './actions'
+import { resetAction } from './reset'
 
 export function UseCacheInUseServerFromClient(props: {
   defaultExecutions: number
