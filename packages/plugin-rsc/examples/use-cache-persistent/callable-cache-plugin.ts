@@ -26,12 +26,9 @@ export function callableCachePlugin(): Plugin {
       manager = getPluginApi(config)!.manager
     },
     async transform(code, id) {
-      const deleteClaim = () => {
+      if (!code.includes(directive)) {
         manager.serverReferences.deleteClaim(pluginName, id)
         if (this.environment.name === 'rsc') cacheModules.delete(id)
-      }
-      if (!code.includes(directive)) {
-        deleteClaim()
         return
       }
 
@@ -42,9 +39,6 @@ export function callableCachePlugin(): Plugin {
       if (environmentName === 'rsc') {
         const generation =
           this.environment.mode === 'dev' ? Date.now() : undefined
-        if (generation !== undefined) {
-          cacheModules.add(id)
-        }
         const runtime = (
           value: string,
           name: string,
@@ -87,7 +81,8 @@ export function callableCachePlugin(): Plugin {
               decode: (value) => value,
             })
         if (!result.output.hasChanged()) {
-          deleteClaim()
+          manager.serverReferences.deleteClaim(pluginName, id)
+          cacheModules.delete(id)
           return
         }
 
@@ -95,6 +90,7 @@ export function callableCachePlugin(): Plugin {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
+        cacheModules.add(id)
         result.output.prepend(
           `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
             `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
@@ -123,7 +119,7 @@ export function callableCachePlugin(): Plugin {
           `${JSON.stringify(name)})`,
       })
       if (!result?.output.hasChanged()) {
-        deleteClaim()
+        manager.serverReferences.deleteClaim(pluginName, id)
         return
       }
 
