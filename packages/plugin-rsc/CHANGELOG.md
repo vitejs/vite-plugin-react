@@ -1,3 +1,21 @@
+## <small>[0.5.34](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.33...plugin-rsc%400.5.34) (2026-08-07)</small>
+### Features
+
+* **rsc:** support inline `"use cache"` exports in file-level `"use server"` modules and vice versa ([#1415](https://github.com/vitejs/vite-plugin-react/issues/1415)) ([5626b31](https://github.com/vitejs/vite-plugin-react/commit/5626b31c1e1ce5b92cd8158585dee94cecd754c5))
+* **rsc:** support inline directive methods ([#1413](https://github.com/vitejs/vite-plugin-react/issues/1413)) ([40300f1](https://github.com/vitejs/vite-plugin-react/commit/40300f14babdce9bd86386b48777633927f26652))
+
+### Documentation
+
+* **rsc:** document use cache examples ([#1407](https://github.com/vitejs/vite-plugin-react/issues/1407)) ([4b0e3c7](https://github.com/vitejs/vite-plugin-react/commit/4b0e3c720ab5877ac6eb8aeb1f59f69a0bb50e43))
+
+### Miscellaneous Chores
+
+* **rsc:** clarify use cache example ([#1410](https://github.com/vitejs/vite-plugin-react/issues/1410)) ([fa4dba4](https://github.com/vitejs/vite-plugin-react/commit/fa4dba4b18b96370705568929c07647f0d003428))
+
+### Tests
+
+* **rsc:** add persistent use cache example ([#1411](https://github.com/vitejs/vite-plugin-react/issues/1411)) ([fc7ace5](https://github.com/vitejs/vite-plugin-react/commit/fc7ace5f6cddc7163df491a7a91f06b6430b8ce4))
+
 ## <small>[0.5.33](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.32...plugin-rsc%400.5.33) (2026-08-06)</small>
 ### Features
 
