@@ -8,8 +8,6 @@ export function FileDirectiveFromServerClient(props: {
   resetAction: () => Promise<void>
 }) {
   const [submissions, setSubmissions] = useState(0)
-  // The execution count proves the body was skipped while this result proves a
-  // persistent hit after restart also replayed the cached value.
   const [result, action] = useActionState(
     (_previousResult: string, formData: FormData) =>
       props.action(String(formData.get('argument'))),
@@ -41,7 +39,7 @@ export function FileDirectiveFromServerClient(props: {
               {props.executionCount}
             </output>
             <br />
-            Result: <output data-testid="result">{result}</output>
+            Action result: <output data-testid="result">{result}</output>
           </span>
         </p>
       </form>
