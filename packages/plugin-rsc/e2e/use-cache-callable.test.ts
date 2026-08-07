@@ -375,6 +375,11 @@ function defineTests(f: Fixture) {
       overrideExecutions: 1,
     },
     {
+      route: 'use-cache-in-use-server-from-server',
+      defaultExecutions: 2,
+      overrideExecutions: 1,
+    },
+    {
       route: 'use-server-in-use-cache-from-client',
       defaultExecutions: 1,
       overrideExecutions: 2,
@@ -411,21 +416,6 @@ function defineTests(f: Fixture) {
       )
     })
   }
-
-  test('use cache in use server from server', async ({ page }) => {
-    await page.goto(f.url('/use-cache-in-use-server-from-server'))
-
-    // The source-facing exports currently reach Flight without server reference
-    // registration when this mixed module stays out of the client graph.
-    await expect(page.getByText('Caught an unexpected error')).toBeVisible()
-    if (f.mode === 'dev') {
-      await expect(
-        page.getByText(
-          /Functions cannot be passed directly to Client Components/,
-        ),
-      ).toBeVisible()
-    }
-  })
 
   test('protected captures', async ({ page }) => {
     // verify captured value is encoded and thus doesn't appear in raw response

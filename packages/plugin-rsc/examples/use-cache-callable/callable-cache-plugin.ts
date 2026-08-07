@@ -74,7 +74,10 @@ export function callableCachePlugin(): Plugin {
           ...reference,
           exportNames: 'names' in result ? result.names : result.exportNames,
         })
-        result.output.prepend(
+        const importPosition =
+          ast.body.find((node) => !('directive' in node))?.start ?? code.length
+        result.output.prependLeft(
+          importPosition,
           `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
             `import * as $$CacheReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )

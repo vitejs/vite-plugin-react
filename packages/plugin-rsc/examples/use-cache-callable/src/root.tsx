@@ -56,7 +56,7 @@ const routes = [
     path: '/use-cache-in-use-server-from-server',
     title: 'Use cache in use server from server',
     description:
-      'A Server Component passes exports from the mixed module, currently exposing missing server reference registration.',
+      'A Server Component passes an inline cached export from a server function module to a Client Component.',
     Component: UseCacheInUseServerFromServerServer,
   },
   {
