@@ -51,8 +51,10 @@ export function callableCachePlugin(): Plugin {
         ) => {
           const options: CacheWrapperOptions = {
             ...getCacheWrapperOptions(meta),
-            cacheId: `${reference.referenceKey}#${name}`,
-            generation,
+            cacheId: JSON.stringify([
+              `${reference.referenceKey}#${name}`,
+              generation,
+            ]),
           }
           return (
             `$$ReactServer.registerServerReference(` +

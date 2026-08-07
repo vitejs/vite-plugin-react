@@ -25,7 +25,6 @@ import {
 export type CacheWrapperOptions = {
   argumentCount?: number
   cacheId: string
-  generation?: number
 }
 
 const pendingEntries = new Map<string, Promise<Uint8Array>>()
@@ -69,11 +68,7 @@ export default function cacheWrapper(
       temporaryReferences: clientTemporaryReferences,
     })
     const serializedCacheKey = await replyToCacheKey(encodedArguments)
-    const cacheKey = JSON.stringify([
-      options.cacheId,
-      options.generation,
-      serializedCacheKey,
-    ])
+    const cacheKey = JSON.stringify([options.cacheId, serializedCacheKey])
     let bytes = await getPersistentCache(cacheKey)
     if (!bytes) {
       let pending = pendingEntries.get(cacheKey)
