@@ -53,6 +53,8 @@ Arguments are serialized with React's `encodeReply()` so values supported by the
 | `/file-directive-from-client`       | A Client Component imports a cached export through its generated proxy.                               |
 | `/file-directive-extra-arguments`   | A zero-parameter module export excludes React-supplied caller arguments.                              |
 | `/inline-directive-extra-arguments` | A zero-parameter inline function uses transform metadata to exclude React-supplied caller arguments.  |
+| `/use-cache-in-use-server`          | An inline cached export overrides the default behavior of a `"use server"` module.                    |
+| `/use-server-in-use-cache`          | Characterizes the current handling of an inline server export in a `"use cache"` module.              |
 | `/protected-captures`               | Inline captures cross the client boundary encrypted while decoded values define cache identity.       |
 
 Each route displays submission and execution counts. Every form submission calls the server reference, while the function body runs only on a cache miss.

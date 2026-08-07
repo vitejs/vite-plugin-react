@@ -368,6 +368,52 @@ function defineTests(f: Fixture) {
     await expect(result).toHaveText('arguments: 0')
   })
 
+  test('use cache in use server', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/use-cache-in-use-server'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('use-cache-in-use-server')
+    const defaultExecutions = example.getByTestId('default-executions')
+    const overrideExecutions = example.getByTestId('override-executions')
+    await example.getByRole('button', { name: 'Reset' }).click()
+    await expect(defaultExecutions).toHaveText('0')
+    await expect(overrideExecutions).toHaveText('0')
+
+    // The file directive supplies ordinary server behavior by default.
+    await callAction(page, example, 'Call default action')
+    await callAction(page, example, 'Call default action')
+    await expect(defaultExecutions).toHaveText('2')
+
+    // The inline cache wrapper runs once for the same argument.
+    await callAction(page, example, 'Call override action')
+    await callAction(page, example, 'Call override action')
+    await expect(overrideExecutions).toHaveText('1')
+  })
+
+  test('use server in use cache', async ({ page }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/use-server-in-use-cache'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('use-server-in-use-cache')
+    const defaultExecutions = example.getByTestId('default-executions')
+    const overrideExecutions = example.getByTestId('override-executions')
+    await example.getByRole('button', { name: 'Reset' }).click()
+    await expect(defaultExecutions).toHaveText('0')
+    await expect(overrideExecutions).toHaveText('0')
+
+    await callAction(page, example, 'Call default action')
+    await callAction(page, example, 'Call default action')
+    await expect(defaultExecutions).toHaveText('1')
+
+    // This characterizes the current transform order: the file-level cache
+    // wrapper is applied before the built-in transform sees "use server".
+    await callAction(page, example, 'Call override action')
+    await callAction(page, example, 'Call override action')
+    await expect(overrideExecutions).toHaveText('1')
+  })
+
   test('protected captures', async ({ page }) => {
     // verify captured value is encoded and thus doesn't appear in raw response
     const rscResponse = await page.request.get(
@@ -423,6 +469,18 @@ function defineTests(f: Fixture) {
     // A cache hit skips the implementation, so its previous display side effect remains.
     await expect(result).toHaveText('second + alpha')
   })
+}
+
+async function callAction(page: Page, example: Locator, name: string) {
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('_.rsc'),
+    ),
+    example.getByRole('button', { name }).click(),
+  ])
+  expect(response.ok()).toBe(true)
 }
 
 async function submit(page: Page, form: Locator) {

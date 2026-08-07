@@ -36,7 +36,7 @@ export function callableCachePlugin(): Plugin {
           name: string,
           options: CacheWrapperOptions,
         ) =>
-          `$$ReactServer.registerServerReference(` +
+          `$$CacheReactServer.registerServerReference(` +
           `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
@@ -75,7 +75,7 @@ export function callableCachePlugin(): Plugin {
         })
         result.output.prepend(
           `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
-            `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
+            `import * as $$CacheReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )
         return {
           code: result.output.toString(),
@@ -91,12 +91,12 @@ export function callableCachePlugin(): Plugin {
           meta.valueNode?.type !== 'ArrayExpression',
         rejectNonAsyncFunction: true,
         runtime: (name) =>
-          `$$ReactClient.createServerReference(` +
+          `$$CacheReactClient.createServerReference(` +
           `${JSON.stringify(reference.referenceKey + '#' + name)},` +
-          `$$ReactClient.callServer,` +
+          `$$CacheReactClient.callServer,` +
           `undefined,` +
           (this.environment.mode === 'dev'
-            ? `$$ReactClient.findSourceMapURL,`
+            ? `$$CacheReactClient.findSourceMapURL,`
             : `undefined,`) +
           `${JSON.stringify(name)})`,
       })
@@ -112,7 +112,7 @@ export function callableCachePlugin(): Plugin {
       const runtimeEnvironment =
         environmentName === 'client' ? 'browser' : 'ssr'
       result.output.prepend(
-        `import * as $$ReactClient from "@vitejs/plugin-rsc/react/${runtimeEnvironment}";\n`,
+        `import * as $$CacheReactClient from "@vitejs/plugin-rsc/react/${runtimeEnvironment}";\n`,
       )
       return {
         code: result.output.toString(),

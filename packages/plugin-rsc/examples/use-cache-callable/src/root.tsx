@@ -4,6 +4,8 @@ import { FileDirectiveFromServer } from './features/file-directive-from-server/s
 import { InlineDirectiveExtraArgumentsServer } from './features/inline-directive-extra-arguments/server'
 import { InlineDirective } from './features/inline-directive/server'
 import { ProtectedCaptures } from './features/protected-captures/server'
+import { UseCacheInUseServer } from './features/use-cache-in-use-server/server'
+import { UseServerInUseCache } from './features/use-server-in-use-cache/server'
 
 const routes = [
   {
@@ -40,6 +42,20 @@ const routes = [
     description:
       'A zero-parameter inline cached function ignores FormData supplied by React.',
     Component: InlineDirectiveExtraArgumentsServer,
+  },
+  {
+    path: '/use-cache-in-use-server',
+    title: 'Use cache in use server',
+    description:
+      'An inline cached export overrides the default behavior of a server function module.',
+    Component: UseCacheInUseServer,
+  },
+  {
+    path: '/use-server-in-use-cache',
+    title: 'Use server in use cache',
+    description:
+      'An inline server export currently retains the default behavior of a cached function module.',
+    Component: UseServerInUseCache,
   },
   {
     path: '/protected-captures',
