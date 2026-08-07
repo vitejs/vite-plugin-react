@@ -171,11 +171,12 @@ function collectImporters(
   roots: EnvironmentModuleNode[],
 ): Set<EnvironmentModuleNode> {
   const visited = new Set<EnvironmentModuleNode>()
-  function visit(module: EnvironmentModuleNode) {
-    if (visited.has(module)) return
+  const queue = [...roots]
+  for (let index = 0; index < queue.length; index++) {
+    const module = queue[index]!
+    if (visited.has(module)) continue
     visited.add(module)
-    for (const importer of module.importers) visit(importer)
+    queue.push(...module.importers)
   }
-  for (const root of roots) visit(root)
   return visited
 }
