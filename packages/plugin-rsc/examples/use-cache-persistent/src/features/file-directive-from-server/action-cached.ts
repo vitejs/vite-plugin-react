@@ -1,6 +1,6 @@
 'use cache'
 
-import { getDirectLabel } from './direct'
+import { getDirectLabel } from './dep-direct'
 import { state } from './state'
 
 export async function cachedFromServer(argument: string) {

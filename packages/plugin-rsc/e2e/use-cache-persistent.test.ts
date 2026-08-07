@@ -82,10 +82,10 @@ function defineDevTests(f: Fixture) {
       'src/features/file-directive-from-server/action-cached.ts',
     )
     const direct = f.createEditor(
-      'src/features/file-directive-from-server/direct.ts',
+      'src/features/file-directive-from-server/dep-direct.ts',
     )
     const transitive = f.createEditor(
-      'src/features/file-directive-from-server/transitive.ts',
+      'src/features/file-directive-from-server/dep-transitive.ts',
     )
 
     await page.goto(f.url('/file-directive-from-server'))
