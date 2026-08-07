@@ -266,16 +266,17 @@ export function transformHoistInlineDirective(
           //     ⬇️
           //   class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
 
-          // always quote identifier method name for cases like `constructor` or `__proto__`
-          const quoteKey =
-            !methodInfo.node.computed &&
-            methodInfo.node.key.type === 'Identifier'
           const isStatic = methodInfo.node.type === 'MethodDefinition'
           const key = input.slice(
             methodInfo.node.key.start,
             methodInfo.node.key.end,
           )
-          const propertyKey = quoteKey ? `["${key}"]` : `[${key}]`
+          // always quote identifier method name for edge cases like `constructor` or `__proto__`
+          const propertyKey =
+            !methodInfo.node.computed &&
+            methodInfo.node.key.type === 'Identifier'
+              ? `["${key}"]`
+              : `[${key}]`
           output.update(
             methodInfo.node.start,
             node.start,
