@@ -95,16 +95,21 @@ function defineDevTests(f: Fixture) {
     await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
     const example = page.getByTestId('file-directive-from-server')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
     const result = example.getByTestId('result')
     await reset(page)
+    await expect(submissionCount).toHaveText('0')
 
     // Warm one persistent entry and prove the second invocation is a cache hit.
     await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
     await expect(result).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
     )
     await submit(page, example)
-    await expect(example.getByTestId('execution-count')).toHaveText('1')
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
 
     // Editing the cached function advances its module generation.
     action.edit((code) => code.replace('body-v1', 'body-v2'))
@@ -139,17 +144,16 @@ function defineDevTests(f: Fixture) {
       'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
     )
 
-    // A development restart uses a fresh epoch and executes the current source.
+    // A development restart uses a fresh timestamp and executes the current source.
     await page.goto('about:blank')
     await f.restart()
     await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
-    const restartedExample = page.getByTestId('file-directive-from-server')
-    await submit(page, restartedExample)
-    await expect(restartedExample.getByTestId('execution-count')).toHaveText(
-      '1',
-    )
-    await expect(restartedExample.getByTestId('result')).toHaveText(
+    await expect(submissionCount).toHaveText('0')
+    await submit(page, example)
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText(
       'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
     )
   })
