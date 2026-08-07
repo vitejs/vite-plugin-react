@@ -15,6 +15,8 @@ const pluginName = 'example:use-cache-persistent'
 
 export function callableCachePlugin(): Plugin {
   let manager: RscPluginManager
+  // A dev restart gets a new epoch, while an HMR update advances each affected
+  // cache module's generation. Both enter the cache key so stale disk entries miss.
   const developmentEpoch = randomUUID()
   const cacheModuleGenerations = new Map<string, number>()
 
