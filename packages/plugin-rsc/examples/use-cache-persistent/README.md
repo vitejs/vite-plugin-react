@@ -6,7 +6,7 @@ Neither React nor `@vitejs/plugin-rsc` defines `"use cache"`. The example compos
 
 ## Development invalidation
 
-[`callable-cache-plugin.ts`](./callable-cache-plugin.ts) assigns each transformed cache module a development generation within a server-specific epoch. Its `hotUpdate` hook walks reverse importers from an updated RSC module and invalidates affected cache modules. Retransformation advances their generations, so edits to a cached function or its direct and transitive dependencies produce new persistent cache keys. Restarting the development server starts a new epoch so edits made while it was stopped cannot reuse stale entries.
+[`callable-cache-plugin.ts`](./callable-cache-plugin.ts) assigns each transformed cache module a development timestamp. Its `hotUpdate` hook walks reverse importers from an updated RSC module and invalidates affected cache modules. Retransformation assigns a new timestamp, so edits to a cached function or its direct and transitive dependencies produce new persistent cache keys. Restarting the development server also retransforms modules with new timestamps, so edits made while it was stopped cannot reuse stale entries.
 
 The cache key consists of the server-reference identity, development generation when applicable, and RSC-serialized arguments.
 

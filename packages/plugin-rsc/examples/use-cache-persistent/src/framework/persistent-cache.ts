@@ -4,6 +4,10 @@ import path from 'node:path'
 
 const cacheDirectory = path.resolve('.use-cache')
 
+// TODO: Isolate dev runs and production builds in timestamped directories and
+// record the active namespace in metadata. A new run or build could then remove
+// obsolete directories while restarts of the same emitted build keep its cache.
+
 export async function getPersistentCache(
   key: string,
 ): Promise<Uint8Array | undefined> {
