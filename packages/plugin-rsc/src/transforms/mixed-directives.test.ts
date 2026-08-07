@@ -1,4 +1,5 @@
 import path from 'node:path'
+import type MagicString from 'magic-string'
 import { parseAstAsync } from 'vite'
 import { expect, test } from 'vitest'
 import { transformHoistInlineDirective } from './hoist'
@@ -17,75 +18,92 @@ const fixtures = import.meta.glob(
 for (const [file, load] of Object.entries(fixtures)) {
   test(path.basename(file), async () => {
     const input = ((await load()) as any).default as string
-    const ast = await parseAstAsync(input)
-    const cacheResult = hasDirective(ast.body, 'use cache')
-      ? transformWrapExport(input, ast, {
-          runtime: cacheRuntime,
-          filter: (_name, meta) => !hasFunctionDirective(meta, 'use server'),
-        })
-      : transformHoistInlineDirective(input, ast, {
-          directive: 'use cache',
-          hoistRuntime: true,
-          runtime: cacheRuntime,
-        })
-
-    const importPosition =
-      ast.body.find((node) => !('directive' in node))?.start ?? input.length
-    cacheResult.output.prependLeft(
-      importPosition,
-      `import { cache as $cache, register as $registerCache } from "cache-runtime";\n`,
-    )
-    const cacheCode = cacheResult.output.toString()
-    const cacheReferences =
-      'names' in cacheResult ? cacheResult.names : cacheResult.exportNames
-
-    const rscAst = await parseAstAsync(cacheCode)
-    const rscResult = transformServerActionServer(cacheCode, rscAst, {
-      runtime: (value, name) =>
-        `$registerServer(${value}, ${JSON.stringify(name)})`,
-    })
-
-    let proxyAst = ast
-    let proxyCode = input
-    let proxyResult = transformDirectiveProxyExport(proxyAst, {
-      code: proxyCode,
-      directive: 'use cache',
-      runtime: (name) => `$cacheProxy(${JSON.stringify(name)})`,
-    })
-    if (proxyResult) {
-      proxyCode = proxyResult.output.toString()
-      proxyAst = await parseAstAsync(proxyCode)
-    }
-    proxyResult ??= transformDirectiveProxyExport(proxyAst, {
-      code: proxyCode,
-      directive: 'use server',
-      runtime: (name) => `$serverProxy(${JSON.stringify(name)})`,
-    })
+    const cacheResult = await transformUseCache(input)
+    const rscResult = await transformUseServer(cacheResult.output.toString())
+    const proxyResult = await transformMixedDirectiveProxy(input)
 
     await parseAstAsync(rscResult.output.toString())
-    if (proxyResult) {
-      await parseAstAsync(proxyResult.output.toString())
-    }
+    await parseAstAsync(proxyResult.output.toString())
     await expect(
       formatTransformMarkdownFixture(input, [
         {
           name: 'framework cache RSC transform',
           output: cacheResult.output,
-          references: cacheReferences,
+          references: cacheResult.references,
         },
         {
           name: 'final RSC transform',
           output: rscResult.output,
-          references: rscResult.referenceNames,
+          references: rscResult.references,
         },
         {
           name: 'browser and SSR proxy transform',
-          output: proxyResult?.output,
-          references: proxyResult?.exportNames,
+          output: proxyResult.output,
+          references: proxyResult.references,
         },
       ]),
     ).toMatchFileSnapshot(file + '.snap.md')
   })
+}
+
+type TransformResult = {
+  output: MagicString
+  references: string[]
+}
+
+async function transformUseCache(input: string): Promise<TransformResult> {
+  const ast = await parseAstAsync(input)
+  const result = hasDirective(ast.body, 'use cache')
+    ? transformWrapExport(input, ast, {
+        runtime: cacheRuntime,
+        filter: (_name, meta) => !hasFunctionDirective(meta, 'use server'),
+      })
+    : transformHoistInlineDirective(input, ast, {
+        directive: 'use cache',
+        hoistRuntime: true,
+        runtime: cacheRuntime,
+      })
+
+  const importPosition =
+    ast.body.find((node) => !('directive' in node))?.start ?? input.length
+  result.output.prependLeft(
+    importPosition,
+    `import { cache as $cache, register as $registerCache } from "cache-runtime";\n`,
+  )
+  return {
+    output: result.output,
+    references: 'names' in result ? result.names : result.exportNames,
+  }
+}
+
+async function transformUseServer(input: string): Promise<TransformResult> {
+  const ast = await parseAstAsync(input)
+  const result = transformServerActionServer(input, ast, {
+    runtime: (value, name) =>
+      `$registerServer(${value}, ${JSON.stringify(name)})`,
+  })
+  return { output: result.output, references: result.referenceNames }
+}
+
+async function transformMixedDirectiveProxy(
+  input: string,
+): Promise<TransformResult> {
+  const ast = await parseAstAsync(input)
+  const result =
+    transformDirectiveProxyExport(ast, {
+      code: input,
+      directive: 'use cache',
+      runtime: (name) => `$cacheProxy(${JSON.stringify(name)})`,
+    }) ??
+    transformDirectiveProxyExport(ast, {
+      code: input,
+      directive: 'use server',
+      runtime: (name) => `$serverProxy(${JSON.stringify(name)})`,
+    })
+  if (!result) {
+    throw new Error('expected a file directive')
+  }
+  return { output: result.output, references: result.exportNames }
 }
 
 function cacheRuntime(value: string, name: string): string {
