@@ -2,11 +2,11 @@
 
 import { state } from './state'
 
-export async function defaultAction(_key: string) {
+export async function defaultAction() {
   state.defaultExecutions++
 }
 
-export async function overrideAction(_key: string) {
+export async function overrideAction() {
   'use cache'
   state.overrideExecutions++
 }

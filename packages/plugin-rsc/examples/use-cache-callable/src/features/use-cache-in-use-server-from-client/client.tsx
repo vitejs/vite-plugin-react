@@ -9,12 +9,8 @@ export function UseCacheInUseServerFromClient(props: {
 }) {
   return (
     <div data-testid="use-cache-in-use-server-from-client">
-      <form action={defaultAction.bind(null, 'same-key')}>
-        <button>Call default action</button>
-      </form>
-      <form action={overrideAction.bind(null, 'same-key')}>
-        <button>Call override action</button>
-      </form>
+      <button onClick={() => defaultAction()}>Call default action</button>
+      <button onClick={() => overrideAction()}>Call override action</button>
       <p>
         Default executions:{' '}
         <output data-testid="default-executions">
@@ -26,9 +22,7 @@ export function UseCacheInUseServerFromClient(props: {
           {props.overrideExecutions}
         </output>
       </p>
-      <form action={resetAction}>
-        <button>Reset</button>
-      </form>
+      <button onClick={() => resetAction()}>Reset</button>
     </div>
   )
 }
