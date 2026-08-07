@@ -270,7 +270,6 @@ export function transformHoistInlineDirective(
           const quoteKey =
             !methodInfo.node.computed &&
             methodInfo.node.key.type === 'Identifier'
-
           const isStatic = methodInfo.node.type === 'MethodDefinition'
           const key = input.slice(
             methodInfo.node.key.start,
