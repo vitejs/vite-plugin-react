@@ -9,7 +9,6 @@ export function FileDirectiveFromServer() {
       action={cachedFromServer}
       executionCount={state.executionCount}
       resetAction={resetAction}
-      result={state.result}
     />
   )
 }

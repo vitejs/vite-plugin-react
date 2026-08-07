@@ -6,5 +6,4 @@ import { state } from './state'
 export async function resetAction() {
   await resetCache()
   state.executionCount = 0
-  state.result = 'not called'
 }

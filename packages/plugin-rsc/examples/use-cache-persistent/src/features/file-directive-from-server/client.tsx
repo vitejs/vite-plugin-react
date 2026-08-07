@@ -6,15 +6,14 @@ export function FileDirectiveFromServerClient(props: {
   action: (argument: string) => Promise<string>
   executionCount: number
   resetAction: () => Promise<void>
-  result: string
 }) {
   const [submissions, setSubmissions] = useState(0)
-  // Render the action result because a persistent hit after restart skips the
-  // function body, so re-rendering props.result would not verify value replay.
+  // The execution count proves the body was skipped while this result proves a
+  // persistent hit after restart also replayed the cached value.
   const [result, action] = useActionState(
     (_previousResult: string, formData: FormData) =>
       props.action(String(formData.get('argument'))),
-    props.result,
+    'not called',
   )
 
   return (
