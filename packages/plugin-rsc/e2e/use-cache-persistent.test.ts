@@ -31,35 +31,39 @@ function defineTests(f: Fixture) {
     await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
 
-    let example = page.getByTestId('file-directive-from-server')
+    const example = page.getByTestId('file-directive-from-server')
+    const submissionCount = example.getByTestId('submission-count')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
     await reset(page)
+    await expect(submissionCount).toHaveText('0')
 
     // The first invocation executes and persists a self-contained Flight value.
     await submit(page, example)
-    await expect(example.getByTestId('execution-count')).toHaveText('1')
-    await expect(example.getByTestId('result')).toHaveText(
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
     )
 
     // The same key replays the persisted value without executing again.
     await submit(page, example)
-    await expect(example.getByTestId('execution-count')).toHaveText('1')
+    await expect(submissionCount).toHaveText('2')
+    await expect(executionCount).toHaveText('1')
 
     await page.goto('about:blank')
     await f.restart()
     await page.goto(f.url('/file-directive-from-server'))
     await waitForHydration(page)
-    example = page.getByTestId('file-directive-from-server')
-    await expect(example.getByTestId('execution-count')).toHaveText('0')
+    await expect(submissionCount).toHaveText('0')
+    await expect(executionCount).toHaveText('0')
 
     // Production reuses the same build-scoped entry after restart. Development
-    // starts a new epoch so edits made while the server was stopped cannot be stale.
+    // gets new transform timestamps so stopped-server edits cannot be stale.
     await submit(page, example)
-    await expect(example.getByTestId('submission-count')).toHaveText('1')
-    await expect(example.getByTestId('execution-count')).toHaveText(
-      f.mode === 'dev' ? '1' : '0',
-    )
-    await expect(example.getByTestId('result')).toHaveText(
+    await expect(submissionCount).toHaveText('1')
+    await expect(executionCount).toHaveText(f.mode === 'dev' ? '1' : '0')
+    await expect(result).toHaveText(
       'server import + body-v1 + direct-v1 + transitive-v1 + alpha',
     )
   })
