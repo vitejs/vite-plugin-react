@@ -26,11 +26,12 @@ export function callableCachePlugin(): Plugin {
       manager = getPluginApi(config)!.manager
     },
     async transform(code, id) {
-      if (!code.includes(directive)) {
+      const deleteClaim = () => {
         manager.serverReferences.deleteClaim(pluginName, id)
-        if (this.environment.name === 'rsc') {
-          cacheModules.delete(id)
-        }
+        if (this.environment.name === 'rsc') cacheModules.delete(id)
+      }
+      if (!code.includes(directive)) {
+        deleteClaim()
         return
       }
 
@@ -86,7 +87,7 @@ export function callableCachePlugin(): Plugin {
               decode: (value) => value,
             })
         if (!result.output.hasChanged()) {
-          manager.serverReferences.deleteClaim(pluginName, id)
+          deleteClaim()
           return
         }
 
@@ -122,7 +123,7 @@ export function callableCachePlugin(): Plugin {
           `${JSON.stringify(name)})`,
       })
       if (!result?.output.hasChanged()) {
-        manager.serverReferences.deleteClaim(pluginName, id)
+        deleteClaim()
         return
       }
 
