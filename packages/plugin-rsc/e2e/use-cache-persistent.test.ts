@@ -38,7 +38,7 @@ function defineTests(f: Fixture) {
     await reset(page)
     await expect(submissionCount).toHaveText('0')
 
-    // The first invocation executes and persists a self-contained Flight value.
+    // The first invocation executes and persists its returned value.
     await submit(page, example)
     await expect(submissionCount).toHaveText('1')
     await expect(executionCount).toHaveText('1')

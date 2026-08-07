@@ -1,6 +1,6 @@
 # Persistent callable `"use cache"` example
 
-This example extends the sibling [`use-cache-callable`](../use-cache-callable) example with cache entries that are independent of transformed function objects. It combines a framework-owned file-level directive, callable React server references, self-contained Flight serialization, and a filesystem-backed cache.
+This example extends the sibling [`use-cache-callable`](../use-cache-callable) example with cache entries that are independent of transformed function objects. It combines a framework-owned file-level directive, callable React server references, Flight value replay, and a filesystem-backed cache.
 
 Neither React nor `@vitejs/plugin-rsc` defines `"use cache"`. The example composes plugin-rsc's public directive transforms and server-reference registry to demonstrate the framework integration.
 
@@ -12,7 +12,7 @@ The cache key consists of the server-reference identity, development generation 
 
 ## Persistent values
 
-[`src/framework/persistent-cache.ts`](./src/framework/persistent-cache.ts) stores entries under `.use-cache`. The runtime serializes each result to complete Flight bytes without invocation-local temporary references, writes those bytes to the external store, and reconstructs a fresh stream for every hit.
+[`src/framework/persistent-cache.ts`](./src/framework/persistent-cache.ts) stores entries under `.use-cache`. The runtime serializes each result to Flight bytes, writes those bytes to the external store, and reconstructs a fresh stream for every hit.
 
 The filesystem handler is intentionally minimal. It stands in for an external key-value or distributed cache without adding service dependencies to the example.
 
