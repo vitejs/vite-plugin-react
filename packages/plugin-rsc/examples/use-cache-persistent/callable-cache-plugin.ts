@@ -28,7 +28,9 @@ export function callableCachePlugin(): Plugin {
     async transform(code, id) {
       if (!code.includes(directive)) {
         manager.serverReferences.deleteClaim(pluginName, id)
-        if (this.environment.name === 'rsc') cacheModules.delete(id)
+        if (this.environment.name === 'rsc') {
+          cacheModules.delete(id)
+        }
         return
       }
 
