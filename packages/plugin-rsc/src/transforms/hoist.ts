@@ -160,38 +160,7 @@ export function transformHoistInlineDirective(
         const match = matchDirective(node.body.body, directive)?.match
         if (!match) return
 
-        const method = analyzeMethod(node, parent)
-        if (method?.node.type === 'MethodDefinition' && !method.node.static) {
-          throw Object.assign(
-            new Error(
-              `It is not allowed to define inline ${JSON.stringify(match[0])} class instance methods.`,
-            ),
-            { pos: method.node.start },
-          )
-        }
-        if (
-          method?.node.type === 'MethodDefinition' &&
-          method.node.key.type === 'PrivateIdentifier'
-        ) {
-          throw Object.assign(
-            new Error(
-              `It is not allowed to define inline ${JSON.stringify(match[0])} private class methods.`,
-            ),
-            { pos: method.node.start },
-          )
-        }
-        if (
-          (method?.node.type === 'Property' && method.node.kind !== 'init') ||
-          (method?.node.type === 'MethodDefinition' &&
-            method.node.kind !== 'method')
-        ) {
-          throw Object.assign(
-            new Error(
-              `It is not allowed to define inline ${JSON.stringify(match[0])} getters or setters.`,
-            ),
-            { pos: method.node.start },
-          )
-        }
+        const method = analyzeMethod(node, parent, match[0])
         if (!node.async && rejectNonAsyncFunction) {
           throw Object.assign(
             new Error(`"${directive}" doesn't allow non async function`),
@@ -345,13 +314,16 @@ export function transformHoistInlineDirective(
 }
 
 type MethodAnalysis = {
+  /** The object property or class method containing the function expression. */
   node: Property | MethodDefinition
+  /** A valid identifier name inferred from a non-computed method key. */
   name?: string
 }
 
 function analyzeMethod(
   node: Node,
   parent: Node | null,
+  directive: string,
 ): MethodAnalysis | undefined {
   if (node.type !== 'FunctionExpression') return
 
@@ -366,6 +338,37 @@ function analyzeMethod(
     method = parent
   } else {
     return
+  }
+
+  if (method.type === 'MethodDefinition' && !method.static) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} class instance methods.`,
+      ),
+      { pos: method.start },
+    )
+  }
+  if (
+    method.type === 'MethodDefinition' &&
+    method.key.type === 'PrivateIdentifier'
+  ) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} private class methods.`,
+      ),
+      { pos: method.start },
+    )
+  }
+  if (
+    (method.type === 'Property' && method.kind !== 'init') ||
+    (method.type === 'MethodDefinition' && method.kind !== 'method')
+  ) {
+    throw Object.assign(
+      new Error(
+        `It is not allowed to define inline ${JSON.stringify(directive)} getters or setters.`,
+      ),
+      { pos: method.start },
+    )
   }
 
   const keyName =
