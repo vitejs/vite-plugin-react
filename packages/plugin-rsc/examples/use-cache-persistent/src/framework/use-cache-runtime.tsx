@@ -79,10 +79,9 @@ export default function cacheWrapper(
             temporaryReferences,
           })
           const result = await fn(...decodedArgs)
-          // TODO: Define how persistent results handle Flight temporary
-          // references. Their invocation-local side tables cannot survive restart.
           const stream = renderToReadableStream(result, {
             environmentName: 'Cache',
+            temporaryReferences,
           })
           const value = new Uint8Array(await new Response(stream).arrayBuffer())
           await setPersistentCache(cacheKey, value)
@@ -103,6 +102,7 @@ export default function cacheWrapper(
     const result = createFromReadableStream(stream, {
       environmentName: 'Cache',
       replayConsoleLogs: true,
+      temporaryReferences: clientTemporaryReferences,
     })
     return result
   }
