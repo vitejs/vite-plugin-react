@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto'
 import { getPluginApi, type RscPluginManager } from '@vitejs/plugin-rsc'
 import {
   hasDirective,
@@ -15,12 +14,11 @@ const pluginName = 'example:use-cache-persistent'
 
 export function callableCachePlugin(): Plugin {
   let manager: RscPluginManager
-  // A dev restart gets a new epoch, while an HMR update advances each affected
-  // cache module's generation. Both enter the cache key so stale disk entries miss.
-  const developmentEpoch = randomUUID()
+  // Every dev transform enters its timestamp in the cache key, so stale disk
+  // entries miss after either an HMR update or a server restart.
   // TODO: An owner-aware `serverReferences.hasClaim()` could identify cache
-  // modules during hot updates without using this map for membership as well.
-  const cacheModuleGenerations = new Map<string, number>()
+  // modules during hot updates without maintaining this set.
+  const cacheModules = new Set<string>()
 
   return {
     name: pluginName,
@@ -31,7 +29,7 @@ export function callableCachePlugin(): Plugin {
       if (!code.includes(directive)) {
         manager.serverReferences.deleteClaim(pluginName, id)
         if (this.environment.name === 'rsc') {
-          cacheModuleGenerations.delete(id)
+          cacheModules.delete(id)
         }
         return
       }
@@ -42,11 +40,9 @@ export function callableCachePlugin(): Plugin {
 
       if (environmentName === 'rsc') {
         const generation =
-          this.environment.mode === 'dev'
-            ? (cacheModuleGenerations.get(id) ?? 0) + 1
-            : undefined
+          this.environment.mode === 'dev' ? Date.now() : undefined
         if (generation !== undefined) {
-          cacheModuleGenerations.set(id, generation)
+          cacheModules.add(id)
         }
         const runtime = (
           value: string,
@@ -56,10 +52,7 @@ export function callableCachePlugin(): Plugin {
           const options: CacheWrapperOptions = {
             ...getCacheWrapperOptions(meta),
             cacheId: `${reference.referenceKey}#${name}`,
-            generation:
-              generation === undefined
-                ? undefined
-                : `${developmentEpoch}:${generation}`,
+            generation,
           }
           return (
             `$$ReactServer.registerServerReference(` +
@@ -149,7 +142,7 @@ export function callableCachePlugin(): Plugin {
       if (this.environment.name !== 'rsc') return
 
       for (const module of collectImporters(ctx.modules)) {
-        if (module.id && cacheModuleGenerations.has(module.id)) {
+        if (module.id && cacheModules.has(module.id)) {
           this.environment.moduleGraph.invalidateModule(module)
         }
       }
