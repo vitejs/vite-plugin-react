@@ -28,9 +28,9 @@ export function createActions(value) {
   }
 }
 
-;export async function $$hoist_0_action(value) {
+;export async function $$hoist_0_action(value, arg) {
       'use server'
-      return value
+      return value + arg
     };
 /* #__PURE__ */ Object.defineProperty($$hoist_0_action, "name", { value: "action" });
 

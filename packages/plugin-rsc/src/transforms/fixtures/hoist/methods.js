@@ -3,9 +3,9 @@ const __proto__ = 'computed-proto'
 
 export function createObject(value) {
   return {
-    async action() {
+    async action(arg) {
       'use server'
-      return value
+      return value + arg
     },
     async [key]() {
       'use server'
