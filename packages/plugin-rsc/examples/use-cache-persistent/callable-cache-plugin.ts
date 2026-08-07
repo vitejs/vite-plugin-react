@@ -4,6 +4,7 @@ import {
   hasDirective,
   type ModuleExportMeta,
   transformDirectiveProxyExport,
+  transformHoistInlineDirective,
   transformWrapExport,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type EnvironmentModuleNode, type Plugin } from 'vite'
@@ -34,11 +35,6 @@ export function callableCachePlugin(): Plugin {
       const reference = manager.serverReferences.resolve(id, 'rsc')
       const ast = await parseAstAsync(code)
       const environmentName = this.environment.name
-      if (!hasDirective(ast.body, directive)) {
-        manager.serverReferences.deleteClaim(pluginName, id)
-        if (environmentName === 'rsc') cacheModuleGenerations.delete(id)
-        return
-      }
 
       if (environmentName === 'rsc') {
         const generation =
@@ -51,24 +47,45 @@ export function callableCachePlugin(): Plugin {
         const runtime = (
           value: string,
           name: string,
-          options: CacheWrapperOptions,
-        ) =>
-          `$$ReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
-          `${JSON.stringify(reference.referenceKey)},` +
-          `${JSON.stringify(name)})`
-        const result = transformWrapExport(code, ast, {
-          runtime: (value, name, meta) =>
-            runtime(value, name, {
-              ...getCacheWrapperOptions(meta),
-              cacheId: `${reference.referenceKey}#${name}`,
-              generation:
-                generation === undefined
-                  ? undefined
-                  : `${developmentEpoch}:${generation}`,
-            }),
-          rejectNonAsyncFunction: true,
-        })
+          meta: Pick<ModuleExportMeta, 'valueNode'>,
+        ) => {
+          const options: CacheWrapperOptions = {
+            ...getCacheWrapperOptions(meta),
+            cacheId: `${reference.referenceKey}#${name}`,
+            generation:
+              generation === undefined
+                ? undefined
+                : `${developmentEpoch}:${generation}`,
+          }
+          return (
+            `$$ReactServer.registerServerReference(` +
+            `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
+            `${JSON.stringify(reference.referenceKey)},` +
+            `${JSON.stringify(name)})`
+          )
+        }
+        const result = hasDirective(ast.body, directive)
+          ? transformWrapExport(code, ast, {
+              runtime: (value, name, meta) => runtime(value, name, meta),
+              // Next.js calls rejecting primitive literals while permitting
+              // objects and arrays arbitrary, but keeps the latter for metadata
+              // and viewport exports.
+              // https://github.com/vercel/next.js/blob/aae4179ac628e55483b62cd023a7e1827dcef122/crates/next-custom-transforms/src/transforms/server_actions.rs#L1914-L1919
+              filter: (_name, meta) =>
+                meta.valueNode?.type !== 'ObjectExpression' &&
+                meta.valueNode?.type !== 'ArrayExpression',
+              rejectNonAsyncFunction: true,
+            })
+          : transformHoistInlineDirective(code, ast, {
+              directive,
+              rejectNonAsyncFunction: true,
+              hoistRuntime: true,
+              runtime: (value, name, meta) => runtime(value, name, meta),
+              encode: (value) => `$$encryptCacheCaptures(${value})`,
+              // The cache runtime replaces the envelope with decoded captures
+              // before invoking this private implementation.
+              decode: (value) => value,
+            })
         if (!result.output.hasChanged()) {
           manager.serverReferences.deleteClaim(pluginName, id)
           return
@@ -76,10 +93,10 @@ export function callableCachePlugin(): Plugin {
 
         manager.serverReferences.replaceClaim(pluginName, id, {
           ...reference,
-          exportNames: result.exportNames,
+          exportNames: 'names' in result ? result.names : result.exportNames,
         })
         result.output.prepend(
-          `import $$cacheWrapper from "/src/framework/use-cache-runtime";\n` +
+          `import $$cacheWrapper, { encryptCacheCaptures as $$encryptCacheCaptures } from "/src/framework/use-cache-runtime";\n` +
             `import * as $$ReactServer from "@vitejs/plugin-rsc/react/rsc/server";\n`,
         )
         return {
@@ -91,6 +108,9 @@ export function callableCachePlugin(): Plugin {
       const result = transformDirectiveProxyExport(ast, {
         code,
         directive,
+        filter: (_name, meta) =>
+          meta.valueNode?.type !== 'ObjectExpression' &&
+          meta.valueNode?.type !== 'ArrayExpression',
         rejectNonAsyncFunction: true,
         runtime: (name) =>
           `$$ReactClient.createServerReference(` +
