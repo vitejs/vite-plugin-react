@@ -9,6 +9,8 @@ export function FileDirectiveFromServerClient(props: {
   result: string
 }) {
   const [submissions, setSubmissions] = useState(0)
+  // Render the action result because a persistent hit after restart skips the
+  // function body, so re-rendering props.result would not verify value replay.
   const [result, action] = useActionState(
     (_previousResult: string, formData: FormData) =>
       props.action(String(formData.get('argument'))),
