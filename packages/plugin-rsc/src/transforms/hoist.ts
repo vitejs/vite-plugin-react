@@ -275,6 +275,11 @@ export function transformHoistInlineDirective(
         // Replace the original function with either the hoisted runtime result
         // or the runtime expression for its hoisted declaration. Bind closure
         // captures to the prepended parameters (or one encoded parameter).
+        // example:
+        //   const someFn = () => { .... }
+        //     ⬇️
+        //   const someFn = __WRAP__($$hoist_0_someFn).bind(null, x, y)
+        //   const someFn = $$hoist_0_someFn.bind(null, x, y)           // with hoistRuntime
         let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
@@ -283,24 +288,32 @@ export function transformHoistInlineDirective(
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
         if (method) {
+          // example:
+          //   { async someFn() { ... } }
+          //     ⬇️
+          //   { ["someFn"]: __WRAP__($$hoist_0_someFn) }
+          // example:
+          //   class C { static async someFn() { ... } }
+          //     ⬇️
+          //   class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
+
+          // always quote method name for cases like `constructor` or `__proto__`
           const quoteKey =
             !method.node.computed && method.node.key.type === 'Identifier'
-          output.update(
-            method.node.start,
-            method.node.key.start,
-            `${method.node.type === 'MethodDefinition' ? 'static ' : ''}[${
-              quoteKey ? '"' : ''
-            }`,
-          )
-          const suffix = `${quoteKey ? '"' : ''}]${
-            method.node.type === 'MethodDefinition' ? ' = ' : ': '
-          }`
+
+          // class C { static ["someFn"] = __WRAP__($$hoist_0_someFn); }
+          //           ^^^^^^^^^      ^^^^^
+          //           prefix         suffix
+          const isStatic = method.node.type === 'MethodDefinition'
+          const prefix = `${isStatic ? 'static ' : ''}[${quoteKey ? '"' : ''}`
+          const suffix = `${quoteKey ? '"' : ''}]${isStatic ? ' = ' : ': '}`
+          output.update(method.node.start, method.node.key.start, prefix)
           if (method.node.key.end === node.start) {
             output.appendLeft(node.start, suffix)
           } else {
             output.update(method.node.key.end, node.start, suffix)
           }
-          if (method.node.type === 'MethodDefinition') {
+          if (isStatic) {
             newCode += ';'
           }
         } else if (declName) {
