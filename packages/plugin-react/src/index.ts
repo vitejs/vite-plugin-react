@@ -14,7 +14,8 @@ import {
 } from '@vitejs/react-common'
 import type { Plugin, ServerOptions } from 'vite'
 import { reactRefreshWrapperPlugin } from 'vite/internal'
-import { reactCompilerPreset } from './reactCompilerPreset'
+import type { ReactCompilerOptions } from '#optionalTypes'
+import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
@@ -52,6 +53,12 @@ export interface Options {
    * reactRefreshHost: 'http://localhost:3000'
    */
   reactRefreshHost?: string
+  /**
+   * Enable React Compiler with its default options or configure it.
+   * This requires `oxc-transform-react` to be installed.
+   * @default false
+   */
+  compiler?: boolean | ReactCompilerOptions
 }
 
 const defaultIncludeRE = /\.[tj]sx?$/
@@ -251,7 +258,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
-  return [
+  const plugins = [
     viteBabel,
     viteRefreshWrapper,
     viteConfigPost,
@@ -262,11 +269,92 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       isEnabled: () => !skipFastRefresh && !isBundledDev,
     }),
   ]
+
+  if (opts.compiler) {
+    plugins.unshift(
+      createReactCompilerPlugin(
+        opts.compiler === true ? {} : opts.compiler,
+        include,
+        exclude,
+      ),
+    )
+  }
+
+  return plugins
+}
+
+function createReactCompilerPlugin(
+  options: ReactCompilerOptions,
+  include: NonNullable<Options['include']>,
+  exclude: NonNullable<Options['exclude']>,
+): Plugin {
+  const { sourcemap = true, ...compilerOptions } = options
+  const runtime =
+    compilerOptions.target === '17' || compilerOptions.target === '18'
+      ? 'react-compiler-runtime'
+      : 'react/compiler-runtime'
+
+  return {
+    name: 'vite:react-compiler',
+    enforce: 'pre',
+    config: () => ({
+      optimizeDeps: {
+        include: [runtime],
+      },
+    }),
+    applyToEnvironment: (env) => env.config.consumer === 'client',
+    transform: {
+      filter: {
+        id: {
+          include: makeIdFiltersToMatchWithQuery(include),
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
+        },
+        code:
+          compilerOptions.compilationMode === 'annotation'
+            ? /['"]use memo['"]/
+            : defaultCodeFilter,
+      },
+      async handler(code, id) {
+        let transform: typeof import('oxc-transform-react').transform
+        try {
+          ;({ transform } = await import('oxc-transform-react'))
+        } catch (error) {
+          this.error(
+            `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`react({ compiler: true })\`.${
+              error instanceof Error ? `\n${error.message}` : ''
+            }`,
+          )
+        }
+
+        const result = await transform(id.split('?')[0]!, code, {
+          jsx: 'preserve',
+          reactCompiler: compilerOptions,
+          sourcemap,
+        })
+        const diagnostics = result.errors.map(
+          (error) =>
+            `${error.message}${error.codeframe ? `\n${error.codeframe}` : ''}`,
+        )
+
+        if (result.fatal) {
+          this.error(
+            diagnostics.join('\n\n') || 'React Compiler transform failed.',
+          )
+        }
+        for (const diagnostic of diagnostics) {
+          this.warn(diagnostic)
+        }
+
+        return { code: result.code, map: result.map }
+      },
+    },
+  }
 }
 
 viteReact.preambleCode = preambleCode
 
 export { reactCompilerPreset }
+export type { ReactCompilerOptions }
 
 // Compat for require
 function viteReactForCjs(this: unknown, options: Options): Plugin[] {
