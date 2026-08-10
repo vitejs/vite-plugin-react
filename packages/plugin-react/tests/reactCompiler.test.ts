@@ -1,7 +1,10 @@
 import path from 'node:path'
 import { type Plugin, rolldown } from 'rolldown'
 import { describe, expect, test } from 'vitest'
-import pluginReact, { type Options } from '../src/index.ts'
+import pluginReact, {
+  type Options,
+  type ReactCompilerOptions,
+} from '../src/index.ts'
 
 describe('compiler option', () => {
   test('compiles React components', async () => {
@@ -55,7 +58,61 @@ describe('compiler option', () => {
 
     expect(output.code).not.toContain('react/compiler-runtime')
   })
+
+  test('uses the Vite build sourcemap setting by default', async () => {
+    expect((await transformWithBuildConfig({}, false)).map).toBeFalsy()
+    expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
+    expect(
+      (await transformWithBuildConfig({ sourcemap: false }, true)).map,
+    ).toBeFalsy()
+    expect(
+      (await transformWithBuildConfig({ sourcemap: true }, false)).map,
+    ).toBeTruthy()
+  })
 })
+
+async function transformWithBuildConfig(
+  compiler: ReactCompilerOptions,
+  buildSourcemap: boolean,
+) {
+  const plugin = pluginReact({ compiler }).find(
+    (plugin) => plugin.name === 'vite:react-compiler',
+  )!
+  const context = {
+    error(message: unknown): never {
+      throw new Error(String(message))
+    },
+    warn() {},
+  }
+
+  if (typeof plugin.config !== 'function')
+    throw new Error('Missing config hook')
+  await plugin.config.call(
+    context as any,
+    {},
+    { command: 'build', mode: 'production' },
+  )
+
+  if (typeof plugin.configResolved !== 'function') {
+    throw new Error('Missing configResolved hook')
+  }
+  await plugin.configResolved.call(
+    context as any,
+    {
+      command: 'build',
+      build: { sourcemap: buildSourcemap },
+    } as any,
+  )
+
+  if (typeof plugin.transform !== 'object') {
+    throw new Error('Missing transform hook')
+  }
+  return plugin.transform.handler.call(
+    context as any,
+    `export function App({ name }) { return <div>{name}</div> }`,
+    '/entry.tsx',
+  )
+}
 
 async function bundle(options: Options, code: string) {
   const entry = '/entry.tsx'

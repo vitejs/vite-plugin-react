@@ -16,7 +16,7 @@ export type ReactCompilerBabelPluginOptions =
 export type ReactCompilerOptions = oxcTransformReact.ReactCompilerOptions & {
   /**
    * Generate a source map for the compiler transform.
-   * @default true
+   * @default true during development, `build.sourcemap` during builds
    */
   sourcemap?: boolean
 }

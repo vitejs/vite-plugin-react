@@ -288,20 +288,46 @@ function createReactCompilerPlugin(
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
 ): Plugin {
-  const { sourcemap = true, ...compilerOptions } = options
+  const { sourcemap: sourcemapOption, ...compilerOptions } = options
+  let sourcemap = sourcemapOption ?? true
+  let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
     compilerOptions.target === '17' || compilerOptions.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
 
+  const loadCompiler = async (
+    onError: (message: string) => never,
+  ): Promise<typeof import('oxc-transform-react')> => {
+    if (compiler) return compiler
+
+    try {
+      return (compiler = await import('oxc-transform-react'))
+    } catch (error) {
+      return onError(
+        `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`react({ compiler: true })\`.${
+          error instanceof Error ? `\n${error.message}` : ''
+        }`,
+      )
+    }
+  }
+
   return {
     name: 'vite:react-compiler',
     enforce: 'pre',
-    config: () => ({
-      optimizeDeps: {
-        include: [runtime],
-      },
-    }),
+    async config() {
+      await loadCompiler((message) => this.error(message))
+      return {
+        optimizeDeps: {
+          include: [runtime],
+        },
+      }
+    },
+    configResolved(config) {
+      sourcemap =
+        sourcemapOption ??
+        (config.command === 'build' ? !!config.build.sourcemap : true)
+    },
     applyToEnvironment: (env) => env.config.consumer === 'client',
     transform: {
       filter: {
@@ -315,16 +341,9 @@ function createReactCompilerPlugin(
             : defaultCodeFilter,
       },
       async handler(code, id) {
-        let transform: typeof import('oxc-transform-react').transform
-        try {
-          ;({ transform } = await import('oxc-transform-react'))
-        } catch (error) {
-          this.error(
-            `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`react({ compiler: true })\`.${
-              error instanceof Error ? `\n${error.message}` : ''
-            }`,
-          )
-        }
+        // The config hook is not called when the plugin is used with Rolldown directly.
+        const { transform } =
+          compiler ?? (await loadCompiler((message) => this.error(message)))
 
         const result = await transform(id.split('?')[0]!, code, {
           jsx: 'preserve',
