@@ -11,14 +11,6 @@ All publishable packages in this repository use a pull-request-driven release fl
 
 The `plugin-react` and `plugin-react-swc` releases move their manually maintained `Unreleased` notes under the new version. The `plugin-rsc` release generates its changelog from conventional commits.
 
-To preview the available release types and versions locally, run the following command from the repository root and cancel before confirming so no files are changed:
-
-```sh
-node scripts/prepare-release.ts plugin-react
-```
-
-Replace `plugin-react` with `plugin-react-swc` or `plugin-rsc` as needed.
-
 ## Review and Publish
 
 1. Review the generated version and changelog, and wait for the release PR checks to pass.

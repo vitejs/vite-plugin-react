@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { extractChangelogEntry } from '@vitejs/release-scripts'
 
 function main() {
   const [path, version] = process.argv.slice(2)
@@ -6,17 +6,7 @@ function main() {
     throw new Error('Usage: node scripts/extract-changelog.ts <path> <version>')
   }
 
-  const sections = readFileSync(path, 'utf-8').split(/^## /m).slice(1)
-  const section = sections.find((section) => {
-    const heading = section.split('\n', 1)[0]
-    return (
-      heading.includes(`[${version}](`) || heading.startsWith(`${version} (`)
-    )
-  })
-  if (!section) throw new Error(`Missing changelog entry for ${version}`)
-
-  const notes = section.split('\n').slice(1).join('\n').trim()
-  if (!notes) throw new Error(`Empty changelog entry for ${version}`)
+  const notes = extractChangelogEntry({ changelogPath: path, version })
   process.stdout.write(`${notes}\n`)
 }
 
