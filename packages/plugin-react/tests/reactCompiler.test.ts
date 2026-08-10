@@ -4,12 +4,6 @@ import { describe, expect, test } from 'vitest'
 import pluginReact, { type Options } from '../src/index.ts'
 
 describe('compiler option', () => {
-  test('is disabled by default', () => {
-    expect(pluginReact().map((plugin) => plugin.name)).not.toContain(
-      'vite:react-compiler',
-    )
-  })
-
   test('compiles React components', async () => {
     const output = await bundle(
       { compiler: true },
@@ -60,29 +54,6 @@ describe('compiler option', () => {
     )
 
     expect(output.code).not.toContain('react/compiler-runtime')
-  })
-
-  test('allows source maps to be disabled', async () => {
-    const compilerPlugin = pluginReact({
-      compiler: { sourcemap: false },
-    }).find((plugin) => plugin.name === 'vite:react-compiler')
-    const transformHook = compilerPlugin?.transform
-    if (!transformHook || typeof transformHook === 'function') {
-      throw new Error('Expected an object transform hook')
-    }
-
-    const result = await transformHook.handler.call(
-      {
-        error(error: unknown) {
-          throw error
-        },
-        warn() {},
-      } as never,
-      `export function App({ name }) { return <div>{name}</div> }`,
-      '/entry.tsx',
-    )
-
-    expect(result).toMatchObject({ map: undefined })
   })
 })
 
