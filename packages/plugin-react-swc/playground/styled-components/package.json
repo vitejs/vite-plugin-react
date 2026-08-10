@@ -10,7 +10,7 @@
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "styled-components": "^6.4.4"
+    "styled-components": "^6.5.1"
   },
   "devDependencies": {
     "@swc/plugin-styled-components": "^12.15.0",
