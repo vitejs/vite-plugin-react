@@ -52,9 +52,9 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "rolldown": "^1.2.0",
+    "rolldown": "^1.2.3",
     "tsdown": "^0.22.14",
-    "vite": "^8.1.5"
+    "vite": "^8.2.1"
   },
   "peerDependencies": {
     "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",

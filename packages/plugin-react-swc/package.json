@@ -30,10 +30,10 @@
   },
   "dependencies": {
     "@rolldown/pluginutils": "^1.0.1",
-    "@swc/core": "^1.15.46"
+    "@swc/core": "^1.15.47"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.0",
+    "@playwright/test": "^1.62.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.13.3",
     "@vitejs/react-common": "workspace:*",

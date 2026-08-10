@@ -8,7 +8,7 @@
     "@vitejs/plugin-rsc": "latest",
     "babel-plugin-react-compiler": "^1.0.0",
     "connect": "^3.7.0",
-    "rsc-html-stream": "^0.0.7",
+    "rsc-html-stream": "^0.0.8",
     "sirv": "^3.0.2"
   }
 }
