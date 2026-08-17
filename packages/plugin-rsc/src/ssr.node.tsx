@@ -1,2 +1,2 @@
-export * from './ssr'
-export { createFromNodeStream } from './react/ssr.node'
+export * from './ssr/shared'
+export * from './react/ssr.node'

@@ -4,12 +4,28 @@ import {
   createClientManifest,
   type CreateClientManifestOptions,
 } from '../../core/rsc'
-import type { RenderToPipeableStreamOptions } from '../../types'
-
-export * from './static'
+import type {
+  PrerenderResult,
+  RenderToPipeableStreamOptions,
+  RenderToReadableStreamOptions,
+} from '../../types'
 
 export interface PrerenderToNodeStreamResult {
   prelude: import('node:stream').Readable
+}
+
+export function prerender<T>(
+  data: T,
+  options?: RenderToReadableStreamOptions,
+  extraOptions?: CreateClientManifestOptions,
+): Promise<PrerenderResult> {
+  return ReactStaticNode.prerender(
+    data,
+    createClientManifest({
+      onClientReference: extraOptions?.onClientReference,
+    }),
+    options,
+  )
 }
 
 export function prerenderToNodeStream<T>(
