@@ -7,6 +7,13 @@ export default defineConfig({
   plugins: [rsc({ serverHandler: false }), react(), nodeServerPlugin()],
   environments: {
     rsc: {
+      optimizeDeps: {
+        include: [
+          '@vitejs/plugin-rsc/vendor/react-server-dom/server.node',
+          '@vitejs/plugin-rsc/vendor/react-server-dom/static.node',
+          '@vitejs/plugin-rsc/vendor/react-server-dom/client.node',
+        ],
+      },
       build: {
         rollupOptions: {
           input: {
@@ -16,6 +23,9 @@ export default defineConfig({
       },
     },
     ssr: {
+      optimizeDeps: {
+        include: ['@vitejs/plugin-rsc/vendor/react-server-dom/client.node'],
+      },
       build: {
         rollupOptions: {
           input: {
