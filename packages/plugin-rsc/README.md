@@ -534,10 +534,10 @@ Node.js environments can use runtime-specific entry points that integrate React'
 | RSC server   | `@vitejs/plugin-rsc/rsc/server.node` | `renderToPipeableStream` |
 | RSC client   | `@vitejs/plugin-rsc/rsc/client.node` | `createFromNodeStream`   |
 | RSC static   | `@vitejs/plugin-rsc/rsc/static.node` | `prerenderToNodeStream`  |
-| SSR          | `@vitejs/plugin-rsc/ssr.node`        | `createFromNodeStream`   |
 | RSC combined | `@vitejs/plugin-rsc/rsc.node`        | Server and client APIs   |
+| SSR          | `@vitejs/plugin-rsc/ssr.node`        | `createFromNodeStream`   |
 
-The Node server, client, and SSR modules also re-export their corresponding runtime APIs from the portable entry points. Use the explicit subpath when only one protocol side is needed. See [`examples/node-stream`](./examples/node-stream) for an end-to-end Node.js handler using these APIs.
+See [`examples/node-stream`](./examples/node-stream) for an end-to-end Node.js handler using these APIs.
 
 ### `@vitejs/plugin-rsc/browser`
 
