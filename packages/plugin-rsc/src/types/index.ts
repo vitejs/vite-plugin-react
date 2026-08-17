@@ -113,16 +113,17 @@ export type DecodeReplyFunction = (
   body: string | FormData,
   options?: DecodeReplyOptions,
 ) => Promise<unknown[]>
+
 // https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L566-L573
 export type DecodeReplyFromBusboyFunction = (
-  body: import('node:stream').Writable,
+  body: import('node:stream').Writable, // BusBoy instance
   options?: DecodeReplyOptions,
 ) => Promise<unknown[]>
 
-// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L149-L168
+// https://github.com/react/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L159-L162
 export interface PipeableStream {
-  pipe<T extends NodeJS.WritableStream>(destination: T): T
   abort(reason?: unknown): void
+  pipe<T extends NodeJS.WritableStream>(destination: T): T
 }
 
 // https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L149-L168
