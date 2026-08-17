@@ -525,7 +525,7 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `encodeReply`: Serializes server function arguments
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
 
-### Node.js stream APIs
+### Node.js stream APIs variants
 
 Node.js environments can use runtime-specific entry points that integrate React's native Node.js stream APIs with Vite's generated manifests:
 
