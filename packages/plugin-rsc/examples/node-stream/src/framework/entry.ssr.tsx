@@ -5,6 +5,7 @@ import {
 } from '@vitejs/plugin-rsc/ssr.node'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
+import type { RenderToPipeableStreamOptions } from 'react-dom/server'
 import { renderToPipeableStream } from 'react-dom/server.node'
 import type { RscPayload } from './entry.rsc'
 import { injectRSCPayload } from './rsc-html-stream.server.node'
@@ -18,12 +19,10 @@ export async function renderHTML(
   },
 ): Promise<{ stream: Readable; status?: number }> {
   const rscStreamForSsr = new PassThrough()
-  const rscStreamForInjection = options.debugNojs
-    ? undefined
-    : new PassThrough()
+  const rscStreamForBrowser = options.debugNojs ? undefined : new PassThrough()
   rscStream.pipe(rscStreamForSsr)
-  if (rscStreamForInjection) {
-    rscStream.pipe(rscStreamForInjection)
+  if (rscStreamForBrowser) {
+    rscStream.pipe(rscStreamForBrowser)
   }
 
   let payload: Promise<RscPayload> | undefined
@@ -60,9 +59,9 @@ export async function renderHTML(
     )
   }
 
-  if (rscStreamForInjection) {
+  if (rscStreamForBrowser) {
     htmlStream = htmlStream.pipe(
-      injectRSCPayload(rscStreamForInjection, { nonce: options.nonce }),
+      injectRSCPayload(rscStreamForBrowser, { nonce: options.nonce }),
     )
   }
 
@@ -71,7 +70,7 @@ export async function renderHTML(
 
 function renderToNodeStream(
   node: React.ReactNode,
-  options: Parameters<typeof renderToPipeableStream>[1],
+  options: RenderToPipeableStreamOptions,
 ): Promise<Readable> {
   return new Promise((resolve, reject) => {
     const output = new PassThrough()
