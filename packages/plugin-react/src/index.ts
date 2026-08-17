@@ -89,6 +89,14 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     name: 'vite:react-babel',
     enforce: 'pre',
     config(_userConfig, { command }) {
+      if (opts.compiler) {
+        return {
+          oxc: { jsx: 'preserve' },
+          optimizeDeps: {
+            rolldownOptions: { transform: { jsx: 'preserve' } },
+          },
+        }
+      }
       if (opts.jsxRuntime === 'classic') {
         return {
           oxc: {
@@ -139,10 +147,12 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     options(options) {
       if (!runningInVite) {
         options.transform ??= {}
-        options.transform.jsx = {
-          runtime: opts.jsxRuntime,
-          importSource: opts.jsxImportSource,
-        }
+        options.transform.jsx = opts.compiler
+          ? 'preserve'
+          : {
+              runtime: opts.jsxRuntime,
+              importSource: opts.jsxImportSource,
+            }
         return options
       }
     },
@@ -176,7 +186,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         command,
         userConfig.server?.hmr,
       )
-      if (skipFastRefresh) {
+      if (skipFastRefresh && !opts.compiler) {
         return {
           oxc: {
             jsx: {
@@ -276,6 +286,8 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         opts.compiler === true ? {} : opts.compiler,
         include,
         exclude,
+        opts,
+        () => !skipFastRefresh,
       ),
     )
   }
@@ -287,9 +299,12 @@ function createReactCompilerPlugin(
   options: ReactCompilerOptions,
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
+  reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
+  isFastRefreshEnabled: () => boolean,
 ): Plugin {
   const { sourcemap: sourcemapOption, ...compilerOptions } = options
   let sourcemap = sourcemapOption ?? true
+  let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
     compilerOptions.target === '17' || compilerOptions.target === '18'
@@ -327,27 +342,34 @@ function createReactCompilerPlugin(
       sourcemap =
         sourcemapOption ??
         (config.command === 'build' ? !!config.build.sourcemap : true)
+      jsxDevelopment = !config.isProduction
     },
-    applyToEnvironment: (env) => env.config.consumer === 'client',
     transform: {
       filter: {
         id: {
           include: makeIdFiltersToMatchWithQuery(include),
           exclude: makeIdFiltersToMatchWithQuery(exclude),
         },
-        code:
-          compilerOptions.compilationMode === 'annotation'
-            ? /['"]use memo['"]/
-            : defaultCodeFilter,
       },
       async handler(code, id) {
+        const isClient = this.environment?.config.consumer !== 'server'
+        const shouldCompile =
+          isClient &&
+          (compilerOptions.compilationMode === 'annotation'
+            ? /['"]use memo['"]/.test(code)
+            : defaultCodeFilter.test(code))
         // The config hook is not called when the plugin is used with Rolldown directly.
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
 
         const result = await transform(id.split('?')[0]!, code, {
-          jsx: 'preserve',
-          reactCompiler: compilerOptions,
+          jsx: {
+            runtime: reactOptions.jsxRuntime,
+            development: jsxDevelopment,
+            importSource: reactOptions.jsxImportSource,
+            refresh: isClient && isFastRefreshEnabled(),
+          },
+          reactCompiler: shouldCompile ? compilerOptions : false,
           sourcemap,
         })
         const diagnostics = result.errors.map(

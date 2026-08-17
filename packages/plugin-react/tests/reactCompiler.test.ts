@@ -51,16 +51,31 @@ describe('compiler option', () => {
   })
 
   test('uses the React plugin filters', async () => {
-    const output = await bundle(
+    const excluded = await bundle(
       { compiler: true, exclude: /entry\.tsx$/ },
       `export function App({ name }) { return <div>{name}</div> }`,
     )
+    const codeFiltered = await bundle(
+      { compiler: true },
+      `export const element = <div />`,
+    )
 
+    expect(excluded.code).not.toContain('react/compiler-runtime')
+    expect(codeFiltered.code).not.toContain('react/compiler-runtime')
+    expect(codeFiltered.code).toContain('react/jsx-runtime')
+  })
+
+  test('uses the native JSX transform for server environments', async () => {
+    const output = await transformWithBuildConfig({}, false, 'server')
+
+    expect(output.code).toContain('react/jsx-runtime')
     expect(output.code).not.toContain('react/compiler-runtime')
   })
 
   test('uses the Vite build sourcemap setting by default', async () => {
-    expect((await transformWithBuildConfig({}, false)).map).toBeFalsy()
+    const withoutSourcemap = await transformWithBuildConfig({}, false)
+    expect(withoutSourcemap.code).toContain('react/jsx-runtime')
+    expect(withoutSourcemap.map).toBeFalsy()
     expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
     expect(
       (await transformWithBuildConfig({ sourcemap: false }, true)).map,
@@ -74,6 +89,7 @@ describe('compiler option', () => {
 async function transformWithBuildConfig(
   compiler: ReactCompilerOptions,
   buildSourcemap: boolean,
+  consumer: 'client' | 'server' = 'client',
 ) {
   const plugin = pluginReact({ compiler }).find(
     (plugin) => plugin.name === 'vite:react-compiler',
@@ -83,6 +99,7 @@ async function transformWithBuildConfig(
       throw new Error(String(message))
     },
     warn() {},
+    environment: { config: { consumer } },
   }
 
   if (typeof plugin.config !== 'function')
@@ -100,6 +117,7 @@ async function transformWithBuildConfig(
     context as any,
     {
       command: 'build',
+      isProduction: true,
       build: { sourcemap: buildSourcemap },
     } as any,
   )
