@@ -16,7 +16,7 @@ import { Root } from '../root'
 import {
   parseRenderRequest,
   readRequestBody,
-  requestBodyToFormData,
+  requestToFormData,
 } from './request.node'
 
 export type RscPayload = {
@@ -60,11 +60,7 @@ export default async function handler(
         actionStatus = 500
       }
     } else {
-      const body = await readRequestBody(request)
-      const formData = await requestBodyToFormData(
-        body,
-        request.headers['content-type'],
-      )
+      const formData = await requestToFormData(request)
       const decodedAction = await decodeAction(formData)
       try {
         const result = await decodedAction()

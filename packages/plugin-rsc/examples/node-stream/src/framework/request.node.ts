@@ -1,4 +1,5 @@
 import type { IncomingMessage } from 'node:http'
+import { Readable } from 'node:stream'
 import { HEADER_ACTION_ID, URL_POSTFIX } from './request'
 
 type RenderRequest = {
@@ -36,16 +37,18 @@ export async function readRequestBody(
   return Buffer.concat(chunks)
 }
 
-export async function requestBodyToFormData(
-  body: Buffer,
-  contentType: string | undefined,
+export async function requestToFormData(
+  request: IncomingMessage,
 ): Promise<FormData> {
   const headers = new Headers()
+  const contentType = request.headers['content-type']
   if (contentType) headers.set('content-type', contentType)
-  const request = new Request('http://localhost', {
+  const init: RequestInit & { duplex: 'half' } = {
     method: 'POST',
     headers,
-    body: new Uint8Array(body),
-  })
-  return request.formData()
+    body: Readable.toWeb(request) as ReadableStream<Uint8Array>,
+    duplex: 'half',
+  }
+  const webRequest = new Request('http://localhost', init)
+  return webRequest.formData()
 }
