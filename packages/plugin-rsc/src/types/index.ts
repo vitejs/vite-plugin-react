@@ -71,7 +71,6 @@ export interface CreateFromReadableStreamBrowserOptions {
   encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
-  findSourceMapURL?: FindSourceMapURLCallback
   replayConsoleLogs?: boolean
   startTime?: number
   temporaryReferences?: ClientTemporaryReferenceSet
@@ -83,7 +82,6 @@ export interface CreateFromStreamOptions {
   encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
-  findSourceMapURL?: FindSourceMapURLCallback
   nonce?: string
   replayConsoleLogs?: boolean
   startTime?: number
@@ -155,11 +153,6 @@ type WebDebugChannel = {
   readable?: ReadableStream<Uint8Array>
   writable?: WritableStream<Uint8Array>
 }
-
-type FindSourceMapURLCallback = (
-  fileName: string,
-  environmentName: string,
-) => string | null
 
 // TODO: for now keep them unknown
 // export type ServerTemporaryReferenceSet = WeakMap<object, string>
