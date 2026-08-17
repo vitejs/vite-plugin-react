@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import React from 'react'
 
-export function Counter() {
-  const [count, setCount] = useState(0)
+export function ClientCounter() {
+  const [count, setCount] = React.useState(0)
+
   return (
-    <button data-testid="counter" onClick={() => setCount((c) => c + 1)}>
-      Count: {count}
+    <button onClick={() => setCount((count) => count + 1)}>
+      Client Counter: {count}
     </button>
   )
 }
