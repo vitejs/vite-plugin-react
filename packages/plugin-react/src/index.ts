@@ -302,12 +302,11 @@ function createReactCompilerPlugin(
   reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
   isFastRefreshEnabled: () => boolean,
 ): Plugin {
-  const { sourcemap: sourcemapOption, ...compilerOptions } = options
-  let sourcemap = sourcemapOption ?? true
+  let sourcemap = true
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
-    compilerOptions.target === '17' || compilerOptions.target === '18'
+    options.target === '17' || options.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
 
@@ -339,9 +338,7 @@ function createReactCompilerPlugin(
       }
     },
     configResolved(config) {
-      sourcemap =
-        sourcemapOption ??
-        (config.command === 'build' ? !!config.build.sourcemap : true)
+      sourcemap = config.command !== 'build' || !!config.build.sourcemap
       jsxDevelopment = !config.isProduction
     },
     transform: {
@@ -355,7 +352,7 @@ function createReactCompilerPlugin(
         const isClient = this.environment?.config.consumer !== 'server'
         const shouldCompile =
           isClient &&
-          (compilerOptions.compilationMode === 'annotation'
+          (options.compilationMode === 'annotation'
             ? /['"]use memo['"]/.test(code)
             : defaultCodeFilter.test(code))
         // The config hook is not called when the plugin is used with Rolldown directly.
@@ -369,7 +366,7 @@ function createReactCompilerPlugin(
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
-          reactCompiler: shouldCompile ? compilerOptions : false,
+          reactCompiler: shouldCompile ? options : false,
           sourcemap,
         })
         const diagnostics = result.errors.map(

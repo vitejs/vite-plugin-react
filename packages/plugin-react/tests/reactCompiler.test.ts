@@ -72,17 +72,11 @@ describe('compiler option', () => {
     expect(output.code).not.toContain('react/compiler-runtime')
   })
 
-  test('uses the Vite build sourcemap setting by default', async () => {
+  test('uses the Vite build sourcemap setting', async () => {
     const withoutSourcemap = await transformWithBuildConfig({}, false)
     expect(withoutSourcemap.code).toContain('react/jsx-runtime')
     expect(withoutSourcemap.map).toBeFalsy()
     expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
-    expect(
-      (await transformWithBuildConfig({ sourcemap: false }, true)).map,
-    ).toBeFalsy()
-    expect(
-      (await transformWithBuildConfig({ sourcemap: true }, false)).map,
-    ).toBeTruthy()
   })
 })
 

@@ -13,10 +13,4 @@ export type RolldownBabelPreset = pluginBabel.RolldownBabelPreset
 export type ReactCompilerBabelPluginOptions =
   babelPluginReactCompiler.PluginOptions
 // @ts-ignore --- `oxc-transform-react` is an optional peer dependency, so this may cause an error
-export type ReactCompilerOptions = oxcTransformReact.ReactCompilerOptions & {
-  /**
-   * Generate a source map for the compiler transform.
-   * @default true during development, `build.sourcemap` during builds
-   */
-  sourcemap?: boolean
-}
+export type ReactCompilerOptions = oxcTransformReact.ReactCompilerOptions
