@@ -1,7 +1,8 @@
 // @ts-ignore
-import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+import * as ReactClientNode from '@vitejs/plugin-rsc/vendor/react-server-dom/client.node'
 import type {
   ClientTemporaryReferenceSet,
+  CreateFromNodeStreamOptions,
   CreateFromReadableStreamEdgeOptions,
   EncodeReplyFunction,
 } from '../../types'
@@ -15,13 +16,25 @@ export function createFromReadableStream<T>(
   options: CreateFromReadableStreamEdgeOptions = {},
   extraOptions?: CreateFromStreamExtraOptions,
 ): Promise<T> {
-  return ReactClient.createFromReadableStream(stream, {
+  return ReactClientNode.createFromReadableStream(stream, {
     serverConsumerManifest: createServerConsumerManifest(extraOptions),
     ...options,
   })
 }
 
-export const encodeReply: EncodeReplyFunction = ReactClient.encodeReply
+export function createFromNodeStream<T>(
+  stream: import('node:stream').Readable,
+  options: CreateFromNodeStreamOptions = {},
+  extraOptions?: CreateFromStreamExtraOptions,
+): Promise<T> {
+  return ReactClientNode.createFromNodeStream(
+    stream,
+    createServerConsumerManifest(extraOptions),
+    options,
+  )
+}
+
+export const encodeReply: EncodeReplyFunction = ReactClientNode.encodeReply
 
 export const createClientTemporaryReferenceSet: () => ClientTemporaryReferenceSet =
-  ReactClient.createTemporaryReferenceSet
+  ReactClientNode.createTemporaryReferenceSet

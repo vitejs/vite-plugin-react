@@ -33,6 +33,7 @@ npm create vite@latest -- --template rsc
 - [`./examples/ssg`](./examples/ssg) - Static site generation with MDX and client components for interactivity.
 - [`./examples/ppr`](./examples/ppr) - Partial prerendering with a reusable static HTML shell and request-time RSC content.
 - [`./examples/no-ssr`](./examples/no-ssr) - RSC application without an SSR environment.
+- [`./examples/node-stream`](./examples/node-stream) - Starter application served end to end through Node.js request, response, and stream APIs.
 - [`./examples/client-first`](./examples/client-first) - Experimental client-owned page that consumes RSC function results.
 - [`./examples/action-reachability`](./examples/action-reachability) - Route-aware dispatch for a retained server action.
 - [`./examples/browser-mode`](./examples/browser-mode) - Advanced setup that runs both RSC and React client environments in the browser with custom module loading.
@@ -523,6 +524,20 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `encodeReply`: Serializes server function arguments
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
+
+### Node.js stream APIs variants
+
+Node.js environments can use runtime-specific entry points that integrate React's native Node.js stream APIs with Vite's generated manifests:
+
+| Environment  | Entry point                          | Node.js stream API       |
+| ------------ | ------------------------------------ | ------------------------ |
+| RSC server   | `@vitejs/plugin-rsc/rsc/server.node` | `renderToPipeableStream` |
+| RSC client   | `@vitejs/plugin-rsc/rsc/client.node` | `createFromNodeStream`   |
+| RSC static   | `@vitejs/plugin-rsc/rsc/static.node` | `prerenderToNodeStream`  |
+| RSC combined | `@vitejs/plugin-rsc/rsc.node`        | Server and client APIs   |
+| SSR          | `@vitejs/plugin-rsc/ssr.node`        | `createFromNodeStream`   |
+
+See [`examples/node-stream`](./examples/node-stream) for an end-to-end Node.js handler using these APIs.
 
 ### `@vitejs/plugin-rsc/browser`
 
