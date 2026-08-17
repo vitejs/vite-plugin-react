@@ -1,6 +1,8 @@
-import { Counter } from './client.tsx'
+import { getServerCount, incrementServerCount } from './action'
+import { Counter } from './client'
 
-export function Root(props: { url: URL }) {
+export async function Root(props: { url: URL }) {
+  const serverCount = await getServerCount()
   return (
     <html lang="en">
       <head>
@@ -13,6 +15,11 @@ export function Root(props: { url: URL }) {
           <h1>RSC Node Stream</h1>
           <p data-testid="url">URL: {props.url?.pathname}</p>
           <Counter />
+          <form action={incrementServerCount}>
+            <button data-testid="server-counter">
+              Server count: {serverCount}
+            </button>
+          </form>
         </div>
       </body>
     </html>

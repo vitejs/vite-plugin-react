@@ -1,13 +1,5 @@
-const URL_POSTFIX = '_.rsc'
-const HEADER_ACTION_ID = 'x-rsc-action'
-
-type RenderRequest = {
-  isRsc: boolean
-  isAction: boolean
-  actionId?: string
-  request: Request
-  url: URL
-}
+export const URL_POSTFIX = '_.rsc'
+export const HEADER_ACTION_ID = 'x-rsc-action'
 
 export function createRscRenderRequest(
   urlString: string,
@@ -24,30 +16,4 @@ export function createRscRenderRequest(
     headers,
     body: action?.body,
   })
-}
-
-export function parseRenderRequest(request: Request): RenderRequest {
-  const url = new URL(request.url)
-  const isAction = request.method === 'POST'
-  if (url.pathname.endsWith(URL_POSTFIX)) {
-    url.pathname = url.pathname.slice(0, -URL_POSTFIX.length)
-    const actionId = request.headers.get(HEADER_ACTION_ID) || undefined
-    if (request.method === 'POST' && !actionId) {
-      throw new Error('Missing action id header for RSC action request')
-    }
-    return {
-      isRsc: true,
-      isAction,
-      actionId,
-      request: new Request(url, request),
-      url,
-    }
-  } else {
-    return {
-      isRsc: false,
-      isAction,
-      request,
-      url,
-    }
-  }
 }

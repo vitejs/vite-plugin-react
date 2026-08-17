@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
-import { expectNoPageError, waitForHydration } from './helper'
+import { expectNoPageError, testNoJs, waitForHydration } from './helper'
 
 test.describe('dev', () => {
   const f = useFixture({ root: 'examples/node-stream', mode: 'dev' })
@@ -29,4 +29,22 @@ function defineTests(f: ReturnType<typeof useFixture>) {
     await button.click()
     await expect(button).toHaveText('Count: 1')
   })
+
+  test('server action', async ({ page }) => {
+    await page.goto(f.url())
+    await waitForHydration(page)
+    await testServerAction(page)
+  })
+
+  testNoJs('server action without JavaScript', async ({ page }) => {
+    await page.goto(f.url())
+    await testServerAction(page)
+  })
+}
+
+async function testServerAction(page: import('@playwright/test').Page) {
+  const button = page.getByTestId('server-counter')
+  const before = Number((await button.textContent())?.match(/\d+/)?.[0])
+  await button.click()
+  await expect(button).toHaveText(`Server count: ${before + 1}`)
 }

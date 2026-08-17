@@ -1,43 +1,51 @@
+import { PassThrough, type Readable } from 'node:stream'
 import {
-  createFromReadableStream,
+  createFromNodeStream,
   getClientEntryUrl,
-} from '@vitejs/plugin-rsc/ssr'
+} from '@vitejs/plugin-rsc/ssr.node'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
-import { renderToReadableStream } from 'react-dom/server.edge'
-import { injectRSCPayload } from 'rsc-html-stream/server'
+import { renderToPipeableStream } from 'react-dom/server.node'
 import type { RscPayload } from './entry.rsc'
+import { injectRSCPayload } from './rsc-html-stream.server.node'
 
 export async function renderHTML(
-  rscStream: ReadableStream<Uint8Array>,
+  rscStream: Readable,
   options: {
     formState?: ReactFormState
     nonce?: string
     debugNojs?: boolean
   },
-): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
-  const [rscStream1, rscStream2] = rscStream.tee()
+): Promise<{ stream: Readable; status?: number }> {
+  const rscStreamForSsr = new PassThrough()
+  const rscStreamForInjection = options.debugNojs
+    ? undefined
+    : new PassThrough()
+  rscStream.pipe(rscStreamForSsr)
+  if (rscStreamForInjection) {
+    rscStream.pipe(rscStreamForInjection)
+  }
 
   let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
-    payload ??= createFromReadableStream<RscPayload>(rscStream1)
+    payload ??= createFromNodeStream<RscPayload>(rscStreamForSsr)
     return React.use(payload).root
   }
 
   const bootstrapScriptContent = `import(${JSON.stringify(getClientEntryUrl())})`
-  let htmlStream: ReadableStream<Uint8Array>
+  let htmlStream: Readable
   let status: number | undefined
   try {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options?.debugNojs
+    htmlStream = await renderToNodeStream(<SsrRoot />, {
+      bootstrapScriptContent: options.debugNojs
         ? undefined
         : bootstrapScriptContent,
-      nonce: options?.nonce,
-      formState: options?.formState,
+      nonce: options.nonce,
+      formState: options.formState,
     })
   } catch (e) {
     status = 500
-    htmlStream = await renderToReadableStream(
+    htmlStream = await renderToNodeStream(
       <html>
         <body>
           <noscript>Internal Server Error: SSR failed</noscript>
@@ -46,20 +54,36 @@ export async function renderHTML(
       {
         bootstrapScriptContent:
           `self.__NO_HYDRATE=1;` +
-          (options?.debugNojs ? '' : bootstrapScriptContent),
-        nonce: options?.nonce,
+          (options.debugNojs ? '' : bootstrapScriptContent),
+        nonce: options.nonce,
       },
     )
   }
 
-  let responseStream: ReadableStream<Uint8Array> = htmlStream
-  if (!options?.debugNojs) {
-    responseStream = responseStream.pipeThrough(
-      injectRSCPayload(rscStream2, {
-        nonce: options?.nonce,
-      }),
+  if (rscStreamForInjection) {
+    htmlStream = htmlStream.pipe(
+      injectRSCPayload(rscStreamForInjection, { nonce: options.nonce }),
     )
   }
 
-  return { stream: responseStream, status }
+  return { stream: htmlStream, status }
+}
+
+function renderToNodeStream(
+  node: React.ReactNode,
+  options: Parameters<typeof renderToPipeableStream>[1],
+): Promise<Readable> {
+  return new Promise((resolve, reject) => {
+    const output = new PassThrough()
+    const stream = renderToPipeableStream(node, {
+      ...options,
+      onShellReady() {
+        stream.pipe(output)
+        resolve(output)
+      },
+      onShellError(error) {
+        reject(error)
+      },
+    })
+  })
 }

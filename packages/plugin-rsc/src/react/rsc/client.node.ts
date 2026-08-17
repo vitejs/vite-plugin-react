@@ -19,13 +19,14 @@ export function createFromNodeStream<T>(
     preserveServerReferences?: boolean
   },
 ): Promise<T> {
-  return ReactClientNode.createFromNodeStream(stream, {
-    serverConsumerManifest: {
+  return ReactClientNode.createFromNodeStream(
+    stream,
+    {
       serverModuleMap: createServerManifest({
         preserveServerReferences: extraOptions?.preserveServerReferences,
       }),
       moduleMap: createServerDecodeClientManifest(),
     },
-    ...options,
-  })
+    options,
+  )
 }
