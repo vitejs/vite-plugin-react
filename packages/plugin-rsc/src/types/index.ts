@@ -64,6 +64,11 @@ export interface PrerenderResult {
   prelude: ReadableStream<Uint8Array>
 }
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L436-L438
+export interface PrerenderToNodeStreamResult {
+  prelude: import('node:stream').Readable
+}
+
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
   callServer?: CallServerCallback

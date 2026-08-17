@@ -7,12 +7,11 @@ import {
 import type {
   PrerenderOptions,
   PrerenderResult,
+  PrerenderToNodeStreamResult,
   PrerenderToNodeStreamOptions,
 } from '../../types'
 
-export interface PrerenderToNodeStreamResult {
-  prelude: import('node:stream').Readable
-}
+export type { PrerenderToNodeStreamResult } from '../../types'
 
 export function prerender<T>(
   data: T,
