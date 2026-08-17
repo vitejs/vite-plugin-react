@@ -1,15 +1,13 @@
-import {
-  prerenderToNodeStream as originalPrerenderToNodeStream,
-  type PrerenderToNodeStreamResult,
-} from '../react/rsc/static.node'
-import type { PrerenderToNodeStreamOptions } from '../types'
+import { prerenderToNodeStream as originalPrerenderToNodeStream } from '../react/rsc/static.node'
+import type {
+  PrerenderToNodeStreamOptions,
+  PrerenderToNodeStreamResult,
+} from '../types'
 import {
   createOnClientReference,
   type OnClientReference,
 } from './client-reference'
 import './shared'
-
-export { type PrerenderToNodeStreamResult } from '../react/rsc/static.node'
 
 export function prerenderToNodeStream<T>(
   data: T,

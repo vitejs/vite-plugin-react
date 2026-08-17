@@ -11,8 +11,6 @@ import type {
   PrerenderToNodeStreamOptions,
 } from '../../types'
 
-export type { PrerenderToNodeStreamResult } from '../../types'
-
 export function prerender<T>(
   data: T,
   options?: PrerenderOptions,
