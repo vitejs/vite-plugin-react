@@ -4,14 +4,11 @@ import {
   createClientManifest,
   type CreateClientManifestOptions,
 } from '../../core/rsc'
-import type {
-  PrerenderResult,
-  RenderToReadableStreamOptions,
-} from '../../types'
+import type { PrerenderOptions, PrerenderResult } from '../../types'
 
 export function prerender<T>(
   data: T,
-  options?: RenderToReadableStreamOptions,
+  options?: PrerenderOptions,
   extraOptions?: CreateClientManifestOptions,
 ): Promise<PrerenderResult> {
   return ReactStatic.prerender(

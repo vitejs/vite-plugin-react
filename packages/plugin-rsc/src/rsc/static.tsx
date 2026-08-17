@@ -1,5 +1,5 @@
 import { prerender as originalPrerender } from '../react/rsc/static'
-import type { PrerenderResult, RenderToReadableStreamOptions } from '../types'
+import type { PrerenderOptions, PrerenderResult } from '../types'
 import {
   createOnClientReference,
   type OnClientReference,
@@ -8,7 +8,7 @@ import './shared'
 
 export function prerender<T>(
   data: T,
-  options?: RenderToReadableStreamOptions,
+  options?: PrerenderOptions,
   extraOptions?: {
     /**
      * @experimental

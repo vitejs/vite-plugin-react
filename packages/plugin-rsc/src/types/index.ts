@@ -34,17 +34,30 @@ export type CallServerCallback = (
 
 // Current: https://github.com/facebook/react/blob/b740af2510de1e19fcb399abb862af26ff95ac80/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
 // React 19.2: https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L73
-export interface RenderToReadableStreamOptions {
-  debugChannel?: DebugChannel
+export interface RenderStreamOptions {
   environmentName?: string | (() => string)
   filterStackFrame?: (url: string, functionName: string) => boolean
   identifierPrefix?: string
-  signal?: AbortSignal
   startTime?: number
   temporaryReferences?: ServerTemporaryReferenceSet
   onError?: (error: unknown) => void
   onPostpone?: (reason: string) => void
 }
+
+export interface RenderToReadableStreamOptions extends RenderStreamOptions {
+  debugChannel?: WebDebugChannel
+  signal?: AbortSignal
+}
+
+export interface RenderToPipeableStreamOptions extends RenderStreamOptions {
+  debugChannel?: import('node:stream').Readable | import('node:stream').Writable
+}
+
+export interface PrerenderOptions extends RenderStreamOptions {
+  signal?: AbortSignal
+}
+
+export type PrerenderToNodeStreamOptions = PrerenderOptions
 
 // https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L188-L196
 export interface PrerenderResult {
@@ -54,25 +67,36 @@ export interface PrerenderResult {
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js#L47-L57
 export interface CreateFromReadableStreamBrowserOptions {
   callServer?: CallServerCallback
-  debugChannel?: DebugChannel
+  debugChannel?: WebDebugChannel
   encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
+  findSourceMapURL?: FindSourceMapURLCallback
   replayConsoleLogs?: boolean
   startTime?: number
   temporaryReferences?: ClientTemporaryReferenceSet
+  unstable_allowPartialStream?: boolean
 }
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientEdge.js#L74-L87
-export interface CreateFromReadableStreamEdgeOptions {
-  debugChannel?: DebugChannel
+export interface CreateFromStreamOptions {
   encodeFormAction?: EncodeFormActionCallback
   endTime?: number
   environmentName?: string
+  findSourceMapURL?: FindSourceMapURLCallback
   nonce?: string
   replayConsoleLogs?: boolean
   startTime?: number
+  unstable_allowPartialStream?: boolean
+}
+
+export interface CreateFromReadableStreamEdgeOptions extends CreateFromStreamOptions {
+  debugChannel?: { readable?: ReadableStream<Uint8Array> }
   temporaryReferences?: ClientTemporaryReferenceSet
+}
+
+export interface CreateFromNodeStreamOptions extends CreateFromStreamOptions {
+  debugChannel?: import('node:stream').Readable
 }
 
 // https://github.com/facebook/react/blob/8b2e903a7447d370eb77bb117bc4c0ae240ce831/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L247-L253
@@ -126,17 +150,16 @@ export interface PipeableStream {
   pipe<T extends NodeJS.WritableStream>(destination: T): T
 }
 
-// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L149-L168
-export type RenderToPipeableStreamOptions = RenderToReadableStreamOptions
-
-// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientNode.js#L57-L93
-export type CreateFromNodeStreamOptions = CreateFromReadableStreamEdgeOptions
-
 // https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L65
-type DebugChannel = {
+type WebDebugChannel = {
   readable?: ReadableStream<Uint8Array>
   writable?: WritableStream<Uint8Array>
 }
+
+type FindSourceMapURLCallback = (
+  fileName: string,
+  environmentName: string,
+) => string | null
 
 // TODO: for now keep them unknown
 // export type ServerTemporaryReferenceSet = WeakMap<object, string>

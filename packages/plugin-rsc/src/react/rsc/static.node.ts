@@ -5,9 +5,9 @@ import {
   type CreateClientManifestOptions,
 } from '../../core/rsc'
 import type {
+  PrerenderOptions,
   PrerenderResult,
-  RenderToPipeableStreamOptions,
-  RenderToReadableStreamOptions,
+  PrerenderToNodeStreamOptions,
 } from '../../types'
 
 export interface PrerenderToNodeStreamResult {
@@ -16,7 +16,7 @@ export interface PrerenderToNodeStreamResult {
 
 export function prerender<T>(
   data: T,
-  options?: RenderToReadableStreamOptions,
+  options?: PrerenderOptions,
   extraOptions?: CreateClientManifestOptions,
 ): Promise<PrerenderResult> {
   return ReactStaticNode.prerender(
@@ -30,7 +30,7 @@ export function prerender<T>(
 
 export function prerenderToNodeStream<T>(
   data: T,
-  options?: RenderToPipeableStreamOptions,
+  options?: PrerenderToNodeStreamOptions,
   extraOptions?: CreateClientManifestOptions,
 ): Promise<PrerenderToNodeStreamResult> {
   return ReactStaticNode.prerenderToNodeStream(

@@ -2,7 +2,7 @@ import {
   prerenderToNodeStream as originalPrerenderToNodeStream,
   type PrerenderToNodeStreamResult,
 } from '../react/rsc/static.node'
-import type { RenderToPipeableStreamOptions } from '../types'
+import type { PrerenderToNodeStreamOptions } from '../types'
 import {
   createOnClientReference,
   type OnClientReference,
@@ -13,7 +13,7 @@ export { type PrerenderToNodeStreamResult } from '../react/rsc/static.node'
 
 export function prerenderToNodeStream<T>(
   data: T,
-  options?: RenderToPipeableStreamOptions,
+  options?: PrerenderToNodeStreamOptions,
   extraOptions?: {
     /**
      * @experimental
