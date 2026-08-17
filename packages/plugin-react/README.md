@@ -114,7 +114,7 @@ React Compiler can also be used through Babel with the exported `reactCompilerPr
 npm install -D @rolldown/plugin-babel @babel/core babel-plugin-react-compiler
 ```
 
-If you are using TypeScript with Babel, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
+If you are using TypeScript with Babel 7, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
 
 ```sh
 npm install -D @types/babel__core
