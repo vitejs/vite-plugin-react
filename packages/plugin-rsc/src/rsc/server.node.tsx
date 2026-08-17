@@ -1,5 +1,12 @@
-import { renderToPipeableStream as originalRenderToPipeableStream } from '../react/rsc/server.node'
-import type { PipeableStream, RenderToPipeableStreamOptions } from '../types'
+import {
+  renderToPipeableStream as originalRenderToPipeableStream,
+  renderToReadableStream as originalRenderToReadableStream,
+} from '../react/rsc/server.node'
+import type {
+  PipeableStream,
+  RenderToPipeableStreamOptions,
+  RenderToReadableStreamOptions,
+} from '../types'
 import {
   createOnClientReference,
   type OnClientReference,
@@ -13,6 +20,23 @@ export {
 } from '../core/rsc'
 
 export * from '../react/rsc/server.node'
+
+export function renderToReadableStream<T>(
+  data: T,
+  options?: RenderToReadableStreamOptions,
+  extraOptions?: {
+    /**
+     * @experimental
+     */
+    onClientReference?: OnClientReference
+  },
+): ReadableStream<Uint8Array> {
+  return originalRenderToReadableStream(data, options, {
+    onClientReference: extraOptions?.onClientReference
+      ? createOnClientReference(extraOptions.onClientReference)
+      : undefined,
+  })
+}
 
 export function renderToPipeableStream<T>(
   data: T,

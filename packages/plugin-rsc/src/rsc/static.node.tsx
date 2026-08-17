@@ -1,5 +1,10 @@
-import { prerenderToNodeStream as originalPrerenderToNodeStream } from '../react/rsc/static.node'
+import {
+  prerender as originalPrerender,
+  prerenderToNodeStream as originalPrerenderToNodeStream,
+} from '../react/rsc/static.node'
 import type {
+  PrerenderOptions,
+  PrerenderResult,
   PrerenderToNodeStreamOptions,
   PrerenderToNodeStreamResult,
 } from '../types'
@@ -8,6 +13,23 @@ import {
   type OnClientReference,
 } from './client-reference'
 import './shared'
+
+export function prerender<T>(
+  data: T,
+  options?: PrerenderOptions,
+  extraOptions?: {
+    /**
+     * @experimental
+     */
+    onClientReference?: OnClientReference
+  },
+): Promise<PrerenderResult> {
+  return originalPrerender(data, options, {
+    onClientReference: extraOptions?.onClientReference
+      ? createOnClientReference(extraOptions.onClientReference)
+      : undefined,
+  })
+}
 
 export function prerenderToNodeStream<T>(
   data: T,
