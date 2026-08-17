@@ -5,10 +5,12 @@ import {
   renderToPipeableStream,
   loadServerAction,
   decodeReply,
+  decodeReplyFromBusboy,
   decodeAction,
   decodeFormState,
   createTemporaryReferenceSet,
 } from '@vitejs/plugin-rsc/rsc/server.node'
+import busboy from 'busboy'
 import type { ReactFormState } from 'react-dom/client'
 import { Root } from '../root'
 import {
@@ -34,14 +36,21 @@ export default async function handler(
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
-    const body = await readRequestBody(request)
     if (renderRequest.actionId) {
       const contentType = request.headers['content-type']
-      const replyBody = contentType?.startsWith('multipart/form-data')
-        ? await requestBodyToFormData(body, contentType)
-        : body.toString()
       temporaryReferences = createTemporaryReferenceSet()
-      const args = await decodeReply(replyBody, { temporaryReferences })
+      let args: unknown[]
+      if (contentType?.startsWith('multipart/form-data')) {
+        const parser = busboy({ headers: request.headers })
+        const argsPromise = decodeReplyFromBusboy(parser, {
+          temporaryReferences,
+        })
+        request.pipe(parser)
+        args = await argsPromise
+      } else {
+        const body = await readRequestBody(request)
+        args = await decodeReply(body.toString(), { temporaryReferences })
+      }
       const action = await loadServerAction(renderRequest.actionId)
       try {
         const data = await action.apply(null, args)
@@ -51,6 +60,7 @@ export default async function handler(
         actionStatus = 500
       }
     } else {
+      const body = await readRequestBody(request)
       const formData = await requestBodyToFormData(
         body,
         request.headers['content-type'],

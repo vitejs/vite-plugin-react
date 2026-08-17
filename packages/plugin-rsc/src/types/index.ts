@@ -113,6 +113,10 @@ export type DecodeReplyFunction = (
   body: string | FormData,
   options?: DecodeReplyOptions,
 ) => Promise<unknown[]>
+export type DecodeReplyFromBusboyFunction = (
+  body: import('node:stream').Writable,
+  options?: DecodeReplyOptions,
+) => Promise<unknown[]>
 
 type DebugChannel = {
   readable?: ReadableStream<Uint8Array>

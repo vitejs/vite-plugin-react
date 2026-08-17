@@ -7,6 +7,7 @@ import {
   type CreateClientManifestOptions,
 } from '../../core/rsc'
 import type {
+  DecodeReplyFromBusboyFunction,
   DecodeReplyFunction,
   PipeableStream,
   RenderToPipeableStreamOptions,
@@ -60,6 +61,14 @@ export const registerServerReference: <T>(
 
 export const decodeReply: DecodeReplyFunction = (body, options) =>
   ReactServerNode.decodeReply(body, createServerManifest(), options)
+
+export const decodeReplyFromBusboy: DecodeReplyFromBusboyFunction = (
+  body,
+  options,
+) =>
+  ReactServerNode.decodeReplyFromBusboy(body, createServerManifest(), options)
+
+// TODO: Expose decodeReplyFromAsyncIterable with a shared Edge/Node type.
 
 export function decodeAction(body: FormData): Promise<() => Promise<void>> {
   return ReactServerNode.decodeAction(body, createServerManifest())
