@@ -113,20 +113,25 @@ export type DecodeReplyFunction = (
   body: string | FormData,
   options?: DecodeReplyOptions,
 ) => Promise<unknown[]>
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L566-L573
 export type DecodeReplyFromBusboyFunction = (
   body: import('node:stream').Writable,
   options?: DecodeReplyOptions,
 ) => Promise<unknown[]>
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L149-L168
 export interface PipeableStream {
   pipe<T extends NodeJS.WritableStream>(destination: T): T
   abort(reason?: unknown): void
 }
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerNode.js#L149-L168
 export type RenderToPipeableStreamOptions = RenderToReadableStreamOptions
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/client/ReactFlightDOMClientNode.js#L57-L93
 export type CreateFromNodeStreamOptions = CreateFromReadableStreamEdgeOptions
 
+// https://github.com/facebook/react/blob/6117d7cca4906492c51fe6a03381e35adfd86e7d/packages/react-server-dom-webpack/src/server/ReactFlightDOMServerEdge.js#L64-L65
 type DebugChannel = {
   readable?: ReadableStream<Uint8Array>
   writable?: WritableStream<Uint8Array>
