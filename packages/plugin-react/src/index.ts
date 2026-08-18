@@ -89,20 +89,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     name: 'vite:react-babel',
     enforce: 'pre',
     config(_userConfig, { command }) {
-      if (opts.compiler) {
-        return {
-          oxc: { jsx: 'preserve' },
-          optimizeDeps: {
-            rolldownOptions: { transform: { jsx: 'preserve' } },
-          },
-        }
-      }
+      const refresh = command === 'serve' && !opts.compiler
       if (opts.jsxRuntime === 'classic') {
         return {
           oxc: {
             jsx: {
               runtime: 'classic',
-              refresh: command === 'serve',
+              refresh,
             },
             jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
             jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
@@ -114,7 +107,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             jsx: {
               runtime: 'automatic',
               importSource: opts.jsxImportSource,
-              refresh: command === 'serve',
+              refresh,
             },
             jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
             jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
@@ -147,12 +140,10 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     options(options) {
       if (!runningInVite) {
         options.transform ??= {}
-        options.transform.jsx = opts.compiler
-          ? 'preserve'
-          : {
-              runtime: opts.jsxRuntime,
-              importSource: opts.jsxImportSource,
-            }
+        options.transform.jsx = {
+          runtime: opts.jsxRuntime,
+          importSource: opts.jsxImportSource,
+        }
         return options
       }
     },
@@ -186,7 +177,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         command,
         userConfig.server?.hmr,
       )
-      if (skipFastRefresh && !opts.compiler) {
+      if (skipFastRefresh) {
         return {
           oxc: {
             jsx: {

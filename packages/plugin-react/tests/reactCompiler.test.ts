@@ -61,8 +61,31 @@ describe('compiler option', () => {
     )
 
     expect(excluded.code).not.toContain('react/compiler-runtime')
+    expect(excluded.code).toContain('react/jsx-runtime')
+    expect(excluded.code).not.toContain('<div')
     expect(codeFiltered.code).not.toContain('react/compiler-runtime')
     expect(codeFiltered.code).toContain('react/jsx-runtime')
+  })
+
+  test('delegates Fast Refresh to the compiler', async () => {
+    expect(await getViteReactConfig({ compiler: true }, 'serve')).toMatchObject(
+      {
+        oxc: {
+          jsx: {
+            runtime: 'automatic',
+            refresh: false,
+          },
+        },
+      },
+    )
+    expect(await getViteReactConfig({}, 'serve')).toMatchObject({
+      oxc: {
+        jsx: {
+          runtime: 'automatic',
+          refresh: true,
+        },
+      },
+    })
   })
 
   test('uses the native JSX transform for server environments', async () => {
@@ -123,6 +146,23 @@ async function transformWithBuildConfig(
     context as any,
     `export function App({ name }) { return <div>{name}</div> }`,
     '/entry.tsx',
+  )
+}
+
+async function getViteReactConfig(
+  options: Options,
+  command: 'serve' | 'build',
+) {
+  const plugin = pluginReact(options).find(
+    (plugin) => plugin.name === 'vite:react-babel',
+  )!
+
+  if (typeof plugin.config !== 'function')
+    throw new Error('Missing config hook')
+  return plugin.config.call(
+    {} as any,
+    {},
+    { command, mode: command === 'serve' ? 'development' : 'production' },
   )
 }
 
