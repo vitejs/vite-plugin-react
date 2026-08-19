@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Add experimental native React Compiler support ([#1419](https://github.com/vitejs/vite-plugin-react/pull/1419))
+
+Add experimental native React Compiler support.
+
+You can use it by installing `oxc-transform-react` and enabling it via the `compiler` option:
+```sh
+npm install -D oxc-transform-react
+```
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [
+     react({ compiler: true })
+  ]
+})
+```
+
 ## 6.0.5 (2026-07-30)
 
 ### Fixed the react compiler preset filter to be linear ([#1353](https://github.com/vitejs/vite-plugin-react/pull/1353))
