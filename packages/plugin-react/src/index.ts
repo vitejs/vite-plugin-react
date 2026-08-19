@@ -57,6 +57,7 @@ export interface Options {
    * Enable React Compiler with its default options or configure it.
    * This requires `oxc-transform-react` to be installed.
    * @default false
+   * @experimental
    */
   compiler?: boolean | ReactCompilerOptions
 }
