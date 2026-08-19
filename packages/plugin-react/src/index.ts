@@ -14,7 +14,8 @@ import {
 } from '@vitejs/react-common'
 import type { Plugin, ServerOptions } from 'vite'
 import { reactRefreshWrapperPlugin } from 'vite/internal'
-import { reactCompilerPreset } from './reactCompilerPreset'
+import type { ReactCompilerOptions } from '#optionalTypes'
+import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
 
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
@@ -52,6 +53,13 @@ export interface Options {
    * reactRefreshHost: 'http://localhost:3000'
    */
   reactRefreshHost?: string
+  /**
+   * Enable React Compiler with its default options or configure it.
+   * This requires `oxc-transform-react` to be installed.
+   * @default false
+   * @experimental
+   */
+  compiler?: boolean | ReactCompilerOptions
 }
 
 const defaultIncludeRE = /\.[tj]sx?$/
@@ -82,12 +90,13 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     name: 'vite:react-babel',
     enforce: 'pre',
     config(_userConfig, { command }) {
+      const refresh = command === 'serve' && !opts.compiler
       if (opts.jsxRuntime === 'classic') {
         return {
           oxc: {
             jsx: {
               runtime: 'classic',
-              refresh: command === 'serve',
+              refresh,
             },
             jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
             jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
@@ -99,7 +108,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
             jsx: {
               runtime: 'automatic',
               importSource: opts.jsxImportSource,
-              refresh: command === 'serve',
+              refresh,
             },
             jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
             jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
@@ -251,7 +260,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     },
   }
 
-  return [
+  const plugins = [
     viteBabel,
     viteRefreshWrapper,
     viteConfigPost,
@@ -262,11 +271,120 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       isEnabled: () => !skipFastRefresh && !isBundledDev,
     }),
   ]
+
+  if (opts.compiler) {
+    plugins.unshift(
+      createReactCompilerPlugin(
+        opts.compiler === true ? {} : opts.compiler,
+        include,
+        exclude,
+        opts,
+        () => !skipFastRefresh,
+      ),
+    )
+  }
+
+  return plugins
+}
+
+function createReactCompilerPlugin(
+  options: ReactCompilerOptions,
+  include: NonNullable<Options['include']>,
+  exclude: NonNullable<Options['exclude']>,
+  reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
+  isFastRefreshEnabled: () => boolean,
+): Plugin {
+  let sourcemap = true
+  let jsxDevelopment = false
+  let compiler: typeof import('oxc-transform-react') | undefined
+  const runtime =
+    options.target === '17' || options.target === '18'
+      ? 'react-compiler-runtime'
+      : 'react/compiler-runtime'
+
+  const loadCompiler = async (
+    onError: (message: string) => never,
+  ): Promise<typeof import('oxc-transform-react')> => {
+    if (compiler) return compiler
+
+    try {
+      return (compiler = await import('oxc-transform-react'))
+    } catch (error) {
+      return onError(
+        `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`react({ compiler: true })\`.${
+          error instanceof Error ? `\n${error.message}` : ''
+        }`,
+      )
+    }
+  }
+
+  return {
+    name: 'vite:react-compiler',
+    enforce: 'pre',
+    async config() {
+      await loadCompiler((message) => this.error(message))
+      return {
+        optimizeDeps: {
+          include: [runtime],
+        },
+      }
+    },
+    configResolved(config) {
+      sourcemap = config.command !== 'build' || !!config.build.sourcemap
+      jsxDevelopment = !config.isProduction
+    },
+    transform: {
+      filter: {
+        id: {
+          include: makeIdFiltersToMatchWithQuery(include),
+          exclude: makeIdFiltersToMatchWithQuery(exclude),
+        },
+      },
+      async handler(code, id) {
+        const isClient = this.environment?.config.consumer !== 'server'
+        const shouldCompile =
+          isClient &&
+          (options.compilationMode === 'annotation'
+            ? /['"]use memo['"]/.test(code)
+            : defaultCodeFilter.test(code))
+        // The config hook is not called when the plugin is used with Rolldown directly.
+        const { transform } =
+          compiler ?? (await loadCompiler((message) => this.error(message)))
+
+        const result = await transform(id.split('?')[0]!, code, {
+          jsx: {
+            runtime: reactOptions.jsxRuntime,
+            development: jsxDevelopment,
+            importSource: reactOptions.jsxImportSource,
+            refresh: isClient && isFastRefreshEnabled(),
+          },
+          reactCompiler: shouldCompile ? options : false,
+          sourcemap,
+        })
+        const diagnostics = result.errors.map(
+          (error) =>
+            `${error.message}${error.codeframe ? `\n${error.codeframe}` : ''}`,
+        )
+
+        if (result.fatal) {
+          this.error(
+            diagnostics.join('\n\n') || 'React Compiler transform failed.',
+          )
+        }
+        for (const diagnostic of diagnostics) {
+          this.warn(diagnostic)
+        }
+
+        return { code: result.code, map: result.map }
+      },
+    },
+  }
 }
 
 viteReact.preambleCode = preambleCode
 
 export { reactCompilerPreset }
+export type { ReactCompilerOptions }
 
 // Compat for require
 function viteReactForCjs(this: unknown, options: Options): Plugin[] {

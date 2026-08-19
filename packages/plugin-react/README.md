@@ -79,13 +79,42 @@ Under the hood, this simply updates the React Fash Refresh runtime URL from `/@r
 
 ## React Compiler
 
-[React Compiler](https://react.dev/learn/react-compiler) support is available via the exported `reactCompilerPreset` helper, which requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel) and [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler) and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
+### Rust React Compiler
+
+> [!WARNING]
+> Native React Compiler support is experimental.
+
+The `compiler` option uses [`oxc-transform-react`](https://npmx.dev/package/oxc-transform-react), a Rust port of [React Compiler](https://react.dev/learn/react-compiler), which must be installed as an optional peer dependency:
+
+```sh
+npm install -D oxc-transform-react
+```
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react({ compiler: true })],
+})
+```
+
+The `compiler` option also accepts [React Compiler options](https://react.dev/reference/react-compiler/configuration):
+
+```js
+react({ compiler: { compilationMode: 'annotation' } })
+```
+
+### Babel React Compiler
+
+React Compiler can also be used through Babel with the exported `reactCompilerPreset` helper. This requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel), [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler), and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
 
 ```sh
 npm install -D @rolldown/plugin-babel @babel/core babel-plugin-react-compiler
 ```
 
-If you are using TypeScript, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
+If you are using TypeScript with Babel 7, you will also need to install [`@types/babel__core`](https://npmx.dev/package/@types/babel__core):
 
 ```sh
 npm install -D @types/babel__core
