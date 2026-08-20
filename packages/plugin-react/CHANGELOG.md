@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.1.0 (2026-08-19)
+
 ### Add experimental native React Compiler support ([#1419](https://github.com/vitejs/vite-plugin-react/pull/1419))
 
 Add experimental native React Compiler support.
