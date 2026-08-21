@@ -101,12 +101,56 @@ describe('compiler option', () => {
     expect(withoutSourcemap.map).toBeFalsy()
     expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
   })
+
+  test('logs recoverable diagnostics by default', async () => {
+    const diagnostics: unknown[] = []
+
+    await transformWithBuildConfig(
+      { logDiagnostics: true },
+      false,
+      'client',
+      `
+        import { useState } from 'react'
+
+        export function App({ condition }) {
+          if (condition) useState(0)
+          return <div />
+        }
+      `,
+      (diagnostic) => diagnostics.push(diagnostic),
+    )
+
+    expect(diagnostics).toHaveLength(1)
+    expect(diagnostics[0]).toContain(
+      'Hooks must always be called in a consistent order',
+    )
+  })
+
+  test('fails on fatal diagnostics when logging is disabled', async () => {
+    await expect(
+      transformWithBuildConfig(
+        { logDiagnostics: false, panicThreshold: 'all_errors' },
+        false,
+        'client',
+        `
+          import { useState } from 'react'
+
+          export function App({ condition }) {
+            if (condition) useState(0)
+            return <div />
+          }
+        `,
+      ),
+    ).rejects.toThrow('Hooks must always be called in a consistent order')
+  })
 })
 
 async function transformWithBuildConfig(
   compiler: ReactCompilerOptions,
   buildSourcemap: boolean,
   consumer: 'client' | 'server' = 'client',
+  code: string = `export function App({ name }) { return <div>{name}</div> }`,
+  onWarn?: (message: unknown) => void,
 ) {
   const plugin = pluginReact({ compiler }).find(
     (plugin) => plugin.name === 'vite:react-compiler',
@@ -115,7 +159,9 @@ async function transformWithBuildConfig(
     error(message: unknown): never {
       throw new Error(String(message))
     },
-    warn() {},
+    warn(message: unknown) {
+      onWarn?.(message)
+    },
     environment: { config: { consumer } },
   }
 
@@ -142,11 +188,7 @@ async function transformWithBuildConfig(
   if (typeof plugin.transform !== 'object') {
     throw new Error('Missing transform hook')
   }
-  return plugin.transform.handler.call(
-    context as any,
-    `export function App({ name }) { return <div>{name}</div> }`,
-    '/entry.tsx',
-  )
+  return plugin.transform.handler.call(context as any, code, '/entry.tsx')
 }
 
 async function getViteReactConfig(
