@@ -278,8 +278,11 @@ export default function viteReact(opts: Options = {}): Plugin[] {
         opts.compiler === true ? {} : opts.compiler,
         include,
         exclude,
-        opts,
-        () => !skipFastRefresh,
+        {
+          standalone: false,
+          reactOptions: opts,
+          isFastRefreshEnabled: () => !skipFastRefresh,
+        },
       ),
     )
   }
@@ -287,12 +290,53 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   return plugins
 }
 
+export interface ReactCompilerPluginOptions extends ReactCompilerOptions {
+  /**
+   * Same as the `include` option of the main plugin
+   * @default /\.[tj]sx?$/
+   */
+  include?: Options['include']
+  /**
+   * Same as the `exclude` option of the main plugin
+   * @default /\/node_modules\//
+   */
+  exclude?: Options['exclude']
+}
+
+/**
+ * Standalone React Compiler plugin for setups where another plugin already
+ * handles JSX and Fast Refresh (e.g. React Router framework mode), so the
+ * main plugin cannot be added. It only runs the React Compiler, in client
+ * environments, and preserves JSX for the rest of the pipeline.
+ * This requires `oxc-transform-react` to be installed.
+ * @experimental
+ */
+export function reactCompiler(
+  options: ReactCompilerPluginOptions = {},
+): Plugin {
+  const {
+    include = defaultIncludeRE,
+    exclude = defaultExcludeRE,
+    ...compilerOptions
+  } = options
+  return createReactCompilerPlugin(compilerOptions, include, exclude, {
+    standalone: true,
+  })
+}
+
+type ReactCompilerPluginHost =
+  | { standalone: true }
+  | {
+      standalone: false
+      reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>
+      isFastRefreshEnabled: () => boolean
+    }
+
 function createReactCompilerPlugin(
   options: ReactCompilerOptions,
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
-  reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
-  isFastRefreshEnabled: () => boolean,
+  host: ReactCompilerPluginHost,
 ): Plugin {
   let sourcemap = true
   let jsxDevelopment = false
@@ -301,6 +345,10 @@ function createReactCompilerPlugin(
     options.target === '17' || options.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
+  const codeFilter =
+    options.compilationMode === 'annotation'
+      ? /['"]use memo['"]/
+      : defaultCodeFilter
 
   const loadCompiler = async (
     onError: (message: string) => never,
@@ -311,9 +359,9 @@ function createReactCompilerPlugin(
       return (compiler = await import('oxc-transform-react'))
     } catch (error) {
       return onError(
-        `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`react({ compiler: true })\`.${
-          error instanceof Error ? `\n${error.message}` : ''
-        }`,
+        `React Compiler requires the optional \`oxc-transform-react\` package. Install it in your project before enabling \`${
+          host.standalone ? 'reactCompiler()' : 'react({ compiler: true })'
+        }\`.${error instanceof Error ? `\n${error.message}` : ''}`,
       )
     }
   }
@@ -321,6 +369,12 @@ function createReactCompilerPlugin(
   return {
     name: 'vite:react-compiler',
     enforce: 'pre',
+    ...(host.standalone
+      ? {
+          // Nothing to do for server environments when JSX is not transformed here.
+          applyToEnvironment: (env) => env.config.consumer === 'client',
+        }
+      : {}),
     async config() {
       await loadCompiler((message) => this.error(message))
       return {
@@ -339,25 +393,26 @@ function createReactCompilerPlugin(
           include: makeIdFiltersToMatchWithQuery(include),
           exclude: makeIdFiltersToMatchWithQuery(exclude),
         },
+        // The main plugin must still transform JSX in files the compiler skips.
+        ...(host.standalone ? { code: codeFilter } : {}),
       },
       async handler(code, id) {
         const isClient = this.environment?.config.consumer !== 'server'
-        const shouldCompile =
-          isClient &&
-          (options.compilationMode === 'annotation'
-            ? /['"]use memo['"]/.test(code)
-            : defaultCodeFilter.test(code))
+        const shouldCompile = isClient && codeFilter.test(code)
+        if (host.standalone && !shouldCompile) return
         // The config hook is not called when the plugin is used with Rolldown directly.
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
 
         const result = await transform(id.split('?')[0]!, code, {
-          jsx: {
-            runtime: reactOptions.jsxRuntime,
-            development: jsxDevelopment,
-            importSource: reactOptions.jsxImportSource,
-            refresh: isClient && isFastRefreshEnabled(),
-          },
+          jsx: host.standalone
+            ? 'preserve'
+            : {
+                runtime: host.reactOptions.jsxRuntime,
+                development: jsxDevelopment,
+                importSource: host.reactOptions.jsxImportSource,
+                refresh: isClient && host.isFastRefreshEnabled(),
+              },
           reactCompiler: shouldCompile ? options : false,
           sourcemap,
         })
@@ -393,5 +448,6 @@ function viteReactForCjs(this: unknown, options: Options): Plugin[] {
 Object.assign(viteReactForCjs, {
   default: viteReactForCjs,
   reactCompilerPreset,
+  reactCompiler,
 })
 export { viteReactForCjs as 'module.exports' }

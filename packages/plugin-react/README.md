@@ -106,6 +106,30 @@ The `compiler` option also accepts [React Compiler options](https://react.dev/re
 react({ compiler: { compilationMode: 'annotation' } })
 ```
 
+#### Standalone plugin
+
+If another plugin already handles JSX and Fast Refresh (for example React Router in framework mode, whose Vite plugin replaces `react()`), use the standalone `reactCompiler` plugin instead. It only runs the React Compiler, in client environments, and preserves JSX for the rest of your setup. It is the native counterpart of the `reactCompilerPreset` Babel helper below.
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import { reactRouter } from '@react-router/dev/vite'
+import { reactCompiler } from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [reactRouter(), reactCompiler()],
+})
+```
+
+`reactCompiler` accepts the same React Compiler options as the `compiler` option, plus `include` and `exclude` with the same defaults as the main plugin:
+
+```js
+reactCompiler({
+  compilationMode: 'annotation',
+  exclude: [/\/node_modules\//, /\/legacy\//],
+})
+```
+
 ### Babel React Compiler
 
 React Compiler can also be used through Babel with the exported `reactCompilerPreset` helper. This requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel), [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler), and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:

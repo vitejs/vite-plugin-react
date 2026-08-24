@@ -1,0 +1,21 @@
+{
+  "name": "@vitejs/test-compiler-standalone",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "workspace:*",
+    "oxc-transform-react": "^0.145.0",
+    "typescript": "^6.0.3"
+  }
+}
