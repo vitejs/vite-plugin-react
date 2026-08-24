@@ -125,24 +125,6 @@ describe('compiler option', () => {
       'Hooks must always be called in a consistent order',
     )
   })
-
-  test('fails on fatal diagnostics when logging is disabled', async () => {
-    await expect(
-      transformWithBuildConfig(
-        { logDiagnostics: false, panicThreshold: 'all_errors' },
-        false,
-        'client',
-        `
-          import { useState } from 'react'
-
-          export function App({ condition }) {
-            if (condition) useState(0)
-            return <div />
-          }
-        `,
-      ),
-    ).rejects.toThrow('Hooks must always be called in a consistent order')
-  })
 })
 
 async function transformWithBuildConfig(

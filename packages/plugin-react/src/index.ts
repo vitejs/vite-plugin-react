@@ -297,7 +297,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 }
 
 function createReactCompilerPlugin(
-  options: ReactCompilerPluginOptions,
+  { logDiagnostics, ...reactCompilerOptions }: ReactCompilerPluginOptions,
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
   reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
@@ -307,7 +307,7 @@ function createReactCompilerPlugin(
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
-    options.target === '17' || options.target === '18'
+    reactCompilerOptions.target === '17' || reactCompilerOptions.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
 
@@ -353,19 +353,12 @@ function createReactCompilerPlugin(
         const isClient = this.environment?.config.consumer !== 'server'
         const shouldCompile =
           isClient &&
-          (options.compilationMode === 'annotation'
+          (reactCompilerOptions.compilationMode === 'annotation'
             ? /['"]use memo['"]/.test(code)
             : defaultCodeFilter.test(code))
         // The config hook is not called when the plugin is used with Rolldown directly.
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
-
-        const cleanOptions = { ...options }
-        delete cleanOptions.logDiagnostics
-
-        const reactCompiler: boolean | ReactCompilerOptions = shouldCompile
-          ? cleanOptions
-          : false
 
         const result = await transform(id.split('?')[0]!, code, {
           jsx: {
@@ -374,7 +367,7 @@ function createReactCompilerPlugin(
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
-          reactCompiler,
+          reactCompiler: shouldCompile ? reactCompilerOptions : false,
           sourcemap,
         })
         const diagnostics = result.errors.map(
@@ -387,7 +380,7 @@ function createReactCompilerPlugin(
             diagnostics.join('\n\n') || 'React Compiler transform failed.',
           )
         }
-        if (options.logDiagnostics) {
+        if (logDiagnostics) {
           for (const diagnostic of diagnostics) {
             this.warn(diagnostic)
           }
