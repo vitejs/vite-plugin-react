@@ -101,6 +101,56 @@ describe('compiler option', () => {
     expect(withoutSourcemap.map).toBeFalsy()
     expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
   })
+
+  test('uses the current environment sourcemap setting for shared plugins', async () => {
+    const plugin = pluginReact({ compiler: true }).find(
+      (plugin) => plugin.name === 'vite:react-compiler',
+    )!
+    const clientConfig = {
+      command: 'build',
+      isProduction: true,
+      build: { sourcemap: true },
+      consumer: 'client',
+    }
+    const serverConfig = {
+      command: 'build',
+      isProduction: false,
+      build: { sourcemap: false },
+      consumer: 'server',
+    }
+    const context = {
+      error(message: unknown): never {
+        throw new Error(String(message))
+      },
+      warn() {},
+      environment: { config: clientConfig },
+    }
+
+    if (typeof plugin.config !== 'function')
+      throw new Error('Missing config hook')
+    await plugin.config.call(
+      context as any,
+      {},
+      { command: 'build', mode: 'production' },
+    )
+
+    if (typeof plugin.configResolved !== 'function')
+      throw new Error('Missing configResolved hook')
+    await plugin.configResolved.call(context as any, clientConfig as any)
+    await plugin.configResolved.call(context as any, serverConfig as any)
+
+    if (typeof plugin.transform !== 'object')
+      throw new Error('Missing transform hook')
+    const result = await plugin.transform.handler.call(
+      context as any,
+      `export function App({ name }) { return <div>{name}</div> }`,
+      '/entry.tsx',
+    )
+
+    expect(result.map).toBeTruthy()
+    expect(result.code).toContain('react/jsx-runtime')
+    expect(result.code).not.toContain('react/jsx-dev-runtime')
+  })
 })
 
 async function transformWithBuildConfig(
@@ -111,12 +161,18 @@ async function transformWithBuildConfig(
   const plugin = pluginReact({ compiler }).find(
     (plugin) => plugin.name === 'vite:react-compiler',
   )!
+  const config = {
+    command: 'build',
+    isProduction: true,
+    build: { sourcemap: buildSourcemap },
+    consumer,
+  }
   const context = {
     error(message: unknown): never {
       throw new Error(String(message))
     },
     warn() {},
-    environment: { config: { consumer } },
+    environment: { config },
   }
 
   if (typeof plugin.config !== 'function')
@@ -130,14 +186,7 @@ async function transformWithBuildConfig(
   if (typeof plugin.configResolved !== 'function') {
     throw new Error('Missing configResolved hook')
   }
-  await plugin.configResolved.call(
-    context as any,
-    {
-      command: 'build',
-      isProduction: true,
-      build: { sourcemap: buildSourcemap },
-    } as any,
-  )
+  await plugin.configResolved.call(context as any, config as any)
 
   if (typeof plugin.transform !== 'object') {
     throw new Error('Missing transform hook')

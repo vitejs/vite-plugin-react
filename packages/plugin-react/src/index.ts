@@ -341,7 +341,15 @@ function createReactCompilerPlugin(
         },
       },
       async handler(code, id) {
-        const isClient = this.environment?.config.consumer !== 'server'
+        const environmentConfig = this.environment?.config
+        const isClient = environmentConfig?.consumer !== 'server'
+        const environmentSourcemap = environmentConfig
+          ? environmentConfig.command !== 'build' ||
+            !!environmentConfig.build.sourcemap
+          : sourcemap
+        const environmentJsxDevelopment = environmentConfig
+          ? !environmentConfig.isProduction
+          : jsxDevelopment
         const shouldCompile =
           isClient &&
           (options.compilationMode === 'annotation'
@@ -354,12 +362,12 @@ function createReactCompilerPlugin(
         const result = await transform(id.split('?')[0]!, code, {
           jsx: {
             runtime: reactOptions.jsxRuntime,
-            development: jsxDevelopment,
+            development: environmentJsxDevelopment,
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
           reactCompiler: shouldCompile ? options : false,
-          sourcemap,
+          sourcemap: environmentSourcemap,
         })
         const diagnostics = result.errors.map(
           (error) =>
