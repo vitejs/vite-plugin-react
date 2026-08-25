@@ -106,6 +106,12 @@ The `compiler` option also accepts [React Compiler options](https://react.dev/re
 react({ compiler: { compilationMode: 'annotation' } })
 ```
 
+Set `logDiagnostics` to `true` to log recoverable React Compiler diagnostics through Vite. This option defaults to `false`. Fatal diagnostics are always logged and fail the transform.
+
+```js
+react({ compiler: { logDiagnostics: true } })
+```
+
 ### Babel React Compiler
 
 React Compiler can also be used through Babel with the exported `reactCompilerPreset` helper. This requires [`@rolldown/plugin-babel`](https://npmx.dev/package/@rolldown/plugin-babel), [`babel-plugin-react-compiler`](https://npmx.dev/package/babel-plugin-react-compiler), and [`@babel/core`](https://npmx.dev/package/@babel/core) as peer dependencies:
