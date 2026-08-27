@@ -343,10 +343,9 @@ function createReactCompilerPlugin(
       async handler(code, id) {
         const isClient = this.environment?.config.consumer !== 'server'
         const shouldCompile =
-          isClient &&
-          (options.compilationMode === 'annotation'
+          options.compilationMode === 'annotation'
             ? /['"]use memo['"]/.test(code)
-            : defaultCodeFilter.test(code))
+            : defaultCodeFilter.test(code)
         // The config hook is not called when the plugin is used with Rolldown directly.
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
@@ -358,7 +357,9 @@ function createReactCompilerPlugin(
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
-          reactCompiler: shouldCompile ? options : false,
+          reactCompiler: shouldCompile
+            ? { ...options, outputMode: isClient ? 'client' : 'ssr' }
+            : false,
           sourcemap,
         })
         const diagnostics = result.errors.map(
