@@ -109,7 +109,7 @@ export default defineConfig(
   },
   {
     name: 'vite/globals',
-    files: ['packages/**/*.?([cm])[jt]s?(x)'],
+    files: ['packages/**/*.{,c,m}[jt]s{,x}'],
     ignores: ['**/__tests__/**'],
     rules: {
       'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
@@ -118,9 +118,9 @@ export default defineConfig(
   {
     name: 'disables/playground',
     files: [
-      'packages/**/*.test.?([cm])[jt]s?(x)',
-      'playground/**/*.?([cm])[jt]s?(x)',
-      'packages/plugin-react-swc/playground/**/*.?([cm])[jt]s?(x)',
+      'packages/**/*.test.{,c,m}[jt]s{,x}',
+      'playground/**/*.{,c,m}[jt]s{,x}',
+      'packages/plugin-react-swc/playground/**/*.{,c,m}[jt]s{,x}',
     ],
     rules: {
       'n/no-extraneous-import': 'off',
