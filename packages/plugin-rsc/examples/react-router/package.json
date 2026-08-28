@@ -22,7 +22,7 @@
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "latest",
     "@vitejs/plugin-rsc": "latest",
     "tailwindcss": "^4.3.3",
