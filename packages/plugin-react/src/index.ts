@@ -303,7 +303,6 @@ function createReactCompilerPlugin(
   reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
   isFastRefreshEnabled: () => boolean,
 ): Plugin {
-  let sourcemap = true
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
@@ -339,7 +338,6 @@ function createReactCompilerPlugin(
       }
     },
     configResolved(config) {
-      sourcemap = config.command !== 'build' || !!config.build.sourcemap
       jsxDevelopment = !config.isProduction
     },
     transform: {
@@ -368,7 +366,10 @@ function createReactCompilerPlugin(
             refresh: isClient && isFastRefreshEnabled(),
           },
           reactCompiler: shouldCompile ? reactCompilerOptions : false,
-          sourcemap,
+          sourcemap: this.environment
+            ? this.environment.config.command !== 'build' ||
+              !!this.environment.config.build.sourcemap
+            : true /* direct Rolldown case */,
         })
         const diagnostics = result.errors.map(
           (error) =>
