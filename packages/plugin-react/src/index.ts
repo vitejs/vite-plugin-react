@@ -20,6 +20,15 @@ import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
+interface ReactCompilerPluginOptions extends ReactCompilerOptions {
+  /**
+   * Log recoverable React Compiler diagnostics through Vite.
+   * Fatal diagnostics are always logged and fail the transform.
+   * @default false
+   */
+  logDiagnostics?: boolean
+}
+
 export interface Options {
   /**
    * Can be used to process extra files like `.mdx`
@@ -59,7 +68,7 @@ export interface Options {
    * @default false
    * @experimental
    */
-  compiler?: boolean | ReactCompilerOptions
+  compiler?: boolean | ReactCompilerPluginOptions
 }
 
 const defaultIncludeRE = /\.[tj]sx?$/
@@ -288,7 +297,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
 }
 
 function createReactCompilerPlugin(
-  options: ReactCompilerOptions,
+  { logDiagnostics, ...reactCompilerOptions }: ReactCompilerPluginOptions,
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
   reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
@@ -298,7 +307,7 @@ function createReactCompilerPlugin(
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
   const runtime =
-    options.target === '17' || options.target === '18'
+    reactCompilerOptions.target === '17' || reactCompilerOptions.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
 
@@ -344,7 +353,7 @@ function createReactCompilerPlugin(
         const isClient = this.environment?.config.consumer !== 'server'
         const shouldCompile =
           isClient &&
-          (options.compilationMode === 'annotation'
+          (reactCompilerOptions.compilationMode === 'annotation'
             ? /['"]use memo['"]/.test(code)
             : defaultCodeFilter.test(code))
         // The config hook is not called when the plugin is used with Rolldown directly.
@@ -358,7 +367,7 @@ function createReactCompilerPlugin(
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
-          reactCompiler: shouldCompile ? options : false,
+          reactCompiler: shouldCompile ? reactCompilerOptions : false,
           sourcemap,
         })
         const diagnostics = result.errors.map(
@@ -371,8 +380,10 @@ function createReactCompilerPlugin(
             diagnostics.join('\n\n') || 'React Compiler transform failed.',
           )
         }
-        for (const diagnostic of diagnostics) {
-          this.warn(diagnostic)
+        if (logDiagnostics) {
+          for (const diagnostic of diagnostics) {
+            this.warn(diagnostic)
+          }
         }
 
         return { code: result.code, map: result.map }
@@ -384,7 +395,7 @@ function createReactCompilerPlugin(
 viteReact.preambleCode = preambleCode
 
 export { reactCompilerPreset }
-export type { ReactCompilerOptions }
+export type { ReactCompilerPluginOptions as ReactCompilerOptions }
 
 // Compat for require
 function viteReactForCjs(this: unknown, options: Options): Plugin[] {

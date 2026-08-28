@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add `compiler.logDiagnostics` option
+
+Recoverable React Compiler diagnostics are no longer logged by default. Set `compiler.logDiagnostics` to `true` to log them through Vite. Fatal diagnostics are always logged and fail the transform.
+
 ## 6.1.0 (2026-08-19)
 
 ### Add experimental native React Compiler support ([#1419](https://github.com/vitejs/vite-plugin-react/pull/1419))
