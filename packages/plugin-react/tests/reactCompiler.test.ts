@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { type Plugin, rolldown } from 'rolldown'
+import { BuildEnvironment, type InlineConfig, resolveConfig } from 'vite'
 import { describe, expect, test } from 'vitest'
 import pluginReact, {
   type Options,
@@ -89,17 +90,54 @@ describe('compiler option', () => {
   })
 
   test('uses the native JSX transform for server environments', async () => {
-    const output = await transformWithBuildConfig({}, false, 'server')
+    const output = await transformWithBuildConfig(
+      {},
+      {
+        build: { sourcemap: false },
+        environments: { ssr: {} },
+      },
+      'ssr',
+    )
 
-    expect(output.code).toContain('react/jsx-runtime')
+    expect(output.code).toMatch(/react\/jsx(?:-dev)?-runtime/)
     expect(output.code).not.toContain('react/compiler-runtime')
   })
 
   test('uses the Vite build sourcemap setting', async () => {
-    const withoutSourcemap = await transformWithBuildConfig({}, false)
-    expect(withoutSourcemap.code).toContain('react/jsx-runtime')
+    const withoutSourcemap = await transformWithBuildConfig(
+      {},
+      { build: { sourcemap: false } },
+    )
+    expect(withoutSourcemap.code).toMatch(/react\/jsx(?:-dev)?-runtime/)
     expect(withoutSourcemap.map).toBeFalsy()
-    expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
+    expect(
+      (await transformWithBuildConfig({}, { build: { sourcemap: true } })).map,
+    ).toBeTruthy()
+  })
+
+  test('uses the environment build sourcemap setting', async () => {
+    expect(
+      (
+        await transformWithBuildConfig(
+          {},
+          {
+            build: { sourcemap: true },
+            environments: { client: { build: { sourcemap: false } } },
+          },
+        )
+      ).map,
+    ).toBeFalsy()
+    expect(
+      (
+        await transformWithBuildConfig(
+          {},
+          {
+            build: { sourcemap: false },
+            environments: { client: { build: { sourcemap: true } } },
+          },
+        )
+      ).map,
+    ).toBeTruthy()
   })
 
   test('logs recoverable diagnostics when enabled', async () => {
@@ -107,7 +145,7 @@ describe('compiler option', () => {
 
     await transformWithBuildConfig(
       { logDiagnostics: true },
-      false,
+      {},
       'client',
       `
         import { useState } from 'react'
@@ -129,12 +167,23 @@ describe('compiler option', () => {
 
 async function transformWithBuildConfig(
   compiler: ReactCompilerOptions,
-  buildSourcemap: boolean,
-  consumer: 'client' | 'server' = 'client',
+  inlineConfig: InlineConfig,
+  environmentName = 'client',
   code: string = `export function App({ name }) { return <div>{name}</div> }`,
   onWarn?: (message: unknown) => void,
 ) {
-  const plugin = pluginReact({ compiler }).find(
+  const config = await resolveConfig(
+    {
+      ...inlineConfig,
+      configFile: false,
+      logLevel: 'silent',
+      plugins: [pluginReact({ compiler })],
+    },
+    'build',
+    'production',
+    'production',
+  )
+  const plugin = config.plugins.find(
     (plugin) => plugin.name === 'vite:react-compiler',
   )!
   const context = {
@@ -144,33 +193,16 @@ async function transformWithBuildConfig(
     warn(message: unknown) {
       onWarn?.(message)
     },
-    environment: { config: { consumer } },
+    environment: new BuildEnvironment(environmentName, config),
   }
-
-  if (typeof plugin.config !== 'function')
-    throw new Error('Missing config hook')
-  await plugin.config.call(
-    context as any,
-    {},
-    { command: 'build', mode: 'production' },
-  )
-
-  if (typeof plugin.configResolved !== 'function') {
-    throw new Error('Missing configResolved hook')
-  }
-  await plugin.configResolved.call(
-    context as any,
-    {
-      command: 'build',
-      isProduction: true,
-      build: { sourcemap: buildSourcemap },
-    } as any,
-  )
 
   if (typeof plugin.transform !== 'object') {
     throw new Error('Missing transform hook')
   }
-  return plugin.transform.handler.call(context as any, code, '/entry.tsx')
+  return plugin.transform.handler.call(context as any, code, '/entry.tsx') as {
+    code: string
+    map: Record<string, unknown> | undefined
+  }
 }
 
 async function getViteReactConfig(
