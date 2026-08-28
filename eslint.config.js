@@ -40,7 +40,6 @@ export default defineConfig(
     },
     rules: {
       eqeqeq: ['warn', 'always', { null: 'never' }],
-      'no-debugger': ['error'],
       'no-empty': ['warn', { allowEmptyCatch: true }],
       'prefer-const': [
         'warn',
@@ -48,6 +47,7 @@ export default defineConfig(
           destructuring: 'all',
         },
       ],
+      'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
 
       'n/no-process-exit': 'off',
       'n/no-deprecated-api': 'off',
@@ -70,10 +70,7 @@ export default defineConfig(
         'error',
         { allow: ['arrowFunctions'] },
       ],
-      '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'no-extra-semi': 'off',
-      '@typescript-eslint/no-extra-semi': 'off', // conflicts with prettier
       '@typescript-eslint/no-inferrable-types': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -87,7 +84,6 @@ export default defineConfig(
           ignoreRestSiblings: true,
         },
       ],
-      '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { prefer: 'type-imports', disallowTypeAnnotations: false },
@@ -105,14 +101,6 @@ export default defineConfig(
       'regexp/prefer-regexp-test': 'error',
       // in some cases using explicit letter-casing is more performant than the `i` flag
       'regexp/use-ignore-case': 'off',
-    },
-  },
-  {
-    name: 'vite/globals',
-    files: ['packages/**/*.{,c,m}[jt]s{,x}'],
-    ignores: ['**/__tests__/**'],
-    rules: {
-      'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
     },
   },
   {
