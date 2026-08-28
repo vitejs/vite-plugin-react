@@ -88,11 +88,13 @@ describe('compiler option', () => {
     })
   })
 
-  test('uses the native JSX transform for server environments', async () => {
+  test('uses the SSR transform for server environments', async () => {
     const output = await transformWithBuildConfig({}, false, 'server')
 
     expect(output.code).toContain('react/jsx-runtime')
     expect(output.code).not.toContain('react/compiler-runtime')
+    expect(output.code).toContain('const count = 0')
+    expect(output.code).not.toContain('useState(0)')
   })
 
   test('uses the Vite build sourcemap setting', async () => {
@@ -144,9 +146,14 @@ async function transformWithBuildConfig(
   }
   return plugin.transform.handler.call(
     context as any,
-    `export function App({ name }) { return <div>{name}</div> }`,
+    /* jsx */ `import { useState } from 'react';
+
+export function App({ name }) {
+  const [count] = useState(0);
+  return <div>{name}{count}</div>
+}`,
     '/entry.tsx',
-  )
+  ) as { code: string; map: any }
 }
 
 async function getViteReactConfig(
