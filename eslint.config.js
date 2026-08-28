@@ -1,5 +1,4 @@
 // @ts-check
-import { builtinModules } from 'node:module'
 import eslint from '@eslint/js'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginN from 'eslint-plugin-n'
@@ -60,6 +59,7 @@ export default tseslint.config(
           tryExtensions: ['.ts', '.js', '.jsx', '.tsx', '.d.ts'],
         },
       ],
+      'n/prefer-node-protocol': 'error',
 
       '@typescript-eslint/explicit-module-boundary-types': [
         'error',
@@ -98,10 +98,6 @@ export default tseslint.config(
       '@typescript-eslint/prefer-for-of': 'off',
       '@typescript-eslint/prefer-function-type': 'off',
 
-      'import-x/no-nodejs-modules': [
-        'error',
-        { allow: builtinModules.map((mod) => `node:${mod}`) },
-      ],
       'import-x/no-duplicates': 'error',
 
       'regexp/prefer-regexp-exec': 'error',
