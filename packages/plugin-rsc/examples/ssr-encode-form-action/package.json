@@ -17,6 +17,6 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-rsc": "latest",
-    "vite": "^8.2.1"
+    "vite": "^8.2.2"
   }
 }
