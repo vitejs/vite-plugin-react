@@ -1,13 +1,13 @@
 // @ts-check
-import { builtinModules } from 'node:module'
 import eslint from '@eslint/js'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginN from 'eslint-plugin-n'
 import pluginRegExp from 'eslint-plugin-regexp'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       '**/dist/**',
@@ -40,7 +40,6 @@ export default tseslint.config(
     },
     rules: {
       eqeqeq: ['warn', 'always', { null: 'never' }],
-      'no-debugger': ['error'],
       'no-empty': ['warn', { allowEmptyCatch: true }],
       'prefer-const': [
         'warn',
@@ -48,6 +47,7 @@ export default tseslint.config(
           destructuring: 'all',
         },
       ],
+      'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
 
       'n/no-process-exit': 'off',
       'n/no-deprecated-api': 'off',
@@ -60,6 +60,7 @@ export default tseslint.config(
           tryExtensions: ['.ts', '.js', '.jsx', '.tsx', '.d.ts'],
         },
       ],
+      'n/prefer-node-protocol': 'error',
 
       '@typescript-eslint/explicit-module-boundary-types': [
         'error',
@@ -69,10 +70,7 @@ export default tseslint.config(
         'error',
         { allow: ['arrowFunctions'] },
       ],
-      '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'no-extra-semi': 'off',
-      '@typescript-eslint/no-extra-semi': 'off', // conflicts with prettier
       '@typescript-eslint/no-inferrable-types': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -86,7 +84,6 @@ export default tseslint.config(
           ignoreRestSiblings: true,
         },
       ],
-      '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { prefer: 'type-imports', disallowTypeAnnotations: false },
@@ -98,10 +95,6 @@ export default tseslint.config(
       '@typescript-eslint/prefer-for-of': 'off',
       '@typescript-eslint/prefer-function-type': 'off',
 
-      'import-x/no-nodejs-modules': [
-        'error',
-        { allow: builtinModules.map((mod) => `node:${mod}`) },
-      ],
       'import-x/no-duplicates': 'error',
 
       'regexp/prefer-regexp-exec': 'error',
@@ -111,19 +104,11 @@ export default tseslint.config(
     },
   },
   {
-    name: 'vite/globals',
-    files: ['packages/**/*.?([cm])[jt]s?(x)'],
-    ignores: ['**/__tests__/**'],
-    rules: {
-      'no-restricted-globals': ['error', 'require', '__dirname', '__filename'],
-    },
-  },
-  {
     name: 'disables/playground',
     files: [
-      'packages/**/*.test.?([cm])[jt]s?(x)',
-      'playground/**/*.?([cm])[jt]s?(x)',
-      'packages/plugin-react-swc/playground/**/*.?([cm])[jt]s?(x)',
+      'packages/**/*.test.{,c,m}[jt]s{,x}',
+      'playground/**/*.{,c,m}[jt]s{,x}',
+      'packages/plugin-react-swc/playground/**/*.{,c,m}[jt]s{,x}',
     ],
     rules: {
       'n/no-extraneous-import': 'off',
