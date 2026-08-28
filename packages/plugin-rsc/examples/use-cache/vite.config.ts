@@ -1,6 +1,9 @@
 import react from '@vitejs/plugin-react'
 import rsc from '@vitejs/plugin-rsc'
-import { transformHoistInlineDirective } from '@vitejs/plugin-rsc/transforms'
+import {
+  transformHoistInlineDirective,
+  validateDirectiveFunction,
+} from '@vitejs/plugin-rsc/transforms'
 import { defineConfig, parseAstAsync, type Plugin } from 'vite'
 
 export default defineConfig({
@@ -25,7 +28,10 @@ function vitePluginUseCache(): Plugin[] {
         if (!code.includes('use cache')) return
         const ast = await parseAstAsync(code)
         const result = transformHoistInlineDirective(code, ast, {
-          runtime: (value) => `__vite_rsc_cache(${value})`,
+          runtime: (value, _name, meta) => {
+            validateDirectiveFunction(meta.valueNode, 'use cache')
+            return `__vite_rsc_cache(${value})`
+          },
           directive: 'use cache',
           rejectNonAsyncFunction: true,
           noExport: true,
