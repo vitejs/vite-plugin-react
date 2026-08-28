@@ -102,7 +102,7 @@ describe('compiler option', () => {
     expect((await transformWithBuildConfig({}, true)).map).toBeTruthy()
   })
 
-  test('logs recoverable diagnostics by default', async () => {
+  test('logs recoverable diagnostics when enabled', async () => {
     const diagnostics: unknown[] = []
 
     await transformWithBuildConfig(
