@@ -6,6 +6,10 @@
 
 Recoverable React Compiler diagnostics are no longer logged by default. Set `compiler.logDiagnostics` to `true` to log them through Vite. Fatal diagnostics are always logged and fail the transform.
 
+### Respect environment sourcemap option for React Compiler transform when `builder.sharedPlugins` is enabled ([#1439](https://github.com/vitejs/vite-plugin-react/pull/1439))
+
+The React Compiler transform was using the top-level sourcemap option instead of the environment sourcemap option. This caused a problem when the experimental `builder.sharedPlugins` was enabled.
+
 ## 6.1.0 (2026-08-19)
 
 ### Add experimental native React Compiler support ([#1419](https://github.com/vitejs/vite-plugin-react/pull/1419))
