@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.1.1 (2026-08-28)
+
 ### Add `compiler.logDiagnostics` option
 
 Recoverable React Compiler diagnostics are no longer logged by default. Set `compiler.logDiagnostics` to `true` to log them through Vite. Fatal diagnostics are always logged and fail the transform.
