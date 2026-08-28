@@ -3,10 +3,11 @@ import eslint from '@eslint/js'
 import pluginImportX from 'eslint-plugin-import-x'
 import pluginN from 'eslint-plugin-n'
 import pluginRegExp from 'eslint-plugin-regexp'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       '**/dist/**',
