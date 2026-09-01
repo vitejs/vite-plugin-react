@@ -94,7 +94,7 @@ function formatDecodedSourceMap(output: MagicString): string {
     hires: 'boundary',
   })
   const sourceLines =
-    map.sourcesContent?.map((source) => source.split('\n')) ?? []
+    map.sourcesContent?.map((source) => source?.split('\n') ?? []) ?? []
   const mappings: string[] = []
 
   for (const generatedLine of generatedLines.keys()) {
