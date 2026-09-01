@@ -42,7 +42,7 @@
     "@rolldown/pluginutils": "^1.0.1",
     "es-module-lexer": "^2.3.2",
     "estree-walker": "^3.0.3",
-    "magic-string": "^0.30.21",
+    "magic-string": "^1.2.3",
     "srvx": "^0.12.7",
     "strip-literal": "^3.1.0",
     "turbo-stream": "^3.2.1",
