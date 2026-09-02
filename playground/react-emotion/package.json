@@ -16,7 +16,7 @@
     "react-switch": "^7.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.1",
     "@emotion/babel-plugin": "^11.13.5",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/react": "^19.2.18",
