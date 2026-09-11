@@ -1,6 +1,8 @@
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { type Plugin, rolldown } from 'rolldown'
-import { BuildEnvironment, type InlineConfig, resolveConfig } from 'vite'
+import { BuildEnvironment, type InlineConfig, build, resolveConfig } from 'vite'
 import { describe, expect, test } from 'vitest'
 import pluginReact, {
   type Options,
@@ -163,6 +165,84 @@ describe('compiler option', () => {
       'Hooks must always be called in a consistent order',
     )
   })
+
+  test('infers per-file jsxImportSource from tsconfig when compiler is enabled', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'vite-plugin-react-1448-'))
+    const component = `export function Component() {
+  return <div>Hello</div>
+}
+`
+    await mkdir(path.join(root, 'styled'))
+    await mkdir(path.join(root, 'plain'))
+    await writeFile(
+      path.join(root, 'styled/tsconfig.json'),
+      JSON.stringify({
+        compilerOptions: {
+          jsx: 'react-jsx',
+          jsxImportSource: '@emotion/react',
+        },
+      }),
+    )
+    await writeFile(
+      path.join(root, 'plain/tsconfig.json'),
+      JSON.stringify({ compilerOptions: { jsx: 'react-jsx' } }),
+    )
+    await writeFile(path.join(root, 'styled/component.tsx'), component)
+    await writeFile(path.join(root, 'plain/component.tsx'), component)
+
+    const inferred = await jsxRuntimeImports(root, { compiler: true })
+    expect(inferred.styled).toBe('@emotion/react')
+    expect(inferred.plain).toBe('react')
+    expect(inferred.styledHasCompilerRuntime).toBe(true)
+    expect(inferred.plainHasCompilerRuntime).toBe(true)
+
+    const overridden = await jsxRuntimeImports(root, {
+      compiler: true,
+      jsxImportSource: '@emotion/react',
+    })
+    expect(overridden.styled).toBe('@emotion/react')
+    expect(overridden.plain).toBe('@emotion/react')
+  })
+
+  test('infers jsxImportSource from referenced tsconfig.app.json when compiler is enabled', async () => {
+    const root = await mkdtemp(
+      path.join(tmpdir(), 'vite-plugin-react-1448-app-'),
+    )
+    await mkdir(path.join(root, 'src'))
+    await writeFile(
+      path.join(root, 'tsconfig.json'),
+      JSON.stringify({
+        files: [],
+        references: [{ path: './tsconfig.app.json' }],
+      }),
+    )
+    await writeFile(
+      path.join(root, 'tsconfig.app.json'),
+      JSON.stringify({
+        include: ['src'],
+        compilerOptions: {
+          jsx: 'react-jsx',
+          jsxImportSource: '@emotion/react',
+        },
+      }),
+    )
+    await writeFile(
+      path.join(root, 'src/component.tsx'),
+      `export function Component() {
+  return <div>Hello</div>
+}
+`,
+    )
+
+    const result = await jsxRuntimeImports(
+      root,
+      { compiler: true },
+      {
+        app: path.join(root, 'src/component.tsx'),
+      },
+    )
+    expect(result.app).toBe('@emotion/react')
+  })
 })
 
 async function transformWithBuildConfig(
@@ -203,6 +283,79 @@ async function transformWithBuildConfig(
     code: string
     map: Record<string, unknown> | undefined
   }
+}
+
+async function jsxRuntimeImports(
+  root: string,
+  options: Options,
+  entries: Record<string, string> = {
+    styled: path.join(root, 'styled/component.tsx'),
+    plain: path.join(root, 'plain/component.tsx'),
+  },
+) {
+  const buildOutput = await build({
+    root,
+    configFile: false,
+    logLevel: 'silent',
+    plugins: [pluginReact(options)],
+    build: {
+      write: false,
+      minify: false,
+      lib: {
+        entry: entries,
+        formats: ['es'],
+      },
+      rolldownOptions: {
+        external: /^(react|@emotion\/react)(\/|$)/,
+        output: { preserveModules: true },
+      },
+    },
+  })
+  const chunks = [buildOutput]
+    .flat()
+    .flatMap((output) => output.output)
+    .filter((output) => output.type === 'chunk')
+  const result: {
+    styled?: string
+    plain?: string
+    app?: string
+    styledHasCompilerRuntime?: boolean
+    plainHasCompilerRuntime?: boolean
+  } = {}
+  for (const entry of Object.keys(entries)) {
+    const chunk = chunks.find((output) => {
+      const fileName = output.fileName.replaceAll('\\', '/')
+      return (
+        fileName === `${entry}.js` ||
+        fileName === `${entry}.mjs` ||
+        fileName.endsWith(`/${entry}.js`) ||
+        fileName.endsWith(`/${entry}.mjs`)
+      )
+    })
+    if (!chunk) {
+      throw new Error(
+        `Missing entry: ${entry} (got ${chunks.map((c) => c.fileName).join(', ')})`,
+      )
+    }
+    const runtime = chunk.imports.find((specifier) =>
+      /\/jsx(?:-dev)?-runtime$/.test(specifier),
+    )
+    const importSource = runtime?.replace(/\/jsx(?:-dev)?-runtime$/, '')
+    if (entry === 'styled') {
+      result.styled = importSource
+      result.styledHasCompilerRuntime = chunk.imports.includes(
+        'react/compiler-runtime',
+      )
+    } else if (entry === 'plain') {
+      result.plain = importSource
+      result.plainHasCompilerRuntime = chunk.imports.includes(
+        'react/compiler-runtime',
+      )
+    } else if (entry === 'app') {
+      result.app = importSource
+    }
+  }
+  return result
 }
 
 async function getViteReactConfig(
