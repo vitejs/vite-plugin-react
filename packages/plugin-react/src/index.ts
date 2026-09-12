@@ -304,7 +304,6 @@ interface TsconfigResolution {
   ) => {
     tsconfig: { compilerOptions?: { jsxImportSource?: string } }
   } | null
-  TsconfigCache: new () => { clear(): void }
 }
 
 let tsconfigResolutionPromise:
@@ -337,7 +336,6 @@ function createReactCompilerPlugin(
 ): Plugin {
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
-  let tsconfigCache: { clear(): void } | undefined
   let resolveTsconfig: TsconfigResolution['resolveTsconfig'] | undefined
   const runtime =
     reactCompilerOptions.target === '17' || reactCompilerOptions.target === '18'
@@ -399,11 +397,11 @@ function createReactCompilerPlugin(
               const api = await loadTsconfigResolution()
               if (api) {
                 resolveTsconfig = api.resolveTsconfig
-                tsconfigCache = new api.TsconfigCache()
               }
             }
-            importSource = resolveTsconfig?.(filename, tsconfigCache)?.tsconfig
-              .compilerOptions?.jsxImportSource
+            importSource =
+              resolveTsconfig?.(filename)?.tsconfig.compilerOptions
+                ?.jsxImportSource
           } catch {
             // Keep oxc-transform-react's default (`react`) when tsconfig
             // lookup is unavailable, e.g. raw Rolldown without Vite.

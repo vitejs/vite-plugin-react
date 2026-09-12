@@ -243,6 +243,50 @@ describe('compiler option', () => {
     )
     expect(result.app).toBe('@emotion/react')
   })
+
+  test('re-resolves jsxImportSource after tsconfig changes in one plugin instance', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'vite-plugin-react-1450-'))
+    await mkdir(path.join(root, 'src'))
+    const tsconfig = path.join(root, 'tsconfig.json')
+    const write = (jsxImportSource?: string) =>
+      writeFile(
+        tsconfig,
+        JSON.stringify({
+          compilerOptions: {
+            jsx: 'react-jsx',
+            ...(jsxImportSource && { jsxImportSource }),
+          },
+        }),
+      )
+    await write('@emotion/react')
+    await writeFile(
+      path.join(root, 'src/component.tsx'),
+      `export function Component() {
+  return <div>Hello</div>
+}
+`,
+    )
+    const entries = { app: path.join(root, 'src/component.tsx') }
+    // One instance across both builds, the way a dev server keeps one plugin alive.
+    const plugin = pluginReact({ compiler: true })
+
+    const before = await jsxRuntimeImports(
+      root,
+      { compiler: true },
+      entries,
+      plugin,
+    )
+    expect(before.app).toBe('@emotion/react')
+
+    await write(undefined) // editing tsconfig mid-session, as in #1450
+    const after = await jsxRuntimeImports(
+      root,
+      { compiler: true },
+      entries,
+      plugin,
+    )
+    expect(after.app).toBe('react')
+  })
 })
 
 async function transformWithBuildConfig(
@@ -292,12 +336,13 @@ async function jsxRuntimeImports(
     styled: path.join(root, 'styled/component.tsx'),
     plain: path.join(root, 'plain/component.tsx'),
   },
+  plugin: ReturnType<typeof pluginReact> = pluginReact(options),
 ) {
   const buildOutput = await build({
     root,
     configFile: false,
     logLevel: 'silent',
-    plugins: [pluginReact(options)],
+    plugins: [plugin],
     build: {
       write: false,
       minify: false,
