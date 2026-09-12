@@ -30,3 +30,30 @@ test('normalizes inline server reference names', async () => {
     referenceNames: ['$$hoist_0_anonymous_server_function'],
   })
 })
+
+test.each([
+  `'use server'; export async function action() { arguments }`,
+  `export function App() { return async function action() { 'use server'; this.value } }`,
+])('validates server functions: %s', async (input) => {
+  await expect(transform(input)).rejects.toThrow(/cannot use/)
+})
+
+test('does not apply a file directive to non-exported functions', async () => {
+  await expect(
+    transform(`
+'use server'
+async function helper() { arguments }
+export async function action() {}
+`),
+  ).resolves.toBeDefined()
+})
+
+test('leaves unresolved local exports for local binding resolution', async () => {
+  await expect(
+    transform(`
+'use server'
+async function action() { arguments }
+export { action }
+`),
+  ).resolves.toBeDefined()
+})

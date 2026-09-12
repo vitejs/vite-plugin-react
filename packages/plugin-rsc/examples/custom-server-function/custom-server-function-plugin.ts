@@ -4,6 +4,7 @@ import {
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
   transformModuleExportEffect,
+  validateDirectiveFunction,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
 
@@ -39,12 +40,17 @@ export function customServerFunctionPlugin(): Plugin {
         const result = hasDirective(ast.body, directive)
           ? transformModuleExportEffect(code, ast, {
               rejectNonAsyncFunction: true,
-              generate: ({ binding, exportName }) =>
-                runtime(binding, exportName),
+              generate: ({ binding, exportName, meta }) => {
+                validateDirectiveFunction(meta.valueNode, directive)
+                return runtime(binding, exportName)
+              },
             })
           : transformHoistInlineDirective(code, ast, {
               directive,
-              runtime,
+              runtime: (value, name, meta) => {
+                validateDirectiveFunction(meta.valueNode, directive)
+                return runtime(value, name)
+              },
               rejectNonAsyncFunction: true,
             })
         if (!result.output.hasChanged()) {
