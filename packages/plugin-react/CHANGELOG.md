@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Respect tsconfig `jsxImportSource` when using the native React Compiler ([#1448](https://github.com/vitejs/vite-plugin-react/issues/1448))
+
+Enabling `compiler: true` no longer ignores per-file `jsxImportSource` from the nearest tsconfig. Inference now matches the non-compiler JSX path, and an explicit plugin `jsxImportSource` still overrides it.
+
 ## 6.1.1 (2026-08-28)
 
 ### Add `compiler.logDiagnostics` option

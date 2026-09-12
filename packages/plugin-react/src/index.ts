@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
   exactRegex,
   makeIdFiltersToMatchWithQuery,
@@ -296,6 +297,36 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   return plugins
 }
 
+interface TsconfigResolution {
+  resolveTsconfig: (
+    filename: string,
+    cache?: { clear(): void } | null,
+  ) => {
+    tsconfig: { compilerOptions?: { jsxImportSource?: string } }
+  } | null
+}
+
+let tsconfigResolutionPromise:
+  | Promise<TsconfigResolution | undefined>
+  | undefined
+
+// Same resolver Vite uses for oxc JSX (rolldown's resolveTsconfig). Loaded
+// through Vite so we do not add a runtime dependency on rolldown internals.
+function loadTsconfigResolution(): Promise<TsconfigResolution | undefined> {
+  tsconfigResolutionPromise ??= (async () => {
+    try {
+      const requireFromVite = createRequire(import.meta.resolve('vite'))
+      const experimentalPath = requireFromVite.resolve('rolldown/experimental')
+      return (await import(
+        pathToFileURL(experimentalPath).href
+      )) as TsconfigResolution
+    } catch {
+      return undefined
+    }
+  })()
+  return tsconfigResolutionPromise
+}
+
 function createReactCompilerPlugin(
   { logDiagnostics, ...reactCompilerOptions }: ReactCompilerPluginOptions,
   include: NonNullable<Options['include']>,
@@ -305,6 +336,7 @@ function createReactCompilerPlugin(
 ): Plugin {
   let jsxDevelopment = false
   let compiler: typeof import('oxc-transform-react') | undefined
+  let resolveTsconfig: TsconfigResolution['resolveTsconfig'] | undefined
   const runtime =
     reactCompilerOptions.target === '17' || reactCompilerOptions.target === '18'
       ? 'react-compiler-runtime'
@@ -357,12 +389,30 @@ function createReactCompilerPlugin(
         // The config hook is not called when the plugin is used with Rolldown directly.
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
+        const filename = id.split('?')[0]!
+        let importSource = reactOptions.jsxImportSource
+        if (importSource === undefined) {
+          try {
+            if (!resolveTsconfig) {
+              const api = await loadTsconfigResolution()
+              if (api) {
+                resolveTsconfig = api.resolveTsconfig
+              }
+            }
+            importSource =
+              resolveTsconfig?.(filename)?.tsconfig.compilerOptions
+                ?.jsxImportSource
+          } catch {
+            // Keep oxc-transform-react's default (`react`) when tsconfig
+            // lookup is unavailable, e.g. raw Rolldown without Vite.
+          }
+        }
 
-        const result = await transform(id.split('?')[0]!, code, {
+        const result = await transform(filename, code, {
           jsx: {
             runtime: reactOptions.jsxRuntime,
             development: jsxDevelopment,
-            importSource: reactOptions.jsxImportSource,
+            importSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
           reactCompiler: shouldCompile ? reactCompilerOptions : false,
