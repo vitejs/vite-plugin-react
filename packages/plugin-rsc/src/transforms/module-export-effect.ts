@@ -1,7 +1,7 @@
-import { tinyassert } from '@hiogawa/utils'
 import type { Identifier } from 'estree'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
+import { tinyassert } from '../utils/shared'
 import { scanModuleExports, type ModuleExportMeta } from './module-export-scan'
 import { rejectNonAsyncFunction, validateNonAsyncFunction } from './utils'
 

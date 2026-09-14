@@ -1,4 +1,3 @@
-import { tinyassert } from '@hiogawa/utils'
 import type {
   ExportAllDeclaration,
   ExportDefaultDeclaration,
@@ -12,6 +11,7 @@ import type {
   VariableDeclarator,
 } from 'estree'
 import type { ESTree } from 'vite'
+import { tinyassert } from '../utils/shared'
 import { extractNames } from './utils'
 
 export type ModuleExportMeta = {

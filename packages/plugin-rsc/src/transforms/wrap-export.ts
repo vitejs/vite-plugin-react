@@ -1,6 +1,6 @@
-import { tinyassert } from '@hiogawa/utils'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
+import { tinyassert } from '../utils/shared'
 import {
   scanModuleExports,
   type ModuleExportEntry,

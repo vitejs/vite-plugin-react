@@ -38,7 +38,7 @@ export default defineConfig({
   format: ['esm'],
   deps: {
     neverBundle: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
-    onlyBundle: false,
+    onlyBundle: ['@types/estree', 'picocolors'],
   },
   fixedExtension: false,
   dts: {
