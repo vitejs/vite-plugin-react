@@ -51,8 +51,8 @@
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
     "oxc-transform-react": "^0.147.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "rolldown": "^1.2.6",
     "tsdown": "^0.22.14",
     "vite": "^8.2.2"
