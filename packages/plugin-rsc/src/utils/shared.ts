@@ -36,8 +36,9 @@ export function memoize<Fn extends (argument: any) => any>(fn: Fn): Fn {
   type Argument = Parameters<Fn>[0]
   const cache = new Map<Argument, ReturnType<Fn>>()
   return function (this: ThisParameterType<Fn>, argument: Argument) {
-    if (cache.has(argument)) {
-      return cache.get(argument)
+    const value = cache.get(argument)
+    if (typeof value !== 'undefined') {
+      return value
     }
     const newValue = fn.call(this, argument)
     cache.set(argument, newValue)
