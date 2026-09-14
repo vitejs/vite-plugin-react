@@ -1,4 +1,3 @@
-import { tinyassert } from '@hiogawa/utils'
 import type {
   ArrowFunctionExpression,
   FunctionDeclaration,
@@ -14,6 +13,7 @@ import type {
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
+import { tinyassert } from '../utils/shared'
 import { buildScopeTree, type ScopeTree } from './scope'
 import { isDirective } from './utils'
 

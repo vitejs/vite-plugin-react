@@ -1,5 +1,5 @@
-import { memoize, tinyassert } from '@hiogawa/utils'
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
+import { memoize, tinyassert } from '../utils/shared'
 import {
   SERVER_DECODE_CLIENT_PREFIX,
   SERVER_REFERENCE_PRESERVE_PREFIX,

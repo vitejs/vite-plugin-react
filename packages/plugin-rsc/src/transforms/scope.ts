@@ -1,4 +1,3 @@
-import { tinyassert } from '@hiogawa/utils'
 import type {
   Program,
   Identifier,
@@ -9,6 +8,7 @@ import type {
   ArrowFunctionExpression,
 } from 'estree'
 import { walk } from 'estree-walker'
+import { tinyassert } from '../utils/shared'
 import { extractNames } from './utils'
 
 // Replacement for periscopic to correctly handle variable shadowing
