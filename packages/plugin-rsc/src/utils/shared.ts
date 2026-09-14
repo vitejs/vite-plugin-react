@@ -20,9 +20,7 @@ export class TinyAssertionError extends Error {
   }
 }
 
-type AnyFunction = (...args: any[]) => any
-
-export function once<Fn extends AnyFunction>(fn: Fn): Fn {
+export function once<Fn extends (...args: any[]) => any>(fn: Fn): Fn {
   let result: ReturnType<Fn>
   let called = false
   return function (this: unknown, ...args: Parameters<Fn>) {
@@ -34,9 +32,7 @@ export function once<Fn extends AnyFunction>(fn: Fn): Fn {
   } as Fn
 }
 
-type UnaryFunction = (argument: any) => any
-
-export function memoize<Fn extends UnaryFunction>(fn: Fn): Fn {
+export function memoize<Fn extends (argument: any) => any>(fn: Fn): Fn {
   type Argument = Parameters<Fn>[0]
   const cache = new Map<Argument, ReturnType<Fn>>()
   return function (this: ThisParameterType<Fn>, argument: Argument) {
