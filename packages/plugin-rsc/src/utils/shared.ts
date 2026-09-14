@@ -34,26 +34,17 @@ export function once<Fn extends AnyFunction>(fn: Fn): Fn {
   } as Fn
 }
 
-export function memoize<Fn extends AnyFunction>(
-  fn: Fn,
-  options?: {
-    keyFn?: (...args: Parameters<Fn>) => unknown
-    cache?: {
-      get(key: unknown): ReturnType<Fn> | undefined
-      set(key: unknown, value: ReturnType<Fn>): void
-    }
-  },
-): Fn {
-  const keyFn = options?.keyFn ?? ((...args) => args[0])
-  const cache = options?.cache ?? new Map<unknown, ReturnType<Fn>>()
-  return function (this: unknown, ...args: Parameters<Fn>) {
-    const key = keyFn(...args)
-    const value = cache.get(key)
+export function memoize<Argument, Result>(
+  fn: (argument: Argument) => Result,
+): (argument: Argument) => Result {
+  const cache = new Map<Argument, Result>()
+  return (argument) => {
+    const value = cache.get(argument)
     if (typeof value !== 'undefined') {
       return value
     }
-    const newValue = fn.apply(this, args)
-    cache.set(key, newValue)
+    const newValue = fn(argument)
+    cache.set(argument, newValue)
     return newValue
-  } as Fn
+  }
 }
