@@ -1,4 +1,3 @@
-import { once } from '@hiogawa/utils'
 import encryptionKeySource from 'virtual:vite-rsc/encryption-key'
 import { renderToReadableStream } from '../react/rsc/server'
 import {
@@ -8,6 +7,7 @@ import {
   encryptBuffer,
   fromBase64,
 } from './encryption-utils'
+import { once } from './shared'
 
 // based on
 // https://github.com/parcel-bundler/parcel/blob/9855f558a69edde843b1464f39a6010f6b421efe/packages/transformers/js/src/rsc-utils.js
