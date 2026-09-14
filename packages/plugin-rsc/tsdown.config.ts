@@ -36,10 +36,11 @@ export default defineConfig({
     'src/utils/encryption-runtime.ts',
   ],
   format: ['esm'],
-  // TODO: specify explicitly
-  inlineOnly: false,
+  deps: {
+    neverBundle: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
+    onlyBundle: false,
+  },
   fixedExtension: false,
-  external: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
   dts: {
     sourcemap: process.argv.slice(2).includes('--sourcemap'),
   },
