@@ -1412,15 +1412,11 @@ function defineTest(f: Fixture) {
       await expect(page.getByTestId('action-error-boundary')).toContainText(
         '(Error: boom!)',
       )
-    } else if (/canary|experimental/.test(React.version)) {
-      // this is now minified on main
+    } else {
+      // this is minified since React 19.3
       // https://github.com/facebook/react/pull/36277
       await expect(page.getByTestId('action-error-boundary')).toContainText(
         '(Error: Minified React error #441',
-      )
-    } else {
-      await expect(page.getByTestId('action-error-boundary')).toContainText(
-        '(Error: An error occurred in the Server Components render.',
       )
     }
     await page.getByRole('button', { name: 'reset-error' }).click()
