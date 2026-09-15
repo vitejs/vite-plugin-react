@@ -45,7 +45,7 @@
     "magic-string": "^1.2.3",
     "obug": "^3.0.0",
     "srvx": "^0.12.7",
-    "strip-literal": "^3.1.0",
+    "strip-literal": "^4.0.0",
     "turbo-stream": "^3.2.1",
     "vitefu": "^1.1.3"
   },
