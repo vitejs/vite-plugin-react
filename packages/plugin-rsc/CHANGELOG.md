@@ -1,3 +1,32 @@
+## <small>[0.5.35](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.34...plugin-rsc%400.5.35) (2026-09-16)</small>
+### Features
+
+* **plugin-rsc:** expose Node.js stream APIs ([#1276](https://github.com/vitejs/vite-plugin-react/issues/1276)) ([32105d5](https://github.com/vitejs/vite-plugin-react/commit/32105d54dcbc1f3c47bfc73122d9d32ad4c1b582))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1375](https://github.com/vitejs/vite-plugin-react/issues/1375)) ([9ab698e](https://github.com/vitejs/vite-plugin-react/commit/9ab698eafc38ffa14861db450291ed2f6f557557))
+* **deps:** update all non-major dependencies ([#1427](https://github.com/vitejs/vite-plugin-react/issues/1427)) ([fb2d6f3](https://github.com/vitejs/vite-plugin-react/commit/fb2d6f3635acbb0f3acbd0e9a914f6c620460957))
+* **deps:** update all non-major dependencies ([#1433](https://github.com/vitejs/vite-plugin-react/issues/1433)) ([61006e6](https://github.com/vitejs/vite-plugin-react/commit/61006e6f52124821c24121a78712f7162ae36f5b))
+* **deps:** update all non-major dependencies ([#1442](https://github.com/vitejs/vite-plugin-react/issues/1442)) ([55895a4](https://github.com/vitejs/vite-plugin-react/commit/55895a46a7bbed75f9a39a538d717f9207936bdc))
+* **deps:** update dependency magic-string to v1 ([#1443](https://github.com/vitejs/vite-plugin-react/issues/1443)) ([c9eba3e](https://github.com/vitejs/vite-plugin-react/commit/c9eba3e76ab2bfa9adcb8b69f9b165e5b4261cd0))
+* **deps:** update dependency strip-literal to v4 ([#1457](https://github.com/vitejs/vite-plugin-react/issues/1457)) ([9657ea1](https://github.com/vitejs/vite-plugin-react/commit/9657ea16b81e413421e864657598202bcb4b8a93))
+* **deps:** update react-related dependencies ([#1452](https://github.com/vitejs/vite-plugin-react/issues/1452)) ([61b650f](https://github.com/vitejs/vite-plugin-react/commit/61b650fe93c3fe30d79aa8615199cdcb0a2594f4))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/react-dom to ^19.2.5 ([#1432](https://github.com/vitejs/vite-plugin-react/issues/1432)) ([e7c2b6d](https://github.com/vitejs/vite-plugin-react/commit/e7c2b6d2fe406b5d8fdf06ca0a761ea289fa4fec))
+* **deps:** update dependency @types/react-dom to ^19.2.7 ([#1444](https://github.com/vitejs/vite-plugin-react/issues/1444)) ([f135533](https://github.com/vitejs/vite-plugin-react/commit/f135533ea918e8c5a548bd3af6e4cfb38e9bffe4))
+* **deps:** update tsdown to v0.23 ([#1451](https://github.com/vitejs/vite-plugin-react/issues/1451)) ([736efe2](https://github.com/vitejs/vite-plugin-react/commit/736efe2f004002abee693a44b405e70699432ecd))
+
+### Code Refactoring
+
+* **rsc:** replace utils package ([#1454](https://github.com/vitejs/vite-plugin-react/issues/1454)) ([389897e](https://github.com/vitejs/vite-plugin-react/commit/389897ed62ea16484ffa815b05c0169492a8dd18))
+
+### Tests
+
+* **rsc:** copy `use cache/server` mixed directive handling to `examples/use-cache-persistent` ([#1417](https://github.com/vitejs/vite-plugin-react/issues/1417)) ([523e45b](https://github.com/vitejs/vite-plugin-react/commit/523e45b8129219867383b2b25eb5fdbec30bbfc9))
+
 ## <small>[0.5.34](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.33...plugin-rsc%400.5.34) (2026-08-07)</small>
 ### Features
 
