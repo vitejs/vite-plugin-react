@@ -14,6 +14,11 @@
       ignoreDeps: ['react', 'react-dom', '@types/react', '@types/react-dom'],
     },
     {
+      // https://github.com/emotion-js/emotion/issues/3386
+      matchFileNames: ['**/react-emotion/**'],
+      ignoreDeps: ['@babel/core'],
+    },
+    {
       matchDepTypes: ['action'],
       pinDigests: true,
     },
