@@ -46,7 +46,6 @@
     "@rolldown/pluginutils": "^1.0.1"
   },
   "devDependencies": {
-    "@babel/core": "8.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
