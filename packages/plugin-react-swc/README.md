@@ -1,9 +1,8 @@
 # @vitejs/plugin-react-swc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-swc)](https://www.npmjs.com/package/@vitejs/plugin-react-swc)
 
-Speed up your Vite dev server with [SWC](https://swc.rs/)
+Use [SWC](https://swc.rs/) instead of Oxc for during development. During production builds, runs SWC if `plugins` or `useAtYourOwnRisk_mutateSwcOptions` are set.
 
-- ✅ A fast Fast Refresh (~20x faster than Babel)
-- ✅ Enable [automatic JSX runtime](https://reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
+Most usages should now be covered in the default `@vitejs/plugin-react` plugin and we recommend using it instead.
 
 ## Installation
 
@@ -29,7 +28,8 @@ This plugin has limited options to enable good performances and be transpiler ag
 - [useDefineForClassFields](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier) is always activated, as this matches the current ECMAScript spec
 - `jsx runtime` is always `automatic`
 - In development:
-  - esbuild is disabled, so the [esbuild configuration](https://vite.dev/config/shared-options.html#esbuild) has no effect
+  - for Vite >= 8, oxc is disabled, so the [oxc configuration](https://vite.dev/config/shared-options.html#oxc) has no effect
+  - for Vite < 8, esbuild is disabled, so the [esbuild configuration](https://v7.vite.dev/config/shared-options.html#esbuild) has no effect
   - `target` is ignored and defaults to `es2020` (see [`devTarget`](#devtarget))
   - JS files are not transformed
   - tsconfig is not resolved, so properties other than the ones listed above behaves like TS defaults
@@ -44,6 +44,16 @@ Control where the JSX factory is imported from.
 
 ```ts
 react({ jsxImportSource: '@emotion/react' })
+```
+
+### compiler
+
+Enable the React Compiler.
+
+`@default` false
+
+```ts
+react({ compiler: true })
 ```
 
 ### tsDecorators
@@ -119,7 +129,7 @@ react({
 
 ### disableOxcRecommendation
 
-If set, disables the recommendation to use `@vitejs/plugin-react` (which is shown when `rolldown-vite` is detected and neither `swc` plugins are used nor the `swc` options are mutated).
+If set, disables the recommendation to use `@vitejs/plugin-react` (which is shown when `vite@8` is detected and neither `swc` plugins are used nor the `swc` options are mutated).
 
 ```ts
 react({ disableOxcRecommendation: true })
