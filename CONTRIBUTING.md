@@ -8,7 +8,7 @@ This repo is a monorepo using pnpm workspaces. The package manager used to insta
 
 > Vite uses pnpm v7. If you are working on multiple projects with different versions of pnpm, it's recommended to enable [Corepack](https://github.com/nodejs/corepack) by running `corepack enable`.
 
-## Pull Request Guidelines
+## Pull Request Guideline
 
 - Checkout a topic branch from a base branch (e.g. `main`), and merge back against that branch.
 
