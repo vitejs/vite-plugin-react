@@ -1,13 +1,7 @@
 import { type CDPSession, expect, test } from '@playwright/test'
-import React from 'react'
 import { useFixture } from './fixture'
 
 test.describe('performance-track', () => {
-  test.skip(
-    !process.env.TEST_PERFORMANCE_TRACK &&
-      !/canary|experimental/.test(React.version),
-  )
-
   const f = useFixture({ root: 'examples/performance-track', mode: 'dev' })
 
   test('emits server component performance tracks', async ({
