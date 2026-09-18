@@ -571,6 +571,54 @@ and React client environments in the browser.
 
 ## Tips
 
+### Stable client chunks
+
+You can use Rolldown's `codeSplitting.groups` option to keep React and Vite runtime code in stable client chunks. This allows browsers to reuse these chunks when application code changes.
+
+```ts
+import { fileURLToPath } from 'node:url'
+import rsc from '@vitejs/plugin-rsc'
+import { defineConfig, normalizePath } from 'vite'
+
+const reactServerDom = normalizePath(
+  fileURLToPath(import.meta.resolve('@vitejs/plugin-rsc/react/browser')),
+)
+
+export default defineConfig({
+  plugins: [rsc()],
+  environments: {
+    client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [
+                {
+                  name: 'lib-react',
+                  test(id) {
+                    return (
+                      id.includes('/node_modules/react/') ||
+                      id.includes('/node_modules/react-dom/') ||
+                      id.includes(reactServerDom)
+                    )
+                  },
+                },
+                {
+                  name: 'lib-vite',
+                  test: (id) => id === '\0vite/preload-helper.js',
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
+})
+```
+
+Use a function for the `lib-react` group test so the React Server Components runtime is included even when the CommonJS plugin adds a proxy suffix to its module ID, such as `?commonjs-es-import`.
+
 ### CSS Support
 
 The plugin automatically handles CSS code-splitting and injection for server components. This eliminates the need to manually call [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss) in most cases.
