@@ -7,7 +7,6 @@ import {
   expect,
   test,
 } from '@playwright/test'
-import React from 'react'
 import { x } from 'tinyexec'
 import { normalizePath, type Rollup } from 'vite'
 import { type Fixture, useCreateEditor, useFixture } from './fixture'
@@ -455,28 +454,21 @@ function defineTest(f: Fixture) {
       const srcs = Object.keys(links)
       expect(srcs).toEqual(expect.arrayContaining(deps.js))
 
-      // `fetchPriority` on `modulepreload` is only emitted by newer React
-      // (see https://github.com/facebook/react/pull/36835), so only assert the
-      // rendered attribute on the canary/experimental CI variants.
-      if (/canary|experimental/.test(React.version)) {
-        const priorities: Record<string, string[]> = {}
-        for (const [href, { fetchpriority }] of Object.entries(links)) {
-          ;(priorities[fetchpriority ?? 'default'] ??= []).push(href)
-        }
-        // client entry deps keep their default priority, while
-        // client-reference-only chunks are downgraded to low
-        const clientEntryJs: string[] = manifest.clientEntryDeps?.js ?? []
-        const nonClientEntryJs = deps.js.filter(
-          (href: string) => !clientEntryJs.includes(href),
-        )
-        expect(priorities.default).toEqual(
-          expect.arrayContaining(clientEntryJs),
-        )
-        expect(priorities.low).toEqual(expect.arrayContaining(nonClientEntryJs))
-        expect(clientEntryJs.length).toBeGreaterThan(0)
-        expect(nonClientEntryJs.length).toBeGreaterThan(0)
-        expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
+      const priorities: Record<string, string[]> = {}
+      for (const [href, { fetchpriority }] of Object.entries(links)) {
+        ;(priorities[fetchpriority ?? 'default'] ??= []).push(href)
       }
+      // client entry deps keep their default priority, while
+      // client-reference-only chunks are downgraded to low
+      const clientEntryJs: string[] = manifest.clientEntryDeps?.js ?? []
+      const nonClientEntryJs = deps.js.filter(
+        (href: string) => !clientEntryJs.includes(href),
+      )
+      expect(priorities.default).toEqual(expect.arrayContaining(clientEntryJs))
+      expect(priorities.low).toEqual(expect.arrayContaining(nonClientEntryJs))
+      expect(clientEntryJs.length).toBeGreaterThan(0)
+      expect(nonClientEntryJs.length).toBeGreaterThan(0)
+      expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
     })
   })
 
