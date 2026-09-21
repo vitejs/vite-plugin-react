@@ -1,6 +1,6 @@
 # @vitejs/plugin-react-swc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-swc)](https://www.npmjs.com/package/@vitejs/plugin-react-swc)
 
-Use [SWC](https://swc.rs/) instead of Oxc for during development. During production builds, runs SWC if `plugins` or `useAtYourOwnRisk_mutateSwcOptions` are set.
+Use [SWC](https://swc.rs/) instead of Oxc for during development. During production builds, runs SWC if `plugins` or `useAtYourOwnRisk_mutateSwcOptions` or `compiler` are set.
 
 Most usages should now be covered in the default `@vitejs/plugin-react` plugin and we recommend using it instead.
 
