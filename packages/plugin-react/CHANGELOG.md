@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add `fastRefresh` option
+
+Set `fastRefresh` to `false` to disable Fast Refresh while keeping HMR, for setups where another plugin already provides it, such as React Router in framework mode. This allows `react({ compiler: true, fastRefresh: false })` to be used next to `reactRouter()` so that JSX and the React Compiler are still handled by this plugin.
+
 ## 6.1.1 (2026-08-28)
 
 ### Add `compiler.logDiagnostics` option
