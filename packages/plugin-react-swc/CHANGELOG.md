@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Add `compiler` option [#1461](https://github.com/vitejs/vite-plugin-react/pull/1461)
+
+Add `compiler` option to enable the React Compiler. Fixes [#428](https://github.com/vitejs/vite-plugin-react/issues/428).
+
+```ts
+react({ compiler: true })
+```
+
 ## 4.3.3 (2026-07-30)
 
 ### Add a patch for bundled-dev mode compat [#1352](https://github.com/vitejs/vite-plugin-react/pull/1352)

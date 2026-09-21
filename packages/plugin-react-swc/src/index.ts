@@ -28,6 +28,11 @@ type Options = {
    */
   jsxImportSource?: string
   /**
+   * Enable the React Compiler.
+   * @default false
+   */
+  compiler?: boolean
+  /**
    * Enable TypeScript decorators. Requires experimentalDecorators in tsconfig.
    * @default false
    */
@@ -82,6 +87,7 @@ const react = (_options?: Options): Plugin[] => {
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
+    compiler: _options?.compiler,
     plugins: _options?.plugins
       ? _options?.plugins.map((el): typeof el => [resolve(el[0]), el[1]])
       : undefined,
@@ -232,7 +238,9 @@ const react = (_options?: Options): Plugin[] => {
         return { code: newCode ?? result.output.code, map: result.output.map }
       },
     },
-    options.plugins || options.useAtYourOwnRisk_mutateSwcOptions
+    options.plugins ||
+    options.useAtYourOwnRisk_mutateSwcOptions ||
+    options.compiler
       ? {
           name: 'vite:react-swc',
           apply: 'build',
@@ -335,6 +343,7 @@ const transformWithOptions = async (
         transform: {
           useDefineForClassFields: true,
           react: reactConfig,
+          reactCompiler: options.compiler,
         },
       },
     }
