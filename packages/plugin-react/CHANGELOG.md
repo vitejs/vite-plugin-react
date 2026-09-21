@@ -6,6 +6,10 @@
 
 Add `refreshInclude` and `refreshExclude` options to skip fast refresh for certain files that won't run in the browser.
 
+### Add `fastRefresh` option
+
+Set `fastRefresh` to `false` to disable Fast Refresh while keeping HMR, for setups where another plugin already provides it, such as React Router in framework mode. This allows `react({ compiler: true, fastRefresh: false })` to be used next to `reactRouter()` so that JSX and the React Compiler are still handled by this plugin.
+
 ## 6.1.2 (2026-10-05)
 
 ### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
