@@ -632,50 +632,34 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
   prevExports,
   nextExports,
 ) {
+  let hasExports = false
   const ignoredExports = window.__getReactRefreshIgnoredExports?.({ id }) ?? []
-  if (
-    predicateOnExport(
-      ignoredExports,
-      prevExports,
-      (key) => key in nextExports,
-    ) !== true
-  ) {
-    return 'Could not Fast Refresh (export removed)'
-  }
-  if (
-    predicateOnExport(
-      ignoredExports,
-      nextExports,
-      (key) => key in prevExports,
-    ) !== true
-  ) {
-    return 'Could not Fast Refresh (new export)'
+
+  for (const key in prevExports) {
+    if (ignoredExports.includes(key)) continue
+    if (!(key in nextExports)) {
+      return `Could not Fast Refresh (export "${key}" removed)`
+    }
   }
 
-  let hasExports = false
-  const allExportsAreComponentsOrUnchanged = predicateOnExport(
-    ignoredExports,
-    nextExports,
-    (key, value) => {
-      hasExports = true
-      if (isLikelyComponentType(value)) return true
-      if (isCompoundComponent(value)) return true
-      return prevExports[key] === nextExports[key]
-    },
-  )
-  if (hasExports && allExportsAreComponentsOrUnchanged === true) {
+  for (const key in nextExports) {
+    if (ignoredExports.includes(key)) continue
+    hasExports = true
+    if (!(key in prevExports)) {
+      return `Could not Fast Refresh (export "${key}" added)`
+    }
+    if (isLikelyComponentType(nextExports[key])) continue
+    if (isCompoundComponent(nextExports[key])) continue
+    if (prevExports[key] !== nextExports[key]) {
+      return `Could not Fast Refresh ("${key}" export is incompatible). Learn more at __README_URL__#consistent-components-exports`
+    }
+  }
+
+  if (hasExports) {
     enqueueUpdate()
   } else {
-    return `Could not Fast Refresh ("${allExportsAreComponentsOrUnchanged}" export is incompatible). Learn more at __README_URL__#consistent-components-exports`
+    return `No exports`
   }
-}
-
-function predicateOnExport(ignoredExports, moduleExports, predicate) {
-  for (const key in moduleExports) {
-    if (ignoredExports.includes(key)) continue
-    if (!predicate(key, moduleExports[key])) return key
-  }
-  return true
 }
 
 // Hides vite-ignored dynamic import so that Vite can skip analysis if no other
