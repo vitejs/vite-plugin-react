@@ -27,8 +27,16 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import {
+  createBundledDevResourceMiddleware,
   crawlBundledDevServerGraph,
   filterBundledDevClientReferences,
+  getBundledDevBootstrapUrl,
+  getBundledDevBoundaryIds,
+  getBundledDevClientUrl,
+  getBundledDevController,
+  getBundledDevSourceUrl,
+  hasBundledDevBoundaryChange,
+  installBundledDevRscUpdateBarrier,
   renderBundledDevClientReferences,
 } from './bundled-dev'
 import vitePluginRscCore from './core/plugin'
@@ -60,7 +68,7 @@ import {
   getEntrySource,
   hashString,
   normalizeRelativePath,
-  normalizeRollupOpitonsInput,
+  normalizeRollupOptionsInput,
   getFetchHandlerExport,
   sortObject,
   withRollupError,
@@ -130,8 +138,10 @@ class RscPluginManager {
   bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   devBrowserEntrySource: string | undefined
+  devClientEntryUrl: string | undefined
   devClientAssetsManifest: AssetsManifest | undefined
-  devServerAssetUrls: Map<string, string> = new Map()
+  devBundledBoundaryIds: string[] = []
+  devBundledGraphScanned: boolean = false
   // This only gates metadata produced by generateBundle, not output commit.
   devClientManifestReady!: Promise<void>
   isScanBuild: boolean = false
@@ -158,15 +168,40 @@ class RscPluginManager {
   > = {}
 
   private resolveDevClientManifestReady!: () => void
+  private devHmrBarrier: { dispose(): void } | undefined
 
   constructor() {
+    this.resetDevBundledState()
+  }
+
+  resetDevBundledState(): void {
+    this.disposeDevHmrBarrier()
+    this.devBrowserEntrySource = undefined
+    this.devClientEntryUrl = undefined
+    this.devClientAssetsManifest = undefined
+    this.devBundledBoundaryIds = []
+    this.devBundledGraphScanned = false
     this.devClientManifestReady = new Promise<void>((resolve) => {
       this.resolveDevClientManifestReady = resolve
     })
   }
 
-  setDevClientAssetsManifest(manifest: AssetsManifest): void {
+  setDevHmrBarrier(barrier: { dispose(): void }): void {
+    this.disposeDevHmrBarrier()
+    this.devHmrBarrier = barrier
+  }
+
+  disposeDevHmrBarrier(): void {
+    this.devHmrBarrier?.dispose()
+    this.devHmrBarrier = undefined
+  }
+
+  setDevClientAssetsManifest(
+    manifest: AssetsManifest,
+    clientEntryUrl: string | undefined,
+  ): void {
     this.devClientAssetsManifest = manifest
+    this.devClientEntryUrl = clientEntryUrl
     this.resolveDevClientManifestReady()
   }
 
@@ -197,6 +232,39 @@ class RscPluginManager {
 
   writeEnvironmentImportsManifest(): void {
     writeEnvironmentImportsManifest(this)
+  }
+}
+
+async function scanBundledDevClientReferences(
+  manager: RscPluginManager,
+  serverEnvironment: DevEnvironment,
+): Promise<void> {
+  const previousClientReferences = manager.clientReferenceMetaMap
+  manager.clientReferenceMetaMap = { ...previousClientReferences }
+  try {
+    const graph = await crawlBundledDevServerGraph(
+      serverEnvironment,
+      Object.values(
+        normalizeRollupOptionsInput(
+          serverEnvironment.config.build.rollupOptions.input,
+        ),
+      ),
+    )
+    if (graph.hasCss) {
+      const resolved = await serverEnvironment.pluginContainer.resolveId(
+        'virtual:vite-rsc/remove-duplicate-server-css',
+      )
+      assert(resolved)
+      graph.moduleIds.add(resolved.id)
+      await serverEnvironment.transformRequest(resolved.id)
+    }
+    manager.clientReferenceMetaMap = filterBundledDevClientReferences(
+      manager.clientReferenceMetaMap,
+      graph.moduleIds,
+    )
+  } catch (error) {
+    manager.clientReferenceMetaMap = previousClientReferences
+    throw error
   }
 }
 
@@ -661,20 +729,19 @@ export default function vitePluginRsc(
         }
 
         const browserEnvironment = config.environments.client
-        if (
-          config.command === 'serve' &&
-          browserEnvironment?.isBundled &&
-          !rscPluginOptions.customClientEntry
-        ) {
-          manager.devBrowserEntrySource = getEntrySource(
-            browserEnvironment,
-            'index',
-          )
-          browserEnvironment.build.rollupOptions.input = {
-            ...normalizeRollupOpitonsInput(
-              browserEnvironment.build.rollupOptions.input,
-            ),
-            index: VIRTUAL_ENTRIES.browser,
+        if (config.command === 'serve' && browserEnvironment?.isBundled) {
+          manager.resetDevBundledState()
+          if (!rscPluginOptions.customClientEntry) {
+            manager.devBrowserEntrySource = getEntrySource(
+              browserEnvironment,
+              'index',
+            )
+            browserEnvironment.build.rollupOptions.input = {
+              ...normalizeRollupOptionsInput(
+                browserEnvironment.build.rollupOptions.input,
+              ),
+              index: VIRTUAL_ENTRIES.browser,
+            }
           }
         }
       },
@@ -734,6 +801,33 @@ export default function vitePluginRsc(
             }
           }
           return oldSend.apply(this, args as any)
+        }
+
+        const clientEnvironment = server.environments.client
+        if (clientEnvironment.config.isBundled) {
+          server.middlewares.use(
+            createBundledDevResourceMiddleware(
+              server,
+              clientEnvironment,
+              () => manager.devClientEntryUrl,
+            ),
+          )
+
+          const bundledDev = getBundledDevController(clientEnvironment)
+          if (bundledDev?.waitForLatestBuildOutput) {
+            manager.setDevHmrBarrier(
+              installBundledDevRscUpdateBarrier({
+                hot: clientEnvironment.hot,
+                waitForLatestClientBuild: () =>
+                  bundledDev.waitForLatestBuildOutput!(),
+                onError(error) {
+                  server.config.logger.warn(
+                    `[vite-rsc] deferred an RSC update because the browser bundle failed: ${error instanceof Error ? error.message : String(error)}`,
+                  )
+                },
+              }),
+            )
+          }
         }
 
         if (rscPluginOptions.serverHandler === false) return
@@ -803,6 +897,43 @@ export default function vitePluginRsc(
         }
       },
       async hotUpdate(ctx) {
+        // Vite's bundled client invokes plugin hooks from Rolldown's watcher,
+        // whose plugin context is not associated with a Vite environment. The
+        // source RSC/SSR environments handle this plugin's invalidation below.
+        if (!('environment' in this)) return
+
+        if (
+          isCSSRequest(ctx.file) &&
+          this.environment.name === 'rsc' &&
+          ctx.modules.length > 0 &&
+          manager.config.environments.client?.isBundled &&
+          (rscPluginOptions.cssLinkPrecedence ?? true)
+        ) {
+          const clientEnvironment = ctx.server.environments.client
+          if (ctx.type === 'update') {
+            clientEnvironment.moduleGraph.onFileChange(ctx.file)
+          } else {
+            clientEnvironment.moduleGraph.onFileDelete(ctx.file)
+          }
+          const url = getBundledDevSourceUrl(ctx.file, manager.config.root)
+          clientEnvironment.hot.send(
+            ctx.type === 'update'
+              ? {
+                  type: 'update',
+                  updates: [
+                    {
+                      type: 'css-update',
+                      path: url,
+                      acceptedPath: url,
+                      timestamp: ctx.timestamp,
+                    },
+                  ],
+                }
+              : { type: 'full-reload', path: '*' },
+          )
+          return []
+        }
+
         if (isCSSRequest(ctx.file)) {
           if (this.environment.name === 'client') {
             const cssLinkPrecedence = rscPluginOptions.cssLinkPrecedence ?? true
@@ -828,15 +959,45 @@ export default function vitePluginRsc(
         // handle client -> server switch (i.e. "use client" removal)
         // by eagerly transforming new module on "rsc" environment.
         if (this.environment.name === 'rsc') {
+          const isBrowserBundled =
+            manager.config.environments.client?.isBundled === true
           for (const mod of ctx.modules) {
             if (
               mod.type === 'js' &&
               mod.id &&
-              mod.id in manager.clientReferenceMetaMap
+              (isBrowserBundled || mod.id in manager.clientReferenceMetaMap)
             ) {
               try {
                 await this.environment.transformRequest(mod.url)
               } catch {}
+            }
+          }
+
+          if (isBrowserBundled) {
+            // The browser bundle contains a closed, static client-reference
+            // graph. If a server edit changes that graph, restart so Rolldown
+            // can rebuild the virtual reference module before rendering again.
+            try {
+              await scanBundledDevClientReferences(manager, this.environment)
+            } catch (error) {
+              ctx.server.environments.client.hot.send({
+                type: 'error',
+                err: prepareError(error as any),
+              })
+              throw error
+            }
+            if (
+              hasBundledDevBoundaryChange(
+                manager.devBundledBoundaryIds,
+                manager.clientReferenceMetaMap,
+              )
+            ) {
+              ctx.server.config.logger.info(
+                '[vite-rsc] client boundary graph changed, restarting the dev server',
+              )
+              manager.disposeDevHmrBarrier()
+              await ctx.server.restart()
+              return []
             }
           }
         }
@@ -1157,44 +1318,19 @@ export function createRpcClient(params) {
             this.environment.name === 'client' &&
             this.environment.config.isBundled
           ) {
-            updateBundledDevAssetUrls(bundle, manager)
-            const manifest = createBundledDevAssetsManifest(
+            const result = createBundledDevAssetsManifest(
               bundle,
               manager,
               rscPluginOptions,
             )
-            if (manifest) {
-              manager.setDevClientAssetsManifest(manifest)
+            if (result) {
+              manager.setDevClientAssetsManifest(
+                result.manifest,
+                result.clientEntryUrl,
+              )
             }
           }
         },
-      },
-    },
-    {
-      name: 'rsc:bundled-dev-server-assets',
-      enforce: 'post',
-      async transform(_code, id) {
-        if (this.environment.mode !== 'dev') return
-        if (
-          this.environment.name === 'client' ||
-          !manager.config.environments.client?.isBundled
-        ) {
-          return
-        }
-
-        const { filename, query } = parseIdQuery(id)
-        if (
-          (!manager.config.assetsInclude(filename) && !('url' in query)) ||
-          'raw' in query ||
-          'inline' in query
-        ) {
-          return
-        }
-
-        await manager.devClientManifestReady
-        const url = manager.devServerAssetUrls.get(normalizePath(filename))
-        if (!url) return
-        return { code: `export default ${JSON.stringify(url)}`, map: null }
       },
     },
     {
@@ -1217,6 +1353,9 @@ export function createRpcClient(params) {
             assert(this.environment.name !== 'client')
             assert(this.environment.mode === 'dev')
             if (manager.config.environments.client?.isBundled) {
+              await getBundledDevController(
+                manager.server.environments.client,
+              )?.waitForLatestBuildOutput?.()
               await manager.devClientManifestReady
               assert(manager.devClientAssetsManifest)
               return `export default ${serializeValueWithRuntime(manager.devClientAssetsManifest)}`
@@ -1435,7 +1574,7 @@ window.__vite_plugin_react_preamble_installed__ = true;
         const resolvedEntry = await this.resolve(source)
         assert(resolvedEntry, `[vite-rsc] failed to resolve entry '${source}'`)
         if (this.environment.config.isBundled) {
-          code += `import ${JSON.stringify(withResolvedIdProxy(resolvedEntry.id))};`
+          code += `await import(${JSON.stringify(withResolvedIdProxy(resolvedEntry.id))});`
         } else {
           code += `await import(${JSON.stringify(resolvedEntry.id)});`
         }
@@ -1728,45 +1867,21 @@ function vitePluginUseClient(
                 return { code: `export default {}`, map: null }
               }
 
-              const serverEnvironment =
-                manager.server.environments[serverEnvironmentName]!
-              let scanResult!: Awaited<
-                ReturnType<typeof crawlBundledDevServerGraph>
-              >
-              const previousClientReferences = manager.clientReferenceMetaMap
-              manager.clientReferenceMetaMap = { ...previousClientReferences }
-              try {
-                scanResult = await crawlBundledDevServerGraph(
+              if (!manager.devBundledGraphScanned) {
+                const serverEnvironment =
+                  manager.server.environments[serverEnvironmentName]
+                assert(
                   serverEnvironment,
-                  Object.values(
-                    normalizeRollupOpitonsInput(
-                      serverEnvironment.config.build.rollupOptions.input,
-                    ),
-                  ),
+                  `[vite-rsc] missing '${serverEnvironmentName}' environment`,
                 )
-                // Registering these modules with addWatchFile is deferred until
-                // Vite exposes an atomic bundledDev rebuild-and-reload operation.
-                if (scanResult.cssImports.size > 0) {
-                  const resolved =
-                    await serverEnvironment.pluginContainer.resolveId(
-                      'virtual:vite-rsc/remove-duplicate-server-css',
-                    )
-                  assert(resolved)
-                  scanResult.moduleIds.add(resolved.id)
-                  await serverEnvironment.transformRequest(resolved.id)
-                }
-                manager.clientReferenceMetaMap =
-                  filterBundledDevClientReferences(
-                    manager.clientReferenceMetaMap,
-                    scanResult.moduleIds,
-                  )
-              } catch (error) {
-                manager.clientReferenceMetaMap = previousClientReferences
-                throw error
+                await scanBundledDevClientReferences(manager, serverEnvironment)
+                manager.devBundledBoundaryIds = getBundledDevBoundaryIds(
+                  manager.clientReferenceMetaMap,
+                )
+                manager.devBundledGraphScanned = true
               }
 
               const code = renderBundledDevClientReferences(
-                scanResult,
                 manager.clientReferenceMetaMap,
               )
               return { code, map: null }
@@ -2412,7 +2527,9 @@ function createBundledDevAssetsManifest(
   bundle: Rollup.OutputBundle,
   manager: RscPluginManager,
   options: Pick<RscPluginOptions, 'cssLinkPrecedence' | 'customClientEntry'>,
-): AssetsManifest | undefined {
+):
+  | { manifest: AssetsManifest; clientEntryUrl: string | undefined }
+  | undefined {
   const assetDeps = collectAssetDeps(bundle)
   const entry = options.customClientEntry
     ? undefined
@@ -2421,9 +2538,20 @@ function createBundledDevAssetsManifest(
       )
   if (!options.customClientEntry && !entry) return
 
-  const clientEntryDeps = entry
-    ? assetsURLOfDeps(entry.deps, manager)
-    : undefined
+  let clientEntryUrl: string | undefined
+  let clientEntryDeps = entry ? assetsURLOfDeps(entry.deps, manager) : undefined
+  if (entry) {
+    const entryUrl = assetsURL(entry.chunk.fileName, manager)
+    assert(
+      typeof entryUrl === 'string',
+      '[vite-rsc] runtime asset URLs are not supported with bundled dev',
+    )
+    clientEntryUrl = entryUrl
+    clientEntryDeps = {
+      ...clientEntryDeps!,
+      js: [getBundledDevClientUrl(manager.config.base), ...clientEntryDeps!.js],
+    }
+  }
   const clientReferenceDeps = Object.fromEntries(
     Object.values(manager.clientReferenceMetaMap).map((meta) => [
       meta.referenceKey,
@@ -2432,32 +2560,15 @@ function createBundledDevAssetsManifest(
   )
 
   return {
-    bootstrapScriptContent: entry
-      ? `import(${JSON.stringify(assetsURL(entry.chunk.fileName, manager))})`
-      : '',
-    clientEntryDeps,
-    clientReferenceDeps,
-    cssLinkPrecedence: options.cssLinkPrecedence,
-  }
-}
-
-function updateBundledDevAssetUrls(
-  bundle: Rollup.OutputBundle,
-  manager: RscPluginManager,
-): void {
-  for (const output of Object.values(bundle)) {
-    if (output.type !== 'asset') continue
-    for (const originalFileName of output.originalFileNames) {
-      const file = path.isAbsolute(originalFileName)
-        ? originalFileName
-        : path.resolve(manager.config.root, originalFileName)
-      const url = assetsURL(output.fileName, manager)
-      assert(
-        typeof url === 'string',
-        '[vite-rsc] runtime asset URLs are not supported with bundled dev',
-      )
-      manager.devServerAssetUrls.set(normalizePath(file), url)
-    }
+    clientEntryUrl,
+    manifest: {
+      clientEntryUrl: entry
+        ? getBundledDevBootstrapUrl(manager.config.base)
+        : undefined,
+      clientEntryDeps,
+      clientReferenceDeps,
+      cssLinkPrecedence: options.cssLinkPrecedence,
+    },
   }
 }
 

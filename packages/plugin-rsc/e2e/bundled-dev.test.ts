@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test'
+import * as vite from 'vite'
 import { setupInlineFixture, useFixture } from './fixture'
 import { expectNoPageError, expectNoReload, waitForHydration } from './helper'
 
 test.describe('bundled dev', () => {
+  test.skip(!('rolldownVersion' in vite), 'bundled dev requires Vite 8')
+
   const root = 'examples/e2e/temp/bundled-dev'
 
   test.beforeAll(async () => {
@@ -42,6 +45,10 @@ test.describe('bundled dev', () => {
     await expect(page.getByAltText('React logo')).not.toHaveJSProperty(
       'naturalWidth',
       0,
+    )
+    expect(requests).toContain(fixture.url('bundledDevClient.mjs'))
+    expect(requests).toContain(
+      fixture.url('@id/__x00__virtual:vite-rsc/bundled-dev-bootstrap'),
     )
     expect(requests).toContain(fixture.url('assets/index.js'))
     expect(requests).not.toContain(
