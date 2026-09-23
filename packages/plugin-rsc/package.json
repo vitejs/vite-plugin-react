@@ -43,6 +43,7 @@
     "es-module-lexer": "^2.3.2",
     "estree-walker": "^3.0.3",
     "magic-string": "^1.2.3",
+    "mrmime": "^2.0.1",
     "obug": "^3.0.0",
     "srvx": "^0.12.7",
     "strip-literal": "^4.0.0",

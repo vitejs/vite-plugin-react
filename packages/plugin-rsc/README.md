@@ -17,6 +17,13 @@ You can create a starter project by:
 npm create vite@latest -- --template rsc
 ```
 
+### Bundled development
+
+Vite's experimental `bundledDev` mode supports initial RSC rendering and client
+HMR. With Vite's mixed-environment HMR support, server component edits refresh
+the RSC payload and changes to the set of client boundaries restart the dev
+server automatically.
+
 ## Examples
 
 **Start here:** [`./examples/starter`](./examples/starter) - Recommended for understanding the package
