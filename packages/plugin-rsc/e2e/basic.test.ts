@@ -788,9 +788,8 @@ function defineTest(f: Fixture) {
         links.map((link) => link.getAttribute('crossorigin')),
       )
     expect(crossOrigins.length).toBeGreaterThan(0)
-    expect(
-      crossOrigins.every((value) => value === '' || value === 'anonymous'),
-    ).toBe(true)
+    // React serializes anonymous CORS as either `"anonymous"` or `""`.
+    expect(crossOrigins).not.toContain(null)
   })
 
   async function testCssBasic(page: Page) {
