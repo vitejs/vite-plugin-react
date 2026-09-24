@@ -473,23 +473,21 @@ function defineTest(f: Fixture) {
       // When separately chunked client references share CSS, Vite removes the
       // temporary CSS-only JS chunk. The manifest should keep the shared CSS
       // without retaining a dependency on that removed chunk.
-      const sharedCssDeps = [
+      const sharedClientDeps = [
         'src/routes/shared-client-css/client1.tsx',
         'src/routes/shared-client-css/client2.tsx',
       ].map((id) => manifest.clientReferenceDeps[hashString(id)])
       const getClientAssetPath = (url: string) =>
         path.join(f.root, 'dist/client', url)
-      const sharedCss = sharedCssDeps[0].css.filter((url: string) =>
-        sharedCssDeps[1].css.includes(url),
-      )
+      expect(sharedClientDeps[0].css).toEqual(sharedClientDeps[1].css)
       expect(
-        sharedCss.some((url: string) =>
+        sharedClientDeps[0].css.some((url: string) =>
           readFileSync(getClientAssetPath(url), 'utf-8').includes(
             '.shared-client-css',
           ),
         ),
       ).toBe(true)
-      for (const deps of sharedCssDeps) {
+      for (const deps of sharedClientDeps) {
         for (const url of deps.js) {
           expect(existsSync(getClientAssetPath(url))).toBe(true)
         }
