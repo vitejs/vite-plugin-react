@@ -477,10 +477,10 @@ function defineTest(f: Fixture) {
         'src/routes/shared-client-css/client1.tsx',
         'src/routes/shared-client-css/client2.tsx',
       ].map((id) => manifest.clientReferenceDeps[hashString(id)])
-      const getClientAssetPath = (url: string) =>
-        path.join(f.root, 'dist/client', url)
       expect(sharedClientDeps[0].css).toEqual(sharedClientDeps[1].css)
       expect(sharedClientDeps[0].css).toHaveLength(1)
+      const getClientAssetPath = (url: string) =>
+        path.join(f.root, 'dist/client', url)
       expect(
         readFileSync(getClientAssetPath(sharedClientDeps[0].css[0]), 'utf-8'),
       ).toContain('.shared-client-css')
