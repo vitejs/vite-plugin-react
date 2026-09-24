@@ -1148,6 +1148,7 @@ export function createRpcClient(params) {
         handler(_options, bundle) {
           // copy assets from rsc build to client build
           if (this.environment.name !== 'client') return
+          if (manager.isScanBuild) return
 
           const rscBundle = manager.bundles['rsc']!
 
