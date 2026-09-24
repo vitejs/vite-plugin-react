@@ -781,6 +781,18 @@ function defineTest(f: Fixture) {
   testNoJs('css @nojs', async ({ page }) => {
     await page.goto(f.url())
     await testCss(page)
+    for (const precedence of [
+      'vite-rsc/client-reference',
+      'vite-rsc/importer-resources',
+    ]) {
+      const links = page.locator(
+        `link[rel="stylesheet"][data-precedence="${precedence}"]`,
+      )
+      await expect(links.first()).toHaveAttribute(
+        'crossorigin',
+        /^(?:|anonymous)$/,
+      )
+    }
   })
 
   async function testCssBasic(page: Page) {
