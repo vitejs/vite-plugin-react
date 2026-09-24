@@ -480,13 +480,10 @@ function defineTest(f: Fixture) {
       const getClientAssetPath = (url: string) =>
         path.join(f.root, 'dist/client', url)
       expect(sharedClientDeps[0].css).toEqual(sharedClientDeps[1].css)
+      expect(sharedClientDeps[0].css).toHaveLength(1)
       expect(
-        sharedClientDeps[0].css.some((url: string) =>
-          readFileSync(getClientAssetPath(url), 'utf-8').includes(
-            '.shared-client-css',
-          ),
-        ),
-      ).toBe(true)
+        readFileSync(getClientAssetPath(sharedClientDeps[0].css[0]), 'utf-8'),
+      ).toContain('.shared-client-css')
       for (const deps of sharedClientDeps) {
         for (const url of deps.js) {
           expect(existsSync(getClientAssetPath(url))).toBe(true)
