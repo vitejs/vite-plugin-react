@@ -1142,8 +1142,7 @@ export function createRpcClient(params) {
       },
       // client build
       generateBundle: {
-        // Vite's CSS post-processing removes pure CSS chunks and updates their
-        // importers, so collect dependencies from the finalized bundle.
+        // Run after `vite:css-post` to process the finalized client bundle.
         order: 'post',
         handler(_options, bundle) {
           // copy assets from rsc build to client build
