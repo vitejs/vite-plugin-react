@@ -470,6 +470,9 @@ function defineTest(f: Fixture) {
       expect(nonClientEntryJs.length).toBeGreaterThan(0)
       expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
 
+      // When separately chunked client references share CSS, Vite removes the
+      // temporary CSS-only JS chunk. The manifest should keep the shared CSS
+      // without retaining a dependency on that removed chunk.
       const sharedCssDeps = [
         'src/routes/shared-client-css/client1.tsx',
         'src/routes/shared-client-css/client2.tsx',
