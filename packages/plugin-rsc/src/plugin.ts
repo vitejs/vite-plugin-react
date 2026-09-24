@@ -1141,9 +1141,14 @@ export function createRpcClient(params) {
         },
       },
       // client build
-      generateBundle(_options, bundle) {
-        // copy assets from rsc build to client build
-        if (this.environment.name === 'client') {
+      generateBundle: {
+        // Vite's CSS post-processing removes pure CSS chunks and updates their
+        // importers, so collect dependencies from the finalized bundle.
+        order: 'post',
+        handler(_options, bundle) {
+          // copy assets from rsc build to client build
+          if (this.environment.name !== 'client') return
+
           const rscBundle = manager.bundles['rsc']!
 
           // when css code split is disabled, treat vite's single css bundle `style.css`
@@ -1243,7 +1248,7 @@ export function createRpcClient(params) {
             serverResources,
             cssLinkPrecedence: rscPluginOptions.cssLinkPrecedence,
           }
-        }
+        },
       },
       // non-client builds can load assets manifest as external
       renderChunk(code, chunk) {

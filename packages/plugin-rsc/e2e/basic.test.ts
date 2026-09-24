@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import {
   type Page,
@@ -469,6 +469,28 @@ function defineTest(f: Fixture) {
       expect(clientEntryJs.length).toBeGreaterThan(0)
       expect(nonClientEntryJs.length).toBeGreaterThan(0)
       expect(Object.keys(priorities).sort()).toEqual(['default', 'low'])
+
+      const sharedCssDeps = [
+        'src/routes/shared-client-css/client1.tsx',
+        'src/routes/shared-client-css/client2.tsx',
+      ].map((id) => manifest.clientReferenceDeps[hashString(id)])
+      const getClientAssetPath = (url: string) =>
+        path.join(f.root, 'dist/client', new URL(url, f.url()).pathname)
+      const sharedCss = sharedCssDeps[0].css.filter((url: string) =>
+        sharedCssDeps[1].css.includes(url),
+      )
+      expect(
+        sharedCss.some((url: string) =>
+          readFileSync(getClientAssetPath(url), 'utf-8').includes(
+            '.shared-client-css',
+          ),
+        ),
+      ).toBe(true)
+      for (const deps of sharedCssDeps) {
+        for (const url of deps.js) {
+          expect(existsSync(getClientAssetPath(url))).toBe(true)
+        }
+      }
     })
   })
 
