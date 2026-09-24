@@ -14,7 +14,6 @@ export function TestStyleServer() {
       <link
         rel="stylesheet"
         href={styleUrl}
-        crossOrigin="anonymous"
         precedence="test-style-manual-link"
       />
       <div className="test-style-url-server">test-style-url-server</div>
@@ -22,7 +21,6 @@ export function TestStyleServer() {
       <link
         rel="stylesheet"
         href="/test-style-server-manual.css"
-        crossOrigin="anonymous"
         precedence="test-style-manual-link"
       />
       <div className="test-style-server-manual">test-style-server-manual</div>

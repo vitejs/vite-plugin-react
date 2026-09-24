@@ -17,7 +17,6 @@ export function TestStyleClient() {
       <link
         rel="stylesheet"
         href={styleUrl}
-        crossOrigin="anonymous"
         precedence="test-style-manual-link"
       />
       <div className="test-style-url-client">test-style-url-client</div>

@@ -18,14 +18,10 @@ export function TestCssQueriesClient(props: {
       <br />
       {enabled && (
         <>
-          <link rel="stylesheet" href={cssUrl} crossOrigin="anonymous" />
+          <link rel="stylesheet" href={cssUrl} />
           <style>{cssInline}</style>
           <style>{cssRaw}</style>
-          <link
-            rel="stylesheet"
-            href={props.serverUrl}
-            crossOrigin="anonymous"
-          />
+          <link rel="stylesheet" href={props.serverUrl} />
           <style>{props.serverInline}</style>
           <style>{props.serverRaw}</style>
         </>
