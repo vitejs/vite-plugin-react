@@ -782,7 +782,7 @@ function defineTest(f: Fixture) {
     await page.goto(f.url())
     await testCss(page)
     const crossOrigins = await page
-      .locator('link[rel="stylesheet"][data-precedence^="vite-rsc/"]')
+      .locator('link[rel="stylesheet"]')
       .evaluateAll((links) =>
         links.map((link) => link.getAttribute('crossorigin')),
       )
