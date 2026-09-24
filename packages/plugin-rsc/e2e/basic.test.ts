@@ -475,7 +475,7 @@ function defineTest(f: Fixture) {
         'src/routes/shared-client-css/client2.tsx',
       ].map((id) => manifest.clientReferenceDeps[hashString(id)])
       const getClientAssetPath = (url: string) =>
-        path.join(f.root, 'dist/client', new URL(url, f.url()).pathname)
+        path.join(f.root, 'dist/client', url)
       const sharedCss = sharedCssDeps[0].css.filter((url: string) =>
         sharedCssDeps[1].css.includes(url),
       )
