@@ -205,25 +205,45 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // extract workspace overrides
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
-  const { stdout: overridesJson } = await x(
-    'pnpm',
-    ['config', 'get', 'overrides', '--json', '--location', 'project'],
-    { throwOnError: true, nodeOptions: { cwd: rootDir } },
+  // The fixture runs outside the monorepo to emulate a consumer install, so
+  // copy the install settings it would otherwise lose at the workspace boundary.
+  const rootPackageJson = readJsonFile<{ packageManager?: string }>(
+    path.join(rootDir, 'package.json'),
   )
-  const workspaceOverrides: Record<string, string> = JSON.parse(
-    overridesJson || '{}',
+  editJsonFile<Record<string, unknown>>(
+    path.join(options.dest, 'package.json'),
+    (fixturePackageJson) => {
+      fixturePackageJson.packageManager = rootPackageJson.packageManager
+    },
   )
+
+  // extract workspace config
+  const rootOverrides = await getPnpmProjectConfig<Record<string, string>>({
+    cwd: rootDir,
+    name: 'overrides',
+    fallback: {},
+  })
+  const rootOnlyBuiltDependencies = await getPnpmProjectConfig<string[]>({
+    cwd: rootDir,
+    name: 'onlyBuiltDependencies',
+    fallback: [],
+  })
   const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
-    ...workspaceOverrides,
+    ...rootOverrides,
     ...options.overrides,
   }
-  const tempWorkspaceYaml = `overrides:\n${Object.entries(overrides)
-    .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
-    .join('\n')}\n`
+  const tempWorkspaceYaml = [
+    'overrides:',
+    ...Object.entries(overrides).map(
+      ([name, value]) => `  ${JSON.stringify(name)}: ${JSON.stringify(value)}`,
+    ),
+    'onlyBuiltDependencies:',
+    ...rootOnlyBuiltDependencies.map((name) => `  - ${JSON.stringify(name)}`),
+    '',
+  ].join('\n')
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
     tempWorkspaceYaml,
@@ -234,13 +254,36 @@ export async function setupIsolatedFixture(options: {
     throwOnError: true,
     nodeOptions: {
       cwd: options.dest,
-      stdio: [
-        'ignore',
-        process.env.TEST_DEBUG ? 'inherit' : 'ignore',
-        'inherit',
-      ],
+      stdio: ['ignore', 'inherit', 'inherit'],
     },
   })
+}
+
+function readJsonFile<T>(filepath: string): T {
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'))
+}
+
+function writeJsonFile(filepath: string, value: unknown): void {
+  fs.writeFileSync(filepath, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+function editJsonFile<T>(filepath: string, edit: (value: T) => void): void {
+  const value = readJsonFile<T>(filepath)
+  edit(value)
+  writeJsonFile(filepath, value)
+}
+
+async function getPnpmProjectConfig<T>(options: {
+  cwd: string
+  name: string
+  fallback: T
+}): Promise<T> {
+  const { stdout } = await x(
+    'pnpm',
+    ['config', 'get', options.name, '--json', '--location', 'project'],
+    { throwOnError: true, nodeOptions: { cwd: options.cwd } },
+  )
+  return stdout ? JSON.parse(stdout) : options.fallback
 }
 
 // inspired by
