@@ -63,6 +63,15 @@ export interface Options {
    */
   reactRefreshHost?: string
   /**
+   * Set to `false` to disable Fast Refresh: the refresh transform, the
+   * runtime and the preamble are skipped while HMR stays enabled.
+   * Useful when another plugin already provides Fast Refresh, e.g. React
+   * Router in framework mode, so that this plugin can still handle JSX and
+   * the React Compiler next to it.
+   * @default true
+   */
+  fastRefresh?: boolean
+  /**
    * Enable React Compiler with its default options or configure it.
    * This requires `oxc-transform-react` to be installed.
    * @default false
@@ -92,14 +101,20 @@ export default function viteReact(opts: Options = {}): Plugin[] {
     command: 'serve' | 'build',
     hmr: ServerOptions['hmr'],
   ) {
-    return isProduction || command === 'build' || hmr === false
+    return (
+      opts.fastRefresh === false ||
+      isProduction ||
+      command === 'build' ||
+      hmr === false
+    )
   }
 
   const viteBabel: Plugin = {
     name: 'vite:react-babel',
     enforce: 'pre',
     config(_userConfig, { command }) {
-      const refresh = command === 'serve' && !opts.compiler
+      const refresh =
+        command === 'serve' && !opts.compiler && opts.fastRefresh !== false
       if (opts.jsxRuntime === 'classic') {
         return {
           oxc: {

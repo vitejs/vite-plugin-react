@@ -77,6 +77,21 @@ react({ reactRefreshHost: 'http://localhost:3000' })
 
 Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
 
+### fastRefresh
+
+Fast Refresh is enabled during development by default. Set `fastRefresh` to `false` when another plugin already provides it, so that the two do not conflict. This is the case for React Router in framework mode, whose Vite plugin ships its own Fast Refresh integration and fails with `Identifier 'RefreshRuntime' has already been declared` when both are active. The plugin then only configures JSX and, if enabled, runs the [React Compiler](#react-compiler), while the other plugin owns Fast Refresh. HMR itself is not affected.
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import { reactRouter } from '@react-router/dev/vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react({ compiler: true, fastRefresh: false }), reactRouter()],
+})
+```
+
 ## React Compiler
 
 ### Rust React Compiler
@@ -111,6 +126,8 @@ Set `logDiagnostics` to `true` to log recoverable React Compiler diagnostics thr
 ```js
 react({ compiler: { logDiagnostics: true } })
 ```
+
+To use the compiler in a setup where another plugin provides Fast Refresh, such as React Router in framework mode, combine it with [`fastRefresh: false`](#fastrefresh).
 
 ### Babel React Compiler
 
