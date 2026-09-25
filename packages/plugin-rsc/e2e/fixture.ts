@@ -205,8 +205,21 @@ export async function setupIsolatedFixture(options: {
     filter: (src) => !src.includes('node_modules'),
   })
 
-  // extract workspace overrides
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  const rootPackageJson = JSON.parse(
+    fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'),
+  ) as { packageManager?: string }
+  const fixturePackageJsonPath = path.join(options.dest, 'package.json')
+  const fixturePackageJson = JSON.parse(
+    fs.readFileSync(fixturePackageJsonPath, 'utf-8'),
+  )
+  fixturePackageJson.packageManager = rootPackageJson.packageManager
+  fs.writeFileSync(
+    fixturePackageJsonPath,
+    `${JSON.stringify(fixturePackageJson, null, 2)}\n`,
+  )
+
+  // extract workspace config
   const { stdout: overridesJson } = await x(
     'pnpm',
     ['config', 'get', 'overrides', '--json', '--location', 'project'],
@@ -214,6 +227,21 @@ export async function setupIsolatedFixture(options: {
   )
   const workspaceOverrides: Record<string, string> = JSON.parse(
     overridesJson || '{}',
+  )
+  const { stdout: onlyBuiltDependenciesJson } = await x(
+    'pnpm',
+    [
+      'config',
+      'get',
+      'onlyBuiltDependencies',
+      '--json',
+      '--location',
+      'project',
+    ],
+    { throwOnError: true, nodeOptions: { cwd: rootDir } },
+  )
+  const onlyBuiltDependencies: string[] = JSON.parse(
+    onlyBuiltDependenciesJson || '[]',
   )
   const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
@@ -223,6 +251,8 @@ export async function setupIsolatedFixture(options: {
   }
   const tempWorkspaceYaml = `overrides:\n${Object.entries(overrides)
     .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
+    .join('\n')}\nonlyBuiltDependencies:\n${onlyBuiltDependencies
+    .map((name) => `  - ${JSON.stringify(name)}`)
     .join('\n')}\n`
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
