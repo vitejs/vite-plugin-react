@@ -2442,7 +2442,11 @@ function vitePluginRscCss(
 
     // skip transform if no css imports
     const result = esModuleLexer.parse(code)
-    if (!result[0].some((i) => i.t === 1 && i.n && isCSSRequest(i.n))) {
+    if (
+      !result[0].some(
+        (i) => i.type === 'static' && i.specifier && isCSSRequest(i.specifier),
+      )
+    ) {
       return false
     }
     // transform only function exports with capital names, e.g.
