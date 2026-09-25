@@ -223,13 +223,15 @@ export async function setupIsolatedFixture(options: {
 
   // extract workspace config
   const workspaceOverrides =
-    (await getPnpmProjectConfig<Record<string, string>>(
-      rootDir,
-      'overrides',
-    )) ?? {}
+    (await getPnpmProjectConfig<Record<string, string>>({
+      cwd: rootDir,
+      name: 'overrides',
+    })) ?? {}
   const onlyBuiltDependencies =
-    (await getPnpmProjectConfig<string[]>(rootDir, 'onlyBuiltDependencies')) ??
-    []
+    (await getPnpmProjectConfig<string[]>({
+      cwd: rootDir,
+      name: 'onlyBuiltDependencies',
+    })) ?? []
   const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
@@ -264,14 +266,14 @@ export async function setupIsolatedFixture(options: {
   })
 }
 
-async function getPnpmProjectConfig<T>(
-  cwd: string,
-  name: string,
-): Promise<T | undefined> {
+async function getPnpmProjectConfig<T>(options: {
+  cwd: string
+  name: string
+}): Promise<T | undefined> {
   const { stdout } = await x(
     'pnpm',
-    ['config', 'get', name, '--json', '--location', 'project'],
-    { throwOnError: true, nodeOptions: { cwd } },
+    ['config', 'get', options.name, '--json', '--location', 'project'],
+    { throwOnError: true, nodeOptions: { cwd: options.cwd } },
   )
   return stdout ? JSON.parse(stdout) : undefined
 }
