@@ -212,11 +212,12 @@ export async function setupIsolatedFixture(options: {
     path.join(rootDir, 'package.json'),
   )
   const fixturePackageJsonPath = path.join(options.dest, 'package.json')
-  const fixturePackageJson = readJsonFile<Record<string, unknown>>(
+  editJsonFile<Record<string, unknown>>(
     fixturePackageJsonPath,
+    (fixturePackageJson) => {
+      fixturePackageJson.packageManager = rootPackageJson.packageManager
+    },
   )
-  fixturePackageJson.packageManager = rootPackageJson.packageManager
-  writeJsonFile(fixturePackageJsonPath, fixturePackageJson)
 
   // extract workspace config
   const rootOverrides = await getPnpmProjectConfig<Record<string, string>>({
@@ -269,6 +270,12 @@ function readJsonFile<T>(filepath: string): T {
 
 function writeJsonFile(filepath: string, value: unknown): void {
   fs.writeFileSync(filepath, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+function editJsonFile<T>(filepath: string, edit: (value: T) => void): void {
+  const value = readJsonFile<T>(filepath)
+  edit(value)
+  writeJsonFile(filepath, value)
 }
 
 async function getPnpmProjectConfig<T>(options: {
