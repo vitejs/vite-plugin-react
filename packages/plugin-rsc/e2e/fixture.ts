@@ -251,11 +251,15 @@ export async function setupIsolatedFixture(options: {
     ...workspaceOverrides,
     ...options.overrides,
   }
-  const tempWorkspaceYaml = `overrides:\n${Object.entries(overrides)
-    .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
-    .join('\n')}\nonlyBuiltDependencies:\n${onlyBuiltDependencies
-    .map((name) => `  - ${JSON.stringify(name)}`)
-    .join('\n')}\n`
+  const tempWorkspaceYaml = [
+    'overrides:',
+    ...Object.entries(overrides).map(
+      ([name, value]) => `  ${JSON.stringify(name)}: ${JSON.stringify(value)}`,
+    ),
+    'onlyBuiltDependencies:',
+    ...onlyBuiltDependencies.map((name) => `  - ${JSON.stringify(name)}`),
+    '',
+  ].join('\n')
   fs.writeFileSync(
     path.join(options.dest, 'pnpm-workspace.yaml'),
     tempWorkspaceYaml,
