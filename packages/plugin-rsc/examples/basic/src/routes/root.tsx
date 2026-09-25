@@ -52,6 +52,7 @@ import { TestPayloadServer } from './payload/server'
 import { TestReactCache } from './react-cache/server'
 import { TestSerializationServer } from './serialization/server'
 import { TestServerError } from './server-error/server'
+import { TestSharedClientCss } from './shared-client-css/server'
 import { TestCssClientNoSsr } from './style-client-no-ssr/server'
 import { TestStyleClient } from './style-client/client'
 import { TestStyleServer } from './style-server/server'
@@ -133,6 +134,7 @@ export function Root(props: { url: URL }) {
         <TestExportAll />
         <TestClientChunkServer />
         <TestChunk2 />
+        <TestSharedClientCss />
         <TestUseId />
         <TestCjsBuiltinInterop />
       </body>
