@@ -222,10 +222,12 @@ export async function setupIsolatedFixture(options: {
   )
 
   // extract workspace config
-  const workspaceOverrides = await getPnpmProjectConfig<Record<string, string>>(
-    { cwd: rootDir, name: 'overrides', fallback: {} },
-  )
-  const onlyBuiltDependencies = await getPnpmProjectConfig<string[]>({
+  const rootOverrides = await getPnpmProjectConfig<Record<string, string>>({
+    cwd: rootDir,
+    name: 'overrides',
+    fallback: {},
+  })
+  const rootOnlyBuiltDependencies = await getPnpmProjectConfig<string[]>({
     cwd: rootDir,
     name: 'onlyBuiltDependencies',
     fallback: [],
@@ -233,7 +235,7 @@ export async function setupIsolatedFixture(options: {
   const overrides: Record<string, string> = {
     '@vitejs/plugin-rsc': `file:${path.join(rootDir, 'packages/plugin-rsc')}`,
     '@vitejs/plugin-react': `file:${path.join(rootDir, 'packages/plugin-react')}`,
-    ...workspaceOverrides,
+    ...rootOverrides,
     ...options.overrides,
   }
   const tempWorkspaceYaml = [
@@ -242,7 +244,7 @@ export async function setupIsolatedFixture(options: {
       ([name, value]) => `  ${JSON.stringify(name)}: ${JSON.stringify(value)}`,
     ),
     'onlyBuiltDependencies:',
-    ...onlyBuiltDependencies.map((name) => `  - ${JSON.stringify(name)}`),
+    ...rootOnlyBuiltDependencies.map((name) => `  - ${JSON.stringify(name)}`),
     '',
   ].join('\n')
   fs.writeFileSync(
