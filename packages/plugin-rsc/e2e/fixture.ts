@@ -208,18 +208,15 @@ export async function setupIsolatedFixture(options: {
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
   // The fixture runs outside the monorepo to emulate a consumer install, so
   // copy the install settings it would otherwise lose at the workspace boundary.
-  const rootPackageJson = JSON.parse(
-    fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'),
-  ) as { packageManager?: string }
+  const rootPackageJson = readJsonFile<{ packageManager?: string }>(
+    path.join(rootDir, 'package.json'),
+  )
   const fixturePackageJsonPath = path.join(options.dest, 'package.json')
-  const fixturePackageJson = JSON.parse(
-    fs.readFileSync(fixturePackageJsonPath, 'utf-8'),
+  const fixturePackageJson = readJsonFile<Record<string, unknown>>(
+    fixturePackageJsonPath,
   )
   fixturePackageJson.packageManager = rootPackageJson.packageManager
-  fs.writeFileSync(
-    fixturePackageJsonPath,
-    `${JSON.stringify(fixturePackageJson, null, 2)}\n`,
-  )
+  writeJsonFile(fixturePackageJsonPath, fixturePackageJson)
 
   // extract workspace config
   const rootOverrides = await getPnpmProjectConfig<Record<string, string>>({
@@ -264,6 +261,14 @@ export async function setupIsolatedFixture(options: {
       ],
     },
   })
+}
+
+function readJsonFile<T>(filepath: string): T {
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'))
+}
+
+function writeJsonFile(filepath: string, value: unknown): void {
+  fs.writeFileSync(filepath, `${JSON.stringify(value, null, 2)}\n`)
 }
 
 async function getPnpmProjectConfig<T>(options: {
