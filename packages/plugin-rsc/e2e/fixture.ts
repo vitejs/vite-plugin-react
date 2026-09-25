@@ -211,9 +211,8 @@ export async function setupIsolatedFixture(options: {
   const rootPackageJson = readJsonFile<{ packageManager?: string }>(
     path.join(rootDir, 'package.json'),
   )
-  const fixturePackageJsonPath = path.join(options.dest, 'package.json')
   editJsonFile<Record<string, unknown>>(
-    fixturePackageJsonPath,
+    path.join(options.dest, 'package.json'),
     (fixturePackageJson) => {
       fixturePackageJson.packageManager = rootPackageJson.packageManager
     },
