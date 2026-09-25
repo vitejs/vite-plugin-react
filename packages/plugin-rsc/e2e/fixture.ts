@@ -206,6 +206,8 @@ export async function setupIsolatedFixture(options: {
   })
 
   const rootDir = path.join(import.meta.dirname, '..', '..', '..')
+  // The fixture runs outside the monorepo to emulate a consumer install, so
+  // copy the install settings it would otherwise lose at the workspace boundary.
   const rootPackageJson = JSON.parse(
     fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'),
   ) as { packageManager?: string }
