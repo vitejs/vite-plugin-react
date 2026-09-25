@@ -2718,6 +2718,7 @@ function generateResourcesCode(
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
+            crossOrigin: 'anonymous',
             ...(precedence ? { precedence } : {}),
             href: href,
             'data-rsc-css-href': href,

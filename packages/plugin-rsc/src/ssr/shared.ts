@@ -107,6 +107,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
   for (const href of deps.css) {
     ReactDOM.preinit(href, {
       as: 'style',
+      crossOrigin: 'anonymous',
       precedence:
         assetsManifest.cssLinkPrecedence !== false
           ? 'vite-rsc/client-reference'
