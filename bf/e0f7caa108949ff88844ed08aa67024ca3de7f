@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/wrap-export.test.ts
+  s_c0a3626512accb::t_9c2fa7b3162438 262,266,332-334,336-337,356,358
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bfe0f7caa108949ff88844ed08aa67024ca3de7f",
+  "prompts": {},
+  "sessions": {
+    "s_c0a3626512accb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0348c3ae8ffev2u72pvoFDBdhm",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

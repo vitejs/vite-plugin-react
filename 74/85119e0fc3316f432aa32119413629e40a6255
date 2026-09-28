@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/client-package-resolution.test.ts
+  s_47b2bf6a58edae::t_0d72276fd4f785 7,10-22,32-33,39,51-66,73-86,88-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7485119e0fc3316f432aa32119413629e40a6255",
+  "prompts": {},
+  "sessions": {
+    "s_47b2bf6a58edae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_05ea669b5ffewYS032Yz3eFTDX",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

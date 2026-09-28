@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/inline.js.snap.js
+  s_7b3bc717d6ee54::t_5859a3d8450b4d 17-20,25,35,52-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1148b9e4653258e4ea381eb24e719ecdea404b5a",
+  "prompts": {},
+  "sessions": {
+    "s_7b3bc717d6ee54": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_049f66b50ffeqzpGpRXqF677PQ",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

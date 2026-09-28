@@ -1,0 +1,23 @@
+packages/plugin-rsc/examples/node-stream/package.json
+  s_15e9757853c398::t_4de09197342b1f 17,22
+packages/plugin-rsc/src/react/rsc/server.node.ts
+  s_15e9757853c398::t_43a64391a885bc 10,65-72
+pnpm-lock.yaml
+  s_15e9757853c398::t_d6df87b327890f 785-787,800-802,2689-2691,3246-3249,4667-4670,6148-6151,6655-6658,8237-8238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d4d93c2999406ca831190cc8aa7d6cb53ed6be37",
+  "prompts": {},
+  "sessions": {
+    "s_15e9757853c398": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff2a01e46ffePBVlOQpDVjyA6y",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+.oxfmtrc.json
+  s_b1b6c7c357f28b::t_2a8338fc911578 13
+packages/plugin-rsc/e2e/use-cache-callable.test.ts
+  s_b1b6c7c357f28b::t_1c1b940b7798a9 100,106
+packages/plugin-rsc/examples/use-cache-callable/callable-cache-plugin.ts
+  s_b1b6c7c357f28b::t_31edc2ec16e780 40-46
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-server/action.ts
+  s_b1b6c7c357f28b::t_c0821fb2aa2f5b 5-9
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-server/client.tsx
+  s_b1b6c7c357f28b::t_5e2de1b8419995 8,39-43
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-server/server.tsx
+  s_b1b6c7c357f28b::t_195a29dc7f8126 1,11
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js
+  s_b1b6c7c357f28b::t_3aab70ea821a35 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.map.snap.md
+  s_b1b6c7c357f28b::t_68f28348d7065f 1-34
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.snap.md
+  s_b1b6c7c357f28b::t_051c0d56a966f6 1-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js
+  s_b1b6c7c357f28b::t_416c02573f1fd5 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.map.snap.md
+  s_b1b6c7c357f28b::t_ee7925a5c001e3 1-21
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.snap.md
+  s_b1b6c7c357f28b::t_12a2e1db9c552a 1-41
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js
+  s_b1b6c7c357f28b::t_4d530fca7b1471 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.map.snap.md
+  s_b1b6c7c357f28b::t_13688fac4023b5 1-25
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.snap.md
+  s_b1b6c7c357f28b::t_77919972c8e2b1 1-47
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js
+  s_b1b6c7c357f28b::t_433b1866e76c9a 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.map.snap.md
+  s_b1b6c7c357f28b::t_2ff419da7024c7 1-25
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.snap.md
+  s_b1b6c7c357f28b::t_0f15e3601b2eff 1-54
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js
+  s_b1b6c7c357f28b::t_55826a49bbc318 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.map.snap.md
+  s_b1b6c7c357f28b::t_cd0906fde6f8d0 1-25
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.snap.md
+  s_b1b6c7c357f28b::t_464f71f860d02e 1-55
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js
+  s_b1b6c7c357f28b::t_20842df8c11c03 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_b1b6c7c357f28b::t_16691977463d7d 1-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_b1b6c7c357f28b::t_85de2c28d71331 1-49
+packages/plugin-rsc/src/transforms/module-export-effect.test.ts
+  s_b1b6c7c357f28b::t_471e3ee3525c08 96,130,139,148,157,166,175,184,193,198-200,205,209,212,219,229,247-249
+packages/plugin-rsc/src/transforms/module-export-effect.ts
+  s_b1b6c7c357f28b::t_a7e55020fdc4da 6,131-137
+packages/plugin-rsc/src/transforms/module-export-scan.test.ts
+  s_b1b6c7c357f28b::t_edffe6a6f1e2b9 27,29,44,46,57,59,75,77,98-101
+packages/plugin-rsc/src/transforms/module-export-scan.ts
+  s_b1b6c7c357f28b::t_20fadda62523d2 18-29,38,154,156,176,178,226,228,232-235,240-243
+packages/plugin-rsc/src/transforms/utils.ts
+  s_b1b6c7c357f28b::t_203670c8b428ae 92-101
+packages/plugin-rsc/src/transforms/wrap-export.test.ts
+  s_b1b6c7c357f28b::t_184e8c7e4ed4f4 313-338,492-493
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "38aff816879d2619628ea7146c204b69d0e8c86b",
+  "prompts": {},
+  "sessions": {
+    "s_b1b6c7c357f28b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03478054bffeyN44aj67U0w83Z",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

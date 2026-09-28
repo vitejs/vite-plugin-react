@@ -1,0 +1,21 @@
+packages/plugin-rsc/examples/action-reachability/README.md
+  s_3e22d60b8ca77d::t_1c301aa94ebc39 31
+packages/plugin-rsc/examples/action-reachability/route-action-manifest-plugin.ts
+  s_3e22d60b8ca77d::t_6ea2010b02cb1b 80-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "793d5a7d04a0047549b87b794cda45fbd08cbb3f",
+  "prompts": {},
+  "sessions": {
+    "s_3e22d60b8ca77d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_054cbff62ffeLWnet7L1TYDyHq",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

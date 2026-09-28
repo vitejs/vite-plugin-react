@@ -1,0 +1,21 @@
+packages/plugin-rsc/examples/use-cache-callable/src/features/use-cache-in-use-server-from-server/client.tsx
+  s_6c4cedfb1483d9::t_a61733bbf6cf29 3,14-17,29
+packages/plugin-rsc/examples/use-cache-callable/src/features/use-server-in-use-cache-from-server/client.tsx
+  s_6c4cedfb1483d9::t_9df1514027f0b8 3,14-17,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "539fed85b22fcd311fc4d18ab53c9873f28b11f5",
+  "prompts": {},
+  "sessions": {
+    "s_6c4cedfb1483d9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02536166bffejSqoWPFOK28I5x",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

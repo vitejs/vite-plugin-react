@@ -1,0 +1,21 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.map.snap.md
+  s_3fd3c6793d8ae7::t_b84b53f615ce6a 5,18,22-24,31-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.snap.md
+  s_3fd3c6793d8ae7::t_e162cda5754174 6,17,36,55,60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "348801223fa1ceacfd547a044c284f87ddc4ba99",
+  "prompts": {},
+  "sessions": {
+    "s_3fd3c6793d8ae7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0358aea1dffeopsgdO1y0Oejy3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

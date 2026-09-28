@@ -1,0 +1,47 @@
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FEATURE-REQUEST-INLINE-DIRECTIVE-SYNTAX.md
+  s_0defc87c84bd97::t_347e7096c941bd 1-125
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FEATURE-REQUEST-USE-CACHE-SERVER-FUNCTIONS-final.md
+  s_0defc87c84bd97::t_1916f14bde09c5 1-65
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FEATURE-REQUEST-USE-CACHE-SERVER-FUNCTIONS.md
+  s_0defc87c84bd97::t_154251c43b0002 1-268
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS-CACHE-SERVER-REFERENCE-TRANSPORT.md
+  s_0defc87c84bd97::t_d201be64dec201 1-230
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS-INLINE-DIRECTIVE.md
+  s_0defc87c84bd97::t_82998ad3981818 1-305
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS-MIXED-DIRECTIVE-COMPOSITION.md
+  s_0defc87c84bd97::t_668913803dcdbf 1-199
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS-STABLE-CACHE-IDENTITY.md
+  s_0defc87c84bd97::t_f9708655b53467 6,10,37,47,66,90,103,148,156,158,164,175,191,234,242,248,250
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS.md
+  s_0defc87c84bd97::t_44527bcc4bd9a6 6,10,22-23,33-180,182-298,302-303,311-313,316,318,322-329,331,333,335-352,356,358,366-367,370-372,374-382,384,387,389,393-400,402,418,426,428,430,434,436,446,458,460,468,474,476,482-492,510,515-517,523,525,539-540
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/NOTE.md
+  s_0defc87c84bd97::t_ca26b30f66756f 6,10,22,24,26,28,30,32,34,36,38,40,56-59
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/PLAN-CANONICAL-CALLABLE-TRANSFORM.md
+  s_0defc87c84bd97::t_1ca60eb4b539d3 1-441
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/SERVER-FUNCTION-EXTENSIBILITY.md
+  s_0defc87c84bd97::t_0d5a654957edc9 3-4,30,162
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/VINEXT-CONTEXT.md
+  s_0defc87c84bd97::t_1e0984878d9ca6 6,44-47,57
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/VINEXT-SERVER-REFERENCE-PRESERVATION.md
+  s_0defc87c84bd97::t_4dd9ae91a3b0d2 3-4,76,78,84,86,88
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/public/PRESERVE-SERVER-REFERENCES.md
+  s_0defc87c84bd97::t_b4d25df2d5c694 1-138
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/public/SERVER-FUNCTION-EXTENSIBILITY.md
+  s_0defc87c84bd97::t_387f0945137673 1-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e3a0d435c3399705feb1b32de7e488f004286421",
+  "prompts": {},
+  "sessions": {
+    "s_0defc87c84bd97": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_059800025ffeJuBRrg5B5JHYvB",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

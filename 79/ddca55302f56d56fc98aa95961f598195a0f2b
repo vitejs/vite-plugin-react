@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/source-map.test.ts
+  s_6c85e1c2f611b3::t_1d462e25709463 9-12,20-23,27-30,36-45,51-64,70-86,94-111,117-120,126-133,139-142,181,183-188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "79ddca55302f56d56fc98aa95961f598195a0f2b",
+  "prompts": {},
+  "sessions": {
+    "s_6c85e1c2f611b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04e7fa6d2ffe1PLoxWVnW2vnSa",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

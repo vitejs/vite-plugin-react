@@ -1,0 +1,23 @@
+packages/plugin-rsc/AGENTS.md
+  s_9fcbf4e043e175::t_502c0c2e2d0769 14,17-18,20-21
+packages/plugin-rsc/CONTRIBUTING.md
+  s_9fcbf4e043e175::t_17c6cc88150b12 44-45
+packages/plugin-rsc/e2e/fixture.ts
+  s_9fcbf4e043e175::t_720a65aea12f89 26,35-39,43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "380ff29a0db7f042574e50de9bffa36b7a40dbf4",
+  "prompts": {},
+  "sessions": {
+    "s_9fcbf4e043e175": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0496fc431ffeEdRvzugBwg2lNB",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

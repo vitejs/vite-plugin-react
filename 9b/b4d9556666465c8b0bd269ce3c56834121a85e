@@ -1,0 +1,43 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_f3b2680fb8b078::t_5afa8d997ae8d5 13-16,32-35,51-54,70-73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_f3b2680fb8b078::t_f6e81e1523748b 15-18,36-39,57-60,77-80
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_f3b2680fb8b078::t_fa922dc7222940 13-16,32-35,51-54,69-72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js
+  s_f3b2680fb8b078::t_a55e72df77c1c9 1-4
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_f3b2680fb8b078::t_2eff20fd790ae1 1-83
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.snap.md
+  s_f3b2680fb8b078::t_5fbd4761d6b4d5 1-69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_f3b2680fb8b078::t_7be5b7edc8385c 15-18,36-39,57-60,77-80
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_f3b2680fb8b078::t_89594daee65190 17-20,41-44,67-70,90-93
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_f3b2680fb8b078::t_8fcd77e9a16c11 1-72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_f3b2680fb8b078::t_48cd72997cc8a7 13-16,31-34,50-53,68-71
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_f3b2680fb8b078::t_1a03bc829d4573 1-93
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.md
+  s_f3b2680fb8b078::t_48727cee3e80f9 11-14,29-32,47-50,64-67
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_f3b2680fb8b078::t_9ccb19fa80c425 15-18,37-40,61-64,82-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9bb4d9556666465c8b0bd269ce3c56834121a85e",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

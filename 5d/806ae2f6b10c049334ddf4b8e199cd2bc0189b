@@ -1,0 +1,29 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js
+  s_d631e27585dd0b::t_d47c9a0220f184 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.map.snap.md
+  s_d631e27585dd0b::t_5ca5ea81e3ed47 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.snap.md
+  s_d631e27585dd0b::t_7850fb08928286 1-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.map.snap.md
+  s_d631e27585dd0b::t_502403a0c6f355 3-11
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.snap.md
+  s_d631e27585dd0b::t_bd48ef8700401a 24-46
+packages/plugin-rsc/src/transforms/source-map.test.ts
+  s_d631e27585dd0b::t_b7d3057d6995f1 68-83,85-86,89-102,105-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5d806ae2f6b10c049334ddf4b8e199cd2bc0189b",
+  "prompts": {},
+  "sessions": {
+    "s_d631e27585dd0b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03081ee7fffeQT9lDAzi4q1y8K",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

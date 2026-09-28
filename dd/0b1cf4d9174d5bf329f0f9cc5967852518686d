@@ -1,0 +1,33 @@
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js
+  s_0a4d21d55bfef5::t_d7af43d4aea7d5 1-52
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.encode.js
+  s_0a4d21d55bfef5::t_958d1549cebb9b 1-85
+packages/plugin-rsc/src/transforms/fixtures/hoist/methods.js.snap.js
+  s_0a4d21d55bfef5::t_c2b536c56edc5f 1-79
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/methods.js
+  s_0a4d21d55bfef5::t_3ee178df84871e 1-17
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/methods.js.map.snap.md
+  s_0a4d21d55bfef5::t_c6387868721bef 1-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/methods.js.snap.md
+  s_0a4d21d55bfef5::t_7504d2c076646c 1-56
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_0a4d21d55bfef5::t_cba290f1bd7add 86,102,201-261
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_0a4d21d55bfef5::t_94b6be3824ec1c 160-195,209-218,221,226-228,256,299-344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "dd0b1cf4d9174d5bf329f0f9cc5967852518686d",
+  "prompts": {},
+  "sessions": {
+    "s_0a4d21d55bfef5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02a3e313affeOEJNoxMUS3W7a1",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

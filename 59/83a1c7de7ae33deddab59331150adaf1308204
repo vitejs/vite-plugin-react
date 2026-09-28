@@ -1,0 +1,25 @@
+packages/plugin-rsc/examples/basic/src/framework/entry.browser.tsx
+  s_d63b853f089398::t_b7de878557f309 18,108-111
+packages/plugin-rsc/examples/custom-server-function/src/framework/entry.browser.tsx
+  s_d63b853f089398::t_d7bf12d2100931 18,103-106
+packages/plugin-rsc/examples/starter-extra/src/framework/entry.browser.tsx
+  s_d63b853f089398::t_066d348a18d8aa 18,103-106
+packages/plugin-rsc/examples/use-cache/src/framework/entry.browser.tsx
+  s_d63b853f089398::t_ef64950f77bc0d 18,103-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5983a1c7de7ae33deddab59331150adaf1308204",
+  "prompts": {},
+  "sessions": {
+    "s_d63b853f089398": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_057b8ff68ffeFZyMZrWwcNQQk7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

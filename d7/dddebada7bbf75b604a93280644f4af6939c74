@@ -1,0 +1,21 @@
+packages/plugin-rsc/examples/server-reference-source-location/src/client.tsx
+  s_6c85e1c2f611b3::t_1e7712c6a80452 7,11-14,18-20,24
+packages/plugin-rsc/examples/server-reference-source-location/src/root.tsx
+  s_6c85e1c2f611b3::t_1810aa52127688 1-60,64-66,68-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d7dddebada7bbf75b604a93280644f4af6939c74",
+  "prompts": {},
+  "sessions": {
+    "s_6c85e1c2f611b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04e7fa6d2ffe1PLoxWVnW2vnSa",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

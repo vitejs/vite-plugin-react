@@ -1,0 +1,285 @@
+packages/plugin-rsc/e2e/basic.test.ts
+  s_ffbf457ad007b1::t_649cbb36689ec8 1521-1545
+packages/plugin-rsc/e2e/use-cache-callable.test.ts
+  s_ffbf457ad007b1::t_483548062408ce 26-28,162,303-362
+packages/plugin-rsc/examples/basic/src/routes/action-encryption/server.tsx
+  s_ffbf457ad007b1::t_32a54be97b4129 1-22
+packages/plugin-rsc/examples/basic/src/routes/root.tsx
+  s_ffbf457ad007b1::t_ec2400d9316f63 11,110
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-extra-arguments/action.ts
+  s_ffbf457ad007b1::t_a58bd108a3ccbb 1-8
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-extra-arguments/client.tsx
+  s_ffbf457ad007b1::t_7e3856afe93630 1-47
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-extra-arguments/reset.ts
+  s_ffbf457ad007b1::t_75a993b7a648ac 1-10
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-extra-arguments/server.tsx
+  s_ffbf457ad007b1::t_47c80420aa4ba0 1-13
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-extra-arguments/state.ts
+  s_ffbf457ad007b1::t_8373ff3f3a785b 1-4
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-client/action.ts
+  s_ffbf457ad007b1::t_478bc9f07196f9 5-9
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-server/action.ts
+  s_ffbf457ad007b1::t_58756243a3412a 5-8
+packages/plugin-rsc/examples/use-cache-callable/src/features/file-directive-from-server/server.tsx
+  s_ffbf457ad007b1::t_7d30256c74ff2c 1,11
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-directive-extra-arguments/client.tsx
+  s_ffbf457ad007b1::t_062d30458aad6a 1-47
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-directive-extra-arguments/reset.ts
+  s_ffbf457ad007b1::t_8306c074c1ae0f 1-10
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-directive-extra-arguments/server.tsx
+  s_ffbf457ad007b1::t_40f9fad61dda79 1-20
+packages/plugin-rsc/examples/use-cache-callable/src/features/inline-directive-extra-arguments/state.ts
+  s_ffbf457ad007b1::t_65857bf16e8e2f 1-4
+packages/plugin-rsc/examples/use-cache-callable/src/root.tsx
+  s_ffbf457ad007b1::t_76dd74e5a02a47 1,4,37-50
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js
+  s_ffbf457ad007b1::t_7ebbe5be78f36f 1
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.map.snap.md
+  s_ffbf457ad007b1::t_1c76b12182873b 1-10
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.snap.md
+  s_ffbf457ad007b1::t_2b14166e90549c 1-23
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js
+  s_ffbf457ad007b1::t_41cc85c01d0a67 1-9
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.map.snap.md
+  s_ffbf457ad007b1::t_592f58041a0649 1-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.snap.md
+  s_ffbf457ad007b1::t_6fd30bf604c0a7 1-43
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js
+  s_ffbf457ad007b1::t_b4b500b809bb64 1-4
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.map.snap.md
+  s_ffbf457ad007b1::t_be1e5f561c3f7c 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.snap.md
+  s_ffbf457ad007b1::t_b66f1f7df59981 1-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js
+  s_ffbf457ad007b1::t_7b5e67ba206e8a 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.map.snap.md
+  s_ffbf457ad007b1::t_0cce6b5d5b6fc0 1-18
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.snap.md
+  s_ffbf457ad007b1::t_67270ae5f3eb18 1-36
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js
+  s_ffbf457ad007b1::t_003c9a8e89447f 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.map.snap.md
+  s_ffbf457ad007b1::t_4093571ab011da 1-17
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.snap.md
+  s_ffbf457ad007b1::t_341ec4d656d09d 1-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js
+  s_ffbf457ad007b1::t_574ed2e30980d3 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js.map.snap.md
+  s_ffbf457ad007b1::t_9b43ff95e0e0cf 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/default-expression.js.snap.md
+  s_ffbf457ad007b1::t_d1ff5b7252f767 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js
+  s_ffbf457ad007b1::t_7971f3146b8e46 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.map.snap.md
+  s_ffbf457ad007b1::t_e608777bea6ff7 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/destructured-nested.js.snap.md
+  s_ffbf457ad007b1::t_fe2e06bd9452af 1-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js
+  s_ffbf457ad007b1::t_287f739360d02c 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js.map.snap.md
+  s_ffbf457ad007b1::t_12c57a3da0656d 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/export-all-ignore.js.snap.md
+  s_ffbf457ad007b1::t_b9f439d29888cb 1-21
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js
+  s_ffbf457ad007b1::t_7a85268b501562 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js.map.snap.md
+  s_ffbf457ad007b1::t_cc4788e186d005 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/filter-value-node.js.snap.md
+  s_ffbf457ad007b1::t_1da521fa0ad947 1-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js
+  s_ffbf457ad007b1::t_f8448031a17925 1-12
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.map.snap.md
+  s_ffbf457ad007b1::t_22b3c0684b938f 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/keep.js.snap.md
+  s_ffbf457ad007b1::t_748f512de83442 1-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js
+  s_ffbf457ad007b1::t_1f67baa9ffca83 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js.map.snap.md
+  s_ffbf457ad007b1::t_1fd0bd350036dd 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-namespace.js.snap.md
+  s_ffbf457ad007b1::t_f8999987e4d09b 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js
+  s_ffbf457ad007b1::t_c96421a507f6b4 1-3
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js.map.snap.md
+  s_ffbf457ad007b1::t_27b8a193511ef8 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/proxy-export/reexport-rename.js.snap.md
+  s_ffbf457ad007b1::t_0505a0d8385a53 1-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.map.snap.md
+  s_ffbf457ad007b1::t_9ad5ee70df30ad 35-42
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.snap.md
+  s_ffbf457ad007b1::t_dff0ab1b4a11ad 64-84
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.map.snap.md
+  s_ffbf457ad007b1::t_858c5cffeffc8a 22-27
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.snap.md
+  s_ffbf457ad007b1::t_a0d2b5436059b5 42-56
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.md
+  s_ffbf457ad007b1::t_364fa78f59c73b 26-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_ffbf457ad007b1::t_7852e359bf6949 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.map.snap.md
+  s_ffbf457ad007b1::t_98a0f5baf1a310 26-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-comments.js.snap.md
+  s_ffbf457ad007b1::t_84f4b4d204ccb8 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier-reassignment.js.map.snap.md
+  s_ffbf457ad007b1::t_70c9ab26970939 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier-reassignment.js.snap.md
+  s_ffbf457ad007b1::t_c21de7a2d871c8 48-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.map.snap.md
+  s_ffbf457ad007b1::t_d7b7a6bb6311f6 27-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_ffbf457ad007b1::t_25b04cb1aa355c 54-70
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.md
+  s_ffbf457ad007b1::t_9f9c118c680fdc 24-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_ffbf457ad007b1::t_2338dbe0077d3b 48-62
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.map.snap.md
+  s_ffbf457ad007b1::t_9112af3bb5e2c6 24-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_ffbf457ad007b1::t_593feebfc4324c 46-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.map.snap.md
+  s_ffbf457ad007b1::t_33e1b18e1aea53 22-27
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/destructured-export.js.snap.md
+  s_ffbf457ad007b1::t_57c3d3b6aa6534 47-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias-reassignment.js.map.snap.md
+  s_ffbf457ad007b1::t_074ef5606b4f09 21-26
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias-reassignment.js.snap.md
+  s_ffbf457ad007b1::t_e1f74c06356de6 47-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.map.snap.md
+  s_ffbf457ad007b1::t_2a023830853650 23-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_ffbf457ad007b1::t_f4d0e4a8036d78 53-69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.map.snap.md
+  s_ffbf457ad007b1::t_0034ed23169719 26-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-binding-preservation.js.snap.md
+  s_ffbf457ad007b1::t_df7588dd3ed3c2 54-72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.map.snap.md
+  s_ffbf457ad007b1::t_4cd5f006c4264d 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.snap.md
+  s_ffbf457ad007b1::t_8e925ab3a723fe 44-59
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.map.snap.md
+  s_ffbf457ad007b1::t_f78d7642ae0f92 26-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-aliases.js.snap.md
+  s_ffbf457ad007b1::t_83cb03ed5b87da 56-73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.map.snap.md
+  s_ffbf457ad007b1::t_554118cd30a967 34-40
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_ffbf457ad007b1::t_2a21fd4d7a9aef 64-81
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.map.snap.md
+  s_ffbf457ad007b1::t_41e9bebbab40ea 24-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_ffbf457ad007b1::t_7232389b7c8c96 47-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.md
+  s_ffbf457ad007b1::t_178fc5b97f7124 23-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_ffbf457ad007b1::t_45eeae7ffd1259 47-61
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.map.snap.md
+  s_ffbf457ad007b1::t_090e77dc5b34bb 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_ffbf457ad007b1::t_611dfea253a4c0 53-69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_ffbf457ad007b1::t_d2166a78bbd6c5 25-30
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_ffbf457ad007b1::t_cab68df7323ac4 50-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport-attributes.js.map.snap.md
+  s_ffbf457ad007b1::t_f1c45edca523a4 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport-attributes.js.snap.md
+  s_ffbf457ad007b1::t_d09fae7bebc806 43-57
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.map.snap.md
+  s_ffbf457ad007b1::t_b68421abc588e0 19-24
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.snap.md
+  s_ffbf457ad007b1::t_3f91deea6d982a 43-57
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.md
+  s_ffbf457ad007b1::t_8a2e920dee4100 32-38
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_ffbf457ad007b1::t_e831eab10cbd79 58-75
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js
+  s_ffbf457ad007b1::t_5ae515c66d1a10 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js.snap.md
+  s_ffbf457ad007b1::t_3a16a563ce3739 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js
+  s_ffbf457ad007b1::t_64f547dda6b3a7 1-9
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js.snap.md
+  s_ffbf457ad007b1::t_e124610b2ab5b7 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js
+  s_ffbf457ad007b1::t_ec387d60fcf61a 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js.snap.md
+  s_ffbf457ad007b1::t_8b62a27a20f9b4 1-47
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js
+  s_ffbf457ad007b1::t_72fde98fee2676 1-7
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js.snap.md
+  s_ffbf457ad007b1::t_e28e6f595741d8 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js
+  s_ffbf457ad007b1::t_039f0f266d2634 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js.snap.md
+  s_ffbf457ad007b1::t_ac88cee5513617 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js
+  s_ffbf457ad007b1::t_9212d5d7450a4b 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js.snap.md
+  s_ffbf457ad007b1::t_e506a6b3953f3a 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js
+  s_ffbf457ad007b1::t_ebc77a1093ab76 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js.snap.md
+  s_ffbf457ad007b1::t_ad513a6e46cfed 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js
+  s_ffbf457ad007b1::t_187192ccfa59a6 1-28
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js.snap.md
+  s_ffbf457ad007b1::t_6c5bebbcc03154 1-84
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js
+  s_ffbf457ad007b1::t_43e6e345a89323 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js.snap.md
+  s_ffbf457ad007b1::t_68f20a54fbb03f 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js
+  s_ffbf457ad007b1::t_1613dfab043849 1-12
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js.snap.md
+  s_ffbf457ad007b1::t_5e27bd58153555 1-40
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js
+  s_ffbf457ad007b1::t_b743343f614ad3 1-17
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js.snap.md
+  s_ffbf457ad007b1::t_c0f8422679a9f1 1-53
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js
+  s_ffbf457ad007b1::t_d34df57e6b860f 1-15
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js.snap.md
+  s_ffbf457ad007b1::t_e05c52ace76c90 1-52
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js
+  s_ffbf457ad007b1::t_b0ea2a16e78a40 1-42
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js.snap.md
+  s_ffbf457ad007b1::t_5854378d6c4129 1-92
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_ffbf457ad007b1::t_b542c38a960127 4,131-167
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_ffbf457ad007b1::t_a2221139c2afab 13,267,282-287
+packages/plugin-rsc/src/transforms/module-export-scan.ts
+  s_ffbf457ad007b1::t_6f6b40c468533c 153-157
+packages/plugin-rsc/src/transforms/proxy-export.test.ts
+  s_ffbf457ad007b1::t_ea708dba65c6ad 3-6,10,15,21-38,41-53,56-67,80-81,86-92
+packages/plugin-rsc/src/transforms/proxy-export.ts
+  s_ffbf457ad007b1::t_d460a188b904d4 4-11,14-17,19-22,24-28,30,33-45,51-55,61,68-95,99,104-106,109,111-115,128-150,152-155,157,159-184,187,190-206,208,210-220,223,225-231
+packages/plugin-rsc/src/transforms/source-map.test.ts
+  s_ffbf457ad007b1::t_42e3fff5d4983c 4,7-10,18-36,57-60,72-76,87-149
+packages/plugin-rsc/src/transforms/test-utils.ts
+  s_ffbf457ad007b1::t_2f5483f6fae072 9-41
+packages/plugin-rsc/src/transforms/utils.test.ts
+  s_ffbf457ad007b1::t_faa712eee2e932 4,7-21
+packages/plugin-rsc/src/transforms/utils.ts
+  s_ffbf457ad007b1::t_647d838d097214 1,5-10,16
+packages/plugin-rsc/src/transforms/waku.test.ts
+  s_ffbf457ad007b1::t_77d223570450a3 1,3,6,8,11-17,23-29,31-32,36-62,66-91
+packages/plugin-rsc/src/transforms/wrap-export.test.ts
+  s_ffbf457ad007b1::t_89ad2792a43f02 372-373,387-388
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b63b4ebc9569d88c41e1b0f153d0737405096abe",
+  "prompts": {},
+  "sessions": {
+    "s_ffbf457ad007b1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02ffb3fa6ffeO4sB59WNCNmVfj",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

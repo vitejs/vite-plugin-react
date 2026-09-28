@@ -1,0 +1,67 @@
+packages/plugin-rsc/e2e/use-cache-callable.test.ts
+  s_ffbf457ad007b1::t_2ba2147573fe94 357-358,362,367-368
+packages/plugin-rsc/examples/use-cache-callable/callable-cache-plugin.ts
+  s_ffbf457ad007b1::t_966d8471069e57 60-61,125-127
+packages/plugin-rsc/examples/use-cache-callable/src/root.tsx
+  s_ffbf457ad007b1::t_fd764db5bddda1 41
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js
+  s_ffbf457ad007b1::t_77e44fed34c9f6 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.encode.js
+  s_ffbf457ad007b1::t_9d4f12ccc2689f 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/arrow.js.snap.js
+  s_ffbf457ad007b1::t_225b624286ff8f 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js
+  s_ffbf457ad007b1::t_99659af1e23ad2 1-12
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.encode.js
+  s_ffbf457ad007b1::t_0acb9f26a758d1 1-16
+packages/plugin-rsc/src/transforms/fixtures/hoist/closure.js.snap.js
+  s_ffbf457ad007b1::t_186a7049a29841 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js
+  s_ffbf457ad007b1::t_fd4ffca114b379 1-10
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.encode.js
+  s_ffbf457ad007b1::t_c0e805b9c0e07b 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/export-before-import.js.snap.js
+  s_ffbf457ad007b1::t_d2045536b974f7 1-13
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js
+  s_ffbf457ad007b1::t_a6efad5558b714 1-15
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.encode.js
+  s_ffbf457ad007b1::t_d357ac2894bbfc 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/higher-order.js.snap.js
+  s_ffbf457ad007b1::t_d50bcd79adfe84 1-21
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js
+  s_ffbf457ad007b1::t_deab0f247d3a22 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.encode.js
+  s_ffbf457ad007b1::t_2e1a84feea0c55 1-25
+packages/plugin-rsc/src/transforms/fixtures/hoist/multiple.js.snap.js
+  s_ffbf457ad007b1::t_19e84d95e20384 1-23
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js
+  s_ffbf457ad007b1::t_1a02bebbfa7916 1-17
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.encode.js
+  s_ffbf457ad007b1::t_522641cbf1a3ef 1-27
+packages/plugin-rsc/src/transforms/fixtures/hoist/top-level.js.snap.js
+  s_ffbf457ad007b1::t_eeac671551223a 1-27
+packages/plugin-rsc/src/transforms/hoist.test.ts
+  s_ffbf457ad007b1::t_58b3d95b6a5594 94,128-172
+packages/plugin-rsc/src/transforms/hoist.ts
+  s_ffbf457ad007b1::t_cfa1975568cf77 3-5,18-49,128-129,224
+packages/plugin-rsc/src/transforms/server-action.ts
+  s_ffbf457ad007b1::t_a972994d43b8a1 7-14,24-30
+packages/plugin-rsc/src/transforms/wrap-export.ts
+  s_ffbf457ad007b1::t_acbba5f225fdf5 23-27,69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "91574ae63eef78990ecc20621df13c3498e6cf4d",
+  "prompts": {},
+  "sessions": {
+    "s_ffbf457ad007b1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02ffb3fa6ffeO4sB59WNCNmVfj",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/ppr/src/root.tsx
+  s_7cb158cc355525::t_ff78c2cfae77a9 5-10,13,16-45,53,64-84,92,95-97,101-103,105-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "be209573b88a2eedd15ed9dad3032e860c1be3bd",
+  "prompts": {},
+  "sessions": {
+    "s_7cb158cc355525": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07ddf6df7ffekmBugp2MyJIoJw",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

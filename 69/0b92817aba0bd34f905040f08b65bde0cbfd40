@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/action-reachability/vite.config.ts
+  s_ddc8dd7f6ec95c::t_964fc7c07df65f 2,20,23-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "690b92817aba0bd34f905040f08b65bde0cbfd40",
+  "prompts": {},
+  "sessions": {
+    "s_ddc8dd7f6ec95c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_058307da9ffe1EXnU06zqPheea",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

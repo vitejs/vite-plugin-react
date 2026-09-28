@@ -1,0 +1,59 @@
+packages/plugin-rsc/examples/basic/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_0087755e34e547 8
+packages/plugin-rsc/examples/basic/src/routes/serialization/server.tsx
+  s_d63b853f089398::t_3688ce3ccbc389 1-2
+packages/plugin-rsc/examples/browser/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_def7fe933a8228 8
+packages/plugin-rsc/examples/cache-replay/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_ed8e363df78f0c 8
+packages/plugin-rsc/examples/cache-replay/src/root.tsx
+  s_d63b853f089398::t_6298154a4b105a 4-5
+packages/plugin-rsc/examples/client-first/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_2fa60202e1aaf3 1
+packages/plugin-rsc/examples/custom-server-function/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_1b033dc321fb60 8
+packages/plugin-rsc/examples/no-ssr/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_0d253d9a14851a 8
+packages/plugin-rsc/examples/performance-track/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_4b8fbfc46f6779 1
+packages/plugin-rsc/examples/ppr/src/framework/cache.ts
+  s_cd0271e1db517a::t_56618ce714e7cf 4-6,10
+packages/plugin-rsc/examples/react-router/react-router-vite/entry.rsc.tsx
+  s_d63b853f089398::t_98b415ef52b104 8
+packages/plugin-rsc/examples/ssg/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_583a87214aa345 1
+packages/plugin-rsc/examples/ssr-encode-form-action/src/framework/entry.rsc.tsx
+  s_cd0271e1db517a::t_b941473f084a23 1-4
+packages/plugin-rsc/examples/starter/README.md
+  s_d63b853f089398::t_af5833ab20da97 23
+packages/plugin-rsc/examples/starter/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_de29cc0e1af8ca 8
+packages/plugin-rsc/examples/use-cache/src/framework/entry.rsc.tsx
+  s_d63b853f089398::t_a7fe227228a114 8
+packages/plugin-rsc/examples/use-cache/src/framework/use-cache-runtime.tsx
+  s_cd0271e1db517a::t_c7d25e11580655 3,5-6,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "aba11623c812915a8fee7ab32762f365a6130f04",
+  "prompts": {},
+  "sessions": {
+    "s_cd0271e1db517a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_057b38a49ffeTcw8xtyvW415Z1",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    },
+    "s_d63b853f089398": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_057b8ff68ffeFZyMZrWwcNQQk7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

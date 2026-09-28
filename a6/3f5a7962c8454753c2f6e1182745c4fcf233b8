@@ -1,0 +1,35 @@
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js.snap.md
+  s_0ed0e786e10e04::t_24ba8e20872e99 5,17
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js.snap.md
+  s_0ed0e786e10e04::t_e1a2756dbdf8e7 11
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js.snap.md
+  s_0ed0e786e10e04::t_e0a9dcba24422e 9,13,17,21
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js.snap.md
+  s_0ed0e786e10e04::t_4ca19e00f1fd62 8,27
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js.snap.md
+  s_0ed0e786e10e04::t_d1fa6f66cf79f1 8,29
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js.snap.md
+  s_0ed0e786e10e04::t_e9bf3e6e3d4557 8,29
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js.snap.md
+  s_0ed0e786e10e04::t_189f7e34469e4e 8,29
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js.snap.md
+  s_0ed0e786e10e04::t_19649d42a3f3e7 7,13,18,23,28,57,63,69,75,81
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js.snap.md
+  s_0ed0e786e10e04::t_77aa1ac1220c55 9,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a63f5a7962c8454753c2f6e1182745c4fcf233b8",
+  "prompts": {},
+  "sessions": {
+    "s_0ed0e786e10e04": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0306c7980ffeGs4CSWDQ0xqGmD",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

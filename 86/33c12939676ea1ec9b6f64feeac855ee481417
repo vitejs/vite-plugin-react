@@ -1,0 +1,29 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.map.snap.md
+  s_07a88dca7df1ae::t_3ca86f078aa77d 1-49
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/classes.js.snap.md
+  s_07a88dca7df1ae::t_d1f9d7998722a7 1-88
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.map.snap.md
+  s_07a88dca7df1ae::t_69208beaec428b 1-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous-class.js.snap.md
+  s_07a88dca7df1ae::t_8d6b3b8265e4b2 1-58
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_07a88dca7df1ae::t_0435d621b5104d 1-38
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_07a88dca7df1ae::t_c53cabceb993ee 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "8633c12939676ea1ec9b6f64feeac855ee481417",
+  "prompts": {},
+  "sessions": {
+    "s_07a88dca7df1ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_039bcc133ffeXR1lF1qWwdTmEh",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+packages/plugin-rsc/src/react/rsc/static.ts
+  s_15e9757853c398::t_6ef2435ea055a3 7,11
+packages/plugin-rsc/src/types/index.ts
+  s_15e9757853c398::t_54e0dd58eccb48 37,47-61,70,74,78,82,86,90-94,98-101,154,159-163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "67ef614909f8264ca1b136956bd54ba6fadbb804",
+  "prompts": {},
+  "sessions": {
+    "s_15e9757853c398": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff2a01e46ffePBVlOQpDVjyA6y",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

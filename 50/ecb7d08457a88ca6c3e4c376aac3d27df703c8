@@ -1,0 +1,65 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_0981131dba53ec 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_dbd79703dc5d5e 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.module-export.snap.js
+  s_f3b2680fb8b078::t_65f815c6f71f0e 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_04a8031aaba0d5 1-15
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_8787042e37cf37 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.module-export.snap.js
+  s_f3b2680fb8b078::t_247cf90abb0082 1-16
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_051f32dfd123cc 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_fab3d59076c968 1-15
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.module-export.snap.js
+  s_f3b2680fb8b078::t_5dc0bd979dcc05 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_3a60d1316283f0 1-15
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_abf3a7a9a20dd7 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.module-export.snap.js
+  s_f3b2680fb8b078::t_9da465d9c0a3e7 1-16
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_7da24561fd5ec5 1-18
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_d56436a013de71 1-21
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.module-export.snap.js
+  s_f3b2680fb8b078::t_d676894091e2e5 1-21
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_fe62a130039938 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_46801febd3761b 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.module-export.snap.js
+  s_f3b2680fb8b078::t_264620e1ec19f1 1-14
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_5a21146a2cd139 1-12
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_8d8b281897e0ef 1-9
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.module-export.snap.js
+  s_f3b2680fb8b078::t_670c2ababa347e 1-13
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.module-export-effect.snap.js
+  s_f3b2680fb8b078::t_8baa2a59db9fcf 1-16
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.module-export-hoist.snap.js
+  s_f3b2680fb8b078::t_a19c3fa313b961 1-19
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.module-export.snap.js
+  s_f3b2680fb8b078::t_d50fe01881e45f 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "50ecb7d08457a88ca6c3e4c376aac3d27df703c8",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

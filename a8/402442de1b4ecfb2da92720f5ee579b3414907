@@ -1,0 +1,35 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/canonical-vs-wrapped-binding.js.map.snap.md
+  s_67e5bed21d49c1::t_9618da77bffded 5,18,34
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/canonical-vs-wrapped-binding.js.snap.md
+  s_67e5bed21d49c1::t_b47cf5b0531503 6,18,23,40,45,62,69
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.map.snap.md
+  s_67e5bed21d49c1::t_46ad016ec9bdd4 32-38
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-identifier.js.snap.md
+  s_67e5bed21d49c1::t_ef1668bdce5934 61,67-70,72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.map.snap.md
+  s_67e5bed21d49c1::t_32808ad55c58a5 28-34
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.snap.md
+  s_67e5bed21d49c1::t_28976b8e274580 60,66-69,71
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.map.snap.md
+  s_67e5bed21d49c1::t_7e502bb8ea9c48 24-28
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-export-before-declaration.js.snap.md
+  s_67e5bed21d49c1::t_f2ebcf7e49c3cb 51,57-59
+packages/plugin-rsc/src/transforms/module-export-scan.ts
+  s_67e5bed21d49c1::t_a92770532608c6 39-40,49-50,73,144,213-219,222,227-228,243,257-262,283-352
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a8402442de1b4ecfb2da92720f5ee579b3414907",
+  "prompts": {},
+  "sessions": {
+    "s_67e5bed21d49c1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_038e3462effeaVK1E52IeH2Efo",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

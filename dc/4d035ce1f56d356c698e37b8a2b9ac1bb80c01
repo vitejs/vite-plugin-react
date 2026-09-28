@@ -1,0 +1,19 @@
+packages/plugin-rsc/e2e/use-cache-callable.test.ts
+  s_49de92a0c18ee3::t_cbf8acae3cced3 26-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "dc4d035ce1f56d356c698e37b8a2b9ac1bb80c01",
+  "prompts": {},
+  "sessions": {
+    "s_49de92a0c18ee3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03403b292ffeHNZNr555LknitH",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

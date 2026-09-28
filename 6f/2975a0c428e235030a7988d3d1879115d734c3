@@ -1,0 +1,25 @@
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS-STABLE-CACHE-IDENTITY.md
+  s_e45ded8d829a30::t_12c7edf4e05ebb 1-282
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/FINDINGS.md
+  s_e45ded8d829a30::t_716cef00c98b00 1-270
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/VINEXT-CONTEXT.md
+  s_e45ded8d829a30::t_e57eae0dc4273b 1-359
+packages/plugin-rsc/docs/research/use-cache-transform-nextjs-comparison/VINEXT-SERVER-REFERENCE-PRESERVATION.md
+  s_e45ded8d829a30::t_ecb8463c29dccc 1-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6f2975a0c428e235030a7988d3d1879115d734c3",
+  "prompts": {},
+  "sessions": {
+    "s_e45ded8d829a30": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06e4b2925ffesubD0l845oH50y",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

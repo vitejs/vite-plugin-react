@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/custom-server-function/custom-server-function-plugin.ts
+  s_e45ded8d829a30::t_773ff4398b7150 1-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a93de80e82491a0aad956a147bfe292ab8a1e0c6",
+  "prompts": {},
+  "sessions": {
+    "s_e45ded8d829a30": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06e4b2925ffesubD0l845oH50y",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

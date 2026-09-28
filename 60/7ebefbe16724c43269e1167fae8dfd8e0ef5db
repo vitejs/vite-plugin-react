@@ -1,0 +1,37 @@
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.map.snap.md
+  s_d631e27585dd0b::t_a6634ecdb46877 6
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/basic.js.snap.md
+  s_d631e27585dd0b::t_139667d1554f92 4,13,18
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.map.snap.md
+  s_d631e27585dd0b::t_cd904cca7eaaff 7-9,11,13-14,16,19-22
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/edge-cases.js.snap.md
+  s_d631e27585dd0b::t_3106cbe3f4514c 4-6,9-11,21,27-32,35-36
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.map.snap.md
+  s_d631e27585dd0b::t_531e9639a0e0e0 7-8
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/local-require.js.snap.md
+  s_d631e27585dd0b::t_e164149391adbe 5-6,16,22-23
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.map.snap.md
+  s_d631e27585dd0b::t_0b74adf81d8a43 7-17
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/non-top-level-reexport.js.snap.md
+  s_d631e27585dd0b::t_8894224cee4b44 4-9,18,24-31
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.map.snap.md
+  s_d631e27585dd0b::t_6052400db2ad9c 9,12
+packages/plugin-rsc/src/transforms/fixtures/source-map/cjs/top-level-reexport.js.snap.md
+  s_d631e27585dd0b::t_88cad9937851f0 5,7,17,24,26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "607ebefbe16724c43269e1167fae8dfd8e0ef5db",
+  "prompts": {},
+  "sessions": {
+    "s_d631e27585dd0b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03081ee7fffeQT9lDAzi4q1y8K",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/module-export-scan.ts
+  s_89878f3c8d6730::t_a1602be91b9b8b 32,102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "663922d763252860d28a4014cc1eba216baf1e63",
+  "prompts": {},
+  "sessions": {
+    "s_89878f3c8d6730": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0390075c2ffe7KDGxuHtF76ty4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

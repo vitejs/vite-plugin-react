@@ -1,0 +1,69 @@
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js
+  s_0ed0e786e10e04::t_083b15990a03c7 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/no-transformation.js.snap.md
+  s_0ed0e786e10e04::t_f8c1ba478ea72e 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js
+  s_0ed0e786e10e04::t_e7d5c62f315cd4 1-9
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server-ssr.js.snap.md
+  s_0ed0e786e10e04::t_5feb5145205c40 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js
+  s_0ed0e786e10e04::t_24043b1b394e3b 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/client-server-proxy/top-level-use-server.js.snap.md
+  s_0ed0e786e10e04::t_07cfde43d0cd59 1-47
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js
+  s_0ed0e786e10e04::t_c3894959cc78df 1-7
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-anonymous-arrow-function.js.snap.md
+  s_0ed0e786e10e04::t_01c5a5cb67f9e1 1-30
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js
+  s_0ed0e786e10e04::t_494e29ac3339c3 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-arrow-function.js.snap.md
+  s_0ed0e786e10e04::t_bbfb4362271fa7 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js
+  s_0ed0e786e10e04::t_1711c36c1d0e8b 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-declaration.js.snap.md
+  s_0ed0e786e10e04::t_b1f8b314b10739 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js
+  s_0ed0e786e10e04::t_671a99fe2f0175 1-8
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-function-expression.js.snap.md
+  s_0ed0e786e10e04::t_346cd850619118 1-32
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js
+  s_0ed0e786e10e04::t_e37005265196fb 1-28
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/inline-various-patterns.js.snap.md
+  s_0ed0e786e10e04::t_1931833af83866 1-84
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js
+  s_0ed0e786e10e04::t_ab6ec7ca8dfc1b 1-3
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/no-transformation.js.snap.md
+  s_0ed0e786e10e04::t_4a298496bc3b31 1-19
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js
+  s_0ed0e786e10e04::t_353974b641d641 1-12
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/server-action-in-object.js.snap.md
+  s_0ed0e786e10e04::t_5ab4a5c0a93b1e 1-40
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js
+  s_0ed0e786e10e04::t_bd0c499dfd01ec 1-17
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-and-inline-use-server.js.snap.md
+  s_0ed0e786e10e04::t_58932fb49ee9a1 1-53
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js
+  s_0ed0e786e10e04::t_0144e232bbbea6 1-15
+packages/plugin-rsc/src/transforms/fixtures/waku/server-action/top-level-use-server.js.snap.md
+  s_0ed0e786e10e04::t_825fd30a04e6cd 1-52
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js
+  s_0ed0e786e10e04::t_6a552c655dea59 1-42
+packages/plugin-rsc/src/transforms/fixtures/waku/server-client-proxy/top-level-use-client.js.snap.md
+  s_0ed0e786e10e04::t_be07823d8dfd81 1-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ca0e8fedc7e2224a952e16906bdbb161c42ee482",
+  "prompts": {},
+  "sessions": {
+    "s_0ed0e786e10e04": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0306c7980ffeGs4CSWDQ0xqGmD",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

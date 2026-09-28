@@ -1,0 +1,37 @@
+packages/plugin-rsc/AGENTS.md
+  s_f3b2680fb8b078::t_2cff31d50c35ae 14,17-27,29-30
+packages/plugin-rsc/CONTRIBUTING.md
+  s_f3b2680fb8b078::t_564ea002ecc057 44-49
+packages/plugin-rsc/e2e/fixture.ts
+  s_f3b2680fb8b078::t_3571540b5e85cf 26,35-45,47,50-70
+packages/plugin-rsc/src/transforms/fixtures/source-map/hoist/inline.js.map.snap.txt
+  s_f3b2680fb8b078::t_37b5cf0da30ce3 1-29
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.txt
+  s_f3b2680fb8b078::t_45badd8731feb3 1-8
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.txt
+  s_f3b2680fb8b078::t_fb06feeebaff10 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/local-alias.js.map.snap.txt
+  s_f3b2680fb8b078::t_f8029222f15666 1-7
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.txt
+  s_f3b2680fb8b078::t_e65879e035cdbf 1-6
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/reexport.js.map.snap.txt
+  s_f3b2680fb8b078::t_0b81cefb714514 1-5
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.txt
+  s_f3b2680fb8b078::t_9b785b629734ed 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b5f33009b7791b76121002617181f27dd84c91bb",
+  "prompts": {},
+  "sessions": {
+    "s_f3b2680fb8b078": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_04988dbd0ffeLnExoQzfFsDiSk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

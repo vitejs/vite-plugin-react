@@ -1,0 +1,19 @@
+packages/plugin-rsc/src/transforms/proxy-export.test.ts
+  s_21766829880a9d::t_ab329d84a1fe3f 133-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a096d9092fb4ae2368c07735e81a26d562258a2d",
+  "prompts": {},
+  "sessions": {
+    "s_21766829880a9d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_030c640c4ffeLAAQkhurJOPX1O",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

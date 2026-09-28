@@ -1,0 +1,19 @@
+packages/plugin-rsc/examples/node-stream/src/root.tsx
+  s_626f66660328ae::t_e228a7712c2066 1-2,4-5,18-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4c289c82252ad4ae948a13aceb0f5e084e545b6f",
+  "prompts": {},
+  "sessions": {
+    "s_626f66660328ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ff2da4004ffeqYz4KpCTlMHvdD",
+        "model": "gpt-5.6"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}

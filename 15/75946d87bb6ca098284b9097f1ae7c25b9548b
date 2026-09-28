@@ -1,0 +1,69 @@
+packages/plugin-rsc/src/plugin.ts
+  s_67e5bed21d49c1::t_26155c717b7a12 2763,2765
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/canonical-vs-wrapped-binding.js.map.snap.md
+  s_89878f3c8d6730::t_88c67de5e6363b 30-34
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/canonical-vs-wrapped-binding.js.snap.md
+  s_89878f3c8d6730::t_f627509f6ad9f2 62,65,72-73
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.map.snap.md
+  s_89878f3c8d6730::t_ff7f829212ea89 31-36
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-anonymous.js.snap.md
+  s_89878f3c8d6730::t_77bcc15de3a9de 55,62-65
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.map.snap.md
+  s_89878f3c8d6730::t_35e2c83f569e62 29-33
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/default-named.js.snap.md
+  s_89878f3c8d6730::t_ce8a75664c8c03 55,60,62-65
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.map.snap.md
+  s_89878f3c8d6730::t_6665647c92bf33 30-33
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/dependent-declarators.js.snap.md
+  s_89878f3c8d6730::t_3ddae0f072e9d7 54,59,62-63
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.map.snap.md
+  s_89878f3c8d6730::t_f67ba73a16ae36 39-48
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/multiple-exports.js.snap.md
+  s_89878f3c8d6730::t_a59730ca9d7dcd 71,76,78,80,82,84-87
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.map.snap.md
+  s_89878f3c8d6730::t_6ada081e050a40 29-33
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function-expression.js.snap.md
+  s_89878f3c8d6730::t_860729f9189eb6 54,59,61-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.map.snap.md
+  s_89878f3c8d6730::t_3f0d3504ef2438 28-32
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/named-function.js.snap.md
+  s_89878f3c8d6730::t_c93d080e83d910 54,59,61-64
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.map.snap.md
+  s_89878f3c8d6730::t_7ba07715a75fa7 30-35
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/pre-declaration-reference.js.snap.md
+  s_89878f3c8d6730::t_0d9e5d0b557e8f 60,65,67,69,71-72
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.map.snap.md
+  s_89878f3c8d6730::t_8bc8d2a3ef0f10 30-35
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/recursive.js.snap.md
+  s_89878f3c8d6730::t_54e19b7e013e2d 57,62,65-68
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.map.snap.md
+  s_89878f3c8d6730::t_8c856a0ceeaa5f 37-44
+packages/plugin-rsc/src/transforms/fixtures/source-map/wrap-export/variables.js.snap.md
+  s_89878f3c8d6730::t_f1d01918c7ff4b 65,70,72,74,76-79
+packages/plugin-rsc/src/transforms/source-map.test.ts
+  s_67e5bed21d49c1::t_87c128210b7364 36-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1575946d87bb6ca098284b9097f1ae7c25b9548b",
+  "prompts": {},
+  "sessions": {
+    "s_67e5bed21d49c1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_038e3462effeaVK1E52IeH2Efo",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    },
+    "s_89878f3c8d6730": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0390075c2ffe7KDGxuHtF76ty4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Hiroshi Ogawa <4232207+hi-ogawa@users.noreply.github.com>"
+    }
+  }
+}
