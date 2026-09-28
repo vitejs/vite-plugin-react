@@ -78,7 +78,7 @@ export function setViteUrl(url: string): void {
 
 // #endregion
 
-// eslint-disable-next-line no-empty-pattern
+// oxlint-disable-next-line no-empty-pattern
 beforeAll(async ({}, suite) => {
   testPath = suite.file.filepath!
   const playgroundDir = slash(testPath).match(/playground\/([\w-]+)\//)?.[1]

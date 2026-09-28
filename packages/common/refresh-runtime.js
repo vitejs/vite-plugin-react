@@ -1,5 +1,5 @@
 /* global window */
-/* eslint-disable eqeqeq, prefer-const, @typescript-eslint/no-empty-function */
+/* oxlint-disable eqeqeq, prefer-const, no-empty-function, no-unused-vars */
 
 /*! Copyright (c) Meta Platforms, Inc. and affiliates. **/
 /**
@@ -372,6 +372,7 @@ export function injectIntoGlobalHook(globalObject) {
   // Here, we just want to get a reference to scheduleRefresh.
   const oldInject = hook.inject
   hook.inject = function (injected) {
+    // oxlint-disable-next-line prefer-rest-params
     const id = oldInject.apply(this, arguments)
     if (
       typeof injected.scheduleRefresh === 'function' &&
@@ -408,6 +409,7 @@ export function injectIntoGlobalHook(globalObject) {
         rootElements.set(root, children)
       }
     }
+    // oxlint-disable-next-line prefer-rest-params
     return oldOnScheduleFiberRoot.apply(this, arguments)
   }
   hook.onCommitFiberRoot = function (id, root, maybePriorityLevel, didError) {
@@ -460,6 +462,7 @@ export function injectIntoGlobalHook(globalObject) {
     }
 
     // Always call the decorated DevTools hook.
+    // oxlint-disable-next-line prefer-rest-params
     return oldOnCommitFiberRoot.apply(this, arguments)
   }
 }
