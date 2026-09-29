@@ -726,6 +726,9 @@ importers:
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
+      '@mdx-js/rollup':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@rolldown/plugin-babel':
         specifier: ^0.2.4
         version: 0.2.4(@babel/core@8.0.6)(rolldown@1.2.9)(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))

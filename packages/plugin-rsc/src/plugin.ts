@@ -114,6 +114,10 @@ function resolvePackage(name: string) {
 
 export type { RscPluginManager }
 
+function serializeAssetsManifest(manifest: AssetsManifest | undefined): string {
+  return `export default ${serializeValueWithRuntime(manifest)}`
+}
+
 /**
  * @experimental
  */
@@ -158,9 +162,7 @@ class RscPluginManager {
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
     // this makes each server build to be self-contained and deploy-able for cloudflare.
-    const assetsManifestCode = `export default ${serializeValueWithRuntime(
-      this.buildAssetsManifest,
-    )}`
+    const assetsManifestCode = serializeAssetsManifest(this.buildAssetsManifest)
     for (const name of environmentNames) {
       const manifestPath = path.join(
         this.config.environments[name]!.build.outDir,
@@ -420,6 +422,8 @@ export default function vitePluginRsc(
   rscPluginOptions: RscPluginOptions = {},
 ): Plugin[] {
   const manager = new RscPluginManager()
+  // environments whose build output imports the assets manifest
+  const assetsManifestImporterEnvs = new Set<string>()
 
   const buildApp: NonNullable<BuilderOptions['buildApp']> = async (builder) => {
     const colors = await import('picocolors')
@@ -468,6 +472,19 @@ export default function vitePluginRsc(
     manager.stabilize()
     logStep('[4/5] build client environment...')
     await builder.build(builder.environments.client!)
+
+    // Write the assets manifest into the rsc output as soon as it's known,
+    // so that the rsc build is importable while the ssr build is still running
+    // (e.g. frameworks pre-rendering from the ssr `writeBundle` hook).
+    // The ssr copy is emitted during the ssr build itself (see `generateBundle` below).
+    fs.writeFileSync(
+      path.join(
+        rscInsideSsr ? tempRscOutDir : rscOutDir,
+        BUILD_ASSETS_MANIFEST_NAME,
+      ),
+      serializeAssetsManifest(manager.buildAssetsManifest),
+    )
+
     logStep('[5/5] build ssr environment...')
     await builder.build(builder.environments.ssr!)
 
@@ -480,7 +497,6 @@ export default function vitePluginRsc(
       fs.renameSync(tempRscOutDir, rscOutDir)
     }
 
-    manager.writeAssetsManifest(['ssr', 'rsc'])
     manager.writeEnvironmentImportsManifest()
   }
 
@@ -1146,9 +1162,26 @@ export function createRpcClient(params) {
         // removed pure CSS chunks and updated their importers.
         order: 'post',
         handler(_options, bundle) {
-          // copy assets from rsc build to client build
-          if (this.environment.name !== 'client') return
           if (manager.isScanBuild) return
+
+          // server builds running after the client build (e.g. ssr) emit
+          // the assets manifest as part of their own output, so that it's
+          // available by the time `writeBundle` hooks run.
+          if (this.environment.name !== 'client') {
+            if (
+              manager.buildAssetsManifest &&
+              assetsManifestImporterEnvs.has(this.environment.name)
+            ) {
+              this.emitFile({
+                type: 'asset',
+                fileName: BUILD_ASSETS_MANIFEST_NAME,
+                source: serializeAssetsManifest(manager.buildAssetsManifest),
+              })
+            }
+            return
+          }
+
+          // copy assets from rsc build to client build
 
           const rscBundle = manager.bundles['rsc']!
 
@@ -1255,6 +1288,7 @@ export function createRpcClient(params) {
       renderChunk(code, chunk) {
         if (code.includes('virtual:vite-rsc/assets-manifest')) {
           assert(this.environment.name !== 'client')
+          assetsManifestImporterEnvs.add(this.environment.name)
           const replacement = normalizeRelativePath(
             path.relative(
               path.join(chunk.fileName, '..'),

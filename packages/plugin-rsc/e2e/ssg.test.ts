@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { type Fixture, useFixture } from './fixture'
+import { type Fixture, setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
 test.describe('dev', () => {
@@ -15,6 +15,46 @@ test.describe('build', () => {
     root: 'examples/ssg',
     mode: 'build',
   })
+  defineTestSsg(f)
+})
+
+// pre-render from ssr `writeBundle` (before plugin-rsc's `buildApp` finishes),
+// which requires the assets manifest to be written before that.
+// e.g. Vike triggers pre-rendering this way.
+test.describe('build-prerender-ssr-writeBundle', () => {
+  const root = 'examples/e2e/temp/ssg-ssr-writeBundle'
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/ssg',
+      dest: root,
+      files: {
+        'vite.config.ts': {
+          edit: (s) => {
+            const before = `\
+      buildApp: {
+        async handler(builder) {
+          await renderStatic(builder.config)
+        },
+      },
+`
+            const after = `\
+      writeBundle: {
+        async handler() {
+          if (this.environment.name === 'ssr') {
+            await renderStatic(this.environment.getTopLevelConfig())
+          }
+        },
+      },
+`
+            if (!s.includes(before)) throw new Error('failed to edit')
+            return s.replace(before, after)
+          },
+        },
+      },
+    })
+  })
+
+  const f = useFixture({ root, mode: 'build' })
   defineTestSsg(f)
 })
 
