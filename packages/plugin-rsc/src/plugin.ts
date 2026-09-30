@@ -1156,7 +1156,7 @@ export function createRpcClient(params) {
           }
         },
       },
-      // client build
+      // client build, and server builds after it
       generateBundle: {
         // Use post to process the client bundle after `vite:css-post` has
         // removed pure CSS chunks and updated their importers.
@@ -1182,7 +1182,6 @@ export function createRpcClient(params) {
           }
 
           // copy assets from rsc build to client build
-
           const rscBundle = manager.bundles['rsc']!
 
           // when css code split is disabled, treat vite's single css bundle `style.css`
