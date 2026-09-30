@@ -1,6 +1,9 @@
 import type { ServerConsumerManifest } from '../types'
-import { memoize } from '../utils/shared'
-import { removeReferenceCacheTag, setInternalRequire } from './shared'
+import {
+  memoizeReferenceRequire,
+  removeReferenceCacheTag,
+  setInternalRequire,
+} from './shared'
 
 let init = false
 
@@ -10,7 +13,7 @@ export function setRequireModule(options: {
   if (init) return
   init = true
 
-  const requireModule = memoize((id: string) => {
+  const requireModule = memoizeReferenceRequire((id: string) => {
     return options.load(removeReferenceCacheTag(id))
   })
   ;(globalThis as any).__vite_rsc_client_require__ = requireModule
