@@ -19,8 +19,10 @@ test.describe('build', () => {
 })
 
 // pre-render from ssr `writeBundle` (before plugin-rsc's `buildApp` finishes),
-// which requires the assets manifest to be written before that.
-// e.g. Vike triggers pre-rendering this way.
+// which requires the assets manifest to be written before that,
+// then remove the ssr output, which plugin-rsc must not write into afterwards.
+// e.g. Vike pre-renders this way and, once every page is pre-rendered,
+// removes the ssr output.
 test.describe('build-prerender-ssr-writeBundle', () => {
   const root = 'examples/e2e/temp/ssg-ssr-writeBundle'
   test.beforeAll(async () => {
@@ -42,6 +44,7 @@ test.describe('build-prerender-ssr-writeBundle', () => {
         async handler() {
           if (this.environment.name === 'ssr') {
             await renderStatic(this.environment.getTopLevelConfig())
+            fs.rmSync(this.environment.config.build.outDir, { recursive: true })
           }
         },
       },
