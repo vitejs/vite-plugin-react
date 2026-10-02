@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
+import * as vite from 'vite'
 import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 
@@ -10,6 +11,8 @@ import { defineStarterTest } from './starter'
 // The facade has no `moduleIds`, so the client entry must not be resolved via
 // module id -> chunk lookups.
 test.describe('strict-execution-order', () => {
+  test.skip(!('rolldownVersion' in vite), 'rolldown only')
+
   const root = 'examples/e2e/temp/strict-execution-order'
 
   test.beforeAll(async () => {
