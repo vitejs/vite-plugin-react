@@ -1227,9 +1227,20 @@ export function createRpcClient(params) {
           // When customClientEntry is enabled, don't require "index" entry
           // and don't merge entry deps into client references
           if (!rscPluginOptions.customClientEntry) {
-            const entry = Object.values(assetDeps).find(
-              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
+            // Look up the entry chunk directly rather than through `assetDeps`,
+            // which is keyed by module id. With `strictExecutionOrder`,
+            // rolldown can emit the entry as an empty facade (no `moduleIds`)
+            // that imports a shared chunk holding the entry's modules.
+            const entryChunk = Object.values(bundle).find(
+              (output): output is Rollup.OutputChunk =>
+                output.type === 'chunk' &&
+                output.name === 'index' &&
+                output.isEntry,
             )
+            const entry = entryChunk && {
+              chunk: entryChunk,
+              deps: collectAssetDepsInner(entryChunk.fileName, bundle),
+            }
             if (!entry) {
               throw new Error(
                 `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,

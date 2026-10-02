@@ -159,12 +159,29 @@ export function useFixture(options: {
   }
 }
 
+// Vite's file watcher (chokidar) drops a `change` event that arrives within
+// 50ms of the previous one for the same path. A fast HMR round trip can make
+// an edit followed by a reset land inside that window, so Vite never sees the
+// reset. Space out writes to the same file to keep every change observable.
+const WRITE_INTERVAL_MS = 100
+const lastWriteTimes = new Map<string, number>()
+
+function writeWatchedFile(filepath: string, content: string) {
+  const wait =
+    (lastWriteTimes.get(filepath) ?? 0) + WRITE_INTERVAL_MS - Date.now()
+  if (wait > 0) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait)
+  }
+  fs.writeFileSync(filepath, content)
+  lastWriteTimes.set(filepath, Date.now())
+}
+
 export function useCreateEditor(cwd: string) {
   const originalFiles: Record<string, string> = {}
 
   test.afterAll(async () => {
     for (const [filepath, content] of Object.entries(originalFiles)) {
-      fs.writeFileSync(filepath, content)
+      writeWatchedFile(filepath, content)
     }
   })
 
@@ -179,13 +196,13 @@ export function useCreateEditor(cwd: string) {
         const next = editFn(current)
         assert(next !== current, 'Edit function did not change the content')
         current = next
-        fs.writeFileSync(filepath, next)
+        writeWatchedFile(filepath, next)
       },
       reset(): void {
-        fs.writeFileSync(filepath, originalFiles[filepath]!)
+        writeWatchedFile(filepath, originalFiles[filepath]!)
       },
       resave(): void {
-        fs.writeFileSync(filepath, current)
+        writeWatchedFile(filepath, current)
       },
     }
   }
@@ -198,6 +215,10 @@ export async function setupIsolatedFixture(options: {
   dest: string
   overrides?: Record<string, string>
 }) {
+  // `pnpm i` hits the network and can take over 30s on macOS runners, which
+  // would exceed the default timeout of the `beforeAll` hook calling this.
+  test.setTimeout(60_000)
+
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.cpSync(options.src, options.dest, {
