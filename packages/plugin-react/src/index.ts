@@ -349,6 +349,14 @@ function createReactCompilerPlugin(
       },
       async handler(code, id) {
         const isClient = this.environment?.config.consumer !== 'server'
+        const filepath = id.split('?')[0]!
+        const jsxImportSource = reactOptions.jsxImportSource ?? 'react'
+        const useFastRefresh =
+          isClient &&
+          isFastRefreshEnabled() &&
+          (filepath.endsWith('x') ||
+            code.includes(`${jsxImportSource}/jsx-runtime`) ||
+            code.includes(`${jsxImportSource}/jsx-dev-runtime`))
         const shouldCompile =
           isClient &&
           (reactCompilerOptions.compilationMode === 'annotation'
@@ -358,12 +366,12 @@ function createReactCompilerPlugin(
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
 
-        const result = await transform(id.split('?')[0]!, code, {
+        const result = await transform(filepath, code, {
           jsx: {
             runtime: reactOptions.jsxRuntime,
             development: jsxDevelopment,
             importSource: reactOptions.jsxImportSource,
-            refresh: isClient && isFastRefreshEnabled(),
+            refresh: useFastRefresh,
           },
           reactCompiler: shouldCompile ? reactCompilerOptions : false,
           sourcemap: this.environment
