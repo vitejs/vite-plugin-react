@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix HMR for compound components
+
+Adding or removing a component from a compound component was not handled, creating stale updates. Doing this now triggers hmr invalidate on the file and propagates the invalidation to importers.
+
 ## 6.1.1 (2026-08-28)
 
 ### Add `compiler.logDiagnostics` option

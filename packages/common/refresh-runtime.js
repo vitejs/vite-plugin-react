@@ -649,7 +649,22 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
       return `Could not Fast Refresh (export "${key}" added)`
     }
     if (isLikelyComponentType(nextExports[key])) continue
-    if (isCompoundComponent(nextExports[key])) continue
+    if (isCompoundComponent(nextExports[key])) {
+      if (!isCompoundComponent(prevExports[key])) {
+        return `Could not Fast Refresh (compound component "${key}" added)`
+      }
+      for (const subKey in prevExports[key]) {
+        if (!(subKey in nextExports[key])) {
+          return `Could not Fast Refresh (compound component "${key}.${subKey}" removed)`
+        }
+      }
+      for (const subKey in nextExports[key]) {
+        if (!(subKey in prevExports[key])) {
+          return `Could not Fast Refresh (compound component "${key}.${subKey}" added)`
+        }
+      }
+      continue
+    }
     if (prevExports[key] !== nextExports[key]) {
       return `Could not Fast Refresh ("${key}" export is incompatible). Learn more at __README_URL__#consistent-components-exports`
     }
