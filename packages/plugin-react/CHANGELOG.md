@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix `compiler.logDiagnostics` option not working
+
+With `oxc-transform-react` >= 0.148, the `logDiagnostics` was not working. This version fixes it and requires `oxc-transform-react` >= 0.152 as a peer dependency if you are using the `compiler` option. `compiler.logDiagnostics` option is now deprecated and should be swapped for the builtin `compiler.reportDiagnostics`.
+
 ## 6.1.1 (2026-08-28)
 
 ### Add `compiler.logDiagnostics` option

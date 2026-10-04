@@ -25,6 +25,7 @@ interface ReactCompilerPluginOptions extends ReactCompilerOptions {
    * Log recoverable React Compiler diagnostics through Vite.
    * Fatal diagnostics are always logged and fail the transform.
    * @default false
+   * @deprecated Use `reportDiagnostics` instead
    */
   logDiagnostics?: boolean
 }
@@ -365,7 +366,11 @@ function createReactCompilerPlugin(
             importSource: reactOptions.jsxImportSource,
             refresh: isClient && isFastRefreshEnabled(),
           },
-          reactCompiler: shouldCompile ? reactCompilerOptions : false,
+          reactCompiler: !shouldCompile
+            ? false
+            : logDiagnostics
+              ? { ...reactCompilerOptions, reportDiagnostics: true }
+              : reactCompilerOptions,
           sourcemap: this.environment
             ? this.environment.config.command !== 'build' ||
               !!this.environment.config.build.sourcemap
@@ -381,10 +386,8 @@ function createReactCompilerPlugin(
             diagnostics.join('\n\n') || 'React Compiler transform failed.',
           )
         }
-        if (logDiagnostics) {
-          for (const diagnostic of diagnostics) {
-            this.warn(diagnostic)
-          }
+        for (const diagnostic of diagnostics) {
+          this.warn(diagnostic)
         }
 
         return { code: result.code, map: result.map }
