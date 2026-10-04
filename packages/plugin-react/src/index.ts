@@ -20,6 +20,13 @@ import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
 const _dirname = dirname(fileURLToPath(import.meta.url))
 const refreshRuntimePath = join(_dirname, 'refresh-runtime.js')
 
+function loadRefreshRuntime(): string {
+  return readFileSync(refreshRuntimePath, 'utf-8').replace(
+    /__README_URL__/g,
+    'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react',
+  )
+}
+
 interface ReactCompilerPluginOptions extends ReactCompilerOptions {
   /**
    * Log recoverable React Compiler diagnostics through Vite.
@@ -202,7 +209,49 @@ export default function viteReact(opts: Options = {}): Plugin[] {
   // for full bundle mode
   const viteReactRefreshBundledDevMode: Plugin = {
     name: 'vite:react-refresh-fbm',
+    apply: 'serve',
     enforce: 'pre',
+    resolveId: {
+      order: 'pre',
+      filter: { id: exactRegex(runtimePublicPath) },
+      handler(id) {
+        if (
+          isBundledDev &&
+          this.environment.name === 'client' &&
+          id === runtimePublicPath
+        ) {
+          // Keep the app and external consumers on the same browser module instance.
+          return {
+            id: opts.reactRefreshHost
+              ? opts.reactRefreshHost + runtimePublicPath
+              : base + runtimePublicPath.slice(1),
+            external: true,
+          }
+        }
+      },
+    },
+    configureServer(server) {
+      if (!isBundledDev) return
+
+      const runtimeUrl = base + runtimePublicPath.slice(1)
+      const runtimeCode = loadRefreshRuntime()
+      server.middlewares.use((req, res, next) => {
+        if (
+          (req.method !== 'GET' && req.method !== 'HEAD') ||
+          req.url?.split('?')[0] !== runtimeUrl
+        ) {
+          return next()
+        }
+
+        res.setHeader('Content-Type', 'text/javascript')
+        res.setHeader('Cache-Control', 'no-cache')
+        const headers = server.config.server.headers
+        for (const name in headers) {
+          res.setHeader(name, headers[name]!)
+        }
+        res.end(runtimeCode)
+      })
+    },
     transformIndexHtml: {
       handler() {
         if (!skipFastRefresh && isBundledDev)
@@ -250,10 +299,7 @@ export default function viteReact(opts: Options = {}): Plugin[] {
       filter: { id: exactRegex(runtimePublicPath) },
       handler(id) {
         if (id === runtimePublicPath) {
-          return readFileSync(refreshRuntimePath, 'utf-8').replace(
-            /__README_URL__/g,
-            'https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react',
-          )
+          return loadRefreshRuntime()
         }
       },
     },
