@@ -198,6 +198,10 @@ export async function setupIsolatedFixture(options: {
   dest: string
   overrides?: Record<string, string>
 }) {
+  // Allow 60s for the calling `beforeAll` hook, because `pnpm i` hits the
+  // network and can exceed the default 30s on macOS runners.
+  test.setTimeout(60_000)
+
   // copy fixture
   fs.rmSync(options.dest, { recursive: true, force: true })
   fs.cpSync(options.src, options.dest, {
