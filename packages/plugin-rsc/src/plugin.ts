@@ -1195,7 +1195,7 @@ export function createRpcClient(params) {
           }
 
           const serverResources: Record<string, AssetDeps> = {}
-          const rscAssetDeps = collectAssetDeps(rscBundle)
+          const rscAssetDeps = collectAssetDeps(rscBundle).idToDeps
           for (const [id, meta] of Object.entries(
             manager.serverResourcesMetaMap,
           )) {
@@ -1208,7 +1208,7 @@ export function createRpcClient(params) {
             )
           }
 
-          const assetDeps = collectAssetDeps(bundle)
+          const { idToDeps: assetDeps, chunkToDeps } = collectAssetDeps(bundle)
           let clientEntryUrl: string | RuntimeAsset | undefined
           let clientEntryDeps: AssetDeps | undefined
 
@@ -1227,19 +1227,24 @@ export function createRpcClient(params) {
           // When customClientEntry is enabled, don't require "index" entry
           // and don't merge entry deps into client references
           if (!rscPluginOptions.customClientEntry) {
-            const entry = Object.values(assetDeps).find(
-              (v) => v.chunk.name === 'index' && v.chunk.isEntry,
+            // Look up the entry chunk at chunk level rather than through
+            // `assetDeps`, which is keyed by module id. The entry can be an
+            // empty facade (no `moduleIds`) that imports a shared chunk holding
+            // the entry's modules, e.g. with `strictExecutionOrder`.
+            const entry = [...chunkToDeps].find(
+              ([chunk]) => chunk.name === 'index' && chunk.isEntry,
             )
             if (!entry) {
               throw new Error(
                 `[vite-rsc] Client build must have an entry chunk named "index". Use 'customClientEntry' option to disable this requirement.`,
               )
             }
-            clientEntryDeps = assetsURLOfDeps(entry.deps, manager)
+            const [entryChunk, entryDeps] = entry
+            clientEntryDeps = assetsURLOfDeps(entryDeps, manager)
             for (const [key, deps] of Object.entries(clientReferenceDeps)) {
               clientReferenceDeps[key] = mergeAssetDeps(deps, clientEntryDeps)
             }
-            clientEntryUrl = assetsURL(entry.chunk.fileName, manager)
+            clientEntryUrl = assetsURL(entryChunk.fileName, manager)
           }
 
           manager.buildAssetsManifest = {
@@ -2308,7 +2313,7 @@ function collectAssetDeps(bundle: Rollup.OutputBundle) {
       idToDeps[id] = { chunk, deps }
     }
   }
-  return idToDeps
+  return { idToDeps, chunkToDeps }
 }
 
 function collectAssetDepsInner(
