@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.1.2 (2026-10-05)
+
 ### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
 
 Adding or removing a component from a compound component was not handled, creating stale updates. Doing this now triggers hmr invalidate on the file and propagates the invalidation to importers.
