@@ -112,7 +112,9 @@ function defineDevTests(f: Fixture) {
     await expect(executionCount).toHaveText('1')
 
     // Editing the cached function advances its module generation.
-    action.edit((code) => code.replace('body-v1', 'body-v2'))
+    await editServerModule(page, () =>
+      action.edit((code) => code.replace('body-v1', 'body-v2')),
+    )
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(
@@ -123,7 +125,9 @@ function defineDevTests(f: Fixture) {
     )
 
     // Editing a direct dependency invalidates the importing cache module.
-    direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
+    await editServerModule(page, () =>
+      direct.edit((code) => code.replace('direct-v1', 'direct-v2')),
+    )
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(
@@ -134,7 +138,9 @@ function defineDevTests(f: Fixture) {
     )
 
     // Reverse-importer traversal also reaches transitive dependencies.
-    transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2'))
+    await editServerModule(page, () =>
+      transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2')),
+    )
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(
@@ -157,6 +163,19 @@ function defineDevTests(f: Fixture) {
       'server import + body-v2 + direct-v2 + transitive-v2 + alpha',
     )
   })
+}
+
+// Edit a server module and wait for the `rsc:update` refetch it triggers.
+// Reloading before that finishes can abort the refetch (an unhandled
+// `TypeError: Load failed` in WebKit), or let the late update reach the
+// reloaded page before it has hydrated.
+async function editServerModule(page: Page, edit: () => void) {
+  const refetch = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'GET' && response.url().includes('_.rsc'),
+  )
+  edit()
+  await (await refetch).finished()
 }
 
 async function expectResultAfterUpdate(
