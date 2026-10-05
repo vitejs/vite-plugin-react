@@ -18,14 +18,14 @@ test.describe('dev', () => {
     await expect(counter).toHaveText('count: 1')
 
     const editor = f.createEditor('src/routes/page.tsx')
-    editor.edit((source) =>
+    await editor.edit((source) =>
       source.replace('client: baseline', 'client: edited'),
     )
 
     await expect(page.getByTestId('client')).toHaveText('client: edited')
     await expect(counter).toHaveText('count: 1')
 
-    editor.reset()
+    await editor.reset()
     await expect(page.getByTestId('client')).toHaveText('client: baseline')
     await expect(counter).toHaveText('count: 1')
   })

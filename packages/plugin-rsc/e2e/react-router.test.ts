@@ -97,7 +97,9 @@ function defineTest(f: Fixture) {
       ).toBeVisible()
 
       const editor = f.createEditor('app/routes/about.tsx')
-      editor.edit((s) => s.replace('Client counter:', 'Client [edit] counter:'))
+      await editor.edit((s) =>
+        s.replace('Client counter:', 'Client [edit] counter:'),
+      )
 
       await expect(
         page.getByRole('button', { name: 'Client [edit] counter: 1' }),
@@ -112,7 +114,7 @@ function defineTest(f: Fixture) {
       await page.getByText('This is the home page.').click()
 
       const editor = f.createEditor('app/routes/home.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace('This is the home page.', 'This is the home [edit] page.'),
       )
 

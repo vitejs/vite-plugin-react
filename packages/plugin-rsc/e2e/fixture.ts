@@ -159,12 +159,29 @@ export function useFixture(options: {
   }
 }
 
+// Wait at least 100ms between writes to the same file so Vite sees each one.
+// Its watcher (chokidar) drops a `change` event within 50ms of the previous
+// one for the same path, so a fast edit-then-reset could lose the reset.
+// https://github.com/paulmillr/chokidar/blob/7c50e25d10a497ce4409f6e52eb630f0d7647b97/index.js#L616
+const WRITE_INTERVAL_MS = 100
+const lastWriteTimes = new Map<string, number>()
+
+async function writeWatchedFile(filepath: string, content: string) {
+  const wait =
+    (lastWriteTimes.get(filepath) ?? 0) + WRITE_INTERVAL_MS - Date.now()
+  if (wait > 0) {
+    await new Promise((resolve) => setTimeout(resolve, wait))
+  }
+  fs.writeFileSync(filepath, content)
+  lastWriteTimes.set(filepath, Date.now())
+}
+
 export function useCreateEditor(cwd: string) {
   const originalFiles: Record<string, string> = {}
 
   test.afterAll(async () => {
     for (const [filepath, content] of Object.entries(originalFiles)) {
-      fs.writeFileSync(filepath, content)
+      await writeWatchedFile(filepath, content)
     }
   })
 
@@ -175,17 +192,17 @@ export function useCreateEditor(cwd: string) {
     let current = init
     return {
       read: () => current,
-      edit(editFn: (data: string) => string): void {
+      async edit(editFn: (data: string) => string): Promise<void> {
         const next = editFn(current)
         assert(next !== current, 'Edit function did not change the content')
         current = next
-        fs.writeFileSync(filepath, next)
+        await writeWatchedFile(filepath, next)
       },
-      reset(): void {
-        fs.writeFileSync(filepath, originalFiles[filepath]!)
+      async reset(): Promise<void> {
+        await writeWatchedFile(filepath, originalFiles[filepath]!)
       },
-      resave(): void {
-        fs.writeFileSync(filepath, current)
+      async resave(): Promise<void> {
+        await writeWatchedFile(filepath, current)
       },
     }
   }

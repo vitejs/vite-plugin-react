@@ -169,12 +169,12 @@ function defineDevTests(f: Fixture) {
 // Reloading before that finishes can abort the refetch (an unhandled
 // `TypeError: Load failed` in WebKit), or let the late update reach the
 // reloaded page before it has hydrated.
-async function editServerModule(page: Page, edit: () => void) {
+async function editServerModule(page: Page, edit: () => Promise<void>) {
   const refetch = page.waitForResponse(
     (response) =>
       response.request().method() === 'GET' && response.url().includes('_.rsc'),
   )
-  edit()
+  await edit()
   await (await refetch).finished()
 }
 

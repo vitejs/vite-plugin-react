@@ -68,7 +68,7 @@ test.describe(() => {
 
       // add syntax error
       const editor = f.createEditor('src/client.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="client-content">client:ok</div>',
           '<div data-testid="client-content">client:broken<</div>',
@@ -78,7 +78,7 @@ test.describe(() => {
 
       // fix syntax error
       await page.waitForTimeout(200)
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="client-content">client:broken<</div>',
           '<div data-testid="client-content">client:fixed</div>',
@@ -113,7 +113,7 @@ test.describe(() => {
 
       // add syntax error
       const editor = f.createEditor('src/root.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="server-content">server:ok</div>',
           '<div data-testid="server-content">server:broken<</div>',
@@ -123,7 +123,7 @@ test.describe(() => {
 
       // fix syntax error
       await page.waitForTimeout(200)
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="server-content">server:broken<</div>',
           '<div data-testid="server-content">server:fixed</div>',
@@ -145,7 +145,7 @@ test.describe(() => {
     test('client ssr', async ({ page }) => {
       // add syntax error
       const editor = f.createEditor('src/client.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="client-content">client:ok</div>',
           '<div data-testid="client-content">client:broken<</div>',
@@ -156,7 +156,7 @@ test.describe(() => {
 
       // fix syntax error
       await page.waitForTimeout(200)
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="client-content">client:broken<</div>',
           '<div data-testid="client-content">client:fixed</div>',
@@ -178,7 +178,7 @@ test.describe(() => {
     test('server ssr', async ({ page }) => {
       // add syntax error
       const editor = f.createEditor('src/root.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="server-content">server:ok</div>',
           '<div data-testid="server-content">server:broken<</div>',
@@ -189,7 +189,7 @@ test.describe(() => {
 
       // fix syntax error
       await page.waitForTimeout(200)
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace(
           '<div data-testid="server-content">server:broken<</div>',
           '<div data-testid="server-content">server:fixed</div>',
