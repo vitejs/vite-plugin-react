@@ -1,5 +1,6 @@
 import { type CDPSession, expect, test } from '@playwright/test'
 import { useFixture } from './fixture'
+import { waitForHydration } from './helper'
 
 test.describe('performance-track', () => {
   const f = useFixture({ root: 'examples/performance-track', mode: 'dev' })
@@ -14,6 +15,7 @@ test.describe('performance-track', () => {
     await startTracing(session)
 
     await page.goto(f.url())
+    await waitForHydration(page)
     // Wait for the innermost step so the whole waterfall has resolved.
     await expect(
       page.getByText('SlowServerComponent resolved after 500ms'),
