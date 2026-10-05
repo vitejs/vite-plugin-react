@@ -309,6 +309,9 @@ function createReactCompilerPlugin(
     reactCompilerOptions.target === '17' || reactCompilerOptions.target === '18'
       ? 'react-compiler-runtime'
       : 'react/compiler-runtime'
+  const jsxImportSource = reactOptions.jsxImportSource ?? 'react'
+  const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
+  const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
 
   const loadCompiler = async (
     onError: (message: string) => never,
@@ -348,7 +351,17 @@ function createReactCompilerPlugin(
         },
       },
       async handler(code, id) {
+        // Follow what the builtin oxc plugin does: https://github.com/vitejs/vite/blob/main/packages/vite/src/node/plugins/oxc.ts#L250-L267
+        const [filepath] = id.split('?')
+        const isJSX = filepath.endsWith('x')
         const isClient = this.environment?.config.consumer !== 'server'
+        const refreshEnabled =
+          isClient &&
+          isFastRefreshEnabled() &&
+          (isJSX ||
+            code.includes(jsxImportRuntime) ||
+            code.includes(jsxImportDevRuntime))
+
         const shouldCompile =
           isClient &&
           (reactCompilerOptions.compilationMode === 'annotation'
@@ -363,7 +376,7 @@ function createReactCompilerPlugin(
             runtime: reactOptions.jsxRuntime,
             development: jsxDevelopment,
             importSource: reactOptions.jsxImportSource,
-            refresh: isClient && isFastRefreshEnabled(),
+            refresh: refreshEnabled,
           },
           reactCompiler: shouldCompile ? reactCompilerOptions : false,
           sourcemap: this.environment

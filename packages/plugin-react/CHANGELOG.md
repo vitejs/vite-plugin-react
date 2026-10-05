@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Disable refresh for non-jsx with compiler enabled (fix [#1478](https://github.com/vitejs/vite-plugin-react/issues/1478)) ([#1485](https://github.com/vitejs/vite-plugin-react/pull/1485))
+
+When the compiler was enabled, TS files could trigger fast refresh which would cause runtime errors. The logic now follows what the builtin oxc plugin in Vite does.
+
 ## 6.1.1 (2026-08-28)
 
 ### Add `compiler.logDiagnostics` option
