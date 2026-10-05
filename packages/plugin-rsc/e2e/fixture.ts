@@ -159,10 +159,9 @@ export function useFixture(options: {
   }
 }
 
-// Vite's file watcher (chokidar) drops a `change` event that arrives within
-// 50ms of the previous one for the same path. A fast HMR round trip can make
-// an edit followed by a reset land inside that window, so Vite never sees the
-// reset. Space out writes to the same file to keep every change observable.
+// Space out writes to the same file by at least 100ms so Vite sees each one.
+// Its watcher (chokidar) drops a `change` event within 50ms of the previous
+// one for the same path, so a fast edit-then-reset could lose the reset.
 const WRITE_INTERVAL_MS = 100
 const lastWriteTimes = new Map<string, number>()
 
@@ -215,8 +214,8 @@ export async function setupIsolatedFixture(options: {
   dest: string
   overrides?: Record<string, string>
 }) {
-  // `pnpm i` hits the network and can take over 30s on macOS runners, which
-  // would exceed the default timeout of the `beforeAll` hook calling this.
+  // Allow 60s for the calling `beforeAll` hook, because `pnpm i` hits the
+  // network and can exceed the default 30s on macOS runners.
   test.setTimeout(60_000)
 
   // copy fixture
