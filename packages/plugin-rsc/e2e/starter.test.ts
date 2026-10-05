@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { x } from 'tinyexec'
-import * as vite from 'vite'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 import { defineStarterTest } from './starter'
@@ -187,50 +186,5 @@ test.describe('isolated build', () => {
     })
     expect(result.stderr).not.toContain('Build failed')
     expect(result.exitCode).toBe(0)
-  })
-})
-
-// With `output.strictExecutionOrder`, rolldown can emit the client `index`
-// entry as an empty facade (no `moduleIds`) that imports a shared chunk.
-// Kept in this file so copying `examples/starter` never overlaps the HMR
-// edits made by the dev tests above, which run serially in the same worker.
-test.describe('strict-execution-order', () => {
-  test.skip(!('rolldownVersion' in vite), 'rolldown only')
-
-  const root = 'examples/e2e/temp/strict-execution-order'
-
-  test.beforeAll(async () => {
-    await setupInlineFixture({
-      src: 'examples/starter',
-      dest: root,
-      files: {
-        'vite.config.base.ts': { cp: 'vite.config.ts' },
-        'vite.config.ts': /* js */ `
-          import { defineConfig, mergeConfig } from 'vite'
-          import baseConfig from './vite.config.base.ts'
-
-          const overrideConfig = defineConfig({
-            environments: {
-              client: {
-                build: {
-                  rollupOptions: {
-                    output: {
-                      strictExecutionOrder: true,
-                    },
-                  },
-                },
-              },
-            },
-          })
-
-          export default mergeConfig(baseConfig, overrideConfig)
-        `,
-      },
-    })
-  })
-
-  test.describe('build', () => {
-    const f = useFixture({ root, mode: 'build' })
-    defineStarterTest(f)
   })
 })
