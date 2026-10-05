@@ -726,6 +726,9 @@ importers:
 
   packages/plugin-rsc/examples/e2e:
     devDependencies:
+      '@cloudflare/vite-plugin':
+        specifier: ^1.62.5
+        version: 1.62.5(@types/node@24.19.1)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))(wrangler@4.147.0(@types/node@24.19.1))
       '@rolldown/plugin-babel':
         specifier: ^0.2.4
         version: 0.2.4(@babel/core@8.0.6)(rolldown@1.2.12)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))
@@ -747,6 +750,9 @@ importers:
       sirv:
         specifier: ^3.0.2
         version: 3.0.2
+      wrangler:
+        specifier: ^4.147.0
+        version: 4.147.0(@types/node@24.19.1)
 
   packages/plugin-rsc/examples/no-ssr:
     dependencies:
