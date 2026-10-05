@@ -32,7 +32,7 @@ Use `examples/basic`, which contains comprehensive test scenarios, when the case
 
 **Using `setupInlineFixture`**
 
-Use `setupInlineFixture` with `examples/starter` for narrow configuration variants, invalid-input coverage, and cases where a standalone runnable example would add mostly boilerplate. Test projects are written under `examples/e2e/temp/`, with dependencies managed in `examples/e2e/package.json`. See `e2e/ssr-thenable.test.ts` for the pattern.
+Use `setupInlineFixture` with `examples/starter-extra` for narrow configuration variants, invalid-input coverage, and cases where a standalone runnable example would add mostly boilerplate. Test projects are written under `examples/e2e/temp/`, with dependencies managed in `examples/e2e/package.json`. See `e2e/ssr-thenable.test.ts` for the pattern.
 
 ### Unit Tests
 
