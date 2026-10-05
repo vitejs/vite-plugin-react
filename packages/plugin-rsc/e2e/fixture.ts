@@ -162,6 +162,7 @@ export function useFixture(options: {
 // Wait at least 100ms between writes to the same file so Vite sees each one.
 // Its watcher (chokidar) drops a `change` event within 50ms of the previous
 // one for the same path, so a fast edit-then-reset could lose the reset.
+// https://github.com/paulmillr/chokidar/blob/cebe1fd74ac87f04607f25178a1e7c4c6098d00a/index.js#L616
 const WRITE_INTERVAL_MS = 100
 const lastWriteTimes = new Map<string, number>()
 
