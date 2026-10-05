@@ -159,28 +159,12 @@ export function useFixture(options: {
   }
 }
 
-// Space out writes to the same file by at least 100ms so Vite sees each one.
-// Its watcher (chokidar) drops a `change` event within 50ms of the previous
-// one for the same path, so a fast edit-then-reset could lose the reset.
-const WRITE_INTERVAL_MS = 100
-const lastWriteTimes = new Map<string, number>()
-
-function writeWatchedFile(filepath: string, content: string) {
-  const wait =
-    (lastWriteTimes.get(filepath) ?? 0) + WRITE_INTERVAL_MS - Date.now()
-  if (wait > 0) {
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait)
-  }
-  fs.writeFileSync(filepath, content)
-  lastWriteTimes.set(filepath, Date.now())
-}
-
 export function useCreateEditor(cwd: string) {
   const originalFiles: Record<string, string> = {}
 
   test.afterAll(async () => {
     for (const [filepath, content] of Object.entries(originalFiles)) {
-      writeWatchedFile(filepath, content)
+      fs.writeFileSync(filepath, content)
     }
   })
 
@@ -195,13 +179,13 @@ export function useCreateEditor(cwd: string) {
         const next = editFn(current)
         assert(next !== current, 'Edit function did not change the content')
         current = next
-        writeWatchedFile(filepath, next)
+        fs.writeFileSync(filepath, next)
       },
       reset(): void {
-        writeWatchedFile(filepath, originalFiles[filepath]!)
+        fs.writeFileSync(filepath, originalFiles[filepath]!)
       },
       resave(): void {
-        writeWatchedFile(filepath, current)
+        fs.writeFileSync(filepath, current)
       },
     }
   }
