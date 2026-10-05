@@ -68,13 +68,15 @@ export function defineStarterTest(
     ).toBeVisible()
 
     const editor = f.createEditor(`src/client.tsx`)
-    editor.edit((s) => s.replace('Client Counter', 'Client [edit] Counter'))
+    await editor.edit((s) =>
+      s.replace('Client Counter', 'Client [edit] Counter'),
+    )
     await expect(
       page.getByRole('button', { name: 'Client [edit] Counter: 1' }),
     ).toBeVisible()
 
     if (variant === 'no-ssr') {
-      editor.reset()
+      await editor.reset()
       await page.getByRole('button', { name: 'Client Counter: 1' }).click()
       return
     }
@@ -83,7 +85,7 @@ export function defineStarterTest(
     const res = await page.goto(f.url())
     expect(await res?.text()).toContain('Client [edit] Counter')
     await waitForHydration(page)
-    editor.reset()
+    await editor.reset()
     await page.getByRole('button', { name: 'Client Counter: 0' }).click()
   })
 
@@ -96,11 +98,11 @@ export function defineStarterTest(
       await using _ = await expectNoReload(page)
       await expect(page.getByText('Vite + RSC')).toBeVisible()
       const editor = f.createEditor('src/root.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replace('<h1>Vite + RSC</h1>', '<h1>Vite x RSC</h1>'),
       )
       await expect(page.getByText('Vite x RSC')).toBeVisible()
-      editor.reset()
+      await editor.reset()
       await expect(page.getByText('Vite + RSC')).toBeVisible()
     })
   })
@@ -137,7 +139,7 @@ export function defineStarterTest(
 
     await using _ = await expectNoReload(page)
     const editor = f.createEditor('src/index.css')
-    editor.edit((s) =>
+    await editor.edit((s) =>
       s.replace(
         '.card {\n  padding: 1rem;',
         `.card {\n  padding: 1rem; background-color: rgb(255, 0, 200);`,
@@ -146,7 +148,7 @@ export function defineStarterTest(
     await expect(card).toHaveCSS('background-color', 'rgb(255, 0, 200)')
 
     await page.waitForTimeout(100)
-    editor.reset()
+    await editor.reset()
     await expect(card).not.toHaveCSS('background-color', 'rgb(255, 0, 200)')
   })
 

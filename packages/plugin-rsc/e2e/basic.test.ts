@@ -131,7 +131,7 @@ test.describe('dev-non-optimized-cjs', () => {
   test.beforeAll(async () => {
     // remove explicitly added optimizeDeps.include
     const editor = f.createEditor('vite.config.ts')
-    editor.edit((s) =>
+    await editor.edit((s) =>
       s.replace(
         `include: ['@vitejs/test-dep-transitive-cjs > @vitejs/test-dep-cjs'],`,
         ``,
@@ -161,7 +161,7 @@ test.describe('dev-inconsistent-client-optimization', () => {
   test.beforeAll(async () => {
     // remove explicitly added optimizeDeps.exclude
     const editor = f.createEditor('vite.config.ts')
-    editor.edit((s) =>
+    await editor.edit((s) =>
       s.replace(`'@vitejs/test-dep-client-in-server2/client',`, ``),
     )
   })
@@ -197,7 +197,7 @@ test.describe('build-stable-chunks', () => {
 
     // edit src/routes/client.tsx
     const editor = createEditor('src/routes/client.tsx')
-    editor.edit((s) => s.replace('client-counter', 'client-counter-v2'))
+    await editor.edit((s) => s.replace('client-counter', 'client-counter-v2'))
 
     // 2nd build
     await x('pnpm', ['build'], {
@@ -516,7 +516,7 @@ function defineTest(f: Fixture) {
 
     // update server code
     const editor = f.createEditor('src/routes/action/action.tsx')
-    editor.edit((s) =>
+    await editor.edit((s) =>
       s.replace('const TEST_UPDATE = 1\n', 'const TEST_UPDATE = 10\n'),
     )
     await expect(async () => {
@@ -531,7 +531,7 @@ function defineTest(f: Fixture) {
       page.getByRole('button', { name: 'server-counter: 10' }),
     ).toBeVisible()
 
-    editor.reset()
+    await editor.reset()
     await expect(async () => {
       if (!options.js) await page.goto(f.url())
       await expect(
@@ -552,7 +552,9 @@ function defineTest(f: Fixture) {
       ).toBeVisible()
 
       const editor = f.createEditor('src/routes/client.tsx')
-      editor.edit((s) => s.replace('client-counter', 'client-[edit]-counter'))
+      await editor.edit((s) =>
+        s.replace('client-counter', 'client-[edit]-counter'),
+      )
       await expect(
         page.getByRole('button', { name: 'client-[edit]-counter: 1' }),
       ).toBeVisible()
@@ -561,7 +563,7 @@ function defineTest(f: Fixture) {
       const res = await page.goto(f.url())
       expect(await res?.text()).toContain('client-[edit]-counter')
       await waitForHydration(page)
-      editor.reset()
+      await editor.reset()
       await page.getByRole('button', { name: 'client-counter: 0' }).click()
     })
 
@@ -575,7 +577,7 @@ function defineTest(f: Fixture) {
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok]')
 
       const editor = f.createEditor('src/routes/hmr-client-dep/client-dep.tsx')
-      editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
+      await editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok-edit]')
 
       // check next rsc payload includes current client reference and preserves state
@@ -593,7 +595,7 @@ function defineTest(f: Fixture) {
       })
       expect(await res?.text()).toContain('[ok-edit]')
 
-      editor.reset()
+      await editor.reset()
       await expect(locator).toHaveText('test-hmr-client-dep: 1[ok]')
     })
 
@@ -607,7 +609,7 @@ function defineTest(f: Fixture) {
       await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
 
       const editor = f.createEditor('src/routes/hmr-client-dep2/client-dep.ts')
-      editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
+      await editor.edit((s) => s.replace('[ok]', '[ok-edit]'))
       await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok-edit]')
 
       // check next rsc payload includes an updated client reference and preserves state
@@ -625,7 +627,7 @@ function defineTest(f: Fixture) {
       })
       expect(await res?.text()).toContain('[ok-edit]')
 
-      editor.reset()
+      await editor.reset()
       await expect(locator).toHaveText('test-hmr-client-dep2: 1[ok]')
     })
 
@@ -634,11 +636,13 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/action/server.tsx')
-      editor.edit((s) => s.replace('server-counter', 'server-[edit]-counter'))
+      await editor.edit((s) =>
+        s.replace('server-counter', 'server-[edit]-counter'),
+      )
       await expect(
         page.getByRole('button', { name: 'server-[edit]-counter: 0' }),
       ).toBeVisible()
-      editor.reset()
+      await editor.reset()
       await expect(
         page.getByRole('button', { name: 'server-counter: 0' }),
       ).toBeVisible()
@@ -657,11 +661,11 @@ function defineTest(f: Fixture) {
 
       // change parent module
       const editor = f.createEditor('src/routes/module-invalidation/server.tsx')
-      editor.edit((s) => s.replace('[dep:', '[dep-edit:'))
+      await editor.edit((s) => s.replace('[dep:', '[dep-edit:'))
 
       // preserve child module state
       await expect(locator).toContainText('[dep-edit: 1]')
-      editor.reset()
+      await editor.reset()
       await expect(locator).toContainText('[dep: 1]')
     })
 
@@ -680,7 +684,7 @@ function defineTest(f: Fixture) {
 
       // Test 1: Component HMR (shared1.tsx)
       const editor1 = f.createEditor('src/routes/hmr-shared/shared1.tsx')
-      editor1.edit((s) => s.replace('shared1', 'shared1-edit'))
+      await editor1.edit((s) => s.replace('shared1', 'shared1-edit'))
 
       // Verify both server and client components updated
       await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
@@ -690,7 +694,7 @@ function defineTest(f: Fixture) {
         '(shared1-edit, shared2)',
       )
 
-      editor1.reset()
+      await editor1.reset()
       await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
         '(shared1, shared2)',
       )
@@ -700,7 +704,7 @@ function defineTest(f: Fixture) {
 
       // Test 2: Non-component HMR (shared2.tsx)
       const editor2 = f.createEditor('src/routes/hmr-shared/shared2.tsx')
-      editor2.edit((s) => s.replace('shared2', 'shared2-edit'))
+      await editor2.edit((s) => s.replace('shared2', 'shared2-edit'))
 
       // Verify both server and client components updated
       await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
@@ -710,7 +714,7 @@ function defineTest(f: Fixture) {
         '(shared1, shared2-edit)',
       )
 
-      editor2.reset()
+      await editor2.reset()
       await expect(page.getByTestId('test-hmr-shared-server')).toContainText(
         '(shared1, shared2)',
       )
@@ -731,7 +735,7 @@ function defineTest(f: Fixture) {
 
       // non-atomic update causes an error
       const editor = f.createEditor('src/routes/hmr-shared/atomic/shared.tsx')
-      editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
+      await editor.edit((s) => s.replace('test-shared', 'test-shared-edit'))
       await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
         'ErrorBoundary',
       )
@@ -740,7 +744,7 @@ function defineTest(f: Fixture) {
       await expect(page.getByText('ok (test-shared-edit)')).toBeVisible()
 
       // non-atomic update causes an error
-      editor.reset()
+      await editor.reset()
       await expect(page.getByTestId('test-hmr-shared-atomic')).toContainText(
         'ErrorBoundary',
       )
@@ -758,13 +762,13 @@ function defineTest(f: Fixture) {
         '(useState: false)',
       )
       const editor = f.createEditor('src/routes/hmr-switch/server.tsx')
-      editor.edit((s) => `"use client";\n` + s)
+      await editor.edit((s) => `"use client";\n` + s)
       await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
         '(useState: true)',
       )
 
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(page.getByTestId('test-hmr-switch-server')).toContainText(
         '(useState: false)',
       )
@@ -779,13 +783,13 @@ function defineTest(f: Fixture) {
         '(useState: true)',
       )
       const editor = f.createEditor('src/routes/hmr-switch/client.tsx')
-      editor.edit((s) => s.replace(`'use client'`, ''))
+      await editor.edit((s) => s.replace(`'use client'`, ''))
       await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
         '(useState: false)',
       )
 
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(page.getByTestId('test-hmr-switch-client')).toContainText(
         '(useState: true)',
       )
@@ -856,12 +860,14 @@ function defineTest(f: Fixture) {
 
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.locator('.test-style-client')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           `color: rgb(0, 165, 255);`,
           `/* color: rgb(0, 165, 255); */`,
@@ -873,7 +879,7 @@ function defineTest(f: Fixture) {
       )
       // wait longer for multiple edits
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(page.locator('.test-style-client')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -933,7 +939,7 @@ function defineTest(f: Fixture) {
 
       // remove css import
       const editor = f.createEditor('src/routes/style-client/client-dep.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           `import './client-dep.css'`,
           `/* import './client-dep.css' */`,
@@ -950,7 +956,7 @@ function defineTest(f: Fixture) {
       }).toPass()
 
       // add back css import
-      editor.reset()
+      await editor.reset()
       await page.waitForTimeout(100)
       await expect(async () => {
         if (!options.js) await page.reload()
@@ -968,12 +974,14 @@ function defineTest(f: Fixture) {
 
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.locator('.test-style-server')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           `color: rgb(0, 165, 255);`,
           `/* color: rgb(0, 165, 255); */`,
@@ -983,7 +991,7 @@ function defineTest(f: Fixture) {
         'color',
         'rgb(0, 0, 0)',
       )
-      editor.reset()
+      await editor.reset()
       await expect(page.locator('.test-style-server')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -1011,7 +1019,7 @@ function defineTest(f: Fixture) {
         await using _ = await expectNoReload(page)
 
         // remove css import
-        editor.edit((s) =>
+        await editor.edit((s) =>
           s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
         )
         await expect(page.locator('.test-style-server')).toHaveCSS(
@@ -1020,7 +1028,7 @@ function defineTest(f: Fixture) {
         )
 
         // add new css
-        editor.edit((s) =>
+        await editor.edit((s) =>
           s.replaceAll(`/* import './server.css' */`, `import './server2.css'`),
         )
         await expect(page.locator('.test-style-server')).toHaveCSS(
@@ -1030,7 +1038,7 @@ function defineTest(f: Fixture) {
       }
 
       // TODO: React doesn't re-inert same css link. so manual reload is required.
-      editor.reset()
+      await editor.reset()
       await page.waitForTimeout(100)
       await expect(async () => {
         await page.reload()
@@ -1058,7 +1066,7 @@ function defineTest(f: Fixture) {
 
       // remove css import
       const editor = f.createEditor('src/routes/style-server/server.tsx')
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(`import './server.css'`, `/* import './server.css' */`),
       )
       await page.waitForTimeout(100)
@@ -1072,7 +1080,7 @@ function defineTest(f: Fixture) {
       }).toPass()
 
       // add back css import
-      editor.reset()
+      await editor.reset()
       await page.waitForTimeout(100)
       await expect(async () => {
         if (!options.js) await page.reload()
@@ -1089,12 +1097,14 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client.module.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.getByTestId('css-module-client')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           'color: rgb(0, 165, 255);',
           '/* color: rgb(0, 165, 255); */',
@@ -1108,7 +1118,7 @@ function defineTest(f: Fixture) {
       // resetting too fast seems to miss hmr update for fast machine
       // (ubuntu / chromium on CI since playwright 1.60.0)
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(page.getByTestId('css-module-client')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -1120,12 +1130,14 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server.module.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           'color: rgb(0, 165, 255);',
           '/* color: rgb(0, 165, 255); */',
@@ -1136,7 +1148,7 @@ function defineTest(f: Fixture) {
         'rgb(0, 0, 0)',
       )
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(page.getByTestId('css-module-server')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -1153,7 +1165,9 @@ function defineTest(f: Fixture) {
       await expect(client).toHaveCSS('color', 'rgb(255, 165, 0)')
 
       const editor = f.createEditor('src/routes/style-shared/shared.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(server).toHaveCSS('color', 'rgb(0, 165, 255)')
       await expect(client).toHaveCSS('color', 'rgb(0, 165, 255)')
 
@@ -1183,11 +1197,13 @@ function defineTest(f: Fixture) {
       await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')
 
       const editor = f.createEditor('src/routes/style-shared/shared.module.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(serverCard).toHaveCSS('color', 'rgb(0, 165, 255)')
       await expect(clientCard).toHaveCSS('color', 'rgb(0, 165, 255)')
 
-      editor.edit((s) =>
+      await editor.edit((s) =>
         s.replaceAll(
           'color: rgb(0, 165, 255);',
           '/* color: rgb(0, 165, 255); */',
@@ -1197,7 +1213,7 @@ function defineTest(f: Fixture) {
       await expect(clientCard).toHaveCSS('color', 'rgb(0, 0, 0)')
 
       await page.waitForTimeout(100)
-      editor.reset()
+      await editor.reset()
       await expect(serverCard).toHaveCSS('color', 'rgb(255, 165, 0)')
       await expect(clientCard).toHaveCSS('color', 'rgb(255, 165, 0)')
     })
@@ -1207,12 +1223,14 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-client/client-url.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.locator('.test-style-url-client')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.reset()
+      await editor.reset()
       await expect(page.locator('.test-style-url-client')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -1224,12 +1242,14 @@ function defineTest(f: Fixture) {
       await waitForHydration(page)
       await using _ = await expectNoReload(page)
       const editor = f.createEditor('src/routes/style-server/server-url.css')
-      editor.edit((s) => s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'))
+      await editor.edit((s) =>
+        s.replaceAll('rgb(255, 165, 0)', 'rgb(0, 165, 255)'),
+      )
       await expect(page.locator('.test-style-url-server')).toHaveCSS(
         'color',
         'rgb(0, 165, 255)',
       )
-      editor.reset()
+      await editor.reset()
       await expect(page.locator('.test-style-url-server')).toHaveCSS(
         'color',
         'rgb(255, 165, 0)',
@@ -1362,24 +1382,24 @@ function defineTest(f: Fixture) {
       await using _ = await expectNoReload(page)
 
       const clientFile = f.createEditor('src/routes/tailwind/client.tsx')
-      clientFile.edit((s) => s.replaceAll('text-[#00f]', 'text-[#88f]'))
+      await clientFile.edit((s) => s.replaceAll('text-[#00f]', 'text-[#88f]'))
       await expect(page.locator('.test-tw-client')).toHaveCSS(
         'color',
         'rgb(136, 136, 255)',
       )
-      clientFile.reset()
+      await clientFile.reset()
       await expect(page.locator('.test-tw-client')).toHaveCSS(
         'color',
         'rgb(0, 0, 255)',
       )
 
       const serverFile = f.createEditor('src/routes/tailwind/server.tsx')
-      serverFile.edit((s) => s.replaceAll('text-[#f00]', 'text-[#f88]'))
+      await serverFile.edit((s) => s.replaceAll('text-[#f00]', 'text-[#f88]'))
       await expect(page.locator('.test-tw-server')).toHaveCSS(
         'color',
         'rgb(255, 136, 136)',
       )
-      serverFile.reset()
+      await serverFile.reset()
       await expect(page.locator('.test-tw-server')).toHaveCSS(
         'color',
         'rgb(255, 0, 0)',
@@ -1395,9 +1415,9 @@ function defineTest(f: Fixture) {
           logs.push(msg.text())
         }
       })
-      f.createEditor('src/routes/tailwind/unused.tsx').resave()
+      await f.createEditor('src/routes/tailwind/unused.tsx').resave()
       await page.waitForTimeout(200)
-      f.createEditor('src/routes/tailwind/server.tsx').resave()
+      await f.createEditor('src/routes/tailwind/server.tsx').resave()
       await page.waitForTimeout(200)
       expect(logs).toEqual([
         expect.stringMatching(/\[vite-rsc:update\].*\/tailwind\/server.tsx/),

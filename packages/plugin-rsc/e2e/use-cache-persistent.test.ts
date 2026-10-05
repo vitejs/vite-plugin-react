@@ -112,7 +112,7 @@ function defineDevTests(f: Fixture) {
     await expect(executionCount).toHaveText('1')
 
     // Editing the cached function advances its module generation.
-    action.edit((code) => code.replace('body-v1', 'body-v2'))
+    await action.edit((code) => code.replace('body-v1', 'body-v2'))
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(
@@ -123,7 +123,7 @@ function defineDevTests(f: Fixture) {
     )
 
     // Editing a direct dependency invalidates the importing cache module.
-    direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
+    await direct.edit((code) => code.replace('direct-v1', 'direct-v2'))
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(
@@ -134,7 +134,9 @@ function defineDevTests(f: Fixture) {
     )
 
     // Reverse-importer traversal also reaches transitive dependencies.
-    transitive.edit((code) => code.replace('transitive-v1', 'transitive-v2'))
+    await transitive.edit((code) =>
+      code.replace('transitive-v1', 'transitive-v2'),
+    )
     await page.reload()
     await waitForHydration(page)
     await expectResultAfterUpdate(

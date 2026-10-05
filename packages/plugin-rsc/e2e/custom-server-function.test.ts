@@ -25,7 +25,7 @@ test.describe('dev-custom-server-function', () => {
     const editor = f.createEditor('src/features/mixed-directives/actions.ts')
     // Switch one export from the custom plugin to the built-in plugin. HMR
     // must remove the custom claim while preserving the module's other claims.
-    editor.edit((source) =>
+    await editor.edit((source) =>
       source
         .replace(`'use custom-server'`, `'use server'`)
         .replace(
@@ -50,7 +50,7 @@ test.describe('dev-custom-server-function', () => {
     ).toBeVisible()
 
     // Switch the export back and verify neither owner retained stale state.
-    editor.reset()
+    await editor.reset()
     await expect(page.getByRole('button', { name: 'Custom: 0' })).toBeVisible()
     await page.getByRole('button', { name: 'Built-in: 0', exact: true }).click()
     await expect(
