@@ -184,6 +184,33 @@ if (!isBuild) {
     await expect
       .poll(() => page.textContent('#accordion-root'))
       .toMatch('Accordion Root Updated')
+
+    await untilBrowserLogAfter(
+      () =>
+        editFile('components/Accordion.jsx', (code) =>
+          code.replace(
+            'export const Accordion = { Root, Item }',
+            `function Noop() { return null }
+export const Accordion = { Root, Item, Noop }`,
+          ),
+        ),
+      [
+        '[vite] invalidate /components/Accordion.jsx: Could not Fast Refresh (compound component "Accordion.Noop" added)',
+      ],
+    )
+
+    await untilBrowserLogAfter(
+      () =>
+        editFile('components/Accordion.jsx', (code) =>
+          code.replace(
+            'export const Accordion = { Root, Item, Noop }',
+            `export const Accordion = { Root, Item }`,
+          ),
+        ),
+      [
+        '[vite] invalidate /components/Accordion.jsx: Could not Fast Refresh (compound component "Accordion.Noop" removed)',
+      ],
+    )
   })
 
   test('no refresh transform for non-jsx files', async () => {

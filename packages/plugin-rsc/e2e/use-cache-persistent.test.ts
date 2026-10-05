@@ -165,10 +165,10 @@ function defineDevTests(f: Fixture) {
   })
 }
 
-// Editing a server module makes the page refetch its RSC payload through
-// `rsc:update`. Wait for that refetch before reloading. Otherwise the reload
-// can abort it (an unhandled `TypeError: Load failed` in WebKit), or the late
-// update can reach the reloaded page before it has hydrated.
+// Edit a server module and wait for the `rsc:update` refetch it triggers.
+// Reloading before that finishes can abort the refetch (an unhandled
+// `TypeError: Load failed` in WebKit), or let the late update reach the
+// reloaded page before it has hydrated.
 async function editServerModule(page: Page, edit: () => void) {
   const refetch = page.waitForResponse(
     (response) =>
