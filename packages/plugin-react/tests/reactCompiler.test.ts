@@ -144,7 +144,7 @@ describe('compiler option', () => {
     const diagnostics: unknown[] = []
 
     await transformWithBuildConfig(
-      { logDiagnostics: true },
+      { reportDiagnostics: true },
       {},
       'client',
       `

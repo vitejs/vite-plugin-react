@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix `compiler.logDiagnostics` option not working ([#1483](https://github.com/vitejs/vite-plugin-react/pull/1483))
+
+With `oxc-transform-react` >= 0.148, the `logDiagnostics` was not working. This version fixes it and requires `oxc-transform-react` >= 0.152 as a peer dependency if you are using the `compiler` option. `compiler.logDiagnostics` option is now deprecated and should be swapped for the builtin `compiler.reportDiagnostics`.
+
 ### Disable refresh for non-jsx with compiler enabled (fix [#1478](https://github.com/vitejs/vite-plugin-react/issues/1478)) ([#1485](https://github.com/vitejs/vite-plugin-react/pull/1485))
 
 When the compiler was enabled, TS files could trigger fast refresh which would cause runtime errors. The logic now follows what the builtin oxc plugin in Vite does.
