@@ -46,7 +46,7 @@ test('HMR invalidate', async ({ page }) => {
     "React!'\nexport const useless = 3",
   ])
   await waitForLogs(
-    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (new export)',
+    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export "useless" added)',
     '[vite] hot updated: /src/App.tsx',
   )
 
@@ -72,7 +72,7 @@ test('HMR invalidate', async ({ page }) => {
     '',
   ])
   await waitForLogs(
-    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export removed)',
+    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export "Title2" removed)',
     '[vite] hot updated: /src/App.tsx',
     /Failed to reload \/src\/App\.tsx. This could be due to syntax errors or importing non-existent modules\. \(see errors above\)$/,
   )
@@ -89,7 +89,7 @@ test('HMR invalidate', async ({ page }) => {
   // Remove useless export
   editFile('src/TitleWithExport.tsx', ['\nexport const useless = 3', ''])
   await waitForLogs(
-    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export removed)',
+    '[vite] invalidate /src/TitleWithExport.tsx: Could not Fast Refresh (export "useless" removed)',
     '[vite] hot updated: /src/App.tsx',
   )
 

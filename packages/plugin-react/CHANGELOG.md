@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
+
+Adding or removing a component from a compound component was not handled, creating stale updates. Doing this now triggers hmr invalidate on the file and propagates the invalidation to importers.
+
 ### Fix `compiler.logDiagnostics` option not working ([#1483](https://github.com/vitejs/vite-plugin-react/pull/1483))
 
 With `oxc-transform-react` >= 0.148, the `logDiagnostics` was not working. This version fixes it and requires `oxc-transform-react` >= 0.152 as a peer dependency if you are using the `compiler` option. `compiler.logDiagnostics` option is now deprecated and should be swapped for the builtin `compiler.reportDiagnostics`.
