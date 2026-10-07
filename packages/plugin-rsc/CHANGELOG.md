@@ -1,3 +1,23 @@
+## <small>[0.5.36](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.35...plugin-rsc%400.5.36) (2026-10-07)</small>
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1445](https://github.com/vitejs/vite-plugin-react/issues/1445)) ([ee97d2f](https://github.com/vitejs/vite-plugin-react/commit/ee97d2f3bd25cda8f06c27366722f01aaac0201f))
+* **deps:** update all non-major dependencies ([#1486](https://github.com/vitejs/vite-plugin-react/issues/1486)) ([98277e7](https://github.com/vitejs/vite-plugin-react/commit/98277e7d49fea7fa707170d2892738c8bfb5f1c0))
+* **deps:** update dependency es-module-lexer to v3 ([#1455](https://github.com/vitejs/vite-plugin-react/issues/1455)) ([f4e4a48](https://github.com/vitejs/vite-plugin-react/commit/f4e4a485f63cd75398c59c059d1223a0bad18025))
+* **deps:** update dependency srvx to v1 ([#1456](https://github.com/vitejs/vite-plugin-react/issues/1456)) ([a574a54](https://github.com/vitejs/vite-plugin-react/commit/a574a543844590dc06a706b303e108c530c9b7ad))
+* **rsc:** finalize asset manifest after css ([#1470](https://github.com/vitejs/vite-plugin-react/issues/1470)) ([14be507](https://github.com/vitejs/vite-plugin-react/commit/14be507bc5698547e24eab79dfd819071cc697f2))
+* **rsc:** resolve facade client entry with strictExecutionOrder ([#1480](https://github.com/vitejs/vite-plugin-react/issues/1480)) ([0982f02](https://github.com/vitejs/vite-plugin-react/commit/0982f0263f73270672c50e60f3fb2f06eb8f88e9))
+* **rsc:** use `crossOrigin: anonymous` for css ([#1469](https://github.com/vitejs/vite-plugin-react/issues/1469)) ([9b5ca53](https://github.com/vitejs/vite-plugin-react/commit/9b5ca53bc3d4a4a7ed8c38e50cbda031d55094ab))
+
+### Tests
+
+* **rsc:** fix `setupIsolatedFixture` in ecosystem CI ([#1471](https://github.com/vitejs/vite-plugin-react/issues/1471)) ([fd25651](https://github.com/vitejs/vite-plugin-react/commit/fd25651a5712227e99f21d782391a32834b4d5bc))
+* **rsc:** fix e2e flakes in use-cache-persistent and isolated fixture setup ([#1487](https://github.com/vitejs/vite-plugin-react/issues/1487)) ([7212f34](https://github.com/vitejs/vite-plugin-react/commit/7212f3486c987ae4bf046ff94501f80a48b90e7f))
+* **rsc:** make e2e file editor async and space out writes ([#1489](https://github.com/vitejs/vite-plugin-react/issues/1489)) ([8063121](https://github.com/vitejs/vite-plugin-react/commit/806312117b2879b576a167bfa7925c533b100e3a))
+* **rsc:** remove React canary checks ([#1463](https://github.com/vitejs/vite-plugin-react/issues/1463)) ([df9f995](https://github.com/vitejs/vite-plugin-react/commit/df9f9959e3df0038b3f5af1247d9ec688f4754d2))
+* **rsc:** run cloudflare e2e on a copy of starter-extra ([#1488](https://github.com/vitejs/vite-plugin-react/issues/1488)) ([c714161](https://github.com/vitejs/vite-plugin-react/commit/c714161e0ac85d959933cc652b276f021912c611))
+* **rsc:** wait for hydration in performance-track e2e ([#1490](https://github.com/vitejs/vite-plugin-react/issues/1490)) ([bbf45d7](https://github.com/vitejs/vite-plugin-react/commit/bbf45d7230aa0e89265729994804b32198380789))
+
 ## <small>[0.5.35](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.34...plugin-rsc%400.5.35) (2026-09-16)</small>
 ### Features
 
