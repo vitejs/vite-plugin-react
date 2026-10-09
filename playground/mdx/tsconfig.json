@@ -4,7 +4,7 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "noEmit": true,
     "jsx": "react-jsx"

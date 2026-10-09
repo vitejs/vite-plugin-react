@@ -5,7 +5,7 @@ test('TS lib build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('ts-lib')
   await page.goto(testUrl)
   await testNonJs(page)
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('TS lib dev', async ({ page }) => {
