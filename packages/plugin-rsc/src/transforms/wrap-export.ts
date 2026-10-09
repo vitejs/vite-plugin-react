@@ -71,6 +71,10 @@ export function transformWrapExport(
   const exportNames: string[] = []
   const appendedCode: string[] = []
   const filter = options.filter ?? (() => true)
+  // Code moved to the end of a module that has no final newline would join its
+  // last line. If that line is a comment (often `//# sourceMappingURL=...`),
+  // the moved code becomes part of the comment and never runs.
+  let needsLeadingNewline = !input.endsWith('\n')
 
   /**
    * Strips a direct export declaration and emits assignments and exports at
@@ -113,8 +117,9 @@ export function transformWrapExport(
         .filter(Boolean)
         .join('') +
       `export { ${exports.map((e) => e.localName).join(', ')} };\n`
-    output.update(start, end, newCode)
+    output.update(start, end, (needsLeadingNewline ? '\n' : '') + newCode)
     output.move(start, end, input.length)
+    needsLeadingNewline = false
   }
 
   /**

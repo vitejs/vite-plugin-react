@@ -70,6 +70,26 @@ export class Cls {};
     `)
   })
 
+  test('module without a final newline', async () => {
+    // Published packages often end with a source map comment and no newline.
+    const input = `export const Arrow = () => {};\nexport function Fn() {};\n//# sourceMappingURL=index.js.map`
+    const output = await testTransform(input)
+    expect(output).toMatchInlineSnapshot(`
+      "let Arrow = () => {};
+      function Fn() {};
+      //# sourceMappingURL=index.js.map
+      Arrow = /* #__PURE__ */ $$wrap(Arrow, "<id>", "Arrow");
+      export { Arrow };
+      Fn = /* #__PURE__ */ $$wrap(Fn, "<id>", "Fn");
+      export { Fn };
+      "
+    `)
+    const lastLine = (output as string)
+      .split('\n')
+      .findLast((line) => line.includes('sourceMappingURL'))
+    expect(lastLine).toBe('//# sourceMappingURL=index.js.map')
+  })
+
   test('preserve reference', async () => {
     const input = `
 export let count = 0;
