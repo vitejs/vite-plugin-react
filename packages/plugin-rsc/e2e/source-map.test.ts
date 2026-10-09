@@ -1,6 +1,4 @@
-import fs from 'node:fs'
 import { SourceMap, type SourceMapPayload } from 'node:module'
-import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import * as vite from 'vite'
 import { useFixture } from './fixture'
@@ -231,34 +229,51 @@ test.describe('source map build', () => {
     buildCommand: 'pnpm build --sourcemap',
   })
 
-  // Next.js covers the same case in "should not expose action content in sourcemaps":
-  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
-  test('keeps Server Function source out of client source maps', () => {
-    const clientDir = path.join(f.root, 'dist/client')
-    const sources = new Map<string, string | null>()
-    for (const file of fs.readdirSync(clientDir, { recursive: true })) {
-      if (!String(file).endsWith('.js.map')) continue
-      const map = JSON.parse(
-        fs.readFileSync(path.join(clientDir, String(file)), 'utf-8'),
-      ) as SourceMapPayload
-      map.sources.forEach((source, i) => {
-        sources.set(source, map.sourcesContent?.[i] ?? null)
-      })
-    }
+  test('omits Server Reference sources on /server-reference-from-client', async ({
+    page,
+  }) => {
+    await page.goto(f.url('/server-reference-from-client'))
+    await waitForHydration(page)
 
-    // The client component importing the Server Function keeps its source.
-    const client = [...sources].find(([source]) =>
+    const sources = await loadClientSources(page)
+    const clientSource = [...sources].find(([source]) =>
       source.endsWith('/server-reference-from-client/client.tsx'),
-    )
-    expect(client?.[1]).toContain('clientImportedAction')
-
-    // Its proxy must not carry the Server Function module's source.
-    const leaked = [...sources]
+    )?.[1]
+    expect(clientSource).toContain('clientImportedAction')
+    const serverSources = [...sources]
       .filter(([, content]) => content?.includes('use server'))
       .map(([source]) => source)
-    expect(leaked).toEqual([])
+    expect(serverSources).toEqual([])
   })
 })
+
+// Collect `sourcesContent` from the source maps of every script the page loaded.
+async function loadClientSources(page: Page) {
+  const scriptURLs = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .filter((url) => new URL(url).pathname.endsWith('.js')),
+  )
+  const sources = new Map<string, string | null>()
+  for (const scriptURL of scriptURLs) {
+    const script = await page.request.get(scriptURL)
+    const sourceMappingURL = /\/\/# sourceMappingURL=(\S+)\s*$/.exec(
+      await script.text(),
+    )?.[1]
+    if (!sourceMappingURL) continue
+    const response = await page.request.get(
+      new URL(sourceMappingURL, scriptURL).href,
+    )
+    expect(response.ok()).toBe(true)
+    const payload = (await response.json()) as Partial<SourceMapPayload>
+    payload.sources!.forEach((source, i) => {
+      sources.set(source, payload.sourcesContent?.[i] ?? null)
+    })
+  }
+  expect(sources.size).toBeGreaterThan(0)
+  return sources
+}
 
 async function createFunctionSourceMapResolver(page: Page, baseURL: string) {
   const session = await page.context().newCDPSession(page)
