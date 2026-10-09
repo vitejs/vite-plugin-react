@@ -9,7 +9,7 @@ test('MDX build', async ({ page }) => {
   const { testUrl, server } = await setupBuildAndPreview('mdx')
   await page.goto(testUrl)
   await expect(page.getByRole('heading', { name: 'Hello' })).toBeVisible()
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('MDX HMR', async ({ page }) => {
@@ -22,7 +22,7 @@ test('MDX HMR', async ({ page }) => {
 
   editFile('src/Counter.tsx', ['{count}', '{count}!'])
   await waitForLogs('[vite] hot updated: /src/Counter.tsx')
-  const button = await page.locator('button')
+  const button = page.locator('button')
   await button.click()
   await expect(button).toHaveText('count is 1!')
 

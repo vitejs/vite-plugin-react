@@ -2,6 +2,9 @@ import regexp from 'eslint-plugin-regexp'
 import { defineConfig } from 'oxlint'
 
 export default defineConfig({
+  options: {
+    typeAware: true,
+  },
   plugins: ['typescript', 'node', 'import', 'unicorn'],
   jsPlugins: ['eslint-plugin-n', 'eslint-plugin-regexp'],
   categories: {

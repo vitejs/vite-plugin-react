@@ -41,6 +41,7 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "^0.71.0",
     "oxlint": "^1.87.0",
+    "oxlint-tsgolint": "^7.0.2003",
     "playwright-chromium": "^1.63.0",
     "simple-git-hooks": "^2.14.0",
     "typescript": "^6.0.3",

@@ -1,5 +1,5 @@
 /* global window */
-/* oxlint-disable eqeqeq, prefer-const, no-empty-function, no-unused-vars */
+/* oxlint-disable eqeqeq, prefer-const, no-empty-function, no-unused-vars, typescript/no-implied-eval */
 
 /*! Copyright (c) Meta Platforms, Inc. and affiliates. **/
 /**
