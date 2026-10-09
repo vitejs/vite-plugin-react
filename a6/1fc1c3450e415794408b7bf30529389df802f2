@@ -1,0 +1,25 @@
+packages/common/refresh-runtime.js
+  s_5d25a98cc01203::t_f3a6c149eec28f 2,375,412,465
+packages/plugin-react-swc/src/index.ts
+  s_5d25a98cc01203::t_7ea242387d6a8d 116
+packages/plugin-react/types/optionalTypes.d.ts
+  s_5d25a98cc01203::t_2d8e4253c2cdbb 1
+playground/vitestSetup.ts
+  s_5d25a98cc01203::t_c1e5426bcb3bb2 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a61fc1c3450e415794408b7bf30529389df802f2",
+  "prompts": {},
+  "sessions": {
+    "s_5d25a98cc01203": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11ece-38ec-72f2-8e6b-04cb80d647b3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
