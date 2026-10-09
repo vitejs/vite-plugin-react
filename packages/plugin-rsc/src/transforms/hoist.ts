@@ -42,6 +42,8 @@ export type TransformHoistInlineDirectiveMeta = {
   directiveMatch: RegExpMatchArray
   /** Original source function before closure captures are added as parameters. */
   valueNode: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression
+  /** Closure captures, in the order they are bound ahead of the original parameters. */
+  bindVars: string[]
 }
 
 export type TransformHoistInlineDirectiveResult = {
@@ -226,7 +228,11 @@ export function transformHoistInlineDirective(
         const runtimeCode = `/* #__PURE__ */ ${runtime(
           implementationName,
           newName,
-          { directiveMatch: match, valueNode: node },
+          {
+            directiveMatch: match,
+            valueNode: node,
+            bindVars: bindVars.map((b) => b.root),
+          },
         )}`
         if (options.hoistRuntime) {
           runtimeHoists.push(
