@@ -1,4 +1,6 @@
+import fs from 'node:fs'
 import { SourceMap, type SourceMapPayload } from 'node:module'
+import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import * as vite from 'vite'
 import { useFixture } from './fixture'
@@ -219,6 +221,42 @@ test.describe('source map', () => {
       await button.click()
       await expect(button).toContainText(`at ${item.functionName} (`)
     }
+  })
+})
+
+test.describe('source map build', () => {
+  const f = useFixture({
+    root: 'examples/source-map',
+    mode: 'build',
+    buildCommand: 'pnpm build --sourcemap',
+  })
+
+  // Next.js covers the same case in "should not expose action content in sourcemaps":
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+  test('keeps Server Function source out of client source maps', () => {
+    const clientDir = path.join(f.root, 'dist/client')
+    const sources = new Map<string, string | null>()
+    for (const file of fs.readdirSync(clientDir, { recursive: true })) {
+      if (!String(file).endsWith('.js.map')) continue
+      const map = JSON.parse(
+        fs.readFileSync(path.join(clientDir, String(file)), 'utf-8'),
+      ) as SourceMapPayload
+      map.sources.forEach((source, i) => {
+        sources.set(source, map.sourcesContent?.[i] ?? null)
+      })
+    }
+
+    // The client component importing the Server Function keeps its source.
+    const client = [...sources].find(([source]) =>
+      source.endsWith('/server-reference-from-client/client.tsx'),
+    )
+    expect(client?.[1]).toContain('clientImportedAction')
+
+    // Its proxy must not carry the Server Function module's source.
+    const leaked = [...sources]
+      .filter(([, content]) => content?.includes('use server'))
+      .map(([source]) => source)
+    expect(leaked).toEqual([])
   })
 })
 

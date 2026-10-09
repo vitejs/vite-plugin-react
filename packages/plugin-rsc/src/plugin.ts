@@ -2156,7 +2156,15 @@ function vitePluginUseServer(
             )
             return {
               code: output.toString(),
-              map: output.generateMap({ hires: 'boundary' }),
+              // The proxy must not map back to the server module in browser
+              // builds, or its source ships in the client sourcemap's
+              // `sourcesContent`. Next.js drops these mappings the same way.
+              // https://github.com/vercel/next.js/pull/76157
+              map:
+                this.environment.mode === 'build' &&
+                this.environment.name === browserEnvironmentName
+                  ? { mappings: '' }
+                  : output.generateMap({ hires: 'boundary' }),
             }
           }
         },
