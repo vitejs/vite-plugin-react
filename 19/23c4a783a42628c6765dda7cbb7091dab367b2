@@ -1,0 +1,38 @@
+packages/common/refresh-runtime.js
+  s_5d25a98cc01203::t_f3a6c149eec28f 375,412,465
+  s_952f39a7aaa3bd::t_17b7b6c0c604b8 2
+oxlint.config.ts
+  s_952f39a7aaa3bd::t_9244fa85460728 1-2,4-13,15-26,28-32,35-87,89-107,109-110
+package.json
+  s_952f39a7aaa3bd::t_42e45b9a47de59 18,43,59,62,65
+packages/plugin-react-swc/src/index.ts
+  s_952f39a7aaa3bd::t_a29711f9e8eb89 116
+packages/plugin-react/types/optionalTypes.d.ts
+  s_952f39a7aaa3bd::t_d60110393998e2 1
+playground/vitestSetup.ts
+  s_952f39a7aaa3bd::t_5d9b202913e4ab 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1923c4a783a42628c6765dda7cbb7091dab367b2",
+  "prompts": {},
+  "sessions": {
+    "s_5d25a98cc01203": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11ece-38ec-72f2-8e6b-04cb80d647b3",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    },
+    "s_952f39a7aaa3bd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11ee9-78f8-7883-bd81-d5d8a8452afe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
