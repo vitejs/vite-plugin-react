@@ -222,6 +222,59 @@ test.describe('source map', () => {
   })
 })
 
+test.describe('source map build', () => {
+  const f = useFixture({
+    root: 'examples/source-map',
+    mode: 'build',
+    buildCommand: 'pnpm build --sourcemap',
+  })
+
+  test('omits Server Reference sources on /server-reference-from-client', async ({
+    page,
+  }) => {
+    await page.goto(f.url('/server-reference-from-client'))
+    await waitForHydration(page)
+
+    const sources = await loadClientSources(page)
+    const clientSource = [...sources].find(([source]) =>
+      source.endsWith('/server-reference-from-client/client.tsx'),
+    )?.[1]
+    expect(clientSource).toContain('clientImportedAction')
+    const serverSources = [...sources]
+      .filter(([, content]) => content?.includes('use server'))
+      .map(([source]) => source)
+    expect(serverSources).toEqual([])
+  })
+})
+
+// Collect `sourcesContent` from the source maps of every script the page loaded.
+async function loadClientSources(page: Page) {
+  const scriptURLs = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .filter((url) => new URL(url).pathname.endsWith('.js')),
+  )
+  const sources = new Map<string, string | null>()
+  for (const scriptURL of scriptURLs) {
+    const script = await page.request.get(scriptURL)
+    const sourceMappingURL = /\/\/# sourceMappingURL=(\S+)\s*$/.exec(
+      await script.text(),
+    )?.[1]
+    if (!sourceMappingURL) continue
+    const response = await page.request.get(
+      new URL(sourceMappingURL, scriptURL).href,
+    )
+    expect(response.ok()).toBe(true)
+    const payload = (await response.json()) as Partial<SourceMapPayload>
+    payload.sources!.forEach((source, i) => {
+      sources.set(source, payload.sourcesContent?.[i] ?? null)
+    })
+  }
+  expect(sources.size).toBeGreaterThan(0)
+  return sources
+}
+
 async function createFunctionSourceMapResolver(page: Page, baseURL: string) {
   const session = await page.context().newCDPSession(page)
   const scripts = new Map<string, { sourceMapURL?: string }>()
