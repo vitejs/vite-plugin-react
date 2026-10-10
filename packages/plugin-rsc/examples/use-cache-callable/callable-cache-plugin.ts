@@ -5,6 +5,7 @@ import {
   transformDirectiveProxyExport,
   transformHoistInlineDirective,
   transformWrapExport,
+  validateDirectiveFunction,
 } from '@vitejs/plugin-rsc/transforms'
 import { parseAstAsync, type Plugin } from 'vite'
 import type { CacheWrapperOptions } from './src/framework/use-cache-runtime'
@@ -40,10 +41,13 @@ export function callableCachePlugin(): Plugin {
           `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
           `${JSON.stringify(reference.referenceKey)},` +
           `${JSON.stringify(name)})`
+        const wrap = (value: string, name: string, meta: ModuleExportMeta) => {
+          validateDirectiveFunction(meta.valueNode, directive)
+          return runtime(value, name, getCacheWrapperOptions(meta))
+        }
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
-              runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta)),
+              runtime: wrap,
               // Next.js calls rejecting primitive literals while permitting
               // objects and arrays arbitrary, but keeps the latter for metadata
               // and viewport exports.
@@ -60,8 +64,7 @@ export function callableCachePlugin(): Plugin {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
-              runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta)),
+              runtime: wrap,
               encode: (value) => `$$encryptCacheCaptures(${value})`,
               // The cache runtime replaces the envelope with decoded captures
               // before invoking this private implementation.
