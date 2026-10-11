@@ -15,8 +15,8 @@ import { once } from './shared'
 // https://github.com/vercel/next.js/pull/56377
 
 // With an `actionId`, it is authenticated as AES-GCM additional data, so the
-// ciphertext only decrypts for that action (like the action id prefix in
-// Next.js). A closure issued for one action can't stand in for another's.
+// ciphertext only decrypts for that action. A closure issued for one action
+// can't stand in for another's.
 export async function encryptActionBoundArgs(
   originalValue: unknown,
   actionId?: string,

@@ -206,8 +206,8 @@ export type RscPluginOptions = {
   enableActionEncryption?: boolean
 
   /**
-   * Bind encrypted "use server" closure arguments to their action id, like
-   * Next.js. Without this, a closure encrypted for one inline server action
+   * Bind encrypted "use server" closure arguments to their action id. Without
+   * this, a closure encrypted for one inline server action
    * also decrypts as the arguments of any other, so a client can substitute
    * one action's captured values (e.g. derived from request input) for
    * another's. When enabled, closures encrypted without their action id are
