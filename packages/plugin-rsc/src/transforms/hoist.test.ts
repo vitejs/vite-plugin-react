@@ -324,6 +324,43 @@ export async function test() {
     await expect(testTransform(input)).rejects.toThrow(message)
   })
 
+  it('passes the hoisted name to encode and decode', async () => {
+    const input = `
+function Page({ label, role }) {
+  async function preview() { "use server"; return label; }
+  const actions = { read: async () => { "use server"; return role; } };
+}
+`
+    const ast = await parseAstAsync(input)
+    const encoded: string[][] = []
+    const decoded: string[][] = []
+    const { names } = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value, name) =>
+        `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
+      encode: (value, name) => {
+        encoded.push([value, name])
+        return `__enc(${value})`
+      },
+      decode: (value, name) => {
+        decoded.push([value, name])
+        return `__dec(${value})`
+      },
+    })
+    expect(names).toEqual([
+      '$$hoist_0_preview',
+      '$$hoist_1_anonymous_server_function',
+    ])
+    expect(encoded).toEqual([
+      ['[label]', '$$hoist_0_preview'],
+      ['[role]', '$$hoist_1_anonymous_server_function'],
+    ])
+    expect(decoded).toEqual([
+      ['$$hoist_encoded', '$$hoist_0_preview'],
+      ['$$hoist_encoded', '$$hoist_1_anonymous_server_function'],
+    ])
+  })
+
   it('reports unsupported methods before async policy', async () => {
     await expect(
       testTransform(`const actions = { get action() { "use server" } }`, {

@@ -7,8 +7,8 @@ import { hasDirective } from './utils'
 export type TransformServerActionServerOptions = {
   runtime: (value: string, name: string) => string
   rejectNonAsyncFunction?: boolean
-  encode?: (value: string) => string
-  decode?: (value: string) => string
+  encode?: (value: string, name: string) => string
+  decode?: (value: string, name: string) => string
 }
 
 export type TransformServerActionServerResult =
