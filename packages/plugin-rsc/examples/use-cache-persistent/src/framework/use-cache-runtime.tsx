@@ -130,20 +130,12 @@ async function decryptCacheCaptures(
   encrypted: unknown,
   captureCount: number,
 ): Promise<unknown[]> {
-  if (
-    typeof encrypted !== 'string' &&
-    !(
-      typeof encrypted === 'object' &&
-      encrypted !== null &&
-      'then' in encrypted &&
-      typeof encrypted.then === 'function'
-    )
-  ) {
+  // `encryptActionBoundArgs` returns a promise, and a client call sends it back
+  // as a promise reference, which `decodeReply` restores as a promise.
+  if (!(encrypted instanceof Promise)) {
     throw new Error('Invalid cache captures')
   }
-  const captures = await decryptActionBoundArgs(
-    Promise.resolve(encrypted as string | PromiseLike<string>),
-  )
+  const captures = await decryptActionBoundArgs(encrypted)
   if (!Array.isArray(captures) || captures.length !== captureCount) {
     throw new Error('Invalid cache captures')
   }
