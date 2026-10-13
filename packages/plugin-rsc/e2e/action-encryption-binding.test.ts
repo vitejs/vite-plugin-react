@@ -1,5 +1,5 @@
-import { webcrypto } from 'node:crypto'
 import { expect, test, type Page } from '@playwright/test'
+import { encryptBuffer, fromBase64 } from '../src/utils/encryption-utils'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 
@@ -182,23 +182,18 @@ async function captureAction(
   }
 }
 
+// Encrypt an already serialized closure the way `encryptActionBoundArgs` does.
 async function seal(flight: string, actionId?: string) {
-  const key = await webcrypto.subtle.importKey(
+  const key = await crypto.subtle.importKey(
     'raw',
-    Buffer.from(ENCRYPTION_KEY, 'base64'),
-    { name: 'AES-GCM' },
+    fromBase64(ENCRYPTION_KEY) as BufferSource,
+    'AES-GCM',
     false,
     ['encrypt'],
   )
-  const iv = webcrypto.getRandomValues(new Uint8Array(16))
-  const encrypted = await webcrypto.subtle.encrypt(
-    {
-      name: 'AES-GCM',
-      iv,
-      ...(actionId && { additionalData: new TextEncoder().encode(actionId) }),
-    },
-    key,
+  return encryptBuffer(
     new TextEncoder().encode(flight),
+    key,
+    actionId === undefined ? undefined : new TextEncoder().encode(actionId),
   )
-  return Buffer.concat([iv, new Uint8Array(encrypted)]).toString('base64')
 }
