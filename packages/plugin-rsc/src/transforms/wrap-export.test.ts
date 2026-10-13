@@ -69,17 +69,24 @@ export class Cls {};
     `)
   })
 
-  test('module without a final newline', async () => {
-    // Published packages often end with a source map comment and no newline.
-    const input = `export const Arrow = () => {};\nexport function Fn() {};\n//# sourceMappingURL=index.js.map`
+  test('no final newline with declaration export', async () => {
+    const input = `export const Arrow = () => {};\n// comment`
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "let Arrow = () => {};
-      function Fn() {};
-      //# sourceMappingURL=index.js.map
+      // comment
       Arrow = /* #__PURE__ */ $$wrap(Arrow, "<id>", "Arrow");
       export { Arrow };
-      Fn = /* #__PURE__ */ $$wrap(Fn, "<id>", "Fn");
-      export { Fn };
+      "
+    `)
+  })
+
+  test('no final newline with default export', async () => {
+    const input = `export default function Fn() {}\n// comment`
+    expect(await testTransform(input)).toMatchInlineSnapshot(`
+      "function Fn() {}
+      // comment
+      const $$wrap_Fn = /* #__PURE__ */ $$wrap(Fn, "<id>", "default");
+      export { $$wrap_Fn as default };
       "
     `)
   })
