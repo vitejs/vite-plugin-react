@@ -127,8 +127,19 @@ test.describe(() => {
       // UI, so the rejection above isn't hiding an unreachable branch.
       await page.goto(f.url('/?token=admin-token'))
       await waitForHydration(page)
-      await page.getByRole('button', { name: 'read secret' }).click()
-      await expect(page.getByTestId('result')).toHaveText('BOUND_ARGS_SECRET')
+      const adminReadSecret = await captureAction(page, {
+        button: 'read secret',
+        result: 'BOUND_ARGS_SECRET',
+      })
+
+      // Known limitation: the binding is per action definition, not per render
+      // or user. The admin's render has the same action id, and its closure
+      // still replays later, e.g. after the token is revoked or from another
+      // user. Actions must re-check authorization instead of trusting captures.
+      expect(adminReadSecret.id).toBe(readSecret.id)
+      const replayed = await callReadSecret(adminReadSecret)
+      expect(replayed.status()).toBe(200)
+      expect(await replayed.text()).toContain('BOUND_ARGS_SECRET')
     })
   }
 })
