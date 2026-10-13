@@ -53,7 +53,6 @@ export class Cls {};
       export { AsyncFn };
       Cls = /* #__PURE__ */ $$wrap(Cls, "<id>", "Cls");
       export { Cls };
-      ;
       const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
@@ -125,7 +124,6 @@ export const { x, y: [z] } = { x: 0, y: [1] };
     expect(await testTransform(input)).toMatchInlineSnapshot(
       `
       "function Fn() {}
-      ;
       const $$wrap_Fn = /* #__PURE__ */ $$wrap(Fn, "<id>", "default");
       export { $$wrap_Fn as default };
       "
@@ -138,7 +136,6 @@ export const { x, y: [z] } = { x: 0, y: [1] };
     expect(await testTransform(input)).toMatchInlineSnapshot(
       `
       "const $$default = function () {}
-      ;
       const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
@@ -151,7 +148,6 @@ export const { x, y: [z] } = { x: 0, y: [1] };
     expect(await testTransform(input)).toMatchInlineSnapshot(
       `
       "class Cls {}
-      ;
       const $$wrap_Cls = /* #__PURE__ */ $$wrap(Cls, "<id>", "default");
       export { $$wrap_Cls as default };
       "
@@ -168,7 +164,6 @@ export { x }
       "
       const x = 0;
 
-      ;
       const $$wrap_x = /* #__PURE__ */ $$wrap(x, "<id>", "x");
       export { $$wrap_x as x };
       "
@@ -184,7 +179,6 @@ export { x as y }
       "
       const x = 0;
 
-      ;
       const $$wrap_x = /* #__PURE__ */ $$wrap(x, "<id>", "y");
       export { $$wrap_x as y };
       "
@@ -205,7 +199,6 @@ export { x as "my thing" }
     const input = `export { x } from "./dep"`
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "
-      ;
       import { x as $$import_x } from "./dep";
       const $$wrap_$$import_x = /* #__PURE__ */ $$wrap($$import_x, "<id>", "x");
       export { $$wrap_$$import_x as x };
@@ -217,7 +210,6 @@ export { x as "my thing" }
     const input = `export { x as y } from "./dep"`
     expect(await testTransform(input)).toMatchInlineSnapshot(`
       "
-      ;
       import { x as $$import_x } from "./dep";
       const $$wrap_$$import_x = /* #__PURE__ */ $$wrap($$import_x, "<id>", "y");
       export { $$wrap_$$import_x as y };
@@ -255,7 +247,6 @@ export { a as aa };
       export { a };
       b = /* #__PURE__ */ $$wrap(b, "<id>", "b");
       export { b, b_no };
-      ;
       import { c as $$import_c } from "./c";
       const $$wrap_$$import_c = /* #__PURE__ */ $$wrap($$import_c, "<id>", "c");
       export { $$wrap_$$import_c as c };
@@ -296,12 +287,11 @@ export { remote, ignored as forwarded } from './dep'
       "const selected = 0, skipped = 1
 
 
-      ;
-      const $$wrap_selected = /* #__PURE__ */ $$wrap(selected, \"<id>\", \"selected\");
+      const $$wrap_selected = /* #__PURE__ */ $$wrap(selected, "<id>", "selected");
       export { $$wrap_selected as selected };
       export { skipped as renamed };
       import { remote as $$import_remote } from './dep';
-      const $$wrap_$$import_remote = /* #__PURE__ */ $$wrap($$import_remote, \"<id>\", \"remote\");
+      const $$wrap_$$import_remote = /* #__PURE__ */ $$wrap($$import_remote, "<id>", "remote");
       export { $$wrap_$$import_remote as remote };
       export { ignored as forwarded } from './dep';
       "
@@ -348,7 +338,6 @@ export default function d() {}
       export { b };
       c = /* #__PURE__ */ $$wrap(c, "<id>", "c");
       export { c };
-      ;
       const $$wrap_d = /* #__PURE__ */ $$wrap(d, "<id>", "default");
       export { $$wrap_d as default };
       "
@@ -378,7 +367,6 @@ export default Page;
       "
       const Page = () => {}
       const $$default = Page;
-      ;
       const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "<id>", "default");
       export { $$wrap_$$default as default };
       "
@@ -427,7 +415,6 @@ export default async function Page() {}
       "
       export const revalidate = 1;
       async function Page() {}
-      ;
       const $$wrap_Page = /* #__PURE__ */ $$wrap(Page, "default");
       export { $$wrap_Page as default };
       "
@@ -461,7 +448,6 @@ export default cached;
       "
       const cached = async () => 1;
       const $$default = cached;
-      ;
       const $$wrap_$$default = /* #__PURE__ */ $$wrap($$default, "default");
       export { $$wrap_$$default as default };
       "

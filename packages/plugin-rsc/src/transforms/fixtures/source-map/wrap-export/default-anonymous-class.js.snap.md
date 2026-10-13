@@ -12,13 +12,12 @@ export default class {}
 
 **References:** default
 
-[Source map visualization](https://evanw.github.io/source-map-visualization/#MTcxACd1c2Ugc2VydmVyJwoKY29uc3QgJCRkZWZhdWx0ID0gY2xhc3Mge30KOwpjb25zdCAkJHdyYXBfJCRkZWZhdWx0ID0gLyogI19fUFVSRV9fICovIHJlZ2lzdGVyU2VydmVyUmVmZXJlbmNlKCQkZGVmYXVsdCwgImRlZmF1bHQiKTsKZXhwb3J0IHsgJCR3cmFwXyQkZGVmYXVsdCBhcyBkZWZhdWx0IH07CjE3MQB7InZlcnNpb24iOjMsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbIid1c2Ugc2VydmVyJ1xuXG5leHBvcnQgZGVmYXVsdCBjbGFzcyB7fVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLENBQUMsR0FBRyxDQUFDLE1BQU07O0FBRVgsa0JBQWUsS0FBSyxDQUFDLENBQUM7Ozs7In0=)
+[Source map visualization](https://evanw.github.io/source-map-visualization/#MTY5ACd1c2Ugc2VydmVyJwoKY29uc3QgJCRkZWZhdWx0ID0gY2xhc3Mge30KY29uc3QgJCR3cmFwXyQkZGVmYXVsdCA9IC8qICNfX1BVUkVfXyAqLyByZWdpc3RlclNlcnZlclJlZmVyZW5jZSgkJGRlZmF1bHQsICJkZWZhdWx0Iik7CmV4cG9ydCB7ICQkd3JhcF8kJGRlZmF1bHQgYXMgZGVmYXVsdCB9OwoxNzAAeyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIiJdLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIHNlcnZlcidcblxuZXhwb3J0IGRlZmF1bHQgY2xhc3Mge31cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxDQUFDLEdBQUcsQ0FBQyxNQUFNOztBQUVYLGtCQUFlLEtBQUssQ0FBQyxDQUFDOzs7In0=)
 
 ```js
 'use server'
 
 const $$default = class {}
-;
 const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, "default");
 export { $$wrap_$$default as default };
 ```

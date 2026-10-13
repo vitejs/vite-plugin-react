@@ -4,9 +4,8 @@
 (0:0) "'use server'\n" --> (0:0) "'use server'\n"
 (2:0) "let action = async () => 'first'\n" --> (2:0) "let action = async () => 'first'\n"
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
-[unmapped] --> (5:0) ";\n"
-[unmapped] --> (6:0) "const $$wrap_action = /* #__PURE__ */ registerServerReference(action, \"renamed\");\n"
-[unmapped] --> (7:0) "export { $$wrap_action as renamed };\n"
+[unmapped] --> (5:0) "const $$wrap_action = /* #__PURE__ */ registerServerReference(action, \"renamed\");\n"
+[unmapped] --> (6:0) "export { $$wrap_action as renamed };\n"
 ```
 
 ## module-export-effect

@@ -6,9 +6,8 @@
 (3:0) "export default " --> (3:0) "const $$default = "
 (3:15) "action\n" --> (3:18) "action\n"
 (4:0) "action = async () => 'second'\n" --> (4:0) "action = async () => 'second'\n"
-[unmapped] --> (5:0) ";\n"
-[unmapped] --> (6:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
-[unmapped] --> (7:0) "export { $$wrap_$$default as default };\n"
+[unmapped] --> (5:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
+[unmapped] --> (6:0) "export { $$wrap_$$default as default };\n"
 ```
 
 ## module-export-effect

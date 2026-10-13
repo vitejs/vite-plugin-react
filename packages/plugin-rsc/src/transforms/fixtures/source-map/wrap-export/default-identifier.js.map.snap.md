@@ -7,9 +7,8 @@
 (4:0) "}\n" --> (4:0) "}\n"
 (6:0) "export default " --> (6:0) "const $$default = "
 (6:15) "defaultIdentifier\n" --> (6:18) "defaultIdentifier\n"
-[unmapped] --> (7:0) ";\n"
-[unmapped] --> (8:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
-[unmapped] --> (9:0) "export { $$wrap_$$default as default };\n"
+[unmapped] --> (7:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
+[unmapped] --> (8:0) "export { $$wrap_$$default as default };\n"
 ```
 
 ## module-export-effect
