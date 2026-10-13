@@ -6,6 +6,7 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "declaration": true,
+    "isolatedDeclarations": true,
     "sourceMap": true,
     "noEmit": true,
     "noUnusedLocals": true,
