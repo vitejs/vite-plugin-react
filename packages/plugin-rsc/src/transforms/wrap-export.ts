@@ -294,7 +294,7 @@ export function transformWrapExport(
   // Emit wrapper bindings, reconstructed skipped exports, and imports for
   // selected forwarded exports in their discovery order.
   if (appendedCode.length > 0) {
-    output.append(appendedCode.map((code) => `${code};\n`).join(''))
+    output.append(['', ...appendedCode, ''].join(';\n'))
   }
 
   return { exportNames, output }

@@ -6,8 +6,9 @@
 (5:0) "consume(direct, indirect)\n" --> (5:0) "consume(direct, indirect)\n"
 (0:0) "export async function direct() {}\n" --> (6:0) "direct = /* #__PURE__ */ registerServerReference(direct, \"direct\");\n"
 (0:0) "export async function direct() {}\n" --> (7:0) "export { direct };\n"
-[unmapped] --> (8:0) "const $$wrap_indirect = /* #__PURE__ */ registerServerReference(indirect, \"indirect\");\n"
-[unmapped] --> (9:0) "export { $$wrap_indirect as indirect };\n"
+[unmapped] --> (8:0) ";\n"
+[unmapped] --> (9:0) "const $$wrap_indirect = /* #__PURE__ */ registerServerReference(indirect, \"indirect\");\n"
+[unmapped] --> (10:0) "export { $$wrap_indirect as indirect };\n"
 ```
 
 ## module-export-effect

@@ -10,8 +10,9 @@
 (2:0) "export class NamedClass {}\n" --> (8:0) "export { NamedClass };\n"
 (4:0) "export const ClassExpression = class InnerClass {}\n" --> (9:0) "ClassExpression = /* #__PURE__ */ registerServerReference(ClassExpression, \"ClassExpression\");\n"
 (4:0) "export const ClassExpression = class InnerClass {}\n" --> (10:0) "export { ClassExpression };\n"
-[unmapped] --> (11:0) "const $$wrap_DefaultClass = /* #__PURE__ */ registerServerReference(DefaultClass, \"default\");\n"
-[unmapped] --> (12:0) "export { $$wrap_DefaultClass as default };\n"
+[unmapped] --> (11:0) ";\n"
+[unmapped] --> (12:0) "const $$wrap_DefaultClass = /* #__PURE__ */ registerServerReference(DefaultClass, \"default\");\n"
+[unmapped] --> (13:0) "export { $$wrap_DefaultClass as default };\n"
 ```
 
 ## module-export-effect

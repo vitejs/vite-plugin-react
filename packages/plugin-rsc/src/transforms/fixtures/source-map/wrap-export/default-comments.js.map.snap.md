@@ -6,8 +6,9 @@
 (2:40) "async function () {\n" --> (2:18) "async function () {\n"
 (3:0) "  return 'default comments called'\n" --> (3:0) "  return 'default comments called'\n"
 (4:0) "}\n" --> (4:0) "}\n"
-[unmapped] --> (5:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
-[unmapped] --> (6:0) "export { $$wrap_$$default as default };\n"
+[unmapped] --> (5:0) ";\n"
+[unmapped] --> (6:0) "const $$wrap_$$default = /* #__PURE__ */ registerServerReference($$default, \"default\");\n"
+[unmapped] --> (7:0) "export { $$wrap_$$default as default };\n"
 ```
 
 ## module-export-effect
