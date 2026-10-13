@@ -19,6 +19,6 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }

@@ -126,16 +126,14 @@ export function useFixture(options: {
   // https://playwright.dev/docs/test-retries
   test.beforeAll(async () => {
     if (options.mode === 'build') {
-      if (!process.env.TEST_SKIP_BUILD) {
-        const buildProc = runCli({
-          command: options.buildCommand ?? `pnpm build`,
-          label: `${options.root}:build`,
-          cwd,
-          ...options.cliOptions,
-        })
-        await buildProc.done
-        assert(buildProc.proc.exitCode === 0)
-      }
+      const buildProc = runCli({
+        command: options.buildCommand ?? `pnpm build`,
+        label: `${options.root}:build`,
+        cwd,
+        ...options.cliOptions,
+      })
+      await buildProc.done
+      assert(buildProc.proc.exitCode === 0)
     }
     if (options.mode) await startServer()
   })

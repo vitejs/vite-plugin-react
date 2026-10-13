@@ -7,7 +7,7 @@ test('Decorators build', async ({ page }) => {
 
   await expect(page.locator('body')).toHaveText('Hello World')
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('Decorators dev', async ({ page }) => {
