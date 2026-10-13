@@ -1,3 +1,22 @@
+## <small>[0.5.37](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.36...plugin-rsc%400.5.37) (2026-10-13)</small>
+### Features
+
+* **rsc:** expose closure captures in transformHoistInlineDirective meta ([#1496](https://github.com/vitejs/vite-plugin-react/issues/1496)) ([e465056](https://github.com/vitejs/vite-plugin-react/commit/e46505618d2b979cefc713c9f736f24094889536))
+
+### Bug Fixes
+
+* **rsc:** bind encrypted "use server" closures to their action id ([#1499](https://github.com/vitejs/vite-plugin-react/issues/1499)) ([e77496b](https://github.com/vitejs/vite-plugin-react/commit/e77496b974a59f7863c045a410e79453e16f5e82))
+* **rsc:** drop Server Function source from client sourcemaps ([#1497](https://github.com/vitejs/vite-plugin-react/issues/1497)) ([6f7c8a1](https://github.com/vitejs/vite-plugin-react/commit/6f7c8a14f67f023613b6c564212ffdfbce5c4f40))
+* **rsc:** keep CSS wrappers out of a trailing comment when a module has no final newline (fix [#1495](https://github.com/vitejs/vite-plugin-react/issues/1495)) ([#1494](https://github.com/vitejs/vite-plugin-react/issues/1494)) ([9a68f29](https://github.com/vitejs/vite-plugin-react/commit/9a68f295bedf8a7285d87047ece7b89f66c01247))
+
+### Miscellaneous Chores
+
+* **deps:** update dependency typescript to v7 ([#1422](https://github.com/vitejs/vite-plugin-react/issues/1422)) ([443be64](https://github.com/vitejs/vite-plugin-react/commit/443be648b4ea122e6535a6648040b3b0991c5d45))
+
+### Tests
+
+* **rsc:** remove TEST_SKIP_BUILD from e2e fixture ([#1502](https://github.com/vitejs/vite-plugin-react/issues/1502)) ([bd74d49](https://github.com/vitejs/vite-plugin-react/commit/bd74d49d812e52adf7f505f4f4db237e77a1c0f6))
+
 ## <small>[0.5.36](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.35...plugin-rsc%400.5.36) (2026-10-07)</small>
 ### Bug Fixes
 
