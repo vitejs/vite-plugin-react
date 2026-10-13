@@ -332,33 +332,29 @@ function Page({ label, role }) {
 }
 `
     const ast = await parseAstAsync(input)
-    const encoded: string[][] = []
-    const decoded: string[][] = []
-    const { names } = transformHoistInlineDirective(input, ast, {
+    const { output } = transformHoistInlineDirective(input, ast, {
       directive: 'use server',
       runtime: (value, name) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
-      encode: (value, name) => {
-        encoded.push([value, name])
-        return `__enc(${value})`
-      },
-      decode: (value, name) => {
-        decoded.push([value, name])
-        return `__dec(${value})`
-      },
+      encode: (value, name) => `__enc(${value}, ${JSON.stringify(name)})`,
+      decode: (value, name) => `__dec(${value}, ${JSON.stringify(name)})`,
     })
-    expect(names).toEqual([
-      '$$hoist_0_preview',
-      '$$hoist_1_anonymous_server_function',
-    ])
-    expect(encoded).toEqual([
-      ['[label]', '$$hoist_0_preview'],
-      ['[role]', '$$hoist_1_anonymous_server_function'],
-    ])
-    expect(decoded).toEqual([
-      ['$$hoist_encoded', '$$hoist_0_preview'],
-      ['$$hoist_encoded', '$$hoist_1_anonymous_server_function'],
-    ])
+    expect(output.toString()).toMatchInlineSnapshot(`
+      "
+      function Page({ label, role }) {
+        const preview = /* #__PURE__ */ $$register($$hoist_0_preview, "<id>", "$$hoist_0_preview").bind(null, __enc([label], "$$hoist_0_preview"));
+        const actions = { read: /* #__PURE__ */ $$register($$hoist_1_anonymous_server_function, "<id>", "$$hoist_1_anonymous_server_function").bind(null, __enc([role], "$$hoist_1_anonymous_server_function")) };
+      }
+
+      ;export async function $$hoist_0_preview($$hoist_encoded) { const [label] = __dec($$hoist_encoded, "$$hoist_0_preview");
+      "use server"; return label; };
+      /* #__PURE__ */ Object.defineProperty($$hoist_0_preview, "name", { value: "preview" });
+
+      ;export async function $$hoist_1_anonymous_server_function($$hoist_encoded) { const [role] = __dec($$hoist_encoded, "$$hoist_1_anonymous_server_function");
+      "use server"; return role; };
+      /* #__PURE__ */ Object.defineProperty($$hoist_1_anonymous_server_function, "name", { value: "anonymous_server_function" });
+      "
+    `)
   })
 
   it('reports unsupported methods before async policy', async () => {
