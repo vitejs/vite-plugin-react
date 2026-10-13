@@ -174,6 +174,35 @@ async function cached(value, { offset }, ...rest) {
     ])
   })
 
+  it('exposes closure captures to the runtime', async () => {
+    const input = `
+function Page({ tenant }, label) {
+  async function capturing(query) {
+    "use cache";
+    return [tenant.id, tenant.region, label, query];
+  }
+  async function standalone() {
+    "use cache";
+    return 1;
+  }
+}
+`
+    const ast = await parseAstAsync(input)
+    const bindVars: Record<string, string[]> = {}
+    transformHoistInlineDirective(input, ast, {
+      directive: 'use cache',
+      runtime: (value, name, meta) => {
+        bindVars[name] = meta.bindVars
+        return value
+      },
+    })
+
+    expect(bindVars).toEqual({
+      $$hoist_0_capturing: ['tenant', 'label'],
+      $$hoist_1_standalone: [],
+    })
+  })
+
   it('ignores strings outside a function directive prologue', async () => {
     const input = `
 async function initialized() {

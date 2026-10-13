@@ -36,9 +36,11 @@ export function callableCachePlugin(): Plugin {
           value: string,
           name: string,
           meta: Pick<ModuleExportMeta, 'valueNode'>,
+          captureCount?: number,
         ) => {
           const options: CacheWrapperOptions = {
             ...getCacheWrapperOptions(meta),
+            captureCount,
             actionId: getActionId(name),
           }
           return (
@@ -67,11 +69,12 @@ export function callableCachePlugin(): Plugin {
               directive,
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
-              runtime: (value, name, meta) => runtime(value, name, meta),
+              runtime: (value, name, meta) =>
+                runtime(value, name, meta, meta.bindVars.length),
               encode: (value, name) =>
                 `$$encryptCacheCaptures(${value}, ${JSON.stringify(getActionId(name))})`,
-              // The cache runtime replaces the envelope with decoded captures
-              // before invoking this private implementation.
+              // The cache runtime replaces the encrypted captures with decoded
+              // ones before invoking this private implementation.
               decode: (value) => value,
             })
         if (!result.output.hasChanged()) {

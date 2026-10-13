@@ -63,23 +63,23 @@ Each route displays submission and execution counts. Every form submission calls
 
 ## Protected captures
 
-Inline closure captures must not cross the client boundary as trusted plaintext. The transform's `encode` hook binds a framework-owned envelope with a synchronous sentinel and an asynchronous encrypted payload:
+Inline closure captures must not cross the client boundary as trusted plaintext. The transform's `encode` hook binds the encrypted captures as the first argument:
 
 ```text
 registered wrapper.bind(null, encryptCacheCaptures([captured]))
 ```
 
-The cache runtime recognizes the envelope, preserves it while admitting declared caller arguments, and decrypts it once. It then uses the same logical argument shape for cache identity and execution:
+The plugin passes the number of captures from the transform metadata (`meta.bindVars`) as `captureCount`. For a function with captures, the cache runtime always decrypts the first argument and rejects anything that isn't an encrypted array of exactly that many captures, so a client calling the server reference directly can't supply its own capture values. The runtime then uses the same logical argument shape for cache identity and execution:
 
 ```ts
-executionArguments = [captures, ...invocationArguments]
+executionArguments = [captures, ...admittedArgs]
 ```
 
 The transformed private implementation receives the decoded capture array and only destructures it back into source bindings. Decryption therefore belongs to the framework runtime rather than being repeated in generated output.
 
 ## Argument admission
 
-The plugin derives `argumentCount` from function AST metadata. The runtime preserves an inline function's bound capture envelope, then admits only the declared invocation arguments. This prevents arguments supplied by helpers such as `useActionState()` from changing either cache identity or execution when the source function does not declare them. Functions with a rest parameter keep unrestricted argument admission.
+The plugin derives `argumentCount` from function AST metadata. After taking an inline function's encrypted captures, the runtime admits only the declared invocation arguments. This prevents arguments supplied by helpers such as `useActionState()` from changing either cache identity or execution when the source function does not declare them. Functions with a rest parameter keep unrestricted argument admission.
 
 ## Form caveat
 

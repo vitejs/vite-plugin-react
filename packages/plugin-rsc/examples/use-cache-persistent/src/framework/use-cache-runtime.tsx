@@ -24,6 +24,11 @@ import {
 
 export type CacheWrapperOptions = {
   argumentCount?: number
+  /**
+   * Number of closure captures, known from the transform. A function with
+   * captures always receives them encrypted as its first argument.
+   */
+  captureCount?: number
   /** Server reference id that encrypted captures are bound to. */
   actionId: string
   cacheId: string
@@ -36,21 +41,20 @@ export default function cacheWrapper(
   options: CacheWrapperOptions,
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
+    // A function with captures receives them encrypted as its first argument,
+    // bound at the call site. `captureCount` comes from the transform, so the
+    // runtime decrypts that argument whatever a client sends in its place.
+    const captureCount = options.captureCount ?? 0
+    const encryptedCaptures = captureCount > 0 ? args[0] : undefined
+    const callerArgs = captureCount > 0 ? args.slice(1) : args
     // Callers can supply more arguments than a cached function declares. For example,
     // `useActionState(fn)` passes state and form data even to `function fn() {}`.
-    // Preserve the bound capture envelope, then strip extras from caller arguments
-    // so they affect neither the cache key nor execution.
+    // Strip extras from caller arguments so they affect neither the cache key nor execution.
     // https://github.com/vercel/next.js/pull/72506
-    const firstArgument = args[0]
-    const captureEnvelope = isCacheCaptureEnvelope(firstArgument)
-      ? firstArgument
-      : undefined
     const admittedArgs =
       options.argumentCount === undefined
-        ? args
-        : captureEnvelope
-          ? [captureEnvelope, ...args.slice(1, 1 + options.argumentCount)]
-          : args.slice(0, options.argumentCount)
+        ? callerArgs
+        : callerArgs.slice(0, options.argumentCount)
     // Serialize arguments to a cache key via `encodeReply` from `react-server-dom/client`.
     // NOTE: using `renderToReadableStream` here for arguments serialization would end up
     // serializing react elements (e.g. children props), which causes
@@ -59,15 +63,15 @@ export default function cacheWrapper(
     // cf. https://nextjs.org/docs/app/api-reference/directives/use-cache#non-serializable-arguments
     const clientTemporaryReferences = createClientTemporaryReferenceSet()
     let executionArguments = admittedArgs
-    if (captureEnvelope) {
+    if (captureCount > 0) {
       // Decrypt in the framework runtime so cache identity and execution share
       // these values; the transformed implementation only destructures the array.
       const captures = await decryptCacheCaptures(
-        captureEnvelope,
+        encryptedCaptures,
+        captureCount,
         options.actionId,
       )
-      const invocationArguments = admittedArgs.slice(1)
-      executionArguments = [captures, ...invocationArguments]
+      executionArguments = [captures, ...admittedArgs]
     }
     const encodedArguments = await encodeReply(executionArguments, {
       temporaryReferences: clientTemporaryReferences,
@@ -120,58 +124,28 @@ export async function resetCache() {
   await resetPersistentCache()
 }
 
-// use fixed sentinel value to detect the existence of cache captures via runtime logic
-// without transform-informed metadata
-const CACHE_CAPTURE_TYPE = 'use-cache-captures'
-
-type CacheCaptureEnvelope = {
-  type: typeof CACHE_CAPTURE_TYPE
-  encrypted: string | PromiseLike<string>
-}
-
 export function encryptCacheCaptures(
   captures: unknown[],
   actionId: string,
-): CacheCaptureEnvelope {
-  // Keep the sentinel envelope synchronous so the cache wrapper can identify it
-  // without awaiting the argument; only the encrypted payload needs to be async.
-  return {
-    type: CACHE_CAPTURE_TYPE,
-    encrypted: encryptActionBoundArgs(captures, actionId),
-  }
+): Promise<string> {
+  return encryptActionBoundArgs(captures, actionId)
 }
 
 async function decryptCacheCaptures(
-  envelope: CacheCaptureEnvelope,
+  encrypted: unknown,
+  captureCount: number,
   actionId: string,
 ): Promise<unknown[]> {
-  const { encrypted } = envelope
-  const captures = await decryptActionBoundArgs(
-    Promise.resolve(encrypted),
-    actionId,
-  )
-  if (!Array.isArray(captures)) {
-    throw new Error('Invalid cache capture payload')
+  // `encryptActionBoundArgs` returns a promise, and a client call sends it back
+  // as a promise reference, which `decodeReply` restores as a promise.
+  if (!(encrypted instanceof Promise)) {
+    throw new Error('Invalid cache captures')
+  }
+  const captures = await decryptActionBoundArgs(encrypted, actionId)
+  if (!Array.isArray(captures) || captures.length !== captureCount) {
+    throw new Error('Invalid cache captures')
   }
   return captures
-}
-
-function isCacheCaptureEnvelope(value: unknown): value is CacheCaptureEnvelope {
-  const encrypted =
-    typeof value === 'object' && value !== null && 'encrypted' in value
-      ? value.encrypted
-      : undefined
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    value.type === CACHE_CAPTURE_TYPE &&
-    (typeof encrypted === 'string' ||
-      (typeof encrypted === 'object' &&
-        encrypted !== null &&
-        'then' in encrypted &&
-        typeof encrypted.then === 'function'))
-  )
 }
 
 async function replyToCacheKey(reply: string | FormData) {
