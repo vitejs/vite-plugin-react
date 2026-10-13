@@ -67,9 +67,7 @@ export function transformWrapExport(
   viteAst: ESTree.Program,
   options: TransformWrapExportOptions,
 ): TransformWrapExportResult {
-  // Code moved or appended to the end of a module that has no final newline
-  // would join its last line. If that line is a comment (often
-  // `//# sourceMappingURL=...`), the code becomes part of the comment.
+  // Keep code emitted at the end off the last line, which may be a comment.
   if (!input.endsWith('\n')) {
     input += '\n'
   }
