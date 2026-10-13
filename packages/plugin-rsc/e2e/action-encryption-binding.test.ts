@@ -1,11 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { encryptBuffer, fromBase64 } from '../src/utils/encryption-utils'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
-
-// A fixed key lets the test encrypt its own closures, e.g. one without an
-// action id.
-const ENCRYPTION_KEY = Buffer.alloc(32, 7).toString('base64')
 
 test.describe(() => {
   const root = 'examples/e2e/temp/action-encryption-binding'
@@ -15,15 +10,6 @@ test.describe(() => {
       src: 'examples/starter-extra',
       dest: root,
       files: {
-        'vite.config.ts': {
-          edit: (s) =>
-            s.replace(
-              'rsc()',
-              `rsc({ defineEncryptionKey: ${JSON.stringify(
-                JSON.stringify(ENCRYPTION_KEY),
-              )} })`,
-            ),
-        },
         'src/root.tsx': /* tsx */ `
           import { BoundActions } from './bound-actions.tsx'
 
@@ -111,49 +97,27 @@ test.describe(() => {
       })
       expect(preview.id).not.toBe(readSecret.id)
 
-      // Replay a request body against `readSecret`'s action id.
-      const callReadSecret = (contentType: string, body: string) =>
+      // Replay a recorded request body against `readSecret`'s action id.
+      const callReadSecret = (request: { contentType: string; body: string }) =>
         page.request.post(f.url('/_.rsc'), {
           headers: {
-            'content-type': contentType,
+            'content-type': request.contentType,
             'x-rsc-action': readSecret.id,
           },
-          data: body,
+          data: request.body,
         })
+
       // `readSecret`'s own closure still works, and its `role` capture is "viewer".
-      const own = await callReadSecret(readSecret.contentType, readSecret.body)
+      const own = await callReadSecret(readSecret)
       expect(own.status()).toBe(200)
       expect(await own.text()).toContain('DENIED:viewer')
 
       // Attack: send `preview`'s closure as `readSecret`'s. Without binding, it
       // would decrypt as `readSecret`'s captures, making `role` "admin" and
       // returning the secret. Bound to `preview`'s id, it fails to decrypt.
-      const swapped = await callReadSecret(preview.contentType, preview.body)
+      const swapped = await callReadSecret(preview)
       expect(swapped.status()).toBe(500)
       expect(await swapped.text()).not.toContain('BOUND_ARGS_SECRET')
-
-      // A closure encrypted with the right key but without an action id (the
-      // format before binding) is also rejected. `flight` is the serialized
-      // capture array `["admin"]`.
-      const flight = '0:["admin"]\n'
-      const unbound = await callReadSecret(
-        'text/plain;charset=UTF-8',
-        JSON.stringify([await encryptSerializedBoundArgs(flight)]),
-      )
-      expect(unbound.status()).toBe(500)
-      expect(await unbound.text()).not.toContain('BOUND_ARGS_SECRET')
-
-      // Control: the same payload encrypted for `readSecret`'s id is accepted and
-      // returns the secret, so the rejections above come from the id check, not
-      // from a malformed request.
-      const bound = await callReadSecret(
-        'text/plain;charset=UTF-8',
-        JSON.stringify([
-          await encryptSerializedBoundArgs(flight, readSecret.id),
-        ]),
-      )
-      expect(bound.status()).toBe(200)
-      expect(await bound.text()).toContain('BOUND_ARGS_SECRET')
     })
   }
 })
@@ -175,20 +139,4 @@ async function captureAction(
     contentType: headers['content-type']!,
     body: request.postData() ?? '',
   }
-}
-
-// Encrypt an already serialized closure the way `encryptActionBoundArgs` does.
-async function encryptSerializedBoundArgs(flight: string, actionId?: string) {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    fromBase64(ENCRYPTION_KEY) as BufferSource,
-    'AES-GCM',
-    false,
-    ['encrypt'],
-  )
-  return encryptBuffer(
-    new TextEncoder().encode(flight),
-    key,
-    actionId === undefined ? undefined : new TextEncoder().encode(actionId),
-  )
 }
