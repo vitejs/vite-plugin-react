@@ -2080,8 +2080,8 @@ function vitePluginUseServer(
               useServerPluginOptions.enableActionEncryption ?? true
             // Bind each closure's encryption to its action id, so a closure
             // issued for one action can't be decrypted as another's.
-            const actionId = (name: string) =>
-              JSON.stringify(`${getServerReference().referenceKey}#${name}`)
+            const getActionId = (name: string) =>
+              `${getServerReference().referenceKey}#${name}`
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
@@ -2090,11 +2090,11 @@ function vitePluginUseServer(
               rejectNonAsyncFunction: true,
               encode: enableEncryption
                 ? (value, name) =>
-                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value}, ${actionId(name)})`
+                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value}, ${JSON.stringify(getActionId(name))})`
                 : undefined,
               decode: enableEncryption
                 ? (value, name) =>
-                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value}, ${actionId(name)})`
+                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value}, ${JSON.stringify(getActionId(name))})`
                 : undefined,
             })
             const output = result.output
