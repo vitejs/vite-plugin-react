@@ -2156,12 +2156,10 @@ function vitePluginUseServer(
             )
             return {
               code: output.toString(),
-              // The proxy must not map back to the server module in browser
-              // builds, or its source ships in the client sourcemap's
-              // `sourcesContent`.
+              // The proxy must not map back to the server module in builds,
+              // or its source ships in the client sourcemap's `sourcesContent`.
               map:
-                this.environment.mode === 'build' &&
-                this.environment.name === browserEnvironmentName
+                this.environment.mode === 'build'
                   ? { mappings: '' }
                   : output.generateMap({ hires: 'boundary' }),
             }
