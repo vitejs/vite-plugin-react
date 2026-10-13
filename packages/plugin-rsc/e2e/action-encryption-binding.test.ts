@@ -127,9 +127,13 @@ test.describe(() => {
   function defineBindingTest(f: Fixture) {
     test('closures only decrypt for their own action', async ({ page }) => {
       using _ = expectNoPageError(page)
+      // The attacker controls `label` through the URL, so `preview`'s encrypted
+      // closure carries an attacker-chosen value ("admin").
       await page.goto(f.url('/?label=admin'))
       await waitForHydration(page)
 
+      // Call both actions from the UI and record each request, including its
+      // encrypted closure in the body.
       const preview = await captureAction(page, 'preview', 'PREVIEW:admin')
       const readSecret = await captureAction(
         page,
@@ -138,6 +142,7 @@ test.describe(() => {
       )
       expect(preview.id).not.toBe(readSecret.id)
 
+      // Replay a request body against `readSecret`'s action id.
       const callReadSecret = (contentType: string, body: string) =>
         page.request.post(f.url('/_.rsc'), {
           headers: {
@@ -153,17 +158,21 @@ test.describe(() => {
         expect(response.status()).toBe(500)
       }
 
-      // readSecret's own closure
+      // `readSecret`'s own closure still works, and its `role` capture is "viewer".
       const own = await callReadSecret(readSecret.contentType, readSecret.body)
       expect(own.status()).toBe(200)
       expect(await own.text()).toContain('DENIED:viewer')
 
-      // preview's closure (capturing `label=admin`) replayed as readSecret's
+      // Attack: send `preview`'s closure as `readSecret`'s. Without binding, it
+      // would decrypt as `readSecret`'s captures, making `role` "admin" and
+      // returning the secret. Bound to `preview`'s id, it fails to decrypt.
       await expectRejected(
         await callReadSecret(preview.contentType, preview.body),
       )
 
-      // a closure encrypted without an action id
+      // A closure encrypted with the right key but without an action id (the
+      // format before binding) is also rejected. `flight` is the serialized
+      // capture array `["admin"]`.
       const flight = '0:["admin"]\n'
       await expectRejected(
         await callReadSecret(
@@ -172,7 +181,9 @@ test.describe(() => {
         ),
       )
 
-      // control: a closure sealed for readSecret's id decrypts as its captures
+      // Control: the same payload encrypted for `readSecret`'s id is accepted and
+      // returns the secret, so the rejections above come from the id check, not
+      // from a malformed request.
       const bound = await callReadSecret(
         'text/plain;charset=UTF-8',
         JSON.stringify([await seal(flight, readSecret.id)]),
