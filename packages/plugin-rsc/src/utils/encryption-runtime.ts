@@ -36,23 +36,14 @@ export async function decryptActionBoundArgs(
 ): Promise<unknown> {
   const [{ createFromReadableStream }, serializedBuffer] = await Promise.all([
     import('../react/rsc/client'),
-    decryptBoundBuffer(await encrypted, actionId),
+    decryptBuffer(
+      await encrypted,
+      await getEncryptionKey(),
+      actionIdData(actionId),
+    ),
   ])
   const serialized = arrayToStream(new Uint8Array(serializedBuffer))
   return createFromReadableStream(serialized)
-}
-
-async function decryptBoundBuffer(
-  encrypted: string,
-  actionId: string | undefined,
-): Promise<ArrayBuffer> {
-  const key = await getEncryptionKey()
-  if (actionId === undefined) return decryptBuffer(encrypted, key)
-  try {
-    return await decryptBuffer(encrypted, key, actionIdData(actionId))
-  } catch {
-    throw new Error('Invalid Server Action payload: failed to decrypt.')
-  }
 }
 
 function actionIdData(actionId: string | undefined) {
