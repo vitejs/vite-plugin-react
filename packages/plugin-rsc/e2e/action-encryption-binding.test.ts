@@ -7,49 +7,6 @@ import { expectNoPageError, waitForHydration } from './helper'
 // encryption would.
 const ENCRYPTION_KEY = Buffer.alloc(32, 7).toString('base64')
 
-async function seal(flight: string, actionId?: string) {
-  const key = await webcrypto.subtle.importKey(
-    'raw',
-    Buffer.from(ENCRYPTION_KEY, 'base64'),
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt'],
-  )
-  const iv = webcrypto.getRandomValues(new Uint8Array(16))
-  const encrypted = await webcrypto.subtle.encrypt(
-    {
-      name: 'AES-GCM',
-      iv,
-      ...(actionId && { additionalData: new TextEncoder().encode(actionId) }),
-    },
-    key,
-    new TextEncoder().encode(flight),
-  )
-  return Buffer.concat([iv, new Uint8Array(encrypted)]).toString('base64')
-}
-
-type CapturedAction = { id: string; contentType: string; body: string }
-
-async function captureAction(
-  page: Page,
-  button: string,
-  result: string,
-): Promise<CapturedAction> {
-  const requestPromise = page.waitForRequest(
-    (request) =>
-      request.method() === 'POST' && !!request.headers()['x-rsc-action'],
-  )
-  await page.getByRole('button', { name: button }).click()
-  const request = await requestPromise
-  await expect(page.getByTestId('result')).toHaveText(result)
-  const headers = await request.allHeaders()
-  return {
-    id: headers['x-rsc-action']!,
-    contentType: headers['content-type']!,
-    body: request.postData() ?? '',
-  }
-}
-
 test.describe(() => {
   const root = 'examples/e2e/temp/action-encryption-binding'
 
@@ -124,6 +81,16 @@ test.describe(() => {
     })
   })
 
+  test.describe('dev', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineBindingTest(f)
+  })
+
+  test.describe('build', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineBindingTest(f)
+  })
+
   function defineBindingTest(f: Fixture) {
     test('closures only decrypt for their own action', async ({ page }) => {
       using _ = expectNoPageError(page)
@@ -192,14 +159,41 @@ test.describe(() => {
       expect(await bound.text()).toContain('BOUND_ARGS_SECRET')
     })
   }
-
-  test.describe('dev', () => {
-    const f = useFixture({ root, mode: 'dev' })
-    defineBindingTest(f)
-  })
-
-  test.describe('build', () => {
-    const f = useFixture({ root, mode: 'build' })
-    defineBindingTest(f)
-  })
 })
+
+async function captureAction(page: Page, button: string, result: string) {
+  const requestPromise = page.waitForRequest(
+    (request) =>
+      request.method() === 'POST' && !!request.headers()['x-rsc-action'],
+  )
+  await page.getByRole('button', { name: button }).click()
+  const request = await requestPromise
+  await expect(page.getByTestId('result')).toHaveText(result)
+  const headers = await request.allHeaders()
+  return {
+    id: headers['x-rsc-action']!,
+    contentType: headers['content-type']!,
+    body: request.postData() ?? '',
+  }
+}
+
+async function seal(flight: string, actionId?: string) {
+  const key = await webcrypto.subtle.importKey(
+    'raw',
+    Buffer.from(ENCRYPTION_KEY, 'base64'),
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt'],
+  )
+  const iv = webcrypto.getRandomValues(new Uint8Array(16))
+  const encrypted = await webcrypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv,
+      ...(actionId && { additionalData: new TextEncoder().encode(actionId) }),
+    },
+    key,
+    new TextEncoder().encode(flight),
+  )
+  return Buffer.concat([iv, new Uint8Array(encrypted)]).toString('base64')
+}
