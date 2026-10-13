@@ -1,0 +1,21 @@
+packages/plugin-rsc/package.json
+  s_8626686f476d0d::t_c7260832b00651 59
+packages/plugin-rsc/scripts/import-typescript-eslint-scope-fixtures.ts
+  s_8626686f476d0d::t_78b78e0f984e47 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0fc0099e8e40a0769f09f0a9fcf88a7f438d033c",
+  "prompts": {},
+  "sessions": {
+    "s_8626686f476d0d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a133ba-6f59-7701-9134-7a45bf6ce3cb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
