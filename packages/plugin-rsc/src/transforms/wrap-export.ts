@@ -67,6 +67,10 @@ export function transformWrapExport(
   viteAst: ESTree.Program,
   options: TransformWrapExportOptions,
 ): TransformWrapExportResult {
+  // Keep code emitted at the end off the last line, which may be a comment.
+  if (!input.endsWith('\n')) {
+    input += '\n'
+  }
   const output = new MagicString(input)
   const exportNames: string[] = []
   const appendedCode: string[] = []
