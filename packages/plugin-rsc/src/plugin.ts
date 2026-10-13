@@ -2078,8 +2078,6 @@ function vitePluginUseServer(
             )
             const enableEncryption =
               useServerPluginOptions.enableActionEncryption ?? true
-            // Bind each closure's encryption to its action id, so a closure
-            // issued for one action can't be decrypted as another's.
             const getActionId = (name: string) =>
               `${getServerReference().referenceKey}#${name}`
             const result = transformServerActionServer_(code, ast, {
