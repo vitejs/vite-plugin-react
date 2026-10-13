@@ -18,5 +18,9 @@ onlyBuiltDependencies:
 
 peerDependencyRules:
   ignoreMissing:
+    # ignore eslint-plugin-* -> eslint
+    - eslint
+    # ignore @mdx-js/rollup -> rollup
+    - rollup
     # ignore react-server-dom-webpack -> webpack
     - webpack
