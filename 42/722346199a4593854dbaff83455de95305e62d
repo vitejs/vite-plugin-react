@@ -1,0 +1,33 @@
+packages/plugin-react/src/index.ts
+  s_a467738d64533f::t_1c3fac5d50a461 78,412-415
+packages/common/refresh-utils.ts
+  s_09219037ec3179::t_3148d6219d36e6 10
+packages/plugin-react/src/reactCompilerPreset.ts
+  s_09219037ec3179::t_4d6a7124553516 7-8
+packages/plugin-react/tsconfig.json
+  s_09219037ec3179::t_c46169e54c71bd 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "42722346199a4593854dbaff83455de95305e62d",
+  "prompts": {},
+  "sessions": {
+    "s_09219037ec3179": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1337f-b357-72c0-9a50-17f1e6b050b5",
+        "model": "unknown"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    },
+    "s_a467738d64533f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13393-3391-70a3-ba44-1da64c968ab5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
