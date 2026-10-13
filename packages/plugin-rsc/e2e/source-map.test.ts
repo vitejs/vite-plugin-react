@@ -1,4 +1,6 @@
+import fs from 'node:fs'
 import { SourceMap, type SourceMapPayload } from 'node:module'
+import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import * as vite from 'vite'
 import { useFixture } from './fixture'
@@ -229,51 +231,39 @@ test.describe('source map build', () => {
     buildCommand: 'pnpm build --sourcemap',
   })
 
-  test('omits Server Reference sources on /server-reference-from-client', async ({
-    page,
-  }) => {
-    await page.goto(f.url('/server-reference-from-client'))
-    await waitForHydration(page)
-
-    const sources = await loadClientSources(page)
-    const clientSource = [...sources].find(([source]) =>
+  // `dist/client` is published as a whole, so check every emitted file rather
+  // than only what one page loads.
+  test('omits Server Function sources from client output', () => {
+    const dir = path.join(f.root, 'dist/client')
+    const files = fs
+      .readdirSync(dir, { recursive: true, encoding: 'utf-8' })
+      .filter((file) => /\.js(\.map)?$/.test(file))
+    const sources = files
+      .filter((file) => file.endsWith('.map'))
+      .flatMap((file) => {
+        const payload = JSON.parse(
+          fs.readFileSync(path.join(dir, file), 'utf-8'),
+        ) as Partial<SourceMapPayload>
+        return payload.sources!.map(
+          (source, i) => [source, payload.sourcesContent?.[i] ?? ''] as const,
+        )
+      })
+    const clientSource = sources.find(([source]) =>
       source.endsWith('/server-reference-from-client/client.tsx'),
     )?.[1]
     expect(clientSource).toContain('clientImportedAction')
-    const serverSources = [...sources]
-      .filter(([, content]) => content?.includes('use server'))
+    const serverSources = sources
+      .filter(([, content]) => content.includes('use server'))
       .map(([source]) => source)
     expect(serverSources).toEqual([])
+    const filesWithServerCode = files.filter((file) =>
+      fs
+        .readFileSync(path.join(dir, file), 'utf-8')
+        .includes('client-imported Server Function called'),
+    )
+    expect(filesWithServerCode).toEqual([])
   })
 })
-
-// Collect `sourcesContent` from the source maps of every script the page loaded.
-async function loadClientSources(page: Page) {
-  const scriptURLs = await page.evaluate(() =>
-    performance
-      .getEntriesByType('resource')
-      .map((entry) => entry.name)
-      .filter((url) => new URL(url).pathname.endsWith('.js')),
-  )
-  const sources = new Map<string, string | null>()
-  for (const scriptURL of scriptURLs) {
-    const script = await page.request.get(scriptURL)
-    const sourceMappingURL = /\/\/# sourceMappingURL=(\S+)\s*$/.exec(
-      await script.text(),
-    )?.[1]
-    if (!sourceMappingURL) continue
-    const response = await page.request.get(
-      new URL(sourceMappingURL, scriptURL).href,
-    )
-    expect(response.ok()).toBe(true)
-    const payload = (await response.json()) as Partial<SourceMapPayload>
-    payload.sources!.forEach((source, i) => {
-      sources.set(source, payload.sourcesContent?.[i] ?? null)
-    })
-  }
-  expect(sources.size).toBeGreaterThan(0)
-  return sources
-}
 
 async function createFunctionSourceMapResolver(page: Page, baseURL: string) {
   const session = await page.context().newCDPSession(page)
