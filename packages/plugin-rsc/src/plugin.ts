@@ -2169,7 +2169,12 @@ function vitePluginUseServer(
             )
             return {
               code: output.toString(),
-              map: output.generateMap({ hires: 'boundary' }),
+              // Drop the proxy's sourcemap in builds so the server module's
+              // source doesn't ship in the client sourcemap's `sourcesContent`.
+              map:
+                this.environment.mode === 'build'
+                  ? { mappings: '' }
+                  : output.generateMap({ hires: 'boundary' }),
             }
           }
         },

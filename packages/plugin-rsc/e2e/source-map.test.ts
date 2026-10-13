@@ -1,4 +1,6 @@
+import fs from 'node:fs'
 import { SourceMap, type SourceMapPayload } from 'node:module'
+import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import * as vite from 'vite'
 import { useFixture } from './fixture'
@@ -219,6 +221,54 @@ test.describe('source map', () => {
       await button.click()
       await expect(button).toContainText(`at ${item.functionName} (`)
     }
+  })
+})
+
+test.describe('source map build', () => {
+  const f = useFixture({
+    root: 'examples/source-map',
+    mode: 'build',
+    buildCommand: 'pnpm build --sourcemap',
+  })
+
+  // `dist/client` is published as a whole, so check every emitted file.
+  test('omits Server Function sources from client output', () => {
+    const dir = path.join(f.root, 'dist/client')
+    const files = fs
+      .readdirSync(dir, { recursive: true, encoding: 'utf-8' })
+      .filter((file) => /\.js(\.map)?$/.test(file))
+    const sources = files
+      .filter((file) => file.endsWith('.map'))
+      .flatMap((file) => {
+        const payload = JSON.parse(
+          fs.readFileSync(path.join(dir, file), 'utf-8'),
+        ) as Partial<SourceMapPayload>
+        return payload.sources!.map(
+          (source, i) => [source, payload.sourcesContent?.[i] ?? ''] as const,
+        )
+      })
+    const clientSource = sources.find(([source]) =>
+      source.endsWith('/server-reference-from-client/client.tsx'),
+    )?.[1]
+    expect(clientSource).toContain('clientImportedAction')
+    const serverCode = files.flatMap((file) => {
+      const content = fs.readFileSync(path.join(dir, file), 'utf-8')
+      return ['use server', 'client-imported Server Function called']
+        .filter((text) => content.includes(text))
+        .map((text) => `${file}: ${text}`)
+    })
+    // Rolldown keeps `sourcesContent` for sources that no mapping reaches.
+    // https://github.com/rolldown/rolldown/issues/11176
+    expect(serverCode).toEqual(
+      isRolldownVite
+        ? [
+            expect.stringMatching(/\.js\.map: use server$/),
+            expect.stringMatching(
+              /\.js\.map: client-imported Server Function called$/,
+            ),
+          ]
+        : [],
+    )
   })
 })
 
