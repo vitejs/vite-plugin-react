@@ -101,12 +101,14 @@ test.describe(() => {
 
       // Call both actions from the UI and record each request, including its
       // encrypted closure in the body.
-      const preview = await captureAction(page, 'preview', 'PREVIEW:admin')
-      const readSecret = await captureAction(
-        page,
-        'read secret',
-        'DENIED:viewer',
-      )
+      const preview = await captureAction(page, {
+        button: 'preview',
+        result: 'PREVIEW:admin',
+      })
+      const readSecret = await captureAction(page, {
+        button: 'read secret',
+        result: 'DENIED:viewer',
+      })
       expect(preview.id).not.toBe(readSecret.id)
 
       // Replay a request body against `readSecret`'s action id.
@@ -161,7 +163,10 @@ test.describe(() => {
   }
 })
 
-async function captureAction(page: Page, button: string, result: string) {
+async function captureAction(
+  page: Page,
+  { button, result }: { button: string; result: string },
+) {
   const requestPromise = page.waitForRequest(
     (request) =>
       request.method() === 'POST' && !!request.headers()['x-rsc-action'],
