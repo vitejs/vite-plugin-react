@@ -231,8 +231,7 @@ test.describe('source map build', () => {
     buildCommand: 'pnpm build --sourcemap',
   })
 
-  // `dist/client` is published as a whole, so check every emitted file rather
-  // than only what one page loads.
+  // `dist/client` is published as a whole, so check every emitted file.
   test('omits Server Function sources from client output', () => {
     const dir = path.join(f.root, 'dist/client')
     const files = fs
