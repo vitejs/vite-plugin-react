@@ -61,10 +61,13 @@ export function callableCachePlugin(): Plugin {
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
               runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta)),
+                runtime(value, name, {
+                  ...getCacheWrapperOptions(meta),
+                  captureCount: meta.bindVars.length,
+                }),
               encode: (value) => `$$encryptCacheCaptures(${value})`,
-              // The cache runtime replaces the envelope with decoded captures
-              // before invoking this private implementation.
+              // The cache runtime replaces the encrypted captures with decoded
+              // ones before invoking this private implementation.
               decode: (value) => value,
             })
         if (!result.output.hasChanged()) {

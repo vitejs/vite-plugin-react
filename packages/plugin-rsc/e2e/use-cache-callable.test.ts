@@ -472,6 +472,48 @@ function defineTests(f: Fixture) {
     // A cache hit skips the implementation, so its previous display side effect remains.
     await expect(result).toHaveText('second + alpha')
   })
+
+  test('protected captures reject a call without encrypted captures', async ({
+    page,
+  }) => {
+    using _errors = expectNoPageError(page)
+    await page.goto(f.url('/protected-captures'))
+    await waitForHydration(page)
+
+    const example = page.getByTestId('protected-captures')
+    const executionCount = example.getByTestId('execution-count')
+    const result = example.getByTestId('result')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect(executionCount).toHaveText('0')
+
+    // A real call runs with the server's "first" capture. Record its action id.
+    const requestPromise = page.waitForRequest(
+      (request) =>
+        request.method() === 'POST' && !!request.headers()['x-rsc-action'],
+    )
+    await submit(page, example)
+    const request = await requestPromise
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('first + alpha')
+
+    // The server reference is public, so a client can call it directly with a
+    // plaintext array where the encrypted captures belong. The function has
+    // captures, so the runtime must decrypt its first argument and reject this.
+    const forged = await page.request.post(request.url(), {
+      headers: {
+        'content-type': 'text/plain;charset=UTF-8',
+        'x-rsc-action': request.headers()['x-rsc-action']!,
+      },
+      data: JSON.stringify([['capture-secret-two'], 'forged']),
+    })
+    expect(forged.status()).toBe(500)
+
+    // The forged call didn't run the implementation.
+    await page.reload()
+    await waitForHydration(page)
+    await expect(executionCount).toHaveText('1')
+    await expect(result).toHaveText('first + alpha')
+  })
 }
 
 async function callAction(page: Page, example: Locator, name: string) {
