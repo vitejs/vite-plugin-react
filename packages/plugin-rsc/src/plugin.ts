@@ -206,10 +206,21 @@ export type RscPluginOptions = {
   enableActionEncryption?: boolean
 
   /**
-   * By default, the plugin uses a build-time generated encryption key for
-   * "use server" closure argument binding.
-   * This can be overwritten by configuring `defineEncryptionKey` option,
-   * for example, to obtain a key through environment variable during runtime.
+   * JavaScript expression evaluated at runtime on the server that returns (or
+   * resolves to) a base64-encoded key for encrypting "use server" closure
+   * arguments, e.g. `'process.env.MY_ENCRYPTION_KEY'`.
+   *
+   * By default, the plugin generates a random key at build time and writes it
+   * into the build output. This option moves the key out of the build into a
+   * runtime secret, so that:
+   * - the key isn't stored in build artifacts,
+   * - it can be rotated without rebuilding, and
+   * - server instances built separately from the same source share one key.
+   *
+   * It isn't meant to keep encrypted closures valid across different versions
+   * of the app. Action ids can change when the source changes, and the
+   * encryption format may change between plugin versions.
+   *
    * cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
    */
   defineEncryptionKey?: string
@@ -2067,6 +2078,8 @@ function vitePluginUseServer(
             )
             const enableEncryption =
               useServerPluginOptions.enableActionEncryption ?? true
+            const getActionId = (name: string) =>
+              `${getServerReference().referenceKey}#${name}`
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
@@ -2074,12 +2087,12 @@ function vitePluginUseServer(
                 )}, ${JSON.stringify(name)})`,
               rejectNonAsyncFunction: true,
               encode: enableEncryption
-                ? (value) =>
-                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value})`
+                ? (value, name) =>
+                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value}, ${JSON.stringify(getActionId(name))})`
                 : undefined,
               decode: enableEncryption
-                ? (value) =>
-                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value})`
+                ? (value, name) =>
+                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value}, ${JSON.stringify(getActionId(name))})`
                 : undefined,
             })
             const output = result.output

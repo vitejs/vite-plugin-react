@@ -425,10 +425,12 @@ export default defineConfig({
       // this is enabled by default. See the "server-only and client-only import" section below for details.
       validateImports: true,
 
-      // by default, the plugin uses a build-time generated encryption key for
-      // "use server" closure argument binding.
-      // This can be overwritten by configuring `defineEncryptionKey` option,
-      // for example, to obtain a key through environment variable during runtime.
+      // by default, the plugin generates a random encryption key for "use server" closure
+      // arguments at build time and writes it into the build output.
+      // `defineEncryptionKey` is a JavaScript expression evaluated at runtime instead,
+      // so the key can be loaded as a runtime secret, rotated without rebuilding,
+      // and shared by server instances built separately from the same source.
+      // It isn't meant to keep encrypted closures valid across different app versions.
       // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
       defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
 

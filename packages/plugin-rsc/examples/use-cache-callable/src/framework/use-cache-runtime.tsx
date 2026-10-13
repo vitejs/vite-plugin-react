@@ -19,6 +19,8 @@ import {
 
 export type CacheWrapperOptions = {
   argumentCount?: number
+  /** Server reference id that encrypted captures are bound to. */
+  actionId: string
 }
 
 const cachedFnMap = new WeakMap<Function, unknown>()
@@ -68,7 +70,10 @@ export default function cacheWrapper(
     if (captureEnvelope) {
       // Decrypt in the framework runtime so cache identity and execution share
       // these values; the transformed implementation only destructures the array.
-      const captures = await decryptCacheCaptures(captureEnvelope)
+      const captures = await decryptCacheCaptures(
+        captureEnvelope,
+        options.actionId,
+      )
       const invocationArguments = admittedArgs.slice(1)
       executionArguments = [captures, ...invocationArguments]
     }
@@ -165,20 +170,25 @@ type CacheCaptureEnvelope = {
 
 export function encryptCacheCaptures(
   captures: unknown[],
+  actionId: string,
 ): CacheCaptureEnvelope {
   // Keep the sentinel envelope synchronous so the cache wrapper can identify it
   // without awaiting the argument; only the encrypted payload needs to be async.
   return {
     type: CACHE_CAPTURE_TYPE,
-    encrypted: encryptActionBoundArgs(captures),
+    encrypted: encryptActionBoundArgs(captures, actionId),
   }
 }
 
 async function decryptCacheCaptures(
   envelope: CacheCaptureEnvelope,
+  actionId: string,
 ): Promise<unknown[]> {
   const { encrypted } = envelope
-  const captures = await decryptActionBoundArgs(Promise.resolve(encrypted))
+  const captures = await decryptActionBoundArgs(
+    Promise.resolve(encrypted),
+    actionId,
+  )
   if (!Array.isArray(captures)) {
     throw new Error('Invalid cache capture payload')
   }
