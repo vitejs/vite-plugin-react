@@ -26,7 +26,7 @@ export async function encryptActionBoundArgs(
   return encryptBuffer(
     serializedBuffer as BufferSource,
     await getEncryptionKey(),
-    actionIdData(actionId),
+    toAdditionalData(actionId),
   )
 }
 
@@ -39,14 +39,14 @@ export async function decryptActionBoundArgs(
     decryptBuffer(
       await encrypted,
       await getEncryptionKey(),
-      actionIdData(actionId),
+      toAdditionalData(actionId),
     ),
   ])
   const serialized = arrayToStream(new Uint8Array(serializedBuffer))
   return createFromReadableStream(serialized)
 }
 
-function actionIdData(actionId: string | undefined) {
+function toAdditionalData(actionId: string | undefined) {
   return actionId === undefined ? undefined : new TextEncoder().encode(actionId)
 }
 
