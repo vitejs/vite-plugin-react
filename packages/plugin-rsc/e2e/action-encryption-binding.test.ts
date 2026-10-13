@@ -120,13 +120,6 @@ test.describe(() => {
           },
           data: body,
         })
-      const expectRejected = async (
-        response: Awaited<ReturnType<typeof callReadSecret>>,
-      ) => {
-        expect(await response.text()).not.toContain('BOUND_ARGS_SECRET')
-        expect(response.status()).toBe(500)
-      }
-
       // `readSecret`'s own closure still works, and its `role` capture is "viewer".
       const own = await callReadSecret(readSecret.contentType, readSecret.body)
       expect(own.status()).toBe(200)
@@ -135,20 +128,20 @@ test.describe(() => {
       // Attack: send `preview`'s closure as `readSecret`'s. Without binding, it
       // would decrypt as `readSecret`'s captures, making `role` "admin" and
       // returning the secret. Bound to `preview`'s id, it fails to decrypt.
-      await expectRejected(
-        await callReadSecret(preview.contentType, preview.body),
-      )
+      const swapped = await callReadSecret(preview.contentType, preview.body)
+      expect(swapped.status()).toBe(500)
+      expect(await swapped.text()).not.toContain('BOUND_ARGS_SECRET')
 
       // A closure encrypted with the right key but without an action id (the
       // format before binding) is also rejected. `flight` is the serialized
       // capture array `["admin"]`.
       const flight = '0:["admin"]\n'
-      await expectRejected(
-        await callReadSecret(
-          'text/plain;charset=UTF-8',
-          JSON.stringify([await encryptSerializedBoundArgs(flight)]),
-        ),
+      const unbound = await callReadSecret(
+        'text/plain;charset=UTF-8',
+        JSON.stringify([await encryptSerializedBoundArgs(flight)]),
       )
+      expect(unbound.status()).toBe(500)
+      expect(await unbound.text()).not.toContain('BOUND_ARGS_SECRET')
 
       // Control: the same payload encrypted for `readSecret`'s id is accepted and
       // returns the secret, so the rejections above come from the id check, not
