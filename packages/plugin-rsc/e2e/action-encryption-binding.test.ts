@@ -3,8 +3,8 @@ import { encryptBuffer, fromBase64 } from '../src/utils/encryption-utils'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 
-// A fixed key lets the test seal closures the way an older or tampered
-// encryption would.
+// A fixed key lets the test encrypt its own closures, e.g. one without an
+// action id.
 const ENCRYPTION_KEY = Buffer.alloc(32, 7).toString('base64')
 
 test.describe(() => {
@@ -146,7 +146,7 @@ test.describe(() => {
       await expectRejected(
         await callReadSecret(
           'text/plain;charset=UTF-8',
-          JSON.stringify([await seal(flight)]),
+          JSON.stringify([await encryptSerializedBoundArgs(flight)]),
         ),
       )
 
@@ -155,7 +155,9 @@ test.describe(() => {
       // from a malformed request.
       const bound = await callReadSecret(
         'text/plain;charset=UTF-8',
-        JSON.stringify([await seal(flight, readSecret.id)]),
+        JSON.stringify([
+          await encryptSerializedBoundArgs(flight, readSecret.id),
+        ]),
       )
       expect(bound.status()).toBe(200)
       expect(await bound.text()).toContain('BOUND_ARGS_SECRET')
@@ -183,7 +185,7 @@ async function captureAction(
 }
 
 // Encrypt an already serialized closure the way `encryptActionBoundArgs` does.
-async function seal(flight: string, actionId?: string) {
+async function encryptSerializedBoundArgs(flight: string, actionId?: string) {
   const key = await crypto.subtle.importKey(
     'raw',
     fromBase64(ENCRYPTION_KEY) as BufferSource,
