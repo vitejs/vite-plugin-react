@@ -14,10 +14,14 @@ test.describe(() => {
           import { BoundActions } from './bound-actions.tsx'
 
           // Two inline actions with same-shaped closures. \`preview\` captures a
-          // request-derived value, \`readSecret\` a server-decided one.
+          // request-derived value, \`readSecret\` a server-decided one (a toy
+          // token check standing in for authentication).
           export function Root(props: { url: URL }) {
             const label = props.url.searchParams.get('label') ?? 'guest'
-            const role = 'viewer'
+            const role =
+              props.url.searchParams.get('token') === 'admin-token'
+                ? 'admin'
+                : 'viewer'
 
             async function preview() {
               'use server'
@@ -80,8 +84,8 @@ test.describe(() => {
   function defineBindingTest(f: Fixture) {
     test('closures only decrypt for their own action', async ({ page }) => {
       using _ = expectNoPageError(page)
-      // The attacker controls `label` through the URL, so `preview`'s encrypted
-      // closure carries an attacker-chosen value ("admin").
+      // A viewer without the token controls `label` through the URL, so
+      // `preview`'s encrypted closure carries an attacker-chosen value ("admin").
       await page.goto(f.url('/?label=admin'))
       await waitForHydration(page)
 
@@ -118,6 +122,13 @@ test.describe(() => {
       const swapped = await callReadSecret(preview)
       expect(swapped.status()).toBe(500)
       expect(await swapped.text()).not.toContain('BOUND_ARGS_SECRET')
+
+      // Control: with the token, the same action returns the secret through the
+      // UI, so the rejection above isn't hiding an unreachable branch.
+      await page.goto(f.url('/?token=admin-token'))
+      await waitForHydration(page)
+      await page.getByRole('button', { name: 'read secret' }).click()
+      await expect(page.getByTestId('result')).toHaveText('BOUND_ARGS_SECRET')
     })
   }
 })
