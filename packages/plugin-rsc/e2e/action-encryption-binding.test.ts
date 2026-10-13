@@ -111,12 +111,11 @@ test.describe(() => {
       })
       expect(preview.id).not.toBe(readSecret.id)
 
-      // Replay a request body against `readSecret`'s action id. These calls send
-      // no files, so `encodeReply` produces a string and the body is text/plain.
-      const callReadSecret = (body: string) =>
+      // Replay a request body against `readSecret`'s action id.
+      const callReadSecret = (contentType: string, body: string) =>
         page.request.post(f.url('/_.rsc'), {
           headers: {
-            'content-type': 'text/plain;charset=UTF-8',
+            'content-type': contentType,
             'x-rsc-action': readSecret.id,
           },
           data: body,
@@ -129,27 +128,33 @@ test.describe(() => {
       }
 
       // `readSecret`'s own closure still works, and its `role` capture is "viewer".
-      const own = await callReadSecret(readSecret.body)
+      const own = await callReadSecret(readSecret.contentType, readSecret.body)
       expect(own.status()).toBe(200)
       expect(await own.text()).toContain('DENIED:viewer')
 
       // Attack: send `preview`'s closure as `readSecret`'s. Without binding, it
       // would decrypt as `readSecret`'s captures, making `role` "admin" and
       // returning the secret. Bound to `preview`'s id, it fails to decrypt.
-      await expectRejected(await callReadSecret(preview.body))
+      await expectRejected(
+        await callReadSecret(preview.contentType, preview.body),
+      )
 
       // A closure encrypted with the right key but without an action id (the
       // format before binding) is also rejected. `flight` is the serialized
       // capture array `["admin"]`.
       const flight = '0:["admin"]\n'
       await expectRejected(
-        await callReadSecret(JSON.stringify([await seal(flight)])),
+        await callReadSecret(
+          'text/plain;charset=UTF-8',
+          JSON.stringify([await seal(flight)]),
+        ),
       )
 
       // Control: the same payload encrypted for `readSecret`'s id is accepted and
       // returns the secret, so the rejections above come from the id check, not
       // from a malformed request.
       const bound = await callReadSecret(
+        'text/plain;charset=UTF-8',
         JSON.stringify([await seal(flight, readSecret.id)]),
       )
       expect(bound.status()).toBe(200)
@@ -170,9 +175,9 @@ async function captureAction(
   const request = await requestPromise
   await expect(page.getByTestId('result')).toHaveText(result)
   const headers = await request.allHeaders()
-  expect(headers['content-type']).toBe('text/plain;charset=UTF-8')
   return {
     id: headers['x-rsc-action']!,
+    contentType: headers['content-type']!,
     body: request.postData() ?? '',
   }
 }
