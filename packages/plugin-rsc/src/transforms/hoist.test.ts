@@ -332,16 +332,32 @@ function Page({ label, role }) {
 }
 `
     const ast = await parseAstAsync(input)
+    const encoded: string[][] = []
+    const decoded: string[][] = []
     const { output, names } = transformHoistInlineDirective(input, ast, {
       directive: 'use server',
       runtime: (value, name) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
-      encode: (value, name) => `__enc(${value}, ${JSON.stringify(name)})`,
-      decode: (value, name) => `__dec(${value}, ${JSON.stringify(name)})`,
+      encode: (value, name) => {
+        encoded.push([value, name])
+        return `__enc(${value}, ${JSON.stringify(name)})`
+      },
+      decode: (value, name) => {
+        decoded.push([value, name])
+        return `__dec(${value}, ${JSON.stringify(name)})`
+      },
     })
     expect(names).toEqual([
       '$$hoist_0_preview',
       '$$hoist_1_anonymous_server_function',
+    ])
+    expect(encoded).toEqual([
+      ['[label]', '$$hoist_0_preview'],
+      ['[role]', '$$hoist_1_anonymous_server_function'],
+    ])
+    expect(decoded).toEqual([
+      ['$$hoist_encoded', '$$hoist_0_preview'],
+      ['$$hoist_encoded', '$$hoist_1_anonymous_server_function'],
     ])
     expect(output.toString()).toMatchInlineSnapshot(`
       "
