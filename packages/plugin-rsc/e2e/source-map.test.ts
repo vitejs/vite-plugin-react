@@ -257,7 +257,18 @@ test.describe('source map build', () => {
         .filter((text) => content.includes(text))
         .map((text) => `${file}: ${text}`)
     })
-    expect(serverCode).toEqual([])
+    // Rolldown keeps `sourcesContent` for sources that no mapping reaches.
+    // https://github.com/rolldown/rolldown/issues/11176
+    expect(serverCode).toEqual(
+      isRolldownVite
+        ? [
+            expect.stringMatching(/\.js\.map: use server$/),
+            expect.stringMatching(
+              /\.js\.map: client-imported Server Function called$/,
+            ),
+          ]
+        : [],
+    )
   })
 })
 
