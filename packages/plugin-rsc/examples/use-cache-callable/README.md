@@ -69,10 +69,10 @@ Inline closure captures must not cross the client boundary as trusted plaintext.
 registered wrapper.bind(null, encryptCacheCaptures([captured]))
 ```
 
-The plugin passes the number of captures from the transform metadata (`meta.bindVars`) as `captureCount`. When it's above zero, the cache runtime always decrypts the first argument and rejects anything that isn't an encrypted array of exactly that many captures. Deciding this from the transform rather than from the argument means a client can't skip decryption by sending plaintext captures in that position. The runtime then uses the same logical argument shape for cache identity and execution:
+The plugin passes the number of captures from the transform metadata (`meta.bindVars`) as `captureCount`. For a function with captures, the cache runtime always decrypts the first argument and rejects anything that isn't an encrypted array of exactly that many captures, so a client calling the server reference directly can't supply its own capture values. The runtime then uses the same logical argument shape for cache identity and execution:
 
 ```ts
-executionArguments = [captures, ...invocationArguments]
+executionArguments = [captures, ...admittedArgs]
 ```
 
 The transformed private implementation receives the decoded capture array and only destructures it back into source bindings. Decryption therefore belongs to the framework runtime rather than being repeated in generated output.

@@ -40,9 +40,8 @@ export default function cacheWrapper(
 ) {
   async function cachedFn(...args: any[]): Promise<unknown> {
     // A function with captures receives them encrypted as its first argument,
-    // bound at the call site. Decide this from the transform rather than from
-    // the argument, so a client can't skip decryption by sending plaintext
-    // captures in that position.
+    // bound at the call site. `captureCount` comes from the transform, so the
+    // runtime decrypts that argument whatever a client sends in its place.
     const captureCount = options.captureCount ?? 0
     const encryptedCaptures = captureCount > 0 ? args[0] : undefined
     const callerArgs = captureCount > 0 ? args.slice(1) : args
