@@ -251,16 +251,13 @@ test.describe('source map build', () => {
       source.endsWith('/server-reference-from-client/client.tsx'),
     )?.[1]
     expect(clientSource).toContain('clientImportedAction')
-    const serverSources = sources
-      .filter(([, content]) => content.includes('use server'))
-      .map(([source]) => source)
-    expect(serverSources).toEqual([])
-    const filesWithServerCode = files.filter((file) =>
-      fs
-        .readFileSync(path.join(dir, file), 'utf-8')
-        .includes('client-imported Server Function called'),
-    )
-    expect(filesWithServerCode).toEqual([])
+    const serverCode = files.flatMap((file) => {
+      const content = fs.readFileSync(path.join(dir, file), 'utf-8')
+      return ['use server', 'client-imported Server Function called']
+        .filter((text) => content.includes(text))
+        .map((text) => `${file}: ${text}`)
+    })
+    expect(serverCode).toEqual([])
   })
 })
 
