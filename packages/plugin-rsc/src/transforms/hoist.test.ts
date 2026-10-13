@@ -332,13 +332,17 @@ function Page({ label, role }) {
 }
 `
     const ast = await parseAstAsync(input)
-    const { output } = transformHoistInlineDirective(input, ast, {
+    const { output, names } = transformHoistInlineDirective(input, ast, {
       directive: 'use server',
       runtime: (value, name) =>
         `$$register(${value}, "<id>", ${JSON.stringify(name)})`,
       encode: (value, name) => `__enc(${value}, ${JSON.stringify(name)})`,
       decode: (value, name) => `__dec(${value}, ${JSON.stringify(name)})`,
     })
+    expect(names).toEqual([
+      '$$hoist_0_preview',
+      '$$hoist_1_anonymous_server_function',
+    ])
     expect(output.toString()).toMatchInlineSnapshot(`
       "
       function Page({ label, role }) {
