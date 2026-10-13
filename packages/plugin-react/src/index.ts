@@ -75,7 +75,7 @@ export interface Options {
 const defaultIncludeRE = /\.[tj]sx?$/
 const defaultExcludeRE = /\/node_modules\//
 
-export default function viteReact(opts: Options = {}): Plugin[] {
+function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude ?? defaultExcludeRE
 
@@ -409,7 +409,10 @@ function createReactCompilerPlugin(
   }
 }
 
-viteReact.preambleCode = preambleCode
+const viteReactWithPreamble: typeof viteReact & { preambleCode: string } =
+  Object.assign(viteReact, { preambleCode })
+
+export default viteReactWithPreamble
 
 export { reactCompilerPreset }
 export type { ReactCompilerPluginOptions as ReactCompilerOptions }

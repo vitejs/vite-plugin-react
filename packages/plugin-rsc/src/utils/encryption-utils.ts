@@ -84,12 +84,14 @@ export async function generateEncryptionKey(): Promise<Uint8Array> {
 export async function encryptBuffer(
   data: BufferSource,
   key: CryptoKey,
+  additionalData?: BufferSource,
 ): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(16))
   const encrypted = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
       iv,
+      ...(additionalData && { additionalData }),
     },
     key,
     data,
@@ -100,6 +102,7 @@ export async function encryptBuffer(
 export async function decryptBuffer(
   encryptedString: string,
   key: CryptoKey,
+  additionalData?: BufferSource,
 ): Promise<ArrayBuffer> {
   const concatenated = fromBase64(encryptedString)
   const iv = concatenated.slice(0, 16)
@@ -108,6 +111,7 @@ export async function decryptBuffer(
     {
       name: 'AES-GCM',
       iv,
+      ...(additionalData && { additionalData }),
     },
     key,
     encrypted,

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs as parseNodeArgs } from 'node:util'
-import ts from 'typescript'
+import ts from '@typescript/typescript6'
 
 const scriptDir = path.dirname(new URL(import.meta.url).pathname)
 const packageDir = path.resolve(scriptDir, '..')

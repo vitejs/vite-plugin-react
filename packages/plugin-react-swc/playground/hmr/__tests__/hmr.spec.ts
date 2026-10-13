@@ -12,7 +12,7 @@ test('Default build', async ({ page }) => {
   await page.click('button')
   await expect(page.locator('button')).toHaveText('count is 1')
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('HMR invalidate', async ({ page }) => {

@@ -25,8 +25,9 @@ export type TransformHoistInlineDirectiveOptions = {
   ) => string
   directive: string | RegExp
   rejectNonAsyncFunction?: boolean
-  encode?: (value: string) => string
-  decode?: (value: string) => string
+  /** `name` is the hoisted function's name, e.g. to bind the encoding to it. */
+  encode?: (value: string, name: string) => string
+  decode?: (value: string, name: string) => string
   /** Keep generated hoisted declarations module-local instead of exporting them. */
   noExport?: boolean
   /**
@@ -186,6 +187,9 @@ export function transformHoistInlineDirective(
         // function. At the original call site, registration below binds the
         // corresponding values in the same order.
         const bindVars = getBindVars(node, scopeTree)
+        const newName =
+          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
+        names.push(newName)
         let newParams = [
           ...bindVars.map((b) => b.root),
           ...node.params.map((n) => input.slice(n.start, n.end)),
@@ -201,15 +205,13 @@ export function transformHoistInlineDirective(
             node.body.body[0]!.start,
             `const [${bindVars.map((b) => b.root).join(',')}] = ${options.decode(
               '$$hoist_encoded',
+              newName,
             )};\n`,
           )
         }
 
         // Rewrite and hoist the original function range into its module-level form.
         // These edits must happen before `.move()` (hoist) so they travel with the range.
-        const newName =
-          `$$hoist_${names.length}` + (originalName ? `_${originalName}` : '')
-        names.push(newName)
         // Hoisted runtimes need two module bindings: a private function for the
         // original body and a canonical binding for the runtime result. The
         // default path keeps the original single generated function binding.
@@ -252,7 +254,10 @@ export function transformHoistInlineDirective(
         let newCode = options.hoistRuntime ? newName : runtimeCode
         if (bindVars.length > 0) {
           const bindArgs = options.encode
-            ? options.encode('[' + bindVars.map((b) => b.expr).join(', ') + ']')
+            ? options.encode(
+                '[' + bindVars.map((b) => b.expr).join(', ') + ']',
+                newName,
+              )
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
