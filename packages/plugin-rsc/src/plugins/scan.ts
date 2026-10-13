@@ -35,7 +35,14 @@ const importGlobRE = /\bimport\.meta\.glob(?:<\w+>)?\s*\(/g
 export async function transformScanBuildStrip(code: string): Promise<string> {
   const [imports] = esModuleLexer.parse(code)
   let output = imports
-    .map((e) => e.specifier && `import ${JSON.stringify(e.specifier)};\n`)
+    // skip template literal globs, e.g. import(`./${x}.js`) as "./*.js",
+    // which are not resolvable module ids
+    .map(
+      (e) =>
+        e.specifier &&
+        !(e.type === 'dynamic' && e.glob) &&
+        `import ${JSON.stringify(e.specifier)};\n`,
+    )
     .filter(Boolean)
     .join('')
 
