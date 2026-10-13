@@ -20,7 +20,7 @@ test('Emotion build', async ({ page }) => {
   const code = page.locator('code')
   await expectColor(code, 'color', '#646cff')
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('Emotion HMR', async ({ page }) => {

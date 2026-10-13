@@ -11,7 +11,7 @@ test('Worker build', async ({ page }) => {
   await page.goto(testUrl)
   await waitForLogs('Worker lives!', 'Worker imported!')
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('Worker HMR', async ({ page }) => {
