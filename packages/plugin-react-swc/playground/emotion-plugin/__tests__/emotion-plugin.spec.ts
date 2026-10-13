@@ -20,7 +20,7 @@ test('Emotion plugin build', async ({ page }) => {
   const code = page.locator('code')
   await expectColor(code, 'color', '#646cff')
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('Emotion plugin HMR', async ({ page }) => {

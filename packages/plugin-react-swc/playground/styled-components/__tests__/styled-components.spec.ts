@@ -19,7 +19,7 @@ test('styled-components build', async ({ page }) => {
   await expectColor(code, 'color', '#db7093')
   await expect(code).toHaveClass(/Button__StyledCode/)
 
-  await server.httpServer.close()
+  await server.close()
 })
 
 test('styled-components HMR', async ({ page }) => {
