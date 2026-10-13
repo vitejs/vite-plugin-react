@@ -62,7 +62,7 @@ test.describe(() => {
           edit: (s) =>
             s.replace(
               'rsc()',
-              `rsc({ bindActionEncryption: true, defineEncryptionKey: ${JSON.stringify(
+              `rsc({ defineEncryptionKey: ${JSON.stringify(
                 JSON.stringify(ENCRYPTION_KEY),
               )} })`,
             ),

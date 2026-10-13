@@ -432,11 +432,6 @@ export default defineConfig({
       // cf. https://nextjs.org/docs/app/guides/data-security#overwriting-encryption-keys-advanced
       defineEncryptionKey: 'process.env.MY_ENCRYPTION_KEY',
 
-      // bind encrypted "use server" closure arguments to their action id, so one
-      // action's closure can't be replayed as another's arguments.
-      // A server built without this can't decrypt closures from one built with it.
-      bindActionEncryption: true,
-
       // when `loadModuleDevProxy: true`, `import.meta.viteRsc.loadModule` is implemented
       // through `fetch` based RPC, which allows, for example, rsc environment inside
       // cloudflare workers to communicate with node ssr environment on main Vite process.

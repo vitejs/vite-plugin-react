@@ -206,19 +206,6 @@ export type RscPluginOptions = {
   enableActionEncryption?: boolean
 
   /**
-   * Bind encrypted "use server" closure arguments to their action id. Without
-   * this, a closure encrypted for one inline server action
-   * also decrypts as the arguments of any other, so a client can substitute
-   * one action's captured values (e.g. derived from request input) for
-   * another's. When enabled, closures encrypted without their action id are
-   * rejected, including ones from earlier builds that share
-   * `defineEncryptionKey` (and a server built without this option can't
-   * decrypt closures from one built with it).
-   * @default false
-   */
-  bindActionEncryption?: boolean
-
-  /**
    * By default, the plugin uses a build-time generated encryption key for
    * "use server" closure argument binding.
    * This can be overwritten by configuring `defineEncryptionKey` option,
@@ -2014,7 +2001,7 @@ function vitePluginDefineEncryptionKey(
 function vitePluginUseServer(
   useServerPluginOptions: Pick<
     RscPluginOptions,
-    'enableActionEncryption' | 'bindActionEncryption' | 'environment'
+    'enableActionEncryption' | 'environment'
   >,
   manager: RscPluginManager,
 ): Plugin[] {
@@ -2080,11 +2067,10 @@ function vitePluginUseServer(
             )
             const enableEncryption =
               useServerPluginOptions.enableActionEncryption ?? true
-            // The id the client sends back (React's `$$id` for the reference).
-            const actionIdArg = (name: string) =>
-              useServerPluginOptions.bindActionEncryption
-                ? `, ${JSON.stringify(`${getServerReference().referenceKey}#${name}`)}`
-                : ''
+            // Bind each closure's encryption to its action id, so a closure
+            // issued for one action can't be decrypted as another's.
+            const actionId = (name: string) =>
+              JSON.stringify(`${getServerReference().referenceKey}#${name}`)
             const result = transformServerActionServer_(code, ast, {
               runtime: (value, name) =>
                 `$$ReactServer.registerServerReference(${value}, ${JSON.stringify(
@@ -2093,11 +2079,11 @@ function vitePluginUseServer(
               rejectNonAsyncFunction: true,
               encode: enableEncryption
                 ? (value, name) =>
-                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value}${actionIdArg(name)})`
+                    `__vite_rsc_encryption_runtime.encryptActionBoundArgs(${value}, ${actionId(name)})`
                 : undefined,
               decode: enableEncryption
                 ? (value, name) =>
-                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value}${actionIdArg(name)})`
+                    `await __vite_rsc_encryption_runtime.decryptActionBoundArgs(${value}, ${actionId(name)})`
                 : undefined,
             })
             const output = result.output
