@@ -35,6 +35,7 @@ export function callableCachePlugin(): Plugin {
       }
 
       const reference = manager.serverReferences.resolve(id, 'rsc')
+      const getActionId = (name: string) => `${reference.referenceKey}#${name}`
       const ast = await parseAstAsync(code)
       const environmentName = this.environment.name
 
@@ -50,10 +51,8 @@ export function callableCachePlugin(): Plugin {
           const options: CacheWrapperOptions = {
             ...getCacheWrapperOptions(meta),
             captureCount,
-            cacheId: JSON.stringify([
-              `${reference.referenceKey}#${name}`,
-              generation,
-            ]),
+            actionId: getActionId(name),
+            cacheId: JSON.stringify([getActionId(name), generation]),
           }
           return (
             `$$CacheReactServer.registerServerReference(` +
@@ -83,7 +82,8 @@ export function callableCachePlugin(): Plugin {
               hoistRuntime: true,
               runtime: (value, name, meta) =>
                 runtime(value, name, meta, meta.bindVars.length),
-              encode: (value) => `$$encryptCacheCaptures(${value})`,
+              encode: (value, name) =>
+                `$$encryptCacheCaptures(${value}, ${JSON.stringify(getActionId(name))})`,
               // The cache runtime replaces the encrypted captures with decoded
               // ones before invoking this private implementation.
               decode: (value) => value,

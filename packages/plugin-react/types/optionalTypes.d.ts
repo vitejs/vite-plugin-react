@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable @typescript-eslint/ban-ts-comment */
 
 // @ts-ignore --- `@rolldown/plugin-babel` is an optional peer dependency, so this may cause an error
 import type * as pluginBabel from '@rolldown/plugin-babel'

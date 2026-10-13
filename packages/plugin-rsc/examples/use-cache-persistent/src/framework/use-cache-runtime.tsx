@@ -29,6 +29,8 @@ export type CacheWrapperOptions = {
    * captures always receives them encrypted as its first argument.
    */
   captureCount?: number
+  /** Server reference id that encrypted captures are bound to. */
+  actionId: string
   cacheId: string
 }
 
@@ -67,6 +69,7 @@ export default function cacheWrapper(
       const captures = await decryptCacheCaptures(
         encryptedCaptures,
         captureCount,
+        options.actionId,
       )
       executionArguments = [captures, ...admittedArgs]
     }
@@ -121,20 +124,24 @@ export async function resetCache() {
   await resetPersistentCache()
 }
 
-export function encryptCacheCaptures(captures: unknown[]): Promise<string> {
-  return encryptActionBoundArgs(captures)
+export function encryptCacheCaptures(
+  captures: unknown[],
+  actionId: string,
+): Promise<string> {
+  return encryptActionBoundArgs(captures, actionId)
 }
 
 async function decryptCacheCaptures(
   encrypted: unknown,
   captureCount: number,
+  actionId: string,
 ): Promise<unknown[]> {
   // `encryptActionBoundArgs` returns a promise, and a client call sends it back
   // as a promise reference, which `decodeReply` restores as a promise.
   if (!(encrypted instanceof Promise)) {
     throw new Error('Invalid cache captures')
   }
-  const captures = await decryptActionBoundArgs(encrypted)
+  const captures = await decryptActionBoundArgs(encrypted, actionId)
   if (!Array.isArray(captures) || captures.length !== captureCount) {
     throw new Error('Invalid cache captures')
   }

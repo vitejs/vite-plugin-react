@@ -27,6 +27,7 @@ export function callableCachePlugin(): Plugin {
       }
 
       const reference = manager.serverReferences.resolve(id, 'rsc')
+      const getActionId = (name: string) => `${reference.referenceKey}#${name}`
       const ast = await parseAstAsync(code)
       const environmentName = this.environment.name
 
@@ -34,16 +35,24 @@ export function callableCachePlugin(): Plugin {
         const runtime = (
           value: string,
           name: string,
-          options: CacheWrapperOptions,
-        ) =>
-          `$$CacheReactServer.registerServerReference(` +
-          `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
-          `${JSON.stringify(reference.referenceKey)},` +
-          `${JSON.stringify(name)})`
+          meta: Pick<ModuleExportMeta, 'valueNode'>,
+          captureCount?: number,
+        ) => {
+          const options: CacheWrapperOptions = {
+            ...getCacheWrapperOptions(meta),
+            captureCount,
+            actionId: getActionId(name),
+          }
+          return (
+            `$$CacheReactServer.registerServerReference(` +
+            `$$cacheWrapper(${value}, ${JSON.stringify(options)}),` +
+            `${JSON.stringify(reference.referenceKey)},` +
+            `${JSON.stringify(name)})`
+          )
+        }
         const result = hasDirective(ast.body, directive)
           ? transformWrapExport(code, ast, {
-              runtime: (value, name, meta) =>
-                runtime(value, name, getCacheWrapperOptions(meta)),
+              runtime: (value, name, meta) => runtime(value, name, meta),
               // Next.js calls rejecting primitive literals while permitting
               // objects and arrays arbitrary, but keeps the latter for metadata
               // and viewport exports.
@@ -61,11 +70,9 @@ export function callableCachePlugin(): Plugin {
               rejectNonAsyncFunction: true,
               hoistRuntime: true,
               runtime: (value, name, meta) =>
-                runtime(value, name, {
-                  ...getCacheWrapperOptions(meta),
-                  captureCount: meta.bindVars.length,
-                }),
-              encode: (value) => `$$encryptCacheCaptures(${value})`,
+                runtime(value, name, meta, meta.bindVars.length),
+              encode: (value, name) =>
+                `$$encryptCacheCaptures(${value}, ${JSON.stringify(getActionId(name))})`,
               // The cache runtime replaces the encrypted captures with decoded
               // ones before invoking this private implementation.
               decode: (value) => value,
@@ -156,7 +163,7 @@ function hasFunctionDirective(
 
 function getCacheWrapperOptions(
   meta: Pick<ModuleExportMeta, 'valueNode'>,
-): CacheWrapperOptions {
+): Pick<CacheWrapperOptions, 'argumentCount'> {
   const node = meta.valueNode
   if (
     node?.type !== 'FunctionDeclaration' &&

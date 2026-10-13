@@ -4,7 +4,8 @@ import type {
   RolldownBabelPreset,
 } from '#optionalTypes'
 
-export const defaultCodeFilter = /forwardRef|memo|\b(?:[A-Z]|use[A-Z0-9])/
+export const defaultCodeFilter: RegExp =
+  /forwardRef|memo|\b(?:[A-Z]|use[A-Z0-9])/
 
 export const reactCompilerPreset = (
   options: ReactCompilerBabelPluginOptions = {},
