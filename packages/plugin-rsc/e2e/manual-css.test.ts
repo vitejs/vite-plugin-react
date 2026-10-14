@@ -15,7 +15,7 @@ test.describe('manual-css', () => {
       files: {
         // Disable auto CSS injection
         'vite.config.ts': {
-          edit: (s) => s.replace('rsc({', `rsc({ rscCssTransform: false,`),
+          edit: (s) => s.replace('rsc()', `rsc({ rscCssTransform: false })`),
         },
         // Add manual loadCss() call since auto-injection is disabled
         'src/root.tsx': {
