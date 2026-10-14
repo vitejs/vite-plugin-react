@@ -13,7 +13,8 @@ on:
       - 'pnpm-lock.yaml'
       - '.github/workflows/ci-rsc.yml'
   schedule:
-    # Run daily at 00:00 UTC to test canary/experimental React versions
+    # Run daily at 00:00 UTC to catch upstream changes in React canary/experimental.
+    # Those move without any change in this repo, so the nightly runs only the React entries.
     - cron: '0 0 * * *'
 
 concurrency:
