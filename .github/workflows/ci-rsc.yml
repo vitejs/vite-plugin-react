@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   test:
-    # unit tests and tsc add nothing on the nightly, which only re-runs unchanged `main` against newer React
+    # the nightly only tests newer React versions
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
@@ -42,9 +42,7 @@ jobs:
     name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.vite && format('(vite-{0})', matrix.vite) || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }} ${{ matrix.subset && format('(subset-{0})', matrix.subset) || '' }} ${{ matrix.shard && format('(shard-{0}/{1})', matrix.shard, matrix.shards) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # Pull requests and `main` run the same matrix. Non-Linux and non-chromium entries
-      # run the subset of tests that can behave differently there (see `E2E_SUBSET` in playwright.config.ts).
-      # The nightly only watches upstream React, so it runs just the React canary/experimental entries.
+      # Entries other than Linux chromium run a subset of tests (see `E2E_SUBSET` in playwright.config.ts).
       matrix:
         include: >-
           ${{ fromJSON(github.event_name == 'schedule' && '[
