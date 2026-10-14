@@ -27,4 +27,21 @@ export default "foo";
       "
     `)
   })
+
+  it('skips template literal glob imports', async () => {
+    const input = `\
+import("./a.js")
+import(\`./b.js\`)
+import("./c*d.js")
+import(/* @vite-ignore */ \`file://\${path}\`)
+import(\`\${file}?v=\${version}\`)
+import(\`./locales/\${locale}.js\`)
+`
+    expect(await transformScanBuildStrip(input)).toMatchInlineSnapshot(`
+      "import "./a.js";
+      import "./b.js";
+      import "./c*d.js";
+      "
+    `)
+  })
 })
