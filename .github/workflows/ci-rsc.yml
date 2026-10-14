@@ -22,6 +22,8 @@ concurrency:
 
 jobs:
   test:
+    # unit tests and tsc add nothing on the nightly, which only re-runs unchanged `main` against newer React
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -37,28 +39,29 @@ jobs:
       - run: pnpm -C packages/plugin-rsc test
 
   test-e2e:
-    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.vite && format('(vite-{0})', matrix.vite) || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }}
+    name: test-rsc (${{ matrix.os }} / ${{ matrix.browser }}) ${{ matrix.vite && format('(vite-{0})', matrix.vite) || '' }} ${{ matrix.react_version && format('(react-{0})', matrix.react_version) || '' }} ${{ matrix.subset && format('(subset-{0})', matrix.subset) || '' }} ${{ matrix.shard && format('(shard-{0}/{1})', matrix.shard, matrix.shards) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
+      # Pull requests and `main` run the same matrix. Non-Linux and non-chromium entries
+      # run the subset of tests that can behave differently there (see `E2E_SUBSET` in playwright.config.ts).
+      # The nightly only watches upstream React, so it runs just the React canary/experimental entries.
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        browser: [chromium]
-        vite: ['']
-        react_version: ['']
-        include:
-          - os: ubuntu-latest
-            browser: firefox
-          - os: macos-latest
-            browser: webkit
-          - os: ubuntu-latest
-            browser: chromium
-            vite: 7
-          - os: ubuntu-latest
-            browser: chromium
-            react_version: canary
-          - os: ubuntu-latest
-            browser: chromium
-            react_version: experimental
+        include: >-
+          ${{ fromJSON(github.event_name == 'schedule' && '[
+            {"os":"ubuntu-latest","browser":"chromium","react_version":"canary"},
+            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental"}
+          ]' || '[
+            {"os":"ubuntu-latest","browser":"chromium","shard":1,"shards":2},
+            {"os":"ubuntu-latest","browser":"chromium","shard":2,"shards":2},
+            {"os":"windows-latest","browser":"chromium","subset":"os"},
+            {"os":"macos-latest","browser":"chromium","subset":"os"},
+            {"os":"ubuntu-latest","browser":"firefox","subset":"engine"},
+            {"os":"ubuntu-latest","browser":"webkit","subset":"engine"},
+            {"os":"ubuntu-latest","browser":"chromium","vite":"7","shard":1,"shards":2},
+            {"os":"ubuntu-latest","browser":"chromium","vite":"7","shard":2,"shards":2},
+            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental","shard":1,"shards":2},
+            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental","shard":2,"shards":2}
+          ]') }}
       fail-fast: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -84,18 +87,23 @@ jobs:
           yq -i '.overrides."@vitejs/plugin-react" = "^5"' pnpm-workspace.yaml
           yq -i '.packages += ["!packages/plugin-react"]' pnpm-workspace.yaml
           pnpm i --no-frozen-lockfile
-      - run: pnpm -C packages/plugin-rsc exec playwright install "$BROWSER_NAME"
+      # webkit on Linux needs system libraries that the runner image doesn't ship
+      - run: pnpm -C packages/plugin-rsc exec playwright install ${WITH_DEPS:+--with-deps} "$BROWSER_NAME"
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
-      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME"
+          WITH_DEPS: ${{ runner.os == 'Linux' && matrix.browser == 'webkit' && 'true' || '' }}
+      - run: pnpm -C packages/plugin-rsc test-e2e-ci --project="$BROWSER_NAME" ${SHARD:+--shard="$SHARD/$SHARDS"}
         shell: bash
         env:
           BROWSER_NAME: ${{ matrix.browser }}
+          E2E_SUBSET: ${{ matrix.subset }}
+          SHARD: ${{ matrix.shard }}
+          SHARDS: ${{ matrix.shards }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.vite && format('-vite-{0}', matrix.vite) || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}
+          name: test-results-${{ matrix.os }}-${{ matrix.browser }}${{ matrix.vite && format('-vite-{0}', matrix.vite) || '' }}${{ matrix.react_version && format('-react-{0}', matrix.react_version) || '' }}${{ matrix.shard && format('-shard-{0}', matrix.shard) || '' }}
           path: |
             packages/plugin-rsc/test-results
           if-no-files-found: ignore
