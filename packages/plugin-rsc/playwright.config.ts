@@ -21,7 +21,7 @@ const subsets: Record<string, string[]> = {
   ],
   // what the browser does with the output: no-JS form submission, CSS application,
   // HMR client and error overlay, streaming and hydration, RSC running in the browser
-  engine: [
+  browser: [
     'basic',
     'starter',
     'react-router',
