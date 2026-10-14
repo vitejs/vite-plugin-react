@@ -47,19 +47,19 @@ jobs:
       matrix:
         include: >-
           ${{ fromJSON(github.event_name == 'schedule' && '[
-            {"os":"ubuntu-latest","browser":"chromium","react_version":"canary"},
-            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental"}
+            { "os": "ubuntu-latest", "browser": "chromium", "react_version": "canary" },
+            { "os": "ubuntu-latest", "browser": "chromium", "react_version": "experimental" }
           ]' || '[
-            {"os":"ubuntu-latest","browser":"chromium","shard":1,"shards":2},
-            {"os":"ubuntu-latest","browser":"chromium","shard":2,"shards":2},
-            {"os":"windows-latest","browser":"chromium","subset":"os"},
-            {"os":"macos-latest","browser":"chromium","subset":"os"},
-            {"os":"ubuntu-latest","browser":"firefox","subset":"browser"},
-            {"os":"ubuntu-latest","browser":"webkit","subset":"browser"},
-            {"os":"ubuntu-latest","browser":"chromium","vite":"7","shard":1,"shards":2},
-            {"os":"ubuntu-latest","browser":"chromium","vite":"7","shard":2,"shards":2},
-            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental","shard":1,"shards":2},
-            {"os":"ubuntu-latest","browser":"chromium","react_version":"experimental","shard":2,"shards":2}
+            { "os": "ubuntu-latest", "browser": "chromium", "shard": 1, "shards": 2 },
+            { "os": "ubuntu-latest", "browser": "chromium", "shard": 2, "shards": 2 },
+            { "os": "windows-latest", "browser": "chromium", "subset": "os" },
+            { "os": "macos-latest", "browser": "chromium", "subset": "os" },
+            { "os": "ubuntu-latest", "browser": "firefox", "subset": "browser" },
+            { "os": "ubuntu-latest", "browser": "webkit", "subset": "browser" },
+            { "os": "ubuntu-latest", "browser": "chromium", "vite": "7", "shard": 1, "shards": 2 },
+            { "os": "ubuntu-latest", "browser": "chromium", "vite": "7", "shard": 2, "shards": 2 },
+            { "os": "ubuntu-latest", "browser": "chromium", "react_version": "experimental", "shard": 1, "shards": 2 },
+            { "os": "ubuntu-latest", "browser": "chromium", "react_version": "experimental", "shard": 2, "shards": 2 }
           ]') }}
       fail-fast: false
     steps:
