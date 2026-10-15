@@ -1,3 +1,13 @@
+## <small>[0.5.38](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.37...plugin-rsc%400.5.38) (2026-10-15)</small>
+### Bug Fixes
+
+* **deps:** update react 19.3.1 ([#1509](https://github.com/vitejs/vite-plugin-react/issues/1509)) ([65a1dd5](https://github.com/vitejs/vite-plugin-react/commit/65a1dd560458ad76a6d351deadca2e388ab9fe10))
+* **rsc:** skip glob dynamic import specifiers in scan build strip ([#1506](https://github.com/vitejs/vite-plugin-react/issues/1506)) ([9147ee2](https://github.com/vitejs/vite-plugin-react/commit/9147ee29827a3062497285154af4a45191f4cf76))
+
+### Continuous Integration
+
+* **rsc:** speed up e2e matrix with test subsets and sharding ([#1507](https://github.com/vitejs/vite-plugin-react/issues/1507)) ([00be872](https://github.com/vitejs/vite-plugin-react/commit/00be872e8ecc917f9e0f890b29967d5e70934783))
+
 ## <small>[0.5.37](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.36...plugin-rsc%400.5.37) (2026-10-13)</small>
 ### Features
 
