@@ -75,10 +75,10 @@ export function validateImportPlugin({
       },
     },
     // for build, check the output after tree-shaking. the invalid module has
-    // side effects, so it stays in the output exactly when a retained module
-    // imports it. checking the module graph earlier (e.g. in `buildEnd`) would
-    // also reject imports that tree-shaking drops, such as an unused leaf of
-    // a `sideEffects: false` barrel package.
+    // side effects, so the bundler keeps it whenever an import of it can run
+    // and drops it along with unused modules. checking the module graph
+    // earlier (e.g. in `buildEnd`) would also reject imports that tree-shaking
+    // drops, such as an unused leaf of a `sideEffects: false` barrel package.
     generateBundle(_options, bundle) {
       // scan build strips modules down to their imports, so it doesn't
       // reflect what the real build keeps. the real build does the check.
@@ -126,23 +126,42 @@ function getImportChainBuild(
   id: string,
   retained: Set<string>,
 ): string[] {
-  const chain: string[] = []
-  const recurse = (id: string) => {
-    if (chain.includes(id)) return
+  const getImporters = (id: string) => {
     const info = ctx.getModuleInfo(id)
-    if (!info) return
-    chain.push(id)
-    // prefer an importer kept in the output over one dropped by tree-shaking
-    // so that the chain shows which import actually kept the invalid module.
-    const importers = [...info.importers, ...info.dynamicImporters]
-    const next =
-      importers.find((id) => retained.has(id) && !chain.includes(id)) ??
-      importers[0]
-    if (next) {
-      recurse(next)
+    return info ? [...info.importers, ...info.dynamicImporters] : []
+  }
+  // start with the path to the nearest module kept in the output, which is
+  // what kept the invalid module. its direct importers can all be dropped,
+  // e.g. rollup keeps the side-effect imports of a dropped module that
+  // re-exports a used binding.
+  let chain = [id]
+  const parents = new Map<string, string>()
+  const queue = [id]
+  for (const current of queue) {
+    if (current !== id && retained.has(current)) {
+      chain = [current]
+      for (let next = parents.get(current); next; next = parents.get(next)) {
+        chain.unshift(next)
+      }
+      break
+    }
+    for (const importer of getImporters(current)) {
+      if (importer !== id && !parents.has(importer)) {
+        parents.set(importer, current)
+        queue.push(importer)
+      }
     }
   }
-  recurse(id)
+  // then continue through importers kept in the output where possible.
+  while (true) {
+    const importers = getImporters(chain.at(-1)!).filter(
+      (importer) => !chain.includes(importer),
+    )
+    const next =
+      importers.find((importer) => retained.has(importer)) ?? importers[0]
+    if (!next) break
+    chain.push(next)
+  }
   return chain
 }
 

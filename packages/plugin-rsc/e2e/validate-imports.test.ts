@@ -1,6 +1,7 @@
 import { stripVTControlCharacters } from 'node:util'
 import { test, expect } from '@playwright/test'
 import { x } from 'tinyexec'
+import * as vite from 'vite'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
 import { expectNoPageError, waitForHydration } from './helper'
 
@@ -178,8 +179,10 @@ test.describe('validate imports', () => {
 //
 // @vitejs/test-primitives (sideEffects: ["*.css"])
 // `-- toast.js  imports "client-only" but only re-exports a binding of
-//               queue.js, so the module is dropped even when the binding is
-//               used (react-aria-components' `exports/Toast.mjs`)
+//               queue.js, so rolldown drops the module even when the binding
+//               is used (react-aria-components' `exports/Toast.mjs`). rollup
+//               keeps the side-effect imports of modules on a re-export path,
+//               so there the marker stays in the output.
 test.describe('validate imports after tree-shaking', () => {
   function setupTreeShakingFixture(options: {
     root: string
@@ -322,8 +325,8 @@ test.describe('validate imports after tree-shaking', () => {
         sideEffects: false,
         files: {
           'src/root.tsx': rootSource({
-            imports: `import { Button, Toast } from '@vitejs/test-barrel'`,
-            body: `<Button>[test-server-button]</Button><Toast.Provider />`,
+            imports: `import { Button } from '@vitejs/test-barrel'`,
+            body: `<Button>[test-server-button]</Button>`,
           }),
         },
       })
@@ -336,11 +339,13 @@ test.describe('validate imports after tree-shaking', () => {
       await page.goto(f.url())
       await waitForHydration(page)
       await expect(page.getByRole('button')).toHaveText('[test-server-button]')
-      await expect(page.getByText('[test-toast:0]')).toBeVisible()
     })
   })
 
   test.describe('client-only in a module that only re-exports a used binding', () => {
+    // rollup keeps the marker, see "client-only kept by a re-export on rollup"
+    test.skip(!('rolldownVersion' in vite), 'rolldown only')
+
     const root = 'examples/e2e/temp/validate-client-only-tree-shaking-reexport'
     test.beforeAll(async () => {
       await setupTreeShakingFixture({
@@ -464,10 +469,34 @@ test.describe('validate imports after tree-shaking', () => {
         },
       })
       const result = await build(root)
+      // rollup's commonjs plugin adds proxy modules to the chain
+      expect(result.stderr).toMatch(
+        /'client-only' cannot be imported in server build \('rsc' environment\):\n(?: +imported by .*\n)*? +imported by node_modules\/@vitejs\/test-barrel\/legacy\.cjs\n(?: +imported by .*\n)*? +imported by src\/root\.tsx\n/,
+      )
+      expect(result.exitCode).not.toBe(0)
+    })
+
+    test('client-only kept by a re-export on rollup', async () => {
+      test.skip('rolldownVersion' in vite, 'rollup only')
+      const root = 'examples/e2e/temp/validate-client-only-reexport-rollup'
+      await setupTreeShakingFixture({
+        root,
+        sideEffects: false,
+        files: {
+          'src/root.tsx': rootSource({
+            imports: `import { Button, Toast } from '@vitejs/test-barrel'`,
+            body: `<Button>[test-server-button]</Button><Toast.Provider />`,
+          }),
+        },
+      })
+      const result = await build(root)
+      // the chain names the re-export that kept the marker rather than the
+      // dropped `calendar.js`, which also imports `client-only`
       expect(result.stderr).toContain(
         `'client-only' cannot be imported in server build ('rsc' environment):\n` +
-          ` imported by node_modules/@vitejs/test-barrel/legacy.cjs\n` +
-          `  imported by src/root.tsx\n`,
+          ` imported by node_modules/@vitejs/test-primitives/toast.js\n` +
+          `  imported by node_modules/@vitejs/test-barrel/toast-queue.js\n` +
+          `   imported by node_modules/@vitejs/test-barrel/toast.js\n`,
       )
       expect(result.exitCode).not.toBe(0)
     })
