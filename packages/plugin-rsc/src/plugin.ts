@@ -1393,7 +1393,7 @@ import.meta.hot.on("rsc:update", () => {
     ...vitePluginFindSourceMapURL(),
     ...vitePluginRscCss(rscPluginOptions, manager),
     {
-      ...validateImportPlugin(),
+      ...validateImportPlugin({ manager }),
       apply: () => rscPluginOptions.validateImports !== false,
     },
     scanBuildStripPlugin({ manager }),

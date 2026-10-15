@@ -1,11 +1,16 @@
 import path from 'node:path'
 import { prefixRegex } from '@rolldown/pluginutils'
 import type { DevEnvironment, Plugin, Rollup } from 'vite'
+import type { RscPluginManager } from '../plugin'
 
 // https://github.com/vercel/next.js/blob/90f564d376153fe0b5808eab7b83665ee5e08aaf/packages/next/src/build/webpack-config.ts#L1249-L1280
 // https://github.com/pcattori/vite-env-only/blob/68a0cc8546b9a37c181c0b0a025eb9b62dbedd09/src/deny-imports.ts
 // https://github.com/sveltejs/kit/blob/84298477a014ec471839adf7a4448d91bc7949e4/packages/kit/src/exports/vite/index.js#L513
-export function validateImportPlugin(): Plugin {
+export function validateImportPlugin({
+  manager,
+}: {
+  manager: RscPluginManager
+}): Plugin {
   return {
     name: 'rsc:validate-imports',
     resolveId: {
@@ -69,28 +74,32 @@ export function validateImportPlugin(): Plugin {
         }
       },
     },
-    // for build, use PluginContext.getModuleInfo during buildEnd.
-    // rollup shows multiple errors if there are other build error from `buildEnd(error)`.
-    buildEnd() {
-      if (this.environment.mode === 'build') {
-        const serverOnly = getImportChainBuild(
-          this,
-          '\0virtual:vite-rsc/validate-imports/invalid/server-only',
-        )
-        validateImportChain(
-          serverOnly,
-          this.environment.name,
-          this.environment.config.root,
-        )
-        const clientOnly = getImportChainBuild(
-          this,
-          '\0virtual:vite-rsc/validate-imports/invalid/client-only',
-        )
-        validateImportChain(
-          clientOnly,
-          this.environment.name,
-          this.environment.config.root,
-        )
+    // for build, check the output after tree-shaking. the invalid module has
+    // side effects, so the bundler keeps it whenever an import of it can run
+    // and drops it along with unused modules. checking the module graph
+    // earlier (e.g. in `buildEnd`) would also reject imports that tree-shaking
+    // drops, such as an unused leaf of a `sideEffects: false` barrel package.
+    generateBundle(_options, bundle) {
+      // scan build strips modules down to their imports, so it doesn't
+      // reflect what the real build keeps. the real build does the check.
+      if (manager.isScanBuild) return
+      const retained = new Set<string>()
+      for (const output of Object.values(bundle)) {
+        if (output.type === 'chunk') {
+          for (const id of output.moduleIds) {
+            retained.add(id)
+          }
+        }
+      }
+      for (const source of ['server-only', 'client-only']) {
+        const id = `\0virtual:vite-rsc/validate-imports/invalid/${source}`
+        if (retained.has(id)) {
+          validateImportChain(
+            getImportChainBuild(this, id, retained),
+            this.environment.name,
+            this.environment.config.root,
+          )
+        }
       }
     },
   }
@@ -112,19 +121,47 @@ function getImportChainDev(environment: DevEnvironment, id: string) {
   return chain
 }
 
-function getImportChainBuild(ctx: Rollup.PluginContext, id: string): string[] {
-  const chain: string[] = []
-  const recurse = (id: string) => {
-    if (chain.includes(id)) return
+function getImportChainBuild(
+  ctx: Rollup.PluginContext,
+  id: string,
+  retained: Set<string>,
+): string[] {
+  const getImporters = (id: string) => {
     const info = ctx.getModuleInfo(id)
-    if (!info) return
-    chain.push(id)
-    const next = info.importers[0]
-    if (next) {
-      recurse(next)
+    return info ? [...info.importers, ...info.dynamicImporters] : []
+  }
+  // start with the path to the nearest module kept in the output, which is
+  // what kept the invalid module. its direct importers can all be dropped,
+  // e.g. rollup keeps the side-effect imports of a dropped module that
+  // re-exports a used binding.
+  let chain = [id]
+  const parents = new Map<string, string>()
+  const queue = [id]
+  for (const current of queue) {
+    if (current !== id && retained.has(current)) {
+      chain = [current]
+      for (let next = parents.get(current); next; next = parents.get(next)) {
+        chain.unshift(next)
+      }
+      break
+    }
+    for (const importer of getImporters(current)) {
+      if (importer !== id && !parents.has(importer)) {
+        parents.set(importer, current)
+        queue.push(importer)
+      }
     }
   }
-  recurse(id)
+  // then continue through importers kept in the output where possible.
+  while (true) {
+    const importers = getImporters(chain.at(-1)!).filter(
+      (importer) => !chain.includes(importer),
+    )
+    const next =
+      importers.find((importer) => retained.has(importer)) ?? importers[0]
+    if (!next) break
+    chain.push(next)
+  }
   return chain
 }
 
