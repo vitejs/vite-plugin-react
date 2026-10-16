@@ -1447,7 +1447,7 @@ function createTransformExpandExportAllContext(
       // (`__vite_ssr_exportName__(...)`) the walker can't read, and on build
       // there's no practical benefit over reading the source directly for the
       // simple TS/JSX modules we care about.
-      const raw = await fs.promises.readFile(id, 'utf-8')
+      const raw = await fs.promises.readFile(cleanUrl(id), 'utf-8')
       const transform = vite.transformWithOxc ?? vite.transformWithEsbuild
       const result = await transform(raw, id, { sourcemap: false })
       return parseAstAsync(result.code)
