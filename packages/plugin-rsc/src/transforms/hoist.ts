@@ -199,16 +199,25 @@ export function transformHoistInlineDirective(
         if (bindVars.length > 0 && options.decode) {
           // Encoded captures travel as one bound argument, then are restored to
           // the individual parameter names before the original body executes.
+          // Parameter defaults run before the body, so when they use a capture,
+          // the parameters are restored from the remaining arguments after it.
+          const restoreParams = paramsUseCaptures(node, scopeTree)
+          const originalParams = node.params.map((n) =>
+            input.slice(n.start, n.end),
+          )
           newParams = [
             '$$hoist_encoded',
-            ...node.params.map((n) => input.slice(n.start, n.end)),
+            ...(restoreParams ? ['...$$hoist_args'] : originalParams),
           ].join(', ')
           output.appendLeft(
             node.body.body[0]!.start,
             `const [${bindVars.map((b) => b.root).join(',')}] = ${options.decode(
               '$$hoist_encoded',
               newName,
-            )};\n`,
+            )};\n` +
+              (restoreParams
+                ? `var [${originalParams.join(', ')}] = $$hoist_args;\n`
+                : ''),
           )
         }
 
@@ -460,6 +469,30 @@ type BindPath = {
   // richer per-segment metadata and corresponding codegen changes.
   key: string
   segments: string[]
+}
+
+// whether a parameter (e.g. its default value) references a closure capture
+function paramsUseCaptures(
+  fn: ArrowFunctionExpression | FunctionDeclaration | FunctionExpression,
+  scopeTree: ScopeTree,
+): boolean {
+  if (fn.params.length === 0) {
+    return false
+  }
+  const start = fn.params[0]!.start
+  const end = fn.params.at(-1)!.end
+  const fnScope = scopeTree.nodeScope.get(fn)!
+  const ancestorScopes = fnScope.getAncestorScopes()
+  return (scopeTree.scopeToReferences.get(fnScope) ?? []).some((id) => {
+    const scope = scopeTree.referenceToDeclaredScope.get(id)
+    return (
+      scope &&
+      scope !== scopeTree.moduleScope &&
+      ancestorScopes.has(scope) &&
+      id.start >= start &&
+      id.end <= end
+    )
+  })
 }
 
 function getBindVars(fn: Node, scopeTree: ScopeTree): BindVar[] {
