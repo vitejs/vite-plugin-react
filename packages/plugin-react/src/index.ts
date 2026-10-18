@@ -12,7 +12,7 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import type { Plugin, ServerOptions } from 'vite'
+import { createFilter, type Plugin, type ServerOptions } from 'vite'
 import { reactRefreshWrapperPlugin } from 'vite/internal'
 import type { ReactCompilerOptions } from '#optionalTypes'
 import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
@@ -44,6 +44,16 @@ export interface Options {
    * @default /\/node_modules\//
    */
   exclude?: string | RegExp | Array<string | RegExp>
+  /**
+   * Can be used to skip fast refresh for certain files that won't run in the browser.
+   * @example options.include
+   */
+  refreshInclude?: string | RegExp | Array<string | RegExp>
+  /**
+   * Can be used to skip fast refresh for certain files that won't run in the browser.
+   * @default options.exclude
+   */
+  refreshExclude?: string | RegExp | Array<string | RegExp>
   /**
    * Control where the JSX factory is imported from.
    * https://oxc.rs/docs/guide/usage/transformer/jsx.html#import-source
@@ -78,6 +88,12 @@ const defaultExcludeRE = /\/node_modules\//
 function viteReact(opts: Options = {}): Plugin[] {
   const include = opts.include ?? defaultIncludeRE
   const exclude = opts.exclude ?? defaultExcludeRE
+  const jsxRefreshInclude = makeIdFiltersToMatchWithQuery(
+    opts.refreshInclude ?? include,
+  )
+  const jsxRefreshExclude = makeIdFiltersToMatchWithQuery(
+    opts.refreshExclude ?? exclude,
+  )
 
   const jsxImportSource = opts.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
@@ -108,8 +124,8 @@ function viteReact(opts: Options = {}): Plugin[] {
               runtime: 'classic',
               refresh,
             },
-            jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
-            jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
+            jsxRefreshInclude,
+            jsxRefreshExclude,
           },
         }
       } else {
@@ -120,8 +136,8 @@ function viteReact(opts: Options = {}): Plugin[] {
               importSource: opts.jsxImportSource,
               refresh,
             },
-            jsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),
-            jsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude),
+            jsxRefreshInclude,
+            jsxRefreshExclude,
           },
           optimizeDeps: {
             rolldownOptions: { transform: { jsx: { runtime: 'automatic' } } },
@@ -170,8 +186,8 @@ function viteReact(opts: Options = {}): Plugin[] {
 
       return reactRefreshWrapperPlugin({
         cwd: process.cwd(),
-        include: makeIdFiltersToMatchWithQuery(include),
-        exclude: makeIdFiltersToMatchWithQuery(exclude),
+        include: jsxRefreshInclude,
+        exclude: jsxRefreshExclude,
         jsxImportSource,
         reactRefreshHost: opts.reactRefreshHost ?? '',
       }) as unknown as boolean
@@ -301,7 +317,10 @@ function createReactCompilerPlugin(
   { logDiagnostics, ...reactCompilerOptions }: ReactCompilerPluginOptions,
   include: NonNullable<Options['include']>,
   exclude: NonNullable<Options['exclude']>,
-  reactOptions: Pick<Options, 'jsxRuntime' | 'jsxImportSource'>,
+  reactOptions: Pick<
+    Options,
+    'jsxRuntime' | 'jsxImportSource' | 'refreshInclude' | 'refreshExclude'
+  >,
   isFastRefreshEnabled: () => boolean,
 ): Plugin {
   let jsxDevelopment = false
@@ -313,6 +332,10 @@ function createReactCompilerPlugin(
   const jsxImportSource = reactOptions.jsxImportSource ?? 'react'
   const jsxImportRuntime = `${jsxImportSource}/jsx-runtime`
   const jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`
+  const jsxRefreshFilter =
+    reactOptions.refreshInclude || reactOptions.refreshExclude
+      ? createFilter(reactOptions.refreshInclude, reactOptions.refreshExclude)
+      : undefined
 
   const loadCompiler = async (
     onError: (message: string) => never,
@@ -359,9 +382,12 @@ function createReactCompilerPlugin(
         const refreshEnabled =
           isClient &&
           isFastRefreshEnabled() &&
-          (isJSX ||
-            code.includes(jsxImportRuntime) ||
-            code.includes(jsxImportDevRuntime))
+          ((jsxRefreshFilter && !jsxRefreshFilter(id)) ||
+            !(
+              isJSX ||
+              code.includes(jsxImportRuntime) ||
+              code.includes(jsxImportDevRuntime)
+            ))
 
         const shouldCompile =
           isClient &&

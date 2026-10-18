@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add `refreshInclude` and `refreshExclude` options ([#1516](https://github.com/vitejs/vite-plugin-react/pull/1516))
+
+Add `refreshInclude` and `refreshExclude` options to skip fast refresh for certain files that won't run in the browser.
+
 ## 6.1.2 (2026-10-05)
 
 ### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
