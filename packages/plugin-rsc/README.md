@@ -761,9 +761,9 @@ export { Button } from './button.js'
 export { Calendar } from './calendar.js'
 ```
 
-The validation runs on the module graph before tree-shaking, so the unused `calendar.js` and its `client-only` import are still part of the graph, even when the package has `"sideEffects": false`. Dev fails in the same way, because Vite evaluates the barrel and every module it re-exports. Other client-only code in an unused module, such as a top-level `createContext` call, can also crash dev, so disabling `validateImports` isn't a reliable fix.
+The validation runs on the module graph before tree-shaking, so the unused `calendar.js` and its `client-only` import are still part of the graph, even when the package has `"sideEffects": false`. Dev fails in the same way, because Vite evaluates the barrel and every module it re-exports. Disabling `validateImports` doesn't fix dev reliably either, because other client-only code in an unused module, such as a top-level `createContext` call, can still crash the server.
 
-The fix is to import from the package's subpath entry instead, for example `import { Button } from 'some-ui-library/button'`. To do this without changing each import, rewrite barrel imports with [`@rolldown/plugin-transform-imports`](https://github.com/rolldown/plugins/tree/main/packages/transform-imports), which works in both dev and build on Vite 8:
+To fix this, import from the package's subpath entry instead, for example `import { Button } from 'some-ui-library/button'`. To do this without changing each import, rewrite barrel imports with [`@rolldown/plugin-transform-imports`](https://github.com/rolldown/plugins/tree/main/packages/transform-imports), which applies in both dev and build and requires Vite 8:
 
 ```js
 import transformImports from '@rolldown/plugin-transform-imports'
@@ -787,12 +787,13 @@ export default defineConfig({
 })
 ```
 
-Some things to watch out for:
+When configuring the plugin:
 
 - Check that the member-to-subpath mapping matches the package's `exports`. A member that matches no pattern is rewritten to the member name itself, so keep the `'*'` fallback.
-- `skipDefaultConversion: true` keeps `import { Button }` as a named import. Without it, the plugin assumes each subpath has a default export.
-- The plugin only rewrites code that goes through Vite's plugin pipeline. In server environments, packages with a `react` peer dependency are not pre-bundled, so this covers typical UI libraries, but a pre-bundled dependency that imports the barrel itself isn't rewritten.
-- If the subpath entry itself still reaches client-only code, rewriting imports doesn't help. Move that usage into a `"use client"` component instead.
+- Set `skipDefaultConversion: true` when the subpath entries use named exports. Otherwise the plugin rewrites `import { Button }` to a default import.
+- The plugin only rewrites code that Vite transforms, which excludes pre-bundled dependencies. Packages with a `react` peer dependency are not pre-bundled in server environments, so imports of a typical UI library are covered, but a pre-bundled dependency that imports the barrel itself isn't rewritten.
+
+If the subpath entry itself still reaches client-only code, rewriting imports doesn't help. Move that usage into a `"use client"` component instead.
 
 ## Credits
 
