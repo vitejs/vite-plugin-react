@@ -25,9 +25,9 @@ import {
   normalizePath,
   parseAstAsync,
 } from 'vite'
-import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
+import { crawlFrameworkPackages } from './plugins/crawl-framework-packages'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
   ensureEnvironmentImportsEntryFallback,
@@ -511,8 +511,7 @@ export default function vitePluginRsc(
         }
         // crawl packages with "react" in "peerDependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
-        const result = await crawlFrameworkPkgs({
-          root: process.cwd(),
+        const frameworkPackages = await crawlFrameworkPackages(process.cwd(), {
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
@@ -528,13 +527,13 @@ export default function vitePluginRsc(
           'server-only',
           'client-only',
           PKG_NAME,
-          ...result.ssr.noExternal.sort(),
+          ...frameworkPackages.sort(),
         ]
         const optimizeDepsExclude = noExternal.filter(
           (pkg) =>
             !['react', 'react-dom', 'react-server-dom-webpack'].includes(pkg),
         )
-        hasReactServerDomWebpack = result.ssr.noExternal.includes(
+        hasReactServerDomWebpack = frameworkPackages.includes(
           'react-server-dom-webpack',
         )
         const reactServerDomPackageName = hasReactServerDomWebpack
