@@ -177,44 +177,17 @@ test.describe('client-only in barrel package', () => {
       src: 'examples/starter-extra',
       dest: options.root,
       files: {
+        // listed so that the plugin treats it as a React package and bundles
+        // it in server environments, as it would for a real UI library
         'package.json': {
           edit: (s) => {
             const pkg = JSON.parse(s)
-            pkg.dependencies['@vitejs/test-barrel'] = '0.0.0'
+            pkg.dependencies['@vitejs/test-dep-barrel'] = '*'
             return JSON.stringify(pkg, null, 2)
           },
         },
-        'node_modules/@vitejs/test-barrel/package.json': JSON.stringify({
-          name: '@vitejs/test-barrel',
-          version: '0.0.0',
-          type: 'module',
-          sideEffects: false,
-          exports: {
-            '.': './index.js',
-            './button': './button.js',
-            './calendar': './calendar.js',
-          },
-          peerDependencies: { react: '*' },
-        }),
-        'node_modules/@vitejs/test-barrel/index.js': /* js */ `
-          export { Button } from './button.js'
-          export { Calendar } from './calendar.js'
-        `,
-        'node_modules/@vitejs/test-barrel/button.js': /* js */ `
-          import React from 'react'
-          export function Button(props) {
-            return React.createElement('button', null, props.children)
-          }
-        `,
-        'node_modules/@vitejs/test-barrel/calendar.js': /* js */ `
-          import 'client-only'
-          import React from 'react'
-          export function Calendar() {
-            return React.createElement('div', null, '[test-calendar]')
-          }
-        `,
         'src/root.tsx': /* tsx */ `
-          import { Button } from '@vitejs/test-barrel'
+          import { Button } from '@vitejs/test-dep-barrel'
 
           export function Root() {
             return (
@@ -241,10 +214,10 @@ test.describe('client-only in barrel package', () => {
                   `plugins: [`,
                   `plugins: [
     transformImports({
-      '@vitejs/test-barrel': {
+      '@vitejs/test-dep-barrel': {
         transform: [
-          ['[A-Z].*', '@vitejs/test-barrel/{{kebabCase member}}'],
-          ['*', '@vitejs/test-barrel'],
+          ['[A-Z].*', '@vitejs/test-dep-barrel/{{kebabCase member}}'],
+          ['*', '@vitejs/test-dep-barrel'],
         ],
         skipDefaultConversion: true,
       },
