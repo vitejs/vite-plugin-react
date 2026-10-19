@@ -5,6 +5,7 @@ import {
   createClientManifest,
   createServerManifest,
   type CreateClientManifestOptions,
+  type CreateServerManifestOptions,
 } from '../../core/rsc'
 import type {
   DecodeReplyFunction,
@@ -42,18 +43,26 @@ export const registerServerReference: <T>(
   name: string,
 ) => T = ReactServer.registerServerReference
 
-export const decodeReply: DecodeReplyFunction = (body, options) =>
-  ReactServer.decodeReply(body, createServerManifest(), options)
+export const decodeReply: DecodeReplyFunction = (body, options, extraOptions) =>
+  ReactServer.decodeReply(body, createServerManifest(extraOptions), options)
 
-export function decodeAction(body: FormData): Promise<() => Promise<void>> {
-  return ReactServer.decodeAction(body, createServerManifest())
+export function decodeAction(
+  body: FormData,
+  extraOptions?: CreateServerManifestOptions,
+): Promise<() => Promise<void>> {
+  return ReactServer.decodeAction(body, createServerManifest(extraOptions))
 }
 
 export function decodeFormState(
   actionResult: unknown,
   body: FormData,
+  extraOptions?: CreateServerManifestOptions,
 ): Promise<ReactFormState | undefined> {
-  return ReactServer.decodeFormState(actionResult, body, createServerManifest())
+  return ReactServer.decodeFormState(
+    actionResult,
+    body,
+    createServerManifest(extraOptions),
+  )
 }
 
 export const createTemporaryReferenceSet: () => ServerTemporaryReferenceSet =

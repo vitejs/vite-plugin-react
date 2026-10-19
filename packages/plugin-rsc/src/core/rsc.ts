@@ -97,9 +97,11 @@ export async function loadServerAction(id: string): Promise<Function> {
   return mod[name]
 }
 
-export function createServerManifest(options?: {
-  preserveServerReferences?: boolean
-}): BundlerConfig {
+export function createServerManifest(
+  options?: CreateServerManifestOptions & {
+    preserveServerReferences?: boolean
+  },
+): BundlerConfig {
   const prefix = options?.preserveServerReferences
     ? SERVER_REFERENCE_PRESERVE_PREFIX
     : ''
@@ -113,6 +115,7 @@ export function createServerManifest(options?: {
         let [id, name] = $$id.split('#')
         tinyassert(id)
         tinyassert(name)
+        options?.onServerReference?.({ id, name })
         return {
           id: SERVER_REFERENCE_PREFIX + prefix + id + cacheTag,
           name,
@@ -179,4 +182,17 @@ export interface ClientReferenceMetadata {
 
 export interface CreateClientManifestOptions {
   onClientReference?: (metadata: ClientReferenceMetadata) => void
+}
+
+export interface ServerReferenceMetadata {
+  id: string
+  name: string
+}
+
+export interface CreateServerManifestOptions {
+  /**
+   * Called for each server reference React resolves while decoding.
+   * Throw to reject the reference before its module loads.
+   */
+  onServerReference?: (metadata: ServerReferenceMetadata) => void
 }
