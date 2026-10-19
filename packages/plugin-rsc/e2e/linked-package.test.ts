@@ -183,24 +183,12 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     test('client libraries imported by linked packages', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      await page
-        .getByRole('button', { name: 'Workspace client: 0', exact: true })
-        .click()
-      await expect(
-        page.getByRole('button', { name: 'Workspace client: 1', exact: true }),
-      ).toBeVisible()
-      await page
-        .getByRole('button', {
-          name: 'Nested workspace client: 0',
-          exact: true,
-        })
-        .click()
-      await expect(
-        page.getByRole('button', {
-          name: 'Nested workspace client: 1',
-          exact: true,
-        }),
-      ).toBeVisible()
+      for (const label of ['Workspace client', 'Nested workspace client']) {
+        const button = (count: number) =>
+          page.getByRole('button', { name: `${label}: ${count}`, exact: true })
+        await button(0).click()
+        await expect(button(1)).toBeVisible()
+      }
     })
   }
 

@@ -30,32 +30,37 @@ export async function crawlFrameworkPackages(
   root: string,
   options: CrawlOptions,
 ): Promise<string[]> {
-  // names of the packages checked so far, framework packages or not
+  const frameworkNames = new Set<string>()
+  // names of the packages checked by earlier crawls
   const checked = new Set<string>()
-  const crawlOptions: CrawlOptions = {
-    ...options,
-    isFrameworkPkgByJson(pkgJson) {
-      checked.add(pkgJson.name)
-      return options.isFrameworkPkgByJson(pkgJson)
-    },
-  }
-  const result = await crawlFrameworkPkgs({ root, ...crawlOptions })
-  const names = new Set(result.ssr.noExternal)
   // crawl one at a time so each crawl skips the packages checked by earlier
-  // ones, along with their dependencies. vitefu only passes the name, so if
-  // linked packages install different versions of a package, only the first
-  // one found is checked.
-  for (const dir of await findLinkedPackageDirs(root)) {
-    const linked = await crawlFrameworkPkgs({
+  // ones, along with their dependencies. vitefu only passes the dependency
+  // name, so if linked packages install different versions of a package, only
+  // the first one found is checked.
+  for (const dir of [root, ...(await findLinkedPackageDirs(root))]) {
+    // package names, which differ from dependency names for npm aliases
+    const otherNames: string[] = []
+    const result = await crawlFrameworkPkgs({
       root: dir,
-      ...crawlOptions,
+      isBuild: options.isBuild,
       isFrameworkPkgByName: (name) => (checked.has(name) ? false : undefined),
+      isFrameworkPkgByJson(pkgJson) {
+        const isFrameworkPkg = options.isFrameworkPkgByJson(pkgJson)
+        if (!isFrameworkPkg) {
+          otherNames.push(pkgJson.name)
+        }
+        return isFrameworkPkg
+      },
     })
-    for (const name of linked.ssr.noExternal) {
-      names.add(name)
+    for (const name of result.ssr.noExternal) {
+      frameworkNames.add(name)
+      checked.add(name)
+    }
+    for (const name of otherNames) {
+      checked.add(name)
     }
   }
-  return [...names]
+  return [...frameworkNames]
 }
 
 /**
@@ -72,7 +77,8 @@ async function findLinkedPackageDirs(root: string): Promise<string[]> {
   const visited = new Set([fs.realpathSync(rootPkgJsonPath)])
   const dirs: string[] = []
 
-  async function visitDependencies(pkgJsonPath: string, pkgJson: PackageJson) {
+  // visit the dependencies of the package at `dir`
+  async function visitDependencies(dir: string, pkgJson: PackageJson) {
     const deps = [
       ...Object.keys(pkgJson.dependencies ?? {}),
       ...Object.keys(pkgJson.devDependencies ?? {}),
@@ -80,10 +86,7 @@ async function findLinkedPackageDirs(root: string): Promise<string[]> {
     await Promise.all(
       deps.map(async (dep) => {
         // the real path, so linked packages point outside node_modules
-        const depPkgJsonPath = await findDepPkgJsonPath(
-          dep,
-          path.dirname(pkgJsonPath),
-        )
+        const depPkgJsonPath = await findDepPkgJsonPath(dep, dir)
         if (
           !depPkgJsonPath ||
           isInNodeModules(depPkgJsonPath) ||
@@ -94,14 +97,15 @@ async function findLinkedPackageDirs(root: string): Promise<string[]> {
         visited.add(depPkgJsonPath)
         const depPkgJson = await readPkgJson(depPkgJsonPath)
         if (depPkgJson) {
-          dirs.push(path.dirname(depPkgJsonPath))
-          await visitDependencies(depPkgJsonPath, depPkgJson)
+          const depDir = path.dirname(depPkgJsonPath)
+          dirs.push(depDir)
+          await visitDependencies(depDir, depPkgJson)
         }
       }),
     )
   }
 
-  await visitDependencies(rootPkgJsonPath, rootPkgJson)
+  await visitDependencies(path.dirname(rootPkgJsonPath), rootPkgJson)
   // sort for a stable crawl order, since dependencies resolve concurrently
   return dirs.sort()
 }

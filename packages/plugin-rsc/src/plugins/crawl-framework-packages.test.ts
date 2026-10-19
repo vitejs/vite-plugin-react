@@ -119,6 +119,24 @@ describe(crawlFrameworkPackages, () => {
     expect((await crawl()).sort()).toEqual(['react-lib', 'react-lib-dep'])
   })
 
+  it('framework packages installed under an alias elsewhere', async () => {
+    writePackage('app', {
+      name: 'app',
+      dependencies: { 'react-lib-v2': 'npm:react-lib@2', ui: '*' },
+    })
+    writePackage(
+      'app/node_modules/react-lib-v2',
+      reactLibrary('react-lib', { version: '2.0.0' }),
+    )
+    writePackage('packages/ui', {
+      name: 'ui',
+      dependencies: { 'react-lib': '*' },
+    })
+    linkPackage('app', 'ui', 'packages/ui')
+    installPackage('packages/ui', reactLibrary('react-lib'))
+    expect((await crawl()).sort()).toEqual(['react-lib', 'react-lib-v2'])
+  })
+
   it('skips non-framework packages installed in node_modules', async () => {
     // not linked, so vitefu's rule still applies: Vite pre-bundles it as a
     // whole, including the React libraries it imports
