@@ -729,6 +729,9 @@ importers:
       '@rolldown/plugin-babel':
         specifier: ^0.2.4
         version: 0.2.4(@babel/core@8.0.6)(rolldown@1.2.12)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))
+      '@rolldown/plugin-transform-imports':
+        specifier: ^0.1.2
+        version: 0.1.2(rolldown@1.2.12)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))
       '@vitejs/plugin-react':
         specifier: latest
         version: link:../../../plugin-react
@@ -2642,6 +2645,16 @@ packages:
       vite:
         optional: true
 
+  '@rolldown/plugin-transform-imports@0.1.2':
+    resolution: {integrity: sha512-C6I8jO2Eg2LfBkzwR9ZEKv6I2rtSETL/psCnGHNHqOENJwBHeEAYPyq9RhDqEO8sF6RtLwlpDsbg6lu76YxT3w==}
+    engines: {node: '>=22.12.0 || ^24.0.0'}
+    peerDependencies:
+      rolldown: ^1.0.0-rc.13
+      vite: ^8.0.0
+    peerDependenciesMeta:
+      vite:
+        optional: true
+
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
@@ -4531,6 +4544,15 @@ packages:
       vue-tsc:
         optional: true
 
+  rolldown-string@0.3.1:
+    resolution: {integrity: sha512-dv8GOXkYqUQdI0rsXB8hmzO95pKWSuX2eg5/JSJa9czfEVIFuKNR7ZJDfat8LlmD35RAhWY+evS7/wXXqFDfSg==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      rolldown: '*'
+    peerDependenciesMeta:
+      rolldown:
+        optional: true
+
   rolldown@1.2.12:
     resolution: {integrity: sha512-8wafseiaG80xmXSfqidUNqZcylTlhmPZZt+za2m+js2sFZ8dTNlhIOV2WcbIPx2hgwPBJpEUGFAMZ9bgBBLTSQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -5923,6 +5945,13 @@ snapshots:
       '@babel/core': 8.0.6
       picomatch: 4.0.7
       rolldown: 1.2.12
+    optionalDependencies:
+      vite: 8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1)
+
+  '@rolldown/plugin-transform-imports@0.1.2(rolldown@1.2.12)(vite@8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1))':
+    dependencies:
+      rolldown: 1.2.12
+      rolldown-string: 0.3.1(rolldown@1.2.12)
     optionalDependencies:
       vite: 8.3.2(@types/node@24.19.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.1)
 
@@ -7774,6 +7803,12 @@ snapshots:
       typescript: 7.0.2
     transitivePeerDependencies:
       - oxc-resolver
+
+  rolldown-string@0.3.1(rolldown@1.2.12):
+    dependencies:
+      magic-string: 1.4.3
+    optionalDependencies:
+      rolldown: 1.2.12
 
   rolldown@1.2.12:
     dependencies:
