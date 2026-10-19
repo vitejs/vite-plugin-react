@@ -525,31 +525,23 @@ function renderToReadableStream<T>(
 
 `decodeReply`, `decodeAction`, and `decodeFormState` (and `decodeReplyFromBusboy` in `@vitejs/plugin-rsc/rsc/server.node`) are extended with an optional last parameter with `onServerReference` callback.
 This is invoked whenever React resolves a server reference while decoding: the action itself in `decodeAction`, and any server function passed as an argument or bound to an action.
+`id` and `name` match the `${id}#${name}` id that `loadServerAction` receives.
 Throwing from the callback rejects the reference before its module is loaded, which allows a framework to limit decoding to the server functions it exposes for the request.
+`loadServerAction` doesn't invoke the callback, so a framework should check the action id it passes there separately.
 
 ```ts
-type ServerManifestExtraOptions = {
-  onServerReference?: (metadata: { id: string; name: string }) => void
-}
-
 function decodeReply(
   body: string | FormData,
   // standard options (e.g. temporaryReferences)
   options?: object,
   // vite-specific options
-  extraOptions?: ServerManifestExtraOptions,
+  extraOptions?: {
+    onServerReference?: (metadata: { id: string; name: string }) => void
+  },
 ): Promise<unknown[]>
 
-function decodeAction(
-  body: FormData,
-  extraOptions?: ServerManifestExtraOptions,
-): Promise<() => Promise<void>>
-
-function decodeFormState(
-  actionResult: unknown,
-  body: FormData,
-  extraOptions?: ServerManifestExtraOptions,
-): Promise<ReactFormState | undefined>
+// `decodeAction(body, extraOptions?)` and
+// `decodeFormState(actionResult, body, extraOptions?)` accept the same `extraOptions`.
 ```
 
 ### `@vitejs/plugin-rsc/ssr`

@@ -193,6 +193,7 @@ export interface CreateServerManifestOptions {
   /**
    * Called for each server reference React resolves while decoding.
    * Throw to reject the reference before its module loads.
+   * @experimental
    */
   onServerReference?: (metadata: ServerReferenceMetadata) => void
 }

@@ -99,7 +99,7 @@ function onServerReference(metadata: { id: string; name: string }) {
       await page.getByRole('button', { name: 'allowed' }).click()
       await expect(page.getByTestId('calls')).toHaveText('[function]')
 
-      // decodeAction and decodeFormState
+      // decodeAction
       const context = await browser.newContext({ javaScriptEnabled: false })
       try {
         const nojsPage = await context.newPage()
