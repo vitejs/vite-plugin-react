@@ -4,8 +4,19 @@ import { expect, test } from '@playwright/test'
 import { setupInlineFixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
-test.describe(() => {
-  const root = 'examples/e2e/temp/linked-package'
+// "isolated" installs each package's dependencies next to it, like pnpm.
+// "hoisted" installs every dependency in the app's node_modules, like npm.
+for (const layout of ['isolated', 'hoisted'] as const) {
+  test.describe(layout, () => {
+    defineLinkedPackageTests(layout)
+  })
+}
+
+function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
+  const root = `examples/e2e/temp/linked-package-${layout}`
+  // the node_modules that the dependencies of the package at `dir` go in
+  const nodeModules = (dir: string) =>
+    layout === 'hoisted' ? 'node_modules' : path.posix.join(dir, 'node_modules')
 
   test.beforeAll(async () => {
     // Dependency and import graph:
@@ -17,14 +28,16 @@ test.describe(() => {
     //         `-- @vitejs/test-nested-client-lib ("react" in "peerDependencies")
     //
     // Linked packages resolve outside node_modules, so Vite treats them as
-    // source and discovers their bare imports for pre-bundling. The client
-    // libraries are only reachable through the linked packages, and their
-    // "use client" directive sits on an internal module that pre-bundling
-    // would drop, so they must be excluded from the server optimizers.
+    // source. The client libraries are only reachable through the linked
+    // packages, and their "use client" directive sits on an internal module.
+    // Unless they're in "noExternal" and excluded from the server optimizers,
+    // dev externalizes them, or pre-bundles them and drops the directive when
+    // dependency discovery is enabled. Builds only externalize dependencies
+    // that resolve from the app, so they fail in the hoisted layout.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
     // a React library whose "use client" directive is on an internal module
     const clientLibrary = (parent: string, name: string, label: string) => {
-      const dir = `${parent}/node_modules/${name}`
+      const dir = `${nodeModules(parent)}/${name}`
       return {
         [`${dir}/package.json`]: json({
           name,
@@ -159,10 +172,10 @@ test.describe(() => {
       // a junction doesn't need extra privileges on Windows (ignored elsewhere)
       fs.symlinkSync(path.resolve(root, target), absoluteLinkPath, 'junction')
     }
-    link('packages/ui', 'node_modules/@vitejs/test-workspace-ui')
+    link('packages/ui', `${nodeModules('.')}/@vitejs/test-workspace-ui`)
     link(
       'packages/nested',
-      'packages/ui/node_modules/@vitejs/test-workspace-nested',
+      `${nodeModules('packages/ui')}/@vitejs/test-workspace-nested`,
     )
   })
 
@@ -212,4 +225,4 @@ test.describe(() => {
       }),
     )
   })
-})
+}

@@ -7,9 +7,8 @@ import {
   findDepPkgJsonPath,
 } from 'vitefu'
 
-type CrawlOptions = Pick<
-  CrawlFrameworkPkgsOptions,
-  'isBuild' | 'isFrameworkPkgByJson'
+type CrawlOptions = Required<
+  Pick<CrawlFrameworkPkgsOptions, 'isBuild' | 'isFrameworkPkgByJson'>
 >
 
 type PackageJson = {
@@ -31,15 +30,26 @@ export async function crawlFrameworkPackages(
   root: string,
   options: CrawlOptions,
 ): Promise<string[]> {
-  const result = await crawlFrameworkPkgs({ root, ...options })
+  // names of the packages checked so far, framework packages or not
+  const checked = new Set<string>()
+  const crawlOptions: CrawlOptions = {
+    ...options,
+    isFrameworkPkgByJson(pkgJson) {
+      checked.add(pkgJson.name)
+      return options.isFrameworkPkgByJson(pkgJson)
+    },
+  }
+  const result = await crawlFrameworkPkgs({ root, ...crawlOptions })
   const names = new Set(result.ssr.noExternal)
-  // crawl one at a time so each crawl skips the packages found by earlier
-  // ones, along with their dependencies
+  // crawl one at a time so each crawl skips the packages checked by earlier
+  // ones, along with their dependencies. vitefu only passes the name, so if
+  // linked packages install different versions of a package, only the first
+  // one found is checked.
   for (const dir of await findLinkedPackageDirs(root)) {
     const linked = await crawlFrameworkPkgs({
       root: dir,
-      ...options,
-      isFrameworkPkgByName: (name) => (names.has(name) ? false : undefined),
+      ...crawlOptions,
+      isFrameworkPkgByName: (name) => (checked.has(name) ? false : undefined),
     })
     for (const name of linked.ssr.noExternal) {
       names.add(name)
