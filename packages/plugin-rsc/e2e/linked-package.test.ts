@@ -22,44 +22,48 @@ test.describe(() => {
     // "use client" directive sits on an internal module that pre-bundling
     // would drop, so they must be excluded from the server optimizers.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
-    const clientLib = (name: string, label: string) => ({
-      [`${name}/package.json`]: json({
-        name: name.split('node_modules/')[1],
-        version: '1.0.0',
-        type: 'module',
-        exports: './index.js',
-        peerDependencies: {
-          react: '*',
-        },
-      }),
-      [`${name}/index.js`]: /* js */ `
-        export { TestClient } from './client.js'
-      `,
-      [`${name}/client.js`]: /* js */ `
-        'use client'
+    // a React library whose "use client" directive is on an internal module
+    const clientLibrary = (parent: string, name: string, label: string) => {
+      const dir = `${parent}/node_modules/${name}`
+      return {
+        [`${dir}/package.json`]: json({
+          name,
+          version: '1.0.0',
+          type: 'module',
+          exports: './index.js',
+          peerDependencies: {
+            react: '*',
+          },
+        }),
+        [`${dir}/index.js`]: /* js */ `
+          export { TestClient } from './client.js'
+        `,
+        [`${dir}/client.js`]: /* js */ `
+          'use client'
 
-        import React from 'react'
+          import React from 'react'
 
-        const CountContext = React.createContext(0)
+          const CountContext = React.createContext(0)
 
-        function Count() {
-          return ${JSON.stringify(label + ': ')} + React.useContext(CountContext)
-        }
+          function Count() {
+            return ${JSON.stringify(label + ': ')} + React.useContext(CountContext)
+          }
 
-        export function TestClient() {
-          const [count, setCount] = React.useState(0)
-          return React.createElement(
-            CountContext.Provider,
-            { value: count },
-            React.createElement(
-              'button',
-              { onClick: () => setCount((value) => value + 1) },
-              React.createElement(Count),
-            ),
-          )
-        }
-      `,
-    })
+          export function TestClient() {
+            const [count, setCount] = React.useState(0)
+            return React.createElement(
+              CountContext.Provider,
+              { value: count },
+              React.createElement(
+                'button',
+                { onClick: () => setCount((value) => value + 1) },
+                React.createElement(Count),
+              ),
+            )
+          }
+        `,
+      }
+    }
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
@@ -115,8 +119,9 @@ test.describe(() => {
             )
           }
         `,
-        ...clientLib(
-          'packages/ui/node_modules/@vitejs/test-client-lib',
+        ...clientLibrary(
+          'packages/ui',
+          '@vitejs/test-client-lib',
           'Workspace client',
         ),
         'packages/nested/package.json': json({
@@ -140,21 +145,19 @@ test.describe(() => {
             return React.createElement(TestClient)
           }
         `,
-        ...clientLib(
-          'packages/nested/node_modules/@vitejs/test-nested-client-lib',
+        ...clientLibrary(
+          'packages/nested',
+          '@vitejs/test-nested-client-lib',
           'Nested workspace client',
         ),
       },
     })
     // link workspace packages like a package manager would
     const link = (target: string, linkPath: string) => {
-      const absoluteLinkPath = path.join(root, linkPath)
+      const absoluteLinkPath = path.resolve(root, linkPath)
       fs.mkdirSync(path.dirname(absoluteLinkPath), { recursive: true })
-      fs.symlinkSync(
-        path.relative(path.dirname(absoluteLinkPath), path.join(root, target)),
-        absoluteLinkPath,
-        'dir',
-      )
+      // a junction doesn't need extra privileges on Windows (ignored elsewhere)
+      fs.symlinkSync(path.resolve(root, target), absoluteLinkPath, 'junction')
     }
     link('packages/ui', 'node_modules/@vitejs/test-workspace-ui')
     link(

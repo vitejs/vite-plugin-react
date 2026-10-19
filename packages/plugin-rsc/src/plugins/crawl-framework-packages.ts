@@ -1,24 +1,31 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {
+  type CrawlFrameworkPkgsOptions,
   crawlFrameworkPkgs,
   findClosestPkgJsonPath,
   findDepPkgJsonPath,
 } from 'vitefu'
 
 type CrawlOptions = Pick<
-  Parameters<typeof crawlFrameworkPkgs>[0],
+  CrawlFrameworkPkgsOptions,
   'isBuild' | 'isFrameworkPkgByJson'
 >
+
+type PackageJson = {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
 
 /**
  * Crawl the framework packages of the app at `root` and of every linked
  * package it depends on, returning their names for `ssr.noExternal`.
  *
- * vitefu only descends into framework packages, so React libraries imported
- * by a workspace package that lists "react" in "dependencies" are missed.
- * Linked packages resolve outside node_modules and Vite treats them as source,
- * so the libraries they import need the same handling as the app's own.
+ * vitefu only descends into framework packages, so it misses the React
+ * libraries imported by a workspace package that lists "react" in
+ * "dependencies". Linked packages resolve outside node_modules and Vite treats
+ * them as source, so the libraries they import need the same handling as the
+ * app's own.
  */
 export async function crawlFrameworkPackages(
   root: string,
@@ -26,11 +33,12 @@ export async function crawlFrameworkPackages(
 ): Promise<string[]> {
   const result = await crawlFrameworkPkgs({ root, ...options })
   const names = new Set(result.ssr.noExternal)
+  // crawl one at a time so each crawl skips the packages found by earlier
+  // ones, along with their dependencies
   for (const dir of await findLinkedPackageDirs(root)) {
     const linked = await crawlFrameworkPkgs({
       root: dir,
       ...options,
-      // skip packages found already, along with their dependencies
       isFrameworkPkgByName: (name) => (names.has(name) ? false : undefined),
     })
     for (const name of linked.ssr.noExternal) {
@@ -40,44 +48,62 @@ export async function crawlFrameworkPackages(
   return [...names]
 }
 
+/**
+ * Find the linked packages that `root` depends on, directly or through other
+ * linked packages: workspace packages and `link:`/`file:` dependencies, which
+ * resolve outside node_modules.
+ */
 async function findLinkedPackageDirs(root: string): Promise<string[]> {
   const rootPkgJsonPath = await findClosestPkgJsonPath(root)
-  if (!rootPkgJsonPath) {
+  const rootPkgJson = rootPkgJsonPath && (await readPkgJson(rootPkgJsonPath))
+  if (!rootPkgJsonPath || !rootPkgJson) {
     return []
   }
-  const seen = new Set([fs.realpathSync(rootPkgJsonPath)])
+  const visited = new Set([fs.realpathSync(rootPkgJsonPath)])
   const dirs: string[] = []
-  const queue = [rootPkgJsonPath]
-  while (queue.length > 0) {
-    const pkgJsonPath = queue.shift()!
-    let pkgJson: Record<string, any>
-    try {
-      pkgJson = JSON.parse(await fs.promises.readFile(pkgJsonPath, 'utf-8'))
-    } catch {
-      continue
-    }
+
+  async function visitDependencies(pkgJsonPath: string, pkgJson: PackageJson) {
     const deps = [
-      ...Object.keys(pkgJson['dependencies'] ?? {}),
-      ...Object.keys(pkgJson['devDependencies'] ?? {}),
+      ...Object.keys(pkgJson.dependencies ?? {}),
+      ...Object.keys(pkgJson.devDependencies ?? {}),
     ]
     await Promise.all(
       deps.map(async (dep) => {
+        // the real path, so linked packages point outside node_modules
         const depPkgJsonPath = await findDepPkgJsonPath(
           dep,
           path.dirname(pkgJsonPath),
         )
         if (
           !depPkgJsonPath ||
-          seen.has(depPkgJsonPath) ||
-          /[/\\]node_modules[/\\]/.test(depPkgJsonPath)
+          isInNodeModules(depPkgJsonPath) ||
+          visited.has(depPkgJsonPath)
         ) {
           return
         }
-        seen.add(depPkgJsonPath)
-        dirs.push(path.dirname(depPkgJsonPath))
-        queue.push(depPkgJsonPath)
+        visited.add(depPkgJsonPath)
+        const depPkgJson = await readPkgJson(depPkgJsonPath)
+        if (depPkgJson) {
+          dirs.push(path.dirname(depPkgJsonPath))
+          await visitDependencies(depPkgJsonPath, depPkgJson)
+        }
       }),
     )
   }
+
+  await visitDependencies(rootPkgJsonPath, rootPkgJson)
+  // sort for a stable crawl order, since dependencies resolve concurrently
   return dirs.sort()
+}
+
+function isInNodeModules(file: string): boolean {
+  return /[/\\]node_modules[/\\]/.test(file)
+}
+
+async function readPkgJson(file: string): Promise<PackageJson | undefined> {
+  try {
+    return JSON.parse(await fs.promises.readFile(file, 'utf-8'))
+  } catch {
+    return undefined
+  }
 }

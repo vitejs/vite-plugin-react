@@ -35,11 +35,8 @@ describe(crawlFrameworkPackages, () => {
   function linkPackage(parent: string, name: string, target: string) {
     const linkPath = path.join(root, parent, 'node_modules', name)
     fs.mkdirSync(path.dirname(linkPath), { recursive: true })
-    fs.symlinkSync(
-      path.relative(path.dirname(linkPath), path.join(root, target)),
-      linkPath,
-      'dir',
-    )
+    // a junction doesn't need extra privileges on Windows (ignored elsewhere)
+    fs.symlinkSync(path.join(root, target), linkPath, 'junction')
   }
 
   function crawl() {
@@ -132,6 +129,23 @@ describe(crawlFrameworkPackages, () => {
     })
     installPackage('app/node_modules/non-react', reactLibrary('react-lib'))
     expect(await crawl()).toEqual([])
+  })
+
+  it('skips linked packages without a valid package.json', async () => {
+    writePackage('app', {
+      name: 'app',
+      dependencies: { broken: '*', ui: '*' },
+    })
+    writePackage('packages/ui', {
+      name: 'ui',
+      dependencies: { 'react-lib': '*' },
+    })
+    fs.mkdirSync(path.join(root, 'packages/broken'), { recursive: true })
+    fs.writeFileSync(path.join(root, 'packages/broken/package.json'), '{')
+    linkPackage('app', 'broken', 'packages/broken')
+    linkPackage('app', 'ui', 'packages/ui')
+    installPackage('packages/ui', reactLibrary('react-lib'))
+    expect(await crawl()).toEqual(['react-lib'])
   })
 
   it('handles linked packages that depend on each other', async () => {
