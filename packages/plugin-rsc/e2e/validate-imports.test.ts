@@ -177,8 +177,9 @@ test.describe('client-only in barrel package', () => {
       src: 'examples/starter-extra',
       dest: options.root,
       files: {
-        // listed so that the plugin treats it as a React package and bundles
-        // it in server environments, as it would for a real UI library
+        // the package is installed through examples/e2e/package.json, but the plugin
+        // only crawls the app's own package.json to find React packages to bundle in
+        // server environments, so list it here as well
         'package.json': {
           edit: (s) => {
             const pkg = JSON.parse(s)
