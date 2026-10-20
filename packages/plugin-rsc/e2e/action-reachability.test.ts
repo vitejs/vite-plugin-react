@@ -50,6 +50,7 @@ test.describe('build', () => {
       .click()
     const response = await responsePromise
     expect(response.status()).toBe(404)
+    expect(await response.text()).toContain('Server action is not reachable')
     await expect(page.getByText('Result: none')).toBeVisible()
   })
 
