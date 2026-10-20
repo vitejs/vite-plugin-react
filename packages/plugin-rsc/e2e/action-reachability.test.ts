@@ -91,6 +91,10 @@ test.describe('build', () => {
     },
   )
 
+  /**
+   * Submits the named `/c` form without JavaScript, which must run on `/c`,
+   * then replays its fields to `/b`, which must reject them with 404.
+   */
   async function testProgressiveAction(
     page: Page,
     name: 'Unbound' | 'Bound' | 'Shared',
