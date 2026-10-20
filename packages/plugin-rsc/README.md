@@ -518,6 +518,32 @@ function renderToReadableStream<T>(
 ): ReadableStream<Uint8Array>
 ```
 
+#### Vite-specific extension: `decodeReply`, `decodeAction`, and `decodeFormState` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific extension to the standard React RSC API. The official `react-server-dom` does not provide this callback mechanism.
+
+`decodeReply`, `decodeAction`, and `decodeFormState` (and `decodeReplyFromBusboy` in `@vitejs/plugin-rsc/rsc/server.node`) are extended with an optional last parameter with `onServerReference` callback.
+This is invoked whenever React resolves a server reference while decoding: the action itself in `decodeAction`, and any server function passed as an argument or bound to an action.
+`id` and `name` match the `${id}#${name}` id that `loadServerAction` receives.
+Throwing from the callback rejects the reference before its module is loaded, which allows a framework to limit decoding to the server functions it exposes for the request.
+`loadServerAction` doesn't invoke the callback, so a framework should check the action id it passes there separately.
+
+```ts
+function decodeReply(
+  body: string | FormData,
+  // standard options (e.g. temporaryReferences)
+  options?: object,
+  // vite-specific options
+  extraOptions?: {
+    onServerReference?: (metadata: { id: string; name: string }) => void
+  },
+): Promise<unknown[]>
+
+// `decodeAction(body, extraOptions?)` and
+// `decodeFormState(actionResult, body, extraOptions?)` accept the same `extraOptions`.
+```
+
 ### `@vitejs/plugin-rsc/ssr`
 
 This module provides Vite-integrated RSC runtime APIs based on

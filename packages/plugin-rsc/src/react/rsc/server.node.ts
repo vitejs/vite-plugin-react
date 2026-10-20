@@ -5,10 +5,10 @@ import {
   createClientManifest,
   createServerManifest,
   type CreateClientManifestOptions,
+  type CreateServerManifestOptions,
 } from '../../core/rsc'
 import type {
-  DecodeReplyFromBusboyFunction,
-  DecodeReplyFunction,
+  DecodeReplyOptions,
   PipeableStream,
   RenderToPipeableStreamOptions,
   RenderToReadableStreamOptions,
@@ -59,29 +59,48 @@ export const registerServerReference: <T>(
   name: string,
 ) => T = ReactServerNode.registerServerReference
 
-export const decodeReply: DecodeReplyFunction = (body, options) =>
-  ReactServerNode.decodeReply(body, createServerManifest(), options)
+export function decodeReply(
+  body: string | FormData,
+  options?: DecodeReplyOptions,
+  extraOptions?: CreateServerManifestOptions,
+): Promise<unknown[]> {
+  return ReactServerNode.decodeReply(
+    body,
+    createServerManifest(extraOptions),
+    options,
+  )
+}
 
-export const decodeReplyFromBusboy: DecodeReplyFromBusboyFunction = (
-  body,
-  options,
-) =>
-  ReactServerNode.decodeReplyFromBusboy(body, createServerManifest(), options)
+export function decodeReplyFromBusboy(
+  body: import('node:stream').Writable, // BusBoy instance
+  options?: DecodeReplyOptions,
+  extraOptions?: CreateServerManifestOptions,
+): Promise<unknown[]> {
+  return ReactServerNode.decodeReplyFromBusboy(
+    body,
+    createServerManifest(extraOptions),
+    options,
+  )
+}
 
 // TODO: Expose decodeReplyFromAsyncIterable with a shared Edge/Node type.
 
-export function decodeAction(body: FormData): Promise<() => Promise<void>> {
-  return ReactServerNode.decodeAction(body, createServerManifest())
+export function decodeAction(
+  body: FormData,
+  extraOptions?: CreateServerManifestOptions,
+): Promise<() => Promise<void>> {
+  return ReactServerNode.decodeAction(body, createServerManifest(extraOptions))
 }
 
 export function decodeFormState(
   actionResult: unknown,
   body: FormData,
+  extraOptions?: CreateServerManifestOptions,
 ): Promise<ReactFormState | undefined> {
   return ReactServerNode.decodeFormState(
     actionResult,
     body,
-    createServerManifest(),
+    createServerManifest(extraOptions),
   )
 }
 

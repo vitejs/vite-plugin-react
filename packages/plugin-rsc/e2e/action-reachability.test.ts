@@ -31,6 +31,44 @@ test.describe('build', () => {
     ).toBeVisible()
   })
 
+  test('rejects a retained action passed as an argument', async ({ page }) => {
+    // Action B is reachable from /b, but the retained action A in its
+    // arguments is not.
+    await page.goto(f.url('/a'))
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Save action A' }).click()
+    await page.getByRole('link', { name: '/b' }).click()
+    await expect(
+      page.getByRole('button', { name: 'Run action B with saved action' }),
+    ).toBeEnabled()
+
+    const responsePromise = page.waitForResponse(
+      (response) => response.request().method() === 'POST',
+    )
+    await page
+      .getByRole('button', { name: 'Run action B with saved action' })
+      .click()
+    const response = await responsePromise
+    expect(response.status()).toBe(404)
+    expect(await response.text()).toContain('Server action is not reachable')
+    await expect(page.getByText('Result: none')).toBeVisible()
+  })
+
+  test('accepts a reachable action passed as an argument', async ({ page }) => {
+    await page.goto(f.url('/b'))
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Save action B' }).click()
+    // Navigate away and back to re-render with the saved action.
+    await page.getByRole('link', { name: '/a' }).click()
+    await page.getByRole('link', { name: '/b' }).click()
+    await page
+      .getByRole('button', { name: 'Run action B with saved action' })
+      .click()
+    await expect(
+      page.getByText('Result: ACTION_B_WITH:ACTION_B_OK:MIDDLEWARE_B'),
+    ).toBeVisible()
+  })
+
   testNoJs(
     'unbound progressive action is limited to its route',
     async ({ page }) => {
@@ -45,7 +83,27 @@ test.describe('build', () => {
     },
   )
 
-  async function testProgressiveAction(page: Page, name: 'Unbound' | 'Bound') {
+  testNoJs(
+    'server function bound to a progressive action is limited to its route',
+    async ({ page }) => {
+      await testProgressiveAction(page, 'Shared')
+    },
+  )
+
+  /**
+   * Submits one of the progressive forms on `/c` without JavaScript, which must
+   * run on `/c`, then retargets the same form to `/b` to simulate a stale or
+   * manipulated submission, which must be rejected with 404.
+   *
+   * `decodeAction` rejects all three on `/b`, at a different reference:
+   * - Unbound: the action from the `$ACTION_ID_*` field.
+   * - Bound: the action from the `$ACTION_REF_*` metadata.
+   * - Shared: the action bound to it, since `/b` also reaches the shared action.
+   */
+  async function testProgressiveAction(
+    page: Page,
+    name: 'Unbound' | 'Bound' | 'Shared',
+  ) {
     // Without JavaScript, React submits the action as a native full-page (MPA)
     // multipart form request to the route that rendered it.
     await page.goto(f.url('/c'))

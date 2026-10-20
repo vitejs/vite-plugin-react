@@ -8,7 +8,11 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { getRoute, RouteRoot } from '../app/routes.tsx'
-import { areAllActionIdsValid, routeActionRequest } from './action-routing.ts'
+import {
+  routeActionRequest,
+  UnreachableServerReferenceError,
+  createServerReferenceValidator,
+} from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 
 export type RscPayload = {
@@ -35,6 +39,9 @@ async function handleRequest(
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
+    const onServerReference = createServerReferenceValidator(
+      renderRequest.url.pathname,
+    )
     if (renderRequest.actionId) {
       // Run the action through middleware for a page whose graph reaches it.
       const routing = routeActionRequest(renderRequest)
@@ -49,7 +56,23 @@ async function handleRequest(
         ? await request.formData()
         : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
-      const args = await decodeReply(body, { temporaryReferences })
+      // Routing checked only the outer action ID. Server functions nested in
+      // the arguments are checked while React decodes them.
+      let args: unknown[]
+      try {
+        args = await decodeReply(
+          body,
+          { temporaryReferences },
+          { onServerReference },
+        )
+      } catch (e) {
+        if (e instanceof UnreachableServerReferenceError) {
+          return unreachableServerReferenceResponse()
+        }
+        throw e
+      }
+      // `loadServerAction` doesn't call `onServerReference`, but routing has
+      // already accepted this ID for the current route.
       const action = await loadServerAction(renderRequest.actionId)
       try {
         const data = await action.apply(null, args)
@@ -59,17 +82,39 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
+      // Progressive forms carry no action ID header, so decoding is their only
+      // check. React resolves the action from a `$ACTION_ID_*` field, or for a
+      // bound action from `$ACTION_<n>:0` metadata, whose bound values can be
+      // further server references.
       const formData = await request.formData()
-      if (!areAllActionIdsValid(formData, renderRequest.url.pathname)) {
-        return new Response('Server action is not reachable from this route', {
-          status: 404,
+      let decodedAction: () => Promise<unknown>
+      try {
+        decodedAction = await decodeAction(formData, { onServerReference })
+      } catch (e) {
+        if (e instanceof UnreachableServerReferenceError) {
+          return unreachableServerReferenceResponse()
+        }
+        throw e
+      }
+      let result: unknown
+      try {
+        result = await decodedAction()
+      } catch (e) {
+        return new Response('Internal Server Error: server action failed', {
+          status: 500,
         })
       }
-      const decodedAction = await decodeAction(formData)
       try {
-        const result = await decodedAction()
-        formState = await decodeFormState(result, formData)
+        // React decodes here only for `useActionState` forms (`$ACTION_KEY`).
+        // Every server reference React resolves goes through the manifest, so
+        // the callback holds this decode to the same route as `decodeAction`.
+        formState = await decodeFormState(result, formData, {
+          onServerReference,
+        })
       } catch (e) {
+        if (e instanceof UnreachableServerReferenceError) {
+          return unreachableServerReferenceResponse()
+        }
         return new Response('Internal Server Error: server action failed', {
           status: 500,
         })
@@ -107,6 +152,12 @@ async function handleRequest(
     headers: {
       'Content-type': 'text/html',
     },
+  })
+}
+
+function unreachableServerReferenceResponse() {
+  return new Response('Server action is not reachable from this route', {
+    status: 404,
   })
 }
 
