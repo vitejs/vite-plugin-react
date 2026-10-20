@@ -8,7 +8,11 @@ import {
 } from '@vitejs/plugin-rsc/rsc'
 import type { ReactFormState } from 'react-dom/client'
 import { getRoute, RouteRoot } from '../app/routes.tsx'
-import { areAllActionIdsValid, routeActionRequest } from './action-routing.ts'
+import {
+  routeActionRequest,
+  UnreachableServerReferenceError,
+  createServerReferenceValidator,
+} from './action-routing.ts'
 import { parseRenderRequest } from './request.tsx'
 
 export type RscPayload = {
@@ -60,15 +64,26 @@ async function handleRequest(
       }
     } else {
       const formData = await request.formData()
-      if (!areAllActionIdsValid(formData, renderRequest.url.pathname)) {
-        return new Response('Server action is not reachable from this route', {
-          status: 404,
-        })
+      const onServerReference = createServerReferenceValidator(
+        renderRequest.url.pathname,
+      )
+      let decodedAction: () => Promise<unknown>
+      try {
+        decodedAction = await decodeAction(formData, { onServerReference })
+      } catch (e) {
+        if (e instanceof UnreachableServerReferenceError) {
+          return new Response(
+            'Server action is not reachable from this route',
+            { status: 404 },
+          )
+        }
+        throw e
       }
-      const decodedAction = await decodeAction(formData)
       try {
         const result = await decodedAction()
-        formState = await decodeFormState(result, formData)
+        formState = await decodeFormState(result, formData, {
+          onServerReference,
+        })
       } catch (e) {
         return new Response('Internal Server Error: server action failed', {
           status: 500,
