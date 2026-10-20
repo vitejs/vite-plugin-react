@@ -56,13 +56,13 @@
       "oxfmt --no-error-on-unmatched-pattern"
     ],
     "packages/*/{src,types}/**/*.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ],
     "packages/**/*.d.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ],
     "playground/**/__tests__/**/*.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ]
   },
   "engines": {
