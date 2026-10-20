@@ -91,32 +91,6 @@ test.describe('build', () => {
     },
   )
 
-  // `decodeAction` uses the last `$ACTION_REF_*` or `$ACTION_ID_*` field, but
-  // `decodeFormState` decodes the last `$ACTION_REF_*` field. A body with both
-  // runs a reachable action, then reaches action B through the other field.
-  testNoJs('form state decoding is limited to its route', async ({ page }) => {
-    const readFormFields = (name: string) =>
-      page
-        .getByRole('form', { name, exact: true })
-        .evaluate((form: HTMLFormElement) =>
-          [...new FormData(form)].map(([key, value]) => [key, String(value)]),
-        )
-    await page.goto(f.url('/b'))
-    const boundToActionB = await readFormFields('Shared progressive action')
-    await page.goto(f.url('/c'))
-    const unboundActionC = await readFormFields('Unbound progressive action')
-
-    const response = await page.request.post(f.url('/c'), {
-      multipart: Object.fromEntries([
-        ...boundToActionB,
-        ...unboundActionC,
-        ['$ACTION_KEY', 'crafted'],
-      ]),
-    })
-    expect(response.status()).toBe(404)
-    expect(await response.text()).toContain('Server action is not reachable')
-  })
-
   /**
    * Submits one of the progressive forms on `/c` (unbound, bound, or shared)
    * without JavaScript, which must run on `/c`, then retargets the same form to

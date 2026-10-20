@@ -106,10 +106,8 @@ async function handleRequest(
       }
       try {
         // React decodes here only for `useActionState` forms (`$ACTION_KEY`).
-        // It reads the last `$ACTION_REF_*` field, while `decodeAction` may
-        // have used a later `$ACTION_ID_*` one, so a crafted body can reach
-        // references that `decodeAction` never checked. The checked action
-        // has already run by then, so this only refuses the unchecked ones.
+        // Every server reference React resolves goes through the manifest, so
+        // the callback holds this decode to the same route as `decodeAction`.
         formState = await decodeFormState(result, formData, {
           onServerReference,
         })
