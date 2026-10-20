@@ -98,8 +98,10 @@ async function handleRequest(
       }
       try {
         const result = await decodedAction()
-        // React decodes here only for `useActionState` forms (`$ACTION_KEY`),
-        // and `decodeAction` has already checked the same references.
+        // React decodes here only for `useActionState` forms (`$ACTION_KEY`).
+        // It reads the last `$ACTION_REF_*` field, while `decodeAction` may
+        // have used a later `$ACTION_ID_*` one, so a crafted body can reach
+        // references that `decodeAction` never checked.
         formState = await decodeFormState(result, formData, {
           onServerReference,
         })
