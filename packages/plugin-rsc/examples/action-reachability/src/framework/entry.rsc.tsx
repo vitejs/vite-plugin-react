@@ -56,6 +56,8 @@ async function handleRequest(
         ? await request.formData()
         : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
+      // Routing checked only the outer action ID. Server functions nested in
+      // the arguments are checked while React decodes them.
       let args: unknown[]
       try {
         args = await decodeReply(
@@ -69,6 +71,8 @@ async function handleRequest(
         }
         throw e
       }
+      // `loadServerAction` doesn't call `onServerReference`, but routing has
+      // already accepted this ID for the current route.
       const action = await loadServerAction(renderRequest.actionId)
       try {
         const data = await action.apply(null, args)
@@ -78,6 +82,10 @@ async function handleRequest(
         actionStatus = 500
       }
     } else {
+      // Progressive forms carry no action ID header, so decoding is their only
+      // check. React resolves the action from a `$ACTION_ID_*` field, or for a
+      // bound action from `$ACTION_<n>:0` metadata, whose bound values can be
+      // further server references.
       const formData = await request.formData()
       let decodedAction: () => Promise<unknown>
       try {
@@ -90,6 +98,8 @@ async function handleRequest(
       }
       try {
         const result = await decodedAction()
+        // React decodes here only for `useActionState` forms (`$ACTION_KEY`),
+        // and `decodeAction` has already checked the same references.
         formState = await decodeFormState(result, formData, {
           onServerReference,
         })
