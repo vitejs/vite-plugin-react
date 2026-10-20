@@ -92,9 +92,10 @@ test.describe('build', () => {
   )
 
   /**
-   * Submits the named `/c` form without JavaScript, which must run on `/c`,
-   * then retargets the same form to `/b` to simulate a stale or manipulated
-   * submission, which must be rejected with 404.
+   * Submits one of the progressive forms on `/c` (unbound, bound, or shared)
+   * without JavaScript, which must run on `/c`, then retargets the same form to
+   * `/b` to simulate a stale or manipulated submission, which must be rejected
+   * with 404.
    */
   async function testProgressiveAction(
     page: Page,
