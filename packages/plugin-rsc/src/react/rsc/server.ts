@@ -8,7 +8,7 @@ import {
   type CreateServerManifestOptions,
 } from '../../core/rsc'
 import type {
-  DecodeReplyFunction,
+  DecodeReplyOptions,
   RenderToReadableStreamOptions,
   ServerTemporaryReferenceSet,
 } from '../../types'
@@ -43,8 +43,17 @@ export const registerServerReference: <T>(
   name: string,
 ) => T = ReactServer.registerServerReference
 
-export const decodeReply: DecodeReplyFunction = (body, options, extraOptions) =>
-  ReactServer.decodeReply(body, createServerManifest(extraOptions), options)
+export function decodeReply(
+  body: string | FormData,
+  options?: DecodeReplyOptions,
+  extraOptions?: CreateServerManifestOptions,
+): Promise<unknown[]> {
+  return ReactServer.decodeReply(
+    body,
+    createServerManifest(extraOptions),
+    options,
+  )
+}
 
 export function decodeAction(
   body: FormData,
