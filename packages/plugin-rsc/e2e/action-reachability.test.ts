@@ -82,8 +82,6 @@ test.describe('build', () => {
     },
   )
 
-  // The shared action is reachable from /b, but the action bound to it on /c
-  // is not.
   testNoJs(
     'server function bound to a progressive action is limited to its route',
     async ({ page }) => {
@@ -92,10 +90,14 @@ test.describe('build', () => {
   )
 
   /**
-   * Submits one of the progressive forms on `/c` (unbound, bound, or shared)
-   * without JavaScript, which must run on `/c`, then retargets the same form to
-   * `/b` to simulate a stale or manipulated submission, which must be rejected
-   * with 404.
+   * Submits one of the progressive forms on `/c` without JavaScript, which must
+   * run on `/c`, then retargets the same form to `/b` to simulate a stale or
+   * manipulated submission, which must be rejected with 404.
+   *
+   * `decodeAction` rejects all three on `/b`, at a different reference:
+   * - Unbound: the action from the `$ACTION_ID_*` field.
+   * - Bound: the action from the `$ACTION_REF_*` metadata.
+   * - Shared: the action bound to it, since `/b` also reaches the shared action.
    */
   async function testProgressiveAction(
     page: Page,
