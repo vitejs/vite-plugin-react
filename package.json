@@ -31,22 +31,22 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.19.1",
+    "@types/node": "^24.19.2",
     "@vitejs/release-scripts": "^1.10.0",
-    "eslint-plugin-n": "^18.4.1",
+    "eslint-plugin-n": "^18.5.0",
     "eslint-plugin-regexp": "^3.3.1",
     "fs-extra": "^11.4.1",
     "globals": "^17.13.0",
     "lint-staged": "^17.6.0",
-    "oxfmt": "^0.71.0",
-    "oxlint": "^1.87.0",
-    "oxlint-tsgolint": "^7.0.2003",
-    "playwright-chromium": "^1.63.0",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "playwright-chromium": "^1.64.1",
     "simple-git-hooks": "^2.14.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.2",
-    "vite-plugin-inspect": "^12.0.2",
-    "vitest": "^5.0.3"
+    "vite": "^8.3.4",
+    "vite-plugin-inspect": "^12.1.0",
+    "vitest": "^5.0.5"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged --concurrent false"
@@ -56,17 +56,17 @@
       "oxfmt --no-error-on-unmatched-pattern"
     ],
     "packages/*/{src,types}/**/*.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ],
     "packages/**/*.d.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ],
     "playground/**/__tests__/**/*.ts": [
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ]
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "packageManager": "pnpm@10.34.6"
+  "packageManager": "pnpm@10.34.7"
 }

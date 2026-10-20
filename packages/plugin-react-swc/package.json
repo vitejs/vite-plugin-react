@@ -30,16 +30,16 @@
   },
   "dependencies": {
     "@rolldown/pluginutils": "^1.0.1",
-    "@swc/core": "^1.16.13"
+    "@swc/core": "^1.16.18"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.1",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.19.1",
+    "@types/node": "^24.19.2",
     "@vitejs/react-common": "workspace:*",
     "fs-extra": "^11.4.1",
     "prettier": "^3.0.3",
-    "tsdown": "^0.23.0",
+    "tsdown": "^0.23.1",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {

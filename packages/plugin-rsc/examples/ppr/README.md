@@ -62,12 +62,12 @@ PPR composes two React runtime families. The RSC layer produces Flight, while Re
 
 ```ts
 // React Server Components / Flight
-import { prerender as prerenderRsc } from '@vitejs/plugin-rsc/rsc/static'
 import { renderToReadableStream } from '@vitejs/plugin-rsc/rsc/server'
+import { prerender as prerenderRsc } from '@vitejs/plugin-rsc/rsc/static'
 
 // React DOM / HTML
-import { prerender as prerenderHtml } from 'react-dom/static.edge'
 import { resume } from 'react-dom/server.edge'
+import { prerender as prerenderHtml } from 'react-dom/static.edge'
 ```
 
 | Layer            | Build-time API                                          | Request-time API                                             | Result                                                                    |
