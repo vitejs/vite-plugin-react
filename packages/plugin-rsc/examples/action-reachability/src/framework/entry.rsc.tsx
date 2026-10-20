@@ -39,6 +39,9 @@ async function handleRequest(
   let temporaryReferences: unknown | undefined
   let actionStatus: number | undefined
   if (renderRequest.isAction === true) {
+    const onServerReference = createServerReferenceValidator(
+      renderRequest.url.pathname,
+    )
     if (renderRequest.actionId) {
       // Run the action through middleware for a page whose graph reaches it.
       const routing = routeActionRequest(renderRequest)
@@ -53,7 +56,19 @@ async function handleRequest(
         ? await request.formData()
         : await request.text()
       temporaryReferences = createTemporaryReferenceSet()
-      const args = await decodeReply(body, { temporaryReferences })
+      let args: unknown[]
+      try {
+        args = await decodeReply(
+          body,
+          { temporaryReferences },
+          { onServerReference },
+        )
+      } catch (e) {
+        if (e instanceof UnreachableServerReferenceError) {
+          return unreachableServerReferenceResponse()
+        }
+        throw e
+      }
       const action = await loadServerAction(renderRequest.actionId)
       try {
         const data = await action.apply(null, args)
@@ -64,18 +79,12 @@ async function handleRequest(
       }
     } else {
       const formData = await request.formData()
-      const onServerReference = createServerReferenceValidator(
-        renderRequest.url.pathname,
-      )
       let decodedAction: () => Promise<unknown>
       try {
         decodedAction = await decodeAction(formData, { onServerReference })
       } catch (e) {
         if (e instanceof UnreachableServerReferenceError) {
-          return new Response(
-            'Server action is not reachable from this route',
-            { status: 404 },
-          )
+          return unreachableServerReferenceResponse()
         }
         throw e
       }
@@ -122,6 +131,12 @@ async function handleRequest(
     headers: {
       'Content-type': 'text/html',
     },
+  })
+}
+
+function unreachableServerReferenceResponse() {
+  return new Response('Server action is not reachable from this route', {
+    status: 404,
   })
 }
 

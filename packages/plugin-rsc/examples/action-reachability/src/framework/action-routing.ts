@@ -52,7 +52,8 @@ export class UnreachableServerReferenceError extends Error {}
 
 /**
  * Rejects server references that the current route cannot reach while React
- * decodes a progressive action, including references bound to the action.
+ * decodes an action request, including server functions passed as arguments
+ * or bound to the action.
  */
 export function createServerReferenceValidator(
   pathname: string,

@@ -42,8 +42,10 @@ Development skips route-aware redispatch. The handler executes action A on `/b`,
 
 ## Protocol scope
 
-Hydrated action calls carry an explicit action ID and can be redispatched to a route whose graph reaches the action. Progressive forms normally post back to the route that rendered them, so their multipart `$ACTION_*` fields are instead validated against the current route before `decodeAction()` can load the submitted references. A mismatched progressive action is rejected as stale or manipulated input rather than redispatched.
+Hydrated action calls carry an explicit action ID and can be redispatched to a route whose graph reaches the action. Progressive forms normally post back to the route that rendered them, so a mismatched progressive action is rejected as stale or manipulated input rather than redispatched.
 
-Route `/c` demonstrates this behavior with unbound and bound progressive forms. Their normal submissions run through `/c` middleware, while replaying the same multipart fields to another route is rejected.
+Server functions can also arrive nested inside a request, as an argument to the action or bound to it. While `decodeReply()` or `decodeAction()` decodes the request, the `onServerReference` callback checks every server reference against the route that runs the action and rejects the request before an unreachable reference loads. For example, action A retained from `/a` and passed as an argument to an action on `/b` is rejected even though the action itself is reachable from `/b`.
 
-The route manifest is build-time data, so this progressive validation is production-only. Development keeps the baseline `decodeAction()` behavior.
+Route `/c` demonstrates the progressive case with unbound and bound forms, and with a shared action that `/b` also renders, bound to an action only `/c` reaches. Their normal submissions run through `/c` middleware, while replaying the same multipart fields to `/b` is rejected.
+
+The route manifest is build-time data, so this validation is production-only. Development decodes every server reference.
