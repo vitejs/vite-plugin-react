@@ -382,12 +382,10 @@ function createReactCompilerPlugin(
         const refreshEnabled =
           isClient &&
           isFastRefreshEnabled() &&
-          ((jsxRefreshFilter && !jsxRefreshFilter(id)) ||
-            !(
-              isJSX ||
-              code.includes(jsxImportRuntime) ||
-              code.includes(jsxImportDevRuntime)
-            ))
+          (!jsxRefreshFilter || jsxRefreshFilter(id)) &&
+          (isJSX ||
+            code.includes(jsxImportRuntime) ||
+            code.includes(jsxImportDevRuntime))
 
         const shouldCompile =
           isClient &&

@@ -89,6 +89,45 @@ describe('compiler option', () => {
     })
   })
 
+  test('enables Fast Refresh for JSX files only', async () => {
+    const component = await transformWithServeConfig(
+      {},
+      '/App.tsx',
+      `export function App() { return <div /> }`,
+    )
+    const hook = await transformWithServeConfig(
+      {},
+      '/useCounter.ts',
+      `
+        import { useState } from 'react'
+
+        export function useCounter() {
+          return useState(0)
+        }
+      `,
+    )
+
+    expect(component.code).toContain('$RefreshReg$')
+    expect(hook.code).not.toContain('$RefreshSig$')
+  })
+
+  test('uses refreshInclude and refreshExclude', async () => {
+    const code = `export function App() { return <div /> }`
+    const excluded = await transformWithServeConfig(
+      { refreshExclude: /App\.tsx$/ },
+      '/App.tsx',
+      code,
+    )
+    const included = await transformWithServeConfig(
+      { refreshInclude: /App\.tsx$/ },
+      '/App.tsx',
+      code,
+    )
+
+    expect(excluded.code).not.toContain('$RefreshReg$')
+    expect(included.code).toContain('$RefreshReg$')
+  })
+
   test('uses the native JSX transform for server environments', async () => {
     const output = await transformWithBuildConfig(
       {},
@@ -202,6 +241,39 @@ async function transformWithBuildConfig(
   return plugin.transform.handler.call(context as any, code, '/entry.tsx') as {
     code: string
     map: Record<string, unknown> | undefined
+  }
+}
+
+async function transformWithServeConfig(
+  options: Options,
+  id: string,
+  code: string,
+) {
+  const config = await resolveConfig(
+    {
+      configFile: false,
+      logLevel: 'silent',
+      plugins: [pluginReact({ compiler: true, ...options })],
+    },
+    'serve',
+    'development',
+    'development',
+  )
+  const plugin = config.plugins.find(
+    (plugin) => plugin.name === 'vite:react-compiler',
+  )!
+  const context = {
+    error(message: unknown): never {
+      throw new Error(String(message))
+    },
+    environment: { config: { consumer: 'client', command: 'serve' } },
+  }
+
+  if (typeof plugin.transform !== 'object') {
+    throw new Error('Missing transform hook')
+  }
+  return plugin.transform.handler.call(context as any, code, id) as {
+    code: string
   }
 }
 
