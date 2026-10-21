@@ -165,3 +165,15 @@ export function evalValue<T = any>(rawValue: string): T {
 
 // https://github.com/vitejs/vite/blob/84079a84ad94de4c1ef4f1bdb2ab448ff2c01196/packages/vite/src/node/utils.ts#L321
 export const directRequestRE: RegExp = /(\?|&)direct=?(?:&|$)/
+
+// Parse an incoming dev-middleware request URL without throwing. Requests
+// like `//` or `//[` are valid HTTP but do not parse as URLs; an uncaught
+// throw inside an async Connect middleware becomes an unhandled rejection
+// and takes down the whole dev server. Callers skip to `next()` on undefined.
+export function parseRequestUrl(reqUrl: string | undefined): URL | undefined {
+  try {
+    return new URL(reqUrl ?? '/', 'http://localhost')
+  } catch {
+    return undefined
+  }
+}
