@@ -1,0 +1,25 @@
+{
+  "name": "@vitejs/test-react-router",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "debug": "node --inspect-brk vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-router/node": "^8.5.0",
+    "isbot": "^5.1.40",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^8.5.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "workspace:*",
+    "oxc-transform-react": "^0.155.0"
+  }
+}
