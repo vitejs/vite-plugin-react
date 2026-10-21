@@ -6,7 +6,7 @@ import {
   type Plugin,
   type ViteDevServer,
 } from 'vite'
-import { slash } from './vite-utils'
+import { parseRequestUrl, slash } from './vite-utils'
 
 //
 // support findSourceMapURL
@@ -21,7 +21,11 @@ export function vitePluginFindSourceMapURL(): Plugin[] {
       apply: 'serve',
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url!, `http://localhost`)
+          const url = parseRequestUrl(req.url)
+          if (!url) {
+            next()
+            return
+          }
           if (url.pathname === '/__vite_rsc_findSourceMapURL') {
             let filename = url.searchParams.get('filename')!
             let environmentName = url.searchParams.get('environmentName')!
