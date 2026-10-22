@@ -120,6 +120,27 @@ function defineTest(f: Fixture) {
 
       await page.getByText('This is the home [edit] page.').click()
     })
+
+    test('server hmr for a glob-loaded component under a client boundary', async ({
+      page,
+    }) => {
+      await page.goto(f.url('/'))
+      await waitForHydration(page)
+      await using _ = await expectNoReload(page)
+
+      const component = page.getByTestId('workflow-component')
+      await expect(component).toHaveText('Workflow component: before')
+
+      const editor = f.createEditor(
+        'app/routes/home-components/workflow-component.tsx',
+      )
+      await editor.edit((contents) => contents.replace('before', 'after'))
+
+      await expect(component).toHaveText('Workflow component: after')
+
+      await editor.reset()
+      await expect(component).toHaveText('Workflow component: before')
+    })
   })
 
   test('server css code split', async ({ page }) => {

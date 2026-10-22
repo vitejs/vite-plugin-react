@@ -1,9 +1,22 @@
+import type { ComponentType } from 'react'
 import { sayHello } from './home.actions.ts'
-import { PendingButton } from './home.client.tsx'
 import './home.css'
+import { PendingButton } from './home.client.tsx'
 import { TestActionStateServer } from './test-action-state/server.tsx'
 
-const Component = () => {
+type WorkflowComponentModule = {
+  default: ComponentType
+}
+
+const workflowComponentModules = import.meta.glob<WorkflowComponentModule>(
+  './home-components/*.tsx',
+)
+const loadWorkflowComponent =
+  workflowComponentModules['./home-components/workflow-component.tsx']!
+
+const Component = async () => {
+  const WorkflowComponent = (await loadWorkflowComponent()).default
+
   return (
     <main className="container my-8 px-8 mx-auto">
       <article className="paper prose max-w-none">
@@ -34,6 +47,7 @@ const Component = () => {
         <div className="mt-4">
           <TestActionStateServer message={`${new Date().toISOString()}`} />
         </div>
+        <WorkflowComponent />
       </article>
     </main>
   )

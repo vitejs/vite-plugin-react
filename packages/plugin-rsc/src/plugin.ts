@@ -823,7 +823,13 @@ export default function vitePluginRsc(
           return mods.some((mod) => recurse(mod))
         }
 
-        if (!isInsideClientBoundary(ctx.modules)) {
+        if (
+          !isInsideClientBoundary(ctx.modules) ||
+          (this.environment.name === 'rsc' &&
+            !ctx.modules.some(
+              (mod) => mod.id && manager.clientReferenceMetaMap[mod.id],
+            ))
+        ) {
           if (this.environment.name === 'rsc') {
             // detect if this module is only created as css deps (e.g. tailwind)
             // (NOTE: this is not necessary since Vite 7.1.0-beta.0 https://github.com/vitejs/vite/pull/20391 )
