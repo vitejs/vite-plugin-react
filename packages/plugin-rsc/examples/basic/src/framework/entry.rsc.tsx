@@ -66,7 +66,8 @@ async function handleRequest({
   const rscOptions = { temporaryReferences }
   const debugClientReferences: unknown[] = []
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
-    nonce,
+    // a client navigation's payload goes to a document with another nonce
+    nonce: renderRequest.isRsc ? undefined : nonce,
     onClientReference(metadata) {
       debugClientReferences.push(metadata)
     },

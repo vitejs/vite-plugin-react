@@ -1,3 +1,4 @@
+import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
 import { memoize, tinyassert } from '../utils/shared'
 import {
@@ -205,26 +206,35 @@ export interface ResourceRenderOptions {
   nonce?: string
 }
 
-declare let AsyncLocalStorage:
-  | typeof import('node:async_hooks').AsyncLocalStorage
-  | undefined
+type ResourceRenderOptionsStorage = AsyncLocalStorage<ResourceRenderOptions>
 
-// per-render options read by `Resources` while React renders it.
-// `AsyncLocalStorage` is made global by `rsc:inject-async-local-storage`.
-const resourceRenderOptionsStorage =
-  typeof AsyncLocalStorage === 'function'
-    ? new AsyncLocalStorage<ResourceRenderOptions>()
-    : undefined
+// per-render options read by `Resources` while React renders it. This uses the
+// global `AsyncLocalStorage` that `rsc:inject-async-local-storage` sets up for
+// React, read lazily so that this module isn't itself a target of the injection.
+let resourceRenderOptionsStorage: ResourceRenderOptionsStorage | undefined
 
+function getResourceRenderOptionsStorage():
+  | ResourceRenderOptionsStorage
+  | undefined {
+  const AsyncLocalStorageClass: typeof AsyncLocalStorage | undefined = (
+    globalThis as any
+  ).AsyncLocalStorage
+  if (AsyncLocalStorageClass) {
+    resourceRenderOptionsStorage ??= new AsyncLocalStorageClass()
+  }
+  return resourceRenderOptionsStorage
+}
+
+// a render always runs with its own options, so a nested render without a
+// nonce (e.g. one whose output is cached across requests) doesn't inherit one.
 export function runWithResourceRenderOptions<T>(
   options: ResourceRenderOptions,
   fn: () => T,
 ): T {
-  return resourceRenderOptionsStorage
-    ? resourceRenderOptionsStorage.run(options, fn)
-    : fn()
+  const storage = getResourceRenderOptionsStorage()
+  return storage ? storage.run(options, fn) : fn()
 }
 
 export function getResourceRenderOptions(): ResourceRenderOptions | undefined {
-  return resourceRenderOptionsStorage?.getStore()
+  return getResourceRenderOptionsStorage()?.getStore()
 }
