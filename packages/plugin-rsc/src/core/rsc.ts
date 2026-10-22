@@ -197,3 +197,34 @@ export interface CreateServerManifestOptions {
    */
   onServerReference?: (metadata: ServerReferenceMetadata) => void
 }
+
+export interface ResourceRenderOptions {
+  /**
+   * CSP nonce for the stylesheet links of server components' CSS.
+   */
+  nonce?: string
+}
+
+declare let AsyncLocalStorage:
+  | typeof import('node:async_hooks').AsyncLocalStorage
+  | undefined
+
+// per-render options read by `Resources` while React renders it.
+// `AsyncLocalStorage` is made global by `rsc:inject-async-local-storage`.
+const resourceRenderOptionsStorage =
+  typeof AsyncLocalStorage === 'function'
+    ? new AsyncLocalStorage<ResourceRenderOptions>()
+    : undefined
+
+export function runWithResourceRenderOptions<T>(
+  options: ResourceRenderOptions,
+  fn: () => T,
+): T {
+  return resourceRenderOptionsStorage
+    ? resourceRenderOptionsStorage.run(options, fn)
+    : fn()
+}
+
+export function getResourceRenderOptions(): ResourceRenderOptions | undefined {
+  return resourceRenderOptionsStorage?.getStore()
+}

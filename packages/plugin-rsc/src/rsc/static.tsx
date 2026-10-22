@@ -1,3 +1,4 @@
+import { runWithResourceRenderOptions } from '../core/rsc'
 import { prerender as originalPrerender } from '../react/rsc/static'
 import type { PrerenderOptions, PrerenderResult } from '../types'
 import {
@@ -14,11 +15,18 @@ export function prerender<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): Promise<PrerenderResult> {
-  return originalPrerender(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalPrerender(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }

@@ -1,3 +1,4 @@
+import { runWithResourceRenderOptions } from '../core/rsc'
 import { renderToReadableStream as originalRenderToReadableStream } from '../react/rsc/server'
 import {
   createOnClientReference,
@@ -21,11 +22,18 @@ export function renderToReadableStream<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): ReadableStream<Uint8Array> {
-  return originalRenderToReadableStream(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalRenderToReadableStream(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }

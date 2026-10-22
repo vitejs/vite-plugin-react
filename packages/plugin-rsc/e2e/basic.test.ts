@@ -818,6 +818,21 @@ function defineTest(f: Fixture) {
     ).toBe(true)
   })
 
+  testNoJs('css nonce', async ({ page }) => {
+    await page.goto(f.url())
+    const nonce = await page
+      .locator('meta[property="csp-nonce"]')
+      .evaluate((meta: HTMLMetaElement) => meta.nonce)
+    expect(nonce).toBeTruthy()
+    const nonces = await page
+      .locator('link[rel="stylesheet"][data-rsc-css-href]')
+      .evaluateAll((links) =>
+        links.map((link) => (link as HTMLLinkElement).nonce),
+      )
+    expect(nonces.length).toBeGreaterThan(0)
+    expect(nonces.every((value) => value === nonce)).toBe(true)
+  })
+
   async function testCssBasic(page: Page) {
     await testCss(page)
     await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(

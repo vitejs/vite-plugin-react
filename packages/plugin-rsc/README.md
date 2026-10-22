@@ -473,7 +473,7 @@ This module provides a Vite-integrated RSC runtime API based on
 
 - `prerender`: static RSC serialization (React VDOM -> RSC stream)
 
-`prerender` supports the same Vite-specific `onClientReference` extension as
+`prerender` supports the same Vite-specific `onClientReference` and `nonce` extensions as
 `renderToReadableStream`.
 
 ### `@vitejs/plugin-rsc/rsc/client`
@@ -499,8 +499,10 @@ Prefer the explicit `/rsc/server` and `/rsc/client` entry points when only one p
 > [!NOTE]
 > This is a Vite-specific extension to the standard React RSC API. The official `react-server-dom` does not provide this callback mechanism.
 
-`renderToReadableStream` API is extended with an optional third parameter with `onClientReference` callback.
-This is invoked whenever a client reference is used in RSC stream rendering.
+`renderToReadableStream` API is extended with an optional third parameter with `onClientReference` callback and `nonce`.
+
+- `onClientReference` is invoked whenever a client reference is used in RSC stream rendering.
+- `nonce` is set on the `<link rel="stylesheet">` elements rendered for server components' CSS (including `import.meta.viteRsc.loadCss()`), for a nonce-based CSP `style-src`. The links render in the RSC stream, so for client navigation renders, pass the nonce of the document the payload goes to.
 
 ```ts
 function renderToReadableStream<T>(
@@ -514,6 +516,7 @@ function renderToReadableStream<T>(
       name: string
       deps: { js: string[]; css: string[] }
     }) => void
+    nonce?: string
   },
 ): ReadableStream<Uint8Array>
 ```

@@ -1,3 +1,4 @@
+import { runWithResourceRenderOptions } from '../core/rsc'
 import {
   prerender as originalPrerender,
   prerenderToNodeStream as originalPrerenderToNodeStream,
@@ -22,13 +23,20 @@ export function prerender<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): Promise<PrerenderResult> {
-  return originalPrerender(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalPrerender(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }
 
 export function prerenderToNodeStream<T>(
@@ -39,11 +47,18 @@ export function prerenderToNodeStream<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): Promise<PrerenderToNodeStreamResult> {
-  return originalPrerenderToNodeStream(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalPrerenderToNodeStream(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }

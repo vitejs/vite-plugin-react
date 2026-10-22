@@ -2742,16 +2742,19 @@ function generateResourcesCode(
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
-    RemoveDuplicateServerCss?: React.FC,
-    precedence?: string,
+    RemoveDuplicateServerCss: React.FC | undefined,
+    precedence: string | undefined,
+    getRenderOptions: () => { nonce?: string } | undefined,
   ) => {
     return function Resources() {
+      const nonce = getRenderOptions()?.nonce
       return React.createElement(React.Fragment, null, [
         ...deps.css.map((href: string) =>
           React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
             crossOrigin: 'anonymous',
+            ...(nonce ? { nonce } : {}),
             ...(precedence ? { precedence } : {}),
             href: href,
             'data-rsc-css-href': href,
@@ -2767,6 +2770,7 @@ function generateResourcesCode(
 
   return `
 import __vite_rsc_react__ from "react";
+import { getResourceRenderOptions as __vite_rsc_get_resource_render_options__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
 
 ${
   manager.config.command === 'serve'
@@ -2779,6 +2783,7 @@ export const Resources = (${ResourcesFn.toString()})(
   ${depsCode},
   RemoveDuplicateServerCss,
   ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
+  __vite_rsc_get_resource_render_options__,
 );
 `
 }

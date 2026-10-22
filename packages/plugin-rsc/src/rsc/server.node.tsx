@@ -1,3 +1,4 @@
+import { runWithResourceRenderOptions } from '../core/rsc'
 import {
   renderToPipeableStream as originalRenderToPipeableStream,
   renderToReadableStream as originalRenderToReadableStream,
@@ -29,13 +30,20 @@ export function renderToReadableStream<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): ReadableStream<Uint8Array> {
-  return originalRenderToReadableStream(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalRenderToReadableStream(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }
 
 export function renderToPipeableStream<T>(
@@ -46,11 +54,18 @@ export function renderToPipeableStream<T>(
      * @experimental
      */
     onClientReference?: OnClientReference
+    /**
+     * CSP nonce for the stylesheet links rendered for server components' CSS.
+     * @experimental
+     */
+    nonce?: string
   },
 ): PipeableStream {
-  return originalRenderToPipeableStream(data, options, {
-    onClientReference: extraOptions?.onClientReference
-      ? createOnClientReference(extraOptions.onClientReference)
-      : undefined,
-  })
+  return runWithResourceRenderOptions({ nonce: extraOptions?.nonce }, () =>
+    originalRenderToPipeableStream(data, options, {
+      onClientReference: extraOptions?.onClientReference
+        ? createOnClientReference(extraOptions.onClientReference)
+        : undefined,
+    }),
+  )
 }

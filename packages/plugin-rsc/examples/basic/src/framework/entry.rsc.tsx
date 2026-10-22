@@ -66,6 +66,7 @@ async function handleRequest({
   const rscOptions = { temporaryReferences }
   const debugClientReferences: unknown[] = []
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
+    nonce,
     onClientReference(metadata) {
       debugClientReferences.push(metadata)
     },
