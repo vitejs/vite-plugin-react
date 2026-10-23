@@ -17,6 +17,9 @@ export {
   createClientManifest,
   createServerManifest,
   loadServerAction,
+  setServerCssLinkProps,
+  type GetServerCssLinkProps,
+  type ServerCssLinkProps,
 } from '../core/rsc'
 
 export * from '../react/rsc/server.node'

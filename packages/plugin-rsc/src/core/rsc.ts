@@ -197,3 +197,35 @@ export interface CreateServerManifestOptions {
    */
   onServerReference?: (metadata: ServerReferenceMetadata) => void
 }
+
+export interface ServerCssLinkProps {
+  /**
+   * CSP nonce for the stylesheet link.
+   */
+  nonce?: string
+}
+
+export type GetServerCssLinkProps = (link: {
+  href: string
+}) => ServerCssLinkProps | undefined
+
+let getServerCssLinkProps: GetServerCssLinkProps | undefined
+
+/**
+ * Registers a function that returns extra props for the stylesheet links
+ * rendered for server components' CSS. It's called while React renders the
+ * links, so it can read the framework's request-scoped state, such as a CSP
+ * nonce from its own `AsyncLocalStorage`.
+ * @experimental
+ */
+export function setServerCssLinkProps(
+  fn: GetServerCssLinkProps | undefined,
+): void {
+  getServerCssLinkProps = fn
+}
+
+export function getServerCssLinkPropsInternal(link: {
+  href: string
+}): ServerCssLinkProps | undefined {
+  return getServerCssLinkProps?.(link)
+}

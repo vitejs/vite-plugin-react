@@ -465,6 +465,7 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `decodeAction/decodeReply/decodeFormState/loadServerAction`
 - `registerClientReference/registerServerReference`
 - `createTemporaryReferenceSet`
+- `setServerCssLinkProps` (see [below](#vite-specific-extension-setservercsslinkprops-experimental))
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
@@ -543,6 +544,32 @@ function decodeReply(
 // `decodeAction(body, extraOptions?)` and
 // `decodeFormState(actionResult, body, extraOptions?)` accept the same `extraOptions`.
 ```
+
+#### Vite-specific extension: `setServerCssLinkProps` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific API. The official `react-server-dom` does not provide it.
+
+`setServerCssLinkProps` registers a function that returns extra props for the `<link rel="stylesheet">` elements the plugin renders for server components' CSS, including the ones from [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss). The plugin calls it while React renders each link, so it can read the framework's request-scoped state, for example a CSP nonce from the framework's own `AsyncLocalStorage`. The only supported prop is `nonce`, for a nonce-based CSP `style-src`.
+
+```ts
+import { AsyncLocalStorage } from 'node:async_hooks'
+import {
+  renderToReadableStream,
+  setServerCssLinkProps,
+} from '@vitejs/plugin-rsc/rsc/server'
+
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setServerCssLinkProps(() => ({ nonce: nonceStorage.getStore() }))
+
+const stream = nonceStorage.run(nonce, () => renderToReadableStream(payload))
+```
+
+Keep these in mind when choosing the value:
+
+- On client navigation, React inserts the links from the RSC payload into the current document, so the nonce has to be the one of that document rather than one generated for the navigation request.
+- A render whose output is cached across requests should not get a request's nonce, so run it outside the request's scope or return no nonce for it.
+- Client components' CSS is linked during SSR through `ReactDOM.preinit`, which doesn't forward `nonce` for stylesheets, so those links don't get a nonce.
 
 ### `@vitejs/plugin-rsc/ssr`
 
