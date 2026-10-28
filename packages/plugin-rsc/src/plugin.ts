@@ -2745,23 +2745,28 @@ function generateResourcesCode(
     RemoveDuplicateServerCss?: React.FC,
     precedence?: string,
   ) => {
+    // `deps` is static for this module, so create the element once and return
+    // the same object on every render. React Flight serializes an element it
+    // has already written as a short reference, so a component rendered many
+    // times doesn't repeat every stylesheet link in the RSC payload.
+    const element = React.createElement(React.Fragment, null, [
+      ...deps.css.map((href: string) =>
+        React.createElement('link', {
+          key: 'css:' + href,
+          rel: 'stylesheet',
+          crossOrigin: 'anonymous',
+          ...(precedence ? { precedence } : {}),
+          href: href,
+          'data-rsc-css-href': href,
+        }),
+      ),
+      RemoveDuplicateServerCss &&
+        React.createElement(RemoveDuplicateServerCss, {
+          key: 'remove-duplicate-css',
+        }),
+    ])
     return function Resources() {
-      return React.createElement(React.Fragment, null, [
-        ...deps.css.map((href: string) =>
-          React.createElement('link', {
-            key: 'css:' + href,
-            rel: 'stylesheet',
-            crossOrigin: 'anonymous',
-            ...(precedence ? { precedence } : {}),
-            href: href,
-            'data-rsc-css-href': href,
-          }),
-        ),
-        RemoveDuplicateServerCss &&
-          React.createElement(RemoveDuplicateServerCss, {
-            key: 'remove-duplicate-css',
-          }),
-      ])
+      return element
     }
   }
 
