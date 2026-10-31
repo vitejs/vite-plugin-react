@@ -32,8 +32,8 @@
     "@vitejs/test-dep-transitive-use-sync-external-store": "file:./test-dep/transitive-use-sync-external-store",
     "rsc-html-stream": "^0.0.8",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.3.4",
-    "wrangler": "^4.151.2"
+    "vite": "^8.3.5",
+    "wrangler": "^4.156.0"
   },
   "stackblitz": {
     "installDependencies": false,
