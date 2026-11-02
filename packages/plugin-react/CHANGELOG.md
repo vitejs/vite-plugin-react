@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fix `refreshInclude` and `refreshExclude` options not working ([#1543](https://github.com/vitejs/vite-plugin-react/pull/1543))
+
+Fix mistake from #1516
+
 ## 6.2.0 (2026-11-02)
 
 ### Add `refreshInclude` and `refreshExclude` options ([#1516](https://github.com/vitejs/vite-plugin-react/pull/1516))
