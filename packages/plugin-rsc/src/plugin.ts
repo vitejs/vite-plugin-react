@@ -27,6 +27,7 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
+import type { GetServerCssLinkProps } from './core/rsc'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
@@ -2742,21 +2743,24 @@ function generateResourcesCode(
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
-    RemoveDuplicateServerCss?: React.FC,
-    precedence?: string,
+    RemoveDuplicateServerCss: React.FC | undefined,
+    precedence: string | undefined,
+    getLinkProps: GetServerCssLinkProps,
   ) => {
     return function Resources() {
       return React.createElement(React.Fragment, null, [
-        ...deps.css.map((href: string) =>
-          React.createElement('link', {
+        ...deps.css.map((href: string) => {
+          const nonce = getLinkProps({ href })?.nonce
+          return React.createElement('link', {
             key: 'css:' + href,
             rel: 'stylesheet',
             crossOrigin: 'anonymous',
+            ...(nonce ? { nonce } : {}),
             ...(precedence ? { precedence } : {}),
             href: href,
             'data-rsc-css-href': href,
-          }),
-        ),
+          })
+        }),
         RemoveDuplicateServerCss &&
           React.createElement(RemoveDuplicateServerCss, {
             key: 'remove-duplicate-css',
@@ -2767,6 +2771,7 @@ function generateResourcesCode(
 
   return `
 import __vite_rsc_react__ from "react";
+import { getServerCssLinkPropsInternal as __vite_rsc_get_server_css_link_props__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
 
 ${
   manager.config.command === 'serve'
@@ -2779,6 +2784,7 @@ export const Resources = (${ResourcesFn.toString()})(
   ${depsCode},
   RemoveDuplicateServerCss,
   ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
+  __vite_rsc_get_server_css_link_props__,
 );
 `
 }

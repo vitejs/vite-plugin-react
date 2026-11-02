@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   renderToReadableStream,
   createTemporaryReferenceSet,
@@ -5,10 +6,16 @@ import {
   loadServerAction,
   decodeAction,
   decodeFormState,
+  setServerCssLinkProps,
 } from '@vitejs/plugin-rsc/rsc/server'
 import type React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { parseRenderRequest } from './request.tsx'
+
+// `Resources` renders server components' css links during the render below,
+// so the framework provides their nonce through its own request-scoped storage.
+const cssNonceStorage = new AsyncLocalStorage<string | undefined>()
+setServerCssLinkProps(() => ({ nonce: cssNonceStorage.getStore() }))
 
 export type RscPayload = {
   root: React.ReactNode
@@ -65,11 +72,16 @@ async function handleRequest({
   const rscPayload: RscPayload = { root: getRoot(), formState, returnValue }
   const rscOptions = { temporaryReferences }
   const debugClientReferences: unknown[] = []
-  const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
-    onClientReference(metadata) {
-      debugClientReferences.push(metadata)
-    },
-  })
+  const rscStream = cssNonceStorage.run(
+    // a client navigation's payload goes to a document with another nonce
+    renderRequest.isRsc ? undefined : nonce,
+    () =>
+      renderToReadableStream<RscPayload>(rscPayload, rscOptions, {
+        onClientReference(metadata) {
+          debugClientReferences.push(metadata)
+        },
+      }),
+  )
 
   // test `onClientReference` callback
   if (renderRequest.url.pathname === '/__test_onClientReference') {
