@@ -10,6 +10,10 @@ Add `refreshInclude` and `refreshExclude` options to skip fast refresh for certa
 
 The peer dependency version range for `oxc-transform-react` was expanded from `^0.152.0` to `>=0.152.0 <0.157.0`.
 
+### Expand `@rolldown/plugin-babel` peer dependency range ([#1541](https://github.com/vitejs/vite-plugin-react/pull/1541))
+
+The peer dependency version range for `@rolldown/plugin-babel` was expanded from `^0.1.7 || ^0.2.0` to `^0.1.7 || ^0.2.0 || ^0.3.0`.
+
 ## 6.1.2 (2026-10-05)
 
 ### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
