@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.2.0 (2026-11-02)
+
 ### Add `refreshInclude` and `refreshExclude` options ([#1516](https://github.com/vitejs/vite-plugin-react/pull/1516))
 
 Add `refreshInclude` and `refreshExclude` options to skip fast refresh for certain files that won't run in the browser.
