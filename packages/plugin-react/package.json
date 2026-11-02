@@ -1,6 +1,6 @@
 {
   "name": "@vitejs/plugin-react",
-  "version": "6.1.2",
+  "version": "6.2.1",
   "description": "The default Vite plugin for React projects",
   "keywords": [
     "fast refresh",
@@ -46,20 +46,20 @@
     "@rolldown/pluginutils": "^1.0.1"
   },
   "devDependencies": {
-    "@rolldown/plugin-babel": "^0.2.4",
+    "@rolldown/plugin-babel": "^0.3.0",
     "@vitejs/react-common": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
-    "oxc-transform-react": "^0.155.0",
+    "oxc-transform-react": "^0.156.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "rolldown": "^1.2.14",
-    "tsdown": "^0.23.1",
-    "vite": "^8.3.4"
+    "rolldown": "^1.2.16",
+    "tsdown": "^0.23.4",
+    "vite": "^8.3.5"
   },
   "peerDependencies": {
-    "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",
+    "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0 || ^0.3.0",
     "babel-plugin-react-compiler": "^1.0.0",
-    "oxc-transform-react": "^0.152.0",
+    "oxc-transform-react": ">=0.152.0 <0.157.0",
     "vite": "^8.0.0"
   },
   "peerDependenciesMeta": {
