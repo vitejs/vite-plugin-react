@@ -6,6 +6,10 @@
 
 Add `refreshInclude` and `refreshExclude` options to skip fast refresh for certain files that won't run in the browser.
 
+### Expand `oxc-transform-react` peer dependency range
+
+The peer dependency version range for `oxc-transform-react` was expanded from `^0.152.0` to `>=0.152.0 <0.157.0`.
+
 ## 6.1.2 (2026-10-05)
 
 ### Fix HMR for compound components ([#1484](https://github.com/vitejs/vite-plugin-react/pull/1484))
