@@ -1,0 +1,19 @@
+packages/plugin-react/CHANGELOG.md
+  s_27ca5e469204cd::t_c4e1b0d74a7765 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "dd989ef09c6562ca0a8a32e1872055aa6341b6f9",
+  "prompts": {},
+  "sessions": {
+    "s_27ca5e469204cd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18b18-f837-77e1-a15b-c50a8d44cd36",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "sapphi-red <green@sapphi.red>"
+    }
+  }
+}
