@@ -14,7 +14,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@swc/plugin-emotion": "^17.0.0",
+    "@swc/plugin-emotion": "^20.0.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react-swc": "../../dist"
