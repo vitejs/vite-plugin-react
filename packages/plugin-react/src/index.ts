@@ -375,19 +375,17 @@ function createReactCompilerPlugin(
         },
       },
       async handler(code, id) {
-        // Follow what the builtin oxc plugin does: https://github.com/vitejs/vite/blob/main/packages/vite/src/node/plugins/oxc.ts#L250-L267
         const [filepath] = id.split('?')
         const isJSX = filepath.endsWith('x')
         const isClient = this.environment?.config.consumer !== 'server'
         const refreshEnabled =
           isClient &&
           isFastRefreshEnabled() &&
-          ((jsxRefreshFilter && !jsxRefreshFilter(id)) ||
-            !(
-              isJSX ||
+          (jsxRefreshFilter
+            ? jsxRefreshFilter(id)
+            : isJSX ||
               code.includes(jsxImportRuntime) ||
-              code.includes(jsxImportDevRuntime)
-            ))
+              code.includes(jsxImportDevRuntime))
 
         const shouldCompile =
           isClient &&
