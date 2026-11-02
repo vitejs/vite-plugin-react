@@ -1,3 +1,4 @@
+import { sharedProgressiveAction } from '../shared/action.tsx'
 import { boundProgressiveActionC, progressiveActionC } from './action.tsx'
 
 export function Page() {
@@ -12,6 +13,12 @@ export function Page() {
         action={boundProgressiveActionC.bind(null, 'bound')}
       >
         <button>Run bound progressive action</button>
+      </form>
+      <form
+        aria-label="Shared progressive action"
+        action={sharedProgressiveAction.bind(null, progressiveActionC)}
+      >
+        <button>Run shared progressive action</button>
       </form>
     </main>
   )

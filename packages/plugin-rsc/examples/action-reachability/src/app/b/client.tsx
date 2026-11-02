@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { getSavedAction, setSavedAction } from '../saved-action.ts'
-import { actionB } from './action.tsx'
+import { actionB, actionBWithCallback } from './action.tsx'
 
 export function ActionB() {
   const [result, setResult] = React.useState('none')
@@ -16,6 +16,14 @@ export function ActionB() {
         onClick={() => savedAction?.().then(setResult)}
       >
         Run saved action
+      </button>
+      <button
+        disabled={!savedAction}
+        onClick={() =>
+          savedAction && actionBWithCallback(savedAction).then(setResult)
+        }
+      >
+        Run action B with saved action
       </button>
       <p>Result: {result}</p>
     </div>

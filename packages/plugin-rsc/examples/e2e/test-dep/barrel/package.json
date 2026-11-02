@@ -1,0 +1,14 @@
+{
+  "name": "@vitejs/test-dep-barrel",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.js",
+    "./button": "./button.js",
+    "./calendar": "./calendar.js"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

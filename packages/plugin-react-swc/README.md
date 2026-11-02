@@ -13,8 +13,8 @@ npm i -D @vitejs/plugin-react-swc
 ## Usage
 
 ```ts
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],

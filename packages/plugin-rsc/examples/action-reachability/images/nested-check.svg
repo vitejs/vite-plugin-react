@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="380" viewBox="0 0 820 380" font-family="system-ui, sans-serif" font-size="13">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+  </defs>
+  <rect width="820" height="380" fill="#fff"/>
+  <text x="20" y="28" font-weight="600">Every reference React resolves while decoding is checked against the route that runs the action</text>
+
+  <!-- Lane 1: hydrated -->
+  <rect x="20" y="44" width="780" height="140" rx="8" fill="#fafafa" stroke="#999"/>
+  <text x="36" y="68" font-weight="600">With JS: decodeReply</text>
+  <g font-family="ui-monospace, monospace" font-size="11">
+    <text x="36" y="92">POST /b_.rsc</text>
+    <text x="36" y="108">x-rsc-action: actionBWithCallback</text>
+    <text x="36" y="124">body: [ref actionA]</text>
+  </g>
+  <line x1="270" y1="104" x2="306" y2="104" stroke="#555" marker-end="url(#arr)"/>
+  <rect x="308" y="80" width="200" height="48" rx="4" fill="#f0fdf4" stroke="#4ade80"/>
+  <text x="320" y="100">routing: outer ID in /b</text>
+  <text x="320" y="118" fill="#15803d">✓ continue on /b</text>
+  <line x1="508" y1="104" x2="544" y2="104" stroke="#555" marker-end="url(#arr)"/>
+  <rect x="546" y="80" width="238" height="48" rx="4" fill="#fef2f2" stroke="#f87171"/>
+  <text x="558" y="100">decode: nested actionA in /b?</text>
+  <text x="558" y="118" fill="#b91c1c">✗ throw → 404</text>
+  <text x="36" y="164" fill="#666" font-size="12">Routing sees only the outer ID. The nested reference to actionA is found during decoding, before a/action.tsx loads.</text>
+
+  <!-- Lane 2: progressive -->
+  <rect x="20" y="200" width="780" height="140" rx="8" fill="#fafafa" stroke="#999"/>
+  <text x="36" y="224" font-weight="600">Without JS: decodeAction</text>
+  <g font-family="ui-monospace, monospace" font-size="11">
+    <text x="36" y="248">POST /b (fields from /c)</text>
+    <text x="36" y="264">sharedProgressiveAction</text>
+    <text x="36" y="280">  .bind(progressiveActionC)</text>
+  </g>
+  <line x1="270" y1="260" x2="306" y2="260" stroke="#555" marker-end="url(#arr)"/>
+  <rect x="308" y="236" width="200" height="48" rx="4" fill="#f0fdf4" stroke="#4ade80"/>
+  <text x="320" y="256">decode: shared action in /b</text>
+  <text x="320" y="274" fill="#15803d">✓ /b renders it too</text>
+  <line x1="508" y1="260" x2="544" y2="260" stroke="#555" marker-end="url(#arr)"/>
+  <rect x="546" y="236" width="238" height="48" rx="4" fill="#fef2f2" stroke="#f87171"/>
+  <text x="558" y="256">decode: bound C action in /b?</text>
+  <text x="558" y="274" fill="#b91c1c">✗ throw → 404</text>
+  <text x="36" y="320" fill="#666" font-size="12">No action ID header, so there's no routing step. Progressive forms are rejected on mismatch, never redispatched.</text>
+
+  <text x="20" y="366" fill="#666" font-size="12">The check is onServerReference from createServerReferenceValidator(pathname). In dev there's no manifest, so it is not installed.</text>
+</svg>

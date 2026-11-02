@@ -8,8 +8,8 @@ The default Vite plugin for React projects.
 
 ```js
 // vite.config.js
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
@@ -23,9 +23,9 @@ export default defineConfig({
 Includes `.js`, `.jsx`, `.ts` & `.tsx` by default. This option can be used to add fast refresh to `.mdx` files:
 
 ```js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import mdx from '@mdx-js/rollup'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -41,8 +41,8 @@ The default value is `/node_modules/`. You may use it to exclude JSX/TSX files t
 Except if explicitly desired, you should keep `node_modules` in the exclude list:
 
 ```js
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -92,8 +92,8 @@ npm install -D oxc-transform-react
 
 ```js
 // vite.config.js
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react({ compiler: true })],
@@ -128,9 +128,9 @@ npm install -D @types/babel__core
 
 ```js
 // vite.config.js
-import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react(), babel({ presets: [reactCompilerPreset()] })],

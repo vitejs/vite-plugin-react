@@ -518,6 +518,32 @@ function renderToReadableStream<T>(
 ): ReadableStream<Uint8Array>
 ```
 
+#### Vite-specific extension: `decodeReply`, `decodeAction`, and `decodeFormState` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific extension to the standard React RSC API. The official `react-server-dom` does not provide this callback mechanism.
+
+`decodeReply`, `decodeAction`, and `decodeFormState` (and `decodeReplyFromBusboy` in `@vitejs/plugin-rsc/rsc/server.node`) are extended with an optional last parameter with `onServerReference` callback.
+This is invoked whenever React resolves a server reference while decoding: the action itself in `decodeAction`, and any server function passed as an argument or bound to an action.
+`id` and `name` match the `${id}#${name}` id that `loadServerAction` receives.
+Throwing from the callback rejects the reference before its module is loaded, which allows a framework to limit decoding to the server functions it exposes for the request.
+`loadServerAction` doesn't invoke the callback, so a framework should check the action id it passes there separately.
+
+```ts
+function decodeReply(
+  body: string | FormData,
+  // standard options (e.g. temporaryReferences)
+  options?: object,
+  // vite-specific options
+  extraOptions?: {
+    onServerReference?: (metadata: { id: string; name: string }) => void
+  },
+): Promise<unknown[]>
+
+// `decodeAction(body, extraOptions?)` and
+// `decodeFormState(actionResult, body, extraOptions?)` accept the same `extraOptions`.
+```
+
 ### `@vitejs/plugin-rsc/ssr`
 
 This module provides Vite-integrated RSC runtime APIs based on
@@ -746,6 +772,54 @@ export function ServerComponent() {
 Note that while there are official npm packages [`server-only`](https://www.npmjs.com/package/server-only) and [`client-only`](https://www.npmjs.com/package/client-only) created by React team, they don't need to be installed. The plugin internally overrides these imports and surfaces their runtime errors as build-time errors.
 
 This build-time validation is enabled by default and can be disabled by setting `validateImports: false` in the plugin options.
+
+#### Barrel packages
+
+A server component that imports one component from a package's barrel entry can fail with `'client-only' cannot be imported in server build`, even though the component it uses is fine on the server:
+
+```tsx
+import { Button } from 'some-ui-library' // ❌ fails because of `Calendar`, which imports 'client-only'
+```
+
+```js
+// node_modules/some-ui-library/index.js
+export { Button } from './button.js'
+export { Calendar } from './calendar.js'
+```
+
+The validation runs on the module graph before tree-shaking, so the unused `calendar.js` and its `client-only` import are still part of the graph, even when the package has `"sideEffects": false`. Dev fails in the same way, because Vite evaluates the barrel and every module it re-exports. Disabling `validateImports` doesn't fix dev reliably either, because other client-only code in an unused module, such as a top-level `createContext` call, can still crash the server.
+
+To fix this, import from the package's subpath entry instead, for example `import { Button } from 'some-ui-library/button'`. To do this without changing each import, rewrite barrel imports with [`@rolldown/plugin-transform-imports`](https://github.com/rolldown/plugins/tree/main/packages/transform-imports), which applies in both dev and build and requires Vite 8:
+
+```js
+import transformImports from '@rolldown/plugin-transform-imports'
+
+export default defineConfig({
+  plugins: [
+    transformImports({
+      'some-ui-library': {
+        transform: [
+          // `Button` -> `some-ui-library/button`
+          ['[A-Z].*', 'some-ui-library/{{kebabCase member}}'],
+          // other exports, such as hooks, stay on the barrel entry
+          ['*', 'some-ui-library'],
+        ],
+        skipDefaultConversion: true,
+      },
+    }),
+    rsc(),
+    react(),
+  ],
+})
+```
+
+When configuring the plugin:
+
+- Check that the member-to-subpath mapping matches the package's `exports`. A member that matches no pattern is rewritten to the member name itself, so keep the `'*'` fallback.
+- Set `skipDefaultConversion: true` when the subpath entries use named exports. Otherwise the plugin rewrites `import { Button }` to a default import.
+- The plugin only rewrites code that Vite transforms, which excludes pre-bundled dependencies. Packages with a `react` peer dependency are not pre-bundled in server environments, so imports of a typical UI library are covered, but a pre-bundled dependency that imports the barrel itself isn't rewritten.
+
+If the subpath entry itself still reaches client-only code, rewriting imports doesn't help. Move that usage into a `"use client"` component instead.
 
 ## Credits
 
