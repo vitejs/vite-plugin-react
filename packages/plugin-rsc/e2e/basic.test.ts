@@ -827,6 +827,12 @@ function defineTest(f: Fixture) {
       )
       expect(response.ok()).toBe(true)
       const payload = await response.text()
+      // Count <link> elements written out in full by their prop key. Flight writes
+      // a repeated copy of the same link array as a reference to the first, which
+      // doesn't contain the key, e.g. in dev:
+      //   3a:[["$","link","css:/src/routes/style-server-repeated/item.css",{…,"data-rsc-css-href":…}],…]
+      //   41:"$3a"
+      // The count covers every CSS link on the page, so compare it against N=1.
       return payload.split('"data-rsc-css-href"').length - 1
     }
     expect(await countCssLinks(5)).toBe(await countCssLinks(1))
