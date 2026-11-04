@@ -518,11 +518,12 @@ export default function vitePluginRsc(
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
-              return false
+              return
             }
+            const peerDeps = pkgJson['peerDependencies']
+            const deps = pkgJson['dependencies']
             return (
-              'react' in (pkgJson['peerDependencies'] ?? {}) ||
-              'react' in (pkgJson['dependencies'] ?? {})
+              (peerDeps && 'react' in peerDeps) || (deps && 'react' in deps)
             )
           },
         })
