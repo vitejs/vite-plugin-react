@@ -2601,7 +2601,7 @@ function vitePluginRscCss(
 
           assert(this.environment.name === 'rsc')
           const output = new MagicString(code)
-          let importAdded = false
+          const importedHashes = new Set<string>()
 
           for (const match of stripLiteral(code).matchAll(
             /import\.meta\.viteRsc\.loadCss\(([\s\S]*?)\)/dg,
@@ -2636,10 +2636,10 @@ function vitePluginRscCss(
             } else {
               const hash = hashString(importId)
               if (
-                !importAdded &&
+                !importedHashes.has(hash) &&
                 !code.includes(`__vite_rsc_importer_resources_${hash}`)
               ) {
-                importAdded = true
+                importedHashes.add(hash)
                 output.prepend(
                   `import * as __vite_rsc_importer_resources_${hash} from ${JSON.stringify(
                     importId,
