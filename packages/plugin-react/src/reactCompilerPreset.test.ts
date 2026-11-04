@@ -1,5 +1,32 @@
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, test } from 'vitest'
-import { defaultCodeFilter } from './reactCompilerPreset'
+import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
+
+describe('reactCompilerPreset', () => {
+  test('preset can be sent to a worker thread', () => {
+    const { preset } = reactCompilerPreset({ compilationMode: 'annotation' })
+    expect(() => structuredClone(preset)).not.toThrow()
+  })
+
+  test('preset module adds babel-plugin-react-compiler with the options', async () => {
+    const options = { target: '18' } as const
+    const [presetPath, presetOptions] = reactCompilerPreset(options).preset as [
+      string,
+      object,
+    ]
+    const { default: babelPreset } = await import(
+      pathToFileURL(presetPath).href
+    )
+    expect(babelPreset({}, presetOptions)).toEqual({
+      plugins: [
+        [
+          fileURLToPath(import.meta.resolve('babel-plugin-react-compiler')),
+          options,
+        ],
+      ],
+    })
+  })
+})
 
 describe('defaultCodeFilter', () => {
   const cases: Record<string, [code: string, expected: boolean]> = {
