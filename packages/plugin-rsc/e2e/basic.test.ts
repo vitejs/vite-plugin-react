@@ -818,6 +818,34 @@ function defineTest(f: Fixture) {
     ).toBe(true)
   })
 
+  test('css of repeated server component is not repeated in payload', async ({
+    page,
+  }) => {
+    async function countCssLinks(count: number) {
+      const response = await page.request.get(
+        f.url(`_.rsc?test-style-server-repeated=${count}`),
+      )
+      expect(response.ok()).toBe(true)
+      const payload = await response.text()
+      // Count <link> elements written out in full by their prop key. Flight writes
+      // a repeated copy of the same link array as a reference to the first, which
+      // doesn't contain the key, e.g. in dev:
+      //   3a:[["$","link","css:/src/routes/style-server-repeated/item.css",{…,"data-rsc-css-href":…}],…]
+      //   41:"$3a"
+      // The count covers every CSS link on the page, so compare it against N=1.
+      return payload.split('"data-rsc-css-href"').length - 1
+    }
+    expect(await countCssLinks(5)).toBe(await countCssLinks(1))
+
+    await page.goto(f.url('./?test-style-server-repeated=3'))
+    await waitForHydration(page)
+    for (let i = 0; i < 3; i++) {
+      await expect(
+        page.getByTestId(`test-style-server-repeated-${i}`),
+      ).toHaveCSS('color', 'rgb(0, 128, 0)')
+    }
+  })
+
   async function testCssBasic(page: Page) {
     await testCss(page)
     await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(

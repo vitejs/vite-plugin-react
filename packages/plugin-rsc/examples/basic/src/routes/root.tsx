@@ -55,6 +55,7 @@ import { TestServerError } from './server-error/server'
 import { TestSharedClientCss } from './shared-client-css/server'
 import { TestCssClientNoSsr } from './style-client-no-ssr/server'
 import { TestStyleClient } from './style-client/client'
+import { TestStyleServerRepeated } from './style-server-repeated/server'
 import { TestStyleServer } from './style-server/server'
 import { TestStyleShared } from './style-shared/server'
 import { TestTailwind } from './tailwind'
@@ -80,6 +81,7 @@ export function Root(props: { url: URL }) {
         <ServerCounter />
         <TestStyleClient />
         <TestStyleServer />
+        <TestStyleServerRepeated url={props.url} />
         <TestStyleShared />
         <TestCssClientNoSsr url={props.url} />
         <TestTailwind />
