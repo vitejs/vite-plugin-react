@@ -511,9 +511,8 @@ export default function vitePluginRsc(
         }
         // crawl packages with "react" in "peerDependencies" or "dependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
-        // "dependencies" covers workspace packages such as `@workspace/ui` in the shadcn monorepo template.
-        // vitefu only looks at the dependencies of framework packages, so the react libraries
-        // they import would be missed otherwise.
+        // "dependencies" is for workspace packages that list "react" there,
+        // such as `@workspace/ui` in the shadcn monorepo template.
         const result = await crawlFrameworkPkgs({
           root: process.cwd(),
           isBuild: env.command === 'build',
