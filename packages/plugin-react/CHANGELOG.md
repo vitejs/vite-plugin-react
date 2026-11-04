@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Make `reactCompilerPreset` work with `@rolldown/plugin-babel`'s `parallel` option ([#1549](https://github.com/vitejs/vite-plugin-react/pull/1549))
+
+`reactCompilerPreset` now refers to its Babel preset by module path instead of by function, so it can be sent to worker threads.
+
 ## 6.2.1 (2026-11-02)
 
 ### Fix `refreshInclude` and `refreshExclude` options not working ([#1543](https://github.com/vitejs/vite-plugin-react/pull/1543))
