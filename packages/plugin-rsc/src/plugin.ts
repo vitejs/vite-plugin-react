@@ -509,17 +509,22 @@ export default function vitePluginRsc(
             vite.mergeConfig(config.rsc, rscPluginOptions),
           )
         }
-        // crawl packages with "react" in "peerDependencies" to bundle react deps on server
+        // crawl packages with "react" in "peerDependencies" or "dependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
+        // "dependencies" covers workspace packages such as `@workspace/ui` in the shadcn monorepo template.
+        // vitefu only looks at the dependencies of framework packages, so the react libraries
+        // they import would be missed otherwise.
         const result = await crawlFrameworkPkgs({
           root: process.cwd(),
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
-              return
+              return false
             }
-            const deps = pkgJson['peerDependencies']
-            return deps && 'react' in deps
+            return (
+              'react' in (pkgJson['peerDependencies'] ?? {}) ||
+              'react' in (pkgJson['dependencies'] ?? {})
+            )
           },
         })
         const noExternal = [
