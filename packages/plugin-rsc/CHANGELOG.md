@@ -1,3 +1,23 @@
+## <small>[0.5.39](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.38...plugin-rsc%400.5.39) (2026-11-05)</small>
+### Features
+
+* **rsc:** allow rejecting server references during decodeReply/decodeAction ([#1520](https://github.com/vitejs/vite-plugin-react/issues/1520)) ([505da21](https://github.com/vitejs/vite-plugin-react/commit/505da21aa13b40470948f25c3d2093f746fc8e03))
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1517](https://github.com/vitejs/vite-plugin-react/issues/1517)) ([b3e9835](https://github.com/vitejs/vite-plugin-react/commit/b3e9835ff60cc8ca521f489f452659e3d49ce8bf))
+* **deps:** update all non-major dependencies ([#1531](https://github.com/vitejs/vite-plugin-react/issues/1531)) ([ef758ba](https://github.com/vitejs/vite-plugin-react/commit/ef758badba331bfcd182ed56e4e7ac0343d180c2))
+* **rsc:** inline packages with react in `dependencies` ([#1550](https://github.com/vitejs/vite-plugin-react/issues/1550)) ([d724b6b](https://github.com/vitejs/vite-plugin-react/commit/d724b6bc07a5f61e43d1a7d3cf9d87014100afb7))
+* **rsc:** reuse server css resources element across renders ([#1534](https://github.com/vitejs/vite-plugin-react/issues/1534)) ([9678b48](https://github.com/vitejs/vite-plugin-react/commit/9678b48b14104a7905baebd58fd9ff88a2309c29))
+
+### Documentation
+
+* **rsc:** document barrel package workaround for validate-imports ([#1519](https://github.com/vitejs/vite-plugin-react/issues/1519)) ([4ffd181](https://github.com/vitejs/vite-plugin-react/commit/4ffd18147ed9396d1c370f1e20e8443336fae83a))
+
+### Tests
+
+* **rsc:** use Fixture type alias ([#1551](https://github.com/vitejs/vite-plugin-react/issues/1551)) ([4a72c6d](https://github.com/vitejs/vite-plugin-react/commit/4a72c6d2d9d08aa682a48077fcdd79029cae74e4))
+
 ## <small>[0.5.38](https://github.com/vitejs/vite-plugin-react/compare/plugin-rsc%400.5.37...plugin-rsc%400.5.38) (2026-10-15)</small>
 ### Bug Fixes
 
