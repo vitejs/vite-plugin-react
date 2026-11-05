@@ -12,11 +12,64 @@ test.describe(() => {
     //
     // app
     // `-- @vitejs/test-workspace-ui (linked, "react" in "dependencies")
-    //     `-- @vitejs/test-client-lib ("react" in "peerDependencies")
+    //     |-- @vitejs/test-client-lib-hoisted ("react" in "peerDependencies")
+    //     `-- @vitejs/test-client-lib-isolated ("react" in "peerDependencies")
     //
-    // The client library is only reachable through the linked package, and
-    // its "use client" directive is on an internal module.
+    // The client libraries are only reachable through the linked package, and
+    // their "use client" directive is on an internal module. The hoisted one
+    // is in the app's node_modules, like npm installs it. The isolated one is
+    // in the linked package's node_modules, like pnpm installs it.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
+    // a React library installed in `nodeModules`
+    const clientLibrary = ({
+      nodeModules,
+      name,
+      label,
+    }: {
+      nodeModules: string
+      name: string
+      label: string
+    }) => {
+      const dir = `${nodeModules}/${name}`
+      return {
+        [`${dir}/package.json`]: json({
+          name,
+          version: '1.0.0',
+          type: 'module',
+          exports: './index.js',
+          peerDependencies: {
+            react: '*',
+          },
+        }),
+        [`${dir}/index.js`]: /* js */ `
+        export { TestClient } from './client.js'
+      `,
+        [`${dir}/client.js`]: /* js */ `
+        'use client'
+
+        import React from 'react'
+
+        const CountContext = React.createContext(0)
+
+        function Count() {
+          return ${JSON.stringify(label + ': ')} + React.useContext(CountContext)
+        }
+
+        export function TestClient() {
+          const [count, setCount] = React.useState(0)
+          return React.createElement(
+            CountContext.Provider,
+            { value: count },
+            React.createElement(
+              'button',
+              { onClick: () => setCount((value) => value + 1) },
+              React.createElement(Count),
+            ),
+          )
+        }
+      `,
+      }
+    }
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
@@ -53,54 +106,35 @@ test.describe(() => {
             './server': './server.js',
           },
           dependencies: {
-            '@vitejs/test-client-lib': '1.0.0',
+            '@vitejs/test-client-lib-hoisted': '1.0.0',
+            '@vitejs/test-client-lib-isolated': '1.0.0',
             react: '*',
           },
         }),
         'packages/ui/server.js': /* js */ `
-          import { TestClient } from '@vitejs/test-client-lib'
+          import { TestClient as TestHoisted } from '@vitejs/test-client-lib-hoisted'
+          import { TestClient as TestIsolated } from '@vitejs/test-client-lib-isolated'
           import React from 'react'
 
           export function TestWorkspace() {
-            return React.createElement(TestClient)
-          }
-        `,
-        'node_modules/@vitejs/test-client-lib/package.json': json({
-          name: '@vitejs/test-client-lib',
-          version: '1.0.0',
-          type: 'module',
-          exports: './index.js',
-          peerDependencies: {
-            react: '*',
-          },
-        }),
-        'node_modules/@vitejs/test-client-lib/index.js': /* js */ `
-          export { TestClient } from './client.js'
-        `,
-        'node_modules/@vitejs/test-client-lib/client.js': /* js */ `
-          'use client'
-
-          import React from 'react'
-
-          const CountContext = React.createContext(0)
-
-          function Count() {
-            return 'Workspace client: ' + React.useContext(CountContext)
-          }
-
-          export function TestClient() {
-            const [count, setCount] = React.useState(0)
             return React.createElement(
-              CountContext.Provider,
-              { value: count },
-              React.createElement(
-                'button',
-                { onClick: () => setCount((value) => value + 1) },
-                React.createElement(Count),
-              ),
+              'div',
+              null,
+              React.createElement(TestHoisted),
+              React.createElement(TestIsolated),
             )
           }
         `,
+        ...clientLibrary({
+          nodeModules: 'node_modules',
+          name: '@vitejs/test-client-lib-hoisted',
+          label: 'Hoisted client',
+        }),
+        ...clientLibrary({
+          nodeModules: 'packages/ui/node_modules',
+          name: '@vitejs/test-client-lib-isolated',
+          label: 'Isolated client',
+        }),
       },
     })
     // link the workspace package like a package manager would
@@ -114,13 +148,15 @@ test.describe(() => {
   })
 
   function defineTest(f: Fixture) {
-    test('client library imported by a linked package', async ({ page }) => {
+    test('client libraries imported by a linked package', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      await page.getByRole('button', { name: 'Workspace client: 0' }).click()
-      await expect(
-        page.getByRole('button', { name: 'Workspace client: 1' }),
-      ).toBeVisible()
+      for (const label of ['Hoisted client', 'Isolated client']) {
+        await page.getByRole('button', { name: `${label}: 0` }).click()
+        await expect(
+          page.getByRole('button', { name: `${label}: 1` }),
+        ).toBeVisible()
+      }
     })
   }
 
