@@ -661,6 +661,14 @@ By default, `@vitejs/plugin-rsc` includes a [vendored version](https://github.co
 }
 ```
 
+### React libraries
+
+React libraries need special handling on the server so that their `"use client"` modules work. The plugin keeps them out of server externals (`noExternal`) and out of dependency pre-bundling (`optimizeDeps.exclude`) in the `rsc` and `ssr` environments.
+
+The plugin finds these libraries by crawling your project's `package.json`. A package counts as a React library when it lists `react` in `peerDependencies`. The crawl only looks inside React libraries, so a package that imports React libraries should list `react` in `peerDependencies` too.
+
+The plugin also accepts `react` in `dependencies`, as a fallback for packages that list it there instead of in `peerDependencies`.
+
 ### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
 By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
