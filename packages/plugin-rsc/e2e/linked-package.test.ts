@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
-import { setupInlineFixture, useFixture } from './fixture'
+import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
 // "isolated" installs each package's dependencies next to it, like pnpm.
@@ -179,7 +179,7 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     )
   })
 
-  function defineTest(f: ReturnType<typeof useFixture>) {
+  function defineTest(f: Fixture) {
     test('client libraries imported by linked packages', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
