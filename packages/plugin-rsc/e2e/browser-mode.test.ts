@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { useFixture } from './fixture'
+import { type Fixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
 
 // Webkit fails by
@@ -18,7 +18,7 @@ test.describe('build-browser-mode', () => {
   defineBrowserModeTest(f)
 })
 
-function defineBrowserModeTest(f: ReturnType<typeof useFixture>) {
+function defineBrowserModeTest(f: Fixture) {
   // action-bind tests copied from basic.test.ts
 
   test('action bind simple', async ({ page }) => {

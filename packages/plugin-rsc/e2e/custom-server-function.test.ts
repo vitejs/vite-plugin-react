@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { useFixture } from './fixture'
+import { type Fixture, useFixture } from './fixture'
 import {
   expectNoPageError,
   expectNoReload,
@@ -69,7 +69,7 @@ test.describe('build-custom-server-function', () => {
   defineTest(f)
 })
 
-function defineTest(f: ReturnType<typeof useFixture>) {
+function defineTest(f: Fixture) {
   test('built-in and custom server functions', async ({ page }) => {
     using _ = expectNoPageError(page)
     await page.goto(f.url())
