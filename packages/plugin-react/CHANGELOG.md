@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Add `fastRefresh` option
+
+Set `fastRefresh` to `false` to disable Fast Refresh while keeping HMR, for setups where another plugin already provides it, such as React Router in framework mode. This allows `react({ compiler: true, fastRefresh: false })` to be used next to `reactRouter()` so that JSX and the React Compiler are still handled by this plugin.
+
 ## 6.2.1 (2026-11-02)
 
 ### Fix `refreshInclude` and `refreshExclude` options not working ([#1543](https://github.com/vitejs/vite-plugin-react/pull/1543))
