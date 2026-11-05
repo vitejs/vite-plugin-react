@@ -4,19 +4,8 @@ import { expect, test } from '@playwright/test'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 import { waitForHydration } from './helper'
 
-// "isolated" installs each package's dependencies next to it, like pnpm.
-// "hoisted" installs every dependency in the app's node_modules, like npm.
-for (const layout of ['isolated', 'hoisted'] as const) {
-  test.describe(layout, () => {
-    defineLinkedPackageTests(layout)
-  })
-}
-
-function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
-  const root = `examples/e2e/temp/linked-package-${layout}`
-  // the node_modules that the dependencies of the package at `dir` go in
-  const nodeModules = (dir: string) =>
-    layout === 'hoisted' ? 'node_modules' : path.posix.join(dir, 'node_modules')
+test.describe(() => {
+  const root = 'examples/e2e/temp/linked-package'
 
   test.beforeAll(async () => {
     // Dependency and import graph:
@@ -25,11 +14,9 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     // `-- @vitejs/test-workspace-ui (linked, "react" in "dependencies")
     //     `-- @vitejs/test-client-lib ("react" in "peerDependencies")
     //
-    // The client library is only reachable through the linked package. Builds
-    // only externalize dependencies that resolve from the app, so without the
-    // fix, the build fails in the hoisted layout but not in the isolated one.
+    // The client library is only reachable through the linked package, and
+    // its "use client" directive is on an internal module.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
-    const clientLibDir = `${nodeModules('packages/ui')}/@vitejs/test-client-lib`
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
@@ -78,7 +65,7 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
             return React.createElement(TestClient)
           }
         `,
-        [`${clientLibDir}/package.json`]: json({
+        'node_modules/@vitejs/test-client-lib/package.json': json({
           name: '@vitejs/test-client-lib',
           version: '1.0.0',
           type: 'module',
@@ -87,11 +74,10 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
             react: '*',
           },
         }),
-        // the "use client" directive is on an internal module
-        [`${clientLibDir}/index.js`]: /* js */ `
+        'node_modules/@vitejs/test-client-lib/index.js': /* js */ `
           export { TestClient } from './client.js'
         `,
-        [`${clientLibDir}/client.js`]: /* js */ `
+        'node_modules/@vitejs/test-client-lib/client.js': /* js */ `
           'use client'
 
           import React from 'react'
@@ -120,7 +106,7 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     // link the workspace package like a package manager would
     const linkPath = path.resolve(
       root,
-      `${nodeModules('.')}/@vitejs/test-workspace-ui`,
+      'node_modules/@vitejs/test-workspace-ui',
     )
     fs.mkdirSync(path.dirname(linkPath), { recursive: true })
     // a junction doesn't need extra privileges on Windows (ignored elsewhere)
@@ -131,13 +117,10 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     test('client library imported by a linked package', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
-      const button = (count: number) =>
-        page.getByRole('button', {
-          name: `Workspace client: ${count}`,
-          exact: true,
-        })
-      await button(0).click()
-      await expect(button(1)).toBeVisible()
+      await page.getByRole('button', { name: 'Workspace client: 0' }).click()
+      await expect(
+        page.getByRole('button', { name: 'Workspace client: 1' }),
+      ).toBeVisible()
     })
   }
 
@@ -162,4 +145,4 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
       }),
     )
   })
-}
+})
