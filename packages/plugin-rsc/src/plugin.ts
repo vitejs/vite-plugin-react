@@ -511,7 +511,8 @@ export default function vitePluginRsc(
         }
         // crawl packages with "react" in "peerDependencies" or "dependencies" to bundle react deps on server
         // see https://github.com/svitejs/vitefu/blob/d8d82fa121e3b2215ba437107093c77bde51b63b/src/index.js#L95-L101
-        // "dependencies" is a fallback for packages that list "react" there instead of in "peerDependencies"
+        // "dependencies" is a fallback for packages such as `@workspace/ui` in the shadcn monorepo template,
+        // which list "react" there instead of in "peerDependencies"
         const result = await crawlFrameworkPkgs({
           root: process.cwd(),
           isBuild: env.command === 'build',
