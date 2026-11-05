@@ -669,8 +669,6 @@ The plugin finds these libraries by crawling your project's `package.json`. A pa
 
 The plugin also accepts `react` in `dependencies`, as a fallback for packages that list it there instead of in `peerDependencies`.
 
-The crawl doesn't read the `devDependencies` of packages below your project. If a library is listed only there, add it to your project's own `dependencies` or `devDependencies`.
-
 ### Using `@vitejs/plugin-rsc` as a framework package's `dependencies`
 
 By default, `@vitejs/plugin-rsc` is expected to be used as `peerDependencies` similar to `react` and `react-dom`. When `@vitejs/plugin-rsc` is not available at the project root (e.g., in `node_modules/@vitejs/plugin-rsc`), you will see warnings like:
