@@ -8,68 +8,18 @@ test.describe(() => {
   const root = 'examples/e2e/temp/linked-package'
 
   test.beforeAll(async () => {
-    // Dependency and import graph:
+    // Directory layout:
     //
-    // app
-    // `-- @vitejs/test-workspace-ui (linked, "react" in "dependencies")
-    //     |-- @vitejs/test-client-lib-hoisted ("react" in "peerDependencies")
-    //     `-- @vitejs/test-client-lib-isolated ("react" in "peerDependencies")
+    // node_modules/
+    // |-- test-ui -> packages/ui (linked)
+    // `-- test-client-hoisted (hoisted like npm)
+    // packages/ui/ ("react" in "dependencies", imports both client libraries)
+    // `-- node_modules/
+    //     `-- test-client-isolated (isolated like pnpm)
     //
-    // The client libraries are only reachable through the linked package, and
-    // their "use client" directive is on an internal module. The hoisted one
-    // is in the app's node_modules, like npm installs it. The isolated one is
-    // in the linked package's node_modules, like pnpm installs it.
+    // The client libraries list "react" in "peerDependencies", and their
+    // "use client" directive is on an internal module.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
-    // a React library installed in `nodeModules`
-    const clientLibrary = ({
-      nodeModules,
-      name,
-      label,
-    }: {
-      nodeModules: string
-      name: string
-      label: string
-    }) => {
-      const dir = `${nodeModules}/${name}`
-      return {
-        [`${dir}/package.json`]: json({
-          name,
-          version: '1.0.0',
-          type: 'module',
-          exports: './index.js',
-          peerDependencies: {
-            react: '*',
-          },
-        }),
-        [`${dir}/index.js`]: /* js */ `
-        export { TestClient } from './client.js'
-      `,
-        [`${dir}/client.js`]: /* js */ `
-        'use client'
-
-        import React from 'react'
-
-        const CountContext = React.createContext(0)
-
-        function Count() {
-          return ${JSON.stringify(label + ': ')} + React.useContext(CountContext)
-        }
-
-        export function TestClient() {
-          const [count, setCount] = React.useState(0)
-          return React.createElement(
-            CountContext.Provider,
-            { value: count },
-            React.createElement(
-              'button',
-              { onClick: () => setCount((value) => value + 1) },
-              React.createElement(Count),
-            ),
-          )
-        }
-      `,
-      }
-    }
     await setupInlineFixture({
       src: 'examples/starter-extra',
       dest: root,
@@ -79,13 +29,13 @@ test.describe(() => {
             const packageJson = JSON.parse(source)
             packageJson.dependencies = {
               ...packageJson.dependencies,
-              '@vitejs/test-workspace-ui': '0.0.0',
+              'test-ui': '0.0.0',
             }
             return JSON.stringify(packageJson, null, 2) + '\n'
           },
         },
         'src/root.tsx': /* tsx */ `
-          import { TestWorkspace } from '@vitejs/test-workspace-ui/server'
+          import { TestWorkspace } from 'test-ui/server'
 
           export function Root() {
             return (
@@ -98,7 +48,7 @@ test.describe(() => {
           }
         `,
         'packages/ui/package.json': json({
-          name: '@vitejs/test-workspace-ui',
+          name: 'test-ui',
           version: '0.0.0',
           private: true,
           type: 'module',
@@ -106,14 +56,14 @@ test.describe(() => {
             './server': './server.js',
           },
           dependencies: {
-            '@vitejs/test-client-lib-hoisted': '1.0.0',
-            '@vitejs/test-client-lib-isolated': '1.0.0',
+            'test-client-hoisted': '1.0.0',
+            'test-client-isolated': '1.0.0',
             react: '*',
           },
         }),
         'packages/ui/server.js': /* js */ `
-          import { TestClient as TestHoisted } from '@vitejs/test-client-lib-hoisted'
-          import { TestClient as TestIsolated } from '@vitejs/test-client-lib-isolated'
+          import { TestHoisted } from 'test-client-hoisted'
+          import { TestIsolated } from 'test-client-isolated'
           import React from 'react'
 
           export function TestWorkspace() {
@@ -125,23 +75,62 @@ test.describe(() => {
             )
           }
         `,
-        ...clientLibrary({
-          nodeModules: 'node_modules',
-          name: '@vitejs/test-client-lib-hoisted',
-          label: 'Hoisted client',
+        'node_modules/test-client-hoisted/package.json': json({
+          name: 'test-client-hoisted',
+          version: '1.0.0',
+          type: 'module',
+          exports: './index.js',
+          peerDependencies: {
+            react: '*',
+          },
         }),
-        ...clientLibrary({
-          nodeModules: 'packages/ui/node_modules',
-          name: '@vitejs/test-client-lib-isolated',
-          label: 'Isolated client',
+        'node_modules/test-client-hoisted/index.js': /* js */ `
+          export { TestHoisted } from './client.js'
+        `,
+        'node_modules/test-client-hoisted/client.js': /* js */ `
+          'use client'
+
+          import React from 'react'
+
+          export function TestHoisted() {
+            const [count, setCount] = React.useState(0)
+            return React.createElement(
+              'button',
+              { onClick: () => setCount((value) => value + 1) },
+              'Hoisted client: ' + count,
+            )
+          }
+        `,
+        'packages/ui/node_modules/test-client-isolated/package.json': json({
+          name: 'test-client-isolated',
+          version: '1.0.0',
+          type: 'module',
+          exports: './index.js',
+          peerDependencies: {
+            react: '*',
+          },
         }),
+        'packages/ui/node_modules/test-client-isolated/index.js': /* js */ `
+          export { TestIsolated } from './client.js'
+        `,
+        'packages/ui/node_modules/test-client-isolated/client.js': /* js */ `
+          'use client'
+
+          import React from 'react'
+
+          export function TestIsolated() {
+            const [count, setCount] = React.useState(0)
+            return React.createElement(
+              'button',
+              { onClick: () => setCount((value) => value + 1) },
+              'Isolated client: ' + count,
+            )
+          }
+        `,
       },
     })
     // link the workspace package like a package manager would
-    const linkPath = path.resolve(
-      root,
-      'node_modules/@vitejs/test-workspace-ui',
-    )
+    const linkPath = path.resolve(root, 'node_modules/test-ui')
     fs.mkdirSync(path.dirname(linkPath), { recursive: true })
     // a junction doesn't need extra privileges on Windows (ignored elsewhere)
     fs.symlinkSync(path.resolve(root, 'packages/ui'), linkPath, 'junction')
