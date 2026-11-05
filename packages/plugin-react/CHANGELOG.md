@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Respect Vite TypeScript enum options with the React Compiler
+
+The native React Compiler now forwards `oxc.typescript.optimizeConstEnums` and
+`oxc.typescript.optimizeEnums` to its TypeScript transform.
+
 ## 6.2.1 (2026-11-02)
 
 ### Fix `refreshInclude` and `refreshExclude` options not working ([#1543](https://github.com/vitejs/vite-plugin-react/pull/1543))

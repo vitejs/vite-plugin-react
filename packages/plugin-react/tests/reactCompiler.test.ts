@@ -1,11 +1,24 @@
 import path from 'node:path'
 import { type Plugin, rolldown } from 'rolldown'
 import { BuildEnvironment, type InlineConfig, resolveConfig } from 'vite'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import pluginReact, {
   type Options,
   type ReactCompilerOptions,
 } from '../src/index.ts'
+
+const compilerTransformOptions = vi.hoisted(() => [] as unknown[])
+
+vi.mock('oxc-transform-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('oxc-transform-react')>()
+  return {
+    ...actual,
+    transform: (...args: Parameters<typeof actual.transform>) => {
+      compilerTransformOptions.push(args[2])
+      return actual.transform(...args)
+    },
+  }
+})
 
 describe('compiler option', () => {
   test('compiles React components', async () => {
@@ -138,6 +151,60 @@ describe('compiler option', () => {
         )
       ).map,
     ).toBeTruthy()
+  })
+
+  test('forwards Vite TypeScript enum options without compiling React code', async () => {
+    const code = `
+      enum Direction {
+        Up,
+        Down,
+      }
+    `
+    compilerTransformOptions.length = 0
+    await transformWithBuildConfig(
+      {},
+      {
+        oxc: {
+          typescript: {
+            optimizeEnums: true,
+            optimizeConstEnums: true,
+          },
+        },
+      },
+      'client',
+      code,
+    )
+    await transformWithBuildConfig(
+      {},
+      {
+        oxc: {
+          typescript: {
+            optimizeEnums: false,
+            optimizeConstEnums: false,
+          },
+        },
+        environments: { ssr: {} },
+      },
+      'ssr',
+      code,
+    )
+
+    expect(compilerTransformOptions).toMatchObject([
+      {
+        typescript: { optimizeEnums: true, optimizeConstEnums: true },
+        reactCompiler: {},
+      },
+      {
+        typescript: { optimizeEnums: false, optimizeConstEnums: false },
+        reactCompiler: false,
+      },
+    ])
+  })
+
+  test('does not read TypeScript options when Vite Oxc is disabled', async () => {
+    const output = await transformWithBuildConfig({}, { oxc: false }, 'client')
+
+    expect(output.code).toContain('react/compiler-runtime')
   })
 
   test('logs recoverable diagnostics when enabled', async () => {
