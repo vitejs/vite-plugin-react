@@ -667,7 +667,7 @@ React libraries need special handling on the server so that their `"use client"`
 
 The plugin finds these libraries by crawling your project's `package.json`. A package counts as a React library when it lists `react` in `peerDependencies`. The crawl only looks inside React libraries, so a package that imports React libraries should list `react` in `peerDependencies` too.
 
-The plugin also accepts `react` in `dependencies`, for packages that list it there instead.
+The plugin also accepts `react` in `dependencies`, as a fallback for packages that list it there instead of in `peerDependencies`.
 
 The crawl doesn't read the `devDependencies` of packages below your project. If a library is listed only there, add it to your project's own `dependencies` or `devDependencies`.
 
