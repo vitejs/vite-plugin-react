@@ -36,7 +36,15 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
     // that resolve from the app, so they fail in the hoisted layout.
     const json = (value: unknown) => JSON.stringify(value, null, 2)
     // a React library whose "use client" directive is on an internal module
-    const clientLibrary = (parent: string, name: string, label: string) => {
+    const clientLibrary = ({
+      parent,
+      name,
+      label,
+    }: {
+      parent: string
+      name: string
+      label: string
+    }) => {
       const dir = `${nodeModules(parent)}/${name}`
       return {
         [`${dir}/package.json`]: json({
@@ -132,11 +140,11 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
             )
           }
         `,
-        ...clientLibrary(
-          'packages/ui',
-          '@vitejs/test-client-lib',
-          'Workspace client',
-        ),
+        ...clientLibrary({
+          parent: 'packages/ui',
+          name: '@vitejs/test-client-lib',
+          label: 'Workspace client',
+        }),
         'packages/nested/package.json': json({
           name: '@vitejs/test-workspace-nested',
           version: '0.0.0',
@@ -158,11 +166,11 @@ function defineLinkedPackageTests(layout: 'isolated' | 'hoisted') {
             return React.createElement(TestClient)
           }
         `,
-        ...clientLibrary(
-          'packages/nested',
-          '@vitejs/test-nested-client-lib',
-          'Nested workspace client',
-        ),
+        ...clientLibrary({
+          parent: 'packages/nested',
+          name: '@vitejs/test-nested-client-lib',
+          label: 'Nested workspace client',
+        }),
       },
     })
     // link workspace packages like a package manager would
