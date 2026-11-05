@@ -396,13 +396,35 @@ function createReactCompilerPlugin(
         const { transform } =
           compiler ?? (await loadCompiler((message) => this.error(message)))
 
-        const result = await transform(id.split('?')[0]!, code, {
+        const oxc = this.environment?.config.oxc
+        const typescriptOptions =
+          oxc && typeof oxc === 'object' ? oxc.typescript : undefined
+        const typescript =
+          typescriptOptions?.optimizeConstEnums === undefined &&
+          typescriptOptions?.optimizeEnums === undefined
+            ? undefined
+            : {
+                ...(typescriptOptions.optimizeConstEnums !== undefined && {
+                  optimizeConstEnums: typescriptOptions.optimizeConstEnums,
+                }),
+                ...(typescriptOptions.optimizeEnums !== undefined && {
+                  optimizeEnums: typescriptOptions.optimizeEnums,
+                }),
+              }
+
+        const transformOptions: Parameters<typeof transform>[2] & {
+          typescript?: {
+            optimizeConstEnums?: boolean
+            optimizeEnums?: boolean
+          }
+        } = {
           jsx: {
             runtime: reactOptions.jsxRuntime,
             development: jsxDevelopment,
             importSource: reactOptions.jsxImportSource,
             refresh: refreshEnabled,
           },
+          typescript,
           reactCompiler: !shouldCompile
             ? false
             : logDiagnostics
@@ -412,7 +434,12 @@ function createReactCompilerPlugin(
             ? this.environment.config.command !== 'build' ||
               !!this.environment.config.build.sourcemap
             : true /* direct Rolldown case */,
-        })
+        }
+        const result = await transform(
+          id.split('?')[0]!,
+          code,
+          transformOptions,
+        )
         const diagnostics = result.errors.map(
           (error) =>
             `${error.message}${error.codeframe ? `\n${error.codeframe}` : ''}`,
