@@ -11,9 +11,15 @@ setRequireModule({
       )
       return import(/* @vite-ignore */ id)
     } else {
-      const import_ = serverReferences[id]
+      // own keys only: an id such as `__proto__` must not resolve to an
+      // inherited member of the registry object
+      const import_ = Object.hasOwn(serverReferences, id)
+        ? serverReferences[id]
+        : undefined
       if (!import_) {
-        throw new Error(`server reference not found '${id}'`)
+        throw Object.assign(new Error(`server reference not found '${id}'`), {
+          code: 'VITE_RSC_SERVER_REFERENCE_NOT_FOUND',
+        })
       }
       return import_()
     }
