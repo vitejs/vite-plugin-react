@@ -10,6 +10,7 @@ export default defineConfig(() => {
       react(),
       babel({
         presets: [reactCompilerPreset({ target: '18' })],
+        parallel: true,
       }),
     ],
   }
