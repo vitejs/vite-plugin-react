@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 6.3.0 (2026-11-09)
+
 ### Make `reactCompilerPreset` work with `@rolldown/plugin-babel`'s `parallel` option ([#1549](https://github.com/vitejs/vite-plugin-react/pull/1549))
 
 `reactCompilerPreset` now refers to its Babel preset by module path instead of by function, so it can be sent to worker threads.
