@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { defaultCodeFilter } from './reactCompilerPreset'
+import { defaultCodeFilter, reactCompilerPreset } from './reactCompilerPreset'
+
+describe('reactCompilerPreset', () => {
+  test('preset can be sent to a worker thread', () => {
+    const { preset } = reactCompilerPreset({ compilationMode: 'annotation' })
+    expect(() => structuredClone(preset)).not.toThrow()
+  })
+})
 
 describe('defaultCodeFilter', () => {
   const cases: Record<string, [code: string, expected: boolean]> = {

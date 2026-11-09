@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: 'src/index.ts',
+  entry: ['src/index.ts', 'src/reactCompilerBabelPreset.ts'],
   fixedExtension: false,
   dts: true,
   deps: {

@@ -30,7 +30,8 @@
   ],
   "type": "module",
   "imports": {
-    "#optionalTypes": "./types/optionalTypes.d.ts"
+    "#optionalTypes": "./types/optionalTypes.d.ts",
+    "#babelPreset": "./dist/reactCompilerBabelPreset.js"
   },
   "exports": {
     ".": "./dist/index.js",
