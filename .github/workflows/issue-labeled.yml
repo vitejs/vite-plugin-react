@@ -9,17 +9,11 @@ jobs:
     if: github.repository == 'vitejs/vite-plugin-react'
     runs-on: ubuntu-latest
     permissions:
-      contents: read # to check out the repo for local actions
       issues: write # to comment on issues
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-          ref: main
-
       - name: contribution welcome
         if: github.event.label.name == 'contribution welcome' || github.event.label.name == 'help wanted'
-        uses: ./.github/actions/issues-helper
+        uses: $/.github/actions/issues-helper
         with:
           actions: create-comment
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -29,7 +23,7 @@ jobs:
 
       - name: need reproduction
         if: github.event.label.name == 'need reproduction'
-        uses: ./.github/actions/issues-helper
+        uses: $/.github/actions/issues-helper
         with:
           actions: create-comment
           token: ${{ secrets.GITHUB_TOKEN }}
