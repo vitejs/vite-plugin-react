@@ -2712,26 +2712,51 @@ function vitePluginRscCss(
       async function () {
         // Remove duplicate css during dev due to server rendered <link> and client inline <style>
         // https://github.com/remix-run/react-router/blob/166fd940e7d5df9ed005ca68e12de53b1d88324a/packages/react-router/lib/dom-export/hydrated-router.tsx#L245-L274
+        // Each <link> is removed only once Vite has injected the matching <style>,
+        // since client references hydrated later (e.g. lazy inside Suspense) inject their css after this effect.
         assert.equal(this.environment.mode, 'dev')
-        function removeFn() {
+        function removeFn(base: string) {
+          const toId = (href: string) => {
+            let path = decodeURIComponent(new URL(href).pathname)
+            if (path.startsWith(base)) path = '/' + path.slice(base.length)
+            return path
+              .replace(/^\/@fs\//, '')
+              .replace(/^\/@id\/(__x00__)?/, (_, nul) => (nul ? '\0' : ''))
+          }
+          const links = new Set<HTMLLinkElement>()
           document
-            .querySelectorAll("link[rel='stylesheet']")
+            .querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']")
             .forEach((node) => {
               if (
-                node instanceof HTMLElement &&
                 node.dataset.precedence?.startsWith('vite-rsc/client-reference')
               ) {
-                node.remove()
+                links.add(node)
               }
             })
+          const sweep = () => {
+            const styleIds = Array.from(
+              document.querySelectorAll('style[data-vite-dev-id]'),
+              (node) => node.getAttribute('data-vite-dev-id')!.split('?')[0]!,
+            )
+            for (const link of links) {
+              const id = toId(link.href)
+              if (styleIds.some((styleId) => styleId.endsWith(id))) {
+                link.remove()
+                links.delete(link)
+              }
+            }
+            if (links.size === 0) observer.disconnect()
+          }
+          const observer = new MutationObserver(sweep)
+          observer.observe(document.head, { childList: true })
+          sweep()
+          return () => observer.disconnect()
         }
         return `\
 "use client"
 import React from "react";
 export default function RemoveDuplicateServerCss() {
-  React.useEffect(() => {
-    (${removeFn.toString()})();
-  }, []);
+  React.useEffect(() => (${removeFn.toString()})(${JSON.stringify(this.environment.config.base)}), []);
   return null;
 }
 `

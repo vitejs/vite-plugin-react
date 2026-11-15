@@ -944,6 +944,37 @@ function defineTest(f: Fixture) {
       await expectNoDuplicateServerCss(page)
     })
 
+    test('keep server css until lazy client css is injected', async ({
+      page,
+    }) => {
+      let release!: () => void
+      const held = new Promise<void>((resolve) => (release = resolve))
+      await page.route(
+        '**/lazy-css/server-to-client-child.css*',
+        async (route) => {
+          if (route.request().resourceType() === 'script') await held
+          await route.continue()
+        },
+      )
+      await page.goto(f.url())
+      await waitForHydration(page)
+      await expect(
+        page.locator(
+          'link[data-precedence="vite-rsc/client-reference"][href*="style-client/client.css"]',
+        ),
+      ).toHaveCount(0)
+      await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+      release()
+      await expect(page.locator('.test-lazy-css-server-to-client')).toHaveCSS(
+        'color',
+        'rgb(255, 165, 0)',
+      )
+      await expectNoDuplicateServerCss(page)
+    })
+
     test('adding/removing css client @js', async ({ page }) => {
       await page.goto(f.url())
       await waitForHydration(page)
