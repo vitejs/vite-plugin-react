@@ -430,7 +430,19 @@ function defineTest(f: Fixture) {
     test.skip(f.mode !== 'build')
 
     testNoJs('module preload on ssr', async ({ page }) => {
-      await page.goto(f.url())
+      // Browsers hide nonce attributes from getAttribute(), so inspect the raw HTML.
+      const response = await page.goto(f.url())
+      const html = await response?.text()
+      const nonce = html?.match(
+        /<meta\b[^>]*property="csp-nonce"[^>]*nonce="([^"]+)"/,
+      )?.[1]
+      expect(nonce).toBeTruthy()
+      const preloads =
+        html?.match(/<link\b[^>]*rel="modulepreload"[^>]*>/g) ?? []
+      expect(preloads.length).toBeGreaterThan(0)
+      expect(preloads.every((link) => link.includes(`nonce="${nonce}"`))).toBe(
+        true,
+      )
       const links: Record<string, { fetchpriority: string | null }> = await page
         .locator(`head >> link[rel="modulepreload"]`)
         .evaluateAll((elements) =>

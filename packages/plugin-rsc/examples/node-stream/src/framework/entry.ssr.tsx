@@ -27,7 +27,9 @@ export async function renderHTML(
 
   let payload: Promise<RscPayload> | undefined
   function SsrRoot() {
-    payload ??= createFromNodeStream<RscPayload>(rscStreamForSsr)
+    payload ??= createFromNodeStream<RscPayload>(rscStreamForSsr, {
+      nonce: options.nonce,
+    })
     return React.use(payload).root
   }
 

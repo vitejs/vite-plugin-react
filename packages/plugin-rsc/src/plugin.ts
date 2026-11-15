@@ -1416,12 +1416,11 @@ function globalAsyncLocalStoragePlugin(): Plugin[] {
     {
       name: 'rsc:inject-async-local-storage',
       transform: {
-        filter: { code: 'typeof AsyncLocalStorage' },
+        filter: { code: 'new AsyncLocalStorage()' },
         handler(code) {
           if (
             (this.environment.name === 'ssr' ||
               this.environment.name === 'rsc') &&
-            code.includes('typeof AsyncLocalStorage') &&
             code.includes('new AsyncLocalStorage()') &&
             !code.includes('__viteRscAsyncHooks')
           ) {

@@ -27,6 +27,19 @@ export type OnClientReference = (reference: {
   deps: ResolvedAssetDeps
 }) => void
 
+// The SSR/RSC transform injects this global before modules that construct it.
+const AsyncLocalStorage = (
+  globalThis as typeof globalThis & {
+    AsyncLocalStorage: typeof import('node:async_hooks').AsyncLocalStorage
+  }
+).AsyncLocalStorage
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+
+/** Run RSC decoding with the nonce used for its SSR resource hints. */
+export function withPreloadNonce<T>(nonce: string | undefined, fn: () => T): T {
+  return nonceStorage.run(nonce, fn)
+}
+
 // Registered callback for client reference deps
 let onClientReference: OnClientReference | undefined
 
@@ -97,6 +110,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
       // https://github.com/vitejs/vite/issues/6648
       crossOrigin: '',
+      nonce: nonceStorage.getStore(),
     }
     if (!clientEntryJsSet.has(href)) {
       // @ts-expect-error fetchPriority is not yet in React's public types

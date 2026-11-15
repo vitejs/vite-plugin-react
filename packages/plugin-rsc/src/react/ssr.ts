@@ -1,6 +1,7 @@
 // @ts-ignore
 import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
 import { createServerConsumerManifest } from '../core/ssr'
+import { withPreloadNonce } from '../ssr/shared'
 import type {
   ClientTemporaryReferenceSet,
   CreateFromReadableStreamEdgeOptions,
@@ -14,10 +15,12 @@ export function createFromReadableStream<T>(
   stream: ReadableStream<Uint8Array>,
   options: CreateFromReadableStreamEdgeOptions = {},
 ): Promise<T> {
-  return ReactClient.createFromReadableStream(stream, {
-    serverConsumerManifest: createServerConsumerManifest(),
-    ...options,
-  })
+  return withPreloadNonce(options.nonce, () =>
+    ReactClient.createFromReadableStream(stream, {
+      serverConsumerManifest: createServerConsumerManifest(),
+      ...options,
+    }),
+  )
 }
 
 export function createServerReference(id: string): unknown {

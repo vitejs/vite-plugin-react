@@ -20,7 +20,9 @@ export async function renderHTML(
 
   let payload: Promise<RscPayload>
   function SsrRoot() {
-    payload ??= createFromReadableStream<RscPayload>(rscStream1)
+    payload ??= createFromReadableStream<RscPayload>(rscStream1, {
+      nonce: options?.nonce,
+    })
     return React.use(payload).root
   }
 
