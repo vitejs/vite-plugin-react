@@ -31,16 +31,3 @@ export function once<Fn extends (...args: any[]) => any>(fn: Fn): Fn {
     return result
   } as Fn
 }
-
-export function memoize<Fn extends (argument: any) => any>(fn: Fn): Fn {
-  type Argument = Parameters<Fn>[0]
-  const cache = new Map<Argument, ReturnType<Fn>>()
-  return function (this: ThisParameterType<Fn>, argument: Argument) {
-    if (cache.has(argument)) {
-      return cache.get(argument)
-    }
-    const newValue = fn.call(this, argument)
-    cache.set(argument, newValue)
-    return newValue
-  } as Fn
-}
