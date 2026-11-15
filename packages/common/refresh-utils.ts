@@ -48,11 +48,12 @@ if (import.meta.hot && !inWebWorker) {
     )}, currentExports);
     import.meta.hot.accept((nextExports) => {
       if (!nextExports) return;
-      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundary(${JSON.stringify(
         id,
       )}, currentExports, nextExports);
       if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
     });
+    import.meta.hot.on('vite:afterUpdate', RefreshRuntime.flushPendingRefresh)
   });
 }
 `

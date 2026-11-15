@@ -613,28 +613,19 @@ export function registerExportsForReactRefresh(filename, moduleExports) {
   }
 }
 
-function debounce(fn, delay) {
-  let handle
-  return () => {
-    clearTimeout(handle)
-    handle = setTimeout(fn, delay)
-  }
-}
-
 const hooks = []
 window.__registerBeforePerformReactRefresh = (cb) => {
   hooks.push(cb)
 }
-const enqueueUpdate = debounce(async () => {
+const seenPayloads = new WeakSet()
+export const flushPendingRefresh = async (payload) => {
+  if (seenPayloads.has(payload)) return
+  seenPayloads.add(payload)
   if (hooks.length) await Promise.all(hooks.map((cb) => cb()))
   performReactRefresh()
-}, 16)
+}
 
-export function validateRefreshBoundaryAndEnqueueUpdate(
-  id,
-  prevExports,
-  nextExports,
-) {
+export function validateRefreshBoundary(id, prevExports, nextExports) {
   let hasExports = false
   const ignoredExports = window.__getReactRefreshIgnoredExports?.({ id }) ?? []
 
@@ -673,9 +664,7 @@ export function validateRefreshBoundaryAndEnqueueUpdate(
     }
   }
 
-  if (hasExports) {
-    enqueueUpdate()
-  } else {
+  if (!hasExports) {
     return `No exports`
   }
 }
