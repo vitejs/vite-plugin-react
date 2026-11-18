@@ -155,13 +155,35 @@ class RscPluginManager {
     return normalizePath(path.relative(this.config.root, id))
   }
 
+  resolveOutDir(environmentName: string): string {
+    return path.resolve(
+      this.config.root,
+      this.config.environments[environmentName]!.build.outDir,
+    )
+  }
+
+  // ssr output nested inside rsc output (e.g. cloudflare `childEnvironments: ["ssr"]`)
+  // is deployed together with it, so it reuses the rsc manifest instead of an identical copy.
+  getAssetsManifestEnvironment(environmentName: string): string {
+    if (
+      environmentName === 'ssr' &&
+      this.config.environments.rsc &&
+      this.resolveOutDir('ssr').startsWith(this.resolveOutDir('rsc') + path.sep)
+    ) {
+      return 'rsc'
+    }
+    return environmentName
+  }
+
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
     // this makes each server build to be self-contained and deploy-able for cloudflare.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       this.buildAssetsManifest,
     )}`
-    for (const name of environmentNames) {
+    for (const name of new Set(
+      environmentNames.map((name) => this.getAssetsManifestEnvironment(name)),
+    )) {
       const manifestPath = path.join(
         this.config.environments[name]!.build.outDir,
         BUILD_ASSETS_MANIFEST_NAME,
@@ -1278,10 +1300,20 @@ export function createRpcClient(params) {
       renderChunk(code, chunk) {
         if (code.includes('virtual:vite-rsc/assets-manifest')) {
           assert(this.environment.name !== 'client')
+          const manifestEnvironment = manager.getAssetsManifestEnvironment(
+            this.environment.name,
+          )
           const replacement = normalizeRelativePath(
             path.relative(
-              path.join(chunk.fileName, '..'),
-              BUILD_ASSETS_MANIFEST_NAME,
+              path.join(
+                manager.resolveOutDir(this.environment.name),
+                chunk.fileName,
+                '..',
+              ),
+              path.join(
+                manager.resolveOutDir(manifestEnvironment),
+                BUILD_ASSETS_MANIFEST_NAME,
+              ),
             ),
           )
           code = code.replaceAll(
