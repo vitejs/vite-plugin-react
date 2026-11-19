@@ -25,27 +25,43 @@ describe(memoizeReferenceRequire, () => {
     expect(load).toHaveBeenLastCalledWith('/a.js' + second)
   })
 
-  it('gives an older tag the last settled load, with its state', async () => {
-    const { load, requireModule } = setup()
+  it('keeps an older render reading its own load after a newer one', async () => {
+    const error = new Error('boom')
+    const load = vi
+      .fn<(id: string) => Promise<unknown>>()
+      .mockResolvedValueOnce({ load: 1 })
+      .mockRejectedValueOnce(error)
+    const requireModule = memoizeReferenceRequire(load)
     const first = createReferenceCacheTag()
     const second = createReferenceCacheTag()
-    const third = createReferenceCacheTag()
     const firstPromise = requireModule('/a.js' + first)
+    const secondPromise = requireModule('/a.js' + second)
     await firstPromise
+    await expect(secondPromise).rejects.toBe(error)
+    expect(requireModule('/a.js' + first)).toBe(firstPromise)
     expect(firstPromise).toMatchObject({
       status: 'fulfilled',
       value: { load: 1 },
     })
-
-    // a newer render's load hasn't settled: the older render keeps its own.
-    const thirdPromise = requireModule('/a.js' + third)
-    expect(requireModule('/a.js' + first)).toBe(firstPromise)
-    expect(requireModule('/a.js' + second)).toBe(firstPromise)
-
-    // once it has, an older render gets the newer module.
-    await thirdPromise
-    expect(requireModule('/a.js' + first)).toBe(thirdPromise)
     expect(load).toHaveBeenCalledTimes(2)
+  })
+
+  it('gives a tag older than the latest ones the last fulfilled load', async () => {
+    const error = new Error('boom')
+    const load = vi.fn((id: string) =>
+      id.includes(last) ? Promise.reject(error) : Promise.resolve({ id }),
+    )
+    const requireModule = memoizeReferenceRequire(load)
+    const oldest = createReferenceCacheTag()
+    const tags = Array.from({ length: 16 }, () => createReferenceCacheTag())
+    const last = tags.at(-1)!
+    const promises = tags.map((tag) => requireModule('/a.js' + tag))
+    await Promise.allSettled(promises)
+    expect(load).toHaveBeenCalledTimes(16)
+
+    // the newest load rejected, so the one before it is the fallback.
+    expect(requireModule('/a.js' + oldest)).toBe(promises.at(-2))
+    expect(load).toHaveBeenCalledTimes(16)
   })
 
   it('keeps an older render reading a module it loads first', async () => {
