@@ -33,7 +33,7 @@ export interface ResourceOptions {
   nonce?: string
 }
 
-export type GetResourceOptions = (resource: {
+export type ResourceOptionsCallback = (resource: {
   as: 'style' | 'script'
   href: string
 }) => ResourceOptions | undefined

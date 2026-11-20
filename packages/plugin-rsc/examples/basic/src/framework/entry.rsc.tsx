@@ -6,7 +6,7 @@ import {
   loadServerAction,
   decodeAction,
   decodeFormState,
-  setResourceOptions,
+  setResourceOptionsCallback,
 } from '@vitejs/plugin-rsc/rsc/server'
 import type React from 'react'
 import type { ReactFormState } from 'react-dom/client'
@@ -15,7 +15,7 @@ import { parseRenderRequest } from './request.tsx'
 // `Resources` renders server components' css links during the render below,
 // so the framework provides their nonce through its own request-scoped storage.
 const nonceStorage = new AsyncLocalStorage<string | undefined>()
-setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
 
 export type RscPayload = {
   root: React.ReactNode

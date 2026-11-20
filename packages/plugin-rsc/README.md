@@ -465,7 +465,7 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `decodeAction/decodeReply/decodeFormState/loadServerAction`
 - `registerClientReference/registerServerReference`
 - `createTemporaryReferenceSet`
-- `setResourceOptions` (see [below](#vite-specific-extension-setresourceoptions-experimental))
+- `setResourceOptionsCallback` (see [below](#vite-specific-extension-setresourceoptionscallback-experimental))
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
@@ -553,17 +553,17 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `encodeReply`: Serializes server function arguments
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
-- `setResourceOptions` (see [below](#vite-specific-extension-setresourceoptions-experimental))
+- `setResourceOptionsCallback` (see [below](#vite-specific-extension-setresourceoptionscallback-experimental))
 
-#### Vite-specific extension: `setResourceOptions` (experimental)
+#### Vite-specific extension: `setResourceOptionsCallback` (experimental)
 
 > [!NOTE]
 > This is a Vite-specific API. The official `react-server-dom` does not provide it.
 
-`setResourceOptions` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`. The function receives `as` (`'style'` or `'script'`), so a CSP with different nonces for scripts and styles can return the matching one.
+`setResourceOptionsCallback` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`. The function receives `as` (`'style'` or `'script'`), so a CSP with different nonces for scripts and styles can return the matching one.
 
 ```ts
-function setResourceOptions(
+function setResourceOptionsCallback(
   fn:
     | ((resource: {
         as: 'style' | 'script'
@@ -586,11 +586,11 @@ function setResourceOptions(
 import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   renderToReadableStream,
-  setResourceOptions,
+  setResourceOptionsCallback,
 } from '@vitejs/plugin-rsc/rsc/server'
 
 const nonceStorage = new AsyncLocalStorage<string | undefined>()
-setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
 
 const rscStream = nonceStorage.run(nonce, () =>
   renderToReadableStream(payload),
@@ -598,11 +598,11 @@ const rscStream = nonceStorage.run(nonce, () =>
 
 // entry.ssr.tsx
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { setResourceOptions } from '@vitejs/plugin-rsc/ssr'
+import { setResourceOptionsCallback } from '@vitejs/plugin-rsc/ssr'
 import { renderToReadableStream } from 'react-dom/server.edge'
 
 const nonceStorage = new AsyncLocalStorage<string | undefined>()
-setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
 
 const htmlStream = await nonceStorage.run(nonce, () =>
   renderToReadableStream(<SsrRoot />, { nonce }),

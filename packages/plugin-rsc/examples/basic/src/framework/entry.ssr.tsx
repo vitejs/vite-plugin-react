@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   createFromReadableStream,
   getClientEntryUrl,
-  setResourceOptions,
+  setResourceOptionsCallback,
 } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
@@ -13,7 +13,7 @@ import type { RscPayload } from './entry.rsc'
 // client references' preloads and stylesheets are added during the SSR render
 // below, so the framework provides their nonce through its own request-scoped storage.
 const nonceStorage = new AsyncLocalStorage<string | undefined>()
-setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
 
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,

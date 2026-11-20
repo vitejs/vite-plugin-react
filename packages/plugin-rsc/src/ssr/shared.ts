@@ -1,13 +1,13 @@
 import * as ReactDOM from 'react-dom'
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
-import type { GetResourceOptions } from '../core/shared'
+import type { ResourceOptionsCallback } from '../core/shared'
 import { setRequireModule } from '../core/ssr'
 import type { ResolvedAssetDeps } from '../plugin'
 import { toCssVirtual, toReferenceValidationVirtual } from '../plugins/shared'
 
 export { createServerConsumerManifest } from '../core/ssr'
-export type { GetResourceOptions, ResourceOptions } from '../core/shared'
+export type { ResourceOptionsCallback, ResourceOptions } from '../core/shared'
 
 export function getClientEntryUrl(): string {
   const url = assetsManifest.clientEntryUrl
@@ -43,7 +43,7 @@ export function setOnClientReference(
   onClientReference = callback
 }
 
-let getResourceOptions: GetResourceOptions | undefined
+let getResourceOptions: ResourceOptionsCallback | undefined
 
 /**
  * Registers a function that returns options, such as a CSP nonce, for the
@@ -54,7 +54,9 @@ let getResourceOptions: GetResourceOptions | undefined
  * `@vitejs/plugin-rsc/rsc` exports the same API for server components' CSS.
  * @experimental
  */
-export function setResourceOptions(fn: GetResourceOptions | undefined): void {
+export function setResourceOptionsCallback(
+  fn: ResourceOptionsCallback | undefined,
+): void {
   getResourceOptions = fn
 }
 

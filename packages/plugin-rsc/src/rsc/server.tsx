@@ -9,9 +9,9 @@ export {
   createClientManifest,
   createServerManifest,
   loadServerAction,
-  setResourceOptions,
+  setResourceOptionsCallback,
 } from '../core/rsc'
-export type { GetResourceOptions, ResourceOptions } from '../core/shared'
+export type { ResourceOptionsCallback, ResourceOptions } from '../core/shared'
 
 export * from '../react/rsc/server'
 

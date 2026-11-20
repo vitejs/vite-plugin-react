@@ -27,7 +27,7 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
-import type { GetResourceOptions } from './core/shared'
+import type { ResourceOptionsCallback } from './core/shared'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
@@ -2752,7 +2752,7 @@ function generateResourcesCode(
     deps: ResolvedAssetDeps,
     RemoveDuplicateServerCss: React.FC | undefined,
     precedence: string | undefined,
-    getResourceOptions: GetResourceOptions,
+    getResourceOptions: ResourceOptionsCallback,
   ) => {
     // `deps` is static for this module, so reuse the element across renders
     // while the nonces stay the same, which they do within a request. React

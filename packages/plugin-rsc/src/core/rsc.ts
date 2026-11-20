@@ -7,7 +7,7 @@ import {
   createReferenceCacheTag,
   removeReferenceCacheTag,
   setInternalRequire,
-  type GetResourceOptions,
+  type ResourceOptionsCallback,
   type ResourceOptions,
 } from './shared'
 
@@ -200,7 +200,7 @@ export interface CreateServerManifestOptions {
   onServerReference?: (metadata: ServerReferenceMetadata) => void
 }
 
-let getResourceOptions: GetResourceOptions | undefined
+let getResourceOptions: ResourceOptionsCallback | undefined
 
 /**
  * Registers a function that returns options, such as a CSP nonce, for the
@@ -210,12 +210,14 @@ let getResourceOptions: GetResourceOptions | undefined
  * `@vitejs/plugin-rsc/ssr` exports the same API for the links SSR adds.
  * @experimental
  */
-export function setResourceOptions(fn: GetResourceOptions | undefined): void {
+export function setResourceOptionsCallback(
+  fn: ResourceOptionsCallback | undefined,
+): void {
   getResourceOptions = fn
 }
 
 export function getResourceOptionsInternal(
-  resource: Parameters<GetResourceOptions>[0],
+  resource: Parameters<ResourceOptionsCallback>[0],
 ): ResourceOptions | undefined {
   return getResourceOptions?.(resource)
 }
