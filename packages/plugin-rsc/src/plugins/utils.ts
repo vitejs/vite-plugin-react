@@ -70,6 +70,11 @@ export function normalizeRelativePath(s: string): string {
   return s[0] === '.' ? s : './' + s
 }
 
+// whether `child` is strictly inside `parent` (both absolute paths)
+export function isPathInside(child: string, parent: string): boolean {
+  return path.normalize(child).startsWith(path.normalize(parent) + path.sep)
+}
+
 export function getEntrySource(
   config: Pick<ResolvedConfig, 'build'>,
   name?: string,

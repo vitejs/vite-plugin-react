@@ -54,6 +54,7 @@ import {
   createVirtualPlugin,
   getEntrySource,
   hashString,
+  isPathInside,
   normalizeRelativePath,
   getFetchHandlerExport,
   sortObject,
@@ -158,15 +159,32 @@ class RscPluginManager {
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
     // this makes each server build to be self-contained and deploy-able for cloudflare.
+    // when a server outDir is nested inside another (e.g. cloudflare `childEnvironments: ['ssr']`
+    // puts ssr output in `dist/rsc/ssr`), both are deployed together, so the nested one
+    // only gets a re-export of the outer manifest instead of a second full copy.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       this.buildAssetsManifest,
     )}`
-    for (const name of environmentNames) {
-      const manifestPath = path.join(
-        this.config.environments[name]!.build.outDir,
-        BUILD_ASSETS_MANIFEST_NAME,
-      )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
+    const outDirs = environmentNames.map(
+      (name) => this.config.environments[name]!.build.outDir,
+    )
+    for (const outDir of outDirs) {
+      const manifestPath = path.join(outDir, BUILD_ASSETS_MANIFEST_NAME)
+      const outerOutDir = outDirs.find((other) => isPathInside(outDir, other))
+      if (outerOutDir) {
+        const importPath = normalizeRelativePath(
+          path.relative(
+            outDir,
+            path.join(outerOutDir, BUILD_ASSETS_MANIFEST_NAME),
+          ),
+        )
+        fs.writeFileSync(
+          manifestPath,
+          `export { default } from ${JSON.stringify(importPath)}\n`,
+        )
+      } else {
+        fs.writeFileSync(manifestPath, assetsManifestCode)
+      }
     }
   }
 
@@ -441,9 +459,7 @@ export default function vitePluginRsc(
     // Check if RSC outDir is inside SSR outDir to avoid SSR build overwriting RSC output
     const rscOutDir = builder.environments.rsc!.config.build.outDir
     const ssrOutDir = builder.environments.ssr!.config.build.outDir
-    const rscInsideSsr = path
-      .normalize(rscOutDir)
-      .startsWith(path.normalize(ssrOutDir) + path.sep)
+    const rscInsideSsr = isPathInside(rscOutDir, ssrOutDir)
 
     // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
