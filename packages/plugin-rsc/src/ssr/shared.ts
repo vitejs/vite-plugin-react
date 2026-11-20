@@ -109,6 +109,7 @@ function wrapResourceProxy(mod: any, id: string, deps: ResolvedAssetDeps) {
 }
 
 function preloadDeps(deps: ResolvedAssetDeps) {
+  const nonce = resourceOptionsCallback?.()?.nonce
   const clientEntryJsSet = new Set(assetsManifest.clientEntryDeps?.js ?? [])
   for (const href of deps.js) {
     const options: ReactDOM.PreloadModuleOptions = {
@@ -116,7 +117,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
       // https://github.com/vitejs/vite/issues/6648
       crossOrigin: '',
-      nonce: resourceOptionsCallback?.({ as: 'script', href })?.nonce,
+      nonce,
     }
     if (!clientEntryJsSet.has(href)) {
       // @ts-expect-error fetchPriority is not yet in React's public types
@@ -130,7 +131,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       crossOrigin: 'anonymous',
       // React 19.3 drops `nonce` for `as: 'style'`, so this has no effect until
       // React forwards it the way it does for scripts.
-      nonce: resourceOptionsCallback?.({ as: 'style', href })?.nonce,
+      nonce,
       precedence:
         assetsManifest.cssLinkPrecedence !== false
           ? 'vite-rsc/client-reference'

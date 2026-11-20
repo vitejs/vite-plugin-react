@@ -26,13 +26,10 @@ export function setInternalRequire(): void {
   }
 }
 
-export type ResourceOptionsCallback = (resource: {
-  as: 'style' | 'script'
-  href: string
-}) =>
+export type ResourceOptionsCallback = () =>
   | {
       /**
-       * CSP nonce for the resource's `<link>`.
+       * CSP nonce for the `<link>` elements.
        */
       nonce?: string
     }

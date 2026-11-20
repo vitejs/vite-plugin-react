@@ -560,26 +560,23 @@ This module provides Vite-integrated RSC runtime APIs based on
 > [!NOTE]
 > This is a Vite-specific API. The official `react-server-dom` does not provide it.
 
-`setResourceOptionsCallback` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`. The function receives `as` (`'style'` or `'script'`), so a CSP with different nonces for scripts and styles can return the matching one.
+`setResourceOptionsCallback` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`.
 
 ```ts
 function setResourceOptionsCallback(
-  fn:
-    | ((resource: {
-        as: 'style' | 'script'
-        href: string
-      }) => { nonce?: string } | undefined)
-    | undefined,
+  fn: (() => { nonce?: string } | undefined) | undefined,
 ): void
 ```
 
 `@vitejs/plugin-rsc/rsc/server` and `@vitejs/plugin-rsc/ssr` both export it with the same signature. The `rsc` and `ssr` environments are separate module graphs, so register it in each:
 
-| Environment | Exported from                   | Links it covers                                                                                                                                    | `as`       |
-| ----------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)                       | `'style'`  |
-| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                                      | `'script'` |
-| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React doesn't forward `nonce` for stylesheets yet, so these get no nonce yet | `'style'`  |
+| Environment | Exported from                   | Links it covers                                                                                                                                    |
+| ----------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)                       |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                                      |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React doesn't forward `nonce` for stylesheets yet, so these get no nonce yet |
+
+With separate nonces for scripts and styles, return the style nonce in `rsc` and the script nonce in `ssr`.
 
 ```ts
 // entry.rsc.tsx

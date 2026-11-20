@@ -2755,28 +2755,22 @@ function generateResourcesCode(
     getResourceOptionsCallback: () => ResourceOptionsCallback | undefined,
   ) => {
     // `deps` is static for this module, so reuse the element across renders
-    // while the nonces stay the same, which they do within a request. React
+    // while the nonce stays the same, which it does within a request. React
     // Flight serializes an element it has already written as a short
     // reference, so a component rendered many times doesn't repeat every
     // stylesheet link in the RSC payload.
-    let cachedNonces: (string | undefined)[] | undefined
+    let cachedNonce: string | undefined
     let cachedElement: React.ReactNode
     return function Resources() {
-      const callback = getResourceOptionsCallback()
-      const nonces = deps.css.map(
-        (href) => callback?.({ as: 'style', href })?.nonce,
-      )
-      if (
-        !cachedNonces ||
-        nonces.some((nonce, i) => nonce !== cachedNonces![i])
-      ) {
+      const nonce = getResourceOptionsCallback()?.()?.nonce
+      if (!cachedElement || nonce !== cachedNonce) {
         cachedElement = React.createElement(React.Fragment, null, [
-          ...deps.css.map((href: string, i) =>
+          ...deps.css.map((href: string) =>
             React.createElement('link', {
               key: 'css:' + href,
               rel: 'stylesheet',
               crossOrigin: 'anonymous',
-              ...(nonces[i] ? { nonce: nonces[i] } : {}),
+              ...(nonce ? { nonce } : {}),
               ...(precedence ? { precedence } : {}),
               href: href,
               'data-rsc-css-href': href,
@@ -2787,7 +2781,7 @@ function generateResourcesCode(
               key: 'remove-duplicate-css',
             }),
         ])
-        cachedNonces = nonces
+        cachedNonce = nonce
       }
       return cachedElement
     }
