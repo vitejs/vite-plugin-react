@@ -604,7 +604,7 @@ const htmlStream = await nonceStorage.run(nonce, () =>
 )
 ```
 
-In `ssr`, the RSC stream has to be decoded inside the SSR render, as React already requires for its own resource hints, for example by calling `createFromReadableStream` lazily from the root component.
+In `ssr`, these links reach the HTML only if the RSC stream is decoded inside the SSR render (see [Decoding the RSC stream inside the SSR render](#decoding-the-rsc-stream-inside-the-ssr-render)).
 
 The framework is responsible for the following:
 
@@ -696,6 +696,20 @@ export function Page() {
     </>
   )
 }
+```
+
+### Decoding the RSC stream inside the SSR render
+
+During SSR, the plugin emits client references' `<link rel="modulepreload">` and stylesheets through `ReactDOM.preloadModule` and `ReactDOM.preinit` while the RSC stream is decoded. React attaches those hints to the SSR render only when decoding runs inside it. If `createFromReadableStream` is awaited before `renderToReadableStream`, React drops them, along with any nonce from [`setResourceOptionsCallback`](#vite-specific-extension-setresourceoptionscallback-experimental). Start decoding lazily from the root component instead:
+
+```tsx
+let payload: Promise<RscPayload> | undefined
+function SsrRoot() {
+  payload ??= createFromReadableStream<RscPayload>(rscStream)
+  return React.use(payload).root
+}
+
+const htmlStream = await renderToReadableStream(<SsrRoot />, options)
 ```
 
 ### Using different React versions
