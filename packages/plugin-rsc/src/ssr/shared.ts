@@ -129,8 +129,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
     ReactDOM.preinit(href, {
       as: 'style',
       crossOrigin: 'anonymous',
-      // React 19.3 drops `nonce` for `as: 'style'`, so this has no effect until
-      // React forwards it the way it does for scripts.
+      // React 19.3 drops `nonce` for `as: 'style'`, unlike for `as: 'script'`.
       nonce,
       precedence:
         assetsManifest.cssLinkPrecedence !== false

@@ -570,11 +570,11 @@ function setResourceOptionsCallback(
 
 `@vitejs/plugin-rsc/rsc/server` and `@vitejs/plugin-rsc/ssr` both export it with the same signature. The `rsc` and `ssr` environments are separate module graphs, so register it in each:
 
-| Environment | Exported from                   | Links it covers                                                                                                                                    |
-| ----------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)                       |
-| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                                      |
-| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React doesn't forward `nonce` for stylesheets yet, so these get no nonce yet |
+| Environment | Exported from                   | Links it covers                                                                                                                       |
+| ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)          |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                         |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React 19.3 drops `nonce` for stylesheets, so these get no nonce |
 
 ```ts
 // entry.rsc.tsx
@@ -616,7 +616,7 @@ The framework is responsible for the following:
 
 Not covered yet:
 
-- With a strict `style-src`, client components' CSS stays blocked until React forwards `nonce` in `ReactDOM.preinit(href, { as: 'style' })`. The plugin already passes it there, so it starts working without changes once React does.
+- With a strict `style-src`, client components' CSS is blocked. The plugin passes `nonce` to `ReactDOM.preinit(href, { as: 'style' })`, but React 19.3 drops it for stylesheets, unlike for scripts.
 
 ### Node.js stream APIs variants
 
