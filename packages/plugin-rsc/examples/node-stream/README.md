@@ -12,6 +12,6 @@ IncomingMessage
   -> ServerResponse
 ```
 
-[`vite.config.ts`](./vite.config.ts) sets `serverHandler: false` and installs the handler in both `configureServer` and `configurePreviewServer`. During development, the plugin imports the RSC entry through Vite's RSC environment runner so that server HMR remains active. Preview imports the built RSC entry directly.
+[`vite.config.ts`](./vite.config.ts) sets `serverHandler: false` and installs the handler in both `configureServer` and `configurePreviewServer`. It also sets `reactServerDomBuild: 'node'`, so the plugin's runtime uses React's Node builds of `react-server-dom` like the `.node` entry points, paired with `react-dom/server.node`. During development, the plugin imports the RSC entry through Vite's RSC environment runner so that server HMR remains active. Preview imports the built RSC entry directly.
 
 [`rsc-html-stream.server.node.ts`](./src/framework/rsc-html-stream.server.node.ts) is the Node.js stream counterpart of `rsc-html-stream/server`. The browser entry continues using `rsc-html-stream/client`, because browser fetch and hydration use Web streams.

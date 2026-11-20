@@ -1,7 +1,12 @@
+import path from 'node:path'
 import { expect, test } from '@playwright/test'
 import { x } from 'tinyexec'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
-import { expectNoPageError, waitForHydration } from './helper'
+import {
+  expectNoPageError,
+  getBundledReactServerDomBuilds,
+  waitForHydration,
+} from './helper'
 import { defineStarterTest } from './starter'
 
 test.describe('dev-default', () => {
@@ -59,6 +64,15 @@ test.describe('dev-default', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'build' })
   defineStarterTest(f)
+
+  test('bundles edge builds of react-server-dom by default', () => {
+    expect(
+      getBundledReactServerDomBuilds(path.join(f.root, 'dist/rsc')),
+    ).toEqual(['server.edge'])
+    expect(
+      getBundledReactServerDomBuilds(path.join(f.root, 'dist/ssr')),
+    ).toEqual(['client.edge'])
+  })
 })
 
 test.describe('dev-production', () => {

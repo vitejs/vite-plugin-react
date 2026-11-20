@@ -4,16 +4,17 @@ import { defineConfig } from 'vite'
 import { nodeServerPlugin } from './src/framework/server-plugin.ts'
 
 export default defineConfig({
-  plugins: [rsc({ serverHandler: false }), react(), nodeServerPlugin()],
+  plugins: [
+    rsc({
+      serverHandler: false,
+      // pair Flight with `react-dom/server.node` used by `entry.ssr.tsx`
+      reactServerDomBuild: 'node',
+    }),
+    react(),
+    nodeServerPlugin(),
+  ],
   environments: {
     rsc: {
-      optimizeDeps: {
-        include: [
-          '@vitejs/plugin-rsc/vendor/react-server-dom/server.node',
-          '@vitejs/plugin-rsc/vendor/react-server-dom/static.node',
-          '@vitejs/plugin-rsc/vendor/react-server-dom/client.node',
-        ],
-      },
       build: {
         rollupOptions: {
           input: {
@@ -23,9 +24,6 @@ export default defineConfig({
       },
     },
     ssr: {
-      optimizeDeps: {
-        include: ['@vitejs/plugin-rsc/vendor/react-server-dom/client.node'],
-      },
       build: {
         rollupOptions: {
           input: {

@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as ReactClient from '@vitejs/plugin-rsc/vendor/react-server-dom/client.edge'
+import * as ReactClient from '@vitejs/plugin-rsc/react-server-dom/client'
 import type {
   ClientTemporaryReferenceSet,
   CreateFromReadableStreamEdgeOptions,
