@@ -7,7 +7,7 @@ import type { ResolvedAssetDeps } from '../plugin'
 import { toCssVirtual, toReferenceValidationVirtual } from '../plugins/shared'
 
 export { createServerConsumerManifest } from '../core/ssr'
-export type { ResourceOptionsCallback, ResourceOptions } from '../core/shared'
+export type { ResourceOptionsCallback } from '../core/shared'
 
 export function getClientEntryUrl(): string {
   const url = assetsManifest.clientEntryUrl

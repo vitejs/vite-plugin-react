@@ -26,14 +26,14 @@ export function setInternalRequire(): void {
   }
 }
 
-export interface ResourceOptions {
-  /**
-   * CSP nonce for the resource's `<link>`.
-   */
-  nonce?: string
-}
-
 export type ResourceOptionsCallback = (resource: {
   as: 'style' | 'script'
   href: string
-}) => ResourceOptions | undefined
+}) =>
+  | {
+      /**
+       * CSP nonce for the resource's `<link>`.
+       */
+      nonce?: string
+    }
+  | undefined

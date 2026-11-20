@@ -19,7 +19,7 @@ export {
   loadServerAction,
   setResourceOptionsCallback,
 } from '../core/rsc'
-export type { ResourceOptionsCallback, ResourceOptions } from '../core/shared'
+export type { ResourceOptionsCallback } from '../core/shared'
 
 export * from '../react/rsc/server.node'
 
