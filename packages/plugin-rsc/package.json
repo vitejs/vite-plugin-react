@@ -53,7 +53,7 @@
     "@playwright/test": "^1.64.1",
     "@tsconfig/strictest": "^2.0.8",
     "@types/estree": "^1.0.10",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript/typescript6": "^6.0.2",
