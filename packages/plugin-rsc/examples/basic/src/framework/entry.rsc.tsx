@@ -108,18 +108,9 @@ async function handler(request: Request): Promise<Response> {
 
   const { Root } = await import('../routes/root.tsx')
   const nonce = !process.env.NO_CSP ? crypto.randomUUID() : undefined
-  // https://vite.dev/guide/features.html#content-security-policy-csp
-  // this isn't needed if `style-src: 'unsafe-inline'` (dev) and `script-src: 'self'`
-  const nonceMeta = nonce && <meta property="csp-nonce" nonce={nonce} />
-  const root = (
-    <>
-      {nonceMeta}
-      <Root url={url} />
-    </>
-  )
   const response = await handleRequest({
     request,
-    getRoot: () => root,
+    getRoot: () => <Root url={url} />,
     nonce,
   })
   if (nonce && response.headers.get('content-type')?.includes('text/html')) {
