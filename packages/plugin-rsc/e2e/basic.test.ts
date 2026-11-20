@@ -846,6 +846,37 @@ function defineTest(f: Fixture) {
     }
   })
 
+  test('resource nonce', async () => {
+    // Browsers hide `nonce` from `getAttribute`, so inspect the raw HTML.
+    // Fetch twice so the second request covers client reference modules that
+    // `load` already cached, with a nonce different from the first.
+    const nonces: string[] = []
+    for (let i = 0; i < 2; i++) {
+      const html = await (await fetch(f.url())).text()
+      const nonce = html.match(
+        /<meta\b[^>]*property="csp-nonce"[^>]*nonce="([^"]+)"/,
+      )?.[1]
+      expect(nonce).toBeTruthy()
+      nonces.push(nonce!)
+      // server components' css rendered by `Resources`
+      const cssLinks = html.match(/<link\b[^>]*data-rsc-css-href[^>]*>/g) ?? []
+      expect(cssLinks.length).toBeGreaterThan(0)
+      for (const link of cssLinks) {
+        expect(link).toContain(`nonce="${nonce}"`)
+      }
+      // client references' js preloaded during SSR, which has deps only on build
+      if (f.mode === 'build') {
+        const preloads =
+          html.match(/<link\b[^>]*rel="modulepreload"[^>]*>/g) ?? []
+        expect(preloads.length).toBeGreaterThan(0)
+        for (const link of preloads) {
+          expect(link).toContain(`nonce="${nonce}"`)
+        }
+      }
+    }
+    expect(nonces[0]).not.toBe(nonces[1])
+  })
+
   async function testCssBasic(page: Page) {
     await testCss(page)
     await expect(page.locator('.test-dep-css-in-server')).toHaveCSS(

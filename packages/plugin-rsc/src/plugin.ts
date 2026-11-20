@@ -27,6 +27,7 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
+import type { GetResourceOptions } from './core/shared'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
@@ -2749,36 +2750,51 @@ function generateResourcesCode(
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
-    RemoveDuplicateServerCss?: React.FC,
-    precedence?: string,
+    RemoveDuplicateServerCss: React.FC | undefined,
+    precedence: string | undefined,
+    getResourceOptions: GetResourceOptions,
   ) => {
-    // `deps` is static for this module, so create the element once and return
-    // the same object on every render. React Flight serializes an element it
-    // has already written as a short reference, so a component rendered many
-    // times doesn't repeat every stylesheet link in the RSC payload.
-    const element = React.createElement(React.Fragment, null, [
-      ...deps.css.map((href: string) =>
-        React.createElement('link', {
-          key: 'css:' + href,
-          rel: 'stylesheet',
-          crossOrigin: 'anonymous',
-          ...(precedence ? { precedence } : {}),
-          href: href,
-          'data-rsc-css-href': href,
-        }),
-      ),
-      RemoveDuplicateServerCss &&
-        React.createElement(RemoveDuplicateServerCss, {
-          key: 'remove-duplicate-css',
-        }),
-    ])
+    // `deps` is static for this module, so reuse the element across renders
+    // while the nonces stay the same, which they do within a request. React
+    // Flight serializes an element it has already written as a short
+    // reference, so a component rendered many times doesn't repeat every
+    // stylesheet link in the RSC payload.
+    let cachedNonces: (string | undefined)[] | undefined
+    let cachedElement: React.ReactNode
     return function Resources() {
-      return element
+      const nonces = deps.css.map(
+        (href) => getResourceOptions({ as: 'style', href })?.nonce,
+      )
+      if (
+        !cachedNonces ||
+        nonces.some((nonce, i) => nonce !== cachedNonces![i])
+      ) {
+        cachedElement = React.createElement(React.Fragment, null, [
+          ...deps.css.map((href: string, i) =>
+            React.createElement('link', {
+              key: 'css:' + href,
+              rel: 'stylesheet',
+              crossOrigin: 'anonymous',
+              ...(nonces[i] ? { nonce: nonces[i] } : {}),
+              ...(precedence ? { precedence } : {}),
+              href: href,
+              'data-rsc-css-href': href,
+            }),
+          ),
+          RemoveDuplicateServerCss &&
+            React.createElement(RemoveDuplicateServerCss, {
+              key: 'remove-duplicate-css',
+            }),
+        ])
+        cachedNonces = nonces
+      }
+      return cachedElement
     }
   }
 
   return `
 import __vite_rsc_react__ from "react";
+import { getResourceOptionsInternal as __vite_rsc_get_resource_options__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
 
 ${
   manager.config.command === 'serve'
@@ -2791,6 +2807,7 @@ export const Resources = (${ResourcesFn.toString()})(
   ${depsCode},
   RemoveDuplicateServerCss,
   ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
+  __vite_rsc_get_resource_options__,
 );
 `
 }

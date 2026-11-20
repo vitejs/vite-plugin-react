@@ -1,11 +1,13 @@
 import * as ReactDOM from 'react-dom'
 import assetsManifest from 'virtual:vite-rsc/assets-manifest'
 import * as clientReferences from 'virtual:vite-rsc/client-references'
+import type { GetResourceOptions } from '../core/shared'
 import { setRequireModule } from '../core/ssr'
 import type { ResolvedAssetDeps } from '../plugin'
 import { toCssVirtual, toReferenceValidationVirtual } from '../plugins/shared'
 
 export { createServerConsumerManifest } from '../core/ssr'
+export type { GetResourceOptions, ResourceOptions } from '../core/shared'
 
 export function getClientEntryUrl(): string {
   const url = assetsManifest.clientEntryUrl
@@ -39,6 +41,21 @@ export function setOnClientReference(
   callback: OnClientReference | undefined,
 ): void {
   onClientReference = callback
+}
+
+let getResourceOptions: GetResourceOptions | undefined
+
+/**
+ * Registers a function that returns options, such as a CSP nonce, for the
+ * client references' `<link rel="modulepreload">` and stylesheet links that
+ * SSR adds through `ReactDOM.preloadModule` and `ReactDOM.preinit`. It's called
+ * during the SSR render, so it can read the framework's request-scoped state,
+ * such as a nonce from its own `AsyncLocalStorage`.
+ * `@vitejs/plugin-rsc/rsc` exports the same API for server components' CSS.
+ * @experimental
+ */
+export function setResourceOptions(fn: GetResourceOptions | undefined): void {
+  getResourceOptions = fn
 }
 
 initialize()
@@ -97,6 +114,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
       // https://github.com/vitejs/vite/issues/6648
       crossOrigin: '',
+      nonce: getResourceOptions?.({ as: 'script', href })?.nonce,
     }
     if (!clientEntryJsSet.has(href)) {
       // @ts-expect-error fetchPriority is not yet in React's public types
@@ -108,6 +126,9 @@ function preloadDeps(deps: ResolvedAssetDeps) {
     ReactDOM.preinit(href, {
       as: 'style',
       crossOrigin: 'anonymous',
+      // React 19.3 drops `nonce` for `as: 'style'`, so this has no effect until
+      // React forwards it the way it does for scripts.
+      nonce: getResourceOptions?.({ as: 'style', href })?.nonce,
       precedence:
         assetsManifest.cssLinkPrecedence !== false
           ? 'vite-rsc/client-reference'

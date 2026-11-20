@@ -25,3 +25,15 @@ export function setInternalRequire(): void {
     return (globalThis as any).__vite_rsc_client_require__(id)
   }
 }
+
+export interface ResourceOptions {
+  /**
+   * CSP nonce for the resource's `<link>`.
+   */
+  nonce?: string
+}
+
+export type GetResourceOptions = (resource: {
+  as: 'style' | 'script'
+  href: string
+}) => ResourceOptions | undefined

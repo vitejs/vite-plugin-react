@@ -465,6 +465,7 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `decodeAction/decodeReply/decodeFormState/loadServerAction`
 - `registerClientReference/registerServerReference`
 - `createTemporaryReferenceSet`
+- `setResourceOptions` (see [below](#vite-specific-extension-setresourceoptions-experimental))
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
@@ -552,6 +553,69 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `encodeReply`: Serializes server function arguments
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
+- `setResourceOptions` (see [below](#vite-specific-extension-setresourceoptions-experimental))
+
+#### Vite-specific extension: `setResourceOptions` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific API. The official `react-server-dom` does not provide it.
+
+`setResourceOptions` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`. The function receives `as` (`'style'` or `'script'`), so a CSP with different nonces for scripts and styles can return the matching one.
+
+```ts
+function setResourceOptions(
+  fn:
+    | ((resource: {
+        as: 'style' | 'script'
+        href: string
+      }) => { nonce?: string } | undefined)
+    | undefined,
+): void
+```
+
+`@vitejs/plugin-rsc/rsc/server` and `@vitejs/plugin-rsc/ssr` both export it with the same signature. The `rsc` and `ssr` environments are separate module graphs, so register it in each:
+
+| Environment | Exported from                   | Links it covers                                                                                                                                    | `as`       |
+| ----------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)                       | `'style'`  |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                                      | `'script'` |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React doesn't forward `nonce` for stylesheets yet, so these get no nonce yet | `'style'`  |
+
+```ts
+// entry.rsc.tsx
+import { AsyncLocalStorage } from 'node:async_hooks'
+import {
+  renderToReadableStream,
+  setResourceOptions,
+} from '@vitejs/plugin-rsc/rsc/server'
+
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+
+const rscStream = nonceStorage.run(nonce, () =>
+  renderToReadableStream(payload),
+)
+
+// entry.ssr.tsx
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { setResourceOptions } from '@vitejs/plugin-rsc/ssr'
+import { renderToReadableStream } from 'react-dom/server.edge'
+
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setResourceOptions(() => ({ nonce: nonceStorage.getStore() }))
+
+const htmlStream = await nonceStorage.run(nonce, () =>
+  renderToReadableStream(<SsrRoot />, { nonce }),
+)
+```
+
+In `ssr`, the RSC stream has to be decoded inside the SSR render, as React already requires for its own resource hints, for example by calling `createFromReadableStream` lazily from the root component.
+
+Keep these in mind when choosing the value:
+
+- On client navigation, React inserts server components' CSS links from the RSC payload into the current document, so the nonce has to be that document's rather than one generated for the navigation request. [`examples/basic`](./examples/basic) doesn't carry it into navigation requests and returns no nonce for them.
+- A render whose output is cached across requests should not get a request's nonce, so run it outside the request's scope or return no nonce for it.
+- With a strict `style-src`, client components' CSS stays blocked until React forwards `nonce` in `ReactDOM.preinit(href, { as: 'style' })`. The plugin already passes it there, so it starts working without changes once React does.
 
 ### Node.js stream APIs variants
 
