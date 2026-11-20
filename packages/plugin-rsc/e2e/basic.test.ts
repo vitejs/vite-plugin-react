@@ -497,6 +497,7 @@ function defineTest(f: Fixture) {
     // links through `'self'`, so a wrong nonce blocks nothing here and the
     // test checks `.nonce` directly. It would block them under a nonce-only CSP.
     test('csp nonce of links added on client navigation', async ({ page }) => {
+      // take the document's nonce from the CSP header of the initial html
       const response = await page.goto(f.url())
       const documentNonce = response
         ?.headers()
@@ -504,6 +505,7 @@ function defineTest(f: Fixture) {
       expect(documentNonce).toBeTruthy()
       await waitForHydration(page)
 
+      // read `.nonce` as a DOM property, since browsers hide the attribute
       const getLinks = () =>
         page
           .locator('link[rel="modulepreload"], link[rel="stylesheet"]')
@@ -514,10 +516,14 @@ function defineTest(f: Fixture) {
             })),
           )
 
+      // each navigation renders a lazy client component with its own chunk and css.
+      // the 1st navigation's chunks load before its payload commits, so only
+      // the 2nd navigation catches a meta replaced by a navigation payload.
       for (const [step, color] of [
         [1, 'rgb(0, 100, 100)'],
         [2, 'rgb(0, 100, 200)'],
       ]) {
+        // navigate and wait for the new component's css to apply
         const hrefsBefore = new Set((await getLinks()).map((l) => l.href))
         await page
           .getByRole('link', { name: `test-csp-nonce-nav-${step}` })
@@ -526,6 +532,8 @@ function defineTest(f: Fixture) {
           'color',
           color as string,
         )
+        // the links Vite inserted for this navigation include its js and css,
+        // and all of them carry the document's nonce
         const added = (await getLinks()).filter((l) => !hrefsBefore.has(l.href))
         expect(added.map((l) => new URL(l.href).pathname)).toEqual(
           expect.arrayContaining([
