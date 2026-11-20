@@ -576,8 +576,6 @@ function setResourceOptionsCallback(
 | `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                                      |
 | `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React doesn't forward `nonce` for stylesheets yet, so these get no nonce yet |
 
-With separate nonces for scripts and styles, return the style nonce in `rsc` and the script nonce in `ssr`.
-
 ```ts
 // entry.rsc.tsx
 import { AsyncLocalStorage } from 'node:async_hooks'
