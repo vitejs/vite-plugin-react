@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.6",
     "@vitejs/release-scripts": "^1.10.0",
     "eslint-plugin-n": "^18.5.0",
     "eslint-plugin-regexp": "^3.3.3",
