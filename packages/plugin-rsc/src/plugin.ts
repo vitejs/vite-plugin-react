@@ -101,6 +101,9 @@ type ClientReferenceMeta = {
 
 const PKG_NAME = '@vitejs/plugin-rsc'
 const REACT_SERVER_DOM_NAME = `${PKG_NAME}/vendor/react-server-dom`
+// resolved to `${REACT_SERVER_DOM_NAME}/<entry>.<build>` per `reactServerDomBuild`
+const REACT_SERVER_DOM_ENTRY_RE =
+  /^@vitejs\/plugin-rsc\/react-server-dom\/(server|static|client)$/
 
 // dev-only wrapper virtual module of rollupOptions.input.index
 const VIRTUAL_ENTRIES = {
@@ -111,6 +114,38 @@ const require = createRequire(import.meta.url)
 
 function resolvePackage(name: string) {
   return pathToFileURL(require.resolve(name)).href
+}
+
+const reactServerDomBuilds = new WeakMap<
+  ResolvedConfig,
+  Map<string, ReactServerDomBuild>
+>()
+
+function getReactServerDomBuild(
+  rscPluginOptions: RscPluginOptions,
+  environmentName: string,
+  config: ResolvedConfig,
+): ReactServerDomBuild {
+  let builds = reactServerDomBuilds.get(config)
+  if (!builds) {
+    builds = new Map()
+    reactServerDomBuilds.set(config, builds)
+  }
+  let build = builds.get(environmentName)
+  if (!build) {
+    // React's server builds don't run in a browser, which keeps the edge
+    // builds as before.
+    const option =
+      config.environments[environmentName]?.consumer === 'client'
+        ? 'edge'
+        : (rscPluginOptions.reactServerDomBuild ?? 'edge')
+    build =
+      typeof option === 'function'
+        ? option({ environmentName, config })
+        : option
+    builds.set(environmentName, build)
+  }
+  return build
 }
 
 export type { RscPluginManager }
@@ -194,6 +229,8 @@ class RscPluginManager {
     writeEnvironmentImportsManifest(this)
   }
 }
+
+export type ReactServerDomBuild = 'edge' | 'node'
 
 export type RscPluginOptions = {
   /**
@@ -334,6 +371,30 @@ export type RscPluginOptions = {
    * @default false
    */
   customClientEntry?: boolean
+
+  /**
+   * The build of React's Flight runtime (`react-server-dom-webpack`) that the
+   * plugin's server runtime uses in a server environment. It selects the
+   * `server`, `static` and `client` builds imported by
+   * `@vitejs/plugin-rsc/rsc`, `@vitejs/plugin-rsc/ssr`, the code generated for
+   * `"use client"` and `"use server"`, and
+   * `@vitejs/plugin-rsc/react-server-dom/{server,static,client}`, along with
+   * the entries pre-bundled in the `rsc` and `ssr` environments.
+   *
+   * Use `'node'` when HTML is rendered with React's Node build of
+   * `react-dom/server`, so that Flight and Fizz come from the same pair of
+   * builds. A function is called once per server environment after the
+   * config is resolved. Client environments keep the edge builds.
+   *
+   * @experimental
+   * @default 'edge'
+   */
+  reactServerDomBuild?:
+    | ReactServerDomBuild
+    | ((context: {
+        environmentName: string
+        config: ResolvedConfig
+      }) => ReactServerDomBuild)
 }
 
 export type PluginApi = {
@@ -387,6 +448,30 @@ export function vitePluginRscMinimal(
             // to client references (and browser mode server references)
             return code.replace('__vite_rsc_raw_import__', 'import')
           }
+        },
+      },
+    },
+    {
+      // resolve `@vitejs/plugin-rsc/react-server-dom/<entry>` to the build
+      // selected by `reactServerDomBuild`. `rsc:react-server-dom-webpack-alias`
+      // then redirects it to user's package when available.
+      name: 'rsc:react-server-dom-build',
+      resolveId: {
+        order: 'pre',
+        filter: { id: REACT_SERVER_DOM_ENTRY_RE },
+        handler(source, importer, options) {
+          const entry = source.match(REACT_SERVER_DOM_ENTRY_RE)?.[1]
+          if (!entry) return
+          const build = getReactServerDomBuild(
+            rscPluginOptions,
+            this.environment.name,
+            manager.config,
+          )
+          return this.resolve(
+            `${REACT_SERVER_DOM_NAME}/${entry}.${build}`,
+            importer,
+            { ...options, skipSelf: true },
+          )
         },
       },
     },
@@ -526,6 +611,7 @@ export default function vitePluginRsc(
   }
 
   let hasReactServerDomWebpack = false
+  let reactServerDomPackageName = REACT_SERVER_DOM_NAME
 
   return [
     {
@@ -574,7 +660,7 @@ export default function vitePluginRsc(
         hasReactServerDomWebpack = result.ssr.noExternal.includes(
           'react-server-dom-webpack',
         )
-        const reactServerDomPackageName = hasReactServerDomWebpack
+        reactServerDomPackageName = hasReactServerDomWebpack
           ? 'react-server-dom-webpack'
           : REACT_SERVER_DOM_NAME
 
@@ -672,12 +758,34 @@ export default function vitePluginRsc(
               },
         }
       },
-      configResolved() {
+      configResolved(config) {
         if (Number(vite.version.split('.')[0]) >= 7) {
           rscPluginOptions.useBuildAppHook ??= true
         }
         manager.shareAssetsManifest =
           rscPluginOptions.shareAssetsManifest ?? true
+
+        // `reactServerDomBuild` is decided from the resolved config, so switch
+        // the edge entries pre-bundled by `config` above here, before the
+        // optimizers are created. The optimizer resolves them without plugins.
+        const edgeEntries = new Set([
+          'react-dom/server.edge',
+          'react-dom/static.edge',
+          `${reactServerDomPackageName}/server.edge`,
+          `${reactServerDomPackageName}/static.edge`,
+          `${reactServerDomPackageName}/client.edge`,
+        ])
+        for (const name of ['ssr', 'rsc']) {
+          const optimizeDeps = config.environments[name]?.optimizeDeps
+          if (
+            optimizeDeps?.include &&
+            getReactServerDomBuild(rscPluginOptions, name, config) === 'node'
+          ) {
+            optimizeDeps.include = optimizeDeps.include.map((id) =>
+              edgeEntries.has(id) ? id.replace(/\.edge$/, '.node') : id,
+            )
+          }
+        }
       },
       buildApp: {
         async handler(builder) {

@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import test, { type Page, expect } from '@playwright/test'
 
 export const testNoJs = test.extend({
@@ -53,4 +55,38 @@ export function expectNoPageError(page: Page) {
       expect(errors).toEqual([])
     },
   }
+}
+
+// The builds of React's Flight runtime in a server build's output, e.g. `server.edge`
+export function getBundledReactServerDomBuilds(outDir: string): string[] {
+  const builds = new Set<string>()
+  for (const file of fs.readdirSync(outDir, { recursive: true })) {
+    if (!String(file).endsWith('.js')) continue
+    const code = fs.readFileSync(path.join(outDir, String(file)), 'utf-8')
+    for (const match of code.matchAll(
+      /react-server-dom-webpack-(\w+\.\w+)\.(?:production|development)\.js/g,
+    )) {
+      builds.add(match[1]!)
+    }
+  }
+  return [...builds].sort()
+}
+
+// The builds of React's Flight runtime pre-bundled by an environment's dep optimizer
+export function getOptimizedReactServerDomBuilds(
+  root: string,
+  environmentName: string,
+): string[] {
+  const metadata = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        root,
+        `node_modules/.vite/deps_${environmentName}/_metadata.json`,
+      ),
+      'utf-8',
+    ),
+  ) as { optimized: Record<string, unknown> }
+  return Object.keys(metadata.optimized)
+    .flatMap((id) => id.match(/\/react-server-dom\/(\w+\.\w+)$/)?.[1] ?? [])
+    .sort()
 }
