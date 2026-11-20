@@ -31,13 +31,13 @@ export async function renderHTML(
     htmlStream = await renderToReadableStream(
       <>
         {/*
-          https://vite.dev/guide/features.html#content-security-policy-csp
-          this isn't needed if `style-src: 'unsafe-inline'` (dev) and `script-src: 'self'`.
-          Vite's preload helper reads this meta whenever it inserts links for a
-          dynamic import, so the meta has to keep the document's nonce. It's
-          rendered outside the RSC payload, where each client navigation would
+          Vite's preload helper gives the links it inserts for dynamic imports
+          the nonce of this meta, so the meta keeps the document's nonce
+          (https://vite.dev/guide/features.html#content-security-policy-csp).
+          It stays out of the RSC payload, where each client navigation would
           replace it with that request's nonce, and entry.browser.tsx renders
-          it again with the same nonce.
+          it again. A CSP with `script-src 'self'` and `style-src 'unsafe-inline'`
+          (enough in dev) doesn't need it.
         */}
         {options.nonce && <meta property="csp-nonce" nonce={options.nonce} />}
         <SsrRoot />

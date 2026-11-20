@@ -52,8 +52,8 @@ async function main() {
     return data
   })
 
-  // keep the csp nonce meta rendered by SSR (see entry.ssr.tsx),
-  // which hydration would otherwise remove
+  // render the csp nonce meta from SSR (see entry.ssr.tsx) again with its
+  // nonce, since hydration removes it otherwise
   const cspNonce = document.querySelector<HTMLMetaElement>(
     'meta[property="csp-nonce"]',
   )?.nonce
