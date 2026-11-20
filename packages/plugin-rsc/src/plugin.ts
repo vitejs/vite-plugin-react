@@ -445,13 +445,6 @@ export default function vitePluginRsc(
       .normalize(rscOutDir)
       .startsWith(path.normalize(ssrOutDir) + path.sep)
 
-    const tempRscOutDir = path.join(
-      builder.config.root,
-      'node_modules',
-      '.vite-rsc-temp',
-      'rsc',
-    )
-
     // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
     manager.isScanBuild = true
@@ -467,28 +460,35 @@ export default function vitePluginRsc(
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
 
-    // Evacuate RSC output to temp before SSR build overwrites it
-    if (rscInsideSsr) {
-      if (fs.existsSync(tempRscOutDir)) {
-        fs.rmSync(tempRscOutDir, { recursive: true })
+    let stagingDir: string | undefined
+    try {
+      // Evacuate RSC output to a build-specific directory before SSR overwrites it.
+      if (rscInsideSsr) {
+        const stagingRoot = path.join(
+          builder.config.root,
+          'node_modules',
+          '.vite-rsc-temp',
+        )
+        fs.mkdirSync(stagingRoot, { recursive: true })
+        stagingDir = fs.mkdtempSync(path.join(stagingRoot, 'rsc-'))
+        fs.renameSync(rscOutDir, path.join(stagingDir, 'rsc'))
       }
-      fs.mkdirSync(path.dirname(tempRscOutDir), { recursive: true })
-      fs.renameSync(rscOutDir, tempRscOutDir)
-    }
 
-    manager.stabilize()
-    logStep('[4/5] build client environment...')
-    await builder.build(builder.environments.client!)
-    logStep('[5/5] build ssr environment...')
-    await builder.build(builder.environments.ssr!)
+      manager.stabilize()
+      logStep('[4/5] build client environment...')
+      await builder.build(builder.environments.client!)
+      logStep('[5/5] build ssr environment...')
+      await builder.build(builder.environments.ssr!)
 
-    // Restore RSC output from temp after SSR build
-    if (rscInsideSsr) {
-      if (fs.existsSync(rscOutDir)) {
-        fs.rmSync(rscOutDir, { recursive: true })
+      if (stagingDir) {
+        fs.rmSync(rscOutDir, { recursive: true, force: true })
+        fs.mkdirSync(path.dirname(rscOutDir), { recursive: true })
+        fs.renameSync(path.join(stagingDir, 'rsc'), rscOutDir)
       }
-      fs.mkdirSync(path.dirname(rscOutDir), { recursive: true })
-      fs.renameSync(tempRscOutDir, rscOutDir)
+    } finally {
+      if (stagingDir) {
+        fs.rmSync(stagingDir, { recursive: true, force: true })
+      }
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
