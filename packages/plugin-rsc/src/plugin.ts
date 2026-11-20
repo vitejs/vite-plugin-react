@@ -2752,7 +2752,7 @@ function generateResourcesCode(
     deps: ResolvedAssetDeps,
     RemoveDuplicateServerCss: React.FC | undefined,
     precedence: string | undefined,
-    getResourceOptions: ResourceOptionsCallback,
+    resourceOptionsCallback: ResourceOptionsCallback,
   ) => {
     // `deps` is static for this module, so reuse the element across renders
     // while the nonces stay the same, which they do within a request. React
@@ -2763,7 +2763,7 @@ function generateResourcesCode(
     let cachedElement: React.ReactNode
     return function Resources() {
       const nonces = deps.css.map(
-        (href) => getResourceOptions({ as: 'style', href })?.nonce,
+        (href) => resourceOptionsCallback({ as: 'style', href })?.nonce,
       )
       if (
         !cachedNonces ||
@@ -2794,7 +2794,7 @@ function generateResourcesCode(
 
   return `
 import __vite_rsc_react__ from "react";
-import { getResourceOptionsInternal as __vite_rsc_get_resource_options__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
+import { resourceOptionsCallbackInternal as __vite_rsc_resource_options_callback__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
 
 ${
   manager.config.command === 'serve'
@@ -2807,7 +2807,7 @@ export const Resources = (${ResourcesFn.toString()})(
   ${depsCode},
   RemoveDuplicateServerCss,
   ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
-  __vite_rsc_get_resource_options__,
+  __vite_rsc_resource_options_callback__,
 );
 `
 }

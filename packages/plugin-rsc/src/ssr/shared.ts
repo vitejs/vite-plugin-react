@@ -43,7 +43,7 @@ export function setOnClientReference(
   onClientReference = callback
 }
 
-let getResourceOptions: ResourceOptionsCallback | undefined
+let resourceOptionsCallback: ResourceOptionsCallback | undefined
 
 /**
  * Registers a function that returns options, such as a CSP nonce, for the
@@ -57,7 +57,7 @@ let getResourceOptions: ResourceOptionsCallback | undefined
 export function setResourceOptionsCallback(
   fn: ResourceOptionsCallback | undefined,
 ): void {
-  getResourceOptions = fn
+  resourceOptionsCallback = fn
 }
 
 initialize()
@@ -116,7 +116,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       // vite doesn't allow configuring crossorigin at the moment, so we can hard code it as well.
       // https://github.com/vitejs/vite/issues/6648
       crossOrigin: '',
-      nonce: getResourceOptions?.({ as: 'script', href })?.nonce,
+      nonce: resourceOptionsCallback?.({ as: 'script', href })?.nonce,
     }
     if (!clientEntryJsSet.has(href)) {
       // @ts-expect-error fetchPriority is not yet in React's public types
@@ -130,7 +130,7 @@ function preloadDeps(deps: ResolvedAssetDeps) {
       crossOrigin: 'anonymous',
       // React 19.3 drops `nonce` for `as: 'style'`, so this has no effect until
       // React forwards it the way it does for scripts.
-      nonce: getResourceOptions?.({ as: 'style', href })?.nonce,
+      nonce: resourceOptionsCallback?.({ as: 'style', href })?.nonce,
       precedence:
         assetsManifest.cssLinkPrecedence !== false
           ? 'vite-rsc/client-reference'

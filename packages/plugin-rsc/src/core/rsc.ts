@@ -200,7 +200,7 @@ export interface CreateServerManifestOptions {
   onServerReference?: (metadata: ServerReferenceMetadata) => void
 }
 
-let getResourceOptions: ResourceOptionsCallback | undefined
+let resourceOptionsCallback: ResourceOptionsCallback | undefined
 
 /**
  * Registers a function that returns options, such as a CSP nonce, for the
@@ -213,11 +213,11 @@ let getResourceOptions: ResourceOptionsCallback | undefined
 export function setResourceOptionsCallback(
   fn: ResourceOptionsCallback | undefined,
 ): void {
-  getResourceOptions = fn
+  resourceOptionsCallback = fn
 }
 
-export function getResourceOptionsInternal(
+export function resourceOptionsCallbackInternal(
   resource: Parameters<ResourceOptionsCallback>[0],
 ): ResourceOptions | undefined {
-  return getResourceOptions?.(resource)
+  return resourceOptionsCallback?.(resource)
 }
