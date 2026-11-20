@@ -8,7 +8,6 @@ import {
   removeReferenceCacheTag,
   setInternalRequire,
   type ResourceOptionsCallback,
-  type ResourceOptions,
 } from './shared'
 
 // @ts-ignore
@@ -216,8 +215,8 @@ export function setResourceOptionsCallback(
   resourceOptionsCallback = fn
 }
 
-export function resourceOptionsCallbackInternal(
-  resource: Parameters<ResourceOptionsCallback>[0],
-): ResourceOptions | undefined {
-  return resourceOptionsCallback?.(resource)
+export function getResourceOptionsCallbackInternal():
+  | ResourceOptionsCallback
+  | undefined {
+  return resourceOptionsCallback
 }
