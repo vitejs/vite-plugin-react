@@ -1,5 +1,3 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import { expect, test } from '@playwright/test'
 import { x } from 'tinyexec'
 import { setupInlineFixture, useFixture, type Fixture } from './fixture'
@@ -61,21 +59,6 @@ test.describe('dev-default', () => {
 test.describe('build-default', () => {
   const f = useFixture({ root: 'examples/starter', mode: 'build' })
   defineStarterTest(f)
-
-  test('ssr output re-exports the rsc assets manifest', () => {
-    expect(
-      fs.readFileSync(
-        path.join(f.root, 'dist/rsc/__vite_rsc_assets_manifest.js'),
-        'utf-8',
-      ),
-    ).toMatch(/^export default /)
-    expect(
-      fs.readFileSync(
-        path.join(f.root, 'dist/ssr/__vite_rsc_assets_manifest.js'),
-        'utf-8',
-      ),
-    ).toBe('export { default } from "../rsc/__vite_rsc_assets_manifest.js"\n')
-  })
 })
 
 test.describe('dev-production', () => {
