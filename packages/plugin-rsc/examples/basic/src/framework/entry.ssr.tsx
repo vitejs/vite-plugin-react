@@ -36,13 +36,29 @@ export async function renderHTML(
   let status: number | undefined
   try {
     htmlStream = await nonceStorage.run(options?.nonce, () =>
-      renderToReadableStream(<SsrRoot />, {
-        bootstrapScriptContent: options?.debugNojs
-          ? undefined
-          : bootstrapScriptContent,
-        nonce: options?.nonce,
-        formState: options?.formState,
-      }),
+      renderToReadableStream(
+        <>
+          {/*
+            Vite's preload helper gives the links it inserts for dynamic imports
+            the nonce of this meta, so the meta has to keep the document's nonce
+            (https://vite.dev/guide/features.html#content-security-policy-csp).
+            It's rendered only with the HTML document. In the RSC payload, every
+            client navigation would render it again with a new nonce.
+            entry.browser.tsx renders the meta again with the same nonce. A CSP
+            with `script-src 'self'` and `style-src 'unsafe-inline'` (enough in
+            dev) doesn't need it.
+          */}
+          {options.nonce && <meta property="csp-nonce" nonce={options.nonce} />}
+          <SsrRoot />
+        </>,
+        {
+          bootstrapScriptContent: options?.debugNojs
+            ? undefined
+            : bootstrapScriptContent,
+          nonce: options?.nonce,
+          formState: options?.formState,
+        },
+      ),
     )
   } catch (e) {
     status = 500

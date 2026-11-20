@@ -71,7 +71,7 @@ function defineTest(f: Fixture) {
         )
       const manifest = JSON.parse(
         readFileSync(
-          f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
+          f.root + '/dist/rsc/__vite_rsc_assets_manifest.js',
           'utf-8',
         ).slice('export default '.length),
       )

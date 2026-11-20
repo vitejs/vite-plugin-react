@@ -124,6 +124,7 @@ class RscPluginManager {
   bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
+  shareAssetsManifest: boolean = true
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
@@ -158,16 +159,34 @@ class RscPluginManager {
 
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
-    // this makes each server build to be self-contained and deploy-able for cloudflare.
+    // by default, only the rsc build gets the full manifest and other server builds re-export it,
+    // relying on an import between the two builds in the same way `import.meta.viteRsc.loadModule` does.
+    // `shareAssetsManifest: false` writes a full copy to each server build to keep each self-contained.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       this.buildAssetsManifest,
     )}`
-    for (const name of environmentNames) {
-      const manifestPath = path.join(
+    const getManifestPath = (name: string) =>
+      path.join(
         this.config.environments[name]!.build.outDir,
         BUILD_ASSETS_MANIFEST_NAME,
       )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
+    const sharedPath =
+      this.shareAssetsManifest && environmentNames.includes('rsc')
+        ? getManifestPath('rsc')
+        : undefined
+    for (const name of environmentNames) {
+      const manifestPath = getManifestPath(name)
+      if (sharedPath && manifestPath !== sharedPath) {
+        const importPath = normalizeRelativePath(
+          path.relative(path.dirname(manifestPath), sharedPath),
+        )
+        fs.writeFileSync(
+          manifestPath,
+          `export { default } from ${JSON.stringify(importPath)}\n`,
+        )
+      } else {
+        fs.writeFileSync(manifestPath, assetsManifestCode)
+      }
     }
   }
 
@@ -192,6 +211,16 @@ export type RscPluginOptions = {
 
   /** @default false */
   loadModuleDevProxy?: boolean
+
+  /**
+   * Write the full assets manifest (`__vite_rsc_assets_manifest.js`) only to the `rsc` build
+   * and make the other server builds re-export it.
+   * Set `false` to write a full copy to each server build, for deployments where
+   * the `ssr` and `rsc` outputs are deployed separately
+   * (for example, two Workers joined by a service binding).
+   * @default true
+   */
+  shareAssetsManifest?: boolean
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
@@ -446,13 +475,6 @@ export default function vitePluginRsc(
       .normalize(rscOutDir)
       .startsWith(path.normalize(ssrOutDir) + path.sep)
 
-    const tempRscOutDir = path.join(
-      builder.config.root,
-      'node_modules',
-      '.vite-rsc-temp',
-      'rsc',
-    )
-
     // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
     manager.isScanBuild = true
@@ -468,28 +490,35 @@ export default function vitePluginRsc(
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
 
-    // Evacuate RSC output to temp before SSR build overwrites it
-    if (rscInsideSsr) {
-      if (fs.existsSync(tempRscOutDir)) {
-        fs.rmSync(tempRscOutDir, { recursive: true })
+    let stagingDir: string | undefined
+    try {
+      // Evacuate RSC output to a build-specific directory before SSR overwrites it.
+      if (rscInsideSsr) {
+        const stagingRoot = path.join(
+          builder.config.root,
+          'node_modules',
+          '.vite-rsc-temp',
+        )
+        fs.mkdirSync(stagingRoot, { recursive: true })
+        stagingDir = fs.mkdtempSync(path.join(stagingRoot, 'rsc-'))
+        fs.renameSync(rscOutDir, path.join(stagingDir, 'rsc'))
       }
-      fs.mkdirSync(path.dirname(tempRscOutDir), { recursive: true })
-      fs.renameSync(rscOutDir, tempRscOutDir)
-    }
 
-    manager.stabilize()
-    logStep('[4/5] build client environment...')
-    await builder.build(builder.environments.client!)
-    logStep('[5/5] build ssr environment...')
-    await builder.build(builder.environments.ssr!)
+      manager.stabilize()
+      logStep('[4/5] build client environment...')
+      await builder.build(builder.environments.client!)
+      logStep('[5/5] build ssr environment...')
+      await builder.build(builder.environments.ssr!)
 
-    // Restore RSC output from temp after SSR build
-    if (rscInsideSsr) {
-      if (fs.existsSync(rscOutDir)) {
-        fs.rmSync(rscOutDir, { recursive: true })
+      if (stagingDir) {
+        fs.rmSync(rscOutDir, { recursive: true, force: true })
+        fs.mkdirSync(path.dirname(rscOutDir), { recursive: true })
+        fs.renameSync(path.join(stagingDir, 'rsc'), rscOutDir)
       }
-      fs.mkdirSync(path.dirname(rscOutDir), { recursive: true })
-      fs.renameSync(tempRscOutDir, rscOutDir)
+    } finally {
+      if (stagingDir) {
+        fs.rmSync(stagingDir, { recursive: true, force: true })
+      }
     }
 
     manager.writeAssetsManifest(['ssr', 'rsc'])
@@ -647,6 +676,8 @@ export default function vitePluginRsc(
         if (Number(vite.version.split('.')[0]) >= 7) {
           rscPluginOptions.useBuildAppHook ??= true
         }
+        manager.shareAssetsManifest =
+          rscPluginOptions.shareAssetsManifest ?? true
       },
       buildApp: {
         async handler(builder) {

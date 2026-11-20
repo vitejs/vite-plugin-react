@@ -439,6 +439,11 @@ export default defineConfig({
       // cloudflare workers to communicate with node ssr environment on main Vite process.
       loadModuleDevProxy: true,
 
+      // by default, only the rsc build gets the full assets manifest and other server builds
+      // re-export it, relying on an import between the two builds in the same way `loadModule` does.
+      // set `false` when ssr and rsc outputs are deployed separately (e.g. two Workers).
+      shareAssetsManifest: false,
+
       // by default, `loadCss()` helper is injected based on certain heuristics.
       // if it breaks, it can be opt-out or selectively applied based on files.
       rscCssTransform: { filter: (id) => id.includes('/my-app/') },

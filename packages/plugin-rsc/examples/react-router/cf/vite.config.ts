@@ -18,6 +18,9 @@ export default defineConfig({
         client: './react-router-vite/entry.browser.tsx',
       },
       serverHandler: false,
+      // ssr and rsc are deployed as separate Workers joined by a service binding,
+      // so each needs its own copy of the assets manifest.
+      shareAssetsManifest: false,
     }),
     cloudflare({
       configPath: './cf/wrangler.ssr.jsonc',
