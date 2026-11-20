@@ -616,7 +616,7 @@ The framework is responsible for the following:
 
 Not covered yet:
 
-- With a strict `style-src`, client components' CSS is blocked. The plugin passes `nonce` to `ReactDOM.preinit(href, { as: 'style' })`, but React 19.3 drops it for stylesheets, unlike for scripts.
+- With a strict `style-src`, client components' CSS is blocked. React 19.3's `ReactDOM.preinit` drops `nonce` for stylesheets, although [its docs](https://react.dev/reference/react-dom/preinit) list the option.
 
 ### Node.js stream APIs variants
 
