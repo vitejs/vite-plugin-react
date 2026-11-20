@@ -470,6 +470,7 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `decodeAction/decodeReply/decodeFormState/loadServerAction`
 - `registerClientReference/registerServerReference`
 - `createTemporaryReferenceSet`
+- `setResourceOptionsCallback` (see [below](#vite-specific-extension-setresourceoptionscallback-experimental))
 
 ### `@vitejs/plugin-rsc/rsc/static`
 
@@ -557,6 +558,70 @@ This module provides Vite-integrated RSC runtime APIs based on
 - `createFromReadableStream`: Deserializes an RSC stream into a React VDOM
 - `encodeReply`: Serializes server function arguments
 - `createTemporaryReferenceSet`: Creates a temporary reference set shared by deserialization and reply serialization
+- `setResourceOptionsCallback` (see [below](#vite-specific-extension-setresourceoptionscallback-experimental))
+
+#### Vite-specific extension: `setResourceOptionsCallback` (experimental)
+
+> [!NOTE]
+> This is a Vite-specific API. The official `react-server-dom` does not provide it.
+
+`setResourceOptionsCallback` registers a function that returns options for the `<link>` elements the plugin adds for CSS and JS. The only supported option is `nonce`, for a nonce-based CSP. The plugin calls the function while React renders, so it can read the framework's request-scoped state, for example a nonce from the framework's own `AsyncLocalStorage`.
+
+```ts
+function setResourceOptionsCallback(
+  fn: (() => { nonce?: string } | undefined) | undefined,
+): void
+```
+
+`@vitejs/plugin-rsc/rsc/server` and `@vitejs/plugin-rsc/ssr` both export it with the same signature. The `rsc` and `ssr` environments are separate module graphs, so register it in each:
+
+| Environment | Exported from                   | Links it covers                                                                                                                       |
+| ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `rsc`       | `@vitejs/plugin-rsc/rsc/server` | `<link rel="stylesheet">` for server components' CSS, including [`import.meta.viteRsc.loadCss()`](#importmetaviterscloadcss)          |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="modulepreload">` from `ReactDOM.preloadModule`                                                         |
+| `ssr`       | `@vitejs/plugin-rsc/ssr`        | client references' `<link rel="stylesheet">` from `ReactDOM.preinit`. React 19.3 drops `nonce` for stylesheets, so these get no nonce |
+
+```ts
+// entry.rsc.tsx
+import { AsyncLocalStorage } from 'node:async_hooks'
+import {
+  renderToReadableStream,
+  setResourceOptionsCallback,
+} from '@vitejs/plugin-rsc/rsc/server'
+
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
+
+const rscStream = nonceStorage.run(nonce, () =>
+  renderToReadableStream(payload),
+)
+
+// entry.ssr.tsx
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { setResourceOptionsCallback } from '@vitejs/plugin-rsc/ssr'
+import { renderToReadableStream } from 'react-dom/server.edge'
+
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
+
+const htmlStream = await nonceStorage.run(nonce, () =>
+  renderToReadableStream(<SsrRoot />, { nonce }),
+)
+```
+
+In `ssr`, these links reach the HTML only if the RSC stream is decoded inside the SSR render (see [Decoding the RSC stream inside the SSR render](#decoding-the-rsc-stream-inside-the-ssr-render)).
+
+The framework is responsible for the following:
+
+- On client navigation, links are added to the current document, so they need that document's nonce rather than one generated for the navigation request. This applies in two places:
+  - The `rsc` callback: React inserts server components' CSS links from the RSC payload. [`examples/basic`](./examples/basic) doesn't carry the document's nonce into navigation requests and returns no nonce for them.
+  - `<meta property="csp-nonce">`: the links Vite's preload helper adds in the browser when a client chunk loads take their nonce from this meta, not from this callback (see [Vite's CSP docs](https://vite.dev/guide/features.html#content-security-policy-csp)). Don't render it with a new nonce in the payload of a navigation request. For example, render it only in the SSR HTML, and render it again in the browser root with the nonce read from the document's meta, so hydration doesn't remove it, as [`examples/basic`](./examples/basic) does.
+- A render whose output is cached across requests should not get a request's nonce, so run it outside the request's scope or return no nonce for it.
+- The bootstrap script and the inline RSC payload aren't covered by this callback. Pass `nonce` to React's SSR `renderToReadableStream` and to the payload injection, such as `injectRSCPayload` from `rsc-html-stream`.
+
+Not covered yet:
+
+- With a strict `style-src`, client components' CSS is blocked. React 19.3's `ReactDOM.preinit` drops `nonce` for stylesheets, although [its docs](https://react.dev/reference/react-dom/preinit) list the option.
 
 ### Node.js stream APIs variants
 
@@ -636,6 +701,20 @@ export function Page() {
     </>
   )
 }
+```
+
+### Decoding the RSC stream inside the SSR render
+
+During SSR, the plugin emits client references' `<link rel="modulepreload">` and stylesheets through `ReactDOM.preloadModule` and `ReactDOM.preinit` while the RSC stream is decoded. React attaches those hints to the SSR render only when decoding runs inside it. If `createFromReadableStream` is awaited before `renderToReadableStream`, React drops them, along with any nonce from [`setResourceOptionsCallback`](#vite-specific-extension-setresourceoptionscallback-experimental). Start decoding lazily from the root component instead:
+
+```tsx
+let payload: Promise<RscPayload> | undefined
+function SsrRoot() {
+  payload ??= createFromReadableStream<RscPayload>(rscStream)
+  return React.use(payload).root
+}
+
+const htmlStream = await renderToReadableStream(<SsrRoot />, options)
 ```
 
 ### Using different React versions

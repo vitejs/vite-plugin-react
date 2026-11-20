@@ -7,6 +7,7 @@ import {
   createReferenceCacheTag,
   removeReferenceCacheTag,
   setInternalRequire,
+  type ResourceOptionsCallback,
 } from './shared'
 
 // @ts-ignore
@@ -196,4 +197,26 @@ export interface CreateServerManifestOptions {
    * @experimental
    */
   onServerReference?: (metadata: ServerReferenceMetadata) => void
+}
+
+let resourceOptionsCallback: ResourceOptionsCallback | undefined
+
+/**
+ * Registers a function that returns options, such as a CSP nonce, for the
+ * stylesheet links rendered for server components' CSS. It's called while
+ * React renders each link, so it can read the framework's request-scoped
+ * state, such as a nonce from its own `AsyncLocalStorage`.
+ * `@vitejs/plugin-rsc/ssr` exports the same API for the links SSR adds.
+ * @experimental
+ */
+export function setResourceOptionsCallback(
+  fn: ResourceOptionsCallback | undefined,
+): void {
+  resourceOptionsCallback = fn
+}
+
+export function getResourceOptionsCallbackInternal():
+  | ResourceOptionsCallback
+  | undefined {
+  return resourceOptionsCallback
 }
