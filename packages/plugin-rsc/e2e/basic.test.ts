@@ -533,7 +533,9 @@ function defineTest(f: Fixture) {
           color as string,
         )
         // the links Vite inserted for this navigation include its js and css,
-        // and all of them carry the document's nonce
+        // and all of them carry the document's nonce. the js/css check only
+        // keeps the nonce check from passing on no links, so it doesn't pin
+        // the exact chunks, which depend on how the bundler splits them.
         const added = (await getLinks()).filter((l) => !hrefsBefore.has(l.href))
         expect(added.map((l) => new URL(l.href).pathname)).toEqual(
           expect.arrayContaining([
