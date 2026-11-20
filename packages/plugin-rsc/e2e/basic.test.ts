@@ -490,6 +490,52 @@ function defineTest(f: Fixture) {
         }
       }
     })
+
+    // Vite's preload helper sets the nonce of the links it inserts from
+    // `<meta property="csp-nonce">`, so the meta has to keep the document's
+    // nonce across client navigations.
+    test('csp nonce of links added on client navigation', async ({ page }) => {
+      const response = await page.goto(f.url())
+      const documentNonce = response
+        ?.headers()
+        ['content-security-policy']?.match(/'nonce-([^']+)'/)?.[1]
+      expect(documentNonce).toBeTruthy()
+      await waitForHydration(page)
+
+      const getLinks = () =>
+        page
+          .locator('link[rel="modulepreload"], link[rel="stylesheet"]')
+          .evaluateAll((elements) =>
+            elements.map((el) => ({
+              href: (el as HTMLLinkElement).href,
+              nonce: (el as HTMLLinkElement).nonce,
+            })),
+          )
+
+      for (const [step, color] of [
+        [1, 'rgb(0, 100, 100)'],
+        [2, 'rgb(0, 100, 200)'],
+      ]) {
+        const hrefsBefore = new Set((await getLinks()).map((l) => l.href))
+        await page
+          .getByRole('link', { name: `test-csp-nonce-nav-${step}` })
+          .click()
+        await expect(page.locator(`.test-csp-nonce-nav${step}`)).toHaveCSS(
+          'color',
+          color as string,
+        )
+        const added = (await getLinks()).filter((l) => !hrefsBefore.has(l.href))
+        expect(added.map((l) => new URL(l.href).pathname)).toEqual(
+          expect.arrayContaining([
+            expect.stringMatching(/\.js$/),
+            expect.stringMatching(/\.css$/),
+          ]),
+        )
+        expect(added).toEqual(
+          added.map((l) => ({ href: l.href, nonce: documentNonce })),
+        )
+      }
+    })
   })
 
   test.describe(() => {

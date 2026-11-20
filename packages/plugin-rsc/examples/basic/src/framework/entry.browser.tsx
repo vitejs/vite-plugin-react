@@ -52,8 +52,14 @@ async function main() {
     return data
   })
 
+  // keep the csp nonce meta rendered by SSR (see entry.ssr.tsx),
+  // which hydration would otherwise remove
+  const cspNonce = document.querySelector<HTMLMetaElement>(
+    'meta[property="csp-nonce"]',
+  )?.nonce
   const browserRoot = (
     <React.StrictMode>
+      {cspNonce && <meta property="csp-nonce" nonce={cspNonce} />}
       <GlobalErrorBoundary>
         <BrowserRoot />
       </GlobalErrorBoundary>

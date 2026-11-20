@@ -28,13 +28,28 @@ export async function renderHTML(
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options?.debugNojs
-        ? undefined
-        : bootstrapScriptContent,
-      nonce: options?.nonce,
-      formState: options?.formState,
-    })
+    htmlStream = await renderToReadableStream(
+      <>
+        {/*
+          https://vite.dev/guide/features.html#content-security-policy-csp
+          this isn't needed if `style-src: 'unsafe-inline'` (dev) and `script-src: 'self'`.
+          Vite's preload helper reads this meta whenever it inserts links for a
+          dynamic import, so the meta has to keep the document's nonce. It's
+          rendered outside the RSC payload, where each client navigation would
+          replace it with that request's nonce, and entry.browser.tsx renders
+          it again with the same nonce.
+        */}
+        {options.nonce && <meta property="csp-nonce" nonce={options.nonce} />}
+        <SsrRoot />
+      </>,
+      {
+        bootstrapScriptContent: options?.debugNojs
+          ? undefined
+          : bootstrapScriptContent,
+        nonce: options?.nonce,
+        formState: options?.formState,
+      },
+    )
   } catch (e) {
     status = 500
     htmlStream = await renderToReadableStream(
