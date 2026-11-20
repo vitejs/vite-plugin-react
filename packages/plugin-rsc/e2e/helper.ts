@@ -57,16 +57,19 @@ export function expectNoPageError(page: Page) {
   }
 }
 
-// The builds of React's Flight runtime in a server build's output, e.g. `server.edge`
+// The builds of React's Flight runtime in a server build's output, e.g. `server.edge`.
+// Matches the CommonJS wrapper named after the file, since Rollup drops React's license comments:
+// `require_react_server_dom_webpack_server_edge_production` (rolldown) or
+// `requireReactServerDomWebpackServer_edge_production` (Rollup)
 export function getBundledReactServerDomBuilds(outDir: string): string[] {
   const builds = new Set<string>()
   for (const file of fs.readdirSync(outDir, { recursive: true })) {
     if (!String(file).endsWith('.js')) continue
     const code = fs.readFileSync(path.join(outDir, String(file)), 'utf-8')
     for (const match of code.matchAll(
-      /react-server-dom-webpack-(\w+\.\w+)\.(?:production|development)\.js/g,
+      /require_?react_?server_?dom_?webpack_?(server|client)_([a-z]+)_(?:production|development)\b/gi,
     )) {
-      builds.add(match[1]!)
+      builds.add(`${match[1]!.toLowerCase()}.${match[2]}`)
     }
   }
   return [...builds].sort()
