@@ -613,8 +613,7 @@ Keep these in mind when choosing the value:
 - On client navigation, React inserts server components' CSS links from the RSC payload into the current document, so the nonce has to be that document's rather than one generated for the navigation request. [`examples/basic`](./examples/basic) doesn't carry it into navigation requests and returns no nonce for them.
 - A render whose output is cached across requests should not get a request's nonce, so run it outside the request's scope or return no nonce for it.
 - With a strict `style-src`, client components' CSS stays blocked until React forwards `nonce` in `ReactDOM.preinit(href, { as: 'style' })`. The plugin already passes it there, so it starts working without changes once React does.
-
-<!-- TODO: once verified, add a bullet that the links Vite's preload helper adds when a client chunk loads in the browser take their nonce from `<meta property="csp-nonce">` (Vite's mechanism), not from this callback, and name any links that get no nonce. -->
+- On client navigation, the links Vite's preload helper adds in the browser when a client chunk loads take their nonce from `<meta property="csp-nonce">`, not from this callback (see [Vite's CSP docs](https://vite.dev/guide/features.html#content-security-policy-csp)). That meta has to keep the document's nonce, so don't render it with a new nonce in the payload of a navigation request.
 
 ### Node.js stream APIs variants
 
