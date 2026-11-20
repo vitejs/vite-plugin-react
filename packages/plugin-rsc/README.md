@@ -617,6 +617,8 @@ Keep these in mind when choosing the value:
 - A render whose output is cached across requests should not get a request's nonce, so run it outside the request's scope or return no nonce for it.
 - With a strict `style-src`, client components' CSS stays blocked until React forwards `nonce` in `ReactDOM.preinit(href, { as: 'style' })`. The plugin already passes it there, so it starts working without changes once React does.
 
+<!-- TODO: once verified, add a bullet that the links Vite's preload helper adds when a client chunk loads in the browser take their nonce from `<meta property="csp-nonce">` (Vite's mechanism), not from this callback, and name any links that get no nonce. -->
+
 ### Node.js stream APIs variants
 
 Node.js environments can use runtime-specific entry points that integrate React's native Node.js stream APIs with Vite's generated manifests:
