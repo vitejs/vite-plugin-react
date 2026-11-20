@@ -83,19 +83,22 @@ export default baseConfig
         true,
       )
       expect(
-        fs.existsSync(
+        fs.readFileSync(
           path.join(f.root, 'dist/server/rsc/__vite_rsc_assets_manifest.js'),
+          'utf-8',
         ),
-      ).toBe(true)
+      ).toMatch(/^export default /)
       // SSR output exists
       expect(fs.existsSync(path.join(f.root, 'dist/server/index.js'))).toBe(
         true,
       )
+      // SSR output re-exports the manifest from the nested RSC output
       expect(
-        fs.existsSync(
+        fs.readFileSync(
           path.join(f.root, 'dist/server/__vite_rsc_assets_manifest.js'),
+          'utf-8',
         ),
-      ).toBe(true)
+      ).toBe('export { default } from "./rsc/__vite_rsc_assets_manifest.js"\n')
     })
   })
 })
