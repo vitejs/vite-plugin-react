@@ -496,6 +496,8 @@ function defineTest(f: Fixture) {
     // nonce across client navigations. The example's CSP also allows these
     // links through `'self'`, so a wrong nonce blocks nothing here and the
     // test checks `.nonce` directly. It would block them under a nonce-only CSP.
+    // Build only: in dev, client chunks load without Vite's preload helper and
+    // insert no links.
     test('csp nonce of links added on client navigation', async ({ page }) => {
       // take the document's nonce from the CSP header of the initial html
       const response = await page.goto(f.url())
