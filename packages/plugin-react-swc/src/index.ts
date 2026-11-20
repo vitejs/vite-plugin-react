@@ -16,7 +16,7 @@ import {
   silenceUseClientWarning,
   virtualPreamblePlugin,
 } from '@vitejs/react-common'
-import type { Plugin } from 'vite'
+import { createFilter, type Plugin } from 'vite'
 import * as vite from 'vite'
 
 const resolve = createRequire(import.meta.url).resolve
@@ -48,6 +48,20 @@ type Options = {
    * @default "es2020"
    */
   devTarget?: JscTarget
+  /**
+   * A [picomatch pattern](https://github.com/micromatch/picomatch#globbing-features), or array of patterns,
+   * which specifies the files the plugin should transform. When omitted, every file is a candidate.
+   * Files must still be supported by SWC (see `parserConfig`) to be transformed.
+   * @example include: /\.(jsx|tsx)$/
+   */
+  include?: string | RegExp | Array<string | RegExp>
+  /**
+   * A [picomatch pattern](https://github.com/micromatch/picomatch#globbing-features), or array of patterns,
+   * which specifies the files to be ignored by the plugin.
+   * Can be used to exclude JSX/TSX files that run in a worker or are not React files.
+   * @example exclude: [/\/pdf\//, /\.solid\.tsx$/]
+   */
+  exclude?: string | RegExp | Array<string | RegExp>
   /**
    * Override the default include list (.ts, .tsx, .mts, .jsx, .mdx).
    * This requires to redefine the config for any file you want to be included.
@@ -84,6 +98,7 @@ const react = (_options?: Options): Plugin[] => {
   let hmrDisabled = true
   let isBundledDev = false
   let viteCacheRoot: string | undefined
+  let filter = createFilter(_options?.include, _options?.exclude)
   const options = {
     jsxImportSource: _options?.jsxImportSource ?? 'react',
     tsDecorators: _options?.tsDecorators,
@@ -93,6 +108,8 @@ const react = (_options?: Options): Plugin[] => {
       : undefined,
     devTarget: _options?.devTarget ?? 'es2020',
     parserConfig: _options?.parserConfig,
+    include: _options?.include,
+    exclude: _options?.exclude,
     reactRefreshHost: _options?.reactRefreshHost,
     useAtYourOwnRisk_mutateSwcOptions:
       _options?.useAtYourOwnRisk_mutateSwcOptions,
@@ -172,6 +189,9 @@ const react = (_options?: Options): Plugin[] => {
       },
       configResolved(config) {
         viteCacheRoot = config.cacheDir
+        filter = createFilter(options.include, options.exclude, {
+          resolve: config.root,
+        })
         hmrDisabled = config.server.hmr === false
         isBundledDev = !!config.experimental.bundledDev
         const mdxIndex = config.plugins.findIndex(
@@ -211,6 +231,7 @@ const react = (_options?: Options): Plugin[] => {
       },
       async transform(code, id, transformOptions) {
         const file = id.split('?')[0]
+        if (!filter(file)) return
         const refresh = !transformOptions?.ssr && !hmrDisabled
 
         const result = await transformWithOptions(
@@ -250,10 +271,15 @@ const react = (_options?: Options): Plugin[] => {
           }),
           configResolved(config) {
             viteCacheRoot = config.cacheDir
+            filter = createFilter(options.include, options.exclude, {
+              resolve: config.root,
+            })
           },
           async transform(code, _id) {
+            const file = _id.split('?')[0]
+            if (!filter(file)) return
             const result = await transformWithOptions(
-              _id.split('?')[0],
+              file,
               code,
               'esnext',
               options,
