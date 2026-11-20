@@ -493,7 +493,9 @@ function defineTest(f: Fixture) {
 
     // Vite's preload helper sets the nonce of the links it inserts from
     // `<meta property="csp-nonce">`, so the meta has to keep the document's
-    // nonce across client navigations.
+    // nonce across client navigations. The example's CSP also allows these
+    // links through `'self'`, so a wrong nonce blocks nothing here and the
+    // test checks `.nonce` directly. It would block them under a nonce-only CSP.
     test('csp nonce of links added on client navigation', async ({ page }) => {
       const response = await page.goto(f.url())
       const documentNonce = response
