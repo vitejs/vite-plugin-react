@@ -159,7 +159,7 @@ class RscPluginManager {
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
     // by default, only the rsc build gets the full manifest and other server builds re-export it,
-    // since rsc already imports ssr through `import.meta.viteRsc.loadModule` and both are deployed together.
+    // relying on an import between the two builds in the same way `import.meta.viteRsc.loadModule` does.
     // `shareAssetsManifest: false` writes a full copy to each server build to keep each self-contained.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       this.buildAssetsManifest,

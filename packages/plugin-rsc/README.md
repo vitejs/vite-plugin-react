@@ -439,8 +439,8 @@ export default defineConfig({
       // cloudflare workers to communicate with node ssr environment on main Vite process.
       loadModuleDevProxy: true,
 
-      // by default, the assets manifest is written in full only to the rsc build,
-      // and other server builds re-export it, since rsc imports ssr through `loadModule`.
+      // by default, only the rsc build gets the full assets manifest and other server builds
+      // re-export it, relying on an import between the two builds in the same way `loadModule` does.
       // set `false` when ssr and rsc outputs are deployed separately (e.g. two Workers).
       shareAssetsManifest: false,
 
