@@ -2386,13 +2386,13 @@ function collectAssetDepsInner(
     const v = bundle[k]
     assert(v, `Not found '${k}' in the bundle`)
     if (v.type === 'chunk') {
-      css.push(...(v.viteMetadata?.importedCss ?? []))
       for (const k2 of v.imports) {
         // server external imports is not in bundle
         if (k2 in bundle) {
           recurse(k2)
         }
       }
+      css.push(...(v.viteMetadata?.importedCss ?? []))
     }
   }
 
