@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { transformCjsToEsm } from './cjs'
 
 describe(transformCjsToEsm, () => {
-  it('e2e', async () => {
+  it('loads CommonJS modules, including partial exports in a cycle', async () => {
     const server = await createServer({
       configFile: false,
       logLevel: 'error',
@@ -28,6 +28,12 @@ describe(transformCjsToEsm, () => {
     const runner = createServerModuleRunner(server.environments.ssr, {
       hmr: false,
     })
+    const circularModule = await runner.import('/cycle-a.cjs')
+    expect(circularModule.default).toEqual({
+      phase: 'after requiring B',
+      capturedByB: { phase: 'before requiring B' },
+    })
+
     const mod = await runner.import('/entry.mjs')
     expect(mod).toMatchInlineSnapshot(`
       {
@@ -47,7 +53,7 @@ describe(transformCjsToEsm, () => {
           "value": 3,
         },
         "depNamespace": {
-          "__cjs_module_runner_transform": true,
+          "__cjs_module_runner_get_exports": [Function],
           "a": "a",
           "b": "b",
           "default": {
