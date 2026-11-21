@@ -9,21 +9,17 @@ import { buildScopeTree } from './scope'
 // TODO:
 // replacing require("xxx") into import("xxx") affects Vite's resolution.
 
-// Runtime helper to handle CJS/ESM interop when transforming require() to import()
-// Unwrap .default for modules
-// 1. if it was transformed by this plugin (marked with __cjs_module_runner_transform)
-// 2. if all named exports point to .default properties (common CJS pattern)
-//    this is particularly important for Node built-in modules consumptions;
-//    where the built-in modules are not transformed by this plugin but still follow the CJS export pattern
-//    see [getESMFacade](https://github.com/nodejs/node/blob/f200685d9930404d610a52d9e06513bf0a821ed4/lib/internal/bootstrap/realm.js#L347-L360)
-//
-// This ensures we don't incorrectly unwrap .default on genuine ESM modules
+// Return the current module.exports for transformed modules, even if a require
+// cycle means their original module has not finished evaluating. For Node
+// built-ins and other CJS namespaces, keep the existing default interop.
+// See https://github.com/nodejs/node/blob/f200685d9930404d610a52d9e06513bf0a821ed4/lib/internal/bootstrap/realm.js#L347-L360
 function __cjs_interop__(m: any) {
-  return m.__cjs_module_runner_transform ||
-    ('default' in m &&
-      Object.keys(m).every((k) => k === 'default' || m[k] === m.default[k]))
-    ? m.default
-    : m
+  return typeof m.__cjs_module_runner_get_exports === 'function'
+    ? m.__cjs_module_runner_get_exports()
+    : 'default' in m &&
+        Object.keys(m).every((k) => k === 'default' || m[k] === m.default[k])
+      ? m.default
+      : m
 }
 
 const CJS_INTEROP_HELPER = __cjs_interop__.toString().replace(/\n\s*/g, '')
@@ -102,7 +98,11 @@ export function transformCjsToEsm(
     output.prepend(`${CJS_INTEROP_HELPER}\n`)
   }
   // https://nodejs.org/docs/v22.19.0/api/modules.html#exports-shortcut
-  output.prepend(`let exports = {}; const module = { exports };\n`)
+  // Make partial exports available before the first dependency import.
+  output.prepend(
+    `let exports = {}; const module = { exports };\n` +
+      `export const __cjs_module_runner_get_exports = () => module.exports;\n`,
+  )
 
   // https://nodejs.org/docs/v22.19.0/api/modules.html#the-module-scope
   // https://github.com/vitest-dev/vitest/blob/965cefc19722a6c899cd1d3decb3cc33e72af696/packages/vite-node/src/client.ts#L548-L554
@@ -118,7 +118,6 @@ export function transformCjsToEsm(
   output.append(`
 ;__vite_ssr_exportAll__(module.exports);
 export default module.exports;
-export const __cjs_module_runner_transform = true;
 `)
 
   return { output }
