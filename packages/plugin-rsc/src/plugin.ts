@@ -67,6 +67,7 @@ import {
   directRequestRE,
   evalValue,
   normalizeViteImportAnalysisUrl,
+  parseRequestUrl,
   prepareError,
   slash,
 } from './plugins/vite-utils'
@@ -1095,7 +1096,11 @@ export default function vitePluginRsc(
         }
 
         server.middlewares.use(async (req, res, next) => {
-          const url = new URL(req.url ?? '/', `http://localhost`)
+          const url = parseRequestUrl(req.url)
+          if (!url) {
+            next()
+            return
+          }
           if (url.pathname === '/__vite_rsc_load_module_dev_proxy') {
             try {
               const handler = await createHandler(url)
