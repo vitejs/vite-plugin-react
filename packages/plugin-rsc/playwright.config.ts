@@ -40,6 +40,7 @@ const subsets: Record<string, string[]> = {
     'no-ssr',
     'css-link-precedence',
     'client-first',
+    'client-action-discovery',
   ],
 }
 
