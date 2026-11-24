@@ -145,6 +145,62 @@ async function second() {
     ])
   })
 
+  it('keeps a function declaration callable before its source position', async () => {
+    const input = `
+function Page(x) {
+  return { action: submit };
+  async function submit(y) {
+    "use server";
+    return x + y;
+  }
+}
+`
+    const output = await testTransform(input)
+    expect(output).toContain('return { action: submit };')
+    expect(output?.indexOf('const submit =')).toBeLessThan(
+      output?.indexOf('return { action: submit };') ?? Infinity,
+    )
+  })
+
+  it('runs a function declaration used before its source position', async () => {
+    const input = `
+export function Page(x) {
+  return { action: submit };
+  async function submit(y) {
+    "use server";
+    return x + y;
+  }
+}
+`
+    const ast = await parseAstAsync(input)
+    const { output } = transformHoistInlineDirective(input, ast, {
+      directive: 'use server',
+      runtime: (value) => value,
+    })
+    const mod = (await import(
+      'data:text/javascript,' + encodeURIComponent(output.toString())
+    )) as { Page: (x: number) => { action: (y: number) => Promise<number> } }
+
+    await expect(mod.Page(1).action(2)).resolves.toBe(3)
+  })
+
+  it('does not move a function declaration wrapper before captured locals', async () => {
+    const input = `
+function Page() {
+  const x = 1;
+  return { action: submit };
+  async function submit() {
+    "use server";
+    return x;
+  }
+}
+`
+    const output = await testTransform(input)
+    expect(output?.indexOf('const x = 1;')).toBeLessThan(
+      output?.indexOf('const submit =') ?? Infinity,
+    )
+  })
+
   it('exposes the source function node to the runtime', async () => {
     const input = `
 async function cached(value, { offset }, ...rest) {
