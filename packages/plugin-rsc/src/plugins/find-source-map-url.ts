@@ -55,7 +55,7 @@ async function findSourceMapURL(
   if (filename.startsWith('file://')) {
     filename = slash(fileURLToPath(filename))
     if (
-      isFileLoadingAllowed(server.config, filename) &&
+      isFileLoadingAllowed(server.environments.client.config, filename) &&
       fs.existsSync(filename)
     ) {
       // line-by-line identity source map
