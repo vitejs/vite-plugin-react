@@ -546,7 +546,7 @@ export default function vitePluginRsc(
         // "dependencies" is a fallback for packages such as `@workspace/ui` in the shadcn monorepo template,
         // which list "react" there instead of in "peerDependencies"
         const result = await crawlFrameworkPkgs({
-          root: process.cwd(),
+          root: config.root ?? process.cwd(),
           isBuild: env.command === 'build',
           isFrameworkPkgByJson(pkgJson) {
             if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
