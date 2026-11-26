@@ -545,33 +545,44 @@ export default function vitePluginRsc(
         // without "optimizeDeps.exclude", pre-bundling drops "use client" on their internal modules.
         // "dependencies" is a fallback for packages such as `@workspace/ui` in the shadcn monorepo template,
         // which list "react" there instead of in "peerDependencies"
-        const result = await crawlFrameworkPkgs({
-          root: process.cwd(),
-          isBuild: env.command === 'build',
-          isFrameworkPkgByJson(pkgJson) {
-            if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
-              return
-            }
-            const peerDeps = pkgJson['peerDependencies']
-            const deps = pkgJson['dependencies']
-            return (
-              (peerDeps && 'react' in peerDeps) || (deps && 'react' in deps)
-            )
-          },
-        })
+        const crawlRoots = new Set([
+          process.cwd(),
+          path.resolve(config.root ?? process.cwd()),
+        ])
+        const results = await Promise.all(
+          [...crawlRoots].map((root) =>
+            crawlFrameworkPkgs({
+              root,
+              isBuild: env.command === 'build',
+              isFrameworkPkgByJson(pkgJson) {
+                if ([PKG_NAME, 'react-dom'].includes(pkgJson.name)) {
+                  return
+                }
+                const peerDeps = pkgJson['peerDependencies']
+                const deps = pkgJson['dependencies']
+                return (
+                  (peerDeps && 'react' in peerDeps) || (deps && 'react' in deps)
+                )
+              },
+            }),
+          ),
+        )
+        const frameworkPkgs = [
+          ...new Set(results.flatMap((result) => result.ssr.noExternal)),
+        ].sort()
         const noExternal = [
           'react',
           'react-dom',
           'server-only',
           'client-only',
           PKG_NAME,
-          ...result.ssr.noExternal.sort(),
+          ...frameworkPkgs,
         ]
         const optimizeDepsExclude = noExternal.filter(
           (pkg) =>
             !['react', 'react-dom', 'react-server-dom-webpack'].includes(pkg),
         )
-        hasReactServerDomWebpack = result.ssr.noExternal.includes(
+        hasReactServerDomWebpack = frameworkPkgs.includes(
           'react-server-dom-webpack',
         )
         const reactServerDomPackageName = hasReactServerDomWebpack
