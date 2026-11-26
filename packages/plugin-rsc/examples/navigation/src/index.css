@@ -1,0 +1,258 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.nav h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #646cff;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.87);
+  border-radius: 4px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-links a.active {
+  background: #646cff;
+  color: white;
+}
+
+.nav-links a.active:hover {
+  background: #535bf2;
+  border-color: transparent;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page {
+  max-width: 800px;
+}
+
+.page h1 {
+  font-size: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #646cff;
+}
+
+.page > p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card p {
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.card ul,
+.card ol {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.card li {
+  margin-bottom: 0.5rem;
+}
+
+.card li strong {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #646cff;
+}
+
+.code-ref {
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+button,
+.button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,
+.button:hover {
+  background-color: #535bf2;
+  transform: translateY(-1px);
+}
+
+button:active,
+.button:active {
+  transform: translateY(0);
+}
+
+.note {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+form {
+  display: inline;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  .nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-links a {
+    color: #213547;
+  }
+
+  .nav-links a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-links a.active {
+    color: white;
+  }
+
+  .page > p {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .card {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .card h2 {
+    color: #213547;
+  }
+
+  .card p,
+  .card ul,
+  .card ol {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .card li strong {
+    color: #213547;
+  }
+
+  .card code {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .code-ref {
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .note {
+    color: rgba(0, 0, 0, 0.5);
+    border-top-color: rgba(0, 0, 0, 0.1);
+  }
+}
