@@ -9,7 +9,11 @@ import type {
   Program,
   VariableDeclaration,
   VariableDeclarator,
+  ArrowFunctionExpression,
+  FunctionExpression,
+  Pattern,
 } from 'estree'
+import { walk } from 'estree-walker'
 import type { ESTree } from 'vite'
 import { tinyassert } from '../utils/shared'
 import { extractNames } from './utils'
@@ -25,6 +29,17 @@ export type ModuleExportMeta = {
    * - `undefined` for export specifiers and re-exports.
    */
   valueNode?: Node | ExportDefaultDeclaration['declaration']
+  /**
+   * The source function referenced by a local export specifier or default
+   * identifier. Only top-level function declarations and const function
+   * initializers without assignments to the binding are resolved.
+   * Writes to the same name in any scope conservatively leave it unresolved;
+   * this does not perform binding or control-flow analysis.
+   */
+  resolvedValueNode?:
+    | FunctionDeclaration
+    | FunctionExpression
+    | ArrowFunctionExpression
   // TODO: followings are used only for internal `transformRscCssExport`.
   // should probably simplify to use `valueNode` directly and remove these.
   /**
@@ -129,6 +144,17 @@ export function scanModuleExports(
 ): ModuleExportGroup[] {
   const ast = viteAst as unknown as Program
   const groups: ModuleExportGroup[] = []
+  const needsLocalResolution = ast.body.some(
+    (node) =>
+      (node.type === 'ExportNamedDeclaration' &&
+        !node.source &&
+        node.specifiers.length > 0) ||
+      (node.type === 'ExportDefaultDeclaration' &&
+        node.declaration.type === 'Identifier'),
+  )
+  const localFunctions = needsLocalResolution
+    ? resolveLocalFunctions(ast)
+    : new Map<string, SourceFunction>()
 
   for (const node of ast.body) {
     if (node.type === 'ExportNamedDeclaration') {
@@ -206,7 +232,10 @@ export function scanModuleExports(
                 specifier.exported.type === 'Identifier'
                   ? specifier.exported.name
                   : '__unsupported_string_export__',
-              meta: {},
+              meta:
+                !node.source && specifier.local.type === 'Identifier'
+                  ? resolvedMeta(localFunctions.get(specifier.local.name))
+                  : {},
             }
           }),
         })
@@ -238,6 +267,7 @@ export function scanModuleExports(
         meta = {
           defaultExportIdentifierName: node.declaration.name,
           valueNode: node.declaration,
+          ...resolvedMeta(localFunctions.get(node.declaration.name)),
         }
       } else {
         // export default function () {}
@@ -253,6 +283,65 @@ export function scanModuleExports(
   }
 
   return groups
+}
+
+type SourceFunction = NonNullable<ModuleExportMeta['resolvedValueNode']>
+
+function resolvedMeta(node: SourceFunction | undefined): ModuleExportMeta {
+  return node ? { resolvedValueNode: node } : {}
+}
+
+function resolveLocalFunctions(ast: Program): Map<string, SourceFunction> {
+  const functions = new Map<string, SourceFunction>()
+  for (const statement of ast.body) {
+    const node =
+      statement.type === 'ExportNamedDeclaration' ||
+      statement.type === 'ExportDefaultDeclaration'
+        ? statement.declaration
+        : statement
+    if (node?.type === 'FunctionDeclaration' && node.id) {
+      functions.set(node.id.name, node as FunctionDeclaration)
+    } else if (node?.type === 'VariableDeclaration' && node.kind === 'const') {
+      for (const { id, init } of node.declarations) {
+        if (
+          id.type === 'Identifier' &&
+          (init?.type === 'FunctionExpression' ||
+            init?.type === 'ArrowFunctionExpression')
+        ) {
+          functions.set(id.name, init)
+        }
+      }
+    }
+  }
+
+  if (functions.size === 0) return functions
+
+  // A function declaration is mutable, and even a const assignment can throw
+  // before registration. Do not claim a source when its name is written to.
+  // Deliberately conservative: shadowed writes also leave metadata unknown.
+  walk(ast, {
+    enter(node) {
+      const target =
+        node.type === 'AssignmentExpression'
+          ? node.left
+          : node.type === 'UpdateExpression'
+            ? node.argument
+            : node.type === 'ForInStatement' || node.type === 'ForOfStatement'
+              ? node.left
+              : undefined
+      if (target && target.type !== 'MemberExpression') {
+        const patterns =
+          target.type === 'VariableDeclaration'
+            ? target.declarations.map((declaration) => declaration.id)
+            : [target]
+        for (const pattern of patterns) {
+          for (const name of extractNames(pattern as Pattern))
+            functions.delete(name)
+        }
+      }
+    },
+  })
+  return functions
 }
 
 function getIsFunction(
