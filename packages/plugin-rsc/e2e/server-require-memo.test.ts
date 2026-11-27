@@ -108,8 +108,8 @@ async function handleMemoTestRequest(request: Request) {
       const result = await (
         await request.get(f.url('__memo-test/retained'))
       ).json()
-      // unknown ids still reach the require, so this checks the probe saw them
-      expect(result.loads).toBeGreaterThanOrEqual(perVariant)
+      // only unknown ids reach the require, which also checks the probe sees loads
+      expect(result.loads).toBe(perVariant)
       expect(result.retained).toBe(0)
     })
   }
