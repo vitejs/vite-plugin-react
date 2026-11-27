@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect width="880" height="300" fill="#ffffff"/>
+
+  <!-- the load id, split into its parts -->
+  <g font-family="ui-monospace, monospace" font-size="14">
+    <rect x="20" y="20" width="130" height="40" fill="#fde7e7" stroke="#b3261e"/>
+    <text x="85" y="45" text-anchor="middle">$$server:</text>
+    <rect x="150" y="20" width="320" height="40" fill="#f3e8fb" stroke="#7b3fa0"/>
+    <text x="310" y="45" text-anchor="middle">$$preserve: | $$decode-client:</text>
+    <rect x="470" y="20" width="200" height="40" fill="#eef7ee" stroke="#2e7d32"/>
+    <text x="570" y="45" text-anchor="middle">key</text>
+    <rect x="670" y="20" width="170" height="40" fill="#fff8e6" stroke="#b07d00"/>
+    <text x="755" y="45" text-anchor="middle">$$cache=N</text>
+  </g>
+  <text x="85" y="80" text-anchor="middle">server route</text>
+  <text x="310" y="80" text-anchor="middle">synthetic mode, optional</text>
+  <text x="570" y="80" text-anchor="middle">module identity</text>
+  <text x="755" y="80" text-anchor="middle">dev only</text>
+
+  <!-- layers -->
+  <rect x="20" y="110" width="250" height="44" rx="6" fill="#f6f6f6" stroke="#888"/>
+  <text x="32" y="137" font-family="ui-monospace, monospace">__vite_rsc_require__</text>
+  <line x1="270" y1="132" x2="298" y2="132" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="306" y="128">strips <tspan font-family="ui-monospace, monospace" fill="#b3261e">$$server:</tspan> and calls the server require.</text>
+  <text x="306" y="146">Any other id goes to the client require.</text>
+
+  <rect x="20" y="172" width="250" height="44" rx="6" fill="#f6f6f6" stroke="#888"/>
+  <text x="32" y="199" font-family="ui-monospace, monospace">__vite_rsc_server_require__</text>
+  <line x1="270" y1="194" x2="298" y2="194" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="306" y="190">returns a synthetic proxy for a <tspan fill="#7b3fa0">mode prefix</tspan>, without a load.</text>
+  <text x="306" y="208">Strips <tspan font-family="ui-monospace, monospace" fill="#b07d00">$$cache=N</tspan>, which its memo key still includes.</text>
+
+  <rect x="20" y="234" width="250" height="44" rx="6" fill="#f6f6f6" stroke="#888"/>
+  <text x="32" y="261" font-family="ui-monospace, monospace">load(<tspan fill="#2e7d32">key</tspan>)</text>
+  <line x1="270" y1="256" x2="298" y2="256" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="306" y="252">The loader sees only the module identity: a Vite import</text>
+  <text x="306" y="270">in dev, or the generated server references table in build.</text>
+</svg>

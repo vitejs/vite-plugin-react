@@ -4,6 +4,7 @@ This document provides AI-agent-specific guidance for the React Server Component
 
 - **[README.md](README.md)** - Plugin overview, concepts, and examples
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development setup and testing guidelines
+- **[docs/concepts/reference-ids.md](docs/concepts/reference-ids.md)** - How reference ids become module loads, and what the `$$` markers mean
 
 Before adding integration coverage, follow the test fixture guidance in [CONTRIBUTING.md](CONTRIBUTING.md#choosing-a-test-fixture).
 
