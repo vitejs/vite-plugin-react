@@ -93,7 +93,9 @@ export function setRequireModule(options: {
 }
 
 // Rejected loads are not kept, so ids that fail to load don't accumulate.
-// React fails the chunk on rejection, so it doesn't ask for the same promise again.
+// React requires a reference a second time only after its load fulfils,
+// so a rejected load can be dropped without breaking the stable promise.
+// https://github.com/facebook/react/blob/edae846a9a17442c00429f2b15375afbfa0376c9/packages/react-server/src/ReactFlightReplyServer.js#L521-L523
 function memoizeServerRequire(
   load: (id: string) => Promise<unknown>,
 ): (id: string) => Promise<unknown> {
