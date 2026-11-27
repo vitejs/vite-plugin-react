@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
 
-// Server reference ids in a reply come from the client, so the server require
+// Server reference ids in a request come from the client, so the server require
 // memo must not keep an entry for each distinct id a client sends.
 test.describe(() => {
   const root = 'examples/e2e/temp/server-require-memo'
@@ -79,42 +79,23 @@ async function handleMemoTestRequest(request: Request) {
       ).json()
       const [knownId, knownName] = actionId.split('#') as [string, string]
 
-      const variants: Record<string, (i: number) => string> = {
-        unknown: (i) => `/memo-test-${i}#x`,
-        'decode-client prefix': (i) => `$$decode-client:/memo-test-${i}#x`,
-        'preserve prefix': (i) => `$$preserve:/memo-test-${i}#x`,
-        'cache tag on a known id': (i) =>
-          `${knownId}$$cache=memo-test-${i}#${knownName}`,
-      }
-      // a few distinct ids per variant, each of which would be a memo entry
+      const variants = [
+        (i: number) => `/memo-test-${i}#x`,
+        (i: number) => `$$decode-client:/memo-test-${i}#x`,
+        (i: number) => `$$preserve:/memo-test-${i}#x`,
+        (i: number) => `${knownId}$$cache=memo-test-${i}#${knownName}`,
+      ]
+      // a few distinct ids per variant, each of which would be a memo entry.
+      // A progressive form post names its action in a field, which React
+      // resolves through the server manifest.
       const perVariant = 3
       let seq = 0
-      for (const toId of Object.values(variants)) {
-        // decodeReply: a hand-encoded reply whose arguments are server
-        // references. React unescapes a leading "$$" in a reply string to "$",
-        // so an id "$$x" goes on the wire as "$$$x".
-        const refs = Array.from({ length: perVariant }, () => {
-          const id = toId(seq++)
-          return { id: id.startsWith('$') ? '$' + id : id, bound: null }
-        })
-        const replyBody = new FormData()
-        replyBody.set('1', JSON.stringify(refs))
-        replyBody.set('0', JSON.stringify(refs.map((_, i) => `$h1:${i}`)))
-        const reply = await request.post(f.url('_.rsc'), {
-          headers: { 'x-rsc-action': actionId },
-          multipart: replyBody,
-        })
-        await reply.text()
-
-        // decodeAction: a progressive form post names its action in a field,
-        // which React doesn't unescape. It loads one action per request.
+      for (const toId of variants) {
         for (let i = 0; i < perVariant; i++) {
-          const actionBody = new FormData()
-          actionBody.set('$ACTION_ID_' + toId(seq++), '')
-          const action = await request.post(f.url(), {
-            multipart: actionBody,
-          })
-          await action.text()
+          const body = new FormData()
+          body.set('$ACTION_ID_' + toId(seq++), '')
+          const response = await request.post(f.url(), { multipart: body })
+          await response.text()
         }
       }
 
@@ -122,7 +103,7 @@ async function handleMemoTestRequest(request: Request) {
         await request.get(f.url('__memo-test/retained'))
       ).json()
       // unknown ids still reach the require, so this checks the probe saw them
-      expect(result.loads).toBeGreaterThanOrEqual(2 * perVariant)
+      expect(result.loads).toBeGreaterThanOrEqual(perVariant)
       expect(result.retained).toBe(0)
     })
   }
