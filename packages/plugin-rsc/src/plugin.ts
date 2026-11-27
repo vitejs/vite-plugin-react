@@ -2015,9 +2015,7 @@ function vitePluginDefineEncryptionKey(
         filter: { id: exactRegex('\0virtual:vite-rsc/encryption-key') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/encryption-key') {
-            // The dev server serves client environment modules over HTTP
-            // (e.g. `/@id/__x00__virtual:vite-rsc/encryption-key`), so the key
-            // must not be loadable outside of the server environment.
+            // server-only module, since the key must never reach the client.
             if (this.environment.name !== serverEnvironmentName) {
               this.error(
                 `[vite-rsc] 'virtual:vite-rsc/encryption-key' is only available in '${serverEnvironmentName}' environment`,
