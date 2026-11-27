@@ -86,6 +86,18 @@ For production target, see https://vite.dev/config/build-options.html#build-targ
 react({ devTarget: 'es2022' })
 ```
 
+### include / exclude
+
+Restrict the files transformed by the plugin with [picomatch patterns](https://github.com/micromatch/picomatch#globbing-features) or regular expressions, like the options of the same name in `@vitejs/plugin-react`. By default, no file is filtered out. Patterns are tested against the file path without query string, and string patterns are resolved relative to the Vite `root`.
+
+This is useful to let another plugin handle some JSX/TSX files, for example Solid components in the same project:
+
+```ts
+react({ exclude: [/\.solid\.tsx$/] })
+```
+
+Files must still be supported by SWC (see [`parserConfig`](#parserconfig)) to be transformed. In build, these options only apply when SWC is used (`plugins`, `compiler` or `useAtYourOwnRisk_mutateSwcOptions`); otherwise JSX is compiled by Vite itself.
+
 ### parserConfig
 
 Override the default include list (.ts, .tsx, .mts, .jsx, .mdx).

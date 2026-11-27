@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Add `include` and `exclude` options
+
+Add `include` and `exclude` options, with the same semantics as in `@vitejs/plugin-react`, to choose which files are transformed. Fixes [#486](https://github.com/vitejs/vite-plugin-react/issues/486).
+
+```ts
+react({ exclude: [/\.solid\.tsx$/] })
+```
+
 ### Add `compiler` option [#1461](https://github.com/vitejs/vite-plugin-react/pull/1461)
 
 Add `compiler` option to enable the React Compiler. Fixes [#428](https://github.com/vitejs/vite-plugin-react/issues/428).
