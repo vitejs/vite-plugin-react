@@ -31,6 +31,14 @@ test.describe('dev-default', () => {
     const response = await fetch(requestUrl)
     expect(response.status).toBe(404)
   })
+
+  test('encryption key is not served to client', async () => {
+    const response = await fetch(
+      f.url('@id/__x00__virtual:vite-rsc/encryption-key'),
+    )
+    expect(response.status).toBe(500)
+    expect(await response.text()).not.toContain('export default')
+  })
 })
 
 test.describe('dev-initial', () => {
