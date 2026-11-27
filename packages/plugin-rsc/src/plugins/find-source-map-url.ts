@@ -49,6 +49,9 @@ async function findSourceMapURL(
     | NonNullable<EnvironmentModuleNode['transformResult']>['map']
     | undefined
   if (environmentName === 'Server') {
+    // Showing server source in browser DevTools is intended, so this has no `server.fs` check.
+    // The rsc module graph only holds modules the app loads, because transforms that
+    // a request triggers are checked first (see `rsc:reference-validation` in `plugin.ts`).
     mod = server.environments.rsc!.moduleGraph.getModuleById(filename)
     // React extracts stacktrace via resetting `prepareStackTrace` on the server
     // and let browser devtools handle the mapping.
