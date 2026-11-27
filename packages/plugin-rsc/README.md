@@ -635,7 +635,34 @@ Node.js environments can use runtime-specific entry points that integrate React'
 | RSC combined | `@vitejs/plugin-rsc/rsc.node`        | Server and client APIs   |
 | SSR          | `@vitejs/plugin-rsc/ssr.node`        | `createFromNodeStream`   |
 
+Set [`reactServerDomBuild: 'node'`](#node-builds-of-react-server-dom) together with these entry points, so that the plugin's own runtime uses the same React builds instead of bundling the edge builds alongside them.
+
 See [`examples/node-stream`](./examples/node-stream) for an end-to-end Node.js handler using these APIs.
+
+### Node builds of `react-server-dom`
+
+By default, the server runtime above uses React's edge builds of `react-server-dom` (`server.edge`, `static.edge` and `client.edge`). The `reactServerDomBuild` plugin option selects React's Node builds instead. React pairs each Flight build with the Fizz build of the same name, so use `'node'` when HTML is rendered with the Node build of `react-dom/server`, for example `react-dom/server.node`, or `react-dom/server` resolved with the `node` condition.
+
+```js
+rsc({
+  reactServerDomBuild: 'node',
+})
+
+// or decide per environment once the config is resolved
+rsc({
+  reactServerDomBuild: ({ environmentName, config }) =>
+    config.environments[environmentName]?.resolve.conditions.includes('workerd')
+      ? 'edge'
+      : 'node',
+})
+```
+
+The option applies to server environments, and a function is called once for each of them. It switches:
+
+- the builds of `react-server-dom/server`, `static` and `client` used by `@vitejs/plugin-rsc/rsc/*`, `@vitejs/plugin-rsc/ssr`, `@vitejs/plugin-rsc/react/*` and the code generated for `"use client"` and `"use server"`. Client environments keep the edge builds, and `@vitejs/plugin-rsc/browser` keeps `client.browser`.
+- the `react-server-dom` and `react-dom/server`/`react-dom/static` entries pre-bundled by `optimizeDeps.include` in the `rsc` and `ssr` environments. Another server environment that pre-bundles them should include the selected build itself.
+
+Frameworks that call React's Flight APIs directly, for example to pass their own manifests, can import `@vitejs/plugin-rsc/react-server-dom/server`, `@vitejs/plugin-rsc/react-server-dom/static` and `@vitejs/plugin-rsc/react-server-dom/client`. These resolve to the build selected for the importing environment (from the installed `react-server-dom-webpack` when present), so the app bundles a single copy of the runtime. A specific build such as `@vitejs/plugin-rsc/vendor/react-server-dom/server.edge` is always that build. Where Vite plugins don't run, for example when `optimizeDeps.include` pre-bundles `@vitejs/plugin-rsc/react/rsc` itself, these specifiers fall back to the edge builds.
 
 ### `@vitejs/plugin-rsc/browser`
 

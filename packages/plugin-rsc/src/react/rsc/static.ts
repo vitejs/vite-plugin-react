@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as ReactStatic from '@vitejs/plugin-rsc/vendor/react-server-dom/static.edge'
+import * as ReactStatic from '@vitejs/plugin-rsc/react-server-dom/static'
 import {
   createClientManifest,
   type CreateClientManifestOptions,

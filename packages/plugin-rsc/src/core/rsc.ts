@@ -11,7 +11,7 @@ import {
 } from './shared'
 
 // @ts-ignore
-import * as ReactServer from '@vitejs/plugin-rsc/vendor/react-server-dom/server.edge'
+import * as ReactServer from '@vitejs/plugin-rsc/react-server-dom/server'
 
 let init = false
 let requireModule!: (id: string) => unknown

@@ -37,7 +37,11 @@ export default defineConfig({
   ],
   format: ['esm'],
   deps: {
-    neverBundle: [/^virtual:/, /^@vitejs\/plugin-rsc\/vendor\//],
+    neverBundle: [
+      /^virtual:/,
+      /^@vitejs\/plugin-rsc\/vendor\//,
+      /^@vitejs\/plugin-rsc\/react-server-dom\//,
+    ],
     onlyBundle: ['@types/estree', 'picocolors'],
   },
   fixedExtension: false,
@@ -59,6 +63,20 @@ export default defineConfig({
           recursive: true,
           force: true,
         })
+
+        // The `rsc:react-server-dom-build` plugin resolves
+        // `@vitejs/plugin-rsc/react-server-dom/<entry>` to the build selected
+        // by `reactServerDomBuild`. These modules are the fallback where the
+        // plugin doesn't run, e.g. when the dep optimizer bundles plugin-rsc's
+        // runtime, and keep the edge build.
+        fs.rmSync('./dist/react-server-dom/', { recursive: true, force: true })
+        fs.mkdirSync('./dist/react-server-dom', { recursive: true })
+        for (const entry of ['server', 'static', 'client']) {
+          fs.writeFileSync(
+            `./dist/react-server-dom/${entry}.js`,
+            `export * from '@vitejs/plugin-rsc/vendor/react-server-dom/${entry}.edge'\n`,
+          )
+        }
       },
     },
   ],
