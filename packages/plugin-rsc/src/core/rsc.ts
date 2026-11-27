@@ -1,10 +1,11 @@
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
-import { memoize, tinyassert } from '../utils/shared'
+import { tinyassert } from '../utils/shared'
 import {
   SERVER_DECODE_CLIENT_PREFIX,
   SERVER_REFERENCE_PRESERVE_PREFIX,
   SERVER_REFERENCE_PREFIX,
   createReferenceCacheTag,
+  memoizeReferenceRequire,
   removeReferenceCacheTag,
   setInternalRequire,
   type ResourceOptionsCallback,
@@ -27,7 +28,7 @@ export function setRequireModule(options: {
   }
 
   // need memoize to return stable promise from __webpack_require__
-  ;(globalThis as any).__vite_rsc_server_require__ = memoize(
+  ;(globalThis as any).__vite_rsc_server_require__ = memoizeReferenceRequire(
     async (id: string) => {
       if (id.startsWith(SERVER_REFERENCE_PRESERVE_PREFIX)) {
         id = id.slice(SERVER_REFERENCE_PRESERVE_PREFIX.length)
