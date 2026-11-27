@@ -1,0 +1,126 @@
+import { expect, test } from '@playwright/test'
+import { setupInlineFixture, type Fixture, useFixture } from './fixture'
+
+// Server reference ids in a reply come from the client, so the server require
+// memo must not keep an entry for each distinct id a client sends.
+test.describe(() => {
+  const root = 'examples/e2e/temp/server-require-memo'
+
+  test.beforeAll(async () => {
+    await setupInlineFixture({
+      src: 'examples/starter-extra',
+      dest: root,
+      files: {
+        'src/memo-action.tsx': /* tsx */ `
+          'use server'
+
+          export async function memoAction(..._args: unknown[]) {}
+        `,
+        'src/framework/entry.rsc.tsx': {
+          edit: (s) =>
+            s.replace(
+              `async function handler(request: Request): Promise<Response> {`,
+              /* tsx */ `
+async function handler(request: Request): Promise<Response> {
+  const testResponse = await handleMemoTestRequest(request)
+  if (testResponse) return testResponse
+`,
+            ) +
+            /* tsx */ `
+import v8 from 'node:v8'
+import vm from 'node:vm'
+import { memoAction } from '../memo-action.tsx'
+
+// Hold every promise the server require returns for a test id weakly.
+// Once the requests are done, only the memo can keep them alive.
+const serverRequire = (globalThis as any).__vite_rsc_server_require__
+const seen = new WeakSet<object>()
+const loads: WeakRef<object>[] = []
+;(globalThis as any).__vite_rsc_server_require__ = (id: string) => {
+  const promise = serverRequire(id)
+  if (id.includes('memo-test-') && !seen.has(promise)) {
+    seen.add(promise)
+    loads.push(new WeakRef(promise))
+  }
+  return promise
+}
+
+v8.setFlagsFromString('--expose-gc')
+const gc: () => void = vm.runInNewContext('gc')
+
+async function handleMemoTestRequest(request: Request) {
+  const url = new URL(request.url)
+  if (url.pathname === '/__memo-test/action-id') {
+    return Response.json((memoAction as any).$$id)
+  }
+  if (url.pathname === '/__memo-test/retained') {
+    for (let i = 0; i < 5; i++) {
+      gc()
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    return Response.json({
+      loads: loads.length,
+      retained: loads.filter((ref) => ref.deref()).length,
+    })
+  }
+}
+`,
+        },
+      },
+    })
+  })
+
+  function defineMemoTest(f: Fixture) {
+    test('server require memo keeps no entry for untrusted ids', async ({
+      request,
+    }) => {
+      const actionId: string = await (
+        await request.get(f.url('__memo-test/action-id'))
+      ).json()
+      const [knownId, knownName] = actionId.split('#') as [string, string]
+
+      // React's reply decoder unescapes a leading "$$" to "$",
+      // so a reference id "$$x" goes on the wire as "$$$x".
+      const variants: Record<string, (i: number) => string> = {
+        unknown: (i) => `/memo-test-${i}#x`,
+        'decode-client prefix': (i) => `$$$decode-client:/memo-test-${i}#x`,
+        'preserve prefix': (i) => `$$$preserve:/memo-test-${i}#x`,
+        'cache tag on a known id': (i) =>
+          `${knownId}$$cache=memo-test-${i}#${knownName}`,
+      }
+      const perVariant = 50
+      let seq = 0
+      for (const toId of Object.values(variants)) {
+        const refs = Array.from({ length: perVariant }, () => ({
+          id: toId(seq++),
+          bound: null,
+        }))
+        const body = new FormData()
+        body.set('1', JSON.stringify(refs))
+        body.set('0', JSON.stringify(refs.map((_, i) => `$h1:${i}`)))
+        const response = await request.post(f.url('_.rsc'), {
+          headers: { 'x-rsc-action': actionId },
+          multipart: body,
+        })
+        await response.text()
+      }
+
+      const result = await (
+        await request.get(f.url('__memo-test/retained'))
+      ).json()
+      // unknown ids still reach the require, so this checks the probe saw them
+      expect(result.loads).toBeGreaterThanOrEqual(perVariant)
+      expect(result.retained).toBe(0)
+    })
+  }
+
+  test.describe('dev', () => {
+    const f = useFixture({ root, mode: 'dev' })
+    defineMemoTest(f)
+  })
+
+  test.describe('build', () => {
+    const f = useFixture({ root, mode: 'build' })
+    defineMemoTest(f)
+  })
+})
