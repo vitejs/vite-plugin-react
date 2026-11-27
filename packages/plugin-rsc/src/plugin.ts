@@ -21,6 +21,7 @@ import {
   type ViteDevServer,
   defaultServerConditions,
   isCSSRequest,
+  isFileLoadingAllowed,
   normalizePath,
   parseAstAsync,
 } from 'vite'
@@ -67,6 +68,7 @@ import {
   evalValue,
   normalizeViteImportAnalysisUrl,
   prepareError,
+  slash,
 } from './plugins/vite-utils'
 import {
   type TransformWrapExportFilter,
@@ -417,9 +419,18 @@ export function vitePluginRscMinimal(
                 // `preserveServerReferences` can reach action loading without their
                 // modules entering the graph during replay. Transform the target on
                 // demand to populate metadata before validating its ID.
-                // `transformRequest` applies Vite's `server.fs` checks for this environment.
                 try {
-                  await this.environment.transformRequest(parsed.id)
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
+                  const resolved = await this.resolve(parsed.id)
+                  const id = resolved?.id ?? parsed.id
+                  // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L271-L282
+                  const allowed = isFileLoadingAllowed(
+                    this.environment.config,
+                    slash(cleanUrl(id)),
+                  )
+                  if (allowed) {
+                    await this.environment.transformRequest(parsed.id)
+                  }
                 } catch {}
                 meta = manager.serverReferences.findByReferenceKey(parsed.id)
               }
