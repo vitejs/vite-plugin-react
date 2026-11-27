@@ -419,6 +419,10 @@ export function vitePluginRscMinimal(
                 // `preserveServerReferences` can reach action loading without their
                 // modules entering the graph during replay. Transform the target on
                 // demand to populate metadata before validating its ID.
+                // The ID comes from the request, so check `server.fs` access here.
+                // `transformRequest` skips that check in server environments.
+                // https://github.com/vitejs/vite/blob/adc761d6e123c1fd0917c8b80e0d1050689ccbcd/packages/vite/src/node/server/environment.ts#L321
+                // https://github.com/vitejs/vite/blob/adc761d6e123c1fd0917c8b80e0d1050689ccbcd/packages/vite/src/node/server/hmr.ts#L1172
                 try {
                   // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
                   const resolved = await this.resolve(parsed.id)
