@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { setupInlineFixture, type Fixture, useFixture } from './fixture'
+import { waitForHydration } from './helper'
 
 // Server reference ids in a request come from the client, so the server require
 // memo must not keep an entry for each distinct id a client sends.
@@ -11,11 +12,6 @@ test.describe(() => {
       src: 'examples/starter-extra',
       dest: root,
       files: {
-        'src/memo-action.tsx': /* tsx */ `
-          'use server'
-
-          export async function memoAction(..._args: unknown[]) {}
-        `,
         'src/framework/entry.rsc.tsx': {
           edit: (s) =>
             s.replace(
@@ -29,7 +25,6 @@ async function handler(request: Request): Promise<Response> {
             /* tsx */ `
 import v8 from 'node:v8'
 import vm from 'node:vm'
-import { memoAction } from '../memo-action.tsx'
 
 // Hold every promise the server require returns for a test id weakly.
 // Once the requests are done, only the memo can keep them alive.
@@ -50,9 +45,6 @@ const gc: () => void = vm.runInNewContext('gc')
 
 async function handleMemoTestRequest(request: Request) {
   const url = new URL(request.url)
-  if (url.pathname === '/__memo-test/action-id') {
-    return Response.json((memoAction as any).$$id)
-  }
   if (url.pathname === '/__memo-test/retained') {
     for (let i = 0; i < 5; i++) {
       gc()
@@ -72,11 +64,18 @@ async function handleMemoTestRequest(request: Request) {
 
   function defineMemoTest(f: Fixture) {
     test('server require memo keeps no entry for untrusted ids', async ({
+      page,
       request,
     }) => {
-      const actionId: string = await (
-        await request.get(f.url('__memo-test/action-id'))
-      ).json()
+      // record a real action id from the counter form's hydrated call
+      await page.goto(f.url())
+      await waitForHydration(page)
+      const actionRequest = page.waitForRequest(
+        (request) =>
+          request.method() === 'POST' && !!request.headers()['x-rsc-action'],
+      )
+      await page.getByRole('button', { name: /Server Counter/ }).click()
+      const actionId = (await actionRequest).headers()['x-rsc-action']!
       const [knownId, knownName] = actionId.split('#') as [string, string]
 
       const variants = [
