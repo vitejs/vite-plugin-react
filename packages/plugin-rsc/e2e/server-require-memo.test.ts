@@ -79,37 +79,50 @@ async function handleMemoTestRequest(request: Request) {
       ).json()
       const [knownId, knownName] = actionId.split('#') as [string, string]
 
-      // React's reply decoder unescapes a leading "$$" to "$",
-      // so a reference id "$$x" goes on the wire as "$$$x".
       const variants: Record<string, (i: number) => string> = {
         unknown: (i) => `/memo-test-${i}#x`,
-        'decode-client prefix': (i) => `$$$decode-client:/memo-test-${i}#x`,
-        'preserve prefix': (i) => `$$$preserve:/memo-test-${i}#x`,
+        'decode-client prefix': (i) => `$$decode-client:/memo-test-${i}#x`,
+        'preserve prefix': (i) => `$$preserve:/memo-test-${i}#x`,
         'cache tag on a known id': (i) =>
           `${knownId}$$cache=memo-test-${i}#${knownName}`,
       }
-      const perVariant = 50
+      // a few distinct ids per variant, each of which would be a memo entry
+      const perVariant = 3
       let seq = 0
       for (const toId of Object.values(variants)) {
-        const refs = Array.from({ length: perVariant }, () => ({
-          id: toId(seq++),
-          bound: null,
-        }))
-        const body = new FormData()
-        body.set('1', JSON.stringify(refs))
-        body.set('0', JSON.stringify(refs.map((_, i) => `$h1:${i}`)))
-        const response = await request.post(f.url('_.rsc'), {
-          headers: { 'x-rsc-action': actionId },
-          multipart: body,
+        // decodeReply: a hand-encoded reply whose arguments are server
+        // references. React unescapes a leading "$$" in a reply string to "$",
+        // so an id "$$x" goes on the wire as "$$$x".
+        const refs = Array.from({ length: perVariant }, () => {
+          const id = toId(seq++)
+          return { id: id.startsWith('$') ? '$' + id : id, bound: null }
         })
-        await response.text()
+        const replyBody = new FormData()
+        replyBody.set('1', JSON.stringify(refs))
+        replyBody.set('0', JSON.stringify(refs.map((_, i) => `$h1:${i}`)))
+        const reply = await request.post(f.url('_.rsc'), {
+          headers: { 'x-rsc-action': actionId },
+          multipart: replyBody,
+        })
+        await reply.text()
+
+        // decodeAction: a progressive form post names its action in a field,
+        // which React doesn't unescape. It loads one action per request.
+        for (let i = 0; i < perVariant; i++) {
+          const actionBody = new FormData()
+          actionBody.set('$ACTION_ID_' + toId(seq++), '')
+          const action = await request.post(f.url(), {
+            multipart: actionBody,
+          })
+          await action.text()
+        }
       }
 
       const result = await (
         await request.get(f.url('__memo-test/retained'))
       ).json()
       // unknown ids still reach the require, so this checks the probe saw them
-      expect(result.loads).toBeGreaterThanOrEqual(perVariant)
+      expect(result.loads).toBeGreaterThanOrEqual(2 * perVariant)
       expect(result.retained).toBe(0)
     })
   }
