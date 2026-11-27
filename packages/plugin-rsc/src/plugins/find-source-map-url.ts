@@ -51,11 +51,19 @@ async function findSourceMapURL(
   filename: string,
   environmentName: string,
 ): Promise<object | undefined> {
-  // this is likely server external (i.e. outside of Vite processing)
+  // A `file://` frame comes from a file that Node loads natively instead of through Vite.
+  // React drops `node_modules` frames by default, so this is mostly reached with a custom
+  // `filterStackFrame` or with project files that are externalized or imported natively.
+  // https://github.com/facebook/react/blob/edae846a9a17442c00429f2b15375afbfa0376c9/packages/react-server/src/ReactFlightServer.js#L195-L204
+  // TODO: consider removing this branch. It only gives DevTools the raw text of rarely seen frames,
+  // but it is the only branch that reads arbitrary files from disk, so it depends on Vite's `server.fs` rules.
+  // The browser-side `findSourceMapURL` could return `null` for `file://` instead.
   if (filename.startsWith('file://')) {
     filename = slash(fileURLToPath(filename))
+    // The browser requests this and the response includes the file contents,
+    // so check access the same way as Vite's `/@fs/` serving for the client.
     if (
-      isFileLoadingAllowed(server.config, filename) &&
+      isFileLoadingAllowed(server.environments.client.config, filename) &&
       fs.existsSync(filename)
     ) {
       // line-by-line identity source map
