@@ -14,7 +14,7 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import type { ESTree } from 'vite'
 import { tinyassert } from '../utils/shared'
-import { buildScopeTree, type ScopeTree } from './scope'
+import { buildScopeTree, type Scope, type ScopeTree } from './scope'
 import { isDirective } from './utils'
 
 export type TransformHoistInlineDirectiveOptions = {
@@ -267,6 +267,8 @@ export function transformHoistInlineDirective(
             : bindVars.map((b) => b.expr).join(', ')
           newCode = `${newCode}.bind(null, ${bindArgs})`
         }
+        let insertionAt = node.start
+        let insertAtScopeStart = false
         if (methodInfo) {
           // example:
           //   { async someFn() { ... } }
@@ -296,16 +298,53 @@ export function transformHoistInlineDirective(
           if (isStatic) {
             newCode += ';'
           }
+          output.appendLeft(node.start, newCode)
         } else if (declName) {
-          // A function declaration becomes a const declaration. For a default
-          // export, retain the export as a separate statement after that const.
-          newCode = `const ${declName} = ${newCode};`
+          // A function declaration is visible from the start of its containing
+          // statement list. If it is referenced before its source position,
+          // initialize the wrapper at that earlier boundary so the reference
+          // does not hit the const temporal dead zone. This is only safe when
+          // the captured values are already available there, for example when
+          // they come from parameters or an outer scope.
+          const container = getFunctionDeclarationContainer(ast, node)
+          const declarationScope = getFunctionDeclarationScope(node, scopeTree)
+          const hasEarlierReference = [
+            ...scopeTree.referenceToDeclaredScope,
+          ].some(
+            ([id, scope]) =>
+              id.name === declName &&
+              scope === declarationScope &&
+              id.start < node.start,
+          )
+          const capturesReadyAtScopeStart =
+            !!declarationScope &&
+            !bindVars.some(({ root }) =>
+              declarationScope.declarations.has(root),
+            )
+          const canInsertAtScopeStart =
+            !!container?.[0] && container[0].start !== node.start
+          insertAtScopeStart =
+            hasEarlierReference &&
+            capturesReadyAtScopeStart &&
+            canInsertAtScopeStart
+          insertionAt =
+            insertAtScopeStart && container?.[0]
+              ? container[0].start
+              : node.start
+
+          let declarationCode = `const ${declName} = ${newCode};`
           if (parent?.type === 'ExportDefaultDeclaration') {
             output.remove(parent.start, node.start)
-            newCode = `${newCode}\nexport default ${declName};`
+            declarationCode += `\nexport default ${declName};`
           }
+          if (insertAtScopeStart) {
+            output.appendLeft(insertionAt, declarationCode + '\n')
+          } else {
+            output.appendLeft(insertionAt, declarationCode)
+          }
+        } else {
+          output.appendLeft(insertionAt, newCode)
         }
-        output.appendLeft(node.start, newCode)
       }
     },
   })
@@ -329,6 +368,41 @@ type MethodInfo = {
   node: Property | MethodDefinition
   /** The name of a non-computed identifier method. */
   name?: string
+}
+
+/**
+ * Finds the statement list containing a function declaration. Function
+ * declarations are initialized on scope entry, so their wrappers must be
+ * inserted before every statement in that list, not only before the declaration.
+ */
+function getFunctionDeclarationContainer(
+  ast: Program,
+  node: FunctionDeclaration,
+): Program['body'] | undefined {
+  let container: Program['body'] | undefined
+  walk(ast, {
+    enter(child, parent) {
+      if (child === node && parent) {
+        container =
+          (parent as unknown as { body?: Program['body'] }).body ?? undefined
+        this.skip()
+      }
+    },
+  })
+  return container
+}
+
+/**
+ * Returns the scope in which a function declaration's binding lives.
+ * Function names are declared in the scope containing the declaration, not
+ * in the function's own parameter/body scope.
+ */
+function getFunctionDeclarationScope(
+  node: FunctionDeclaration,
+  scopeTree: ScopeTree,
+): Scope | undefined {
+  const functionScope = scopeTree.nodeScope.get(node)
+  return functionScope?.parent
 }
 
 function getMethodInfo(
