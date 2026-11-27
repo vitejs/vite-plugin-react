@@ -54,6 +54,7 @@ async function findSourceMapURL(
   // A `file://` frame comes from a file that Node loads natively instead of through Vite.
   // React drops `node_modules` frames by default, so this is mostly reached with a custom
   // `filterStackFrame` or with project files that are externalized or imported natively.
+  // https://github.com/facebook/react/blob/edae846a9a17442c00429f2b15375afbfa0376c9/packages/react-server/src/ReactFlightServer.js#L195-L204
   if (filename.startsWith('file://')) {
     filename = slash(fileURLToPath(filename))
     // The browser requests this and the response includes the file contents,
