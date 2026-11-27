@@ -21,18 +21,7 @@ test.describe('dev-default', () => {
   const f = useFixture({ root: 'examples/basic', mode: 'dev' })
   defineTest(f)
 
-  test('validate findSourceMapURL - reject', async () => {
-    const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
-    requestUrl.searchParams.set(
-      'filename',
-      new URL('../examples/basic/.env', import.meta.url).href,
-    )
-    requestUrl.searchParams.set('environmentName', 'Server')
-    const response = await fetch(requestUrl)
-    expect(response.status).toBe(404)
-  })
-
-  test('validate findSourceMapURL - pass', async () => {
+  test('findSourceMapURL does not read files by file URL', async () => {
     const requestUrl = new URL(f.url('__vite_rsc_findSourceMapURL'))
     requestUrl.searchParams.set(
       'filename',
@@ -40,10 +29,7 @@ test.describe('dev-default', () => {
     )
     requestUrl.searchParams.set('environmentName', 'Server')
     const response = await fetch(requestUrl)
-    expect(response.status).toBe(200)
-    expect(await response.json()).toMatchObject({
-      version: 3,
-    })
+    expect(response.status).toBe(404)
   })
 })
 
