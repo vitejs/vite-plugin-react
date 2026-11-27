@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, test } from '@playwright/test'
+import { getPluginApi } from '@vitejs/plugin-rsc'
 import { createBuilder } from 'vite'
 import { setupInlineFixture, useFixture } from './fixture'
 import { defineStarterTest } from './starter'
@@ -51,7 +52,10 @@ export default baseConfig
             name: 'wait-for-concurrent-builds',
             async buildStart() {
               // Both builds stage their RSC output before the client build starts.
-              if (this.environment.name === 'client') {
+              if (
+                this.environment.name === 'client' &&
+                !getPluginApi(this.environment.config)!.manager.isScanBuild
+              ) {
                 if (++staged === 2) {
                   bothStaged.resolve()
                 }

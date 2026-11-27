@@ -479,18 +479,47 @@ export default function vitePluginRsc(
       .normalize(rscOutDir)
       .startsWith(path.normalize(ssrOutDir) + path.sep)
 
-    // rsc -> ssr -> rsc -> client -> ssr
     ensureEnvironmentImportsEntryFallback(builder.config)
+    const scanEnvironments = [
+      builder.environments.rsc!,
+      builder.environments.ssr!,
+      builder.environments.client!,
+    ]
+    const writeOptions = scanEnvironments.map(
+      (environment) => [environment, environment.config.build.write] as const,
+    )
     manager.isScanBuild = true
-    builder.environments.rsc!.config.build.write = false
-    builder.environments.ssr!.config.build.write = false
-    logStep('[1/5] analyze client references...')
-    await builder.build(builder.environments.rsc!)
-    logStep('[2/5] analyze server references...')
-    await builder.build(builder.environments.ssr!)
-    manager.isScanBuild = false
-    builder.environments.rsc!.config.build.write = true
-    builder.environments.ssr!.config.build.write = true
+    for (const environment of scanEnvironments) {
+      environment.config.build.write = false
+    }
+    try {
+      while (true) {
+        logStep('[1/5] analyze client references...')
+        await builder.build(builder.environments.rsc!)
+        const knownServerReferences = new Set(
+          manager.serverReferences.metaMap.keys(),
+        )
+        logStep('[2/5] analyze server references (ssr)...')
+        await builder.build(builder.environments.ssr!)
+        logStep('[2/5] analyze server references (client)...')
+        await builder.build(builder.environments.client!)
+
+        // Browser-only actions can render new client components, which in turn
+        // import more actions. Discover the whole graph before emitting bundles.
+        if (
+          [...manager.serverReferences.metaMap.keys()].every((id) =>
+            knownServerReferences.has(id),
+          )
+        ) {
+          break
+        }
+      }
+    } finally {
+      manager.isScanBuild = false
+      for (const [environment, write] of writeOptions) {
+        environment.config.build.write = write
+      }
+    }
     logStep('[3/5] build rsc environment...')
     await builder.build(builder.environments.rsc!)
 
