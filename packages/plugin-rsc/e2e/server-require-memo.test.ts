@@ -78,8 +78,9 @@ async function handleMemoTestRequest(request: Request) {
       const actionId = (await actionRequest).headers()['x-rsc-action']!
       const [knownId, knownName] = actionId.split('#') as [string, string]
 
-      const variants = [
-        (i: number) => `/memo-test-${i}#x`,
+      const unknown = (i: number) => `/memo-test-${i}#x`
+      // ids with the internal markers are rejected by the server manifest
+      const marked = [
         (i: number) => `$$decode-client:/memo-test-${i}#x`,
         (i: number) => `$$preserve:/memo-test-${i}#x`,
         (i: number) => `${knownId}$$cache=memo-test-${i}#${knownName}`,
@@ -89,12 +90,18 @@ async function handleMemoTestRequest(request: Request) {
       // resolves through the server manifest.
       const perVariant = 3
       let seq = 0
-      for (const toId of variants) {
+      for (const toId of [unknown, ...marked]) {
         for (let i = 0; i < perVariant; i++) {
+          const id = toId(seq++)
           const body = new FormData()
-          body.set('$ACTION_ID_' + toId(seq++), '')
+          body.set('$ACTION_ID_' + id, '')
           const response = await request.post(f.url(), { multipart: body })
-          await response.text()
+          expect(response.status()).toBe(500)
+          if (toId !== unknown) {
+            await expect
+              .poll(() => f.proc().stderr())
+              .toContain(`server reference not found '${id.split('#')[0]}'`)
+          }
         }
       }
 
