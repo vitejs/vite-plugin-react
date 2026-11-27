@@ -56,6 +56,8 @@ export function findSourceMapURL(
   filename: string,
   environmentName: string,
 ): string | null {
+  // `file://` frames come from files that Node loads without Vite, so no source map exists for them.
+  if (filename.startsWith('file://')) return null
   // TODO: respect config.base?
   const url = new URL(
     /* @vite-ignore */ '/__vite_rsc_findSourceMapURL',
