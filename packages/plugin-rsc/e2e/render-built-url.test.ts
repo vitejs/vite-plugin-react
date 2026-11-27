@@ -105,7 +105,7 @@ test.describe(() => {
 
     test('verify runtime url', () => {
       const manifestFileContent = fs.readFileSync(
-        f.root + '/dist/ssr/__vite_rsc_assets_manifest.js',
+        f.root + '/dist/rsc/__vite_rsc_assets_manifest.js',
         'utf-8',
       )
       expect(manifestFileContent).toContain(

@@ -27,6 +27,7 @@ import {
 } from 'vite'
 import { crawlFrameworkPkgs } from 'vitefu'
 import vitePluginRscCore from './core/plugin'
+import type { ResourceOptionsCallback } from './core/shared'
 import { cjsModuleRunnerPlugin } from './plugins/cjs'
 import { vitePluginFindSourceMapURL } from './plugins/find-source-map-url'
 import {
@@ -123,6 +124,7 @@ class RscPluginManager {
   bundles: Record<string, Rollup.OutputBundle> = {}
   buildAssetsManifest: AssetsManifest | undefined
   isScanBuild: boolean = false
+  shareAssetsManifest: boolean = true
   clientReferenceMetaMap: Record<string, ClientReferenceMeta> = {}
   clientReferenceGroups: Record</* group name*/ string, ClientReferenceMeta[]> =
     {}
@@ -157,16 +159,34 @@ class RscPluginManager {
 
   writeAssetsManifest(environmentNames: string[]): void {
     // write client manifest to all non-client builds during post-build step.
-    // this makes each server build to be self-contained and deploy-able for cloudflare.
+    // by default, only the rsc build gets the full manifest and other server builds re-export it,
+    // relying on an import between the two builds in the same way `import.meta.viteRsc.loadModule` does.
+    // `shareAssetsManifest: false` writes a full copy to each server build to keep each self-contained.
     const assetsManifestCode = `export default ${serializeValueWithRuntime(
       this.buildAssetsManifest,
     )}`
-    for (const name of environmentNames) {
-      const manifestPath = path.join(
+    const getManifestPath = (name: string) =>
+      path.join(
         this.config.environments[name]!.build.outDir,
         BUILD_ASSETS_MANIFEST_NAME,
       )
-      fs.writeFileSync(manifestPath, assetsManifestCode)
+    const sharedPath =
+      this.shareAssetsManifest && environmentNames.includes('rsc')
+        ? getManifestPath('rsc')
+        : undefined
+    for (const name of environmentNames) {
+      const manifestPath = getManifestPath(name)
+      if (sharedPath && manifestPath !== sharedPath) {
+        const importPath = normalizeRelativePath(
+          path.relative(path.dirname(manifestPath), sharedPath),
+        )
+        fs.writeFileSync(
+          manifestPath,
+          `export { default } from ${JSON.stringify(importPath)}\n`,
+        )
+      } else {
+        fs.writeFileSync(manifestPath, assetsManifestCode)
+      }
     }
   }
 
@@ -191,6 +211,16 @@ export type RscPluginOptions = {
 
   /** @default false */
   loadModuleDevProxy?: boolean
+
+  /**
+   * Write the full assets manifest (`__vite_rsc_assets_manifest.js`) only to the `rsc` build
+   * and make the other server builds re-export it.
+   * Set `false` to write a full copy to each server build, for deployments where
+   * the `ssr` and `rsc` outputs are deployed separately
+   * (for example, two Workers joined by a service binding).
+   * @default true
+   */
+  shareAssetsManifest?: boolean
 
   rscCssTransform?: false | { filter?: (id: string) => boolean }
 
@@ -389,13 +419,17 @@ export function vitePluginRscMinimal(
                 // `preserveServerReferences` can reach action loading without their
                 // modules entering the graph during replay. Transform the target on
                 // demand to populate metadata before validating its ID.
+                // The ID comes from the request, so check `server.fs` access here.
+                // `transformRequest` skips that check in server environments.
+                // https://github.com/vitejs/vite/blob/adc761d6e123c1fd0917c8b80e0d1050689ccbcd/packages/vite/src/node/server/environment.ts#L321
+                // https://github.com/vitejs/vite/blob/adc761d6e123c1fd0917c8b80e0d1050689ccbcd/packages/vite/src/node/server/hmr.ts#L1172
                 try {
                   // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L170-L175
                   const resolved = await this.resolve(parsed.id)
                   const id = resolved?.id ?? parsed.id
                   // https://github.com/vitejs/vite/blob/a477454442eff649b430f9e3c6caf2500fcb7183/packages/vite/src/node/server/transformRequest.ts#L271-L282
                   const allowed = isFileLoadingAllowed(
-                    manager.config,
+                    this.environment.config,
                     slash(cleanUrl(id)),
                   )
                   if (allowed) {
@@ -646,6 +680,8 @@ export default function vitePluginRsc(
         if (Number(vite.version.split('.')[0]) >= 7) {
           rscPluginOptions.useBuildAppHook ??= true
         }
+        manager.shareAssetsManifest =
+          rscPluginOptions.shareAssetsManifest ?? true
       },
       buildApp: {
         async handler(builder) {
@@ -1979,6 +2015,12 @@ function vitePluginDefineEncryptionKey(
         filter: { id: exactRegex('\0virtual:vite-rsc/encryption-key') },
         handler(id) {
           if (id === '\0virtual:vite-rsc/encryption-key') {
+            // server-only module, since the key must never reach the client.
+            if (this.environment.name !== serverEnvironmentName) {
+              this.error(
+                `[vite-rsc] 'virtual:vite-rsc/encryption-key' is only available in '${serverEnvironmentName}' environment`,
+              )
+            }
             if (this.environment.mode === 'build') {
               // during build, load key from an external file to make chunks stable.
               return `export default () => ${KEY_PLACEHOLDER}`
@@ -2749,36 +2791,46 @@ function generateResourcesCode(
   const ResourcesFn = (
     React: typeof import('react'),
     deps: ResolvedAssetDeps,
-    RemoveDuplicateServerCss?: React.FC,
-    precedence?: string,
+    RemoveDuplicateServerCss: React.FC | undefined,
+    precedence: string | undefined,
+    getResourceOptionsCallback: () => ResourceOptionsCallback | undefined,
   ) => {
-    // `deps` is static for this module, so create the element once and return
-    // the same object on every render. React Flight serializes an element it
-    // has already written as a short reference, so a component rendered many
-    // times doesn't repeat every stylesheet link in the RSC payload.
-    const element = React.createElement(React.Fragment, null, [
-      ...deps.css.map((href: string) =>
-        React.createElement('link', {
-          key: 'css:' + href,
-          rel: 'stylesheet',
-          crossOrigin: 'anonymous',
-          ...(precedence ? { precedence } : {}),
-          href: href,
-          'data-rsc-css-href': href,
-        }),
-      ),
-      RemoveDuplicateServerCss &&
-        React.createElement(RemoveDuplicateServerCss, {
-          key: 'remove-duplicate-css',
-        }),
-    ])
+    // `deps` is static for this module, so reuse the element across renders
+    // while the nonce stays the same, which it does within a request. React
+    // Flight serializes an element it has already written as a short
+    // reference, so a component rendered many times doesn't repeat every
+    // stylesheet link in the RSC payload.
+    let cachedNonce: string | undefined
+    let cachedElement: React.ReactNode
     return function Resources() {
-      return element
+      const nonce = getResourceOptionsCallback()?.()?.nonce
+      if (!cachedElement || nonce !== cachedNonce) {
+        cachedElement = React.createElement(React.Fragment, null, [
+          ...deps.css.map((href: string) =>
+            React.createElement('link', {
+              key: 'css:' + href,
+              rel: 'stylesheet',
+              crossOrigin: 'anonymous',
+              ...(nonce ? { nonce } : {}),
+              ...(precedence ? { precedence } : {}),
+              href: href,
+              'data-rsc-css-href': href,
+            }),
+          ),
+          RemoveDuplicateServerCss &&
+            React.createElement(RemoveDuplicateServerCss, {
+              key: 'remove-duplicate-css',
+            }),
+        ])
+        cachedNonce = nonce
+      }
+      return cachedElement
     }
   }
 
   return `
 import __vite_rsc_react__ from "react";
+import { getResourceOptionsCallbackInternal as __vite_rsc_get_resource_options_callback__ } from "${resolvePackage(`${PKG_NAME}/core/rsc`)}";
 
 ${
   manager.config.command === 'serve'
@@ -2791,6 +2843,7 @@ export const Resources = (${ResourcesFn.toString()})(
   ${depsCode},
   RemoveDuplicateServerCss,
   ${usePrecedence ? `"vite-rsc/importer-resources"` : `undefined`},
+  __vite_rsc_get_resource_options_callback__,
 );
 `
 }

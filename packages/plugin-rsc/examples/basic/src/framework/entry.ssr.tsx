@@ -1,12 +1,19 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   createFromReadableStream,
   getClientEntryUrl,
+  setResourceOptionsCallback,
 } from '@vitejs/plugin-rsc/ssr'
 import React from 'react'
 import type { ReactFormState } from 'react-dom/client'
 import { renderToReadableStream } from 'react-dom/server.edge'
 import { injectRSCPayload } from 'rsc-html-stream/server'
 import type { RscPayload } from './entry.rsc'
+
+// client references' preloads and stylesheets are added during the SSR render
+// below, so the framework provides their nonce through its own request-scoped storage.
+const nonceStorage = new AsyncLocalStorage<string | undefined>()
+setResourceOptionsCallback(() => ({ nonce: nonceStorage.getStore() }))
 
 export async function renderHTML(
   rscStream: ReadableStream<Uint8Array>,
@@ -28,13 +35,31 @@ export async function renderHTML(
   let htmlStream: ReadableStream<Uint8Array>
   let status: number | undefined
   try {
-    htmlStream = await renderToReadableStream(<SsrRoot />, {
-      bootstrapScriptContent: options?.debugNojs
-        ? undefined
-        : bootstrapScriptContent,
-      nonce: options?.nonce,
-      formState: options?.formState,
-    })
+    htmlStream = await nonceStorage.run(options?.nonce, () =>
+      renderToReadableStream(
+        <>
+          {/*
+            Vite's preload helper gives the links it inserts for dynamic imports
+            the nonce of this meta, so the meta has to keep the document's nonce
+            (https://vite.dev/guide/features.html#content-security-policy-csp).
+            It's rendered only with the HTML document. In the RSC payload, every
+            client navigation would render it again with a new nonce.
+            entry.browser.tsx renders the meta again with the same nonce. A CSP
+            with `script-src 'self'` and `style-src 'unsafe-inline'` (enough in
+            dev) doesn't need it.
+          */}
+          {options.nonce && <meta property="csp-nonce" nonce={options.nonce} />}
+          <SsrRoot />
+        </>,
+        {
+          bootstrapScriptContent: options?.debugNojs
+            ? undefined
+            : bootstrapScriptContent,
+          nonce: options?.nonce,
+          formState: options?.formState,
+        },
+      ),
+    )
   } catch (e) {
     status = 500
     htmlStream = await renderToReadableStream(

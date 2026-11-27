@@ -1,12 +1,4 @@
-import fs from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import {
-  isFileLoadingAllowed,
-  type EnvironmentModuleNode,
-  type Plugin,
-  type ViteDevServer,
-} from 'vite'
-import { slash } from './vite-utils'
+import type { EnvironmentModuleNode, Plugin, ViteDevServer } from 'vite'
 
 //
 // support findSourceMapURL
@@ -51,31 +43,15 @@ async function findSourceMapURL(
   filename: string,
   environmentName: string,
 ): Promise<object | undefined> {
-  // this is likely server external (i.e. outside of Vite processing)
-  if (filename.startsWith('file://')) {
-    filename = slash(fileURLToPath(filename))
-    if (
-      isFileLoadingAllowed(server.config, filename) &&
-      fs.existsSync(filename)
-    ) {
-      // line-by-line identity source map
-      const content = fs.readFileSync(filename, 'utf-8')
-      return {
-        version: 3,
-        sources: [filename],
-        sourcesContent: [content],
-        mappings: 'AAAA' + ';AACA'.repeat(content.split('\n').length),
-      }
-    }
-    return
-  }
-
   // server component stack, replace log, `registerServerReference`, etc...
   let mod: EnvironmentModuleNode | undefined
   let map:
     | NonNullable<EnvironmentModuleNode['transformResult']>['map']
     | undefined
   if (environmentName === 'Server') {
+    // Showing server source in browser DevTools is intended, so this has no `server.fs` check.
+    // The rsc module graph only holds modules the app loads, because transforms that
+    // a request triggers are checked first (see `rsc:reference-validation` in `plugin.ts`).
     mod = server.environments.rsc!.moduleGraph.getModuleById(filename)
     // React extracts stacktrace via resetting `prepareStackTrace` on the server
     // and let browser devtools handle the mapping.

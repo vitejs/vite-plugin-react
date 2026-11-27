@@ -25,6 +25,7 @@ import { TestClientChunkServer } from './chunk/server'
 import { TestChunk2 } from './chunk2/server'
 import { ClientCounter, Hydrated } from './client'
 import { TestClientError } from './client-error/client'
+import { TestCspNonceNav } from './csp-nonce-nav/server'
 import { TestCssQueries } from './css-queries/server'
 import { TestCjsBuiltinInterop } from './deps/cjs-builtin-interop/server'
 import { TestClientInServer } from './deps/client-in-server/server'
@@ -139,6 +140,7 @@ export function Root(props: { url: URL }) {
         <TestSharedClientCss />
         <TestUseId />
         <TestCjsBuiltinInterop />
+        <TestCspNonceNav url={props.url} />
       </body>
     </html>
   )

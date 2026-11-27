@@ -25,3 +25,12 @@ export function setInternalRequire(): void {
     return (globalThis as any).__vite_rsc_client_require__(id)
   }
 }
+
+export type ResourceOptionsCallback = () =>
+  | {
+      /**
+       * CSP nonce for the `<link>` elements.
+       */
+      nonce?: string
+    }
+  | undefined
