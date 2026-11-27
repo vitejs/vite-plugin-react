@@ -1,5 +1,5 @@
 import type { BundlerConfig, ImportManifestEntry, ModuleMap } from '../types'
-import { memoize, tinyassert } from '../utils/shared'
+import { tinyassert } from '../utils/shared'
 import {
   SERVER_DECODE_CLIENT_PREFIX,
   SERVER_REFERENCE_PRESERVE_PREFIX,
@@ -26,7 +26,7 @@ export function setRequireModule(options: {
   }
 
   // need memoize to return stable promise from __webpack_require__
-  ;(globalThis as any).__vite_rsc_server_require__ = memoize(
+  ;(globalThis as any).__vite_rsc_server_require__ = memoizeServerRequire(
     async (id: string) => {
       if (id.startsWith(SERVER_REFERENCE_PRESERVE_PREFIX)) {
         id = id.slice(SERVER_REFERENCE_PRESERVE_PREFIX.length)
@@ -91,6 +91,27 @@ export function setRequireModule(options: {
   setInternalRequire()
 }
 
+// Rejected loads are not kept, so ids that fail to load don't accumulate.
+// React fails the chunk on rejection, so it doesn't ask for the same promise again.
+function memoizeServerRequire(
+  load: (id: string) => Promise<unknown>,
+): (id: string) => Promise<unknown> {
+  const cache = new Map<string, Promise<unknown>>()
+  return (id) => {
+    let promise = cache.get(id)
+    if (!promise) {
+      promise = load(id)
+      cache.set(id, promise)
+      promise.catch(() => {
+        if (cache.get(id) === promise) {
+          cache.delete(id)
+        }
+      })
+    }
+    return promise
+  }
+}
+
 export async function loadServerAction(id: string): Promise<Function> {
   const [file, name] = id.split('#') as [string, string]
   const mod: any = await requireModule(file)
@@ -115,6 +136,13 @@ export function createServerManifest(
         let [id, name] = $$id.split('#')
         tinyassert(id)
         tinyassert(name)
+        // ids come from the client. They must not carry the internal markers
+        // that `__vite_rsc_server_require__` reads: a prefix skips the lookup,
+        // and a cache tag is stripped before it, so either load succeeds and
+        // every distinct id would stay in the require memo.
+        if (id.startsWith('$$') || id.includes('$$cache=')) {
+          throw new Error(`server reference not found '${id}'`)
+        }
         options?.onServerReference?.({ id, name })
         return {
           id: SERVER_REFERENCE_PREFIX + prefix + id + cacheTag,
